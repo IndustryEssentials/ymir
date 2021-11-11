@@ -1,0 +1,14 @@
+anchors: '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
+image_height: 608
+image_width: 608
+learning_rate: 0.013
+max_batches: 20000
+warmup_iterations: 1000
+pretrained_model_params: /fake_model
+batch: 64
+subdivisions: 32
+shm_size: '16G'
+# class_names:
+# - expose_rubbish
+# gpu_id: '0,1,2,3'
+
