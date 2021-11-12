@@ -1,0 +1,105 @@
+version: "3.3"
+services:
+  backend:
+    image: pymir/backend
+    env_file:
+      - .env
+    runtime: nvidia
+    environment:
+      # controller
+      - REDIS_URI=redis://redis:6379/0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
+      - MONTIOR=${YMIR_PATH}/ymir-data/monitor
+      - MODELS_PATH=${YMIR_PATH}/ymir-models
+      - ASSETS_PATH=${YMIR_PATH}/ymir-assets
+      - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
+      - DATA_SOURCE=/data/sharing
+      # viz
+      - SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
+      - VIZ_REDIS_URI=redis://:@viz-redis
+      # app
+      - DATABASE_URI=mysql+pymysql://user:passwd@db/ymir
+      - GRPC_CHANNEL=127.0.0.1:50066
+      - VIZ_HOST=127.0.0.1:9099
+      - SHARED_DATA_DIR=/data/sharing
+      - NGINX_DATA_PATH=/ymir-storage
+      # arq
+      - CHECK_INTERVAL_IN_SECONDS=30
+      - API_HOST=127.0.0.1:80
+    volumes:
+      - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
+      - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
+      - "${YMIR_PATH}/ymir-data/logs:/app_logs"
+      - "${YMIR_PATH}/ymir-models:${YMIR_PATH}/ymir-models"
+      - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
+      # special volumes for start container in container
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /usr/bin/nvidia-docker:/usr/bin/nvidia-docker
+      - /usr/bin/nvidia-smi:/usr/bin/nvidia-smi
+      - /lib64/libltdl.so.7:/lib64/libltdl.so.7
+      # app
+      - ${YMIR_PATH}/ymir-storage:/ymir-storage
+      - ${YMIR_PATH}/importing_pic:/data/sharing
+    depends_on:
+      - db
+      - redis
+      - viz-redis
+    command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
+#    restart: always
+    networks:
+      - pymir_network
+
+  viz-redis:
+    image: pymir/pymir-viz-redis
+    restart: always
+    networks:
+      - pymir_network
+
+  redis:
+    image: pymir/pymir-backend-redis
+    command: redis-server /config/redis/redis.conf --loadmodule /usr/lib/redis/modules/redisgraph.so
+    volumes:
+      - ${YMIR_PATH}/redis:/var/log/redis
+      - ${YMIR_PATH}/redis:/data
+    restart: always
+    networks:
+      - pymir_network
+
+  nginx:
+    image: pymir/pymir-web
+    volumes:
+      - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
+      - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
+      - "${YMIR_PATH}/ymir-storage:/data/ymir/ymir-storage"
+    environment:
+      - LABEL_STUDIO_OPEN_HOST=${LABEL_STUDIO_OPEN_HOST}
+      - LABEL_STUDIO_OPEN_PORT=${LABEL_STUDIO_OPEN_PORT}
+    ports:
+      - ${NGINX_PORT}:80
+    restart: always
+    networks:
+      - pymir_network
+
+  db:
+    image: 'mysql/mysql-server:8.0.25'
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ${YMIR_PATH}/mysql:/var/lib/mysql
+    restart: always
+    networks:
+      - pymir_network
+
+networks:
+  pymir_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 12.88.12.0/24
+        gateway: 12.88.12.1

@@ -1,0 +1,47 @@
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field, root_validator, validator
+
+from app.schemas.common import Common
+
+
+class InferenceBase(BaseModel):
+    model_id: int
+    image_urls: List[str]
+
+
+class InferenceCreate(InferenceBase):
+    pass
+
+
+class Box(BaseModel):
+    x: int
+    y: int
+    w: int
+    h: int
+
+
+class DetectionResult(BaseModel):
+    box: Box
+    keyword: str = Field(description="aka class_name for MIR")
+    score: float = Field(ge=0, le=1)
+
+    @root_validator(pre=True)
+    def fill_keyword(cls, values: Dict) -> Dict:
+        # rename class_name to keyword
+        values["keyword"] = values["class_name"]
+        return values
+
+
+class Annotation(BaseModel):
+    image_url: str
+    detection: List[DetectionResult]
+
+
+class InferenceResult(BaseModel):
+    model_id: int
+    annotations: List[Annotation]
+
+
+class InferenceOut(Common):
+    result: InferenceResult

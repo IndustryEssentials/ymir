@@ -1,0 +1,72 @@
+version: "3.3"
+services:
+  backend:
+    image: pymir/backend
+    env_file:
+      - .env.example
+    build: .
+    runtime: nvidia
+    environment:
+      # controller
+      - REDIS_URI=redis://redis:6379/0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
+      - MONTIOR=${YMIR_PATH}/ymir-data/monitor
+      - MODELS_PATH=${YMIR_PATH}/ymir-models
+      - ASSETS_PATH=${YMIR_PATH}/ymir-assets
+      - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
+      - DATA_SOURCE=/data/sharing
+      # viz
+      - SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
+      - VIZ_REDIS_URI=redis://:@viz-redis
+      # app
+      - DATABASE_URI=mysql+pymysql://user:passwd@db/ymir
+      - GRPC_CHANNEL=127.0.0.1:50066
+      - VIZ_HOST=127.0.0.1:9099
+      - SHARED_DATA_DIR=/data/sharing
+      - NGINX_DATA_PATH=/ymir-storage
+      # arq
+      - CHECK_INTERVAL_IN_SECONDS=30
+      - API_HOST=127.0.0.1:80
+    ports:
+      - 8888:80
+    volumes:
+      - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
+      - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
+      - "${YMIR_PATH}/ymir-data/logs:/app_logs"
+      - "${YMIR_PATH}/ymir-models:${YMIR_PATH}/ymir-models"
+      - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
+      # special volumes for start container in container
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /usr/bin/nvidia-docker:/usr/bin/nvidia-docker
+      - /usr/bin/nvidia-smi:/usr/bin/nvidia-smi
+      - /lib64/libltdl.so.7:/lib64/libltdl.so.7
+      # app
+      - ${YMIR_PATH}/ymir-storage:/ymir-storage
+      - ${YMIR_PATH}/importing_pic:/data/sharing
+    depends_on:
+      - db
+      - redis
+      - viz-redis
+    command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
+    restart: always
+
+  viz-redis:
+    image: redis
+    restart: always
+
+  redis:
+    image: redislabs/redisgraph:latest
+    restart: always
+
+  db:
+    image: 'mysql/mysql-server:8.0.25'
+    environment:
+      - MYSQL_ROOT_PASSWORD=ymir_db_passwd
+      - MYSQL_DATABASE=ymir
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=passwd
+    volumes:
+      - ${YMIR_PATH}/mysql:/var/lib/mysql
+    restart: always

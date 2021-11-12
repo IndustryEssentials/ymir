@@ -1,0 +1,19 @@
+SERVICE:
+  port: "50051"
+ASSETS:
+  assetskvlocation: /tmp/ymir-controller-sandbox-root/ymir-assets/
+  assetskvprotocol: file
+  assetsuploadlocation: /tmp/ymir-controller-sandbox-root/ymir-assets/
+  assetsuploadprotocol: file
+  modelskvlocation: /tmp/ymir-controller-sandbox-root/ymir-models/
+  modelskvprotocol: file
+  modelsuploadlocation: /tmp/ymir-controller-sandbox-root/ymir-models/
+  modelsuploadprotocol: file
+  training_image: pymir/executor-det-yolov4-training:release-0.1.1
+  mining_image: pymir/executor-det-yolov4-mining:release-0.1.1
+SANDBOX:
+  sandboxowner: ymir-root
+  sandboxownergroup: ymir-root
+  sandboxroot: /tmp/ymir-controller-sandbox-root/sandbox
+TASK_MONITOR:
+  storageroot: /tmp/ymir-controller-sandbox-root/monitor
