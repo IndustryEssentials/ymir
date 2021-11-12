@@ -1,0 +1,90 @@
+/** component: hash **/
+.hash {
+  display: inline-block;
+  max-width: 160px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/** component: copy **/
+.copy {
+  padding: 2px 6px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  font-weight: normal;
+  cursor: pointer;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.hiddenInput {
+  position: fixed;
+  left: -100px;
+  top: -100px;
+}
+
+/** component: loading **/
+.loading {
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+}
+/** component: icons **/
+.cicon {
+  font-size: 20px;
+  vertical-align: text-bottom;
+}
+/** component: breadcrumb **/
+.breadcrumb {
+  height: 50px;
+  line-height: 50px;
+  background: #fff;
+  margin: 0 -5vw 20px;
+  padding: 0 5vw;
+  box-shadow: 0px 0px 10px rgba(0, 106, 107, 0.1);
+  .breadcrumbContent {
+    line-height: 50px;
+  }
+}
+/** quickActions **/
+.quickActions {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  z-index: 5;
+  .qaContent {
+    text-align: center;
+  }
+  .quickAction, .logo {
+    margin: 0 2px;
+    background: rgba(176, 177, 180, 0.8);
+    width: 50px;
+    height: 50px;
+    line-height: 20px;
+    a {
+      display: block;
+      width: 100%;
+      height: 100%;
+      padding: 5px 0;
+      color: #fff;
+    }
+  }
+  .logo {
+    margin-right: 0;
+    background: rgba(54, 203, 203, 0.9);
+    line-height: 50px;
+    cursor: move;
+    & :hover {
+      cursor: move;
+    }
+  }
+}
