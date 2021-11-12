@@ -1,0 +1,110 @@
+.login {
+  .slogan {
+    background-image: url(../../assets/slogan.png), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
+    background-position: center center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    position: relative;
+    .logo {
+      margin: 60px 0 0 60px;
+      height: 50px;
+      img {
+        height: 100%;
+      }
+    }
+    .footer {
+      position: absolute;
+      bottom: 0;
+      padding: 20px 0;
+      width: 100%;
+    }
+  }
+  .content {
+    background-color: #fff;
+    @langHeight: 60px;
+    .lang {
+      margin: 30px 10% 0 0;
+      height: @langHeight;
+      line-height: 26px;
+      text-align: right;
+    }
+    .loginForm {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      height: calc(100% - @langHeight - 30px);
+      .title, .form {
+        padding: 0 10%;
+        width: 100%;
+      }
+      .title {
+        margin-bottom: 40px;
+        font-size: 26px;
+        font-weight: 600;
+        color: @btn-primary-bg;
+      }
+      .links {
+        text-align: center;
+        .link {
+          color: rgba(0,0,0,0.45);
+        }
+      }
+    }
+  }
+}
+.reg, .forget, .reset {
+  .content {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    min-height: calc(100vh - 112px);
+    &:after {
+      content: ' ';
+      flex: 1;
+    }
+  }
+  .formBox {
+    margin-top: 60px;
+    width: 60vw;
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    .header {
+      padding: 0 24px;
+      line-height: 80px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      h2 {
+        font-size: 26px;
+        color: @btn-primary-bg;
+        font-weight: 600;
+        margin-bottom: 0;
+      }
+      .back {
+        color: rgba(0, 0, 0, 0.45);
+      }
+    }
+    .tipTitle {
+      font-weight: 800;
+      font-size: 18px;
+      color:rgba(0, 0, 0, 0.65);
+    }
+    .tip {
+      color:rgba(0, 0, 0, 0.65);
+      // font-size: 16px;
+    }
+    .form {
+      padding: 20px 10vw;
+    }
+  }
+}
+.login, .reg, .forget, .reset {
+  :global(.ant-input) {
+    line-height: 2.9;
+  }
+  :global(.ant-form-large .ant-form-item-label > label) {
+    height: 60px;
+  }
+  .submit {
+    height: 60px;
+  }
+}

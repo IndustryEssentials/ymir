@@ -1,0 +1,18 @@
+@menu-bg: none;
+.nav-menu.ant-menu {
+  background: none;
+  border: none;
+  .ant-menu-item {
+    color: #fff;
+    min-width: 120px;
+    text-align: center;
+    &:hover,
+    &.ant-menu-item-selected {
+      font-weight: bold;
+      color: #fff;
+      &:after {
+        border-bottom: 4px solid #fff;
+      }
+    }
+  }
+}

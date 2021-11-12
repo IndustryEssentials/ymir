@@ -1,0 +1,27 @@
+
+.normal {
+  font-family: Arial, 'Microsoft Yahei', sans-serif;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: normal;
+  letter-spacing: -1px;
+  background: darkslateblue;
+  padding: 0;
+  color: white;
+  margin: 0;
+}
+.loading {
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
