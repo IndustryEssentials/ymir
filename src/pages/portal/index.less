@@ -1,0 +1,152 @@
+.portal {
+  padding: 20px 0;
+  .box {
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0px 0px 10px 0px rgba(0, 106, 107, 0.1);
+    background: #fff;
+  }
+  .boxItem {
+    padding: 0 10px;
+    height: 236px;
+    overflow: hidden;
+    :global(.ant-card-head-title) {
+      padding: 10px 0;
+    }
+    :global(.ant-card-head) {
+      padding: 0;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    :global(.ant-card-body) {
+      padding: 10px 0;
+    }
+  }
+  .emptyBoxItem {
+    flex: 0 0 25%;
+    border-style: dashed;
+    border-width: 2px;
+    padding: 0;
+    text-align: center;
+  }
+  .emptyBoxAction {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    padding-top: 84px;
+  }
+  .boxItemTitle {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .boxItemTitleCount {
+    text-align: center;
+  }
+  .headIcon {
+    margin-right: 10px;
+  }
+  .moreIcon {
+    color: rgba(0, 0, 0, 0.85);
+  }
+  .kwContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    flex: 1;
+    &:after {
+      content: ' ';
+      width: 30%;
+    }
+  }
+  .kwTag {
+    display: inline-block;
+    flex: 0 0 30%;
+    margin: 0 0 5px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .oset {
+    :global(.ant-descriptions-item) {
+      padding-bottom: 0;
+    }
+    :global(.ant-carousel .slick-prev) {
+      left: -18px;
+    }
+    :global(.ant-carousel .slick-next) {
+      right: -18px;
+    }
+    :global(.ant-carousel .slick-dots) {
+      margin-bottom: 0;
+    }
+    .setInfo {
+      margin: 8px 0;
+    }
+    .kwTag {
+      margin: 0 0 4px;
+    }
+  }
+  .hotModel {
+    :global(.ant-descriptions-item) {
+      padding-bottom: 10px;
+    }
+  }
+  .modelList {
+    :global(.ant-list-item) {
+      padding: 6px 0;
+      border-bottom: none;
+    }
+    .action {
+      color: rgba(0, 0, 0, 0.85);
+    }
+  }  /** model lsit **/
+  .modelListItem {
+    display: inline-block;
+    color: rgba(0, 0, 0, 0.45);
+    width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    &:hover {
+      font-weight: bold;
+    }
+  }
+  .ol {
+    display: inline-block;
+    margin-right: 15px;
+    height: 22px;
+    width: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 100px;
+  }
+  .ol0, .ol1, .ol2 {
+    color: #fff;
+  }
+  .ol0 {
+    background: rgb(242, 99, 123);
+  }
+  .ol1, .ol2 {
+    background: @primary-color;
+  }
+
+  .taskAnalysContent {
+    position: relative;
+    padding: 24px 0;
+  }
+  .taskTimeBtn {
+    position: absolute;
+    right: 20px;
+    top: 8px;
+    z-index: 2;
+  }
+
+
+  .badge {
+    z-index: 2;
+    width: 100%;
+  }
+  .dataset_panel, .model_panel, .task_panel {
+    margin-bottom: 20px;
+  }
+}
