@@ -1,0 +1,83 @@
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  input, input:focus {
+    background: #fff;
+  }
+  .ant-tag {
+    margin-bottom: 5px;
+  }
+  .ant-btn .anticon {
+    vertical-align: middle;
+  }
+
+  .ant-table-row .edit {
+      visibility: hidden;
+      color: skyblue;
+  }
+  .ant-table-row:hover .edit {
+        visibility: visible;
+  }
+  /* carousel arrow */
+  .ant-carousel .slick-prev,
+  .ant-carousel .slick-next,
+  .ant-carousel .slick-prev:hover,
+  .ant-carousel .slick-next:hover,
+  .ant-carousel .slick-prev:focus,
+  .ant-carousel .slick-next:focus {
+    font-size: inherit;
+    color: currentColor !important;
+  }
+  .ant-carousel .slick-prev::before {
+    color: currentColor !important;
+  }
+  .slick-arrow.slick-prev {
+    font-size: 20px !important;
+  }
+  .ant-carousel .slick-next::before {
+    color: currentColor !important;
+  }
+  .slick-arrow.slick-next {
+    font-size: 20px !important;
+  }
+  .ant-carousel .slick-dots li {
+      background-color: #000;
+    
+  }
+  .ant-carousel .slick-dots li.slick-active button {
+    background-color: #ccc;
+  }
+  .ant-tag-error {
+    color: @error-color;
+    background: fade(@error-color, 10);
+    border-color: @error-color;
+  }
+  .ant-tag-success {
+    color: @success-color;
+    background: fade(@success-color, 10);
+    border-color: @success-color;
+  }
+  .ant-tag-warning {
+    color: @warning-color;
+    background: fade(@warning-color, 10);
+    border-color: @warning-color;
+  }
+  .ant-card-head-title {
+    padding: 10px 0;
+  }
+  .ant-descriptions-item-label {
+    color: rgba(0, 0, 0, 0.45);
+  }
+
+  /** form **/
+  .ant-form-item-label {
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.85);
+  }
+  .ant-radio-button-wrapper, .ant-form-item-control-input-content {
+    color:rgba(0, 0, 0, 0.65);
+  }
+}
