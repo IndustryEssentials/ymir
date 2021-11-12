@@ -7,7 +7,6 @@ on:
     branches:
       - master
       - dev
-      - 0.1.4
 
 env:
   PYTHONPATH: ./
