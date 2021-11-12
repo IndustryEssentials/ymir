@@ -9,8 +9,8 @@ ASSETS:
   modelskvprotocol: file
   modelsuploadlocation: ${MODELS_PATH}
   modelsuploadprotocol: file
-  training_image: pymir/executor-det-yolov4-training:release-0.1.1
-  mining_image: pymir/executor-det-yolov4-mining:release-0.1.2
+  training_image: industryessentials/executor-det-yolov4-training:release-0.1.2
+  mining_image: industryessentials/executor-det-yolov4-mining:release-0.1.2
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
