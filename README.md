@@ -26,7 +26,7 @@ Bring up by docker-compose:
 docker-compose -f docker-compose.dev.yml up --build -d
 ```
 
-Further reading: [ymir](https://github.com/IndustryEssentials/ymir)
+Further reading: [Ymir](https://github.com/IndustryEssentials/ymir)
 
 
 ## License
