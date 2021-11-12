@@ -11,7 +11,6 @@ ymir_repo_user_rsa
 ymir_repo_user_rsa.pub
 *.db
 *.swp
-build
 dist
 .vscode
 .pytest_cache
