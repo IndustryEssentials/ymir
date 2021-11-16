@@ -1,0 +1,24 @@
+version: "3.3"
+services:
+  label-studio:
+    image: heartexlabs/label-studio:latest
+    env_file:
+      - .env
+    ports:
+      - ${LABEL_STUDIO_OPEN_PORT}:8080
+    environment:
+      - LOCAL_FILES_SERVING_ENABLED=true
+    volumes:
+      - "${YMIR_PATH}/label-studio_data:/label-studio/data"
+      - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
+      - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
+    restart: on-failure
+    networks:
+      extnetwork:
+        ipv4_address: 172.168.255.2
+
+networks:
+    extnetwork:
+      ipam:
+        config:
+        - subnet: 172.168.255.0/24
