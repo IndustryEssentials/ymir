@@ -308,6 +308,7 @@ function Model({ getModels, delModel, updateModel }) {
       <div className={styles.list}>
       <div className={styles.search}>
         <Form
+          name='queryForm'
           form={form}
           // layout="inline"
           labelCol={{ flex: '100px' }}

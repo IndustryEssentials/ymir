@@ -149,6 +149,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
       <Card className={commonStyles.container} title={t('breadcrumbs.task.training')}>
         <div className={commonStyles.formContainer}>
           <Form
+            name='trainForm'
             className={styles.form}
             {...formLayout}
             form={form}
@@ -330,12 +331,16 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
+              <Form.Item name='submitBtn' noStyle>
                 <Button type="primary" size="large" htmlType="submit">
                   {t('task.filter.create')}
                 </Button>
+              </Form.Item>
+              <Form.Item name='backBtn' noStyle>
                 <Button size="large" onClick={() => history.goBack()}>
                   {t('task.btn.back')}
                 </Button>
+              </Form.Item>
               </Space>
             </Form.Item>
           </Form>
