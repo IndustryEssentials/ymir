@@ -144,6 +144,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             className={styles.form}
             {...formLayout}
             form={form}
+            name='miningForm'
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
@@ -306,12 +307,16 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
+              <Form.Item name='submitBtn' noStyle>
                 <Button type="primary" size="large" htmlType="submit">
                   {t('task.filter.create')}
                 </Button>
+              </Form.Item>
+              <Form.Item name='backBtn' noStyle>
                 <Button size="large" onClick={() => history.goBack()}>
                   {t('task.btn.back')}
                 </Button>
+              </Form.Item>
               </Space>
             </Form.Item>
           </Form>

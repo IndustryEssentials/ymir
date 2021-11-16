@@ -292,6 +292,7 @@ function Task({ getTasks, delTask, updateTask }) {
   const renderQuery = (
     <div className={styles.search}>
       <Form
+        name='queryForm'
         form={form}
         // layout="inline"
         labelCol={{ flex: '100px' }}

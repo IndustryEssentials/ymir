@@ -95,6 +95,7 @@ function Filter({
       <Card className={commonStyles.container} title={t('breadcrumbs.task.filter')}>
         <Form
           form={form}
+          name='filterForm'
           {...formLayout}
           initialValues={initialValues}
           onFinish={onFinish}
@@ -179,12 +180,16 @@ function Filter({
           </Form.Item>
           <Form.Item className={styles.submit} wrapperCol={{ offset: 4 }}>
             <Space size={20}>
+              <Form.Item name='submitBtn' noStyle>
               <Button type="primary" size="large" htmlType="submit">
                 {t('task.filter.create')}
               </Button>
+              </Form.Item>
+              <Form.Item name='backBtn' noStyle>
               <Button size="large" onClick={() => history.goBack()}>
                 {t('task.btn.back')}
               </Button>
+              </Form.Item>
             </Space>
           </Form.Item>
         </Form>
