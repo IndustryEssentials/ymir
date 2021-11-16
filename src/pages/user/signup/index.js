@@ -69,7 +69,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
             <Form
               className={styles.form}
               {...layout420}
-              name="basic"
+              name="signupForm"
               initialValues={{}}
               onFinish={signup}
               onFinishFailed={onFinishFailed}
@@ -150,7 +150,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                 <Input.Password allowClear placeholder={t('signup.repwd.placeholder')} prefix={<KeyIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
 
-              <Form.Item wrapperCol={{ span: 24 }}>
+              <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
                 <Button type="primary" htmlType="submit" className={styles.submit} block>
                   {t("signup.signup")}
                 </Button>

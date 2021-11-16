@@ -46,7 +46,7 @@ const Forget = ({ forgetPwd }) => {
             <Form
               className={styles.form}
               {...layout420}
-              name="basic"
+              name="forgetForm"
               initialValues={{}}
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
@@ -70,7 +70,7 @@ const Forget = ({ forgetPwd }) => {
               >
                 <Input allowClear prefix={<EmailIcon />} placeholder={t('forget.email.placeholder')} />
               </Form.Item>
-              <Form.Item wrapperCol={{ span: 24 }}>
+              <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
                 <Button
                   type="primary"
                   htmlType="submit"

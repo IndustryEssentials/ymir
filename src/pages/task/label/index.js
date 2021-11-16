@@ -75,6 +75,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             className={styles.form}
             {...formLayout}
             form={form}
+            name='labelForm'
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
@@ -174,12 +175,16 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
+              <Form.Item name='submitBtn' noStyle>
                 <Button type="primary" size="large" htmlType="submit">
                   {t('task.filter.create')}
                 </Button>
+              </Form.Item>
+              <Form.Item name='backBtn' noStyle>
                 <Button size="large" onClick={() => history.goBack()}>
                   {t('task.btn.back')}
                 </Button>
+              </Form.Item>
               </Space>
               <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/lsf/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
             </Form.Item>

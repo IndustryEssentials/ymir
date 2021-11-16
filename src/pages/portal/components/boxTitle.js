@@ -4,6 +4,6 @@ import styles from '../index.less'
 import { MoreIcon } from "@/components/common/icons"
 const renderTitle = (title, link = '', label = 'More') => <Row>
   <Col flex={1}>{title}</Col>
-  { link ? <Col><Link to={link}><MoreIcon title={label} className={styles.moreIcon} /></Link></Col> : null }
+  { link ? <Col><Link className='more' to={link}><MoreIcon title={label} className={styles.moreIcon} /></Link></Col> : null }
   </Row>
 export default renderTitle
