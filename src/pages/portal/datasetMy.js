@@ -90,7 +90,7 @@ function Sets({ title, count = 3, batchDatasets, getHotDataset }) {
   )
 
   return (
-    <Card className={styles.box} bordered={false}
+    <Card  id='mydataset' className={styles.box} bordered={false}
       headStyle={cardHead} bodyStyle={cardBody}
       title={renderTitle(<><MydatasetIcon className={styles.headIcon} />{t('portal.dataset.my.title')}</>, '/home/dataset')}
     >

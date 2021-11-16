@@ -61,7 +61,7 @@ const ResetPwd = ({ resetPwd }) => {
             <Form
               className={styles.form}
               {...layout420}
-              name="basic"
+              name="resetForm"
               initialValues={{}}
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
@@ -105,7 +105,7 @@ const ResetPwd = ({ resetPwd }) => {
                 <Input.Password allowClear placeholder={t('reset_pwd.repwd.placeholder')} />
               </Form.Item>
 
-              <Form.Item wrapperCol={{ span: 24 }}>
+              <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
                 <Button type="primary" htmlType="submit" className={styles.submit} block>
                   {t("reset_pwd.reset")}
                 </Button>
