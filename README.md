@@ -78,8 +78,8 @@ The YMIR platform mainly meets the needs of users for developing models at scale
 
 | Function Module    | Primary Function   | Secondary Function                                           | Function Description                                         |
 | ------------------ | ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Data Management    | Dataset Management | Importing Datasets                                           | Support users to import prepared datasets by copying public datasets, URL address, path import and local import |
-| Dataset Management | View Datasets      | Supports visualization of image data and annotations, and viewing of historical information |                                                              |
+| Data Management    | Dataset Management | Import Datasets                                           | Support users to import prepared datasets by copying public datasets, URL address, path import and local import |
+| Dataset Management | View Datasets      | Support visualization of image data and annotations, and viewing of historical information |                                                              |
 | Dataset Management | Edit Dataset       | Support Dataset Edit, Delete                                 |                                                              |
 | Task Management    | Filtering Tasks    | Support for filtering datasets by tags                       |                                                              |
 | Training Models    | Task Management    | Training Tasks                                               | Support self-selected datasets, labels, and adjust training parameters to train models according to needs, and view the corresponding model results after completion |
