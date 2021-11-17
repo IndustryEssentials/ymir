@@ -115,10 +115,9 @@ message GeneralResp {
     string req_task_id = 2;
     string message = 3;
     repeated string ext_strs = 4;
+    repeated string csv_labels = 5;
     RespGetTaskInfo resp_get_task_info = 1000;
     RespCMDInference detection = 1001;
-    RespCMDAddLabel resp_add_labels = 1002;
-    repeated string resp_get_labels = 1003;
 }
 
 // base args for create task request
