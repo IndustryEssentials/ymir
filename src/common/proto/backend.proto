@@ -1,0 +1,572 @@
+syntax = "proto3";
+
+/// assertion type: training, validation or test
+enum TvtType {
+    TvtTypeUnknown = 0;
+    TvtTypeTraining = 1;
+    TvtTypeValidation = 2;
+    TvtTypeTest = 3;
+};
+
+enum AssetType {
+    AssetTypeUnknown = 0;
+    AssetTypeImageJpeg = 1;
+    AssetTypeImagePng = 2;
+    AssetTypeImagePixelMat = 3;
+    AssetTypeImageYuv420p = 4;
+    AssetTypeImageYuv420sp = 5;
+    AssetTypeImageYuv422p = 6;
+    AssetTypeImageYuv422sp = 7;
+    AssetTypeVideoMp4 = 101;
+};
+
+/// task type
+enum TaskType {
+    TaskTypeUnknown = 0;
+    TaskTypeTraining = 1;
+    TaskTypeMining = 2;
+    TaskTypeLabel = 3;
+    TaskTypeFilter = 4;
+    TaskTypeImportData = 5;
+    TaskTypeExportData = 6;
+    TaskTypeCopyData = 7;
+    TaskTypeMerge = 8;
+};
+
+enum TaskState {
+    TaskStateUnknown = 0;
+    TaskStatePending = 1;
+    TaskStateRunning = 2;
+    TaskStateDone = 3;
+    TaskStateError = 4;
+    TaskStateMiss = 5;
+};
+
+enum Sha1Type {
+    SHA1_TYPE_UNKNOWN = 0;
+    SHA1_TYPE_ASSET = 1;
+    SHA1_TYPE_COMMIT = 2;
+}
+
+enum RCode {
+    RC_OK = 0;
+    RC_ERROR_UNKNOWN = 1;
+
+    RC_CMD_ERROR_UNKNOWN = 100;
+    RC_CMD_CORRUPT_MIR_FILE = 101;
+    RC_CMD_INVALID_MIR_FILE = 102;
+    RC_CMD_INVALID_MIR_REPO = 103;
+    RC_CMD_INVALID_ARGS = 104;
+    RC_CMD_INVALID_BRANCH_OR_TAG = 105;
+    RC_CMD_INVALID_COMMAND = 106;
+    RC_CMD_MIR_FILE_NOT_FOUND = 107;
+    RC_CMD_CONFLICTS_OCCURED = 108;
+    RC_CMD_EMPTY_METADATAS = 109;
+    RC_CMD_EMPTY_TRAIN_SET = 110;
+    RC_CMD_EMPTY_VAL_SET = 111;
+    RC_CMD_DIRTY_REPO = 112;
+    RC_CMD_NOTHING_TO_MERGE = 113;
+
+    RC_SERVICE_ERROR_UNKNOWN = 1000;
+    RC_SERVICE_INVALID_REQ = 1001;
+    RC_SERVICE_INVOKE_ERROR = 1002;
+    RC_SERVICE_UNKOWN_RESPONSE = 1003;
+    RC_SERVICE_TASK_INVOKER_ERROR = 1004;
+    RC_SERVICE_INFO_INVOKER_ERROR = 1005;
+}
+
+enum MirStorage {
+    MIR_METADATAS = 0;
+    MIR_ANNOTATIONS = 1;
+    MIR_KEYWORDS = 2;
+    MIR_TASKS = 3;
+}
+
+enum LabelFormat {
+    NO_ANNOTATION = 0;
+    PASCAL_VOC = 1;
+    IF_ARK = 2;
+};
+
+
+enum RequestType {
+    UNKNOWN = 0;
+    // CMD task
+    CMD_BRANCH_DEL = 1;
+    CMD_BRANCH_LIST = 2;
+    CMD_BRANCH_CHECKOUT = 3;
+    CMD_BRANCH_CREATE = 4;
+    CMD_CLONE = 5;
+    CMD_COMMIT = 6;
+    CMD_FILTER = 7;
+    CMD_INIT = 8;
+    CMD_LOG = 9;
+    CMD_MERGE = 10;
+    CMD_INFERENCE = 11;
+    CMD_LABEL_ADD = 12;
+    CMD_LABEL_GET = 13;
+
+    // Sandbox path operation
+    USER_LIST = 101;
+    USER_CREATE = 102;
+    USER_REMOVE = 103;
+    REPO_LIST = 104;
+    REPO_CREATE = 105;
+    REPO_REMOVE = 106;
+
+    // Long task
+    TASK_CREATE = 1001;
+    TASK_INFO = 1002;
+}
+
+message GeneralReq {
+    string user_id = 1;
+    string repo_id = 2;
+    RequestType req_type = 3;
+    string task_id = 4;
+    // singleton ops arg, such as checkout rev, create branch, etc.
+    string singleton_op = 5;
+    // ancestor task id that initiates this task from.
+    string his_task_id = 6;
+    // dest branch id to store current task result.
+    string dst_task_id = 7;
+    // branches you want to concat the data from
+    repeated string in_dataset_ids = 8;
+    // branches you want to exclude the data from
+    repeated string ex_dataset_ids = 9;
+    // keyid should be included, joint with OR
+    repeated int32 in_class_ids = 10;
+    // keyid that expected to be exclude, joint with OR
+    repeated int32 ex_class_ids = 11;
+    bool force = 12;
+    string commit_message = 13;
+    string model_hash = 14;
+    string asset_dir = 15;
+    string model_config = 16;
+    repeated string private_labels = 17;
+    ReqCreateTask req_create_task = 1001;
+    ReqGetTaskInfo req_get_task_info = 1002;
+}
+
+message GeneralResp {
+    int32 code = 1;
+    string req_task_id = 2;
+    string message = 3;
+    repeated string ext_strs = 4;
+    RespGetTaskInfo resp_get_task_info = 1000;
+    RespCMDInference detection = 1001;
+    RespCMDAddLabel resp_add_labels = 1002;
+    repeated string resp_get_labels = 1003;
+}
+
+// base args for create task request
+message ReqCreateTask {
+    // task type
+    TaskType task_type = 1;
+    float sampling_rate = 2;
+    bool no_task_monitor = 3;
+
+    TaskReqFilter filter = 101;
+    TaskReqTraining training = 102;
+    TaskReqMining mining = 103;
+    TaskReqImporting importing = 104;
+    TaskReqExporting exporting = 105;
+    TaskReqInference inference = 106;
+    TaskReqCopyData copy = 107;
+    TaskReqLabeling labeling = 108;
+}
+
+message TaskReqFilter {
+    repeated string in_dataset_ids = 1;
+    repeated int32 in_class_ids = 2;
+    repeated int32 ex_class_ids = 3;
+}
+
+message TaskReqTraining {
+    message TrainingDatasetType {
+        string dataset_id = 1;
+        TvtType dataset_type = 2;
+    }
+    repeated TrainingDatasetType in_dataset_types = 1;
+    repeated int32 in_class_ids = 2;
+    string training_config = 3;
+}
+
+message TaskReqMining {
+    repeated string in_dataset_ids = 1;
+    repeated string ex_dataset_ids = 2;
+    string model_hash = 3;  // training model hash
+    int32 top_k = 4;  // > 0, will keep all if set to 0.
+    string mining_config = 5;
+}
+
+message TaskReqImporting {
+    // store media files
+    string asset_dir = 1;
+    // single pascal xml per asset, same base_filename as in asset-folder
+    string annotation_dir = 2;
+}
+
+message TaskReqExporting {
+    string dataset_id = 1;
+    LabelFormat format = 2;
+    string asset_dir = 3;
+    string annotation_dir = 4;
+}
+
+message TaskReqInference {
+}
+
+message TaskReqCopyData {
+    string src_user_id = 1;
+    string src_repo_id = 2;
+    string src_dataset_id = 3;
+}
+
+message TaskReqLabeling {
+    string dataset_id = 1;
+    repeated string labeler_accounts = 2;
+    repeated int32 in_class_ids = 3;
+    string expert_instruction_url = 4;
+    string project_name = 5;
+}
+
+message ReqGetTaskInfo {
+    repeated string task_ids = 1;
+}
+
+message RespGetTaskInfo {
+    // key: task id, value: task info
+    map<string, TaskInfoItem> task_infos = 1;
+}
+
+// sub for `TaskMonitorStorageItem_`
+message TaskInfoItem {
+    string task_id = 1; // Copy of task id.
+    string base_task_id = 2;
+    string user_id = 3;
+    string repo_id = 4;
+    TaskType type = 5;
+    TaskState state = 6;
+    int64 start_timestamp = 7;
+    int64 finish_timestamp = 8;
+    int64 update_timestamp = 9;
+    float percent = 10;
+    string last_error = 11;
+}
+
+message RespCMDInference {
+    /// key: image id, value: annotations of that single image
+    map<string, SingleImageAnnotations> image_annotations = 1;
+};
+
+message RespCMDAddLabel {
+    repeated string successful_add = 1;
+    repeated string failed_add = 2;
+};
+
+message SingleImageAnnotations {
+    repeated Annotation annotations = 2;
+};
+
+message Annotation {
+    // Index of this annotation in current single image, may be different from the index in repeated field.
+    int32 index = 1;
+    Rect box = 2;
+    int32 class_id = 3;
+    double score = 4;
+    string class_name = 5;
+};
+
+message Rect {
+    int32 x = 1;
+    int32 y = 2;
+    int32 w = 3;
+    int32 h = 4;
+};
+
+
+/// task monitor storage
+message TaskMonitorStorage {
+    map<string, TaskMonitorStorageItem> tasks = 1;
+};
+
+message TaskMonitorStorageItem {
+    TaskInfoItem general_info = 1;
+    string monitor_file_path = 2;
+    string storage_file_path = 3;
+    string repo_root = 4;
+    string branch_name = 5;
+    GeneralReq request = 100;
+};
+
+service mir_controller_service {
+    /*
+        APIS FOR DATA MANAGEMENT
+        KEY CONCEPTS
+            sandbox: sandbox = sandbox_dir + docker_container
+                    sandbox_dir = sandbox_root + user_name
+                    docker_container = container of docker_image
+                where sandbox_root and docker_image are get from cli args
+                one user should have only one sandbox
+                    but can have multiple mir repos in this sandbox
+
+        CREATE_SANDBOX
+            creates a sandbox for a single user
+        Args:
+            GeneralReq.user: user name for this sandbox
+        Returns:
+            0: success
+            errors when:
+                sandbox already exists
+                other system errors occurred
+
+        REMOVE_SANDBOX
+            removes a sandbox for a single user
+            it also removes all contents in the sandbox
+        Args:
+            GeneralReq.user: user name for this sandbox
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                other system errors occurred
+
+        START_SANDBOX
+            starts a sandbox for a single user
+        Args:
+            GeneralReq.user: user name for this sandbox
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox already started
+                other docker errors occurred
+
+        STOP_SANDBOX
+            stops a sandbox for a single user
+        Args:
+            GeneralReq.user: user name for this sandbox
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox already stopped
+                other docker errors occurred
+
+        INIT
+            init a new mir repo in a running sandbox
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                already have mir repo with the same name
+                other docker errors occurred
+                other mir errors occurred
+
+        BRANCH_LIST
+            list all branches in running sandbox for user
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_bool: if true, lists remote branches
+                                    if false, lists local branches
+        Returns:
+            0: success
+                ext_strs: branches
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                other docker errors occurred
+                other mir errors occurred
+
+        BRANCH_DEL
+            remove one branch in running sandbox for user
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_str: branch to be deleted
+            GeneralReq.ext_bool: force delete even if this branch has not been merged yet
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                branch not found
+                branch not merged if ext_bool is false
+                other docker errors occurred
+                other mir errors occurred
+
+        CHECKOUT_COMMIT
+            checkout to another commit, or to another branch, or to another tag
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_str: branch name, tag name or commit id
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                branch, tag or commit not found
+                other docker errors occurred
+                other mir errors occurred
+
+        CHECKOUT_BRANCH
+            create a new branch in a running sandbox for user
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_str: new branch name
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                new branch name already exists
+                other docker errors occurred
+                other mir errors occurred
+
+        CLONE
+            clones a mir repo from server
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo url
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo url not available
+                other docker errors occurred
+                other mir errors occurred
+
+        COMMIT
+            commit changes for mir repo
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_str: commit messages, multi lines enabled
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                commit messages empty, or contains only spaces, tabs or line breaks
+                other docker errors occurred
+                other mir errors occurred
+
+        FILTER
+            filter assets (currently by asset keywords) in mir repo
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_str: predicates, keywords separated by commas or semicolons
+                    comma means AND
+                    semicolon means OR
+                for example: `person; cat, dog` means to filter assets which
+                    have person, or have both cat and dog in asset keywords list
+                attention that comma (means AND) has higher priority
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                predicate empty
+                other docker errors occurred
+                other mir errors occurred
+
+        LOG
+            get log from repo
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+        Returns:
+            0: success
+                GeneralResp.ext_strs: log infos
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                other docker errors occurred
+                other mir errors occurred
+
+        MERGE
+            merges current repo with another
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_int32: merge stragety, 0: MIX, 1: GUEST
+            GeneralReq.ext_str: guest branch name
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                other docker errors occurred
+                other mir errors occurred
+
+        PULL
+            pulls (updates) contents from server
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                other docker errors occurred
+                other mir errors occurred
+
+        PUSH
+            pushes local commits to server
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+            GeneralReq.ext_bool: creates new branch on server
+        Returns:
+            0: success
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                other docker errors occurred
+                other mir errors occurred
+
+        RESET: currently not available
+
+        STATUS
+            shows status of current repo
+        Args:
+            GeneralReq.user: user name for this sandbox
+            GeneralReq.repo: repo name
+        Returns:
+            0: success
+                GeneralResp.message: summary of current repo
+            errors when:
+                sandbox not exists
+                sandbox not running
+                repo not found
+                other docker errors occurred
+                other mir errors occurred
+    */
+    rpc data_manage_request(GeneralReq) returns (GeneralResp) {}
+    // rpc view_request(GeneralReq) returns (GeneralResp) {}
+} // mcs_dm
+
+// service mcs_view
+// service scm_tvt
+// service mcs_auto_mining

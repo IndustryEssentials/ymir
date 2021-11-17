@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   backend:
-    image: pymir/backend
+    image: industryessentials/ymir-backend
     env_file:
       - .env
     runtime: nvidia
@@ -52,13 +52,13 @@ services:
       - pymir_network
 
   viz-redis:
-    image: pymir/pymir-viz-redis
+    image: industryessentials/ymir-viz-redis
     restart: always
     networks:
       - pymir_network
 
   redis:
-    image: pymir/pymir-backend-redis
+    image: industryessentials/ymir-backend-redis
     command: redis-server /config/redis/redis.conf --loadmodule /usr/lib/redis/modules/redisgraph.so
     volumes:
       - ${YMIR_PATH}/redis:/var/log/redis
@@ -68,7 +68,7 @@ services:
       - pymir_network
 
   nginx:
-    image: pymir/pymir-web
+    image: industryessentials/ymir-web
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"

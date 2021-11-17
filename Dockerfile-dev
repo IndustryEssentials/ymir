@@ -17,10 +17,10 @@ RUN mkdir -p /data/sharing/
 RUN mkdir -p /app_logs/
 
 COPY requirements.txt ./
-RUN pip3 install -r requirements.txt
+RUN pip3 install --index-url=https://mirrors.aliyun.com/pypi/simple -r requirements.txt
 
 RUN pip3 uninstall -y ymir-cmd
-RUN git clone -b dev https://under-chaos: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@github.com/IndustryEssentials/ymir-cmd.git
+RUN git clone -b dev https://github.com/IndustryEssentials/ymir-cmd.git
 RUN pip3 install -e ./ymir-cmd/
 
 COPY ./src /app
@@ -31,5 +31,5 @@ COPY ./deploy/git.config /root/.gitconfig
 
 COPY ./deploy/supervisor /app/supervisor
 
-ENV PYTHONPATH=/app/pymir-app:/app/pymir-controller:/app/pymir-viz
+ENV PYTHONPATH=/app/pymir-app:/app/pymir-controller:/app/pymir-viz:/app/common
 
