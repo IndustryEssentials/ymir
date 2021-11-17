@@ -12,7 +12,7 @@ English | [Simplified Chinese](README_zh-CN.md)
   - [1.1. Main functions](#11-main-functions)
   - [1.2. Apply for trial](#12-apply-for-trial)
 - [2. Installation](#2-installation)
-  - [2.1. Cuda environment dependencies](#21-cuda-environment-dependencies)
+  - [2.1. Environment dependencies](#21-environment-dependencies)
   - [2.2. Installing YMIR-GUI](#22-installing-ymir-gui)
   - [2.3. Installing label studio (optional)](#23-installing-label-studio-optional)
 - [3. Use YMIR-GUI: typical model production process](#3-use-ymir-gui-typical-model-production-process)
@@ -104,7 +104,7 @@ How do users choose to install GUI or CMD?
 
 This chapter contains the installation instructions for YMIR-GUI. If you need to use CMD, please refer to the [Ymir-CMD user guide] (#4-for-advanced-users-ymir-cmd-command-line-users-guide).
 
-## 2.1. Cuda environment dependencies
+## 2.1. Environment dependencies
 
 1.NVIDIA drivers shall be properly installed before installing YMIR. For detailed instructions, see https://www.nvidia.cn/geforce/drivers/.
 
