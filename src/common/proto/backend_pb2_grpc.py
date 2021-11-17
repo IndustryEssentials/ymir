@@ -15,7 +15,7 @@ class mir_controller_serviceStub(object):
             channel: A grpc.Channel.
         """
         self.data_manage_request = channel.unary_unary(
-                '/mir_controller_service/data_manage_request',
+                '/ymir.backend.mir_controller_service/data_manage_request',
                 request_serializer=backend__pb2.GeneralReq.SerializeToString,
                 response_deserializer=backend__pb2.GeneralResp.FromString,
                 )
@@ -301,7 +301,7 @@ def add_mir_controller_serviceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'mir_controller_service', rpc_method_handlers)
+            'ymir.backend.mir_controller_service', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -320,7 +320,7 @@ class mir_controller_service(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/mir_controller_service/data_manage_request',
+        return grpc.experimental.unary_unary(request, target, '/ymir.backend.mir_controller_service/data_manage_request',
             backend__pb2.GeneralReq.SerializeToString,
             backend__pb2.GeneralResp.FromString,
             options, channel_credentials,
