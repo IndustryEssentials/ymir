@@ -10,18 +10,6 @@ enum TvtType {
     TvtTypeTest = 3;
 };
 
-enum AssetType {
-    AssetTypeUnknown = 0;
-    AssetTypeImageJpeg = 1;
-    AssetTypeImagePng = 2;
-    AssetTypeImagePixelMat = 3;
-    AssetTypeImageYuv420p = 4;
-    AssetTypeImageYuv420sp = 5;
-    AssetTypeImageYuv422p = 6;
-    AssetTypeImageYuv422sp = 7;
-    AssetTypeVideoMp4 = 101;
-};
-
 /// task type
 enum TaskType {
     TaskTypeUnknown = 0;
@@ -44,30 +32,9 @@ enum TaskState {
     TaskStateMiss = 5;
 };
 
-enum Sha1Type {
-    SHA1_TYPE_UNKNOWN = 0;
-    SHA1_TYPE_ASSET = 1;
-    SHA1_TYPE_COMMIT = 2;
-}
-
 enum RCode {
     RC_OK = 0;
     RC_ERROR_UNKNOWN = 1;
-
-    RC_CMD_ERROR_UNKNOWN = 100;
-    RC_CMD_CORRUPT_MIR_FILE = 101;
-    RC_CMD_INVALID_MIR_FILE = 102;
-    RC_CMD_INVALID_MIR_REPO = 103;
-    RC_CMD_INVALID_ARGS = 104;
-    RC_CMD_INVALID_BRANCH_OR_TAG = 105;
-    RC_CMD_INVALID_COMMAND = 106;
-    RC_CMD_MIR_FILE_NOT_FOUND = 107;
-    RC_CMD_CONFLICTS_OCCURED = 108;
-    RC_CMD_EMPTY_METADATAS = 109;
-    RC_CMD_EMPTY_TRAIN_SET = 110;
-    RC_CMD_EMPTY_VAL_SET = 111;
-    RC_CMD_DIRTY_REPO = 112;
-    RC_CMD_NOTHING_TO_MERGE = 113;
 
     RC_SERVICE_ERROR_UNKNOWN = 1000;
     RC_SERVICE_INVALID_REQ = 1001;
@@ -75,13 +42,6 @@ enum RCode {
     RC_SERVICE_UNKOWN_RESPONSE = 1003;
     RC_SERVICE_TASK_INVOKER_ERROR = 1004;
     RC_SERVICE_INFO_INVOKER_ERROR = 1005;
-}
-
-enum MirStorage {
-    MIR_METADATAS = 0;
-    MIR_ANNOTATIONS = 1;
-    MIR_KEYWORDS = 2;
-    MIR_TASKS = 3;
 }
 
 enum LabelFormat {
