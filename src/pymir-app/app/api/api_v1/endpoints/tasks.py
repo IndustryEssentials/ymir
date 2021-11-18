@@ -201,18 +201,18 @@ def delete_task(
     "/{task_id}",
     response_model=schemas.TaskOut,
     response_model_exclude_none=True,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={404: {"description": "Task Not Found"}},
 )
 def get_task(
     db: Session = Depends(deps.get_db),
     task_id: int = Path(..., example="12"),
+    current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
     Get verbose information of specific task
     """
-    task = crud.task.get(db, id=task_id)
+    task = crud.task.get_by_user_and_id(db, user_id=current_user.id, id=task_id)
     if not task:
         raise TaskNotFound()
     result = {}
