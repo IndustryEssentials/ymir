@@ -67,7 +67,7 @@ A typical model development process can usually be summarized in a few steps: de
 
 *  Prepare data: Data preparation is primarily the process of collecting and pre-processing data. It is the foundation of a successful AI project.  The most important task in this step is to ensure the quality of data and its annotations. In many projects, it is impossible to collect all the required data at the beginning. Therefore, the project developer may find that some data is missing in subsequent stages. Additional data could be necessary upon the project  needs.
 
-*  Training models: This operation is commonly referred to as "modeling". This step refers to the exploration and analysis of prepared data to discover the internal patterns and any links between the input and the expected prediction target.  The result of this step is usually one or more machine learning models. These models can be applied to new data to obtain predictions. Developers train their own models using mainstream model training frameworks, such as pytorch, tensorflow, darknet, etc.
+*  Training models: This operation is commonly referred to "modeling". This step refers to the exploration and analysis of prepared data to discover the internal patterns and any links between the input and the expected prediction target.  The result of this step is usually one or more machine learning models. These models can be applied to new data to obtain predictions. Developers train their own models using mainstream model training frameworks, such as pytorch, tensorflow, darknet, etc.
 
 *  Model evaluation: The entire development process has not yet been completed after training the model. Models need to be evaluated and checked before being put into production. Normally, you will not get a production-quality model all at once. You need to adjust parameters, and iterate the model continuously. Some common metrics can help you evaluate models quantitatively and pick a satisfactory model. Some common metrics can help you to evaluate models quantitatively.
 
@@ -116,7 +116,7 @@ This chapter contains the installation instructions for YMIR-GUI. If you need to
 
 3. Hardware Suggestions
 
-* NVIDIA GeForce RTX 2080 Ti or higher is required.
+* NVIDIA GeForce RTX 2080 Ti or higher is recommended.
 
 ## 2.2. Installing YMIR-GUI
 
