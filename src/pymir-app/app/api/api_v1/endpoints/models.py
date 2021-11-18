@@ -87,17 +87,17 @@ def delete_model(
 @router.get(
     "/{model_id}",
     response_model=schemas.ModelOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={404: {"description": "Model Not Found"}},
 )
 def get_model(
     db: Session = Depends(deps.get_db),
     model_id: int = Path(..., example="12"),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get verbose information of specific model
     """
-    model = crud.model.get_with_task(db, id=model_id)
+    model = crud.model.get_with_task(db, user_id=current_user.id, id=model_id)
     if not model:
         raise ModelNotFound()
     return {"result": model}
