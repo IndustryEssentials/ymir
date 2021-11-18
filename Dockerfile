@@ -27,4 +27,4 @@ COPY ./deploy/git.config /root/.gitconfig
 
 COPY ./deploy/supervisor /app/supervisor
 
-ENV PYTHONPATH=/app/pymir-app:/app/pymir-controller:/app/pymir-viz
+ENV PYTHONPATH=/app/pymir-app:/app/pymir-controller:/app/pymir-viz:/app/common

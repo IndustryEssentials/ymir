@@ -36,4 +36,6 @@ gunicorn==20.1.0
 python_dateutil==2.7.0
 setuptools>=21.0.0
 ymir-cmd==0.0.2
+grpclib==0.4.2
+# remove it after private labels
 ymir-proto==0.1.5
