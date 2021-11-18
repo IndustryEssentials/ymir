@@ -221,11 +221,6 @@ message RespCMDInference {
     map<string, SingleImageAnnotations> image_annotations = 1;
 };
 
-message RespCMDAddLabel {
-    repeated string successful_add = 1;
-    repeated string failed_add = 2;
-};
-
 message SingleImageAnnotations {
     repeated Annotation annotations = 2;
 };
