@@ -51,7 +51,7 @@ English | [Simplified Chinese](README_zh-CN.md)
 
 # 1. Introduction to AI SUITE-YMIR
 
-YMIR is a streamlined model development product focused on dataset versioning and model iteration in the AI SUITE open-source series.
+YMIR (You Mine In Recursion) is a streamlined model development product focused on dataset versioning and model iteration in the AI SUITE open-source series.
 
 AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. In real business, the adoption of AI often encounter challenges such as a lack of skilled developers, high development costs, and long iteration cycles.
 
