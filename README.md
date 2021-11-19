@@ -98,7 +98,7 @@ We provide an online trial version for your convenience. If you need, please fil
 
 How do users choose to install GUI or CMD?
 
-1. Normal users are recommended to install GUI version, to support model training and iterating.
+1. The GUI verision with the supports of model training and model iteration is more suitable for ordinary users.
 
 2. If you need to modify the default configuration of the system, such as customizing labels and replacing training algorithms, it is recommended to install CMD;
 
