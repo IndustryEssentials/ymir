@@ -13,8 +13,8 @@ English | [Simplified Chinese](README_zh-CN.md)
   - [1.2. Apply for trial](#12-apply-for-trial)
 - [2. Installation](#2-installation)
   - [2.1. Environment dependencies](#21-environment-dependencies)
-  - [2.2. Installing YMIR-GUI](#22-installing-ymir-gui)
-  - [2.3. Installing label studio (optional)](#23-installing-label-studio-optional)
+  - [2.2. Installation of YMIR-GUI](#22-installation-of-ymir-gui)
+  - [2.3. Installation of label studio (optional)](#23-installation-of-label-studio-optional)
 - [3. Use YMIR-GUI: typical model production process](#3-use-ymir-gui-typical-model-production-process)
   - [3.1. Raw data preparation](#31-raw-data-preparation)
   - [3.2. Data labeling](#32-data-labeling)
@@ -51,27 +51,27 @@ English | [Simplified Chinese](README_zh-CN.md)
 
 # 1. Introduction to AI SUITE-YMIR
 
-YMIR is a streamlined model development product focused on dataset versioning and model iteration in the AI SUITE open-source series.
+As a streamlined model development product, YMIR(You Mine In Recursion) focuses on the dataset versioning and model iteration in the AI SUITE open-source series.
 
-AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. In real business, the adoption of AI often encounter challenges such as a lack of skilled developers, high development costs, and long iteration cycles.
+AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs, and long iteration cycles.
 
-YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
+As a platform, YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
 
-The YMIR platform provides effective model development capabilities with a data-centric approach. The platform integrates concepts such as active learning methods, data and model version control, and workspace. YMIR realizes parallel rapid iteration of data sets and projects for multiple specific tasks. The platform uses an open API design, so third-party tools can also be integrated into the system.
+The YMIR platform provides effective model development capabilities with a data-centric approach. The platform integrates concepts such as active learning methods, data and model version control, and workspace. Parallel rapid iteration of data sets and projects for multiple specific tasks are realized by YMIR. The platform uses an open API design, so third-party tools can also be integrated into the system.
 
 ## 1.1. Main functions
 
 A typical model development process can usually be summarized in a few steps: defining the task, preparing the data, training the model, evaluating the model, and deploying the model.
 
-*  Define the task: Before starting an AI development project, it is important to be clear about what is to be analyzed. What are the expected inputs and outputs of users. This will help developers correctly convert the problem into several typical ML modeling tasks, such as image classification, object detection, etc. Different tasks have different data requirements.
+*  Define the task: Before starting an AI development project, it is important to be clear about what is to be analyzed. This will help developers correctly convert the problem into several typical ML modeling tasks, such as image classification, object detection, etc. Different tasks have different data requirements.
 
-*  Prepare data: Data preparation is primarily the process of collecting and pre-processing data. It is the foundation of a successful AI project.  The most important task in this step is to ensure the quality of data and its annotations. In many projects, it is impossible to collect all the required data at the beginning. Therefore, the project developer may find that some data is missing in subsequent stages. Additional data could be necessary upon the project  needs.
+*  Prepare data: Data preparation is the foundation of a successful AI project. The most important task in this step is to ensure the quality of data and its annotations. Collect all the required data at the beginning is the optimal situation for many projects. Therefore, the project developer may find that some data is missing in subsequent stages. Additional data could be necessary upon the project  needs.
 
-*  Training models: This operation is commonly referred to "modeling". This step refers to the exploration and analysis of prepared data to discover the internal patterns and any links between the input and the expected prediction target.  The result of this step is usually one or more machine learning models. These models can be applied to new data to obtain predictions. Developers train their own models using mainstream model training frameworks, such as pytorch, tensorflow, darknet, etc.
+*  Train model: This operation is commonly referred to "modeling". This step refers to the exploration and analysis of prepared data to discover the internal patterns and any links between the input and the expected prediction target.  The result of this step is usually one or more machine learning models. These models can be applied to new data to obtain predictions. Developers train their own models using mainstream model training frameworks, such as pytorch, tensorflow, darknet, etc.
 
-*  Model evaluation: The entire development process has not yet been completed after training the model. Models need to be evaluated and checked before being put into production. Normally, you will not get a production-quality model all at once. You need to adjust parameters, and iterate the model continuously. Some common metrics can help you evaluate models quantitatively and pick a satisfactory model. Some common metrics can help you to evaluate models quantitatively.
+*  Evaluate model: The entire development process has not yet been completed after training the model. Models need to be evaluated and checked before being put into production. Normally, get a production-quality model all at once is not so easy. You need to adjust parameters, and iterate the model continuously. Some common metrics can help you evaluate models quantitatively and pick a satisfactory model. Some common metrics can help you to evaluate models quantitatively.
 
-*  Deployment of models: Models are developed and trained based on previously available data (possibly test data). After a satisfactory model is obtained, it will be applied to real data to make predictions at scale.
+*  Deploy model: Models are developed and trained based on previously available data (possibly test data). After a satisfactory model is obtained, it will be applied to real data to make predictions at scale.
 
 The YMIR platform mainly meets the needs of users for developing models at scale. The platform provides users an easy-to-use user interface, it is consists of four parts: home page, task management, dataset management, and model management, which have the following main functions:
 
@@ -98,7 +98,7 @@ We provide an online trial version for your convenience. If you need, please fil
 
 How do users choose to install GUI or CMD?
 
-1. We recommend most users install the GUI version, which has full support for model training and model iteration.
+1. Normal users are recommended to install GUI version, to support model training and iterating.
 
 2. If you need to modify the default configuration of the system, such as customizing labels and replacing training algorithms, it is recommended to install CMD;
 
@@ -112,13 +112,13 @@ This chapter contains the installation instructions for YMIR-GUI. If you need to
 
 * Installation of Docker and Docker Compose https://docs.docker.com/get-docker/
 
-* NVIDIA Docker Installation https://github.com/NVIDIA/nvidia-docker
+* Installation of NVIDIA Docker https://github.com/NVIDIA/nvidia-docker
 
 3. Hardware Suggestions
 
 * NVIDIA GeForce RTX 2080 Ti or higher is recommended.
 
-## 2.2. Installing YMIR-GUI
+## 2.2. Installation of YMIR-GUI
 
 The user must ensure that all the conditions in [Cuda environment dependencies] (#21-cuda-environment-dependencies) have been met, otherwise the installation may fail.
 
@@ -138,7 +138,7 @@ sh ymir.sh start
 
 After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `sh ymir.sh stop`
 
-## 2.3. Installing label studio (optional)
+## 2.3. Installation of label studio (optional)
 
 Label Studio is an external labeling system that works with YMIR. Install it if you plan to label data in the development process.
 
@@ -186,7 +186,7 @@ This section uses a complete model iteration process as an example to illustrate
 
 ![YMIR-GUI process](docs/images/YMIR-GUI-process.jpeg)
 
-As shown in the figure above, YMIR divides the model development process into multiple steps, details about how to run each step are listed in the subsequent sections.
+As shown in the figure above, YMIR divides the model development process into multiple steps. Details about how to run each step are listed in the subsequent sections.
 
 ## 3.1. Raw data preparation
 
@@ -329,7 +329,7 @@ $ mir --version
 ![process-en](docs/images/process-en.jpeg)
 
 The above figure shows a typical process of model training: 1) the user prepares external data, 2) imports it into the system, 3) appropriately filters the data, and 4) begins training to obtain a model (possibly with low accuracy). 5) selects images in a dataset to be mined that are suitable for further training based on this model, 6) annotates these images, 7) merges the annotated results with the original training set, and 8) uses the merged results to run the training process again to obtain a better model.
-In this section, we need to implement the process shown above using the command line.
+This section implement the process shown above using the command line.
 All the following commands are prefixed with $ (which is also the Linux prompt under the normal user). When entering a command in the console, the user does not need to enter $ at the same time.
 
 ### 4.2.1 Preparation of external data
@@ -626,7 +626,7 @@ YMIR-command-api.211028
 
 The YMIR project consists of three components:
 
-1. [Back-end](https://github.com/IndustryEssentials/ymir-backend), which is in charge of task distribution and management.
+1. [Back-end](https://github.com/IndustryEssentials/ymir-backend), task distribution and management.
 
 2. [Front-end](https://github.com/IndustryEssentials/ymir-web), interactive interface.
 
@@ -652,13 +652,13 @@ Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/w
 
 The dataset consists of metadata and media files, and the metadata has the following characteristics:
 
-* It has a unique ID and the system has an initial default metadata status of null.
+* A unique ID and the system has an initial default metadata status of null.
 
-* It contains a list of resources, where each element points to an actual resource; Metadata doesn't actually hold resources, but only maintains this list of resources.
+* A list of resources, where each element points to an actual resource; Metadata doesn't actually hold resources, but only maintains this list of resources.
 
-* It has a number of keywords by which a user can search for a particular metadata status.
+* A number of keywords by which a user can search for a particular metadata status.
 
-* The user may create a new metadata branch and perform operations on the newly created branch. The operations on the new branch do not affect the status of the original metadata, and the original metadata is still traceable by the user. These operations include but are not limited to the following:
+* Support users to create a new metadata branch and perform operations on the newly created branch. The operations on the new branch do not affect the status of the original metadata, and the original metadata is still traceable by the user. These operations include but are not limited to the following:
 
   (1) Adding resources
   (2) Adding or modifying annotations
@@ -666,15 +666,15 @@ The dataset consists of metadata and media files, and the metadata has the follo
   (4) Filtering resources
   (5) Merging two different metadatas
 
-* Users can switch freely between different metadata.
+* You can switch freely between different metadata.
 
-* Users can query the history of the metadata.
+* You can query the history of the metadata.
 
-* Users can tag the metadata to facilitate precise search by tag.
+* You can tag the metadata to facilitate precise search by tag.
 
-* Users can also add keywords to metadata to facilitate fuzzy search through keywords.
+* You can also add keywords to metadata to facilitate fuzzy search through keywords.
 
-* Users can read the resources contained in a metadata and use those resources for browsing, training and so on.
+* You can read the resources contained in a metadata and use those resources for browsing, training and so on.
 
 From the above description, it can be seen that the management of metadata is similar to that of VCS (Version Control System), and users can have the following completely different usage methods and scenarios:
 
@@ -719,7 +719,7 @@ This management approach is shown in the following figure:
 
 ![branch and dataset](docs/images/branch-and-dataset.jpeg)
 
-We use the concept of code version control in Git to manage our data and models. We use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform.
+We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform.
 
 # 7. MISC
 
@@ -764,13 +764,13 @@ And you may get output like this:
 9,dining table,diningtable,board
 ```
 
-Each line of this configuration file is separated by commas. The first item is the type id, followed by the type name.
+Each line of this configuration file is separated by commas. The first item is the category id, followed by the category name.
 
-Pay attention to this line with id 7. It has 3 items: "7, pizza, and pizza pie". The first one is type id, the second one is a type name, and the third one is type alias.
+Pay attention to this line with id 7. It has 3 items: "7, pizza, and pizza pie". The first one is category id, the second one is a category name, and the third one is category alias.
 
-In the filter command, the -c and -C arguments are mapped to type ids with this file. All type aliases have the same meaning as type names.
+In the filter command, the -c and -C arguments are mapped to category ids with this file. All category aliases have the same meaning as category names.
 
-You can edit this file by vi and other text editing tools, you can add and change type alias, add type id and type names, but don’t change ids and names we already have.
+You can edit this file by vi and other text editing tools. You can add alias to category or add new category, but it is not recommended to change the primary id and name of category that already existed.
 
 ## 7.2. License
 
