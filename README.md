@@ -720,10 +720,20 @@ This management approach is shown in the following figure:
 ![branch and dataset](docs/images/branch-and-dataset.jpeg)
 
 We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform.
+# 7. Citatins.
+```bibtex
+@misc{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      year={2021},
+      eprint={2111.10046},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI}
+}
+```
+# 8. MISC
 
-# 7. MISC
-
-## 7.1. FAQ
+## 8.1. FAQ
 
 **Why did the upload of the local dataset fail?**
 
@@ -772,11 +782,11 @@ In the filter command, the -c and -C arguments are mapped to category ids with t
 
 You can edit this file by vi and other text editing tools. You can add alias to category or add new category, but it is not recommended to change the primary id and name of category that already existed.
 
-## 7.2. License
+## 8.2. License
 
 YMIR is licensed under version 2.0 of the Apache License. See the [LICENSE](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE) file for details.
 
-## 7.3. Contact us
+## 8.3. Contact us
 
 Contact us with further questions：contact.viesc@gmail.com
 
