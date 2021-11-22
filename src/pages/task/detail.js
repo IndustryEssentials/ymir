@@ -218,7 +218,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
         <Descriptions bordered labelStyle={labelStyle} title={<><FileHistoryIcon /> {t("task.detail.state.title")} </>} className={styles.infoTable}>
           <Item label={t('task.detail.state.current')}>
             <Row>
-              <Col><StateTag state={task.state} /></Col>
+              <Col><StateTag mode='icon' size='large' state={task.state} /></Col>
               <Col flex={1}>{task.state === TASKSTATES.DOING ? <Progress strokeColor={'#FAD337'} percent={task.progress} /> : null}</Col>
             </Row>
           </Item>

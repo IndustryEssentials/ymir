@@ -536,6 +536,20 @@
       "font_class": "no-sjj",
       "unicode": "e6c5",
       "unicode_decimal": 59077
+    },
+    {
+      "icon_id": "89757885",
+      "name": "reasoning",
+      "font_class": "reasoning",
+      "unicode": "e6e1",
+      "unicode_decimal": 59105
+    },
+    {
+      "icon_id": "89757886",
+      "name": "clear",
+      "font_class": "clear",
+      "unicode": "e6e2",
+      "unicode_decimal": 59106
     }
   ]
 }

@@ -28,6 +28,7 @@ const dataset = {
   "dataset.action.history": { cn: "历史树", en: "History", },
   "dataset.action.detail": { cn: "详情", en: "Detail", },
   "dataset.action.edit": { cn: "编辑", en: "Rename", },
+  'dataset.action.inference': { cn: '推理', en: 'Inference', },
   "dataset.empty.label": { cn: "去导入一个数据集", en: "Import A Dataset", },
   "dataset.import.label": { cn: "导入数据集", en: "Import Dataset", },
   "dataset.query.name": { cn: "名称", en: "Dataset Name", },

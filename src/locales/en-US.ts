@@ -12,6 +12,7 @@ import signup from "./modules/signup"
 import common from "./modules/common"
 import breadcrumbs from "./modules/breadcrumbs"
 import portal from "./modules/portal"
+import keyword from './modules/keyword'
 
 const lang = {
   ...common,
@@ -27,5 +28,6 @@ const lang = {
   ...model,
   ...task,
   ...errors,
+  ...keyword,
 }
 export default trans(lang, 'en')

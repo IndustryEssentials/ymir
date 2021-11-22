@@ -378,7 +378,18 @@ function Task({ getTasks, delTask, updateTask }) {
           ></Table>
         </ConfigProvider>
       </div>
-      <EditBox record={current} action={saveName} />
+      <EditBox record={current} action={saveName}>
+        {current.type ? <Form.Item
+          label={t('task.column.type')}
+        >
+          {(types.find((t) => t.value === current.type))?.label}
+        </Form.Item> : null}
+        {current.state ? <Form.Item
+          label={t('task.detail.state.title')}
+        >
+          <StateTag mode='text' state={current.state} />
+        </Form.Item> : null}
+      </EditBox>
     </div>
   )
 }

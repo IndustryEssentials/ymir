@@ -1,0 +1,29 @@
+.actions {
+  color: #3BA0FF;
+  .action {
+    padding: 0;
+    height: 22px;
+    line-height: 22px;
+    :global(.anticon) {
+      font-size: 16px;
+      margin-right: 3px;
+      color: #3BA0FF;
+    }
+    &:after {
+      content: '|';
+      display: inline-block;
+      margin-left: 4px;
+      color: rgba(0, 0, 0, 0.06); 
+    }
+    &.last:after {
+      content: '';
+      display: inline;
+    }
+    span {
+      margin-left: 0;
+    }
+  }
+  .l {
+    
+  }
+}

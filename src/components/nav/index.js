@@ -31,14 +31,43 @@ const menus = () => [
     icon: <NavTaskIcon className={styles.navIcon} />,
   },
   {
-    label: t('common.top.menu.dataset'),
-    key: "/home/dataset",
+    label: t('common.top.menu.data'),
+    key: "/home/datasets",
     icon: <NavDatasetIcon className={styles.navIcon} />,
+    sub: [
+      {
+        label: t('common.top.menu.dataset'),
+        key: "/home/dataset",
+        icon: <NavDatasetIcon className={styles.navIcon} />,
+      },
+      {
+        label: t('common.top.menu.keyword'),
+        key: "/home/keyword",
+        icon: <NavDatasetIcon className={styles.navIcon} />,
+      },
+    ]
   },
   {
     label: t('common.top.menu.model'),
     key: "/home/model",
     icon: <NavModelmanageIcon className={styles.navIcon} />,
+  },
+  {
+    label: t('common.top.menu.configure'),
+    key: "/home/configures",
+    icon: <NavModelmanageIcon className={styles.navIcon} />,
+    sub: [
+      {
+        label: t('common.top.menu.resource'),
+        key: "/home/configure",
+        icon: <NavModelmanageIcon className={styles.navIcon} />,
+      },
+      {
+        label: t('common.top.menu.permission'),
+        key: "/home/configure/permission",
+        icon: <NavModelmanageIcon className={styles.navIcon} />,
+      },
+    ]
   },
 ]
 
@@ -112,8 +141,10 @@ function HeaderNav({ simple = false, username, loginout }) {
         return (
           <SubMenu
             key={menu.key}
+            popupClassName='nav-submenu'
             title={menu.label}
             icon={menu.icon}
+            popupOffset={[0, -2]}
           // onTitleClick={handleTitleClick}
           >
             {renderMenu(menu.sub)}
@@ -126,7 +157,7 @@ function HeaderNav({ simple = false, username, loginout }) {
             if (ref) {
               guideRefs[i] = ref
             }
-            }}>
+          }}>
             {menu.icon}
             {menu.label}
           </Menu.Item>
@@ -154,35 +185,35 @@ function HeaderNav({ simple = false, username, loginout }) {
     <Row className={styles.nav} gutter={24} align="middle">
       <div className={styles.logo} style={{ overflow: simple ? 'initial' : 'hidden' }}><Link to='/' title={'YMIR'}><img src={logo} /></Link></div>
       {!simple ? <>
-      <Col flex={1}>
-        <Menu className='nav-menu' selectedKeys={defaultKeys} mode="horizontal">
-          {renderMenu((menus()))}
-        </Menu>
-      </Col>
-      <Col style={{ textAlign: "right" }}>
-        <Space size={20}>
-          <Popover trigger="focus" content={searchContent} visible={visible && !!searchValue}>
-            <Input type="search" className={styles.search}
-              value={searchValue}
-              placeholder={t('common.top.search.placeholder')}
-              onChange={e => setSearchValue(e.target.value)}
-              onFocus={() => setTimeout(() => setVisible(true), 200)}
-              onBlur={() => setTimeout(() => setVisible(false), 200)}
-              suffix={<SearchOutlined style={{ color: '#fff', fontSize: 20 }} />}
-            />
+        <Col flex={1}>
+          <Menu className='nav-menu' selectedKeys={defaultKeys} mode="horizontal">
+            {renderMenu((menus()))}
+          </Menu>
+        </Col>
+        <Col style={{ textAlign: "right" }}>
+          <Space size={20}>
+            <Popover trigger="focus" content={searchContent} visible={visible && !!searchValue}>
+              <Input type="search" className={styles.search}
+                value={searchValue}
+                placeholder={t('common.top.search.placeholder')}
+                onChange={e => setSearchValue(e.target.value)}
+                onFocus={() => setTimeout(() => setVisible(true), 200)}
+                onBlur={() => setTimeout(() => setVisible(false), 200)}
+                suffix={<SearchOutlined style={{ color: '#fff', fontSize: 20 }} />}
+              />
 
-          </Popover>
-          <Dropdown overlay={menu} placement="bottomRight">
-            <div className={styles.user}>
-              <span className={styles.avatar}>{(username || 'Y').charAt(0).toUpperCase()}</span>
-              <span>{username}</span>
-              <ArrowDownIcon />
-            </div>
-          </Dropdown>
-          <LangBtn />
-        </Space>
+            </Popover>
+            <Dropdown overlay={menu} placement="bottomRight">
+              <div className={styles.user}>
+                <span className={styles.avatar}>{(username || 'Y').charAt(0).toUpperCase()}</span>
+                <span>{username}</span>
+                <ArrowDownIcon />
+              </div>
+            </Dropdown>
+            <LangBtn />
+          </Space>
           <GuideStep elem={guideTarget}></GuideStep>
-      </Col>
+        </Col>
       </> : renderSimple}
     </Row>
   )
