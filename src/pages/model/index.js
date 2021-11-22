@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./index.less"
 import { Link, useHistory, useParams } from "umi"
-import { Form, Button, Input, Select, Table, Menu, Dropdown, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip,} from "antd"
+import { Form, Button, Input, Select, Table, Menu, Dropdown, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
 import {
   PlusOutlined,
   SearchOutlined,
@@ -17,7 +17,9 @@ import { getTimes, getModelImportTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/model'
 import EditBox from "../../components/form/editBox"
-import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon } from "../../components/common/icons"
+import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon } from "../../components/common/icons"
+import Actions from "../../components/table/actions"
+import TypeTag from "../../components/task/typeTag"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -30,7 +32,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Model({ getModels, delModel, updateModel }) {
+function Keyword({ getModels, delModel, updateModel }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [models, setModels] = useState([])
@@ -91,7 +93,7 @@ function Model({ getModels, delModel, updateModel }) {
     {
       title: showTitle("model.column.source"),
       dataIndex: "source",
-      render: renderSource,
+      render: (type, { task_id, task_name }) => <TypeTag types={getModelImportTypes()} type={type} id={task_id} name={task_name} />,
       ellipsis: true,
     },
     {
@@ -125,7 +127,7 @@ function Model({ getModels, delModel, updateModel }) {
       title: showTitle("model.column.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => actions(record),
+      render: (text, record) => <Actions menus={actionMenus(record)} />,
       className: styles.tab_actions,
       align: "center",
       width: "280px",
@@ -167,25 +169,46 @@ function Model({ getModels, delModel, updateModel }) {
     }
   }
 
-  
-  const moreActionsList = (record) => {
-    const { id, name } = record
+  const actionMenus = (record) => {
+    const { id, name, url } = record
     return [
+      {
+        key: "verify",
+        label: t("model.action.verify"),
+        onclick: () => history.push(`/home/model/verify/${id}`),
+        icon: <ShieldIcon />,
+      },
+      {
+        key: "download",
+        type: 'link',
+        label: t("model.action.download"),
+        url,
+        icon: <FileDownloadIcon />,
+      },
+      {
+        key: "mining",
+        label: t("dataset.action.mining"),
+        onclick: () => history.push(`/home/task/mining?mid=${id}`),
+        icon: <VectorIcon />,
+      },
       {
         key: "history",
         label: t("dataset.action.history"),
         onclick: () => history.push(`/home/history/model/${id}`),
+        icon: <TreeIcon />,
       },
       {
         key: "edit",
         label: t("dataset.action.edit"),
         onclick: () => edit(record),
+        icon: <EditIcon />,
       },
       {
         key: "del",
         label: t("dataset.action.del"),
         onclick: () => del(id, name),
         className: styles.action_del,
+        icon: <DeleteIcon />,
       },
     ]
   }
@@ -197,7 +220,7 @@ function Model({ getModels, delModel, updateModel }) {
 
   const del = (id, name) => {
     confirm({
-      icon: <TipsIcon style={{color: 'rgb(242, 99, 123)'}} />,
+      icon: <TipsIcon style={{ color: 'rgb(242, 99, 123)' }} />,
       content: t("model.action.del.confirm.content", { name }),
       onOk: async () => {
         const result = await delModel(id)
@@ -208,7 +231,7 @@ function Model({ getModels, delModel, updateModel }) {
         }
       },
       okText: t('task.action.del'),
-      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)',  }}
+      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)', } }
     })
   }
 
@@ -273,75 +296,45 @@ function Model({ getModels, delModel, updateModel }) {
     )
   }
 
-  const addBtn = (
-    <Button type="primary" onClick={add}>
-      <PlusOutlined /> {t("model.import.label")}
-    </Button>
-  )
-
-  const actions = (record) => {
-    return (
-      <Space className={styles.column_actions}>
-        <Link className={styles.action} to={`/home/model/verify/${record.id}`}>
-          <ShieldIcon className={styles.addBtnIcon} />{t("model.action.verify")}
-        </Link><span className={styles.l}>|</span>
-        <Link
-          className={styles.action}
-          target='_blank'
-          to={record.url}
-        >
-          <ImportIcon className={styles.addBtnIcon} />{t("model.action.download")}
-        </Link><span className={styles.l}>|</span>
-        <Link className={styles.action} to={`/home/task/mining?mid=${record.id}`}>
-          <VectorIcon className={styles.addBtnIcon} />{t("dataset.action.mining")}
-        </Link><span className={styles.l}>|</span>
-        <Dropdown className={styles.action} overlay={moreActions(record)}>
-          <More1Icon style={{ fontSize: 16, lineHeight: '16px', verticalAlign: 'middle', color: '#3BA0FF' }} />
-        </Dropdown>
-      </Space>
-    )
-  }
+  // const addBtn = (
+  //   <Button type="primary" onClick={add}>
+  //     <PlusOutlined /> {t("model.import.label")}
+  //   </Button>
+  // )
 
   return (
     <div className={styles.model}>
       <Breadcrumbs />
       <div className={styles.list}>
-      <div className={styles.search}>
-        <Form
-          name='queryForm'
-          form={form}
-          // layout="inline"
-          labelCol={{ flex: '100px' }}
-          initialValues={{ source: "", time: 0, name: keyword || "" }}
-          onValuesChange={search}
-          size='large'
-          colon={false}
-        >
-          <Row>
-            <Col className={styles.queryColumn} span={12}>
-              <Form.Item name="name" label={t('model.query.name')}>
-                <Input placeholder={t("model.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchOutlined />} />
-              </Form.Item>
-            </Col>
-            {/* <Col className={styles.queryColumn} span={12}>
-              <Form.Item
-                name="source"
-                label={t("model.column.source")}
-              >
-                <Radio.Group options={types} optionType='button'></Radio.Group>
-              </Form.Item></Col> */}
-            <Col className={styles.queryColumn} span={12}>
-              <Form.Item
-                name="time"
-                label={t("model.column.create_time")}
-              >
-                <Radio.Group options={times} optionType="button"></Radio.Group>
-              </Form.Item></Col>
-          </Row>
-        </Form>
-      </div>
+        <div className={styles.search}>
+          <Form
+            name='queryForm'
+            form={form}
+            // layout="inline"
+            labelCol={{ flex: '100px' }}
+            initialValues={{ source: "", time: 0, name: keyword || "" }}
+            onValuesChange={search}
+            size='large'
+            colon={false}
+          >
+            <Row>
+              <Col className={styles.queryColumn} span={12}>
+                <Form.Item name="name" label={t('model.query.name')}>
+                  <Input placeholder={t("model.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchOutlined />} />
+                </Form.Item>
+              </Col>
+              <Col className={styles.queryColumn} span={12}>
+                <Form.Item
+                  name="time"
+                  label={t("model.column.create_time")}
+                >
+                  <Radio.Group options={times} optionType="button"></Radio.Group>
+                </Form.Item></Col>
+            </Row>
+          </Form>
+        </div>
 
-      {/* <Space hidden={true} className={styles.actions}>
+        {/* <Space hidden={true} className={styles.actions}>
         {addBtn}
       </Space> */}
         <Row className={styles.refresh}>
@@ -356,29 +349,39 @@ function Model({ getModels, delModel, updateModel }) {
             ></Button>
           </Col>
         </Row>
-      <div className={styles.table}>
-        <ConfigProvider renderEmpty={() => <EmptyState />}>
-          <Table
-            dataSource={models}
-            onChange={({ current, pageSize }) =>
-              pageChange({ current, pageSize })
-            }
-            rowKey={(record) => record.id}
-            pagination={{
-              showQuickJumper: true,
-              showSizeChanger: true,
-              total: total,
-              // total: 500,
-              defaultPageSize: query.limit,
-              showTotal: (total) => t("model.pager.total.label", { total }),
-              defaultCurrent: 1,
-            }}
-            columns={columns}
-          ></Table>
-        </ConfigProvider>
+        <div className={styles.table}>
+          <ConfigProvider renderEmpty={() => <EmptyState />}>
+            <Table
+              dataSource={models}
+              onChange={({ current, pageSize }) =>
+                pageChange({ current, pageSize })
+              }
+              rowKey={(record) => record.id}
+              pagination={{
+                showQuickJumper: true,
+                showSizeChanger: true,
+                total: total,
+                // total: 500,
+                defaultPageSize: query.limit,
+                showTotal: (total) => t("model.pager.total.label", { total }),
+                defaultCurrent: 1,
+              }}
+              columns={columns}
+            ></Table>
+          </ConfigProvider>
+        </div>
       </div>
-      </div>
-      <EditBox record={current} action={saveName} dataType='model' />
+      <EditBox record={current} action={saveName}>
+        {current.source ? <Form.Item label={t('model.column.source')}>
+          <TypeTag type={current.source} id={current.id} name={current.task_name} />
+        </Form.Item> : null}
+        {current.keywords ? <Form.Item label={t('model.column.target')}>
+          {t('dataset.column.keyword.label', { keywords: current.keywords.join(', '), total: current.keywords.length })}
+        </Form.Item> : null}
+        <Form.Item label={t('model.column.map')}>
+          {current.map}
+        </Form.Item>
+      </EditBox>
       {/* <Add visible={showAdd} type='local' cancel={() => setSowAdd(false)} ok={() => { resetQuery(); getData() }} /> */}
     </div>
   )
@@ -413,4 +416,4 @@ const actions = (dispatch) => {
   }
 }
 
-export default connect(props, actions)(Model)
+export default connect(props, actions)(Keyword)

@@ -118,6 +118,12 @@ const Routes = [
         component: "@/pages/user/modifyPwd",
         title: "modify_pwd.title",
       },
+      {
+        path: "/home/keyword",
+        name: "keyword",
+        component: "@/pages/keyword/index",
+        title: "keywords.title",
+      },
     ],
   },
   {

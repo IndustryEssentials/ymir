@@ -8,12 +8,12 @@ export default defineConfig({
   // // development api proxy
   proxy: {
     "/api": {
-      target: "http://192.168.13.107:8088/",
+      target: "http://192.168.13.107:26002/",
       changeOrigin: true,
       pathRewrite: { "^/api": "/api" },
     },
     '/ymir-': {
-      target: "http://192.168.13.107:8888/",
+      target: "http://192.168.13.107:26001/",
       changeOrigin: true,
       pathRewrite: { 
         "^/ymir-storage": "/ymir-storage",

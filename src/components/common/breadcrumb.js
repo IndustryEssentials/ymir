@@ -23,6 +23,9 @@ const getCrumbs = () => [
   { path: '/home/model/detail/:id', label: t('breadcrumbs.model'), pid: 3, id: 16 },
   { path: '/home/model/verify/:id', label: t('breadcrumbs.model.verify'), pid: 16, id: 17 },
   { path: '/home/history/:type/:id', label: t('breadcrumbs.history'), pid: 1, id: 18 },
+  { path: '/home/keyword', label: t('breadcrumbs.keyword'), pid: 1, id: 19 },
+  { path: '/home/configure', label: t('breadcrumbs.configure'), pid: 1, id: 20 },
+  { path: '/home/configure/permission', label: t('breadcrumbs.configure.permission'), pid: 20, id: 21 },
 ]
 
 function getCrumbItems(path, crumbs) {
