@@ -695,7 +695,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 # 7. 文章引用
 
-如要在您的工作用引用YMIR，请使用下面的Bibtex：
+如要在您的工作中引用YMIR，请使用下面的Bibtex：
 
 ```bibtex
 @misc{huang2021ymir,
