@@ -721,6 +721,8 @@ This management approach is shown in the following figure:
 
 We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform.
 # 7. Citatins.
+
+If you wish to refer to YMIR in your work, please use the following BibTeX entry.
 ```bibtex
 @misc{huang2021ymir,
       title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
