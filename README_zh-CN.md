@@ -693,9 +693,23 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 我们使用Git中代码版本控制的概念来管理我们的数据和模型。我们使用分支的概念创建新项目，以便同一组映像上的不同任务可以并行运行。数据集的增加、检索、更新和删除以及基本操作都创建提交到分支。从逻辑上讲，每次提交都存储数据集或新模型的更新版本，以及导致此更改的操作的元数据。最后，只有数据更改被合并到主分支，这在概念上，聚合了该平台上许多项目注释的所有数据。
 
-# 7.MISC
+# 7. 文章引用
 
-## 7.1 常见问题
+
+```bibtex
+@misc{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      year={2021},
+      eprint={2111.10046},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI}
+}
+```
+
+# 8.MISC
+
+## 8.1 常见问题
 
 *  为什么上传本地数据集的压缩包失败？
 
@@ -744,11 +758,11 @@ cat `pip show ymir-proto | grep 'Location: ' | cut -d ' ' -f2`/ymir/ids/type_id_
 
 可以使用vim，或其他类似的编辑工具对此文件进行编辑，用户可以添加类别的别名，也可以增加新的类别，但不建议更改已经有的类别的主名和id。
 
-## 7.2 License
+## 8.2 License
 
 YMIR开源项目符合Apache 2.0证书许可。查看 [LICENSE](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE) file for details.
 
-## 7.3 联系我们
+## 8.3 联系我们
 
 当您有其他问题时，请联系我们：contact.viesc@gmail.com
 
