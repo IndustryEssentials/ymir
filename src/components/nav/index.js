@@ -52,23 +52,23 @@ const menus = () => [
     key: "/home/model",
     icon: <NavModelmanageIcon className={styles.navIcon} />,
   },
-  {
-    label: t('common.top.menu.configure'),
-    key: "/home/configures",
-    icon: <NavModelmanageIcon className={styles.navIcon} />,
-    sub: [
-      {
-        label: t('common.top.menu.resource'),
-        key: "/home/configure",
-        icon: <NavModelmanageIcon className={styles.navIcon} />,
-      },
-      {
-        label: t('common.top.menu.permission'),
-        key: "/home/configure/permission",
-        icon: <NavModelmanageIcon className={styles.navIcon} />,
-      },
-    ]
-  },
+  // {
+  //   label: t('common.top.menu.configure'),
+  //   key: "/home/configures",
+  //   icon: <NavModelmanageIcon className={styles.navIcon} />,
+  //   sub: [
+  //     {
+  //       label: t('common.top.menu.resource'),
+  //       key: "/home/configure",
+  //       icon: <NavModelmanageIcon className={styles.navIcon} />,
+  //     },
+  //     {
+  //       label: t('common.top.menu.permission'),
+  //       key: "/home/configure/permission",
+  //       icon: <NavModelmanageIcon className={styles.navIcon} />,
+  //     },
+  //   ]
+  // },
 ]
 
 const plateMenusPath = (ms) => {

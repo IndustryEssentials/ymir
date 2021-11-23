@@ -9,7 +9,7 @@ import { AddDelTwoIcon, AddIcon, AddTwoIcon } from '../../components/common/icon
 const { Option } = Select
 const { useForm } = Form
 
-const Add = ({ visible, keys=[], cancel = () => { }, ok = () => { }, updateKeywords }) => {
+const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKeywords }) => {
 
   const [form] = useForm()
   const [show, setShow] = useState(visible)
@@ -17,7 +17,7 @@ const Add = ({ visible, keys=[], cancel = () => { }, ok = () => { }, updateKeywo
 
   useEffect(() => {
     setKeywords(keys)
-    form.setFieldsValue({ keywords: keys })
+    form.setFieldsValue({ keywords: keys.length ? keys : [{ name: '' }] })
   }, [keys])
 
   useEffect(() => {
@@ -71,10 +71,6 @@ const Add = ({ visible, keys=[], cancel = () => { }, ok = () => { }, updateKeywo
     Promise.reject(t('keyword.add.name.validchar'))
   }
 
-  const initValues = {
-    keywords: keys.length ? keys : [{name: ''}]
-  }
-
   return (
     <Modal
       visible={show}
@@ -83,7 +79,7 @@ const Add = ({ visible, keys=[], cancel = () => { }, ok = () => { }, updateKeywo
       onOk={onOk}
       width={680}
     >
-      <Form name='keywordAddForm' form={form} layout='vertical' initialValues={initValues}>
+      <Form name='keywordAddForm' form={form} layout='vertical'>
         <Form.List name='keywords'>
           {(fields, { add, remove }) => (
             <div className={s.content}>
@@ -98,7 +94,7 @@ const Add = ({ visible, keys=[], cancel = () => { }, ok = () => { }, updateKeywo
                       name={[field.name, 'name']}
                       fieldKey={[field.fieldKey, 'name']}
                       rules={[
-                        {validator: validChar },
+                        { validator: validChar },
                         { validator: repeatKeywords }
                       ]}
                     >
