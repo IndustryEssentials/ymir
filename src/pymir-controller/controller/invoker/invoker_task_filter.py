@@ -1,15 +1,15 @@
-from controller.invoker.invoker_task_base import TaskBaseInvoker, write_done_progress
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
+from controller.invoker.invoker_task_base import TaskBaseInvoker, write_done_progress
 from controller.utils import code, invoker_call, utils
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 class TaskFilterInvoker(TaskBaseInvoker):
     @classmethod
     @write_done_progress
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: str, working_dir: str,
-                    task_monitor_file: str, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralResp:
+                    task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         # Use sub_task_id 0 as end of task.
         filter_request = request.req_create_task.filter
 
@@ -20,7 +20,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
         sub_task_id_1 = utils.sub_task_id(request.task_id, 1)
         merge_response = invoker_call.make_invoker_cmd_call(invoker=MergeInvoker,
                                                             sandbox_root=sandbox_root,
-                                                            req_type=mirsvrpb.CMD_MERGE,
+                                                            req_type=backend_pb2.CMD_MERGE,
                                                             user_id=request.user_id,
                                                             repo_id=request.repo_id,
                                                             task_id=sub_task_id_1,
@@ -33,7 +33,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
         sub_task_id_0 = utils.sub_task_id(request.task_id, 0)
         filter_response = invoker_call.make_invoker_cmd_call(invoker=FilterBranchInvoker,
                                                              sandbox_root=sandbox_root,
-                                                             req_type=mirsvrpb.CMD_FILTER,
+                                                             req_type=backend_pb2.CMD_FILTER,
                                                              user_id=request.user_id,
                                                              repo_id=request.repo_id,
                                                              task_id=sub_task_id_0,

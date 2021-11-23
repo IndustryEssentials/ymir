@@ -2,11 +2,11 @@ import os
 from typing import List, Dict
 
 from google.protobuf import message as pb_message
-
 from mir.tools import mir_storage_ops
+
+from proto import backend_pb2
 from src import config
 from src.libs import utils
-import ymir.protos.mir_common_pb2 as mir_common
 
 
 class MirStorageLoader:
@@ -25,14 +25,14 @@ class MirStorageLoader:
         return mir_raw_data
 
     def get_tasks_content(self) -> Dict:
-        raw_task_message = self.load_raw_message([mir_common.MirStorage.MIR_TASKS])
+        raw_task_message = self.load_raw_message([backend_pb2.MirStorage.MIR_TASKS])
 
-        return raw_task_message[mir_common.MirStorage.MIR_TASKS]
+        return raw_task_message[backend_pb2.MirStorage.MIR_TASKS]
 
     def get_keywords_content(self) -> Dict:
-        raw_keywords_message = self.load_raw_message([mir_common.MirStorage.MIR_KEYWORDS])
+        raw_keywords_message = self.load_raw_message([backend_pb2.MirStorage.MIR_KEYWORDS])
 
-        return raw_keywords_message[mir_common.MirStorage.MIR_KEYWORDS]
+        return raw_keywords_message[backend_pb2.MirStorage.MIR_KEYWORDS]
 
     def format_mir_content(self, all_metadata: Dict, all_annotations: Dict, all_keywords: Dict) -> Dict:
         """
@@ -94,9 +94,9 @@ class MirStorageLoader:
         }
         """
         raw_message = self.load_raw_message(
-            [mir_common.MirStorage.MIR_ANNOTATIONS, mir_common.MirStorage.MIR_METADATAS])
-        annotations_message = raw_message[mir_common.MirStorage.MIR_ANNOTATIONS]
-        metadatas_message = raw_message[mir_common.MirStorage.MIR_METADATAS]
+            [backend_pb2.MirStorage.MIR_ANNOTATIONS, backend_pb2.MirStorage.MIR_METADATAS])
+        annotations_message = raw_message[backend_pb2.MirStorage.MIR_ANNOTATIONS]
+        metadatas_message = raw_message[backend_pb2.MirStorage.MIR_METADATAS]
         keywords_message = self.get_keywords_content()
 
         result = self.format_mir_content(metadatas_message, annotations_message, keywords_message)

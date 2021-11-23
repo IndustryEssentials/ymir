@@ -1,10 +1,9 @@
-from concurrent import futures
-
 import argparse
 import logging
 import os
 import re
 import sys
+from concurrent import futures
 from typing import Any
 
 import grpc
@@ -14,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from controller import server_impl as mir_controller_service
 from controller import task_monitor
-from ymir.protos import mir_controller_service_pb2_grpc as mirgrpc
+from proto import backend_pb2_grpc
 
 path_matcher = re.compile(r"\$\{([^}^{]+)\}")
 
@@ -68,7 +67,7 @@ def main(main_args: Any) -> int:
     mc_service_impl = mir_controller_service.MirControllerService(sandbox_root=sandbox_root,
                                                                   assets_config=server_config['ASSETS'])
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    mirgrpc.add_mir_controller_serviceServicer_to_server(mc_service_impl, server)
+    backend_pb2_grpc.add_mir_controller_serviceServicer_to_server(mc_service_impl, server)
     server.add_insecure_port("[::]:{}".format(port))
     server.start()
 

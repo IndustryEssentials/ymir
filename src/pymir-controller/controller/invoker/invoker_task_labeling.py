@@ -1,11 +1,10 @@
 from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
-
-from ymir.ids import class_ids
 from controller.label_model import label_runner
+from controller.utils import code, utils
+from controller.utils.labels import LabelFileHandler
+from proto import backend_pb2
 
 
 class TaskLabelingInvoker(TaskBaseInvoker):
@@ -17,11 +16,11 @@ class TaskLabelingInvoker(TaskBaseInvoker):
         assets_config: Dict[str, str],
         working_dir: str,
         task_monitor_file: str,
-        request: mirsvrpb.GeneralReq,
-    ) -> mirsvrpb.GeneralResp:
+        request: backend_pb2.GeneralReq,
+    ) -> backend_pb2.GeneralResp:
         labeling_request = request.req_create_task.labeling
-        class_ids_ins = class_ids.ClassIdManager()
-        keywords = [class_ids_ins.main_name_for_id(clas_id) for clas_id in labeling_request.in_class_ids]
+        label_handler = LabelFileHandler(repo_root)
+        keywords = label_handler.get_main_labels_by_ids(labeling_request.in_class_ids)
         labeler_accounts = list(labeling_request.labeler_accounts)
         media_location = assets_config["assetskvlocation"]
         task_id = request.task_id

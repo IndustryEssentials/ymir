@@ -4,14 +4,13 @@ import shutil
 import unittest
 from unittest import mock
 
-from google.protobuf.json_format import MessageToDict, ParseDict
+from google.protobuf.json_format import ParseDict
 
+import tests.utils as test_utils
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-import tests.utils as test_utils
-import ymir.protos.mir_common_pb2 as mir_common
-import ymir.protos.mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
@@ -80,22 +79,22 @@ class TestInvokerTaskCopy(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        copy_request = mirsvrpb.TaskReqCopyData()
+        copy_request = backend_pb2.TaskReqCopyData()
         copy_request.src_user_id = "usre"
         copy_request.src_repo_id = "repodi"
         copy_request.src_dataset_id = "t000aaaabbbbbbzzzzzzzzzzzzzzb6"
         mir_src_root = os.path.join(self._sandbox_root, copy_request.src_user_id, copy_request.src_repo_id)
         os.makedirs(mir_src_root)
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   mir_common.TaskType.Name(mir_common.TaskTypeCopyData), self._task_id)
+                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeCopyData), self._task_id)
 
-        req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_common.TaskTypeCopyData
+        req_create_task = backend_pb2.ReqCreateTask()
+        req_create_task.task_type = backend_pb2.TaskTypeCopyData
         req_create_task.no_task_monitor = True
         req_create_task.copy.CopyFrom(copy_request)
-        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[mirsvrpb.TASK_CREATE],
+        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
-                                         req_type=mirsvrpb.TASK_CREATE,
+                                         req_type=backend_pb2.TASK_CREATE,
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
@@ -108,7 +107,7 @@ class TestInvokerTaskCopy(unittest.TestCase):
             mock.call(expected_cmd_copy, capture_output=True, shell=True),
         ])
 
-        expected_ret = mirsvrpb.GeneralResp()
+        expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}
         ParseDict(expected_dict, expected_ret)
         self.assertEqual(response, expected_ret)

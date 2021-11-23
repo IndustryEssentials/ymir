@@ -4,12 +4,11 @@ import os
 from datetime import datetime
 from typing import Any, Callable, Dict, Optional
 
-from google.protobuf import json_format
 import yaml
+from google.protobuf import json_format
 
 from controller.utils import singleton, tasks_util
-from ymir.protos import mir_common_pb2 as mir_common
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 class _ScheduledProcess(mp.Process):
@@ -59,7 +58,7 @@ class ControllerTaskMonitor:
         with open(self._task_storage_file, 'w') as outfile:
             yaml.dump(dict(self._task_storage), outfile)
 
-    def save_task(self, task_id: str, task_storage_item: mirsvrpb.TaskMonitorStorageItem) -> None:
+    def save_task(self, task_id: str, task_storage_item: backend_pb2.TaskMonitorStorageItem) -> None:
         storage_dict = json_format.MessageToDict(task_storage_item,
                                                  preserving_proto_field_name=True,
                                                  use_integers_for_enums=True)
@@ -67,9 +66,9 @@ class ControllerTaskMonitor:
         with open(task_storage_file, 'w') as f:
             yaml.dump(storage_dict, f)
 
-    def load_task(self, task_id: str) -> mirsvrpb.TaskMonitorStorageItem:
+    def load_task(self, task_id: str) -> backend_pb2.TaskMonitorStorageItem:
         task_storage_file = self._task_file_location(task_id)
-        task_storage_item = mirsvrpb.TaskMonitorStorageItem()
+        task_storage_item = backend_pb2.TaskMonitorStorageItem()
         if not os.path.isfile(task_storage_file):
             logging.error("task storage file not ready: {}".format(task_id))
         else:
@@ -88,7 +87,7 @@ class ControllerTaskMonitor:
                 continue  # cannt find task file.
 
             task_item = self._update_task_item(task_monitor_file, task_id)
-            if task_item.state in [mir_common.TaskStateDone, mir_common.TaskStateError]:
+            if task_item.state in [backend_pb2.TaskStateDone, backend_pb2.TaskStateError]:
                 logging.debug("monitor found finished task: %s, state: %s", task_id, task_item.state)
                 finished_task_ids.add(task_id)
         for task_id in finished_task_ids:
@@ -96,7 +95,7 @@ class ControllerTaskMonitor:
 
         self.save_tasks()
 
-    def _update_task_item(self, task_monitor_file: str, task_id: str) -> mirsvrpb.TaskMonitorStorageItem:
+    def _update_task_item(self, task_monitor_file: str, task_id: str) -> backend_pb2.TaskMonitorStorageItem:
         task_storage_item = self.load_task(task_id=task_id)
         task_item = task_storage_item.general_info
 
@@ -106,7 +105,7 @@ class ControllerTaskMonitor:
                 monitor_file_lines = f.readlines()
         if not monitor_file_lines or len(monitor_file_lines[0]) < 4:
             task_item.update_timestamp = int(datetime.now().timestamp())
-            task_item.state = mir_common.TaskStateUnknown
+            task_item.state = backend_pb2.TaskStateUnknown
             task_item.last_error = "invalid monitor file: {}".format(task_monitor_file)
         else:
             task_id, timestamp, percent, state, *_ = monitor_file_lines[0].split()
@@ -145,17 +144,17 @@ class ControllerTaskMonitor:
         self._monitor_process = None
 
     def _generate_storage_item(self, task_id: str, repo_root: str, task_monitor_file: str,
-                               request: mirsvrpb.GeneralReq) -> mirsvrpb.TaskMonitorStorageItem:
-        general_info = mirsvrpb.TaskInfoItem()
+                               request: backend_pb2.GeneralReq) -> backend_pb2.TaskMonitorStorageItem:
+        general_info = backend_pb2.TaskInfoItem()
         general_info.task_id = task_id
         general_info.user_id = request.user_id
         general_info.repo_id = request.repo_id
         general_info.type = request.req_type
-        general_info.state = mir_common.TaskStatePending
+        general_info.state = backend_pb2.TaskStatePending
         general_info.start_timestamp = int(datetime.now().timestamp())
         general_info.percent = 0
 
-        task_storage_item = mirsvrpb.TaskMonitorStorageItem()
+        task_storage_item = backend_pb2.TaskMonitorStorageItem()
         task_storage_item.general_info.CopyFrom(general_info)
         task_storage_item.monitor_file_path = task_monitor_file
         task_storage_item.storage_file_path = self._task_file_location(task_id)
@@ -164,14 +163,14 @@ class ControllerTaskMonitor:
         task_storage_item.request.CopyFrom(request)
         return task_storage_item
 
-    def register_task(self, task_id: str, repo_root: str, task_monitor_file: str, request: mirsvrpb.GeneralReq) -> None:
+    def register_task(self, task_id: str, repo_root: str, task_monitor_file: str, request: backend_pb2.GeneralReq) -> None:
         self._start_monitor()  # In case monitor has not been started.
 
         if task_id in self._task_storage:
             logging.warning("Task {0} already exist.".format(task_id))
             del self._task_storage[task_id]
 
-        tasks_util.write_task_progress(task_monitor_file, task_id, 0, mir_common.TaskStatePending)
+        tasks_util.write_task_progress(task_monitor_file, task_id, 0, backend_pb2.TaskStatePending)
         task_storage_item = self._generate_storage_item(task_id=task_id,
                                                         repo_root=repo_root,
                                                         task_monitor_file=task_monitor_file,
@@ -184,11 +183,11 @@ class ControllerTaskMonitor:
     def has_task(self, task_id: str) -> bool:
         return (task_id in self._task_storage) and os.path.isfile(self._task_file_location(task_id))
 
-    # def get_task_info(self, task_id: str) -> Optional[mirsvrpb.TaskMonitorStorageItem]:
+    # def get_task_info(self, task_id: str) -> Optional[backend_pb2.TaskMonitorStorageItem]:
     #     if not self.has_task(task_id):
     #         return None
 
-    #     task_item = mirsvrpb.TaskMonitorStorageItem()
+    #     task_item = backend_pb2.TaskMonitorStorageItem()
     #     with open(self._task_storage[task_id], 'rb') as f:
     #         task_item.ParseFromString(f.read())
     #     return task_item

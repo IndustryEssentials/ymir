@@ -1,12 +1,11 @@
 from typing import Any, List
 
-from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 def make_cmd_request(user_id: str = None,
                      repo_id: str = None,
-                     req_type: mirsvrpb.RequestType = None,
+                     req_type: backend_pb2.RequestType = None,
                      task_id: str = None,
                      singleton_op: str = None,
                      his_task_id: str = None,
@@ -15,14 +14,15 @@ def make_cmd_request(user_id: str = None,
                      ex_dataset_ids: List[str] = None,
                      in_class_ids: List[int] = None,
                      ex_class_ids: List[int] = None,
+                     private_labels: List[str] = None,
                      asset_dir: str = None,
                      model_config: str = None,
                      model_hash: str = None,
                      force: bool = None,
                      commit_message: str = None,
-                     req_create_task: mirsvrpb.ReqCreateTask = None,
-                     task_info_req: mirsvrpb.ReqGetTaskInfo = None) -> mirsvrpb.GeneralReq:
-    request = mirsvrpb.GeneralReq()
+                     req_create_task: backend_pb2.ReqCreateTask = None,
+                     task_info_req: backend_pb2.ReqGetTaskInfo = None) -> backend_pb2.GeneralReq:
+    request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
     if repo_id is not None:
@@ -45,6 +45,8 @@ def make_cmd_request(user_id: str = None,
         request.in_class_ids[:] = in_class_ids
     if ex_class_ids:
         request.ex_class_ids[:] = ex_class_ids
+    if private_labels:
+        request.private_labels[:] = private_labels
     if force is not None:
         request.force = force
     if commit_message is not None:
@@ -65,7 +67,7 @@ def make_cmd_request(user_id: str = None,
 def make_invoker_cmd_call(invoker: Any,
                           sandbox_root: str = None,
                           assets_config: dict = None,
-                          req_type: mirsvrpb.RequestType = None,
+                          req_type: backend_pb2.RequestType = None,
                           user_id: str = None,
                           repo_id: str = None,
                           task_id: str = None,
@@ -78,9 +80,9 @@ def make_invoker_cmd_call(invoker: Any,
                           ex_class_ids: List[int] = None,
                           force: bool = None,
                           commit_message: str = None,
-                          req_create_task: mirsvrpb.ReqCreateTask = None,
-                          task_info_req: mirsvrpb.ReqGetTaskInfo = None,
-                          async_mode: bool = False) -> mirsvrpb.GeneralReq:
+                          req_create_task: backend_pb2.ReqCreateTask = None,
+                          task_info_req: backend_pb2.ReqGetTaskInfo = None,
+                          async_mode: bool = False) -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,

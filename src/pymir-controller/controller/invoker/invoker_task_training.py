@@ -3,14 +3,13 @@ import time
 from typing import List, Dict, Set
 
 import yaml
-from ymir.ids import class_ids
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
 
 from controller.config import GPU_LOCKING_SET
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils, invoker_call, revs, gpu_utils
+from controller.utils import code, utils, invoker_call, revs, gpu_utils, labels
 from controller.utils.redis import rds
+from proto import backend_pb2
 
 
 class TaskTrainingInvoker(TaskBaseInvoker):
@@ -52,10 +51,10 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         return ",".join(gpus)
 
     @classmethod
-    def gen_training_config(cls, req_training_config: str, in_class_ids: List, work_dir: str) -> str:
+    def gen_training_config(cls, repo_root: str, req_training_config: str, in_class_ids: List, work_dir: str) -> str:
         training_config = yaml.safe_load(req_training_config)
-        ids_manager = class_ids.ClassIdManager()
-        training_config["class_names"] = [ids_manager.main_name_for_id(x) for x in in_class_ids]
+        label_handler = labels.LabelFileHandler(repo_root)
+        training_config["class_names"] = label_handler.get_main_labels_by_ids(in_class_ids)
 
         gpu_ids = cls.find_gpu_ids(training_config)
         if not gpu_ids:
@@ -76,8 +75,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         assets_config: Dict[str, str],
         working_dir: str,
         task_monitor_file: str,
-        request: mirsvrpb.GeneralReq,
-    ) -> mirsvrpb.GeneralResp:
+        request: backend_pb2.GeneralReq,
+    ) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         if not train_request.in_dataset_types:
             return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid dataset_types")
@@ -91,7 +90,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
             sandbox_root=sandbox_root,
-            req_type=mirsvrpb.CMD_MERGE,
+            req_type=backend_pb2.CMD_MERGE,
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=sub_task_id_1,
@@ -106,7 +105,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
         training_image = assets_config["training_image"]
-        config_file = cls.gen_training_config(train_request.training_config, train_request.in_class_ids, working_dir)
+        config_file = cls.gen_training_config(repo_root, train_request.training_config, train_request.in_class_ids, working_dir)
         if not config_file:
             return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, "Not enough GPU available")
 
@@ -135,7 +134,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         his_rev: str,
         in_src_revs: str,
         training_image: str,
-    ) -> mirsvrpb.GeneralResp:
+    ) -> backend_pb2.GeneralResp:
         training_cmd = (f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
                         f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
                         f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image}")

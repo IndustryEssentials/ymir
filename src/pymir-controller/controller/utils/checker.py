@@ -1,12 +1,12 @@
-from enum import auto, IntEnum, unique
 import logging
 import os
 import sys
+from enum import auto, IntEnum, unique
 from typing import List
 
 from controller.utils import code, utils
-from ymir.ids import task_id as task_id_proto
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from controller.utils import task_id as task_id_proto
+from proto import backend_pb2
 
 
 @unique
@@ -28,9 +28,9 @@ class Prerequisites(IntEnum):
 
 
 # check controller request
-def check_request(request: mirsvrpb.GeneralReq,
+def check_request(request: backend_pb2.GeneralReq,
                   prerequisites: List[Prerequisites] = [],
-                  mir_root: str = None) -> mirsvrpb.GeneralResp:
+                  mir_root: str = None) -> backend_pb2.GeneralResp:
     for item in prerequisites:
         checker_name = "_{}".format(item.name.lower())
         checker_func = getattr(sys.modules[__name__], checker_name)
@@ -41,11 +41,11 @@ def check_request(request: mirsvrpb.GeneralReq,
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_nothing(request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralResp:
+def _check_nothing(request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_user_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_user_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     user_id = request.user_id
     if not (user_id and utils.check_valid_input_string(user_id)
             and len(user_id) == task_id_proto.IDProto.ID_LEN_USER_ID):
@@ -54,7 +54,7 @@ def _check_user_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.Gene
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_repo_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_repo_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     repo_id = request.repo_id
     if not (repo_id and utils.check_valid_input_string(repo_id)
             and len(repo_id) == task_id_proto.IDProto.ID_LEN_REPO_ID):
@@ -63,7 +63,7 @@ def _check_repo_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.Gene
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_task_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_task_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     task_id = request.task_id
     if not (task_id and utils.check_valid_input_string(task_id) and len(task_id) == task_id_proto.IDProto.ID_LENGTH):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -71,7 +71,7 @@ def _check_task_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.Gene
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_singleton_op(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_singleton_op(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     task_id = request.singleton_op
     if not (task_id and utils.check_valid_input_string(task_id) and len(task_id) == task_id_proto.IDProto.ID_LENGTH):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -79,7 +79,7 @@ def _check_singleton_op(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_dst_task_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_dst_task_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     task_id = request.dst_task_id
     if not (task_id and utils.check_valid_input_string(task_id) and len(task_id) == task_id_proto.IDProto.ID_LENGTH):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -87,7 +87,7 @@ def _check_dst_task_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_his_task_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_his_task_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     task_id = request.his_task_id
     if not (task_id and utils.check_valid_input_string(task_id) and len(task_id) == task_id_proto.IDProto.ID_LENGTH):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -95,7 +95,7 @@ def _check_his_task_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_guest_branches(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_guest_branches(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     guest_branches = request.guest_branches
     if not guest_branches:
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -107,7 +107,7 @@ def _check_guest_branches(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvr
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_taskinfo_ids(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_taskinfo_ids(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     task_info_ids = request.req_get_task_info.task_ids
     if len(task_info_ids) == 0:
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, 'no task ids in request')
@@ -118,7 +118,7 @@ def _check_taskinfo_ids(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_commit_message(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_commit_message(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     commit_message = request.commit_message
     if not commit_message:
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -127,7 +127,7 @@ def _check_commit_message(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvr
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_repo_root_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_repo_root_exist(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     if not os.path.isdir(mir_root):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
                                            "mir_root not exist: {}, abort".format(mir_root))
@@ -135,7 +135,7 @@ def _check_repo_root_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsv
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_repo_root_not_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_repo_root_not_exist(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     if os.path.isdir(mir_root):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
                                            "mir_root exist: {}, abort".format(mir_root))
@@ -143,7 +143,7 @@ def _check_repo_root_not_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> m
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_user_root_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_user_root_exist(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     user_root = os.path.basename(mir_root)
     if not os.path.isdir(user_root):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -152,7 +152,7 @@ def _check_user_root_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsv
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_user_root_not_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_user_root_not_exist(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     user_root = os.path.basename(mir_root)
     if os.path.isdir(user_root):
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -161,7 +161,7 @@ def _check_user_root_not_exist(request: mirsvrpb.GeneralReq, mir_root: str) -> m
     return utils.make_general_response(code.ResCode.CTR_OK, "")
 
 
-def _check_single_in_dataset_id(request: mirsvrpb.GeneralReq, mir_root: str) -> mirsvrpb.GeneralResp:
+def _check_single_in_dataset_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
     in_dataset_ids = request.in_dataset_ids
     if not in_dataset_ids or len(in_dataset_ids) > 1:
         return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,

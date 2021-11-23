@@ -1,14 +1,12 @@
-from functools import wraps
 import os
 import threading
-from typing import Any, AnyStr, Callable, Dict
-
-import ymir.protos.mir_controller_service_pb2 as mirsvrpb
+from functools import wraps
+from typing import Any, Callable, Dict
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.task_monitor import ControllerTaskMonitor
 from controller.utils import code, checker, tasks_util, utils
-from ymir.protos import mir_common_pb2 as mir_common
+from proto import backend_pb2
 
 
 def write_done_progress(fn: Callable) -> Callable:
@@ -17,14 +15,14 @@ def write_done_progress(fn: Callable) -> Callable:
         ret = fn(*args, **kwargs)
         print('ret: {}'.format(ret))
         tasks_util.write_task_progress(kwargs['task_monitor_file'], kwargs['request'].task_id, 1.0,
-                                       mir_common.TaskStateDone)
+                                       backend_pb2.TaskStateDone)
         return ret
 
     return write_done
 
 
 class TaskBaseInvoker(BaseMirControllerInvoker):
-    def pre_invoke(self) -> mirsvrpb.GeneralResp:
+    def pre_invoke(self) -> backend_pb2.GeneralResp:
         return checker.check_request(request=self._request,
                                      prerequisites=[
                                          checker.Prerequisites.CHECK_USER_ID,
@@ -33,8 +31,8 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                      ],
                                      mir_root=self._repo_root)
 
-    def invoke(self) -> mirsvrpb.GeneralResp:
-        if self._request.req_type != mirsvrpb.TASK_CREATE:
+    def invoke(self) -> backend_pb2.GeneralResp:
+        if self._request.req_type != backend_pb2.TASK_CREATE:
             raise RuntimeError("Mismatched req_type")
 
         self._task_monitor_file = os.path.join(self._work_dir, 'out', 'monitor.txt')
@@ -69,11 +67,11 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def _task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
-                     task_monitor_file: str, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralResp:
+                     task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                        tid=request.task_id,
                                        percent=0.0,
-                                       state=mir_common.TaskStateRunning)
+                                       state=backend_pb2.TaskStateRunning)
 
         response = cls.task_invoke(sandbox_root=sandbox_root,
                                    repo_root=repo_root,
@@ -87,14 +85,14 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=mir_common.TaskStateError,
+                                           state=backend_pb2.TaskStateError,
                                            msg=response.message)
 
         return response
 
     @classmethod
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
-                    task_monitor_file: str, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralResp:
+                    task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         raise NotImplementedError
 
     def _repr(self) -> str:

@@ -1,6 +1,6 @@
 from mir.tools.mir_storage_ops import MirStorageOps
 
-import ymir.protos.mir_common_pb2 as mir_common
+from proto import backend_pb2
 
 
 class TestModelController:
@@ -24,7 +24,7 @@ class TestModelController:
             }
         }
 
-        mocker.patch.object(MirStorageOps, "load", return_value={mir_common.MirStorage.MIR_TASKS: mir_tasks_content})
+        mocker.patch.object(MirStorageOps, "load", return_value={backend_pb2.MirStorage.MIR_TASKS: mir_tasks_content})
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/models")
 
         assert resp.status_code == 200

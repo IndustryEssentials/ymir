@@ -6,11 +6,10 @@ from unittest import mock
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-import ymir.protos.mir_controller_service_pb2 as mirsvrpb
+import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-
-import tests.utils as test_utils
+from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
@@ -68,9 +67,9 @@ class TestInvokerBranchCreate(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[mirsvrpb.CMD_BRANCH_CREATE],
+        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_BRANCH_CREATE],
                                          sandbox_root=self._sandbox_root,
-                                         req_type=mirsvrpb.CMD_BRANCH_CREATE,
+                                         req_type=backend_pb2.CMD_BRANCH_CREATE,
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
@@ -80,7 +79,7 @@ class TestInvokerBranchCreate(unittest.TestCase):
         expected_cmd = "cd {0} && mir checkout -b {1}".format(self._mir_repo_root, self._singleton_op)
         mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True)
 
-        expected_ret = mirsvrpb.GeneralResp()
+        expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}
         ParseDict(expected_dict, expected_ret)
         self.assertEqual(response, expected_ret)
