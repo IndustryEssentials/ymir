@@ -4,14 +4,14 @@ from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker, write_done_progress
 from controller.utils import code, utils
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 class TaskImportingInvoker(TaskBaseInvoker):
     @classmethod
     @write_done_progress
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
-                    task_monitor_file: str, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralResp:
+                    task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         importing_request = request.req_create_task.importing
 
         # Prepare media index-file
@@ -39,7 +39,7 @@ class TaskImportingInvoker(TaskBaseInvoker):
 
     @staticmethod
     def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str,
-                      media_location: str, work_dir: str) -> mirsvrpb.GeneralResp:
+                      media_location: str, work_dir: str) -> backend_pb2.GeneralResp:
         importing_cmd = (
             f"cd {repo_root} && mir import --dataset-name {task_id} --dst-rev {task_id}@{task_id} "
             f"--src-revs master --index-file {index_file} --annotation-dir {annotation_dir} "

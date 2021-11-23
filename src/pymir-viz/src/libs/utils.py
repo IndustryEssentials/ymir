@@ -4,8 +4,8 @@ from typing import Dict, Callable
 
 from flask import request
 
-from src.libs import app_logger
 from src import config
+from src.libs import app_logger
 
 
 def suss_resp(error_code: int = 0, message: str = "operation successful") -> Dict:

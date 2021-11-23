@@ -6,11 +6,10 @@ from unittest import mock
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-import ymir.protos.mir_controller_service_pb2 as mirsvrpb
+import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-
-import tests.utils as test_utils
+from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
@@ -71,9 +70,9 @@ class TestInvokerMerge(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[mirsvrpb.CMD_MERGE],
+        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_MERGE],
                                          sandbox_root=self._sandbox_root,
-                                         req_type=mirsvrpb.CMD_MERGE,
+                                         req_type=backend_pb2.CMD_MERGE,
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
@@ -89,7 +88,7 @@ class TestInvokerMerge(unittest.TestCase):
                                                                               self._guest_id2, self._guest_id3))
         mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True)
 
-        expected_ret = mirsvrpb.GeneralResp()
+        expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}
         ParseDict(expected_dict, expected_ret)
         self.assertEqual(response, expected_ret)

@@ -2,11 +2,11 @@ import os
 from typing import Dict
 
 import yaml
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import code, utils, invoker_call
+from proto import backend_pb2
 
 
 class TaskMiningInvoker(TaskBaseInvoker):
@@ -27,8 +27,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
         assets_config: Dict[str, str],
         working_dir: str,
         task_monitor_file: str,
-        request: mirsvrpb.GeneralReq,
-    ) -> mirsvrpb.GeneralResp:
+        request: backend_pb2.GeneralReq,
+    ) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
         if mining_request.top_k < 0:
             return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
@@ -43,7 +43,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
             sandbox_root=sandbox_root,
-            req_type=mirsvrpb.CMD_MERGE,
+            req_type=backend_pb2.CMD_MERGE,
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=sub_task_id_1,
@@ -91,7 +91,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         in_src_revs: str,
         asset_cache_dir: str,
         executor: str,
-    ) -> mirsvrpb.GeneralResp:
+    ) -> backend_pb2.GeneralResp:
         mining_cmd = (f"cd {repo_root} && {utils.mir_executable()} mining --dst-rev {task_id}@{task_id} "
                       f"-w {work_dir} --model-location {model_location} --media-location {media_location} "
                       f"--topk {top_k} --model-hash {model_hash} --src-revs {in_src_revs}@{his_rev} "

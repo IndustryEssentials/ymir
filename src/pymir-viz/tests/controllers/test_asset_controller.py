@@ -1,6 +1,6 @@
 import pytest
 
-import ymir.protos.mir_common_pb2 as mir_common
+from proto import backend_pb2
 from mir.tools.mir_storage_ops import MirStorageOps
 
 
@@ -72,9 +72,9 @@ def mock_mir_content(mocker):
         MirStorageOps,
         "load",
         return_value={
-            mir_common.MirStorage.MIR_METADATAS: dict_metadatas,
-            mir_common.MirStorage.MIR_ANNOTATIONS: dict_annotations,
-            mir_common.MirStorage.MIR_KEYWORDS: dict_keywords,
+            backend_pb2.MirStorage.MIR_METADATAS: dict_metadatas,
+            backend_pb2.MirStorage.MIR_ANNOTATIONS: dict_annotations,
+            backend_pb2.MirStorage.MIR_KEYWORDS: dict_keywords,
         },
     )
 

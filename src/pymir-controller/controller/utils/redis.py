@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 import redis
+
 from controller.config import REDIS_URI
 
 

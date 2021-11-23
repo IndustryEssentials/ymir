@@ -1,10 +1,10 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, code, revs, utils
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 class MergeInvoker(BaseMirControllerInvoker):
-    def pre_invoke(self) -> mirsvrpb.GeneralResp:
+    def pre_invoke(self) -> backend_pb2.GeneralResp:
         if not self._request.in_dataset_ids and not self._request.ex_dataset_ids:
             return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
                                                'one of include/exclude branches is required.')
@@ -18,8 +18,8 @@ class MergeInvoker(BaseMirControllerInvoker):
                                      ],
                                      mir_root=self._repo_root)
 
-    def invoke(self) -> mirsvrpb.GeneralResp:
-        if self._request.req_type != mirsvrpb.CMD_MERGE:
+    def invoke(self) -> backend_pb2.GeneralResp:
+        if self._request.req_type != backend_pb2.CMD_MERGE:
             raise RuntimeError("Mismatched req_type")
 
         command = "cd {0} && {1} merge --dst-rev {2} -s stop".format(

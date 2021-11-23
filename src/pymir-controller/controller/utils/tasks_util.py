@@ -1,26 +1,26 @@
 from datetime import datetime
 
 from controller.utils import code
-from ymir.protos import mir_common_pb2 as mir_common
+from proto import backend_pb2
 
 
-def task_state_str_to_code(state: str) -> mir_common.TaskState:
+def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
     _task_state_to_enum = {
-        "pending": mir_common.TaskStatePending,
-        "running": mir_common.TaskStateRunning,
-        "runing": mir_common.TaskStateRunning,
-        "done": mir_common.TaskStateDone,
-        "error": mir_common.TaskStateError,
+        "pending": backend_pb2.TaskStatePending,
+        "running": backend_pb2.TaskStateRunning,
+        "runing": backend_pb2.TaskStateRunning,
+        "done": backend_pb2.TaskStateDone,
+        "error": backend_pb2.TaskStateError,
     }
     return _task_state_to_enum[state]
 
 
-def task_state_code_to_str(state: mir_common.TaskState) -> str:
+def task_state_code_to_str(state: backend_pb2.TaskState) -> str:
     _dict_enum_to_str = {
-        mir_common.TaskStatePending: "pending",
-        mir_common.TaskStateRunning: "running",
-        mir_common.TaskStateDone: "done",
-        mir_common.TaskStateError: "error",
+        backend_pb2.TaskStatePending: "pending",
+        backend_pb2.TaskStateRunning: "running",
+        backend_pb2.TaskStateDone: "done",
+        backend_pb2.TaskStateError: "error",
     }
     return _dict_enum_to_str[state]
 
@@ -28,7 +28,7 @@ def task_state_code_to_str(state: mir_common.TaskState) -> str:
 def write_task_progress(monitor_file: str,
                         tid: str,
                         percent: float,
-                        state: mir_common.TaskState,
+                        state: backend_pb2.TaskState,
                         msg: str = None) -> code.ResCode:
     if not monitor_file:
         raise RuntimeError("Invalid monitor_file")

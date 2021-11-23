@@ -22,3 +22,6 @@ TASK_ERROR = "error"
 
 # key of locking gpu
 GPU_LOCKING_SET = "gpu_locking_set"
+
+# labels.csv
+RESERVE_COLUMN = 1

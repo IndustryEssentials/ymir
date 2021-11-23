@@ -2,14 +2,14 @@ import os
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker, write_done_progress
 from controller.utils import code, utils
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 class TaskCopyInvoker(TaskBaseInvoker):
     @classmethod
     @write_done_progress
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: str, working_dir: str,
-                    task_monitor_file: str, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralResp:
+                    task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         copy_request = request.req_create_task.copy
 
         if not (copy_request.src_user_id and copy_request.src_repo_id):
@@ -31,7 +31,7 @@ class TaskCopyInvoker(TaskBaseInvoker):
 
     @staticmethod
     def copying_cmd(repo_root: str, task_id: str, src_root: str, src_dataset_id: str,
-                    work_dir: str) -> mirsvrpb.GeneralResp:
+                    work_dir: str) -> backend_pb2.GeneralResp:
         copying_cmd_str = (
             f"cd {repo_root} && mir copy --src-root {src_root} --dst-rev {task_id}@{task_id} "
             f"--src-revs {src_dataset_id}@{src_dataset_id} -w {work_dir}"

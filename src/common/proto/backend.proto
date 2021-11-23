@@ -50,6 +50,12 @@ enum LabelFormat {
     IF_ARK = 2;
 };
 
+enum MirStorage {
+    MIR_METADATAS = 0;
+    MIR_ANNOTATIONS = 1;
+    MIR_KEYWORDS = 2;
+    MIR_TASKS = 3;
+}
 
 enum RequestType {
     UNKNOWN = 0;
@@ -106,6 +112,7 @@ message GeneralReq {
     string asset_dir = 15;
     string model_config = 16;
     repeated string private_labels = 17;
+    bool check_only=18;
     ReqCreateTask req_create_task = 1001;
     ReqGetTaskInfo req_get_task_info = 1002;
 }

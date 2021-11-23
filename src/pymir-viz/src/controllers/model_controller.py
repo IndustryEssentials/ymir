@@ -1,7 +1,6 @@
 from typing import Dict
 
 from src.libs import app_logger, utils
-from src.models.model_result import ModelResult
 from src.viz_models import task
 
 

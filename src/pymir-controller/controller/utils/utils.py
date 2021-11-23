@@ -1,13 +1,10 @@
 import logging
 import re
 import subprocess
-from typing import Tuple
 
-from ymir.ids import task_id as task_id_proto
-from ymir.protos import mir_common_pb2 as mir_common
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
-
+from controller.utils import task_id as task_id_proto
 from controller.utils.code import ResCode
+from proto import backend_pb2
 
 
 def mir_executable() -> str:
@@ -15,7 +12,7 @@ def mir_executable() -> str:
     return "mir"
 
 
-def run_command(cmd: str) -> mirsvrpb.GeneralResp:
+def run_command(cmd: str) -> backend_pb2.GeneralResp:
     logging.info("starting cmd: \n{}\n".format(cmd))
     run_result = subprocess.run(cmd, capture_output=True, shell=True)  # run and wait
     returncode = run_result.returncode
@@ -50,8 +47,8 @@ def check_valid_input_string(inputs: str,
     return True
 
 
-def make_general_response(code: int, message: str) -> mirsvrpb.GeneralResp:
-    response = mirsvrpb.GeneralResp()
+def make_general_response(code: int, message: str) -> backend_pb2.GeneralResp:
+    response = backend_pb2.GeneralResp()
     response.code = code
     response.message = message
     return response
@@ -66,6 +63,6 @@ def sub_task_id(task_id: str, offset: int) -> str:
     return task_id[0] + str(offset) + task_id[2:]
 
 
-def annotation_format_str(format: mir_common.LabelFormat) -> str:
-    format_enum_dict = {mir_common.NO_ANNOTATION: 'none', mir_common.PASCAL_VOC: 'voc', mir_common.IF_ARK: 'ark'}
+def annotation_format_str(format: backend_pb2.LabelFormat) -> str:
+    format_enum_dict = {backend_pb2.NO_ANNOTATION: 'none', backend_pb2.PASCAL_VOC: 'voc', backend_pb2.IF_ARK: 'ark'}
     return format_enum_dict[format]
