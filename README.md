@@ -720,7 +720,7 @@ This management approach is shown in the following figure:
 ![branch and dataset](docs/images/branch-and-dataset.jpeg)
 
 We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform.
-# 7. Citatins.
+# 7. Citations.
 
 If you wish to refer to YMIR in your work, please use the following BibTeX entry.
 ```bibtex
@@ -733,6 +733,17 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
       primaryClass={cs.AI}
 }
 ```
+
+YMIR Team contributors: 
+@phoenix-xhuang
+@fenrir-z
+@IJtLJZ8Rm4Yr
+@elliotmessi
+@Aryalfrat
+@under-chaos
+@Zhang-SJ930104
+@LuciferZap
+
 # 8. MISC
 
 ## 8.1. FAQ
