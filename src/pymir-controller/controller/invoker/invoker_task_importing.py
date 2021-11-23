@@ -21,7 +21,7 @@ class TaskImportingInvoker(TaskBaseInvoker):
             logging.error(error_str)
             return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, error_str)
 
-        media_files = [os.path.join(media_dir, f) for f in os.listdir(media_dir) if f.endswith('.jpg')]
+        media_files = [os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))]
         index_file = os.path.join(working_dir, 'index.txt')
         with open(index_file, 'w') as f:
             f.write('\n'.join(media_files))
