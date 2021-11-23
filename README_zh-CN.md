@@ -707,6 +707,15 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
       primaryClass={cs.AI}
 }
 ```
+YMIR 贡献者：
+@phoenix-xhuang
+@fenrir-z
+@IJtLJZ8Rm4Yr
+@elliotmessi
+@Aryalfrat
+@under-chaos
+@Zhang-SJ930104
+@LuciferZap
 
 # 8.MISC
 
