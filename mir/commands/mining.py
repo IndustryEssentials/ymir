@@ -9,6 +9,7 @@ from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, data_exporter, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
+from mir.tools.phase_logger import phase_logger_in_out
 
 
 class CmdMining(base.BaseCommand):
@@ -39,6 +40,7 @@ class CmdMining(base.BaseCommand):
                                        executor_name=self.args.executor_name)
 
     @staticmethod
+    @phase_logger_in_out
     def run_with_args(work_dir: str,
                       media_cache: Optional[str],
                       src_revs: str,
