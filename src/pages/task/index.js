@@ -15,10 +15,12 @@ import { TASKSTATES, TASKTYPES } from "../../constants/task"
 import { getTaskTypes, getTimes, getTaskStates } from '@/constants/query'
 import Breadcrumbs from "../../components/common/breadcrumb"
 import styles from "./index.less"
-import { DeleteIcon, EditIcon, InprogressIcon, ScreenIcon, TaggingIcon, TipsIcon, TrainIcon, VectorIcon } from "../../components/common/icons"
+import { CopyIcon, DeleteIcon, EditIcon, FlagIcon, InprogressIcon, ScreenIcon, SearchEyeIcon, StopIcon, TaggingIcon, TipsIcon, TrainIcon, VectorIcon } from "../../components/common/icons"
 import EditBox from "../../components/form/editBox"
 import StateTag from "../../components/task/stateTag"
 import RenderProgress from "../../components/common/progress"
+import Actions from "../../components/table/actions"
+import Confirm from "../../components/common/dangerConfirm"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -95,7 +97,7 @@ function Task({ getTasks, delTask, updateTask }) {
       title: showTitle("task.column.action"),
       key: "action",
       dataIndex: 'actions',
-      render: (text, record) => actions(record),
+      render: (text, record) => <Actions menus={actionMenus(record)} />,
       className: styles.tab_actions,
       align: "center",
       width: 240,
@@ -168,8 +170,7 @@ function Task({ getTasks, delTask, updateTask }) {
   }
 
   const del = (id, name) => {
-    confirm({
-      icon: <TipsIcon style={{color: 'rgb(242, 99, 123)'}} />,
+    Confirm({
       content: t("task.action.del.confirm.content", { name }),
       onOk: async () => {
         const result = await delTask(id)
@@ -180,7 +181,37 @@ function Task({ getTasks, delTask, updateTask }) {
         }
       },
       okText: t('task.action.del'),
-      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)',  }}
+    })
+  }
+  const stop = (id, name) => {
+    Confirm({
+      content: t("task.action.stop.confirm.content", { name }),
+      onOk: async () => {
+        const result = await stopTask(id)
+        if (result) {
+          getData()
+        }
+      },
+      okText: t('task.action.stop'),
+    })
+  }
+
+  const copy = (record) => {
+    const { type } = record
+    const { key } = getTaskTypes().find(task => task.value === type)
+    history.push({ pathname: `/home/task/${key}`, query: record })
+  }
+
+  const getLabels = (id) => {
+    Confirm({
+      content: t("task.action.getlabels.confirm.content", { name }),
+      onOk: async () => {
+        const result = await getLabelData(id)
+        if (result) {
+          getData()
+        }
+      },
+      okText: t('task.action.getlabeldata'),
     })
   }
 
@@ -230,44 +261,60 @@ function Task({ getTasks, delTask, updateTask }) {
     form.resetFields()
   }
 
-  const actions = (record) => {
-    return (
-      <Space className={styles.column_actions}>
-        <Button
-          type='link'
-          className={styles.action}
-          onClick={() => edit(record)}
-          icon={<EditIcon style={{fontSize: 16}} />}
-        >
-          {t("task.action.edit")}
-        </Button>
-        {[TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(record.state) >= 0 ?
-          <Button
-            type="link"
-            className={`${styles.action} ${styles.action_del}`}
-            onClick={() => del(record.id, record.name)}
-            icon={<DeleteIcon style={{fontSize: 16}} />}
-          >
-            {t("task.action.del")}
-          </Button>
-          : null}
-      </Space>
-    )
+  const actionMenus = (record) => {
+    const { id, name, state, type } = record
+    const menus = [
+      {
+        key: "stop",
+        label: t("dataset.action.stop"),
+        onclick: () => stop(record.id, record.name),
+        hidden: () => {
+          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0
+        },
+        icon: <StopIcon />,
+      },
+      {
+        key: "copy",
+        label: t("dataset.action.copy"),
+        onclick: () => copy(record),
+        icon: <CopyIcon />,
+      },
+      {
+        key: "labelplatform",
+        label: t("dataset.action.labelplatform"),
+        onclick: () => history.push(`/lsf/`),
+        hidden: () => {
+          return TASKTYPES.LABEL !== type
+        },
+        icon: <FlagIcon />,
+      },
+      {
+        key: "labeldata",
+        label: t("dataset.action.labeldata"),
+        onclick: () => getLabels(id),
+        hidden: () => {
+          return TASKTYPES.LABEL !== type
+        },
+        icon: <SearchEyeIcon />,
+      },
+      {
+        key: "edit",
+        label: t("dataset.action.edit"),
+        onclick: () => edit(record),
+        icon: <EditIcon />,
+      },
+      {
+        key: "del",
+        label: t("dataset.action.del"),
+        onclick: () => del(id, name),
+        hidden: () => {
+          return [TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(state) < 0
+        },
+        icon: <DeleteIcon />,
+      },
+    ]
+    return menus
   }
-
-  // const addMoreMenu = (
-  //   <Menu>
-  //     {addMore.map((action) => (
-  //       <Menu.Item
-  //         className={action.className}
-  //         key={action.key}
-  //         onClick={action.onclick}
-  //       >
-  //         {action.label}
-  //       </Menu.Item>
-  //     ))}
-  //   </Menu>
-  // )
 
   const addBtn = addMore.map(action => <Button
     className={action.className}
@@ -412,6 +459,18 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'task/deleteTask',
         payload,
+      })
+    },
+    stopTask: (id) => {
+      return dispatch({
+        type: 'task/stopTask',
+        payload: id,
+      })
+    },
+    getLabelData: (id) => {
+      return dispatch({
+        type: 'task/getLabelData',
+        payload: id,
       })
     },
     updateTask: (id, name) => {

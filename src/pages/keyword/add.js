@@ -31,9 +31,11 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
 
   const onOk = async () => {
 
-    if (form.validateFields()) {
+    form.validateFields().then(async () => {
       const { keywords } = form.getFieldsValue()
-      const result = await updateKeywords(keywords.filter(k => k && k.name))
+      const kws = keywords.filter(k => k && k.name)
+        .map(k => ({ name: k?.name.trim(), aliases: k?.aliases.map(a => a.trim())}))
+      const result = await updateKeywords(kws)
       if (result) {
         message.success(t('keyword.add.success'))
         form.resetFields()
@@ -42,7 +44,8 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
       } else {
         // todo
       }
-    }
+    }).catch(err => console.error('validate error: ', err))
+    
   }
   const onCancel = () => {
     close()
@@ -57,18 +60,21 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
         keys.push(...(k.aliases || []))
       )
     })
-    if (keys.filter(k => k === (Array.isArray(value) ? value[value.length - 1] : value)).length > 1) {
+    const target = keys.filter(k => Array.isArray(value) ? value.indexOf(k) >= 0 : k === value)
+    if (!target.every((k, i) => target.indexOf(k) === i)) {
       return Promise.reject(t('keyword.name.repeat'))
     }
-    Promise.resolve()
+    return Promise.resolve()
   }
 
   const validChar = (_, value) => {
-    const reg = /^[^\s\t\n,]+$/
-    if (reg.test(value.trim())) {
+    const reg = /^[^\s\t\n,]+([ ]+[^\s\t\n,]+)?$/
+    if (!value|| (Array.isArray(value) ?
+      value.every(item => reg.test(item.trim()) && item.length <= 32)
+      : reg.test(value.trim()))) {
       return Promise.resolve()
     }
-    Promise.reject(t('keyword.add.name.validchar'))
+    return Promise.reject(t('keyword.add.name.validchar'))
   }
 
   return (
@@ -85,7 +91,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
             <div className={s.content}>
               {fields.map(field => (
                 <Row key={field.key} gutter={20} wrap={false}>
-                  <Col flex={'40%'}>
+                  <Col flex={'300px'}>
                     <Form.Item
                       {...field}
                       label={field.name === 0 ? t('keyword.add.name.label') : null}
@@ -94,11 +100,13 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                       name={[field.name, 'name']}
                       fieldKey={[field.fieldKey, 'name']}
                       rules={[
+                        { whitespace: true, required: true },
+                        { max: 32 },
                         { validator: validChar },
                         { validator: repeatKeywords }
                       ]}
                     >
-                      <Input disabled={!!keys.length} allowClear maxLength={50} placeholder={t('keyword.add.name.placeholder')} />
+                      <Input disabled={!!keys.length} allowClear placeholder={t('keyword.add.name.placeholder')} />
                     </Form.Item>
                   </Col>
                   <Col flex={1}>
@@ -109,6 +117,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                       name={[field.name, 'aliases']}
                       fieldKey={[field.fieldKey, 'aliases']}
                       rules={[
+                        { validator: validChar },
                         { validator: repeatKeywords }
                       ]}
                     >
