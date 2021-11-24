@@ -26,11 +26,12 @@ return (
 
 const Actions = ({ menus, showCount = 3 }) => {
   const isMore = () =>  menus.length > showCount
+  const showActions = menus.filter(menu => !(menu.hidden && menu.hidden()))
   return (
     <Space className={s.actions} size={4} style={ isMore() ? { justifyContent: 'flex-end', width: '100%'} : {}}>
-      {actions(menus.filter((item, i) => i < showCount))}
+      {actions(showActions.filter((item, i) => i < showCount))}
       {isMore() ? (
-        <Dropdown overlay={moreActions(menus.filter((item, i) => i >= showCount))}>
+        <Dropdown overlay={moreActions(showActions.filter((item, i) => i >= showCount))}>
           <More1Icon />
         </Dropdown>
       ) : null}
