@@ -148,6 +148,8 @@ def build_keywords_index(mir_keywords: mirpb.MirKeywords) -> int:
 
     mir_keywords.predifined_keyids_cnt.clear()
     mir_keywords.customized_keywords_cnt.clear()
+    mir_keywords.index_predifined_keyids.clear()
+
     for asset_id, keywords in mir_keywords.keywords.items():
         for key_id in keywords.predifined_keyids:
             mir_keywords.predifined_keyids_cnt[key_id] += 1

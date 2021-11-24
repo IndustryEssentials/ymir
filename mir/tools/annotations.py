@@ -1,13 +1,14 @@
+from collections import defaultdict
 import logging
 import os
 from typing import Dict, List, Set, Tuple
 
 import xml.dom.minidom
 
+from mir.tools import class_ids
 from mir.tools.code import MirCode
 from mir.tools.phase_logger import PhaseLogger, PhaseLoggerCenter, PhaseStateEnum
 from mir.protos import mir_command_pb2 as mirpb
-from ymir.ids import class_ids
 
 
 def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> xml.dom.minidom.Element:
@@ -51,7 +52,7 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     """
     generate mirpb.Annotation instance from object node in coco and pascal annotation xml file
     """
-    name = _get_dom_xml_tag_data(obj, "name").lower()
+    name = _xml_obj_to_type_name(obj)
     bndbox_node = _get_dom_xml_tag_node(obj, "bndbox")
     xmin = int(float(_get_dom_xml_tag_data(bndbox_node, "xmin")))
     ymin = int(float(_get_dom_xml_tag_data(bndbox_node, "ymin")))
@@ -68,6 +69,10 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     annotation.box.h = height
     annotation.score = 0
     return annotation
+
+
+def _xml_obj_to_type_name(obj: xml.dom.minidom.Element) -> str:
+    return _get_dom_xml_tag_data(obj, "name").lower()
 
 
 def _read_customized_Keywords(ck_file: str) -> Dict[str, Set[str]]:
@@ -106,13 +111,32 @@ def _read_customized_Keywords(ck_file: str) -> Dict[str, Set[str]]:
 
 
 def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords, in_sha1_file: str,
-                       ck_file: str, annotations_dir_path: str, task_id: str, phase: str) -> int:
+                       ck_file: str, mir_root: str, annotations_dir_path: str, task_id: str,
+                       phase: str) -> Tuple[int, Dict[str, int]]:
+    """
+    imports annotations
+
+    Args:
+        mir_annotation (mirpb.MirAnnotations): data buf for annotations.mir
+        mir_keywords (mirpb.MirKeywords): data buf for keywords.mir
+        in_sha1_file (str): path to sha1 file
+        ck_file (str): path to customized keywords file
+        mir_root (str): path to mir repo
+        annotations_dir_path (str): path to annotations root
+        task_id (str): task id
+        phase (str): process phase
+
+    Returns:
+        Tuple[int, Dict[str, int]]: return code and unknown type names
+    """
+    unknown_types_and_count: Dict[str, int] = defaultdict(int)
+
     if (not in_sha1_file) or (not annotations_dir_path):
         logging.error("empty sha1_file or annotations_dir_path")
-        return MirCode.RC_CMD_INVALID_ARGS
+        return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
 
     # read type_id_name_dict and type_name_id_dict
-    class_type_manager = class_ids.ClassIdManager()
+    class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
     logging.info("loaded type id and names: %d", class_type_manager.size())
 
     # read customized keywords from ck_file
@@ -135,9 +159,9 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
     logging.info(f"wrting {total_assethash_count} annotations")
 
     counter = 0
-    cur_max_id = class_type_manager._max_id
     missing_annotations_counter = 0
     for asset_hash, main_file_name, file_path in assethash_filename_list:
+        # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml')
         if not os.path.isfile(annotation_file):
             missing_annotations_counter += 1
@@ -145,17 +169,21 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
             # if have annotation file, import annotations and predefined key ids
             dom_tree = xml.dom.minidom.parse(annotation_file)
             if not dom_tree:
-                logging.error("cannot open annotation_file: {}".format(annotation_file))
-                return MirCode.RC_CMD_INVALID_ARGS
+                logging.error(f"cannot open annotation_file: {annotation_file}")
+                return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
 
             single_asset_keyids_set = set()
             collection = dom_tree.documentElement
             objects = collection.getElementsByTagName("object")
             for idx, obj in enumerate(objects):
-                annotation = _xml_obj_to_annotation(obj, class_type_manager)
-                annotation.index = idx
-                image_annotations[asset_hash].annotations.append(annotation)
-                single_asset_keyids_set.add(annotation.class_id)
+                type_name = _xml_obj_to_type_name(obj)
+                if class_type_manager.has_name(type_name):
+                    annotation = _xml_obj_to_annotation(obj, class_type_manager)
+                    annotation.index = idx
+                    image_annotations[asset_hash].annotations.append(annotation)
+                    single_asset_keyids_set.add(annotation.class_id)
+                else:
+                    unknown_types_and_count[type_name] += 1
             mir_keywords.keywords[asset_hash].predifined_keyids[:] = single_asset_keyids_set
 
         # import customized keywords
@@ -166,18 +194,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
         if counter % 5000 == 0:
             PhaseLoggerCenter.update_phase(phase=phase, local_percent=(counter / total_assethash_count))
 
-    # find extra class ids, save to new file and exit.
-    max_id = class_type_manager._max_id
-    if max_id > cur_max_id:
-        new_ids = [class_type_manager._dirty_id_names_dict[i] for i in range(cur_max_id + 1, max_id + 1)]
-        logging.error("\nError: import process abort because new class labels are detected: {}".format(
-            ','.join(new_ids)))
-        logging.error("new dict file is stored with a .new suffix at: {}".format(class_type_manager._csv_path))
-        logging.error("contact ymir-team@intellif.com how to update ids file before continue,")
-        logging.error("or use the .new file to replace the previous one a for temp running.")
-        return MirCode.RC_CMD_INVALID_ARGS
-
     if missing_annotations_counter > 0:
         logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
 
-    return MirCode.RC_OK
+    return MirCode.RC_OK, unknown_types_and_count

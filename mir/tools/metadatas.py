@@ -54,9 +54,10 @@ def _generate_metadata_mir_pb(mir_metadatas: mirpb.MirMetadatas, dataset_name: s
 
 
 _ASSET_TYPE_STR_TO_ENUM_MAPPING = {
-    "jpeg": mirpb.AssetTypeImageJpeg,
-    "jpg": mirpb.AssetTypeImageJpeg,
-    "png": mirpb.AssetTypeImagePng,
+    'jpeg': mirpb.AssetTypeImageJpeg,
+    'jpg': mirpb.AssetTypeImageJpeg,
+    'png': mirpb.AssetTypeImagePng,
+    'bmp': mirpb.AssetTypeImageBmp,
 }
 
 
@@ -101,7 +102,7 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas, dataset_name: str, in_sh
                 continue
             sha1s.append(line_components[0])
     if not sha1s:
-        logging.error('no sha1s found, exit')
+        logging.error(f"no sha1s found in {in_sha1_path}, exit")
         return MirCode.RC_CMD_INVALID_ARGS
 
     # generate mir_metadatas

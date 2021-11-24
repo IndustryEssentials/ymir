@@ -1,21 +1,31 @@
 import argparse
 import logging
+from typing import List
 from mir.scm.cmd import CmdScm
 import os
 
 from mir import scm
 from mir.commands import base
-from mir.tools import checker
+from mir.tools import checker, class_ids
 from mir.tools.code import MirCode
 
 
 class CmdInit(base.BaseCommand):
-    # private: modify_ignore
+    # private: misc
     @staticmethod
-    def __ignore_lock(mir_root: str, git: CmdScm) -> None:
+    def __update_files(mir_root: str) -> None:
+        # creates a new label file if not exists
+        label_file_path = class_ids.ids_file_path(mir_root=mir_root)
+        if not os.path.isfile(label_file_path):
+            with open(label_file_path, 'w') as f:
+                f.write('# type_id, preserved, main type name, alias...\n')
+
+    @staticmethod
+    def __update_ignore(mir_root: str, git: CmdScm, ignored_items: List[str]) -> None:
         gitignore_file = os.path.join(mir_root, '.gitignore')
         with open(gitignore_file, 'a') as f:
-            f.write('.mir_lock\n')
+            for item in ignored_items:
+                f.write(f"{item}\n")
         git.add(gitignore_file)
 
     # public: run
@@ -31,7 +41,8 @@ class CmdInit(base.BaseCommand):
         repo_git.init()
         repo_dvc.init()
 
-        CmdInit.__ignore_lock(mir_root, repo_git)
+        CmdInit.__update_files(mir_root=mir_root)
+        CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', class_ids.ids_file_name()])
         repo_git.commit(["-m", "first commit"])
 
         return MirCode.RC_OK
