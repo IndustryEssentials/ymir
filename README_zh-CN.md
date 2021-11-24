@@ -59,13 +59,11 @@
 如要在您的工作中引用YMIR，请使用下面的Bibtex：
 
 ```bibtex
-@misc{huang2021ymir,
+@inproceedings{huang2021ymir,
       title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
       author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      booktitle={Proceedings of the Data-Centric AI Workshop Workshop at NeurIPS},
       year={2021},
-      eprint={2111.10046},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI}
 }
 ```
 
