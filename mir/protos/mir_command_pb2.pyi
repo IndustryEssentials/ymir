@@ -45,6 +45,7 @@ class _AssetTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enum
     AssetTypeImageYuv420sp = AssetType.V(5)
     AssetTypeImageYuv422p = AssetType.V(6)
     AssetTypeImageYuv422sp = AssetType.V(7)
+    AssetTypeImageBmp = AssetType.V(8)
     AssetTypeVideoMp4 = AssetType.V(101)
 
 AssetTypeUnknown = AssetType.V(0)
@@ -55,6 +56,7 @@ AssetTypeImageYuv420p = AssetType.V(4)
 AssetTypeImageYuv420sp = AssetType.V(5)
 AssetTypeImageYuv422p = AssetType.V(6)
 AssetTypeImageYuv422sp = AssetType.V(7)
+AssetTypeImageBmp = AssetType.V(8)
 AssetTypeVideoMp4 = AssetType.V(101)
 global___AssetType = AssetType
 
@@ -579,12 +581,26 @@ global___MirTasks = MirTasks
 
 class Task(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class UnknownTypesEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
     TYPE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
     TASK_ID_FIELD_NUMBER: builtins.int
     BASE_TASK_ID_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
+    UNKNOWN_TYPES_FIELD_NUMBER: builtins.int
     ARGS_FIELD_NUMBER: builtins.int
     ANCESTOR_TASK_ID_FIELD_NUMBER: builtins.int
     type: global___TaskType.V = ...
@@ -602,6 +618,8 @@ class Task(google.protobuf.message.Message):
 
     @property
     def model(self) -> global___ModelMeta: ...
+    @property
+    def unknown_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]: ...
     args: typing.Text = ...
     """/ serialization result of arguments of this task, in yaml format"""
 
@@ -614,11 +632,12 @@ class Task(google.protobuf.message.Message):
         base_task_id : typing.Text = ...,
         timestamp : builtins.int = ...,
         model : typing.Optional[global___ModelMeta] = ...,
+        unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         args : typing.Text = ...,
         ancestor_task_id : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ancestor_task_id",b"ancestor_task_id","args",b"args","base_task_id",b"base_task_id","model",b"model","name",b"name","task_id",b"task_id","timestamp",b"timestamp","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ancestor_task_id",b"ancestor_task_id","args",b"args","base_task_id",b"base_task_id","model",b"model","name",b"name","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):

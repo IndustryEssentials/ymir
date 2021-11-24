@@ -10,10 +10,9 @@ from typing import Any, Dict, List, Optional, Set
 import xml.etree.ElementTree as ElementTree
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import mir_storage_ops
+from mir.tools import class_ids, mir_storage_ops
 from mir.tools import utils as mir_utils
 from mir.tools.phase_logger import PhaseLoggerCenter, PhaseStateEnum
-from ymir.ids import class_ids
 
 
 class ExportError(Exception):
@@ -124,7 +123,8 @@ def export(mir_root: str,
         _export_detect_voc_annotations_to_path(annotations_dict=assets_to_det_annotations_dict,
                                                mir_metadatas=mir_metadatas,
                                                asset_ids=list(asset_ids),
-                                               dest_path=annotation_dir)
+                                               dest_path=annotation_dir,
+                                               mir_root=mir_root)
     else:
         raise ValueError(f"unsupported format: {format_type.name}")
 
@@ -226,7 +226,7 @@ def _export_detect_ark_annotations_to_path(annotations_dict: Dict[str, List[mirp
 # private: export annotations: voc
 def _export_detect_voc_annotations_to_path(annotations_dict: Dict[str, List[mirpb.Annotation]],
                                            mir_metadatas: mirpb.MirMetadatas, asset_ids: List[str],
-                                           dest_path: str) -> None:
+                                           dest_path: str, mir_root: str) -> None:
     if not asset_ids:
         raise ValueError('empty asset_ids')
     if not mir_metadatas:
@@ -234,7 +234,7 @@ def _export_detect_voc_annotations_to_path(annotations_dict: Dict[str, List[mirp
 
     os.makedirs(dest_path, exist_ok=True)
 
-    cls_id_mgr = class_ids.ClassIdManager()
+    cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
 
     missing_counter = 0
     empty_counter = 0

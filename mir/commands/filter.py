@@ -5,10 +5,8 @@ from typing import Any, Callable, List, Tuple, Optional, Set, Union
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-
-from ymir.ids import class_ids
 
 # type for function `__include_match` and `__exclude_match`
 __IncludeExcludeCallableType = Callable[[Set[str], mirpb.MirKeywords, str, Any], Set[str]]
@@ -87,7 +85,8 @@ class CmdFilter(base.BaseCommand):
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
 
-        return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
+        return_code = checker.check(mir_root,
+                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if return_code != MirCode.RC_OK:
             return return_code
 
@@ -110,7 +109,7 @@ class CmdFilter(base.BaseCommand):
         assert len(mir_annotations.task_annotations.keys()) == 1
         base_task_annotations = mir_annotations.task_annotations[base_task_id]  # type: mirpb.SingleTaskAnnotations
 
-        class_manager = class_ids.ClassIdManager()
+        class_manager = class_ids.ClassIdManager(mir_root=mir_root)
         preds_set = CmdFilter.__preds_set_from_str(in_cis, class_manager)  # type: Set[int]
         excludes_set = CmdFilter.__preds_set_from_str(ex_cis, class_manager)  # type: Set[int]
         ck_preds_set = {ck.strip() for ck in in_cks.split(";")} if in_cks else set()

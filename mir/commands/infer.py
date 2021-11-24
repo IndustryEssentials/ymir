@@ -4,6 +4,7 @@ import logging
 import os
 import subprocess
 import tarfile
+import time
 from typing import Any, List, Tuple, Optional
 
 import yaml
@@ -40,7 +41,8 @@ class CmdInfer(base.BaseCommand):
                                       model_hash=self.args.model_hash,
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
-                                      executor=self.args.executor)
+                                      executor=self.args.executor,
+                                      executor_name=self.args.executor_name)
 
     @staticmethod
     def run_with_args(work_dir: str,
@@ -50,7 +52,8 @@ class CmdInfer(base.BaseCommand):
                       index_file: str,
                       config_file: str,
                       executor: str,
-                      task_id: str = 'infer-default',
+                      executor_name: str,
+                      task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
                       process_infer_results: bool = True) -> int:
         """run infer command
@@ -66,7 +69,8 @@ class CmdInfer(base.BaseCommand):
             index_file (str): index file, each line means an image abs path
             config_file (str): configuration file passed to infer executor
             executor (str): docker image name used to infer
-            task_id (str, optional): id of this infer (or mining) task. Defaults to 'infer-default'.
+            executor_name (str): docker container name
+            task_id (str, optional): id of this infer (or mining) task. Defaults to 'default-infer' + timestamp.
             shm_size (str, optional): shared memory size used to start the infer docker. Defaults to None.
             process_infer_results (bool, optional): if true, process infer-result.json. Defaults to True.
 
@@ -98,6 +102,9 @@ class CmdInfer(base.BaseCommand):
             logging.error('empty --executor, abort')
             return MirCode.RC_CMD_INVALID_ARGS
 
+        if not executor_name:
+            executor_name = task_id
+
         _, work_model_path, work_out_path = _prepare_env(work_dir)
         work_index_file = os.path.join(work_dir, 'in', 'candidate', 'index.tsv')
         work_config_file = os.path.join(work_dir, 'in', 'config.yaml')
@@ -120,6 +127,7 @@ class CmdInfer(base.BaseCommand):
                        config_file_path=work_config_file,
                        out_path=work_out_path,
                        executor=executor,
+                       executor_name=executor_name,
                        shm_size=shm_size,
                        task_type=task_id)
 
@@ -284,7 +292,7 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
-                   executor: str, shm_size: Optional[str], task_type: str) -> int:
+                   executor: str, executor_name: str, shm_size: Optional[str], task_type: str) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
@@ -297,6 +305,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
     if shm_size:
         cmd.append(f"--shm-size={shm_size}")
+    cmd.extend(['--name', executor_name])
     cmd.append(executor)
 
     logging.info(f"starting {task_type} docker container with cmd: {' '.join(cmd)}")
@@ -381,5 +390,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   required=True,
                                   dest="executor",
                                   type=str,
-                                  help="docker image name for mining")
+                                  help="docker image name for infer or mining")
+    infer_arg_parser.add_argument('--executor-name',
+                                  required=False,
+                                  dest='executor_name',
+                                  type=str,
+                                  help='docker container name for infer or mining')
     infer_arg_parser.set_defaults(func=CmdInfer)

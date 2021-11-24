@@ -24,12 +24,13 @@ class CmdImport(base.BaseCommand):
                                        dataset_name=self.args.dataset_name,
                                        dst_rev=self.args.dst_rev,
                                        src_revs=self.args.src_revs,
-                                       work_dir=self.args.work_dir)
+                                       work_dir=self.args.work_dir,
+                                       ignore_unknown_types=self.args.ignore_unknown_types)
 
     @staticmethod
     @phase_logger_in_out
     def run_with_args(mir_root: str, index_file: str, ck_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
-                      dst_rev: str, src_revs: str, work_dir: str) -> int:
+                      dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not anno_abs or not gen_abs:
             logging.error("Missing input args")
@@ -52,12 +53,12 @@ class CmdImport(base.BaseCommand):
             src_revs = 'master'
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
 
-        PhaseLoggerCenter.create_phase_loggers(
-            top_phase='import',
-            monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
-            task_name=dst_typ_rev_tid.tid)
+        PhaseLoggerCenter.create_phase_loggers(top_phase='import',
+                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
+                                               task_name=dst_typ_rev_tid.tid)
 
-        check_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
+        check_code = checker.check(mir_root,
+                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if check_code != MirCode.RC_OK:
             return check_code
 
@@ -83,16 +84,23 @@ class CmdImport(base.BaseCommand):
 
         mir_annotation = mirpb.MirAnnotations()
         mir_keywords = mirpb.MirKeywords()
-        ret = annotations.import_annotations(mir_annotation=mir_annotation,
-                                             mir_keywords=mir_keywords,
-                                             in_sha1_file=sha1_index_abs,
-                                             ck_file=ck_file,
-                                             annotations_dir_path=anno_abs,
-                                             task_id=dst_typ_rev_tid.tid,
-                                             phase='import.others')
-        if ret != MirCode.RC_OK:
-            logging.error(f"import annotations failed: {ret}")
-            return ret
+        ret_code, unknown_types = annotations.import_annotations(mir_annotation=mir_annotation,
+                                                                 mir_keywords=mir_keywords,
+                                                                 in_sha1_file=sha1_index_abs,
+                                                                 ck_file=ck_file,
+                                                                 mir_root=mir_root,
+                                                                 annotations_dir_path=anno_abs,
+                                                                 task_id=dst_typ_rev_tid.tid,
+                                                                 phase='import.others')
+        if ret_code != MirCode.RC_OK:
+            logging.error(f"import annotations error: {ret_code}")
+            return ret_code
+        if unknown_types:
+            if ignore_unknown_types:
+                logging.warning(f"unknown types: {unknown_types}")
+            else:
+                logging.error(f"import annotations error, unknown types: {unknown_types}")
+                return MirCode.RC_CMD_INVALID_MIR_REPO
 
         # create and write tasks
         mir_tasks = mirpb.MirTasks()
@@ -101,6 +109,8 @@ class CmdImport(base.BaseCommand):
         task.name = f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}"
         task.task_id = dst_typ_rev_tid.tid
         task.timestamp = int(datetime.datetime.now().timestamp())
+        for type_name, count in unknown_types.items():
+            task.unknown_types[type_name] = count
         mir_storage_ops.add_mir_task(mir_tasks, task)
 
         mir_data = {
@@ -148,8 +158,7 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
 
             idx += 1
             if idx % 5000 == 0:
-                PhaseLoggerCenter.update_phase(phase=hash_phase_name,
-                                               local_percent=(idx / total_count))
+                PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
                 logging.info(f"finished {idx} / {total_count} hashes")
     PhaseLoggerCenter.update_phase(phase=hash_phase_name)
     return MirCode.RC_OK
@@ -183,4 +192,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                       required=True,
                                       help="rev@tid: destination branch name and task id")
     importing_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
+    importing_arg_parser.add_argument('--ignore-unknown-types',
+                                      dest='ignore_unknown_types',
+                                      required=False,
+                                      action='store_true',
+                                      help='ignore unknown type names in annotation files')
     importing_arg_parser.set_defaults(func=CmdImport)

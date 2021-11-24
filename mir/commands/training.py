@@ -11,10 +11,8 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, data_exporter, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-
-from ymir.ids import class_ids
 
 
 def _process_model_storage(out_root: str, config_file_path: str, model_upload_location: str,
@@ -148,12 +146,14 @@ class CmdTrain(base.BaseCommand):
                                       mir_root=self.args.mir_root,
                                       media_location=self.args.media_location,
                                       executor=self.args.executor,
+                                      executor_name=self.args.executor_name,
                                       config_file=self.args.config_file)
 
     @staticmethod
     def run_with_args(export_root: str,
                       model_upload_location: str,
                       executor: str,
+                      executor_name: str,
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
@@ -196,11 +196,14 @@ class CmdTrain(base.BaseCommand):
             logging.error(f"dumplicate class names in class_names: {class_names}, abort")
             return MirCode.RC_CMD_INVALID_ARGS
 
-        return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
+        return_code = checker.check(mir_root,
+                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if return_code != MirCode.RC_OK:
             return return_code
 
         task_id = dst_typ_rev_tid.tid
+        if not executor_name:
+            executor_name = f"default-training-{task_id}"
 
         # get train_ids, val_ids, test_ids
         train_ids = set()  # type: Set[str]
@@ -243,7 +246,7 @@ class CmdTrain(base.BaseCommand):
 
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
-        cls_mgr = class_ids.ClassIdManager()
+        cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         type_ids_list = cls_mgr.id_for_names(class_names)
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")
@@ -315,7 +318,7 @@ class CmdTrain(base.BaseCommand):
         joint_path_binds = " ".join(path_binds)
         shm_size = _get_shm_size(config_file)
         cmd = (f"nvidia-docker run --rm --shm-size={shm_size} {joint_path_binds} --user {os.getuid()}:{os.getgid()} "
-               f"{executor}")
+               f"--name {executor_name} {executor}")
 
         ret = _run_train_cmd(cmd)
         if ret != MirCode.RC_OK:
@@ -375,6 +378,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   dest="executor",
                                   type=str,
                                   help="docker image name for training")
+    train_arg_parser.add_argument('--executor-name',
+                                  required=False,
+                                  dest='executor_name',
+                                  type=str,
+                                  help='docker container name for training')
     train_arg_parser.add_argument("--src-revs",
                                   dest="src_revs",
                                   type=str,

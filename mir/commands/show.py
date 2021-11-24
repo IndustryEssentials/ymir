@@ -3,10 +3,8 @@ import logging
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-
-from ymir.ids.class_ids import ClassIdManager
 
 
 class CmdShow(base.BaseCommand):
@@ -26,7 +24,8 @@ class CmdShow(base.BaseCommand):
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
         if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
-        check_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
+        check_code = checker.check(mir_root,
+                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if check_code != MirCode.RC_OK:
             return check_code
 
@@ -81,7 +80,7 @@ class CmdShow(base.BaseCommand):
         mir_keywords: mirpb.MirKeywords = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                                     mir_branch=src_typ_rev_tid.rev,
                                                                                     ms=mirpb.MIR_KEYWORDS)
-        cls_id_mgr = ClassIdManager()
+        cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         if verbose:
             print(f"predefined key ids ({len(mir_keywords.predifined_keyids_cnt)}):")
             for ci, cnt in mir_keywords.predifined_keyids_cnt.items():

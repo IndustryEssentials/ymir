@@ -144,6 +144,7 @@ class TestMiningCmd(unittest.TestCase):
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
+        args.executor_name = 'executor-name'
         mining_instance = CmdMining(args)
         mining_instance.run()
 
@@ -156,6 +157,7 @@ class TestMiningCmd(unittest.TestCase):
                                          task_id='mining-task-id',
                                          shm_size='16G',
                                          executor=args.executor,
+                                         executor_name=args.executor_name,
                                          process_infer_results=False)
 
         if os.path.isdir(self._sandbox_root):

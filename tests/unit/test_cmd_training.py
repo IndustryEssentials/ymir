@@ -9,7 +9,7 @@ import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils
+from mir.tools import class_ids, hash_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -27,6 +27,7 @@ class TestCmdTraining(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__prepare_dirs()
+        self.__prepare_labels_csv()
         self.__prepare_assets()
         self.__prepare_mir_repo()
         return super().setUp()
@@ -42,6 +43,13 @@ class TestCmdTraining(unittest.TestCase):
         test_utils.remake_dirs(self._models_location)
         test_utils.remake_dirs(self._mir_root)
         test_utils.remake_dirs(self._working_root)
+
+    def __prepare_labels_csv(self):
+        with open(class_ids.ids_file_path(self._mir_root), 'w') as f:
+            f.write('# commented lines\n')
+            f.write('0,,freshbee\n')
+            f.write('2,,person\n')
+            f.write('52,,airplane,aeroplane\n')
 
     def __prepare_mir_repo(self):
         """
@@ -223,6 +231,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.force = True
         fake_args.force_rebuild = False
         fake_args.executor = "executor"
+        fake_args.executor_name = 'executor-name'
         fake_args.config_file = self._config_file
 
         cmd = training.CmdTrain(fake_args)

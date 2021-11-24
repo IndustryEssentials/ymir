@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11mir_command.proto\x12\x0bmir.command\"\xa1\x01\n\x0cMirMetadatas\x12=\n\nattributes\x18\x01 \x03(\x0b\x32).mir.command.MirMetadatas.AttributesEntry\x1aR\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x05value\x18\x02 \x01(\x0b\x32\x1f.mir.command.MetadataAttributes:\x02\x38\x01\"\xe0\x01\n\x12MetadataAttributes\x12\x14\n\x0c\x64\x61taset_name\x18\x01 \x01(\t\x12)\n\ttimestamp\x18\x02 \x01(\x0b\x32\x16.mir.command.Timestamp\x12&\n\x08tvt_type\x18\x03 \x01(\x0e\x32\x14.mir.command.TvtType\x12*\n\nasset_type\x18\x04 \x01(\x0e\x32\x16.mir.command.AssetType\x12\r\n\x05width\x18\x05 \x01(\x05\x12\x0e\n\x06height\x18\x06 \x01(\x05\x12\x16\n\x0eimage_channels\x18\x07 \x01(\x05\",\n\tTimestamp\x12\r\n\x05start\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x02\"\xce\x01\n\x0eMirAnnotations\x12J\n\x10task_annotations\x18\x01 \x03(\x0b\x32\x30.mir.command.MirAnnotations.TaskAnnotationsEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1aZ\n\x14TaskAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTaskAnnotations:\x02\x38\x01\"\xca\x01\n\x15SingleTaskAnnotations\x12S\n\x11image_annotations\x18\x01 \x03(\x0b\x32\x38.mir.command.SingleTaskAnnotations.ImageAnnotationsEntry\x1a\\\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command.SingleImageAnnotations:\x02\x38\x01\"F\n\x16SingleImageAnnotations\x12,\n\x0b\x61nnotations\x18\x02 \x03(\x0b\x32\x17.mir.command.Annotation\"\\\n\nAnnotation\x12\r\n\x05index\x18\x01 \x01(\x05\x12\x1e\n\x03\x62ox\x18\x02 \x01(\x0b\x32\x11.mir.command.Rect\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\x05\x12\r\n\x05score\x18\x04 \x01(\x01\"2\n\x04Rect\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01w\x18\x03 \x01(\x05\x12\t\n\x01h\x18\x04 \x01(\x05\"\x9e\x05\n\x0bMirKeywords\x12\x38\n\x08keywords\x18\x01 \x03(\x0b\x32&.mir.command.MirKeywords.KeywordsEntry\x12P\n\x15predifined_keyids_cnt\x18\x02 \x03(\x0b\x32\x31.mir.command.MirKeywords.PredifinedKeyidsCntEntry\x12\x1f\n\x17predifined_keyids_total\x18\x03 \x01(\x05\x12T\n\x17\x63ustomized_keywords_cnt\x18\x04 \x03(\x0b\x32\x33.mir.command.MirKeywords.CustomizedKeywordsCntEntry\x12!\n\x19\x63ustomized_keywords_total\x18\x05 \x01(\x05\x12T\n\x17index_predifined_keyids\x18\x06 \x03(\x0b\x32\x33.mir.command.MirKeywords.IndexPredifinedKeyidsEntry\x1a\x46\n\rKeywordsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.mir.command.Keywords:\x02\x38\x01\x1a:\n\x18PredifinedKeyidsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a<\n\x1a\x43ustomizedKeywordsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1aQ\n\x1aIndexPredifinedKeyidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.mir.command.Assets:\x02\x38\x01\"\x1b\n\x06\x41ssets\x12\x11\n\tasset_ids\x18\x01 \x03(\t\"B\n\x08Keywords\x12\x19\n\x11predifined_keyids\x18\x01 \x03(\x05\x12\x1b\n\x13\x63ustomized_keywords\x18\x02 \x03(\t\"\x92\x01\n\x08MirTasks\x12/\n\x05tasks\x18\x01 \x03(\x0b\x32 .mir.command.MirTasks.TasksEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1a?\n\nTasksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.mir.command.Task:\x02\x38\x01\"\xc2\x01\n\x04Task\x12#\n\x04type\x18\x01 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\x12\x14\n\x0c\x62\x61se_task_id\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12%\n\x05model\x18\x06 \x01(\x0b\x32\x16.mir.command.ModelMeta\x12\x0c\n\x04\x61rgs\x18\x64 \x01(\t\x12\x18\n\x10\x61ncestor_task_id\x18\x65 \x01(\t\"P\n\tModelMeta\x12\x12\n\nmodel_hash\x18\x01 \x01(\t\x12\x1e\n\x16mean_average_precision\x18\x02 \x01(\x02\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t*Z\n\x07TvtType\x12\x12\n\x0eTvtTypeUnknown\x10\x00\x12\x13\n\x0fTvtTypeTraining\x10\x01\x12\x15\n\x11TvtTypeValidation\x10\x02\x12\x0f\n\x0bTvtTypeTest\x10\x03*\xf1\x01\n\tAssetType\x12\x14\n\x10\x41ssetTypeUnknown\x10\x00\x12\x16\n\x12\x41ssetTypeImageJpeg\x10\x01\x12\x15\n\x11\x41ssetTypeImagePng\x10\x02\x12\x1a\n\x16\x41ssetTypeImagePixelMat\x10\x03\x12\x19\n\x15\x41ssetTypeImageYuv420p\x10\x04\x12\x1a\n\x16\x41ssetTypeImageYuv420sp\x10\x05\x12\x19\n\x15\x41ssetTypeImageYuv422p\x10\x06\x12\x1a\n\x16\x41ssetTypeImageYuv422sp\x10\x07\x12\x15\n\x11\x41ssetTypeVideoMp4\x10\x65*\xc9\x01\n\x08TaskType\x12\x13\n\x0fTaskTypeUnknown\x10\x00\x12\x14\n\x10TaskTypeTraining\x10\x01\x12\x12\n\x0eTaskTypeMining\x10\x02\x12\x11\n\rTaskTypeLabel\x10\x03\x12\x12\n\x0eTaskTypeFilter\x10\x04\x12\x16\n\x12TaskTypeImportData\x10\x05\x12\x16\n\x12TaskTypeExportData\x10\x06\x12\x14\n\x10TaskTypeCopyData\x10\x07\x12\x11\n\rTaskTypeMerge\x10\x08*\x87\x01\n\tTaskState\x12\x14\n\x10TaskStateUnknown\x10\x00\x12\x14\n\x10TaskStatePending\x10\x01\x12\x14\n\x10TaskStateRunning\x10\x02\x12\x11\n\rTaskStateDone\x10\x03\x12\x12\n\x0eTaskStateError\x10\x04\x12\x11\n\rTaskStateMiss\x10\x05*L\n\x08Sha1Type\x12\x15\n\x11SHA1_TYPE_UNKNOWN\x10\x00\x12\x13\n\x0fSHA1_TYPE_ASSET\x10\x01\x12\x14\n\x10SHA1_TYPE_COMMIT\x10\x02*\xf6\x04\n\x05RCode\x12\t\n\x05RC_OK\x10\x00\x12\x14\n\x10RC_ERROR_UNKNOWN\x10\x01\x12\x18\n\x14RC_CMD_ERROR_UNKNOWN\x10\x64\x12\x1b\n\x17RC_CMD_CORRUPT_MIR_FILE\x10\x65\x12\x1b\n\x17RC_CMD_INVALID_MIR_FILE\x10\x66\x12\x1b\n\x17RC_CMD_INVALID_MIR_REPO\x10g\x12\x17\n\x13RC_CMD_INVALID_ARGS\x10h\x12 \n\x1cRC_CMD_INVALID_BRANCH_OR_TAG\x10i\x12\x1a\n\x16RC_CMD_INVALID_COMMAND\x10j\x12\x1d\n\x19RC_CMD_MIR_FILE_NOT_FOUND\x10k\x12\x1c\n\x18RC_CMD_CONFLICTS_OCCURED\x10l\x12\x1a\n\x16RC_CMD_EMPTY_METADATAS\x10m\x12\x1a\n\x16RC_CMD_EMPTY_TRAIN_SET\x10n\x12\x18\n\x14RC_CMD_EMPTY_VAL_SET\x10o\x12\x15\n\x11RC_CMD_DIRTY_REPO\x10p\x12\x1b\n\x17RC_CMD_NOTHING_TO_MERGE\x10q\x12\x1d\n\x18RC_SERVICE_ERROR_UNKNOWN\x10\xe8\x07\x12\x1b\n\x16RC_SERVICE_INVALID_REQ\x10\xe9\x07\x12\x1c\n\x17RC_SERVICE_INVOKE_ERROR\x10\xea\x07\x12\x1f\n\x1aRC_SERVICE_UNKOWN_RESPONSE\x10\xeb\x07\x12\"\n\x1dRC_SERVICE_TASK_INVOKER_ERROR\x10\xec\x07\x12\"\n\x1dRC_SERVICE_INFO_INVOKER_ERROR\x10\xed\x07*U\n\nMirStorage\x12\x11\n\rMIR_METADATAS\x10\x00\x12\x13\n\x0fMIR_ANNOTATIONS\x10\x01\x12\x10\n\x0cMIR_KEYWORDS\x10\x02\x12\r\n\tMIR_TASKS\x10\x03*<\n\x0bLabelFormat\x12\x11\n\rNO_ANNOTATION\x10\x00\x12\x0e\n\nPASCAL_VOC\x10\x01\x12\n\n\x06IF_ARK\x10\x02\x62\x06proto3'
+  serialized_pb=b'\n\x11mir_command.proto\x12\x0bmir.command\"\xa1\x01\n\x0cMirMetadatas\x12=\n\nattributes\x18\x01 \x03(\x0b\x32).mir.command.MirMetadatas.AttributesEntry\x1aR\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x05value\x18\x02 \x01(\x0b\x32\x1f.mir.command.MetadataAttributes:\x02\x38\x01\"\xe0\x01\n\x12MetadataAttributes\x12\x14\n\x0c\x64\x61taset_name\x18\x01 \x01(\t\x12)\n\ttimestamp\x18\x02 \x01(\x0b\x32\x16.mir.command.Timestamp\x12&\n\x08tvt_type\x18\x03 \x01(\x0e\x32\x14.mir.command.TvtType\x12*\n\nasset_type\x18\x04 \x01(\x0e\x32\x16.mir.command.AssetType\x12\r\n\x05width\x18\x05 \x01(\x05\x12\x0e\n\x06height\x18\x06 \x01(\x05\x12\x16\n\x0eimage_channels\x18\x07 \x01(\x05\",\n\tTimestamp\x12\r\n\x05start\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x02\"\xce\x01\n\x0eMirAnnotations\x12J\n\x10task_annotations\x18\x01 \x03(\x0b\x32\x30.mir.command.MirAnnotations.TaskAnnotationsEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1aZ\n\x14TaskAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTaskAnnotations:\x02\x38\x01\"\xca\x01\n\x15SingleTaskAnnotations\x12S\n\x11image_annotations\x18\x01 \x03(\x0b\x32\x38.mir.command.SingleTaskAnnotations.ImageAnnotationsEntry\x1a\\\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command.SingleImageAnnotations:\x02\x38\x01\"F\n\x16SingleImageAnnotations\x12,\n\x0b\x61nnotations\x18\x02 \x03(\x0b\x32\x17.mir.command.Annotation\"\\\n\nAnnotation\x12\r\n\x05index\x18\x01 \x01(\x05\x12\x1e\n\x03\x62ox\x18\x02 \x01(\x0b\x32\x11.mir.command.Rect\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\x05\x12\r\n\x05score\x18\x04 \x01(\x01\"2\n\x04Rect\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01w\x18\x03 \x01(\x05\x12\t\n\x01h\x18\x04 \x01(\x05\"\x9e\x05\n\x0bMirKeywords\x12\x38\n\x08keywords\x18\x01 \x03(\x0b\x32&.mir.command.MirKeywords.KeywordsEntry\x12P\n\x15predifined_keyids_cnt\x18\x02 \x03(\x0b\x32\x31.mir.command.MirKeywords.PredifinedKeyidsCntEntry\x12\x1f\n\x17predifined_keyids_total\x18\x03 \x01(\x05\x12T\n\x17\x63ustomized_keywords_cnt\x18\x04 \x03(\x0b\x32\x33.mir.command.MirKeywords.CustomizedKeywordsCntEntry\x12!\n\x19\x63ustomized_keywords_total\x18\x05 \x01(\x05\x12T\n\x17index_predifined_keyids\x18\x06 \x03(\x0b\x32\x33.mir.command.MirKeywords.IndexPredifinedKeyidsEntry\x1a\x46\n\rKeywordsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.mir.command.Keywords:\x02\x38\x01\x1a:\n\x18PredifinedKeyidsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a<\n\x1a\x43ustomizedKeywordsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1aQ\n\x1aIndexPredifinedKeyidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.mir.command.Assets:\x02\x38\x01\"\x1b\n\x06\x41ssets\x12\x11\n\tasset_ids\x18\x01 \x03(\t\"B\n\x08Keywords\x12\x19\n\x11predifined_keyids\x18\x01 \x03(\x05\x12\x1b\n\x13\x63ustomized_keywords\x18\x02 \x03(\t\"\x92\x01\n\x08MirTasks\x12/\n\x05tasks\x18\x01 \x03(\x0b\x32 .mir.command.MirTasks.TasksEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1a?\n\nTasksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.mir.command.Task:\x02\x38\x01\"\xb3\x02\n\x04Task\x12#\n\x04type\x18\x01 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\x12\x14\n\x0c\x62\x61se_task_id\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12%\n\x05model\x18\x06 \x01(\x0b\x32\x16.mir.command.ModelMeta\x12:\n\runknown_types\x18\x07 \x03(\x0b\x32#.mir.command.Task.UnknownTypesEntry\x12\x0c\n\x04\x61rgs\x18\x64 \x01(\t\x12\x18\n\x10\x61ncestor_task_id\x18\x65 \x01(\t\x1a\x33\n\x11UnknownTypesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"P\n\tModelMeta\x12\x12\n\nmodel_hash\x18\x01 \x01(\t\x12\x1e\n\x16mean_average_precision\x18\x02 \x01(\x02\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t*Z\n\x07TvtType\x12\x12\n\x0eTvtTypeUnknown\x10\x00\x12\x13\n\x0fTvtTypeTraining\x10\x01\x12\x15\n\x11TvtTypeValidation\x10\x02\x12\x0f\n\x0bTvtTypeTest\x10\x03*\x88\x02\n\tAssetType\x12\x14\n\x10\x41ssetTypeUnknown\x10\x00\x12\x16\n\x12\x41ssetTypeImageJpeg\x10\x01\x12\x15\n\x11\x41ssetTypeImagePng\x10\x02\x12\x1a\n\x16\x41ssetTypeImagePixelMat\x10\x03\x12\x19\n\x15\x41ssetTypeImageYuv420p\x10\x04\x12\x1a\n\x16\x41ssetTypeImageYuv420sp\x10\x05\x12\x19\n\x15\x41ssetTypeImageYuv422p\x10\x06\x12\x1a\n\x16\x41ssetTypeImageYuv422sp\x10\x07\x12\x15\n\x11\x41ssetTypeImageBmp\x10\x08\x12\x15\n\x11\x41ssetTypeVideoMp4\x10\x65*\xc9\x01\n\x08TaskType\x12\x13\n\x0fTaskTypeUnknown\x10\x00\x12\x14\n\x10TaskTypeTraining\x10\x01\x12\x12\n\x0eTaskTypeMining\x10\x02\x12\x11\n\rTaskTypeLabel\x10\x03\x12\x12\n\x0eTaskTypeFilter\x10\x04\x12\x16\n\x12TaskTypeImportData\x10\x05\x12\x16\n\x12TaskTypeExportData\x10\x06\x12\x14\n\x10TaskTypeCopyData\x10\x07\x12\x11\n\rTaskTypeMerge\x10\x08*\x87\x01\n\tTaskState\x12\x14\n\x10TaskStateUnknown\x10\x00\x12\x14\n\x10TaskStatePending\x10\x01\x12\x14\n\x10TaskStateRunning\x10\x02\x12\x11\n\rTaskStateDone\x10\x03\x12\x12\n\x0eTaskStateError\x10\x04\x12\x11\n\rTaskStateMiss\x10\x05*L\n\x08Sha1Type\x12\x15\n\x11SHA1_TYPE_UNKNOWN\x10\x00\x12\x13\n\x0fSHA1_TYPE_ASSET\x10\x01\x12\x14\n\x10SHA1_TYPE_COMMIT\x10\x02*\xf6\x04\n\x05RCode\x12\t\n\x05RC_OK\x10\x00\x12\x14\n\x10RC_ERROR_UNKNOWN\x10\x01\x12\x18\n\x14RC_CMD_ERROR_UNKNOWN\x10\x64\x12\x1b\n\x17RC_CMD_CORRUPT_MIR_FILE\x10\x65\x12\x1b\n\x17RC_CMD_INVALID_MIR_FILE\x10\x66\x12\x1b\n\x17RC_CMD_INVALID_MIR_REPO\x10g\x12\x17\n\x13RC_CMD_INVALID_ARGS\x10h\x12 \n\x1cRC_CMD_INVALID_BRANCH_OR_TAG\x10i\x12\x1a\n\x16RC_CMD_INVALID_COMMAND\x10j\x12\x1d\n\x19RC_CMD_MIR_FILE_NOT_FOUND\x10k\x12\x1c\n\x18RC_CMD_CONFLICTS_OCCURED\x10l\x12\x1a\n\x16RC_CMD_EMPTY_METADATAS\x10m\x12\x1a\n\x16RC_CMD_EMPTY_TRAIN_SET\x10n\x12\x18\n\x14RC_CMD_EMPTY_VAL_SET\x10o\x12\x15\n\x11RC_CMD_DIRTY_REPO\x10p\x12\x1b\n\x17RC_CMD_NOTHING_TO_MERGE\x10q\x12\x1d\n\x18RC_SERVICE_ERROR_UNKNOWN\x10\xe8\x07\x12\x1b\n\x16RC_SERVICE_INVALID_REQ\x10\xe9\x07\x12\x1c\n\x17RC_SERVICE_INVOKE_ERROR\x10\xea\x07\x12\x1f\n\x1aRC_SERVICE_UNKOWN_RESPONSE\x10\xeb\x07\x12\"\n\x1dRC_SERVICE_TASK_INVOKER_ERROR\x10\xec\x07\x12\"\n\x1dRC_SERVICE_INFO_INVOKER_ERROR\x10\xed\x07*U\n\nMirStorage\x12\x11\n\rMIR_METADATAS\x10\x00\x12\x13\n\x0fMIR_ANNOTATIONS\x10\x01\x12\x10\n\x0cMIR_KEYWORDS\x10\x02\x12\r\n\tMIR_TASKS\x10\x03*<\n\x0bLabelFormat\x12\x11\n\rNO_ANNOTATION\x10\x00\x12\x0e\n\nPASCAL_VOC\x10\x01\x12\n\n\x06IF_ARK\x10\x02\x62\x06proto3'
 )
 
 _TVTTYPE = _descriptor.EnumDescriptor(
@@ -53,8 +53,8 @@ _TVTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2301,
-  serialized_end=2391,
+  serialized_start=2414,
+  serialized_end=2504,
 )
 _sym_db.RegisterEnumDescriptor(_TVTTYPE)
 
@@ -107,15 +107,20 @@ _ASSETTYPE = _descriptor.EnumDescriptor(
       type=None,
       create_key=_descriptor._internal_create_key),
     _descriptor.EnumValueDescriptor(
-      name='AssetTypeVideoMp4', index=8, number=101,
+      name='AssetTypeImageBmp', index=8, number=8,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='AssetTypeVideoMp4', index=9, number=101,
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2394,
-  serialized_end=2635,
+  serialized_start=2507,
+  serialized_end=2771,
 )
 _sym_db.RegisterEnumDescriptor(_ASSETTYPE)
 
@@ -175,8 +180,8 @@ _TASKTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2638,
-  serialized_end=2839,
+  serialized_start=2774,
+  serialized_end=2975,
 )
 _sym_db.RegisterEnumDescriptor(_TASKTYPE)
 
@@ -221,8 +226,8 @@ _TASKSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2842,
-  serialized_end=2977,
+  serialized_start=2978,
+  serialized_end=3113,
 )
 _sym_db.RegisterEnumDescriptor(_TASKSTATE)
 
@@ -252,8 +257,8 @@ _SHA1TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2979,
-  serialized_end=3055,
+  serialized_start=3115,
+  serialized_end=3191,
 )
 _sym_db.RegisterEnumDescriptor(_SHA1TYPE)
 
@@ -378,8 +383,8 @@ _RCODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3058,
-  serialized_end=3688,
+  serialized_start=3194,
+  serialized_end=3824,
 )
 _sym_db.RegisterEnumDescriptor(_RCODE)
 
@@ -414,8 +419,8 @@ _MIRSTORAGE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3690,
-  serialized_end=3775,
+  serialized_start=3826,
+  serialized_end=3911,
 )
 _sym_db.RegisterEnumDescriptor(_MIRSTORAGE)
 
@@ -445,8 +450,8 @@ _LABELFORMAT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3777,
-  serialized_end=3837,
+  serialized_start=3913,
+  serialized_end=3973,
 )
 _sym_db.RegisterEnumDescriptor(_LABELFORMAT)
 
@@ -463,6 +468,7 @@ AssetTypeImageYuv420p = 4
 AssetTypeImageYuv420sp = 5
 AssetTypeImageYuv422p = 6
 AssetTypeImageYuv422sp = 7
+AssetTypeImageBmp = 8
 AssetTypeVideoMp4 = 101
 TaskTypeUnknown = 0
 TaskTypeTraining = 1
@@ -1349,6 +1355,44 @@ _MIRTASKS = _descriptor.Descriptor(
 )
 
 
+_TASK_UNKNOWNTYPESENTRY = _descriptor.Descriptor(
+  name='UnknownTypesEntry',
+  full_name='mir.command.Task.UnknownTypesEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='mir.command.Task.UnknownTypesEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='mir.command.Task.UnknownTypesEntry.value', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2279,
+  serialized_end=2330,
+)
+
 _TASK = _descriptor.Descriptor(
   name='Task',
   full_name='mir.command.Task',
@@ -1400,14 +1444,21 @@ _TASK = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='args', full_name='mir.command.Task.args', index=6,
+      name='unknown_types', full_name='mir.command.Task.unknown_types', index=6,
+      number=7, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='args', full_name='mir.command.Task.args', index=7,
       number=100, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='ancestor_task_id', full_name='mir.command.Task.ancestor_task_id', index=7,
+      name='ancestor_task_id', full_name='mir.command.Task.ancestor_task_id', index=8,
       number=101, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1416,7 +1467,7 @@ _TASK = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_TASK_UNKNOWNTYPESENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -1426,7 +1477,7 @@ _TASK = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=2023,
-  serialized_end=2217,
+  serialized_end=2330,
 )
 
 
@@ -1471,8 +1522,8 @@ _MODELMETA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2219,
-  serialized_end=2299,
+  serialized_start=2332,
+  serialized_end=2412,
 )
 
 _MIRMETADATAS_ATTRIBUTESENTRY.fields_by_name['value'].message_type = _METADATAATTRIBUTES
@@ -1502,8 +1553,10 @@ _MIRKEYWORDS.fields_by_name['index_predifined_keyids'].message_type = _MIRKEYWOR
 _MIRTASKS_TASKSENTRY.fields_by_name['value'].message_type = _TASK
 _MIRTASKS_TASKSENTRY.containing_type = _MIRTASKS
 _MIRTASKS.fields_by_name['tasks'].message_type = _MIRTASKS_TASKSENTRY
+_TASK_UNKNOWNTYPESENTRY.containing_type = _TASK
 _TASK.fields_by_name['type'].enum_type = _TASKTYPE
 _TASK.fields_by_name['model'].message_type = _MODELMETA
+_TASK.fields_by_name['unknown_types'].message_type = _TASK_UNKNOWNTYPESENTRY
 DESCRIPTOR.message_types_by_name['MirMetadatas'] = _MIRMETADATAS
 DESCRIPTOR.message_types_by_name['MetadataAttributes'] = _METADATAATTRIBUTES
 DESCRIPTOR.message_types_by_name['Timestamp'] = _TIMESTAMP
@@ -1677,11 +1730,19 @@ _sym_db.RegisterMessage(MirTasks)
 _sym_db.RegisterMessage(MirTasks.TasksEntry)
 
 Task = _reflection.GeneratedProtocolMessageType('Task', (_message.Message,), {
+
+  'UnknownTypesEntry' : _reflection.GeneratedProtocolMessageType('UnknownTypesEntry', (_message.Message,), {
+    'DESCRIPTOR' : _TASK_UNKNOWNTYPESENTRY,
+    '__module__' : 'mir_command_pb2'
+    # @@protoc_insertion_point(class_scope:mir.command.Task.UnknownTypesEntry)
+    })
+  ,
   'DESCRIPTOR' : _TASK,
   '__module__' : 'mir_command_pb2'
   # @@protoc_insertion_point(class_scope:mir.command.Task)
   })
 _sym_db.RegisterMessage(Task)
+_sym_db.RegisterMessage(Task.UnknownTypesEntry)
 
 ModelMeta = _reflection.GeneratedProtocolMessageType('ModelMeta', (_message.Message,), {
   'DESCRIPTOR' : _MODELMETA,
@@ -1699,4 +1760,5 @@ _MIRKEYWORDS_PREDIFINEDKEYIDSCNTENTRY._options = None
 _MIRKEYWORDS_CUSTOMIZEDKEYWORDSCNTENTRY._options = None
 _MIRKEYWORDS_INDEXPREDIFINEDKEYIDSENTRY._options = None
 _MIRTASKS_TASKSENTRY._options = None
+_TASK_UNKNOWNTYPESENTRY._options = None
 # @@protoc_insertion_point(module_scope)
