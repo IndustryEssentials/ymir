@@ -13,6 +13,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
+from mir.tools.phase_logger import phase_logger_in_out
 
 
 def _process_model_storage(out_root: str, config_file_path: str, model_upload_location: str,
@@ -139,7 +140,7 @@ class CmdTrain(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command train: %s", self.args)
 
-        return CmdTrain.run_with_args(export_root=self.args.work_dir,
+        return CmdTrain.run_with_args(work_dir=self.args.work_dir,
                                       model_upload_location=self.args.model_path,
                                       src_revs=self.args.src_revs,
                                       dst_rev=self.args.dst_rev,
@@ -150,7 +151,8 @@ class CmdTrain(base.BaseCommand):
                                       config_file=self.args.config_file)
 
     @staticmethod
-    def run_with_args(export_root: str,
+    @phase_logger_in_out
+    def run_with_args(work_dir: str,
                       model_upload_location: str,
                       executor: str,
                       executor_name: str,
@@ -172,8 +174,8 @@ class CmdTrain(base.BaseCommand):
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
-        if not export_root:
-            logging.error("empty export_root, abort")
+        if not work_dir:
+            logging.error("empty work_dir, abort")
             return MirCode.RC_CMD_INVALID_ARGS
         if not config_file:
             logging.warning('empty --config-file, abort')
@@ -238,9 +240,9 @@ class CmdTrain(base.BaseCommand):
 
         # export
         logging.info("exporting assets")
-        os.makedirs(export_root, exist_ok=True)
-        work_dir_in = os.path.join(export_root, "in")
-        work_dir_out = os.path.join(export_root, "out")
+        os.makedirs(work_dir, exist_ok=True)
+        work_dir_in = os.path.join(work_dir, "in")
+        work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
 
