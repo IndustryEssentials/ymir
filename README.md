@@ -57,7 +57,7 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 @inproceedings{huang2021ymir,
       title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
       author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
-      booktitle={Proceedings of the Data-Centric AI Workshop Workshop at NeurIPS},
+      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
       year={2021},
 }
 ```
