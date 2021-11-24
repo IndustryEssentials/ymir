@@ -8,6 +8,7 @@ English | [Simplified Chinese](README_zh-CN.md)
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Catalog**
 
+- [Citations](#citations)
 - [1. Introduction to AI SUITE-YMIR](#1-introduction-to-ai-suite-ymir)
   - [1.1. Main functions](#11-main-functions)
   - [1.2. Apply for trial](#12-apply-for-trial)
@@ -48,6 +49,20 @@ English | [Simplified Chinese](README_zh-CN.md)
   - [7.3. Contact us](#73-contact-us)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Citations
+
+If you wish to refer to YMIR in your work, please use the following BibTeX entry.
+```bibtex
+@misc{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      year={2021},
+      eprint={2111.10046},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI}
+}
+```
 
 # 1. Introduction to AI SUITE-YMIR
 

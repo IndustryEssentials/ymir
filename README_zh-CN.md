@@ -6,9 +6,11 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **目录**
 
-- [1.  AI SUITE-YMIR介绍](#1--ai-suite-ymir%E4%BB%8B%E7%BB%8D)
+- [文章引用](#文章引用)
+- [1. AI SUITE-YMIR介绍](#1--ai-suite-ymir%E4%BB%8B%E7%BB%8D)
   - [1.1.	主要功能](#11-主要功能)
   - [1.2.	申请试用](#12-申请试用)
 - [2. 安装](#2-%E5%AE%89%E8%A3%85)
@@ -51,6 +53,21 @@
   - [7.3 联系我们](#73-%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# 文章引用
+
+如要在您的工作中引用YMIR，请使用下面的Bibtex：
+
+```bibtex
+@misc{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      year={2021},
+      eprint={2111.10046},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI}
+}
+```
 
 # 1.  AI SUITE-YMIR介绍
 
