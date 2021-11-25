@@ -112,15 +112,16 @@ class TestNormalizeParameters:
     def test_normalize_task_parameters_succeed(self, mocker):
         mocker.patch.object(m, "crud")
         params = {
-            "some_classes": [],
-            "some_datasets": [],
+            "include_classes": [],
+            "include_datasets": [1, 2, 3],
             "model_id": 233,
             "name": random_lower_string(5),
             "else": None,
         }
+        params = m.schemas.TaskParameter(**params)
         res = m.normalize_parameters(mocker.Mock(), random_lower_string(5), params)
-        assert "some_classes" in res
-        assert "some_datasets" in res
+        assert "include_classes" in res
+        assert "include_datasets" in res
         assert "model_hash" in res
 
     def test_normalize_task_parameters_skip(self, mocker):

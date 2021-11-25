@@ -1,4 +1,5 @@
 import json
+import enum
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
@@ -11,6 +12,12 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
+
+
+class MergeStrategy(enum.IntEnum):
+    stop_upon_conflict = 1
+    prefer_newest = 2
+    prefer_oldest = 3
 
 
 class TaskBase(BaseModel):
@@ -27,6 +34,11 @@ class TaskParameter(BaseModel):
 
     include_classes: Optional[List[str]]
     exclude_classes: Optional[List[str]]
+
+    # strategy
+    strategy: Optional[MergeStrategy] = Field(
+        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
+    )
 
     # label
     extra_url: Optional[str]
