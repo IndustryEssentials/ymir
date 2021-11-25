@@ -83,9 +83,9 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
 
   useEffect(() => {
     if (datasets.length) {
-      setTrainSetCount(datasets.reduce((prev, current) => 
+      setTrainSetCount(datasets.reduce((prev, current) =>
         selectedSets.indexOf(current.id) > -1 ? prev + current.asset_count : prev,
-      0))
+        0))
     }
   }, [selectedSets, datasets])
 
@@ -94,7 +94,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     const params = form.getFieldValue('hyperparam').map(({ key }) => key)
       .filter(item => item && item.trim() && item === value)
     if (params.length > 1) {
-      return Promise.reject('Same Key Above')
+      return Promise.reject(t('task.validator.same.param'))
     } else {
       return Promise.resolve()
     }
@@ -165,24 +165,37 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
               <Form.Item
                 label={t('task.filter.form.datasets.label')}
-                name="datasets"
-                rules={[
-                  { required: true, message: t('task.filter.form.datasets.required') },
-                ]}
               >
-                <Select
-                  placeholder={t('task.filter.form.datasets.placeholder')}
-                  mode='multiple'
-                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                  onChange={setsChange}
-                  showArrow
+                <Form.Item
+                  noStyle
+                  name="datasets"
+                  rules={[
+                    { required: true, message: t('task.filter.form.datasets.required') },
+                  ]}
                 >
-                  {datasets.map(item => excludeSets.indexOf(item.id) < 0 ? (
-                    <Option value={item.id} key={item.name}>
-                      {item.name}({item.asset_count})
-                    </Option>
-                  ) : null)}
-                </Select>
+                  <Select
+                    placeholder={t('task.filter.form.datasets.placeholder')}
+                    mode='multiple'
+                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    onChange={setsChange}
+                    showArrow
+                  >
+                    {datasets.map(item => excludeSets.indexOf(item.id) < 0 ? (
+                      <Option value={item.id} key={item.name}>
+                        {item.name}({item.asset_count})
+                      </Option>
+                    ) : null)}
+                  </Select>
+                </Form.Item>
+                <div className={commonStyles.formItemLowLevel}>
+                  <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
+                  <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
+                    <Radio.Group options={[
+                      { value: 2, label: t('task.train.form.repeatdata.latest') },
+                      { value: 3, label: t('task.train.form.repeatdata.original') },
+                      { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                    ]} />
+                  </Form.Item></div>
               </Form.Item>
               <Form.Item
                 label={t('task.mining.form.excludeset.label')}
@@ -235,10 +248,19 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             >
               <Radio checked>{t('task.mining.form.topk.label')}</Radio>
               <Form.Item noStyle name='topk' label='topk' rules={[
-                { type: 'number', min: 1, max: trainSetCount || 1}
+                { type: 'number', min: 1, max: trainSetCount || 1 }
               ]}>
                 <InputNumber style={{ width: 120 }} min={1} max={trainSetCount} precision={0} />
               </Form.Item>
+            </Form.Item>
+            <Form.Item
+              label={t('task.mining.form.label.label')}
+              name='inference'
+            >
+              <Radio.Group options={[
+                { value: 1, label: t('task.mining.form.label.yes') },
+                { value: 0, label: t('task.mining.form.label.no') },
+              ]} defaultValue={0} />
             </Form.Item>
             <Form.Item
               label={t('task.train.form.hyperparam.label')}
@@ -294,7 +316,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                         <Col span={2}>
                           <Space>
                             {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                            {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')}  /> : null }
+                            {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
                           </Space>
                         </Col>
                       </Row>
@@ -307,16 +329,16 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
-              <Form.Item name='submitBtn' noStyle>
-                <Button type="primary" size="large" htmlType="submit">
-                  {t('task.filter.create')}
-                </Button>
-              </Form.Item>
-              <Form.Item name='backBtn' noStyle>
-                <Button size="large" onClick={() => history.goBack()}>
-                  {t('task.btn.back')}
-                </Button>
-              </Form.Item>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('task.filter.create')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
               </Space>
             </Form.Item>
           </Form>

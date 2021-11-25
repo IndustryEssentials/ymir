@@ -34,7 +34,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
     form.validateFields().then(async () => {
       const { keywords } = form.getFieldsValue()
       const kws = keywords.filter(k => k && k.name)
-        .map(k => ({ name: k?.name.trim(), aliases: k?.aliases.map(a => a.trim())}))
+        .map(k => ({ name: k?.name.trim(), aliases: k.aliases ? k.aliases.map(a => a.trim()) : []}))
       const result = await updateKeywords(kws)
       if (result) {
         message.success(t('keyword.add.success'))
