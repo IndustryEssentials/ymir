@@ -37,7 +37,7 @@ class CmdMining(base.BaseCommand):
                                        config_file=self.args.config_file,
                                        topk=self.args.topk,
                                        executor=self.args.executor,
-                                       executor_name=self.args.executor_name)
+                                       executor_instance=self.args.executor_instance)
 
     @staticmethod
     @phase_logger_in_out
@@ -51,7 +51,7 @@ class CmdMining(base.BaseCommand):
                       model_location: str,
                       config_file: str,
                       executor: str,
-                      executor_name: str,
+                      executor_instance: str,
                       topk: int = 0) -> int:
         """
         runs a mining task \n
@@ -65,7 +65,7 @@ class CmdMining(base.BaseCommand):
             media_location, model_location: location of assets.
             config_file: path to the config file
             executor: executor name, currently, the docker image name
-            executor_name: docker container name
+            executor_instance: docker container name
             topk: top k assets you want to save in the result workspace, set to 0 if you want to save all
         Returns:
             error code
@@ -138,7 +138,7 @@ class CmdMining(base.BaseCommand):
                                      task_id=dst_typ_rev_tid.tid,
                                      shm_size=_get_shm_size(config_file),
                                      executor=executor,
-                                     executor_name=executor_name,
+                                     executor_instance=executor_instance,
                                      process_infer_results=False)
 
         _process_mining_results(mir_root=mir_root,
@@ -329,9 +329,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                    dest="executor",
                                    type=str,
                                    help="docker image name for mining")
-    mining_arg_parser.add_argument('--executor-name',
+    mining_arg_parser.add_argument('--executor-instance',
                                    required=False,
-                                   dest='executor_name',
+                                   dest='executor_instance',
                                    type=str,
                                    help='docker container name for mining')
     mining_arg_parser.set_defaults(func=CmdMining)
