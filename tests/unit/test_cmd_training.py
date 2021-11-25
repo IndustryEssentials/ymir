@@ -231,7 +231,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.force = True
         fake_args.force_rebuild = False
         fake_args.executor = "executor"
-        fake_args.executor_name = 'executor-name'
+        fake_args.executor_instance = 'executor-instance'
         fake_args.config_file = self._config_file
 
         cmd = training.CmdTrain(fake_args)

@@ -102,7 +102,7 @@ class TestCmdInfer(unittest.TestCase):
         fake_args.index_file = self._assets_index_file
         fake_args.config_file = self._config_file
         fake_args.executor = 'infer-executor:fake'
-        fake_args.executor_name = 'executor-name'
+        fake_args.executor_instance = 'executor-instance'
         cmd_instance = CmdInfer(fake_args)
         cmd_result = cmd_instance.run()
 
@@ -115,7 +115,7 @@ class TestCmdInfer(unittest.TestCase):
                                          config_file_path=os.path.join(fake_args.work_dir, 'in', 'config.yaml'),
                                          out_path=os.path.join(fake_args.work_dir, 'out'),
                                          executor=fake_args.executor,
-                                         executor_name=fake_args.executor_name,
+                                         executor_instance=fake_args.executor_instance,
                                          shm_size=None,
                                          task_type=mock.ANY)
         mock_process.assert_called_once_with(infer_result_file=os.path.join(fake_args.work_dir, 'out',

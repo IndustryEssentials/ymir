@@ -147,7 +147,7 @@ class CmdTrain(base.BaseCommand):
                                       mir_root=self.args.mir_root,
                                       media_location=self.args.media_location,
                                       executor=self.args.executor,
-                                      executor_name=self.args.executor_name,
+                                      executor_instance=self.args.executor_instance,
                                       config_file=self.args.config_file)
 
     @staticmethod
@@ -155,7 +155,7 @@ class CmdTrain(base.BaseCommand):
     def run_with_args(work_dir: str,
                       model_upload_location: str,
                       executor: str,
-                      executor_name: str,
+                      executor_instance: str,
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
@@ -204,8 +204,8 @@ class CmdTrain(base.BaseCommand):
             return return_code
 
         task_id = dst_typ_rev_tid.tid
-        if not executor_name:
-            executor_name = f"default-training-{task_id}"
+        if not executor_instance:
+            executor_instance = f"default-training-{task_id}"
 
         # get train_ids, val_ids, test_ids
         train_ids = set()  # type: Set[str]
@@ -320,7 +320,7 @@ class CmdTrain(base.BaseCommand):
         joint_path_binds = " ".join(path_binds)
         shm_size = _get_shm_size(config_file)
         cmd = (f"nvidia-docker run --rm --shm-size={shm_size} {joint_path_binds} --user {os.getuid()}:{os.getgid()} "
-               f"--name {executor_name} {executor}")
+               f"--name {executor_instance} {executor}")
 
         ret = _run_train_cmd(cmd)
         if ret != MirCode.RC_OK:
@@ -380,9 +380,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   dest="executor",
                                   type=str,
                                   help="docker image name for training")
-    train_arg_parser.add_argument('--executor-name',
+    train_arg_parser.add_argument('--executor-instance',
                                   required=False,
-                                  dest='executor_name',
+                                  dest='executor_instance',
                                   type=str,
                                   help='docker container name for training')
     train_arg_parser.add_argument("--src-revs",
