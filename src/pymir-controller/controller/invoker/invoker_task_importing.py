@@ -33,18 +33,22 @@ class TaskImportingInvoker(TaskBaseInvoker):
                                                index_file=index_file,
                                                annotation_dir=anno_dir,
                                                media_location=media_location,
-                                               work_dir=working_dir)
+                                               work_dir=working_dir,
+                                               name_strategy_ignore=importing_request.name_strategy_ignore)
 
         return importing_response
 
     @staticmethod
     def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str,
-                      media_location: str, work_dir: str) -> backend_pb2.GeneralResp:
+                      media_location: str, work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
         importing_cmd = (
             f"cd {repo_root} && mir import --dataset-name {task_id} --dst-rev {task_id}@{task_id} "
             f"--src-revs master --index-file {index_file} --annotation-dir {annotation_dir} "
             f"--gen-dir {media_location} -w {work_dir}"
         )
+
+        if name_strategy_ignore:
+            importing_cmd += " --ignore-unknown-types"
 
         return utils.run_command(importing_cmd)
 

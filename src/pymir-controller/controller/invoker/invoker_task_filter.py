@@ -26,7 +26,8 @@ class TaskFilterInvoker(TaskBaseInvoker):
                                                             task_id=sub_task_id_1,
                                                             his_task_id=in_dataset_ids[0],
                                                             dst_task_id=request.task_id,
-                                                            in_dataset_ids=in_dataset_ids)
+                                                            in_dataset_ids=in_dataset_ids,
+                                                            merge_strategy=request.merge_strategy)
         if merge_response.code != code.ResCode.CTR_OK:
             return merge_response
 

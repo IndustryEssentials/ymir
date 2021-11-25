@@ -57,6 +57,11 @@ enum MirStorage {
     MIR_TASKS = 3;
 }
 
+enum MergeStrategy {
+    STOP = 0;
+    HOST = 1;
+}
+
 enum RequestType {
     UNKNOWN = 0;
     // CMD task
@@ -73,6 +78,7 @@ enum RequestType {
     CMD_INFERENCE = 11;
     CMD_LABEL_ADD = 12;
     CMD_LABEL_GET = 13;
+    CMD_KILL = 14;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -113,6 +119,8 @@ message GeneralReq {
     string model_config = 16;
     repeated string private_labels = 17;
     bool check_only=18;
+    string executor_instance = 19;
+    MergeStrategy merge_strategy = 20;
     ReqCreateTask req_create_task = 1001;
     ReqGetTaskInfo req_get_task_info = 1002;
 }
@@ -173,6 +181,7 @@ message TaskReqImporting {
     string asset_dir = 1;
     // single pascal xml per asset, same base_filename as in asset-folder
     string annotation_dir = 2;
+    bool name_strategy_ignore = 3;
 }
 
 message TaskReqExporting {
@@ -189,6 +198,7 @@ message TaskReqCopyData {
     string src_user_id = 1;
     string src_repo_id = 2;
     string src_dataset_id = 3;
+    bool name_strategy_ignore = 4;
 }
 
 message TaskReqLabeling {
