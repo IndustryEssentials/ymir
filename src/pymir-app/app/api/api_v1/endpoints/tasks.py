@@ -1,5 +1,6 @@
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
+from operator import attrgetter
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
@@ -16,6 +17,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.models import Dataset, Model
 from app.models.task import Task, TaskState, TaskType
+from app.schemas.task import MergeStrategy
 from app.utils.class_ids import REVERSED_CLASS_TYPES
 from app.utils.data import groupby
 from app.utils.email import send_task_result_email
@@ -33,8 +35,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/",
-    response_model=schemas.TaskOut,
+    "/", response_model=schemas.TaskOut,
 )
 def list_tasks(
     db: Session = Depends(deps.get_db),
@@ -66,8 +67,7 @@ def list_tasks(
 
 
 @router.post(
-    "/",
-    response_model=schemas.TaskOut,
+    "/", response_model=schemas.TaskOut,
 )
 def create_task(
     *,
@@ -80,6 +80,11 @@ def create_task(
 ) -> Any:
     """
     Create task
+
+    Note that if you selected multiple datasets, use `strategy` to choose primary one:
+     - stop_upon_conflict = 1
+     - prefer_newest = 2
+     - prefer_oldest = 3
     """
     logger.debug("create task start: %s" % task_in.name)
     task = crud.task.get_by_user_and_name(
@@ -134,6 +139,7 @@ def normalize_parameters(
             continue
         if k.endswith("datasets"):
             datasets = crud.dataset.get_multi_by_ids(db, ids=v)
+            # order_datasets_by_strategy(datasets, parameters.strategy)
             normalized[k] = [dataset.hash for dataset in datasets]  # type: ignore
         elif k.endswith("classes"):
             normalized[k] = [REVERSED_CLASS_TYPES[keyword.strip()] for keyword in v]  # type: ignore
@@ -144,6 +150,16 @@ def normalize_parameters(
         else:
             normalized[k] = v
     return normalized
+
+
+def order_datasets_by_strategy(objects: List[Any], strategy: MergeStrategy) -> None:
+    """
+    change the order of datasets *in place*
+    """
+    return objects.sort(
+        key=attrgetter("update_datetime"),
+        reverse=strategy is MergeStrategy.prefer_newest,
+    )
 
 
 def update_stats(
@@ -281,9 +297,7 @@ def update_task_status(
     Batch update given tasks status
     """
     tasks = crud.task.get_tasks_by_states(
-        db,
-        states=[TaskState.pending, TaskState.running],
-        including_deleted=True,
+        db, states=[TaskState.pending, TaskState.running], including_deleted=True,
     )
     task_result_proxy = TaskResultProxy(
         db=db,
@@ -449,10 +463,7 @@ class TaskResultProxy:
         return model
 
     def get_dataset_info(self, user_id: int, task_hash: str) -> Dict:
-        assets = self.viz.get_assets(
-            user_id=user_id,
-            branch_id=task_hash,
-        )
+        assets = self.viz.get_assets(user_id=user_id, branch_id=task_hash,)
         result = {
             "keywords": list(assets.keywords.keys()),
             "items": assets.items,
