@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Checkbox, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
+import { Select, Card, Input, Radio, Checkbox, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag } from "antd"
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -71,7 +71,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
     }
     const tkw = getKw(trainSets)
     const vkw = getKw(validationSets)
-    console.log('keywords: ', tkw, vkw)
+    // console.log('keywords: ', tkw, vkw)
     const kws = tkw.filter(v => vkw.includes(v))
     setKeywords(kws)
     form.setFieldsValue({ keywords: [] })
@@ -97,14 +97,14 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
     const params = form.getFieldValue('hyperparam').map(({ key }) => key)
       .filter(item => item && item.trim() && item === value)
     if (params.length > 1) {
-      return Promise.reject('Same Key Above')
+      return Promise.reject(t('task.validator.same.param'))
     } else {
       return Promise.resolve()
     }
   }
 
   function trainSetChange(value) {
-    console.log('change: ', value)
+    // console.log('change: ', value)
     setTrainSets(value)
   }
   function validationSetChange(value) {
@@ -173,24 +173,37 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
               <Form.Item
                 label={t('task.train.form.trainsets.label')}
-                name="train_sets"
-                rules={[
-                  { required: true, message: t('task.filter.form.datasets.required') },
-                ]}
               >
-                <Select
-                  placeholder={t('task.filter.form.datasets.placeholder')}
-                  mode='multiple'
-                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                  onChange={trainSetChange}
-                  showArrow
+                <Form.Item
+                  noStyle
+                  name="train_sets"
+                  rules={[
+                    { required: true, message: t('task.filter.form.datasets.required') },
+                  ]}
                 >
-                  {datasets.map(item => validationSets.indexOf(item.id) < 0 ? (
-                    <Option value={item.id} key={item.name}>
-                      {item.name}({item.asset_count})
-                    </Option>
-                  ) : null)}
-                </Select>
+                  <Select
+                    placeholder={t('task.filter.form.datasets.placeholder')}
+                    mode='multiple'
+                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    onChange={trainSetChange}
+                    showArrow
+                  >
+                    {datasets.map(item => validationSets.indexOf(item.id) < 0 ? (
+                      <Option value={item.id} key={item.name}>
+                        {item.name}({item.asset_count})
+                      </Option>
+                    ) : null)}
+                  </Select>
+                </Form.Item>
+                <div className={commonStyles.formItemLowLevel}>
+                  <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
+                  <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
+                  <Radio.Group options={[
+                    { value: 2, label: t('task.train.form.repeatdata.latest') },
+                    { value: 3, label: t('task.train.form.repeatdata.original') },
+                    { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                  ]} />
+                </Form.Item></div>
               </Form.Item>
               <Form.Item
                 label={t('task.train.form.testsets.label')}
@@ -225,6 +238,9 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
             </Form.Item>
             <Form.Item
               label={t('task.train.form.keywords.label')}
+              // next version
+              // >
+              //   <Form.Item
               name="keywords"
               rules={[
                 { required: true, message: t('task.train.form.keywords.required') }
@@ -237,6 +253,14 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                   </Option>
                 ))}
               </Select>
+              {/* next version */}
+              {/* </Form.Item>
+              <div className={styles.formItemLowLevel}><span className={styles.label}>{t('常用标签: ')}</span><Form.Item name='label_strategy' colon={true} initialValue={0} noStyle>
+                <Tag>cat</Tag>
+                <Tag>dog</Tag>
+                <Tag>person</Tag>
+                <Tag>pig</Tag>
+              </Form.Item></div> */}
             </Form.Item>
             <Form.Item
               label={t('task.train.form.traintype.label')}
@@ -280,49 +304,49 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                 {(fields, { add, remove }) => (
                   <>
                     <div className={styles.paramContainer}>
-                    <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                      <Col flex={'240px'}>Key</Col>
-                      <Col flex={1}>Value</Col>
-                      <Col span={2}>Action</Col>
-                    </Row>
-                    {fields.map(field => (
-                      <Row key={field.key} gutter={20}>
-                        <Col flex={'240px'}>
-                          <Form.Item
-                            {...field}
-                            // label="Key"
-                            name={[field.name, 'key']}
-                            fieldKey={[field.fieldKey, 'key']}
-                            rules={[
-                              // {required: true, message: 'Missing Key'},
-                              { validator: validHyperparam }
-                            ]}
-                          >
-                            <Input disabled={field.name < seniorConfig.length} allowClear maxLength={50} />
-                          </Form.Item>
-                        </Col>
-                        <Col flex={1}>
-                          <Form.Item
-                            {...field}
-                            // label="Value"
-                            name={[field.name, 'value']}
-                            fieldKey={[field.fieldKey, 'value']}
-                            rules={[
-                              // {required: true, message: 'Missing Value'},
-                            ]}
-                          >
-                            {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                              <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
-                          </Form.Item>
-                        </Col>
-                        <Col span={2}>
-                          <Space>
-                            {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                            {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')}  /> : null }
-                          </Space>
-                        </Col>
+                      <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
+                        <Col flex={'240px'}>Key</Col>
+                        <Col flex={1}>Value</Col>
+                        <Col span={2}>Action</Col>
                       </Row>
-                    ))}
+                      {fields.map(field => (
+                        <Row key={field.key} gutter={20}>
+                          <Col flex={'240px'}>
+                            <Form.Item
+                              {...field}
+                              // label="Key"
+                              name={[field.name, 'key']}
+                              fieldKey={[field.fieldKey, 'key']}
+                              rules={[
+                                // {required: true, message: 'Missing Key'},
+                                { validator: validHyperparam }
+                              ]}
+                            >
+                              <Input disabled={field.name < seniorConfig.length} allowClear maxLength={50} />
+                            </Form.Item>
+                          </Col>
+                          <Col flex={1}>
+                            <Form.Item
+                              {...field}
+                              // label="Value"
+                              name={[field.name, 'value']}
+                              fieldKey={[field.fieldKey, 'value']}
+                              rules={[
+                                // {required: true, message: 'Missing Value'},
+                              ]}
+                            >
+                              {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
+                                <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
+                            </Form.Item>
+                          </Col>
+                          <Col span={2}>
+                            <Space>
+                              {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
+                              {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
+                            </Space>
+                          </Col>
+                        </Row>
+                      ))}
                     </div>
                   </>
                 )}
@@ -331,16 +355,16 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
-              <Form.Item name='submitBtn' noStyle>
-                <Button type="primary" size="large" htmlType="submit">
-                  {t('task.filter.create')}
-                </Button>
-              </Form.Item>
-              <Form.Item name='backBtn' noStyle>
-                <Button size="large" onClick={() => history.goBack()}>
-                  {t('task.btn.back')}
-                </Button>
-              </Form.Item>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('task.filter.create')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
               </Space>
             </Form.Item>
           </Form>

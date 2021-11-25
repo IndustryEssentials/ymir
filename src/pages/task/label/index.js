@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Input, Card, Button, Form, Row, Col, Checkbox, ConfigProvider, Space, } from "antd"
+import { Select, Input, Card, Button, Form, Row, Col, Checkbox, ConfigProvider, Space, Radio, } from "antd"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
@@ -170,6 +170,16 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 ))}
               </Select>
             </Form.Item>
+            {/* next version */}
+            {/* <Form.Item
+              label={t('task.label.form.label.label')}
+              name='with_labels'
+            >
+              <Radio.Group options={[
+                { value: 1, label: t('task.mining.form.label.yes')},
+                {value: 0, label: t('task.mining.form.label.no')}, 
+              ]} defaultValue={0} />
+            </Form.Item> */}
             <Form.Item label={t('task.label.form.desc.label')}>
               <Uploader onChange={(result) => { setDoc(result) }} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { connect } from "dva"
-import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Row, Col } from "antd"
+import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Row, Col, Radio } from "antd"
 import { useHistory, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
@@ -56,7 +56,7 @@ function Filter({
     // reset
     setSelectedKeywords([])
     setExclude([])
-    form.setFieldsValue({ inc: [], exc: []})
+    form.setFieldsValue({ inc: [], exc: [] })
   }
 
   const onFinish = async ({ name, datasets }) => {
@@ -108,7 +108,7 @@ function Filter({
             label={t('task.filter.form.name.label')}
             name='name'
             rules={[
-              { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'),},
+              { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
               { type: 'string', min: 2, max: 20 },
             ]}
           >
@@ -117,24 +117,37 @@ function Filter({
           <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
-              name="datasets"
-              rules={[
-                { required: true, message: t('task.filter.form.datasets.required') },
-              ]}
             >
-              <Select
-                placeholder={t('task.filter.form.datasets.placeholder')}
-                mode='multiple'
-                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={datasetChange}
-                showArrow
+              <Form.Item
+                noStyle
+                name="datasets"
+                rules={[
+                  { required: true, message: t('task.filter.form.datasets.required') },
+                ]}
               >
-                {datasets.map(item => (
-                  <Option value={item.id} key={item.name}>
-                    {item.name}({item.asset_count})
-                  </Option>
-                ))}
-              </Select>
+                <Select
+                  placeholder={t('task.filter.form.datasets.placeholder')}
+                  mode='multiple'
+                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                  onChange={datasetChange}
+                  showArrow
+                >
+                  {datasets.map(item => (
+                    <Option value={item.id} key={item.name}>
+                      {item.name}({item.asset_count})
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <div className={commonStyles.formItemLowLevel}>
+                <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
+                <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
+                  <Radio.Group options={[
+                    { value: 2, label: t('task.train.form.repeatdata.latest') },
+                    { value: 3, label: t('task.train.form.repeatdata.original') },
+                    { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                  ]} />
+                </Form.Item></div>
             </Form.Item>
           </ConfigProvider>
           <Form.Item label={t('dataset.column.keyword')} required>
@@ -181,14 +194,14 @@ function Filter({
           <Form.Item className={styles.submit} wrapperCol={{ offset: 4 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>
-              <Button type="primary" size="large" htmlType="submit">
-                {t('task.filter.create')}
-              </Button>
+                <Button type="primary" size="large" htmlType="submit">
+                  {t('task.filter.create')}
+                </Button>
               </Form.Item>
               <Form.Item name='backBtn' noStyle>
-              <Button size="large" onClick={() => history.goBack()}>
-                {t('task.btn.back')}
-              </Button>
+                <Button size="large" onClick={() => history.goBack()}>
+                  {t('task.btn.back')}
+                </Button>
               </Form.Item>
             </Space>
           </Form.Item>
