@@ -292,7 +292,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
   }
 
   const add = () => {
-    setShowAdd(true)
+    history.push('/home/dataset/add')
   }
 
 

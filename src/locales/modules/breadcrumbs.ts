@@ -11,6 +11,7 @@ const breadcrumbs = {
   'breadcrumbs.task': { cn: '任务详情', en: 'Task Detail', },
   'breadcrumbs.datasets.search': { cn: '数据集搜索', en: 'Dataset Search', },
   'breadcrumbs.dataset': { cn: '数据集详情', en: 'Dataset Detail', },
+  'breadcrumbs.dataset.add': { cn: '导入数据集', en: 'Dataset Import', },
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
   'breadcrumbs.models.search': { cn: '模型搜索', en: 'Model Search', },
   'breadcrumbs.model': { cn: '模型详情', en: 'Model Detail', },

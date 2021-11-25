@@ -37,7 +37,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
         <Col>
           <span
             title={t('portal.dataset.origin.copy.title')}
-            onClick={(ev) => history.push({ pathname: '/home/dataset', state: { type: 'add', id: set.id }})}
+            onClick={(ev) => history.push(`/home/dataset/add/${set.id}`)}
             style={{ cursor: 'pointer' }}
           >
             <CopyIcon />

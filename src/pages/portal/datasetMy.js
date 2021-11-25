@@ -117,10 +117,10 @@ function Sets({ title, count = 3, batchDatasets, getHotDataset }) {
           <QuickAction 
             icon={<ImportIcon style={{ fontSize: 50, color: '#36cbcb' }} />} 
             label={t('portal.action.dataset.import')} 
-            link={{ pathname: '/home/dataset', state: { type: 'add' }}}
+            link={'/home/dataset/add'}
           />
         </>
-          : <EmptyState style={{ height: 236 }} add={() => history.push({ pathname: '/home/dataset', state: { type: 'add' }})} />}
+          : <EmptyState style={{ height: 236 }} add={() => history.push('/home/dataset/add')} />}
       </Row>
     </Card>
   )
