@@ -93,7 +93,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push({ pathname: '/home/dataset', state: { type: 'add' }})} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
               <Form.Item
                 label={t('task.filter.form.datasets.label')}
                 name="datasets"

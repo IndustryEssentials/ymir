@@ -26,6 +26,7 @@ const getCrumbs = () => [
   { path: '/home/keyword', label: t('breadcrumbs.keyword'), pid: 1, id: 19 },
   { path: '/home/configure', label: t('breadcrumbs.configure'), pid: 1, id: 20 },
   { path: '/home/configure/permission', label: t('breadcrumbs.configure.permission'), pid: 20, id: 21 },
+  { path: '/home/dataset/add/:type?/:id?', label: t('breadcrumbs.dataset.add'), pid: 4, id: 22 },
 ]
 
 function getCrumbItems(path, crumbs) {

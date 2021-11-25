@@ -38,7 +38,7 @@ const Guide = ({ visible, neverShow, setGuideVisible, setNeverShow }) => {
       </div>
       <Row className={s.mainSteps} gutter={10}>
         <Col className={s.step}>
-          <Card className={s.stepBox} hoverable onClick = {() => go({ pathname: '/home/dataset', state: { type: 'add' }})}>
+          <Card className={s.stepBox} hoverable onClick = {() => go({ pathname: '/home/dataset/add'})}>
             <h2>{t('common.guide.step1.title')}</h2>
             <p><NoSjjIcon className={s.stepIcon} /></p>
             <p className={s.stepTip}>{t('common.guide.step1.content')}</p>

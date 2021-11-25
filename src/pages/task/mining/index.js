@@ -162,7 +162,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push({ pathname: '/home/dataset', state: { type: 'add' }})} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
               <Form.Item
                 label={t('task.filter.form.datasets.label')}
                 name="datasets"
