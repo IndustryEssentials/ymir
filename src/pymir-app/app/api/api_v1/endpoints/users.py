@@ -2,6 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, Body, Depends
 from fastapi.logger import logger
+from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 
@@ -47,6 +48,7 @@ def create_user(
     )
     user = crud.user.create(db, obj_in=user_in)
 
+    # fixme better user to workspace mapping
     workspace_id = f"{user.id:0>6}"
     crud.workspace.create(
         db,
@@ -73,6 +75,36 @@ def get_current_user(
     Get verbose information about current user
     """
     return {"result": current_user}
+
+
+@router.patch(
+    "/me",
+    response_model=schemas.UserOut,
+    responses={404: {"description": "User Not Found"}},
+)
+def update_myself(
+    db: Session = Depends(deps.get_db),
+    password: str = Body(None),
+    username: str = Body(None),
+    phone: str = Body(None),
+    avatar: str = Body(None),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Update current user's information
+    """
+    current_user_info = jsonable_encoder(current_user)
+    user_in = schemas.UserUpdate(**current_user_info)
+    if password:
+        user_in.password = password
+    if username:
+        user_in.username = username
+    if phone:
+        user_in.phone = phone
+    if avatar:
+        user_in.avatar = avatar
+    user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    return {"result": user}
 
 
 @router.get(

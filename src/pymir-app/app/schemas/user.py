@@ -15,6 +15,7 @@ class UserBase(BaseModel):
     username: Optional[str] = None
     email: EmailStr
     phone: Optional[str] = None
+    avatar: Optional[str] = None
     is_admin: bool = False
 
 
