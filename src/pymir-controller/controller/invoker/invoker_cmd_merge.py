@@ -22,9 +22,10 @@ class MergeInvoker(BaseMirControllerInvoker):
         if self._request.req_type != backend_pb2.CMD_MERGE:
             raise RuntimeError("Mismatched req_type")
 
-        command = "cd {0} && {1} merge --dst-rev {2} -s stop".format(
+        command = "cd {0} && {1} merge --dst-rev {2} -s {3}".format(
             self._repo_root, utils.mir_executable(),
-            revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id))
+            revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id),
+            backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower())
 
         if self._request.in_dataset_ids:
             command += " --src-revs '{}'".format(

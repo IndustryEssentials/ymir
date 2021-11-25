@@ -21,7 +21,7 @@ def trigger_mir_import(
 ) -> None:
     # trigger mir import
     TaskImportingInvoker.importing_cmd(
-        repo_root, task_id, index_file, des_annotation_path, media_location, import_work_dir,
+        repo_root, task_id, index_file, des_annotation_path, media_location, import_work_dir, name_strategy_ignore=False
     )
 
 

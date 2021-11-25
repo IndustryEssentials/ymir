@@ -125,10 +125,12 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
-                                         req_create_task=req_create_task)
+                                         req_create_task=req_create_task,
+                                         executor_instance=self._task_id,
+                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
         print(MessageToDict(response))
 
-        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s stop "
+        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
                               "--src-revs 'tr:{3}@{3};va:{4}'".format(self._mir_repo_root, self._task_id,
                                                                       self._sub_task_id, self._guest_id1,
                                                                       self._guest_id2))
@@ -145,9 +147,10 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self.assertDictEqual(training_config, config)
 
         training_cmd = ("cd {0} && mir train --dst-rev {1}@{1} --model-location {2} "
-                        "--media-location {2} -w {3} --src-revs {1}@{4} --config-file {5} --executor {6}".format(
+                        "--media-location {2} -w {3} --src-revs {1}@{4} --config-file {5} --executor {6} "
+                        "--executor-instance {7}".format(
                             self._mir_repo_root, self._task_id, self._storage_root, working_dir, self._sub_task_id,
-                            output_config, training_image))
+                            output_config, training_image, self._task_id))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge, capture_output=True, shell=True),
             mock.call(training_cmd, capture_output=True, shell=True),

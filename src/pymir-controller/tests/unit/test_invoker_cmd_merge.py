@@ -68,6 +68,7 @@ class TestInvokerMerge(unittest.TestCase):
         ret.stdout = RET_ID
         return ret
 
+
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_MERGE],
@@ -79,10 +80,11 @@ class TestInvokerMerge(unittest.TestCase):
                                          his_task_id=self._guest_id1,
                                          dst_task_id=self._dst_task_id,
                                          in_dataset_ids=[self._guest_id1, self._guest_id2],
-                                         ex_dataset_ids=[self._guest_id3])
+                                         ex_dataset_ids=[self._guest_id3],
+                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
         print(MessageToDict(response))
 
-        expected_cmd = ("cd {0} && mir merge --dst-rev {1}@{2} -s stop "
+        expected_cmd = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
                         "--src-revs '{3}@{3};{4}' --ex-src-revs '{5}'".format(self._mir_repo_root, self._dst_task_id,
                                                                               self._task_id, self._guest_id1,
                                                                               self._guest_id2, self._guest_id3))
