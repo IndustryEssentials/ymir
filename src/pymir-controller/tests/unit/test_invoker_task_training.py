@@ -77,14 +77,13 @@ class TestInvokerTaskTraining(unittest.TestCase):
         rds.zrange = mock.Mock(return_value=['0', '2'])
         rds.zadd = mock.Mock()
         rds.zremrangebyscore = mock.Mock()
-        gpu_utils.get_gpus_info = mock.Mock(return_value={'0': 0.99, '1': 0.9, '2': 0.89})
+        gpu_utils.GPUInfo.get_gpus_info = mock.Mock(return_value={'0': 0.99, '1': 0.9, '2': 0.89})
 
         LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["frisbee", "car"])
 
         training_config = {
             'anchors': '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401',
             'batch': 64,
-            'gpu_id': '4',
             'image_height': 608,
             'image_width': 608,
             'learning_rate': 0.013,
@@ -92,7 +91,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'pretrained_model_params': '/fake_model',
             'shm_size': '16G',
             'subdivisions': 32,
-            'warmup_iterations': 1000
+            'warmup_iterations': 1000,
+            'gpu_count': 1
         }
 
         training_data_type_1 = backend_pb2.TaskReqTraining.TrainingDatasetType()

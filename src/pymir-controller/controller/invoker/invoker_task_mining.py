@@ -5,17 +5,25 @@ import yaml
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils, invoker_call
+from controller.utils import code, utils, invoker_call, gpu_utils
 from proto import backend_pb2
 
 
 class TaskMiningInvoker(TaskBaseInvoker):
     @classmethod
     def gen_mining_config(cls, req_mining_config: str, work_dir: str) -> str:
-        training_config = yaml.safe_load(req_mining_config)
+        mining_config = yaml.safe_load(req_mining_config)
+        # when gpu_count > 0, use gpu model
+        if mining_config["gpu_count"] > 0:
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(mining_config["gpu_count"])
+            if not gpu_ids:
+                return gpu_ids
+            else:
+                mining_config["gpu_id"] = gpu_ids
+
         output_config = os.path.join(work_dir, "task_config.yaml")
         with open(output_config, "w") as f:
-            yaml.dump(training_config, f)
+            yaml.dump(mining_config, f)
 
         return output_config
 
@@ -65,6 +73,9 @@ class TaskMiningInvoker(TaskBaseInvoker):
         media_location = assets_config["assetskvlocation"]
         mining_image = assets_config["mining_image"]
         config_file = cls.gen_mining_config(mining_request.mining_config, working_dir)
+        if not config_file:
+            return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, "Not enough GPU available")
+
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
                                          config_file=config_file,

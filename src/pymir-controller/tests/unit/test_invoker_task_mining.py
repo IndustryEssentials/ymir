@@ -81,7 +81,8 @@ class TestInvokerTaskMining(unittest.TestCase):
             'strategy': 'aldd_yolo',
             'image_height': 608,
             'image_width': 608,
-            'batch_size': 16
+            'batch_size': 16,
+            'gpu_count': 0
         }
         top_k, model_hash = 300, 'abc'
         mine_task_req = backend_pb2.TaskReqMining()
