@@ -10,19 +10,6 @@ function equalObject(obj1, obj2) {
 }
 
 describe("models: common", () => {
-  it("reducers: UPDATE_KEYWORDS", () => {
-    const state = {
-      keywords: [],
-    }
-    const expected = [1, 2, 23, 4]
-
-    const action = {
-      payload: expected,
-    }
-
-    const result = common.reducers.UPDATE_KEYWORDS(state, action)
-    equalArray(result.keywords, expected)
-  })
 
   it("effects: getStats", () => {
     const saga = common.effects.getStats
@@ -103,38 +90,6 @@ describe("models: common", () => {
     const end = generator.next(expected)
 
     equalObject(expected.result, end.value)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getKeywords", () => {
-    const saga = common.effects.getKeywords
-    const creator = {
-      type: "getKeywords",
-      payload: {},
-    }
-    const keywords = [1, 2, 3, 4]
-    const expected = {code: 0, result: keywords }
-
-    const generator = saga(creator, { put, call, select })
-    const start = generator.next()
-    const selectKeywords = generator.next([])
-    const response = generator.next(expected)
-    const end = generator.next()
-
-    equalArray(expected.result, end.value)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getKeywords from cache", () => {
-    const saga = common.effects.getKeywords
-    const creator = {
-      type: "getKeywords",
-      payload: {},
-    }
-    const keywords = [1, 2, 3, 4]
-
-    const generator = saga(creator, { put, call, select })
-    const start = generator.next()
-    const end = generator.next(keywords)
-
     expect(end.done).toBe(true)
   })
 })

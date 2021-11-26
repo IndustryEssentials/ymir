@@ -27,20 +27,6 @@ describe('service: common', () => {
     process.env.NODE_ENV = 'development'
     expect(getUploadUrl()).toBe(process.env.APIURL + path)
   })
-  it('common:getKeywords', () => {
-    const params = {}
-    const expected = [1,2,3,4,5,6,7,8,9]
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    getKeywords(params).then(({ result }) => {
-      expect(result).toEqual(expected)
-    })
-  })
   it('common:getHistory', () => {
     const params = {}
     const expected = {

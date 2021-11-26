@@ -104,6 +104,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
+    config['gpu_count'] = form.getFieldValue('gpu_count')
+
     const params = {
       ...values,
       name: values.name.trim(),
@@ -134,6 +136,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     datasets: datasetIds,
     algorithm: getCheckedValue(Algorithm()),
     topk: 0,
+    gpu_count: 0,
   }
   return (
     <div className={commonStyles.wrapper}>
@@ -261,6 +264,13 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                 { value: 1, label: t('task.mining.form.label.yes') },
                 { value: 0, label: t('task.mining.form.label.no') },
               ]} defaultValue={0} />
+            </Form.Item>
+            <Form.Item
+              label={t('task.gpu.count')}
+              name="gpu_count"
+              rules={[{ type: 'number', min: 0, max: 1000 }]}
+            >
+              <InputNumber min={0} max={1000} precision={0} />
             </Form.Item>
             <Form.Item
               label={t('task.train.form.hyperparam.label')}

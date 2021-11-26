@@ -37,7 +37,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
   }, [])
 
   useEffect(() => {
-    getKeywords()
+    getKeywords({ limit: 100000 })
   }, [])
 
   const onFinish = async (values) => {
@@ -164,8 +164,11 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             >
               <Select mode="multiple" showArrow>
                 {keywords.map(keyword => (
-                  <Option key={keyword} value={keyword}>
-                    {keyword}
+                  <Option key={keyword} value={keyword.name}>
+                    <Row>
+                      <Col flex={1}>{keyword.name}</Col>
+                      {keyword.aliases && keyword.aliases.length ? <Col>Aliases: {keyword?.aliases}</Col> : null}
+                    </Row>
                   </Option>
                 ))}
               </Select>
@@ -185,16 +188,16 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
-              <Form.Item name='submitBtn' noStyle>
-                <Button type="primary" size="large" htmlType="submit">
-                  {t('task.filter.create')}
-                </Button>
-              </Form.Item>
-              <Form.Item name='backBtn' noStyle>
-                <Button size="large" onClick={() => history.goBack()}>
-                  {t('task.btn.back')}
-                </Button>
-              </Form.Item>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('task.filter.create')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
               </Space>
               <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/lsf/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
             </Form.Item>
@@ -221,7 +224,7 @@ const dis = (dispatch) => {
     },
     getKeywords(payload) {
       return dispatch({
-        type: 'common/getKeywords',
+        type: 'keyword/getKeywords',
         payload,
       })
     },
@@ -230,7 +233,7 @@ const dis = (dispatch) => {
 
 const stat = (state) => {
   return {
-    keywords: state.common.keywords,
+    keywords: state.keyword.keywords.items,
   }
 }
 

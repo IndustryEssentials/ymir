@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Radio, Row, Col, Select, Space, Tag } from 'antd'
 import { connect } from 'dva'
-import { Link } from 'umi'
+import { Link, useParams } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
@@ -24,8 +24,8 @@ const TYPES = Object.freeze({
 })
 
 
-const Add = ({ id, visible, cancel = () => { }, ok = () => { }, getInternalDataset, createDataset }) => {
-
+const Add = ({ cancel = () => { }, ok = () => { }, getInternalDataset, createDataset }) => {
+  const { id } = useParams()
   const types = [
     { id: TYPES.INTERNAL, label: t('dataset.add.types.internal') },
     // { id: TYPES.SHARE, label: t('dataset.add.types.share') },
@@ -43,12 +43,11 @@ const Add = ({ id, visible, cancel = () => { }, ok = () => { }, getInternalDatas
     { value: 2, label: t('dataset.add.label_strategy.stop'), },
   ]
   const [form] = useForm()
-  const [show, setShow] = useState(visible)
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
   const [publicDataset, setPublicDataset] = useState([])
   const [selected, setSelected] = useState([])
   const [fileToken, setFileToken] = useState('')
-  const [selectedDataset, setSelectedDataset] = useState(null)
+  const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
   const [showLabelStrategy, setShowLS] = useState(true)
   const [strategy, setStrategy] = useState(2)
   const [newKeywords, setNewKeywords] = useState(
@@ -59,21 +58,16 @@ const Add = ({ id, visible, cancel = () => { }, ok = () => { }, getInternalDatas
 
 
   useEffect(async () => {
-    form.resetFields()
-    if (!visible) {
-      initState()
-    }
-    if (visible && !publicDataset.length) {
+    // form.resetFields()
+    // initState()
+    if (!publicDataset.length) {
       const result = await getInternalDataset()
+      console.log('get public dataset: ', result)
       if (result) {
         setPublicDataset(result.items)
       }
     }
-  }, [visible])
-
-  useEffect(() => {
-    setSelectedDataset(id ? Number(id) : null)
-  }, [id])
+  }, [])
   
   useEffect(() => {
     const ds = publicDataset.find(set => set.id === selectedDataset)
@@ -83,10 +77,6 @@ const Add = ({ id, visible, cancel = () => { }, ok = () => { }, getInternalDatas
       setNewKeywords(ds.keywords)
     }
   }, [selectedDataset])
-
-  useEffect(() => {
-    setShow(visible)
-  }, [visible])
 
   const typeChange = (type) => {
     setCurrentType(type)
@@ -219,9 +209,6 @@ const Add = ({ id, visible, cancel = () => { }, ok = () => { }, getInternalDatas
             </Form.Item>
             {isType(TYPES.INTERNAL) ? (
               <>
-                <Form.Item label={t('task.filter.form.include.label')}>
-                  {renderPublicKeywords()}
-                </Form.Item>
                 <Form.Item
                   label={t('dataset.add.form.internal.label')}
                   name='input_dataset_id'
