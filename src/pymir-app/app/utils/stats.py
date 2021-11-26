@@ -1,9 +1,10 @@
 from collections import defaultdict
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import arrow
-import redis
+from redis import StrictRedis
 from arrow.arrow import Arrow
+from app.config import settings
 
 PRECISION = ["day", "week", "month"]
 
@@ -12,8 +13,16 @@ class RedisStats:
     def __init__(self, url: str, stats_group: List, tz: str = "Asia/Shanghai"):
         self.prefix = "stats"
         self.stats_group = stats_group
-        self.conn = redis.StrictRedis.from_url(url)
+        self.conn = self._get_redis_con(url)
         self.tz = tz
+
+    def _get_redis_con(self, redis_uri: str) -> StrictRedis:
+        if settings.IS_TESTING:
+            import redislite
+            redis_con = redislite.StrictRedis('/tmp/redis.db')
+        else:
+            redis_con = StrictRedis.from_url(redis_uri)
+        return redis_con
 
     def update_task_stats(self, user_id: int, task_type: int) -> None:
         """
@@ -76,7 +85,7 @@ class RedisStats:
 
     @staticmethod
     def _update_rank(
-        conn: redis.StrictRedis, key: str, name: str, count: int = 1
+        conn: StrictRedis, key: str, name: str, count: int = 1
     ) -> None:
         # name, amount, value
         # "Increment the score of ``value`` in sorted set ``name`` by ``amount``"
@@ -84,17 +93,17 @@ class RedisStats:
 
     @staticmethod
     def _get_rank(
-        conn: redis.StrictRedis, key: str, start: int = 0, stop: int = -1
+        conn: StrictRedis, key: str, start: int = 0, stop: int = -1
     ) -> List:
         return conn.zrange(key, start, stop, withscores=True, desc=True)
 
     @staticmethod
-    def _delete_rank(conn: redis.StrictRedis, key: str, name: str) -> None:
+    def _delete_rank(conn: StrictRedis, key: str, name: str) -> None:
         conn.zrem(key, name)
 
     @staticmethod
     def update_counter(
-        conn: redis.StrictRedis,
+        conn: StrictRedis,
         prefix: str,
         name: str,
         tz: str,
@@ -112,7 +121,7 @@ class RedisStats:
 
     @staticmethod
     def get_counter(
-        conn: redis.StrictRedis, prefix: str, name: str, precision: str
+        conn: StrictRedis, prefix: str, name: str, precision: str
     ) -> List:
         assert precision in PRECISION
 

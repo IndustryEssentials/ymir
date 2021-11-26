@@ -6,13 +6,13 @@ from tests.utils.utils import random_lower_string
 
 
 class TestAsset:
-    def test_create_asset(self):
+    def test_create_asset(self, mocker):
         asset_id = random_lower_string()
         res = {
             "annotations": [
                 {
                     "box": random_lower_string(10),
-                    "class_id": random.randint(1, 80),
+                    "class_id": random.randint(1, 20),
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -23,7 +23,8 @@ class TestAsset:
                 "timestamp": {"start": time.time()},
             },
         }
-        A = m.Asset.from_viz_res(asset_id, res)
+        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
+        A = m.Asset.from_viz_res(asset_id, res, keyword_id_to_name=keyword_id_to_name)
         assert A.url == m.get_asset_url(asset_id)
 
 
@@ -39,7 +40,8 @@ class TestAssets:
             "class_ids_count": {},
             "total": random.randint(1000, 2000),
         }
-        AS = m.Assets.from_viz_res(res)
+        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
+        AS = m.Assets.from_viz_res(res, keyword_id_to_name)
         assert AS.total == res["total"]
 
 
@@ -81,7 +83,9 @@ class TestVizClient:
         viz.session = mock_session
         user_id = random.randint(1000, 2000)
         task_id = random_lower_string()
-        ret = viz.get_assets(user_id=user_id, branch_id=task_id)
+        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
+        viz.config(user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name)
+        ret = viz.get_assets()
         assert isinstance(ret, m.Assets)
         assert ret.total
         assert ret.items
@@ -113,7 +117,9 @@ class TestVizClient:
         user_id = random.randint(100, 200)
         task_id = random_lower_string()
         asset_id = random_lower_string()
-        ret = viz.get_asset(user_id=user_id, branch_id=task_id, asset_id=asset_id)
+        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
+        viz.config(user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name)
+        ret = viz.get_asset(asset_id=asset_id)
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id
 
@@ -132,7 +138,8 @@ class TestVizClient:
 
         user_id = random.randint(100, 200)
         task_id = random_lower_string()
-        ret = viz.get_model(user_id=user_id, branch_id=task_id)
+        viz.config(user_id=user_id, branch_id=task_id)
+        ret = viz.get_model()
         assert isinstance(ret, dict)
         assert ret["hash"] == res["model_id"]
         assert ret["map"] == res["model_mAP"]

@@ -7,18 +7,20 @@ from typing import Dict, Generator, List, Optional, Union
 
 import grpc
 from google.protobuf import json_format  # type: ignore
-from ymir.ids.task_id import TaskId
-from ymir.protos import mir_common_pb2 as mir_common
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
-from ymir.protos import mir_controller_service_pb2_grpc as mir_grpc
+from proto import backend_pb2 as mirsvrpb
+from proto import backend_pb2_grpc as mir_grpc
+from fastapi.logger import logger
 
 from app.models.task import TaskType
+from id_definition.task_id import TaskId
 
 
 class ExtraRequestType(enum.IntEnum):
     create_workspace = 100
     get_task_info = 200
     inference = 300
+    add_label = 400
+    get_label = 401
 
 
 def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
@@ -86,7 +88,7 @@ class ControllerRequest:
             filter_request.ex_class_ids[:] = args["exclude_classes"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_common.TaskTypeFilter
+        req_create_task.task_type = mirsvrpb.TaskTypeFilter
         req_create_task.filter.CopyFrom(filter_request)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -100,14 +102,13 @@ class ControllerRequest:
 
         datasets = itertools.chain(
             gen_typed_datasets(
-                mir_common.TvtTypeTraining, args.get("include_train_datasets", [])
+                mirsvrpb.TvtTypeTraining, args.get("include_train_datasets", [])
             ),
             gen_typed_datasets(
-                mir_common.TvtTypeValidation,
-                args.get("include_validation_datasets", []),
+                mirsvrpb.TvtTypeValidation, args.get("include_validation_datasets", []),
             ),
             gen_typed_datasets(
-                mir_common.TvtTypeTest, args.get("include_test_datasets", [])
+                mirsvrpb.TvtTypeTest, args.get("include_test_datasets", [])
             ),
         )
         for dataset in datasets:
@@ -117,7 +118,7 @@ class ControllerRequest:
             train_task_req.training_config = args["config"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_common.TaskTypeTraining
+        req_create_task.task_type = mirsvrpb.TaskTypeTraining
         req_create_task.no_task_monitor = False
         req_create_task.training.CopyFrom(train_task_req)
 
@@ -139,7 +140,7 @@ class ControllerRequest:
             mine_task_req.ex_dataset_ids[:] = args["exclude_datasets"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_common.TaskTypeMining
+        req_create_task.task_type = mirsvrpb.TaskTypeMining
         req_create_task.no_task_monitor = False
         req_create_task.mining.CopyFrom(mine_task_req)
 
@@ -155,7 +156,7 @@ class ControllerRequest:
         importing_request.annotation_dir = args["annotation_dir"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_common.TaskTypeImportData
+        req_create_task.task_type = mirsvrpb.TaskTypeImportData
         req_create_task.no_task_monitor = False
         req_create_task.importing.CopyFrom(importing_request)
 
@@ -175,7 +176,7 @@ class ControllerRequest:
             label_request.expert_instruction_url = args["extra_url"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_common.TaskTypeLabel
+        req_create_task.task_type = mirsvrpb.TaskTypeLabel
         req_create_task.labeling.CopyFrom(label_request)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -191,7 +192,7 @@ class ControllerRequest:
         copy_request.src_dataset_id = args["src_dataset_id"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_common.TaskTypeCopyData
+        req_create_task.task_type = mirsvrpb.TaskTypeCopyData
         req_create_task.copy.CopyFrom(copy_request)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -205,6 +206,20 @@ class ControllerRequest:
         request.model_hash = args["model_hash"]
         request.asset_dir = args["asset_dir"]
         request.model_config = args["config"]
+        return request
+
+    def prepare_add_label(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
+        request.check_only = args["dry_run"]
+        request.req_type = mirsvrpb.CMD_LABEL_ADD
+        request.private_labels[:] = args["labels"]
+        return request
+
+    def prepare_get_label(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_LABEL_GET
         return request
 
 
@@ -226,3 +241,9 @@ class ControllerClient:
             use_integers_for_enums=True,
             including_default_value_fields=True,
         )
+
+    def get_labels_of_user(self, user_id: int) -> List[str]:
+        req = ControllerRequest(ExtraRequestType.get_label, user_id)
+        resp = self.send(req)
+        logger.info("[controller] get labels response: %s", resp)
+        return list(resp["csv_labels"])
