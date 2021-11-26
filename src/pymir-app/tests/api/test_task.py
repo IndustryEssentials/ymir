@@ -11,7 +11,9 @@ from tests.utils.utils import random_lower_string
 
 @pytest.fixture(scope="function")
 def mock_controller(mocker):
-    return mocker.Mock()
+    c = mocker.Mock()
+    c.get_labels_of_user.return_value = ["0,cat", "1,dog,puppy"]
+    return c
 
 
 @pytest.fixture(scope="function")
@@ -112,21 +114,22 @@ class TestNormalizeParameters:
     def test_normalize_task_parameters_succeed(self, mocker):
         mocker.patch.object(m, "crud")
         params = {
-            "include_classes": [],
+            "include_classes": "cat,dog,boy".split(","),
             "include_datasets": [1, 2, 3],
             "model_id": 233,
             "name": random_lower_string(5),
             "else": None,
         }
+        keywords_mapping = {"cat": 1, "dog": 2, "boy": 3}
         params = m.schemas.TaskParameter(**params)
-        res = m.normalize_parameters(mocker.Mock(), random_lower_string(5), params)
-        assert "include_classes" in res
+        res = m.normalize_parameters(mocker.Mock(), random_lower_string(5), params, keywords_mapping)
+        assert res["include_classes"] == [1, 2, 3]
         assert "include_datasets" in res
         assert "model_hash" in res
 
     def test_normalize_task_parameters_skip(self, mocker):
         assert (
-            m.normalize_parameters(mocker.Mock(), random_lower_string(5), None) is None
+            m.normalize_parameters(mocker.Mock(), random_lower_string(5), None, {}) is None
         )
 
 

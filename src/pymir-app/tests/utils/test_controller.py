@@ -41,7 +41,7 @@ class TestControllerRequest:
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeFilter
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeFilter
 
     def test_training(self):
         task_type = m.TaskType.training
@@ -57,7 +57,7 @@ class TestControllerRequest:
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeTraining
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeTraining
 
     def test_mining(self):
         task_type = m.TaskType.mining
@@ -73,7 +73,7 @@ class TestControllerRequest:
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeMining
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeMining
 
     def test_label(self):
         task_type = m.TaskType.label
@@ -90,7 +90,7 @@ class TestControllerRequest:
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeLabel
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeLabel
 
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
@@ -105,7 +105,7 @@ class TestControllerRequest:
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeCopyData
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeCopyData
 
 
 class TestControllerClient:

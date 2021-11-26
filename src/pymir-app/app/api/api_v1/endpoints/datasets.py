@@ -2,7 +2,7 @@ import pathlib
 import random
 import tempfile
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List
 from zipfile import BadZipFile
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -26,13 +26,13 @@ from app.utils.files import FailedToDownload, is_relative_to, prepare_dataset
 from app.utils.stats import RedisStats
 from app.utils.ymir_controller import ControllerClient, ControllerRequest
 from app.utils.ymir_viz import VizClient
+from app.utils.class_ids import get_keyword_id_to_name_mapping
 
 router = APIRouter()
 
 
 @router.get(
-    "/",
-    response_model=schemas.DatasetOut,
+    "/", response_model=schemas.DatasetOut,
 )
 def list_dataset(
     db: Session = Depends(deps.get_db),
@@ -72,8 +72,7 @@ def list_dataset(
 
 
 @router.get(
-    "/public",
-    response_model=schemas.DatasetOut,
+    "/public", response_model=schemas.DatasetOut,
 )
 def get_public_datasets(
     db: Session = Depends(deps.get_db),
@@ -84,15 +83,13 @@ def get_public_datasets(
     public datasets come from User 1
     """
     datasets, total = crud.dataset.get_datasets_of_user(
-        db,
-        user_id=settings.PUBLIC_DATASET_OWNER,
+        db, user_id=settings.PUBLIC_DATASET_OWNER,
     )
     return {"result": {"total": total, "items": datasets}}
 
 
 @router.post(
-    "/",
-    response_model=schemas.DatasetOut,
+    "/", response_model=schemas.DatasetOut,
 )
 def create_dataset(
     *,
@@ -340,10 +337,12 @@ def get_assets_of_dataset(
     dataset_id: int = Path(..., example="12"),
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
-    keyword: str = Query(None),
+    keyword: Optional[str] = Query(None),
+    keyword_id: Optional[int] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
+    labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Get asset list of specific dataset,
@@ -353,14 +352,23 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    assets = viz_client.get_assets(
-        user_id=current_user.id,
-        repo_id=current_workspace.hash,  # type: ignore
-        branch_id=dataset.task_hash,  # type: ignore
-        keyword=keyword,
-        limit=limit,
-        offset=offset,
+    keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
+    keyword_name_to_id = {v: k for k, v in keyword_id_to_name.items()}
+    logger.info(
+        "keyword_id_to_name: %s, keyword_name_to_id: %s",
+        keyword_id_to_name,
+        keyword_name_to_id,
     )
+
+    keyword_id = keyword_id or keyword_name_to_id.get(keyword)
+
+    viz_client.config(
+        user_id=current_user.id,
+        repo_id=current_workspace.hash,
+        branch_id=dataset.task_hash,  # type: ignore
+        keyword_id_to_name=keyword_id_to_name,
+    )
+    assets = viz_client.get_assets(keyword_id=keyword_id, limit=limit, offset=offset)
     result = {
         "keywords": assets.keywords,
         "items": assets.items,
@@ -380,6 +388,7 @@ def get_random_asset_id_of_dataset(
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
+    labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Get random asset from specific dataset
@@ -388,15 +397,15 @@ def get_random_asset_id_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
+    keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
     offset = get_random_asset_offset(dataset)
-    assets = viz_client.get_assets(
+    viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,  # type: ignore
+        repo_id=current_workspace.hash,
         branch_id=dataset.task_hash,  # type: ignore
-        keyword=None,
-        offset=offset,
-        limit=1,
+        keyword_id_to_name=keyword_id_to_name,
     )
+    assets = viz_client.get_assets(keyword_id=None, offset=offset, limit=1,)
     if assets.total == 0:
         raise AssetNotFound()
     return {"result": assets.items[0]}
@@ -421,6 +430,7 @@ def get_asset_of_dataset(
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
+    labels: List = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Get asset from specific dataset
@@ -429,12 +439,14 @@ def get_asset_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    asset = viz_client.get_asset(
+    keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
+    viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,  # type: ignore
+        repo_id=current_workspace.hash,
         branch_id=dataset.task_hash,  # type: ignore
-        asset_id=asset_hash,
+        keyword_id_to_name=keyword_id_to_name,
     )
+    asset = viz_client.get_asset(asset_id=asset_hash)
     if not asset:
         raise AssetNotFound()
     return {"result": asset}

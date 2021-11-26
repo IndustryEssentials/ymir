@@ -32,6 +32,8 @@ class Settings(BaseSettings):
 
     USE_200_EVERYWHERE: bool = True
 
+    IS_TESTING: bool = False
+
     # paths to share data with Controller, etc
     SHARED_DATA_DIR: str = "./"
 

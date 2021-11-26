@@ -18,7 +18,6 @@ from app.config import settings
 from app.models import Dataset, Model
 from app.models.task import Task, TaskState, TaskType
 from app.schemas.task import MergeStrategy
-from app.utils.class_ids import REVERSED_CLASS_TYPES
 from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
@@ -30,6 +29,7 @@ from app.utils.ymir_controller import (
     ExtraRequestType,
 )
 from app.utils.ymir_viz import VizClient
+from app.utils.class_ids import get_keyword_id_to_name_mapping, get_keyword_name_to_id_mapping
 
 router = APIRouter()
 
@@ -77,6 +77,7 @@ def create_task(
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     stats_client: RedisStats = Depends(deps.get_stats_client),
+    labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Create task
@@ -93,9 +94,12 @@ def create_task(
     if task:
         raise DuplicateTaskError()
 
-    # todo
-    #  maybe using pydantic to do the normalization
-    parameters = normalize_parameters(db, task_in.name, task_in.parameters)
+    keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
+
+    # todo: using pydantic to do the normalization
+    parameters = normalize_parameters(
+        db, task_in.name, task_in.parameters, keyword_name_to_id
+    )
 
     if parameters and task_in.config:
         parameters["config"] = task_in.config
@@ -122,7 +126,10 @@ def create_task(
 
 
 def normalize_parameters(
-    db: Session, name: str, parameters: Optional[schemas.TaskParameter]
+    db: Session,
+    name: str,
+    parameters: Optional[schemas.TaskParameter],
+    keyword_name_to_id: Dict,
 ) -> Optional[Dict]:
     """
     Normalize task parameters, including:
@@ -142,7 +149,7 @@ def normalize_parameters(
             # order_datasets_by_strategy(datasets, parameters.strategy)
             normalized[k] = [dataset.hash for dataset in datasets]  # type: ignore
         elif k.endswith("classes"):
-            normalized[k] = [REVERSED_CLASS_TYPES[keyword.strip()] for keyword in v]  # type: ignore
+            normalized[k] = [keyword_name_to_id[keyword.strip()] for keyword in v]  # type: ignore
         elif k == "model_id":
             model = crud.model.get(db, id=v)
             assert model and model.hash
@@ -443,7 +450,8 @@ class TaskResultProxy:
         return updated
 
     def add_new_model_if_not_exist(self, task: schemas.Task) -> Model:
-        model_info = self.viz.get_model(user_id=task.user_id, branch_id=task.hash)
+        self.viz.config(user_id=task.user_id, branch_id=task.hash)
+        model_info = self.viz.get_model()
         if not model_info:
             raise ValueError("model not ready yet")
 
@@ -463,7 +471,11 @@ class TaskResultProxy:
         return model
 
     def get_dataset_info(self, user_id: int, task_hash: str) -> Dict:
-        assets = self.viz.get_assets(user_id=user_id, branch_id=task_hash,)
+        labels = self.controller.get_labels_of_user(user_id)
+        keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
+        self.viz.config(user_id=user_id, branch_id=task_hash, keyword_id_to_name=keyword_id_to_name)
+
+        assets = self.viz.get_assets()
         result = {
             "keywords": list(assets.keywords.keys()),
             "items": assets.items,
