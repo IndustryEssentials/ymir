@@ -79,6 +79,7 @@ enum RequestType {
     CMD_LABEL_ADD = 12;
     CMD_LABEL_GET = 13;
     CMD_KILL = 14;
+    CMD_LABLE_TASK_TERMINATE = 15;
 
     // Sandbox path operation
     USER_LIST = 101;

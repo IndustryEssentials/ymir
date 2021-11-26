@@ -25,6 +25,22 @@ def trigger_mir_import(
     )
 
 
+def _gen_index_file(des_annotation_path: str) -> str:
+    media_files = []
+    for one_file in os.listdir(des_annotation_path):
+        if one_file.endswith(".json"):
+            with open(os.path.join(des_annotation_path, one_file)) as f:
+                json_content = json.load(f)
+                pic_path = json_content["task"]["data"]["image"].replace("data/local-files/?d=", "")
+                media_files.append(pic_path)
+
+    index_file = os.path.join(des_annotation_path, "index.txt")
+    with open(index_file, "w") as f:
+        f.write("\n".join(media_files))
+
+    return index_file
+
+
 def lable_task_monitor() -> None:
     if config.LABEL_STUDIO == config.LABEL_TOOL:
         label_instance = LabelStudio()
@@ -32,31 +48,31 @@ def lable_task_monitor() -> None:
         raise ValueError("Error! Please setting your label tools")
 
     project_mapping = rds.hgetall(config.MONITOR_MAPPING_KEY)
-    for project_id, content in project_mapping.items():
+    for task_id, content in project_mapping.items():
         project_info = json.loads(content)
-        percent = label_instance.get_task_completion_percent(project_id)
+        percent = label_instance.get_task_completion_percent(project_info['project_id'])
 
-        logger.info(f'label task:{project_info["task_id"]} percent: {percent}')
+        logger.info(f'label task:{task_id} percent: {percent}')
         state = config.TASK_DONE if percent == 1 else config.TASK_RUNNING
         if state == config.TASK_DONE:
             try:
-                label_instance.convert_annotation_to_voc(project_id, project_info["des_annotation_path"])
+                label_instance.convert_annotation_to_voc(project_info['project_id'], project_info["des_annotation_path"])
             except requests.HTTPError as e:
                 # TODO:(chao) add sentry
-                logger.error(f'get label task {project_info["task_id"]} voc error: {e}, continue next')
+                logger.error(f'get label task {task_id} voc error: {e}, continue next')
                 continue
-
+            index_file = _gen_index_file(project_info["des_annotation_path"])
             trigger_mir_import(
                 project_info["repo_root"],
-                project_info["task_id"],
-                project_info["index_file"],
+                task_id,
+                index_file,
                 project_info["des_annotation_path"],
                 project_info["media_location"],
                 project_info["import_work_dir"],
             )
 
-            rds.hdel(config.MONITOR_MAPPING_KEY, project_id)
-            logging.info(f'task {project_info["task_id"]} finished!!!')
+            rds.hdel(config.MONITOR_MAPPING_KEY, task_id)
+            logging.info(f'task {task_id} finished!!!')
 
         content = f'{project_info["task_id"]} {int(datetime.now().timestamp())} {percent} {state}'
         label_instance.write_project_status(project_info["monitor_file_path"], content)

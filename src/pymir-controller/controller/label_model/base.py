@@ -78,7 +78,6 @@ class LabelBase(ABC):
         monitor_file_path: str,
         des_annotation_path: str,
         repo_root: str,
-        index_file: str,
         media_location: str,
         import_work_dir: str
     ) -> None:
@@ -89,9 +88,8 @@ class LabelBase(ABC):
             monitor_file_path=monitor_file_path,
             des_annotation_path=des_annotation_path,
             repo_root=repo_root,
-            index_file=index_file,
             media_location=media_location,
             import_work_dir=import_work_dir
         )
 
-        rds.hmset(config.MONITOR_MAPPING_KEY, {project_id: json.dumps(label_task_content)})
+        rds.hmset(config.MONITOR_MAPPING_KEY, {task_id: json.dumps(label_task_content)})
