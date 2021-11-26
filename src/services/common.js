@@ -11,10 +11,6 @@ export function getUploadUrl() {
   return getBaseURL() + 'uploadfile/'
 }
 
-export function getKeywords() {
-  return request.get('/keywords/')
-}
-
 export function getHistory({ type, id, max_hops }) {
   return request.get('/graphs/', { params: { type, id, max_hops } })
 }

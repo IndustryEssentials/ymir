@@ -78,7 +78,7 @@ const Routes = [
         title: "dataset.title",
       },
       {
-        path: "/home/dataset/add/:type?/:id?",
+        path: "/home/dataset/add/:id?",
         name: "datasetImport",
         component: "@/pages/dataset/add",
         title: "dataset.add.title",
