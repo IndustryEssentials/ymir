@@ -25,3 +25,6 @@ GPU_LOCKING_SET = "gpu_locking_set"
 
 # labels.csv
 RESERVE_COLUMN = 1
+
+# get label studio tasks's slice number
+LABEL_PAGE_SIZE = 500

@@ -38,16 +38,6 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, asset_dir: str, media_l
     )
 
 
-def gen_index_file(asset_dir: str) -> str:
-    # generate index file for mir command, keep same name as other task
-    media_files = [os.path.join(asset_dir, f) for f in os.listdir(asset_dir) if f.endswith(".jpeg")]
-    index_file = os.path.join(asset_dir, "index.txt")
-    with open(index_file, "w") as f:
-        f.write("\n".join(media_files))
-
-    return index_file
-
-
 def start_label_task(
     repo_root: str,
     working_dir: str,
@@ -70,7 +60,6 @@ def start_label_task(
         working_dir, task_id
     )
     trigger_ymir_export(repo_root, dataset_id, asset_dir, media_location, export_work_dir)
-    index_file = gen_index_file(asset_dir)
     label_instance.run(
         task_id=task_id,
         project_name=project_name,
@@ -81,7 +70,6 @@ def start_label_task(
         export_path=export_path,
         monitor_file_path=monitor_file_path,
         repo_root=repo_root,
-        index_file=index_file,
         media_location=media_location,
         import_work_dir=import_work_dir
     )

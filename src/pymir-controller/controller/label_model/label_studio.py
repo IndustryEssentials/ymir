@@ -1,5 +1,6 @@
 import glob
 import json
+import math
 import os
 import shutil
 import zipfile
@@ -15,19 +16,21 @@ from controller.utils.app_logger import logger
 
 
 class RequestHandler:
-    def __init__(self,
-                 host: str = config.LABEL_STUDIO_HOST,
-                 headers: Dict[str, str] = {"Authorization": config.LABEL_STUDIO_TOKEN}):
+    def __init__(
+        self,
+        host: str = config.LABEL_STUDIO_HOST,
+        headers: Dict[str, str] = {"Authorization": config.LABEL_STUDIO_TOKEN},
+    ):
         self.host = host
         self.headers = headers
 
-    def get(self, url_path: str) -> bytes:
-        resp = requests.get(url=f"{self.host}{url_path}", headers=self.headers, timeout=600)
+    def get(self, url_path: str, params: Dict = {}) -> bytes:
+        resp = requests.get(url=f"{self.host}{url_path}", headers=self.headers, params=params, timeout=600)
         resp.raise_for_status()
         return resp.content
 
-    def post(self, url_path: str, json_data: Dict = {}) -> bytes:
-        resp = requests.post(url=f"{self.host}{url_path}", headers=self.headers, json=json_data)
+    def post(self, url_path: str, params: Dict = {}, json_data: Dict = {}) -> bytes:
+        resp = requests.post(url=f"{self.host}{url_path}", headers=self.headers, params=params, json=json_data)
         resp.raise_for_status()
         return resp.content
 
@@ -62,8 +65,9 @@ class LabelStudio(LabelBase):
 
         return label_config
 
-    def create_label_project(self, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-                             **kwargs: Dict) -> int:
+    def create_label_project(
+        self, project_name: str, keywords: List, collaborators: List, expert_instruction: str, **kwargs: Dict
+    ) -> int:
         # Create a project and set up the labeling interface in Label Studio
         url_path = "/api/projects"
         label_config = self.gen_detection_label_config(keywords)
@@ -120,13 +124,46 @@ class LabelStudio(LabelBase):
                 return 0.0
             return a / b
 
-        url_path = f"/api/projects/{project_id}"
-        resp = self.requests.get(url_path)
-        content = json.loads(resp)
-
+        content = self.get_project_info(project_id)
         percent = safe_div(content["num_tasks_with_annotations"], content["task_number"])
 
         return percent
+
+    def get_project_info(self, project_id: int) -> Dict:
+        url_path = f"/api/projects/{project_id}"
+        resp = self.requests.get(url_path)
+        return json.loads(resp)
+
+    def get_unlabeled_task(self, task_num: int, project_id: int) -> List:
+        unlabeled_task_ids = []
+        url_path = f"/api/projects/{project_id}/tasks/"
+
+        for page in range(1, math.ceil(task_num / config.LABEL_PAGE_SIZE) + 1):
+            params = {
+                "page_size": config.LABEL_PAGE_SIZE,
+                "page": page,
+            }
+            all_content = self.requests.get(url_path=url_path, params=params)
+            for content in json.loads(all_content):
+                if not content["is_labeled"]:
+                    unlabeled_task_ids.append(content["id"])
+
+        return unlabeled_task_ids
+
+    def delete_unlabeled_task(self, project_id: int) -> None:
+        project_info = self.get_project_info(project_id)
+        unlabeled_task_ids = self.get_unlabeled_task(project_info["task_number"], project_id)
+
+        url_path = "/api/dm/actions"
+        params = {"id": "delete_tasks", "project": project_id}
+        json_data = {
+            "ordering": [],
+            "selectedItems": {"all": False, "included": unlabeled_task_ids},
+            "filters": {"conjunction": "and", "items": []},
+            "project": str(project_id),
+        }
+
+        self.requests.post(url_path=url_path, params=params, json_data=json_data)
 
     @classmethod
     def _move_label_studio_voc_files(cls, des_path: str) -> None:
@@ -152,12 +189,12 @@ class LabelStudio(LabelBase):
 
     @catch_label_task_error
     def run(self, task_id: str, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-            asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str, index_file: str,
+            asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str,
             media_location: str, import_work_dir: str) -> None:
         logger.info("start LabelStudio run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, asset_dir)
         self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
-        self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root, index_file,
+        self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root,
                                       media_location, import_work_dir)
