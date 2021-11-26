@@ -5,7 +5,7 @@ from enum import auto, IntEnum, unique
 from typing import List
 
 from controller.utils import code, utils
-from controller.utils import task_id as task_id_proto
+from id_definition import task_id as task_id_proto
 from proto import backend_pb2
 
 

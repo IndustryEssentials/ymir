@@ -2,7 +2,7 @@ import logging
 import re
 import subprocess
 
-from controller.utils import task_id as task_id_proto
+from id_definition import task_id as task_id_proto
 from controller.utils.code import ResCode
 from proto import backend_pb2
 
