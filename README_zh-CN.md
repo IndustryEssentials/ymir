@@ -41,6 +41,7 @@
 - [5.  获取代码](#5--%E8%8E%B7%E5%8F%96%E4%BB%A3%E7%A0%81)
   - [5.1  YMIR repos](#51--ymir-repos)
   - [5.2  代码贡献](#52--%E4%BB%A3%E7%A0%81%E8%B4%A1%E7%8C%AE)
+  - [5.3  关于训练，推理与挖掘镜像](#53--关于训练，推理与挖掘镜像)
 - [6. 设计理念](#6-设计理念)
   - [6.1.	Life of a dataset](#61-life-of-a-dataset)
     - [6.1.1 数据集介绍](#611-数据集介绍)
@@ -623,6 +624,10 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 - [mypy](http://mypy-lang.org/) - Python必须经过静态类型检查。
 
 也可以查看 [MSFT编码风格](https://github.com/Microsoft/Recommenders/wiki/Coding-Guidelines) 来获取更多的建议。
+
+## 5.3 关于训练，推理与挖掘镜像
+
+[查看这篇文档](docs/ymir-cmd-container.md)获取更多细节。
 
 # 6. 设计理念
 

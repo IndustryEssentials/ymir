@@ -38,6 +38,7 @@ English | [Simplified Chinese](README_zh-CN.md)
 - [5. Get the code](#5-get-the-code)
   - [5.1. YMIR repos](#51-ymir-repos)
   - [5.2. Code contribution](#52-code-contribution)
+  - [5.3. About training, inference and mining docker images](#53-about-training-inference-and-mining-docker-images)
 - [6. Design concept](#6-design-concept)
   - [6.1. Life of a dataset](#61-life-of-a-dataset)
     - [6.1.1. Introduction to a dataset](#611-introduction-to-a-dataset)
@@ -643,6 +644,10 @@ Any code in the YMIR repo should follow the coding standards and will be checked
 - [mypy](http://mypy-lang.org/) - Python must go through static type checking.
 
 Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/wiki/Coding-Guidelines) for more advice.
+
+## 5.3 About training, inference and mining docker images
+
+[Check this document](docs/ymir-cmd-container.md) for details
 
 # 6. Design concept
 
