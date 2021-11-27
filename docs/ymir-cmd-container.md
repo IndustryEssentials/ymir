@@ -242,6 +242,8 @@ model:
 
 * `run_mining`: 取值为0或1，1表示需要将挖掘结果写入 `result.tsv` 中，0表示不需要进行挖掘
 
+* `class_names`: 模型可以识别的类型名称列表
+
 #### 4.4.2. 输出挂载点
 
 | 路径 | 说明 |
@@ -267,8 +269,8 @@ model:
 ```
 {'detection':
   {
-    asset-name-0: [{'box': {x: 30,y: 30,w: 50, h: 50}, 'class_name': cat,'conf': 0.8}, ...],
-    asset-name-1: [...],
+    asset-name-0: {'annotations': [{'box': {'x': 30, 'y': 30, 'w': 50, 'h': 50}, 'class_name': 'cat','score': 0.8}, ...]},
+    asset-name-1: {'annotations': [...]},
     ...
   }
 }
@@ -276,8 +278,8 @@ model:
 
 其中：
 
-* asset-name-0, asset-name-1就是 `/in/candidate/index.tsv` 里面的资源名称
+* asset-name-0, asset-name-1就是 `/in/candidate/index.tsv` 里面的资源名称 (base name)
 
-* box的结构为：x, y, w, h，原图片坐标系
+* box的结构为：x, y, w, h，参考系为图片坐标系，左上角为原点
 
-* class_name：模型推断出的类别名称
+* class_name：模型推断出的类别名称，此名称需要出现在 `/in/config.yaml` 中的 `class_names` 列表中
