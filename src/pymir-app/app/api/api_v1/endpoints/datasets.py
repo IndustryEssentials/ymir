@@ -94,23 +94,28 @@ def get_public_datasets(
 def create_dataset(
     *,
     db: Session = Depends(deps.get_db),
-    dataset_input: schemas.DatasetInput,
+    dataset_import: schemas.DatasetImport,
     current_user: models.User = Depends(deps.get_current_active_user),
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
     """
-    Create dataset
+    Create dataset.
+
+    Three Import Strategy:
+    - no_annotations = 1
+    - ignore_unknown_annotations = 2
+    - stop_upon_unknown_annotations = 3
     """
     dataset = crud.dataset.get_by_user_and_name(
-        db, user_id=current_user.id, name=dataset_input.name
+        db, user_id=current_user.id, name=dataset_import.name
     )
     if dataset:
         raise DuplicateDatasetError()
 
     pre_dataset = PrepareDataset.from_dataset_input(
-        current_user.id, current_workspace.hash, dataset_input
+        current_user.id, current_workspace.hash, dataset_import
     )
 
     task_in = schemas.TaskCreate(name=pre_dataset.task_id, type=pre_dataset.task_type)
@@ -122,7 +127,7 @@ def create_dataset(
     logger.info("[create dataset] task created and hided: %s", task)
 
     dataset_in = schemas.DatasetCreate(
-        name=dataset_input.name,
+        name=dataset_import.name,
         hash=pre_dataset.task_id,
         type=pre_dataset.task_type,
         user_id=current_user.id,
@@ -148,14 +153,15 @@ class PrepareDataset:
     src_path: Optional[str]
     task_type: TaskType
     task_id: str
+    strategy: schemas.ImportStrategy
 
     @classmethod
     def from_dataset_input(
-        cls, user_id: int, workspace: Optional[str], dataset_input: schemas.DatasetInput
+        cls, user_id: int, workspace: Optional[str], dataset_import: schemas.DatasetImport
     ) -> "PrepareDataset":
-        if dataset_input.input_url or dataset_input.input_path:
+        if dataset_import.input_url or dataset_import.input_path:
             task_type = TaskType.import_data
-        elif dataset_input.input_dataset_id:
+        elif dataset_import.input_dataset_id:
             task_type = TaskType.copy_data
         else:
             logger.exception(
@@ -166,11 +172,12 @@ class PrepareDataset:
         return cls(
             user_id=user_id,
             workspace=workspace,
-            src_url=dataset_input.input_url,
-            src_dataset_id=dataset_input.input_dataset_id,
-            src_path=dataset_input.input_path,
+            src_url=dataset_import.input_url,
+            src_dataset_id=dataset_import.input_dataset_id,
+            src_path=dataset_import.input_path,
             task_type=task_type,
             task_id=task_id,
+            strategy=dataset_import.strategy,
         )
 
 
@@ -228,6 +235,7 @@ def _import_dataset(
             "src_dataset_id": dataset.hash,  # type: ignore
         }
 
+    parameters["strategy"] = pre_dataset.strategy  # type: ignore
     req = ControllerRequest(
         pre_dataset.task_type,
         pre_dataset.user_id,

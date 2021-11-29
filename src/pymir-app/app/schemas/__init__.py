@@ -2,10 +2,11 @@ from .asset import Asset, AssetOut, Assets
 from .dataset import (
     Dataset,
     DatasetCreate,
-    DatasetInput,
+    DatasetImport,
     DatasetOut,
     Datasets,
     DatasetUpdate,
+    ImportStrategy,
 )
 from .graph import Graph, GraphOut
 from .inference import InferenceCreate, InferenceOut
