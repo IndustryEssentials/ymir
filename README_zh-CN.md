@@ -6,9 +6,11 @@
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **目录**
 
-- [1.  AI SUITE-YMIR介绍](#1--ai-suite-ymir%E4%BB%8B%E7%BB%8D)
+- [文章引用](#文章引用)
+- [1. AI SUITE-YMIR介绍](#1--ai-suite-ymir%E4%BB%8B%E7%BB%8D)
   - [1.1.	主要功能](#11-主要功能)
   - [1.2.	申请试用](#12-申请试用)
 - [2. 安装](#2-%E5%AE%89%E8%A3%85)
@@ -53,9 +55,22 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+# 文章引用
+
+如要在您的工作中引用YMIR，请使用下面的Bibtex：
+
+```bibtex
+@inproceedings{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
+      year={2021},
+}
+```
+
 # 1.  AI SUITE-YMIR介绍
 
-YMIR是一个简化的模型开发产品，专注于AI SUITE开源系列中的数据集版本和模型迭代。
+YMIR(You Mine In Recursion)是一个简化的模型开发产品，专注于AI SUITE开源系列中的数据集版本和模型迭代。
 
 目前人工智能商业化在算力、算法和技术方面达到阶段性成熟。AI应用在产品落地过程中经常会遇到无法大规模扩展的瓶颈，例如人才紧缺、开发成本高、迭代周期长等问题。
 
