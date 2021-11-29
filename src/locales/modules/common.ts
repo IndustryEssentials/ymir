@@ -1,5 +1,7 @@
 const common = {
   'common.top.menu.logout': { cn: '退出', en: 'Logout', },
+  'common.top.menu.user': { cn: '用户管理', en: 'User', },
+  'common.top.menu.community': { cn: '开源社区', en: 'GitHub', },
   'common.top.menu.home': { cn: "主页", en: "Home", },
   'common.top.menu.task': { cn: "任务管理", en: "Task", },
   'common.top.menu.dataset': { cn: "数据集管理", en: "Dataset", },
@@ -46,6 +48,7 @@ const common = {
   'common.qa.action.train': {cn: '训练{br}模型', en: 'Train Model', },
   'common.qa.action.guide': {cn: '操作{br}指引', en: 'Guide', },
   'common.empty.keywords': {cn: '无标签', en: 'None', },
+  'common.modify': {cn: '修改', en: 'Modify', },
 }
 
 export default common

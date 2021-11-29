@@ -85,7 +85,7 @@ function Verify({ getModel, verify }) {
         type='primary'
         className={styles.verify_uploader}
         onChange={(result) => { setUrl(result) }}
-        format='jpg'
+        format='img'
         label={label}
         showUploadList={false}
         max={IMGSIZELIMIT}

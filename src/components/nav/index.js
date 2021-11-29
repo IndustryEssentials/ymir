@@ -16,6 +16,7 @@ import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavTaskIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
 import GuideStep from "../guide/step"
+import { GithubIcon, UserIcon } from "../common/icons"
 
 const { SubMenu } = Menu
 
@@ -87,7 +88,7 @@ function getParantPath(path) {
   return path.replace(/^(\/home\/[^\/]+).*/, "$1")
 }
 
-function HeaderNav({ simple = false, username, loginout }) {
+function HeaderNav({ simple = false, username, loginout, avatar }) {
   // const location = useLocation()
   const [defaultKeys, setDefaultKeys] = useState(null)
   const location = useLocation()
@@ -123,9 +124,14 @@ function HeaderNav({ simple = false, username, loginout }) {
 
   const menu = (
     <Menu className={styles.popMenu}>
-      <Menu.Item key="logout" onClick={out}>
-        <LogoutOutlined />&nbsp;&nbsp;
-        {t('common.top.menu.logout')}
+      <Menu.Item onClick={() => history.push('/home/user')}>
+        <UserIcon /> {t('common.top.menu.user')}
+      </Menu.Item>
+      <Menu.Item>
+        <a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>
+      </Menu.Item>
+      <Menu.Item onClick={out}>
+        <LogoutOutlined /> {t('common.top.menu.logout')}
       </Menu.Item>
     </Menu>
   )
@@ -205,7 +211,7 @@ function HeaderNav({ simple = false, username, loginout }) {
             </Popover>
             <Dropdown overlay={menu} placement="bottomRight">
               <div className={styles.user}>
-                <span className={styles.avatar}>{(username || 'Y').charAt(0).toUpperCase()}</span>
+                <span className={styles.avatar}>{avatar ? <img src={avatar} /> : (username || 'Y').charAt(0).toUpperCase()}</span>
                 <span>{username}</span>
                 <ArrowDownIcon />
               </div>
@@ -223,6 +229,7 @@ const mapStateToProps = (state) => {
   return {
     logined: state.user.logined,
     username: state.user.username,
+    avatar: state.user.avatar,
     current: state.watchRoute.current,
   }
 }

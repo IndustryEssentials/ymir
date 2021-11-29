@@ -121,7 +121,6 @@ describe("models: user", () => {
     const saga = user.effects.getUserInfo
     const creator = {
       type: "getUserInfo",
-      payload: {},
     }
     const expected = Expected
 
@@ -145,7 +144,6 @@ describe("models: user", () => {
     const saga = user.effects.getUserInfo
     const creator = {
       type: "getUserInfo",
-      payload: {},
     }
 
     const userinfo = { id: 3434 }
@@ -156,6 +154,29 @@ describe("models: user", () => {
     const end = generator.next(userinfo)
 
     expect(end.value.id).toBe(userinfo.id)
+    expect(end.done).toBe(true)
+  })
+  it("effects: getUserInfo -> always get info from net", () => {
+    const saga = user.effects.getUserInfo
+    const expected = Expected
+
+    const creator = {
+      type: "getUserInfo",
+      payload: true, // always get info from net
+    }
+
+    const userinfo = { id: 3434 }
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const getCacheUser = generator.next(userinfo)
+    const getUserInfo = generator.next({
+      code: 0,
+      result: expected,
+    })
+    const end = generator.next()
+
+    expect(JSON.stringify(end.value)).toBe(JSON.stringify(expected))
     expect(end.done).toBe(true)
   })
   it("effects: loginout", () => {

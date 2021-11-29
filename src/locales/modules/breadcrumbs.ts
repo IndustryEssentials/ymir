@@ -20,6 +20,7 @@ const breadcrumbs = {
   'breadcrumbs.keyword': { cn: '标签管理', en: 'Keyword List', },
   'breadcrumbs.configure': { cn: '资源配置', en: 'Configure', },
   'breadcrumbs.configure.permission': { cn: '权限配置', en: 'Permission', },
+  'breadcrumbs.user.info': { cn: '用户管理', en: 'User Information', },
 }
 
 export default breadcrumbs

@@ -462,7 +462,6 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
           </ConfigProvider>
         </div>
       </div>
-      <Add visible={showAdd} id={location.state?.id} cancel={() => setShowAdd(false)} ok={() => { history.replace('/home/dataset'); resetQuery(); getData() }} />
       <EditBox record={current} action={saveName}>
         {current.type ? <Form.Item
           label={t('dataset.column.source')}
