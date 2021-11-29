@@ -24,6 +24,7 @@ class Asset(BaseModel):
 
         result = dict(
             class_ids_count=assets_content["class_ids_count"],
+            ignored_labels=assets_content["ignored_labels"],
             elements=elements,
             limit=limit,
             offset=offset,
@@ -47,10 +48,17 @@ class Asset(BaseModel):
         elements = []
         for asset_id, asset_detail in zip(asset_ids, assets_detail):
             elements.append(dict(asset_id=asset_id, class_ids=json.loads(asset_detail)["class_ids"]))
-        class_ids_count = redis_cache.get(f"{cache_key}:{config.ASSETS_CLASS_IDS_COUNT}")
+        assets_attributes = redis_cache.get(f"{cache_key}:{config.ASSETS_ATTRIBUTES}")
         total = redis_cache.llen(f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}")
 
-        result = dict(class_ids_count=class_ids_count, elements=elements, limit=limit, offset=offset, total=total)
+        result = dict(
+            class_ids_count=assets_attributes["class_ids_count"],
+            ignored_labels=assets_attributes["ignored_labels"],
+            elements=elements,
+            limit=limit,
+            offset=offset,
+            total=total,
+        )
 
         return result
 

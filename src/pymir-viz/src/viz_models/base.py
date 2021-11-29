@@ -63,7 +63,10 @@ class BaseModel:
                 pipe.lpush(f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}", *assets_list["asset_ids"])
             pipe.execute()
 
-        redis_cache.set(f"{cache_key}:{config.ASSETS_CLASS_IDS_COUNT}", asset_content["class_ids_count"])
+        redis_cache.set(
+            f"{cache_key}:{config.ASSETS_ATTRIBUTES}",
+            {"class_ids_count": asset_content["class_ids_count"], "ignored_labels": asset_content["ignored_labels"]},
+        )
         redis_cache.set(f"{cache_key}:{config.CACHE_STATUS}", {"flag": 1})
         app_logger.logger.info("finish setting cache!!!")
 
