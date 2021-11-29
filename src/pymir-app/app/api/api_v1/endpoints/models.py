@@ -2,14 +2,24 @@ import random
 import secrets
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, BackgroundTasks
+from fastapi.encoders import jsonable_encoder
+from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import DuplicateModelError, ModelNotFound, NoModelPermission
+from app.api.errors.errors import (
+    DuplicateModelError,
+    ModelNotFound,
+    NoModelPermission,
+    InvalidConfiguration,
+)
 from app.models.task import TaskType
 from app.utils.stats import RedisStats
+from app.utils.ymir_controller import ControllerRequest
+from app.utils.files import save_file
+from app.config import settings
 
 router = APIRouter()
 
@@ -50,6 +60,56 @@ def list_models(
     )
     payload = {"total": total, "items": models}
     return {"result": payload}
+
+
+@router.post(
+    "/", response_model=schemas.ModelOut,
+)
+def import_model(
+    *,
+    db: Session = Depends(deps.get_db),
+    model_import: schemas.ModelImport,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
+    background_tasks: BackgroundTasks,
+) -> Any:
+    existing_model_name = crud.model.get_by_user_and_name(
+        db, user_id=current_user.id, name=model_import.name
+    )
+    if existing_model_name:
+        raise DuplicateModelError()
+
+    if not settings.MODELS_PATH:
+        raise InvalidConfiguration()
+
+    task_id = ControllerRequest.gen_task_id(current_user.id)
+    task_in = schemas.TaskCreate(name=task_id, type=TaskType.import_data)
+    task = crud.task.create_task(
+        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
+    )
+    crud.task.soft_remove(db, id=task.id)
+    logger.info("[import model] task created and hided: %s", task)
+
+    existing_model_hash = crud.model.get_by_hash(
+        db, hash_=model_import.hash
+    )
+
+    model_info = jsonable_encoder(model_import)
+    model_in = schemas.ModelCreate(**model_info)
+    model = crud.model.create(db, obj_in=model_in)
+    logger.info("[import model] model record created: %s", model)
+
+    if existing_model_hash:
+        logger.info("model of same hash (%s) existing, just add a new reference", model_import.hash)
+    else:
+        background_tasks.add_task(
+            save_model_file, model_import.input_url, settings.MODELS_PATH
+        )
+
+
+def save_model_file(model_url: str, storage_path: str) -> None:
+    logger.info("[import model] start importing model file from %s", model_url)
+    save_file(model_url, storage_path)
 
 
 @router.delete(

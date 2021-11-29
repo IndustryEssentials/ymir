@@ -22,25 +22,15 @@ class ModelBase(BaseModel):
         description="input parameters of related training task"
     )
     task_id: Optional[int]
-    user_id: int
-
-
-class ModelInput(BaseModel):
-    name: str = Field(description="dataset name")
-    input_url: Optional[AnyHttpUrl] = Field(description="from url")
-    input_model_id: Optional[int] = Field(description="from other's model")
-    input_token: Optional[str] = Field(description="from uploaded file token")
-
-    @root_validator
-    def check_input_source(cls, values: Any) -> Any:
-        fields = ("input_url", "input_model_id", "input_token")
-        if all(values.get(i) is None for i in fields):
-            raise ValueError("Missing input source")
-        return values
+    user_id: Optional[int]
 
 
 class ModelCreate(ModelBase):
     pass
+
+
+class ModelImport(ModelBase):
+    input_url: str
 
 
 class ModelUpdate(BaseModel):
