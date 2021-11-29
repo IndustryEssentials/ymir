@@ -8,7 +8,6 @@ import math
 import os
 import traceback
 from typing import Any, Callable, Dict, List, Optional
-from unittest.case import expectedFailure
 
 from mir.tools.code import MirCode
 from mir.tools import revs_parser, mir_repo_utils

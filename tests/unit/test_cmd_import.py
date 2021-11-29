@@ -190,11 +190,9 @@ class TestCmdImport(unittest.TestCase):
                 'keywords': {
                     'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
                         'predifined_keyids': [1],
-                        'customized_keywords': ['ck0'],
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'predifined_keyids': [1],
-                        'customized_keywords': ['ck0'],
                     }
                 },
                 'predifined_keyids_cnt': {
@@ -207,21 +205,15 @@ class TestCmdImport(unittest.TestCase):
                         ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
                     }
                 },
-                'customized_keywords_cnt': {
-                    'ck0': 2,
-                },
-                'customized_keywords_total': 2,
             }
         else:
             dict_keywords_expect = {
                 'keywords': {
                     'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
                         'predifined_keyids': [1],
-                        'customized_keywords': ['ck0'],
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'predifined_keyids': [1, 2],
-                        'customized_keywords': ['ck0'],
                     }
                 },
                 'predifined_keyids_cnt': {
@@ -238,10 +230,6 @@ class TestCmdImport(unittest.TestCase):
                         ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
                     }
                 },
-                'customized_keywords_cnt': {
-                    'ck0': 2,
-                },
-                'customized_keywords_total': 2,
             }
         try:
             self.assertDictEqual(dict_keywords, dict_keywords_expect)

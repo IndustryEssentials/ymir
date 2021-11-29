@@ -331,7 +331,6 @@ class CmdMerge(base.BaseCommand):
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: host_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: host_mir_annotations,
-            mirpb.MirStorage.MIR_KEYWORDS: host_mir_keywords,
             mirpb.MirStorage.MIR_TASKS: host_mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,

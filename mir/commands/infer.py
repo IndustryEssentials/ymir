@@ -42,7 +42,9 @@ class CmdInfer(base.BaseCommand):
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
-                                      executor_instance=self.args.executor_instance)
+                                      executor_instance=self.args.executor_instance,
+                                      run_infer=True,
+                                      run_mining=False)
 
     @staticmethod
     def run_with_args(work_dir: str,
@@ -55,7 +57,8 @@ class CmdInfer(base.BaseCommand):
                       executor_instance: str,
                       task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
-                      process_infer_results: bool = True) -> int:
+                      run_infer: bool = False,
+                      run_mining: bool = False) -> int:
         """run infer command
 
         This function can be called from cmd infer, or as part of minig cmd
@@ -72,7 +75,8 @@ class CmdInfer(base.BaseCommand):
             executor_instance (str): docker container name
             task_id (str, optional): id of this infer (or mining) task. Defaults to 'default-infer' + timestamp.
             shm_size (str, optional): shared memory size used to start the infer docker. Defaults to None.
-            process_infer_results (bool, optional): if true, process infer-result.json. Defaults to True.
+            run_infer (bool, optional): run or not run infer. Defaults to False.
+            run_mining (bool, optional): run or not run mining, Defaults to False.
 
         Returns:
             int: [description]
@@ -98,6 +102,10 @@ class CmdInfer(base.BaseCommand):
             logging.error(f"invalid --config-file {config_file}, not a file, abort")
             return MirCode.RC_CMD_INVALID_ARGS
 
+        if not run_infer and not run_mining:
+            logging.error('invalid run_infer and run_mining: both false')
+            return MirCode.RC_CMD_INVALID_ARGS
+
         if not executor:
             logging.error('empty --executor, abort')
             return MirCode.RC_CMD_INVALID_ARGS
@@ -119,7 +127,9 @@ class CmdInfer(base.BaseCommand):
                             dst_config_file=work_config_file,
                             class_names=class_names,
                             task_id=task_id,
-                            model_params_path=os.path.join('/in/model', rel_model_params_path))
+                            model_params_path=os.path.join('/in/model', rel_model_params_path),
+                            run_infer=run_infer,
+                            run_mining=run_mining)
 
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
@@ -131,7 +141,7 @@ class CmdInfer(base.BaseCommand):
                        shm_size=shm_size,
                        task_type=task_id)
 
-        if process_infer_results:
+        if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
                                    max_boxes=_get_max_boxes(config_file))
 
@@ -362,33 +372,37 @@ def _unpack_models(tar_file: str, dest_root: str) -> Tuple[str, str, str]:
 # public: cli bind
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                        parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
-    infer_arg_parser = subparsers.add_parser("infer",
-                                             description="use this command to inference images",
-                                             help="inference images")
-    infer_arg_parser.add_argument("-w",
-                                  required=True,
-                                  dest="work_dir",
-                                  type=str,
-                                  help="work place for mining and monitoring")
-    infer_arg_parser.add_argument("--model-location",
-                                  required=True,
-                                  dest="model_location",
-                                  type=str,
-                                  help="model storage location for models")
-    infer_arg_parser.add_argument("--model-hash",
-                                  dest="model_hash",
+    infer_arg_parser = subparsers.add_parser('infer',
+                                             description='use this command to inference images',
+                                             help='inference images')
+    infer_arg_parser.add_argument('--index-file',
+                                  dest='index_file',
                                   type=str,
                                   required=True,
-                                  help="model hash to be used")
-    infer_arg_parser.add_argument("--index-file", dest="index_file", type=str, required=True, help="path to index file")
-    infer_arg_parser.add_argument("--config-file",
-                                  dest="config_file",
+                                  help='path to index file')
+    infer_arg_parser.add_argument('-w',
+                                  required=True,
+                                  dest='work_dir',
+                                  type=str,
+                                  help='work place for mining and monitoring')
+    infer_arg_parser.add_argument('--model-location',
+                                  required=True,
+                                  dest='model_location',
+                                  type=str,
+                                  help='model storage location for models')
+    infer_arg_parser.add_argument('--model-hash',
+                                  dest='model_hash',
                                   type=str,
                                   required=True,
-                                  help="path to executor config file")
-    infer_arg_parser.add_argument("--executor",
+                                  help='model hash to be used')
+    infer_arg_parser.add_argument('--config-file',
+                                  dest='config_file',
+                                  type=str,
                                   required=True,
-                                  dest="executor",
+                                  help='path to executor config file')
+    infer_arg_parser.add_argument('--executor',
+                                  required=True,
+                                  dest='executor',
                                   type=str,
                                   help="docker image name for infer or mining")
     infer_arg_parser.add_argument('--executor-instance',

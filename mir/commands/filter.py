@@ -167,7 +167,6 @@ class CmdFilter(base.BaseCommand):
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-            mirpb.MirStorage.MIR_KEYWORDS: matched_mir_keywords,
             mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
 

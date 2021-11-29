@@ -5,9 +5,9 @@ from typing import Dict, List, Set, Tuple
 
 import xml.dom.minidom
 
-from mir.tools import class_ids
+from mir.tools import class_ids, mir_storage_ops
 from mir.tools.code import MirCode
-from mir.tools.phase_logger import PhaseLogger, PhaseLoggerCenter, PhaseStateEnum
+from mir.tools.phase_logger import PhaseLoggerCenter, PhaseStateEnum
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -172,7 +172,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
                 logging.error(f"cannot open annotation_file: {annotation_file}")
                 return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
 
-            single_asset_keyids_set = set()
             collection = dom_tree.documentElement
             objects = collection.getElementsByTagName("object")
             for idx, obj in enumerate(objects):
@@ -181,10 +180,8 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
                     annotation = _xml_obj_to_annotation(obj, class_type_manager)
                     annotation.index = idx
                     image_annotations[asset_hash].annotations.append(annotation)
-                    single_asset_keyids_set.add(annotation.class_id)
                 else:
                     unknown_types_and_count[type_name] += 1
-            mir_keywords.keywords[asset_hash].predifined_keyids[:] = single_asset_keyids_set
 
         # import customized keywords
         if file_path in cks:

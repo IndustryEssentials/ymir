@@ -141,6 +141,7 @@ class TestMiningCmd(unittest.TestCase):
         args.model_location = self._storage_root
         args.media_location = self._storage_root
         args.topk = 1
+        args.add_annotations = False
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
@@ -158,7 +159,8 @@ class TestMiningCmd(unittest.TestCase):
                                          shm_size='16G',
                                          executor=args.executor,
                                          executor_instance=args.executor_instance,
-                                         process_infer_results=False)
+                                         run_infer=False,
+                                         run_mining=True)
 
         if os.path.isdir(self._sandbox_root):
             shutil.rmtree(self._sandbox_root)
