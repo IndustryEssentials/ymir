@@ -77,7 +77,7 @@ class LabelStudio(LabelBase):
             label_config=label_config,
             expert_instruction=expert_instruction,
         )
-        resp = self.requests.post(url_path, data)
+        resp = self.requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp)["id"]
 
         return project_id
@@ -94,7 +94,7 @@ class LabelStudio(LabelBase):
             description="description",
         )
 
-        resp = self.requests.post(url_path, data)
+        resp = self.requests.post(url_path=url_path, json_data=data)
         storage_id = json.loads(resp)["id"]
 
         return storage_id
@@ -111,12 +111,12 @@ class LabelStudio(LabelBase):
             description="description",
         )
 
-        self.requests.post(url_path, data)
+        self.requests.post(url_path=url_path, json_data=data)
 
     def sync_import_storage(self, storage_id: int) -> None:
         # Sync tasks from a local file import storage connection
         url_path = f"/api/storages/localfiles/{storage_id}/sync"
-        self.requests.post(url_path)
+        self.requests.post(url_path=url_path)
 
     def get_task_completion_percent(self, project_id: int) -> float:
         def safe_div(a: int, b: int) -> float:
@@ -131,7 +131,7 @@ class LabelStudio(LabelBase):
 
     def get_project_info(self, project_id: int) -> Dict:
         url_path = f"/api/projects/{project_id}"
-        resp = self.requests.get(url_path)
+        resp = self.requests.get(url_path=url_path)
         return json.loads(resp)
 
     def get_unlabeled_task(self, task_num: int, project_id: int) -> List:
@@ -182,7 +182,7 @@ class LabelStudio(LabelBase):
 
     def convert_annotation_to_voc(self, project_id: int, des_path: str) -> None:
         url_path = f"/api/projects/{project_id}/export?exportType=VOC"
-        resp = self.requests.get(url_path)
+        resp = self.requests.get(url_path=url_path)
         self.unzip_annotation_files(BytesIO(resp), des_path)
 
         logger.info(f"success convert_annotation_to_ymir: {des_path}")
