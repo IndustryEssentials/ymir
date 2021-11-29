@@ -36,6 +36,7 @@ class Settings(BaseSettings):
 
     # paths to share data with Controller, etc
     SHARED_DATA_DIR: str = "./"
+    MODELS_PATH: Optional[str] = None
 
     # redis
     REDIS_URI: str = "redis://redis:6379/0"

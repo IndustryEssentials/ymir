@@ -113,6 +113,11 @@ class RequiredFieldMissing(APIError):
     message = "Required Field Missing"
 
 
+class InvalidConfiguration(APIError):
+    code = error_codes.INVALID_CONFIGURATION
+    message = "API Configuration Error"
+
+
 class FieldValidationFailed(APIError):
     code = error_codes.VALIDATION_FAILED
     message = "Field Validation Failed"
