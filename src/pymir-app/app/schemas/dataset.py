@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+import enum
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyHttpUrl, BaseModel, Field, root_validator, validator
@@ -13,6 +14,12 @@ from app.schemas.common import (
 )
 
 
+class ImportStrategy(enum.IntEnum):
+    no_annotations = 1
+    ignore_unknown_annotations = 2
+    stop_upon_unknown_annotations = 3
+
+
 class DatasetBase(BaseModel):
     name: str
     hash: str
@@ -24,12 +31,13 @@ class DatasetBase(BaseModel):
     task_id: Optional[int]
 
 
-class DatasetInput(BaseModel):
+class DatasetImport(BaseModel):
     name: str = Field(description="dataset name")
     input_url: Optional[Union[AnyHttpUrl, str]] = Field(description="from url")
     input_dataset_id: Optional[int] = Field(description="from other's dataset")
     input_token: Optional[str] = Field(description="from uploaded file token")
     input_path: Optional[str] = Field(description="from path on ymir server")
+    strategy: ImportStrategy = Field(description="strategy about importing annotations")
 
     @root_validator
     def check_input_source(cls, values: Any) -> Any:

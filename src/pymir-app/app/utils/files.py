@@ -21,6 +21,8 @@ from requests.exceptions import (
     Timeout,
 )
 
+from app.config import settings
+
 env = os.environ.get
 
 BUF_SIZE = 65536
@@ -135,3 +137,11 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
     for example, /x/y/z is relative to /x/
     """
     return Path(path_short) in Path(path_long).parents
+
+
+def purge_contents_of_a_dir(directory: str) -> None:
+    if not is_relative_to(directory, settings.SHARED_DATA_DIR):
+        return
+    p = Path(directory)
+    shutil.rmtree(p)
+    p.mkdir()

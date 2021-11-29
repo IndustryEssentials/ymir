@@ -3,7 +3,7 @@ import itertools
 import secrets
 import time
 from dataclasses import dataclass
-from typing import Dict, Generator, List, Optional, Union
+from typing import Dict, Generator, List, Union, Optional
 
 import grpc
 from google.protobuf import json_format  # type: ignore
@@ -11,8 +11,10 @@ from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
 from fastapi.logger import logger
 
-from app.models.task import Task, TaskType
+from app.models.task import TaskType, Task
+from app.schemas.dataset import ImportStrategy
 from id_definition.task_id import TaskId
+from app.utils.files import purge_contents_of_a_dir
 
 
 class ExtraRequestType(enum.IntEnum):
@@ -158,6 +160,18 @@ class ControllerRequest:
         importing_request = mirsvrpb.TaskReqImporting()
         importing_request.asset_dir = args["asset_dir"]
         importing_request.annotation_dir = args["annotation_dir"]
+        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
+        if strategy is ImportStrategy.ignore_unknown_annotations:
+            importing_request.name_strategy_ignore = True
+        elif strategy is ImportStrategy.stop_upon_unknown_annotations:
+            importing_request.name_strategy_ignore = False
+        elif strategy is ImportStrategy.no_annotations:
+            # underlying stuff requires the `annotation_dir` anyway
+            purge_contents_of_a_dir(args["annotation_dir"])
+            # name_strategy_ignore has no effect actually, but it's required
+            importing_request.name_strategy_ignore = False
+        else:
+            raise ValueError("not supported strategy: %s" % strategy.name)
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportData
@@ -191,6 +205,14 @@ class ControllerRequest:
         self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         copy_request = mirsvrpb.TaskReqCopyData()
+        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
+        if strategy is ImportStrategy.ignore_unknown_annotations:
+            copy_request.name_strategy_ignore = True
+        elif strategy is ImportStrategy.stop_upon_unknown_annotations:
+            copy_request.name_strategy_ignore = False
+        else:
+            raise ValueError("not supported strategy: %s" % strategy.name)
+
         copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
         copy_request.src_dataset_id = args["src_dataset_id"]
