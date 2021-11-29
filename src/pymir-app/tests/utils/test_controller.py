@@ -107,6 +107,17 @@ class TestControllerRequest:
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
         assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeCopyData
 
+    def test_kill(self, mocker):
+        task_type = m.ExtraRequestType.kill
+        user_id = random.randint(1000, 2000)
+        task = mocker.Mock(hash=random_lower_string(), type=m.TaskType.label)
+
+        kill_label_task = m.ControllerRequest(task_type, user_id, args={"target_container": task.hash, "is_label_task": True})
+        assert kill_label_task.req.req_type == m.mirsvrpb.CMD_LABLE_TASK_TERMINATE
+
+        kill_other_task = m.ControllerRequest(task_type, user_id, args={"target_container": task.hash, "is_label_task": False})
+        assert kill_other_task.req.req_type == m.mirsvrpb.CMD_KILL
+
 
 class TestControllerClient:
     def test_close_controller(self, mocker):
