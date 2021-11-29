@@ -38,6 +38,14 @@ export function getMeInfo() {
   return request.get("/users/me")
 }
 
+export function updateUserInfo(info) {
+  return request({
+    method: 'PATCH',
+    url: '/users/me',
+    data: info,
+  })
+}
+
 export function forgetPwd(email) {
   return request.post(`/password-recovery/${email}`)
 }

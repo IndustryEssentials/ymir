@@ -130,6 +130,12 @@ const Routes = [
         component: "@/pages/keyword/index",
         title: "keywords.title",
       },
+      {
+        path: "/home/user",
+        name: "user",
+        component: "@/pages/user/info",
+        title: "keywords.title",
+      },
     ],
   },
   {

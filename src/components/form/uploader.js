@@ -1,17 +1,20 @@
 import { Button, message, Upload } from "antd"
+import ImgCrop from 'antd-img-crop'
+
 import { CloudUploadOutlined } from "@ant-design/icons"
 import { getUploadUrl } from "../../services/common"
 import storage from '@/utils/storage'
 import t from '@/utils/t'
+import 'antd/es/slider/style'
 
 const typeFormat = {
-  jpg: ['image/jpeg', 'image/png', 'image/gif'],
+  img: ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'],
   zip: ['application/zip'],
   doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/pdf'],
 }
 
 function Uploader({ className, value, format="zip", label, max = 200, 
-  maxCount = 1, info = '', type='', showUploadList = true, onChange}) {
+  maxCount = 1, info = '', type='', crop = false, showUploadList = true, onChange = ()=> {}}) {
 
   label = label || t('model.add.form.upload.btn')
 
@@ -22,7 +25,7 @@ function Uploader({ className, value, format="zip", label, max = 200,
   }
 
   function beforeUpload(file) {
-    // console.log('file: ', file)
+    console.log('file: ', file)
     const isValid = typeFormat[format].indexOf(file.type) > -1
     if (!isValid) {
       message.error('You can only upload valid format file!')
@@ -40,9 +43,7 @@ function Uploader({ className, value, format="zip", label, max = 200,
     }
   }
 
-  return (
-    <>
-      <Upload
+  const uploader = <Upload
         className={className}
         action={getUploadUrl()}
         name='file'
@@ -55,6 +56,10 @@ function Uploader({ className, value, format="zip", label, max = 200,
       >
         <Button type={type} icon={<CloudUploadOutlined />}>{label}</Button>
       </Upload>
+
+  return (
+    <>
+      { format === 'img' && crop ? <ImgCrop rotate>{uploader}</ImgCrop> : uploader}
       {info ? <p style={{ margin: '10px 0' }}>{info}</p> : null }
     </>
   )

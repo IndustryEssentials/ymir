@@ -1,4 +1,4 @@
-import { login, loginout, getMeInfo, signup, resetPwd, modifyPwd, forgetPwd } from "../Auth"
+import { login, loginout, getMeInfo, signup, resetPwd, modifyPwd, forgetPwd } from "../user"
 import request from '@/utils/request'
 
 jest.mock('@/utils/request', () => {
@@ -8,7 +8,7 @@ jest.mock('@/utils/request', () => {
   return req
 })
 
-describe("service: auth", () => {
+describe("service: user", () => {
   it("login -> success", () => {
     const params = { username: "idol", password: "1q2w3e" }
     const expected = "token"

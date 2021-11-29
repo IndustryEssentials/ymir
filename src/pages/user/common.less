@@ -108,3 +108,48 @@
     height: 60px;
   }
 }
+.info {
+  height: 100%;
+  .container {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+    :global(.ant-card-body) {
+      flex: 1;
+      overflow-y: auto;
+    }
+  }
+  .icon {
+    width: 50px;
+    height: 50px;
+    background: @primary-color;
+    border-radius: 100px;
+    text-align: center;
+    line-height: 50px;
+    vertical-align: middle;
+    color: #fff;
+    :global(.anticon) {
+      font-size: 26px;
+    }
+  }
+  .avatarContent {
+    margin: 20px 0;
+    text-align: center;
+    .avatar {
+      margin: 10px auto;
+      width: 100px;
+      height: 100px;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 200px;
+      overflow: hidden;
+      :global(.anticon) {
+        line-height: 146px;
+      }
+      img {
+        display: block;
+        width: 100px;
+      }
+    }
+  }
+}

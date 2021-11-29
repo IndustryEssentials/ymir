@@ -54,6 +54,7 @@
     "@antv/graphin-icons": "^1.0.0",
     "@umijs/preset-react": "^1.8.26",
     "antd": "^4.16.0",
+    "antd-img-crop": "^3.16.0",
     "axios": "^0.21.4",
     "color": "^4.0.1",
     "crypto-js": "^4.1.1",
