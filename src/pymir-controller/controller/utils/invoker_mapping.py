@@ -13,6 +13,8 @@ from controller.invoker import (
     invoker_cmd_task_info,
     invoker_cmd_label_get,
     invoker_cmd_label_add,
+    invoker_cmd_kill,
+    invoker_cmd_finish_label
 )
 
 from proto import backend_pb2
@@ -33,4 +35,6 @@ RequestTypeToInvoker = {
     backend_pb2.TASK_INFO: invoker_cmd_task_info.GetTaskInfoInvoker,
     backend_pb2.CMD_LABEL_ADD: invoker_cmd_label_add.LabelAddInvoker,
     backend_pb2.CMD_LABEL_GET: invoker_cmd_label_get.LabelGetInvoker,
+    backend_pb2.CMD_KILL: invoker_cmd_kill.KillCMDInvoker,
+    backend_pb2.CMD_LABLE_TASK_TERMINATE: invoker_cmd_finish_label.FinishLabelTaskInvoker,
 }
