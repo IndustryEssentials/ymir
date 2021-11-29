@@ -11,7 +11,7 @@ from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
 from fastapi.logger import logger
 
-from app.models.task import TaskType
+from app.models.task import Task, TaskType
 from id_definition.task_id import TaskId
 
 
@@ -21,6 +21,7 @@ class ExtraRequestType(enum.IntEnum):
     inference = 300
     add_label = 400
     get_label = 401
+    kill = 500
 
 
 def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
@@ -48,7 +49,10 @@ class ControllerRequest:
         if self.task_id is None:
             self.task_id = self.gen_task_id(self.user_id)
         request = mirsvrpb.GeneralReq(
-            user_id=self.user_id, repo_id=self.repo_id, task_id=self.task_id
+            user_id=self.user_id,
+            repo_id=self.repo_id,
+            task_id=self.task_id,
+            executor_instance=self.task_id,
         )
 
         method_name = "prepare_" + self.type.name
@@ -222,6 +226,16 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_LABEL_GET
         return request
 
+    def prepare_kill(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
+        if args["is_label_task"]:
+            request.req_type = mirsvrpb.CMD_LABLE_TASK_TERMINATE
+        else:
+            request.req_type = mirsvrpb.CMD_KILL
+        request.executor_instance = args["target_container"]
+        return request
+
 
 class ControllerClient:
     def __init__(self, channel: str) -> None:
@@ -247,3 +261,14 @@ class ControllerClient:
         resp = self.send(req)
         logger.info("[controller] get labels response: %s", resp)
         return list(resp["csv_labels"])
+
+    def terminate_task(self, user_id: int, target_task: Task) -> Dict:
+        req = ControllerRequest(
+            ExtraRequestType.kill,
+            user_id=user_id,
+            args={
+                "target_container": target_task.hash,
+                "is_label_task": target_task.type is TaskType.label,
+            },
+        )
+        return self.send(req)

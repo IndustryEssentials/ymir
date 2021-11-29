@@ -288,6 +288,26 @@ def update_task_name(
 
 
 @router.post(
+    "/{task_id}/terminate", response_model=schemas.TaskOut,
+)
+def terminate_task(
+    db: Session = Depends(deps.get_db),
+    task_id: int = Path(..., example="12"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    task = crud.task.get(db, id=task_id)
+    if not task:
+        raise TaskNotFound()
+    killable_task_types = [TaskType.training, TaskType.mining, TaskType.label]
+    if task.type in killable_task_types:
+        controller_client.terminate_task(user_id=current_user.id, target_task=task)
+    if task.type is not TaskType.label:
+        task = crud.task.update_task_state(db, task_id=task.id, new_state=TaskState.error)
+    return {"result": task}
+
+
+@router.post(
     "/update_status",
     response_model=schemas.TaskOut,
     dependencies=[Depends(deps.get_current_active_user)],
