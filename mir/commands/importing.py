@@ -18,7 +18,7 @@ class CmdImport(base.BaseCommand):
 
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        index_file=self.args.index_file,
-                                       ck_file=self.args.ck_file,
+                                       ck_file='',
                                        anno_abs=self.args.anno,
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
@@ -116,7 +116,6 @@ class CmdImport(base.BaseCommand):
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotation,
-            mirpb.MirStorage.MIR_KEYWORDS: mir_keywords,
             mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
@@ -180,11 +179,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                       dest="dataset_name",
                                       type=str,
                                       help="name of the dataset to be created, use tid if not set.")
-    importing_arg_parser.add_argument('--ck-file',
-                                      dest='ck_file',
-                                      type=str,
-                                      required=False,
-                                      help='path to custom keywords index file')
     importing_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="rev: source rev")
     importing_arg_parser.add_argument("--dst-rev",
                                       dest="dst_rev",

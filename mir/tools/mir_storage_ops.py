@@ -3,13 +3,12 @@ from typing import Any, List, Dict, Optional
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
-from google.protobuf import message as pb_message
 
-from mir.tools import exodus, mir_storage, mir_repo_utils
-from mir.tools.code import MirCode
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import exodus, mir_storage, mir_repo_utils
+from mir.tools.code import MirCode
 
 
 class MirStorageDatas:
@@ -46,7 +45,19 @@ class MirStorageOps():
 
     # private: save and load
     @classmethod
-    def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', pb_message.Message]) -> None:
+    def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any]) -> None:
+        have_annotations = mirpb.MirStorage.MIR_ANNOTATIONS in mir_datas
+
+        if have_annotations:
+            # also have keywords
+            mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+            mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
+            build_annotations_head_task_id(mir_annotations=mir_annotations)
+            generate_keywords_cis(
+                single_task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id],
+                mir_keywords=mir_keywords)
+            mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
+
         for ms, mir_data in mir_datas.items():
             cls.mir_pre_save(ms)(mir_data)  # calc before save.
 
@@ -66,7 +77,7 @@ class MirStorageOps():
             mir_root (str): path to mir repo
             mir_branch (str): branch you wish to save to, if not exists, create new one
             his_branch (Optional[str]): if `mir_branch` not exists, this is the branch where you wish to start with
-            mir_datas (Dict[mirpb.MirStorage.V, pb_message.Message]): datas you wish to save
+            mir_datas (Dict[mirpb.MirStorage.V, pb_message.Message]): datas you wish to save, need no mir_keywords
             commit_message (str): commit messages
 
         Raises:
@@ -81,6 +92,8 @@ class MirStorageOps():
             raise ValueError("empty commit message")
         if not mir_branch:
             raise ValueError("empty mir branch")
+        if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
+            raise ValueError('need no mir_keywords')
 
         branch_exists = mir_repo_utils.mir_check_branch_exists(mir_root=mir_root, branch=mir_branch)
         if not branch_exists and not his_branch:
@@ -124,11 +137,7 @@ class MirStorageOps():
         return ret
 
     @classmethod
-    def load_single(cls,
-                    mir_root: str,
-                    mir_branch: str,
-                    ms: 'mirpb.MirStorage.V',
-                    as_dict: bool = False) -> Any:
+    def load_single(cls, mir_root: str, mir_branch: str, ms: 'mirpb.MirStorage.V', as_dict: bool = False) -> Any:
         mir_pb_type = mir_storage.mir_type(ms)
         mir_storage_data = mir_pb_type()
         with exodus.open_mir(mir_root=mir_root, file_name=mir_storage.mir_path(ms), rev=mir_branch, mode="rb") as f:
@@ -202,3 +211,17 @@ def add_mir_task(mir_tasks: mirpb.MirTasks, task: mirpb.Task) -> None:
     task.ancestor_task_id = orig_head_task_id
     mir_tasks.tasks[task.task_id].CopyFrom(task)
     mir_tasks.head_task_id = task.task_id
+
+
+def generate_keywords_cis(single_task_annotations: mirpb.SingleTaskAnnotations,
+                          mir_keywords: mirpb.MirKeywords) -> None:
+    """
+    generate mir_keywords's keyids from single_task_annotations
+
+    Args:
+        single_task_annotations (mirpb.SingleTaskAnnotations)
+        mir_keywords (mirpb.MirKeywords)
+    """
+    for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
+        mir_keywords.keywords[asset_id].predifined_keyids[:] = set(
+            [annotation.class_id for annotation in single_image_annotations.annotations])

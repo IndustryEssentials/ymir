@@ -99,7 +99,6 @@ class TestMirStorage(unittest.TestCase):
         mir_data_expect = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-            mirpb.MirStorage.MIR_KEYWORDS: mir_keywords,
             mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,

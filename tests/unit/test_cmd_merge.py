@@ -237,8 +237,6 @@ class TestMergeCmd(unittest.TestCase):
                 try:
                     self.assertEqual(set(expected_keywords["predifined_keyids"]),
                                      set(actual_keywords["predifined_keyids"]))
-                    self.assertEqual(set(expected_keywords["customized_keywords"]),
-                                     set(actual_keywords["customized_keywords"]))
                 except AssertionError as e:
                     logging.info(f"e: {expected_keywords}")
                     logging.info(f"a: {actual_keywords}")
