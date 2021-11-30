@@ -13,7 +13,7 @@ const typeFormat = {
   doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/pdf'],
 }
 
-function Uploader({ className, value, format="zip", label, max = 200, 
+function Uploader({ className, value=[], format="zip", label, max = 200, 
   maxCount = 1, info = '', type='', crop = false, showUploadList = true, onChange = ()=> {}}) {
 
   label = label || t('model.add.form.upload.btn')
@@ -45,6 +45,7 @@ function Uploader({ className, value, format="zip", label, max = 200,
 
   const uploader = <Upload
         className={className}
+        fileList={value}
         action={getUploadUrl()}
         name='file'
         headers={{ "Authorization": `Bearer ${storage.get("access_token")}` }}

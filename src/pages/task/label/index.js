@@ -40,6 +40,33 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
     getKeywords({ limit: 100000 })
   }, [])
 
+  useEffect(() => {
+    const state = history.location.state
+    console.log('state: ', state)
+
+    if (state?.record) {
+      const { parameters, name, } = state.record
+      const { include_classes, include_datasets, labellers, extra_url } = parameters
+      //do somethin
+      form.setFieldsValue({
+        name: `${name}_${randomNumber()}`,
+        datasets: include_datasets[0],
+        label_members: labellers[0],
+        checker: labellers.length > 1 ? labellers.slice(1) : [],
+        keywords: include_classes,
+        desc: [
+          {uid: -1, status: 'done', name: extra_url.replace(/.*\/([^\/]+)$/, '$1'), url: extra_url }
+        ]
+      })
+      setDoc(extra_url)
+      setAsChecker(labellers.length > 1)
+      return
+      // setSelectedKeywords(include_classes)
+      // setExclude(exclude_classes)
+      history.replace({ state: {} })
+    }
+  }, [history.location.state])
+
   const onFinish = async (values) => {
     const { label_members, checker } = values
     const emails = [label_members]
@@ -131,7 +158,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                   </Form.Item>
                 </Col>
                 <Col>
-                  <Checkbox onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
+                  <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
                 </Col>
               </Row>
             </Form.Item>
@@ -162,12 +189,12 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 { required: true, message: t('task.label.form.target.placeholder') }
               ]}
             >
-              <Select mode="multiple" showArrow>
+              <Select mode="multiple" showArrow
+                filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                 {keywords.map(keyword => (
-                  <Option key={keyword} value={keyword.name}>
+                  <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
                     <Row>
                       <Col flex={1}>{keyword.name}</Col>
-                      {keyword.aliases && keyword.aliases.length ? <Col>Aliases: {keyword?.aliases}</Col> : null}
                     </Row>
                   </Option>
                 ))}
@@ -183,7 +210,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 {value: 0, label: t('task.mining.form.label.no')}, 
               ]} defaultValue={0} />
             </Form.Item> */}
-            <Form.Item label={t('task.label.form.desc.label')}>
+            <Form.Item label={t('task.label.form.desc.label')} name='desc'>
               <Uploader onChange={(result) => { setDoc(result) }} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>

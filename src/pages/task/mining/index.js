@@ -49,6 +49,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
   const [seniorConfig, setSeniorConfig] = useState([])
   const [trainSetCount, setTrainSetCount] = useState(1)
   const [hpVisible, setHpVisible] = useState(false)
+  const [topk, setTopk] = useState(false)
+  const [stateConfig, setStateConfig] = useState([])
   const hpMaxSize = 30
 
 
@@ -68,9 +70,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
 
   useEffect(async () => {
     const result = await getRuntimes({ type: CONFIGTYPES.MINING })
-    if (result) {
-      const params = Object.keys(result.config).map(key => ({ key, value: result.config[key] }))
-      setSeniorConfig(params)
+    if (result && !(location.state && location.state.record)) {
+      setConfig(result.config)
     }
   }, [])
   useEffect(() => {
@@ -85,9 +86,36 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     if (datasets.length) {
       setTrainSetCount(datasets.reduce((prev, current) =>
         selectedSets.indexOf(current.id) > -1 ? prev + current.asset_count : prev,
-        0))
+        0) || 1)
     }
   }, [selectedSets, datasets])
+
+  useEffect(() => {
+    const state = location.state
+
+    if (state?.record) {
+      const { parameters, name, config, } = state.record
+      const { include_datasets, exclude_datasets, strategy, top_k, model_id } = parameters
+      //do somethin
+      setTopk(!!top_k)
+      form.setFieldsValue({
+        name: `${name}_${randomNumber()}`,
+        datasets: include_datasets,
+        exclude_sets: exclude_datasets,
+        filter_strategy: !!top_k,
+        model: model_id,
+        topk: top_k,
+        gpu_count: config.gpu_count,
+        strategy,
+      })
+      setConfig(config)
+      setSelectedSets(include_datasets)
+      setExcludeSets(exclude_datasets)
+      setHpVisible(true)
+
+      history.replace({ state: {} })
+    }
+  }, [location.state])
 
   function validHyperparam(rule, value) {
 
@@ -100,6 +128,15 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     }
   }
 
+  function filterStrategyChange({ target }) {
+    setTopk(target.value)
+  }
+
+  function setConfig(config) {
+    const params = Object.keys(config).map(key => ({ key, value: config[key] }))
+    setSeniorConfig(params)
+  }
+
   const onFinish = async (values) => {
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
@@ -109,6 +146,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     const params = {
       ...values,
       name: values.name.trim(),
+      topk: values.filter_strategy ? values.topk : 0,
       config,
     }
     const result = await createMiningTask(params)
@@ -248,13 +286,18 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             </Form.Item>
             <Form.Item
               label={t('task.mining.form.strategy.label')}
+              name='filter_strategy'
+              initialValue={topk}
             >
-              <Radio checked>{t('task.mining.form.topk.label')}</Radio>
-              <Form.Item noStyle name='topk' label='topk' rules={[
-                { type: 'number', min: 1, max: trainSetCount || 1 }
-              ]}>
-                <InputNumber style={{ width: 120 }} min={1} max={trainSetCount} precision={0} />
-              </Form.Item>
+              <Radio.Group onChange={filterStrategyChange}>
+                <Radio value={false}>{t('common.all')}</Radio>
+                <Radio checked value={true}>{t('task.mining.form.topk.label')}</Radio>
+                <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
+                  { type: 'number', min: 1, max: trainSetCount - 1 || 1 }
+                ] : null}>
+                  <InputNumber style={{ width: 120 }} min={1} max={trainSetCount - 1} precision={0} disabled={!topk} />
+                </Form.Item>
+              </Radio.Group>
             </Form.Item>
             <Form.Item
               label={t('task.mining.form.label.label')}

@@ -62,12 +62,16 @@ const model = {
         return true
       }
     },
-    // *modifyPwd({ payload }, { call, put, select }) {
-    //   const { code, result } = yield call(modifyPwd, payload)
-    //   if (code === 0) {
-    //     return result
-    //   }
-    // },
+    *modifyPwd({ payload }, { call, put }) {
+      const { code, result } = yield call(modifyPwd, payload)
+      if (code === 0) {
+        yield put({
+          type: "UPDATE_USERINFO",
+          payload: result,
+        })
+        return result
+      }
+    },
     *resetPwd({ payload }, { call, put, select }) {
       const { code, result } = yield call(resetPwd, payload)
       return code === 0

@@ -50,10 +50,9 @@ export function forgetPwd(email) {
   return request.post(`/password-recovery/${email}`)
 }
 
-export function modifyPwd(new_password, old_password) {
-  new_password = sha1(new_password)
-  old_password = sha1(old_password)
-  return request.post("/users/modifyPwd", { new_password, old_password })
+export function modifyPwd(password) {
+  password = sha1(password)
+  return updateUserInfo({ password })
 }
 export function resetPwd({ new_password, token }) {
   new_password = sha1(new_password)

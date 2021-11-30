@@ -91,16 +91,16 @@ describe("service: user", () => {
   })
   it('modifyPwd -> success', () => {
     
-    const params = { old: 'oldpassword', newPassword: 'newpassword' }
+    const password = 'newpassword'
     const expected = "ok"
-    request.post.mockImplementationOnce(() => {
+    request.mockImplementationOnce(() => {
       return Promise.resolve({
         code: 0,
         result: expected,
       })
     })
 
-    modifyPwd(params).then(({ code, result }) => {
+    modifyPwd(password).then(({ code, result }) => {
       expect(code).toBe(0)
       expect(result).toEqual(expected)
     })

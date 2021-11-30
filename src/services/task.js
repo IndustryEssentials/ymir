@@ -59,12 +59,12 @@ export function deleteTask(id) {
 }
 
 /**
- * stop task
+ * stop task( and get label data for label task)
  * @param {number} id 
  * @returns 
  */
 export function stopTask(id) {
-  return request.post(`/tasks/stop/${id}`)
+  return request.post(`/tasks/${id}/terminate`)
 }
 
 /**
@@ -187,7 +187,7 @@ export function createMiningTask({
       exclude_datasets: exclude_sets,
       mining_algorithm: algorithm,
       top_k: topk,
-      inference,
+      generate_annotations: inference,
       // gpu_count,
     }
   })
