@@ -175,6 +175,7 @@ message TaskReqMining {
     string model_hash = 3;  // training model hash
     int32 top_k = 4;  // > 0, will keep all if set to 0.
     string mining_config = 5;
+    bool generate_annotations = 6;
 }
 
 message TaskReqImporting {
