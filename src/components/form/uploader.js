@@ -1,4 +1,5 @@
 import { Button, message, Upload } from "antd"
+import { useState, useEffect } from 'react'
 import ImgCrop from 'antd-img-crop'
 
 import { CloudUploadOutlined } from "@ant-design/icons"
@@ -17,35 +18,48 @@ function Uploader({ className, value=[], format="zip", label, max = 200,
   maxCount = 1, info = '', type='', crop = false, showUploadList = true, onChange = ()=> {}}) {
 
   label = label || t('model.add.form.upload.btn')
+  const [files, setFiles] = useState([])
 
-  function onFileChange({ file }) {
+  useEffect(() => {
+    value && value.length && setFiles(value)
+  }, [value])
+
+  function onFileChange({ file, fileList }) {
     if (file.status === 'done') {
       uploadSuccess(file.response)
     }
+    setFiles([...fileList])
   }
 
   function beforeUpload(file) {
-    console.log('file: ', file)
+    return validFile(file) || Upload.LIST_IGNORE
+  }
+
+  function validFile(file) {
     const isValid = typeFormat[format].indexOf(file.type) > -1
     if (!isValid) {
-      message.error('You can only upload valid format file!')
+      message.error(t('common.uploader.format.error'))
     }
     const isOver = file.size / 1024 / 1024 < max
     if (!isOver) {
-      message.error(`File must smaller than ${max}MB!`)
+      message.error(t('common.uploader.size.error', { max }))
     }
-    return isValid && isOver ? true : Upload.LIST_IGNORE
+    return isValid && isOver
+  }
+
+  function beforeCrop(file) {
+    return validFile(file)
   }
 
   const uploadSuccess = ({ code, result }) => {
     if (code === 0) {
-      onChange(result)
+      onChange(files, result)
     }
   }
 
   const uploader = <Upload
         className={className}
-        fileList={value}
+        fileList={files}
         action={getUploadUrl()}
         name='file'
         headers={{ "Authorization": `Bearer ${storage.get("access_token")}` }}
@@ -60,7 +74,7 @@ function Uploader({ className, value=[], format="zip", label, max = 200,
 
   return (
     <>
-      { format === 'img' && crop ? <ImgCrop rotate>{uploader}</ImgCrop> : uploader}
+      { format === 'img' && crop ? <ImgCrop rotate beforeCrop={beforeCrop}>{uploader}</ImgCrop> : uploader}
       {info ? <p style={{ margin: '10px 0' }}>{info}</p> : null }
     </>
   )

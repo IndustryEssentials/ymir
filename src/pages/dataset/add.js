@@ -303,7 +303,7 @@ const Add = ({ getInternalDataset, createDataset }) => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('dataset.add.form.upload.btn')}>
                 <Uploader
-                  onChange={(result) => { setFileToken(result) }}
+                  onChange={(files, result) => { setFileToken(result) }}
                   max={1024}
                   info={t('dataset.add.form.upload.tip', { br: <br />, sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a> })}
                 ></Uploader>

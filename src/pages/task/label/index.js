@@ -42,7 +42,6 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
 
   useEffect(() => {
     const state = history.location.state
-    console.log('state: ', state)
 
     if (state?.record) {
       const { parameters, name, } = state.record
@@ -60,9 +59,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
       })
       setDoc(extra_url)
       setAsChecker(labellers.length > 1)
-      return
-      // setSelectedKeywords(include_classes)
-      // setExclude(exclude_classes)
+
       history.replace({ state: {} })
     }
   }, [history.location.state])
@@ -211,7 +208,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
               ]} defaultValue={0} />
             </Form.Item> */}
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
-              <Uploader onChange={(result) => { setDoc(result) }} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
+              <Uploader onChange={(files, result) => { setDoc(result) }} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>

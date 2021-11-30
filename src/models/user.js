@@ -55,6 +55,14 @@ const model = {
       }
       return result
     },
+    *getToken({ payload }, { call, put, select }) {
+      const { code, result } = yield call(login, payload)
+      const { access_token } = result
+      if (code === 0 && access_token) {
+        storage.set("access_token", access_token || "")
+      }
+      return result
+    },
     *forgetPwd({ payload }, { call, put, select }) {
       const { code, result } = yield call(forgetPwd, payload)
       if (code === 0) {

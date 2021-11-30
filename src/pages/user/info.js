@@ -12,7 +12,7 @@ import { EmailIcon, LockIcon, SmartphoneIcon, UserIcon, UserSettingsIcon } from 
 
 const { useForm } = Form
 
-function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
+function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
 
   const [infoList, setInfoList] = useState([])
   const [usernameModify, setUsernameModify] = useState(false)
@@ -26,10 +26,6 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
   useEffect(() => {
     transUserIntoList()
   }, [user])
-
-  function getLatestInfo() {
-    getUserInfo(true)
-  }
 
   function transUserIntoList() {
     setInfoList([
@@ -61,18 +57,18 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
       }
     })
   }
-  const onAvatarOk = async (url) => {
+  const onAvatarOk = async (files, url) => {
     // submit
     console.log('avatar: ', url)
     if (url) {
       const result = await updateUserInfo({ avatar: url })
       if (result) {
-        message.success('user.info.avatar.success')
+        message.success(t('user.info.avatar.success'))
       } else {
-        message.error('user.info.avatar.failure')
+        message.error(t('user.info.avatar.failure'))
       }
     } else {
-      message.error('user.info.avatar.empty')
+      message.error(t('user.info.avatar.empty'))
     }
   }
   const onPhoneOk = () => {
@@ -92,7 +88,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
       if (oldRes && oldRes.access_token) {
         const result = await modifyPwd(password)
         if (result) {
-          await login(user.email, password)
+          await getToken(user.email, password)
           setPasswordModify(false)
           message.success(t('user.info.pwd.success'))
         }
@@ -101,7 +97,6 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
   }
 
   const onUsernameCancel = () => setUsernameModify(false)
-  const onAvatarCancel = () => setAvatarModify(false)
   const onPhoneCancel = () => setPhoneModify(false)
   const onPasswordCancel = () => setPasswordModify(false)
 
@@ -144,6 +139,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
                   crop={true}
                   max={20}
                   info={t('user.info.avatar.tip')}
+                  showUploadList={false}
                 ></Uploader>
               </Col>
             </Row>
@@ -163,7 +159,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
             name="username"
             initialValue={user.username}
             rules={[
-              { required: true, message: t("signup.username.required.msg"), },
+              { required: true, whitespace: true, message: t("signup.username.required.msg"), },
               { min: 2, max: 15, message: t("signup.username.length.msg", { max: 15 }), },
             ]}
           >
@@ -253,15 +249,15 @@ const acts = (dispatch) => {
         payload: password,
       })
     },
-    login(username, password) {
+    getToken(username, password) {
       return dispatch({
-        type: 'user/login',
+        type: 'user/getToken',
         payload: { username, password, }
       })
     },
     validatePwd(username, password) {
       return dispatch({
-        type: 'user/login',
+        type: 'user/getToken',
         payload: { username, password }
       })
     }
