@@ -87,9 +87,10 @@ class TestTaskResult:
     def test_get_dataset_info(self, mocker, mock_controller, mock_db, mock_graph_db):
         viz = mocker.Mock()
         keywords = {"a": 1, "b": 2, "c": 3, "d": 4}
+        ignored_keywords = {"x": 1, "y": 2, "z": 3}
         items = list(range(random.randint(10, 100)))
         viz.get_assets.return_value = mocker.Mock(
-            keywords=keywords, items=items, total=len(items)
+            keywords=keywords, items=items, total=len(items), ignored_keywords=ignored_keywords,
         )
         proxy = m.TaskResultProxy(
             controller=mock_controller,
