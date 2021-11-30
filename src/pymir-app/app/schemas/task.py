@@ -53,6 +53,7 @@ class TaskParameter(BaseModel):
     model_id: Optional[int]
     mining_algorithm: Optional[str]
     top_k: Optional[int]
+    generate_annotations: Optional[bool]
 
 
 class TaskCreate(TaskBase):

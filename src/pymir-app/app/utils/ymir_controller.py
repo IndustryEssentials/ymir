@@ -140,6 +140,7 @@ class ControllerRequest:
             mine_task_req.top_k = args["top_k"]
         mine_task_req.model_hash = args["model_hash"]
         mine_task_req.in_dataset_ids[:] = args["include_datasets"]
+        mine_task_req.generate_annotations = args["generate_annotations"]
         if "config" in args:
             mine_task_req.mining_config = args["config"]
         if args.get("exclude_datasets", None):
