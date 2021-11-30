@@ -91,6 +91,7 @@ class TestInvokerTaskMining(unittest.TestCase):
         mine_task_req.in_dataset_ids[:] = [self._guest_id1, self._guest_id2]
         mine_task_req.ex_dataset_ids[:] = [self._guest_id3]
         mine_task_req.mining_config = json.dumps(mining_config)
+        mine_task_req.generate_annotations = False
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = backend_pb2.TaskTypeMining
@@ -129,8 +130,8 @@ class TestInvokerTaskMining(unittest.TestCase):
         asset_cache_dir = os.path.join(self._user_root, 'mining_assset_cache')
         mining_cmd = (
             "cd {0} && mir mining --dst-rev {1}@{1} -w {2} --model-location {3} --media-location {3} "
-            "--topk {4} --model-hash {5} --src-revs {1}@{6} --cache {9} --config-file {7} --executor {8} "
-            "--executor-instance {10}".format(
+            "--model-hash {5} --src-revs {1}@{6} --cache {9} --config-file {7} --executor {8} "
+            "--executor-instance {10} --topk {4}".format(
                 self._mir_repo_root, self._task_id, working_dir, self._storage_root, top_k, model_hash,
                 self._sub_task_id, output_config, assets_config['mining_image'], asset_cache_dir, self._task_id))
         mock_run.assert_has_calls(calls=[

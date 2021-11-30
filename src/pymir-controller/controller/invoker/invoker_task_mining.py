@@ -89,7 +89,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          his_rev=sub_task_id_1,
                                          in_src_revs=request.task_id,
                                          executor=mining_image,
-                                         executor_instance=executor_instance)
+                                         executor_instance=executor_instance,
+                                         generate_annotations=mining_request.generate_annotations)
 
         return mining_response
 
@@ -109,12 +110,17 @@ class TaskMiningInvoker(TaskBaseInvoker):
         asset_cache_dir: str,
         executor: str,
         executor_instance: str,
+        generate_annotations: bool
     ) -> backend_pb2.GeneralResp:
         mining_cmd = (f"cd {repo_root} && {utils.mir_executable()} mining --dst-rev {task_id}@{task_id} "
                       f"-w {work_dir} --model-location {model_location} --media-location {media_location} "
-                      f"--topk {top_k} --model-hash {model_hash} --src-revs {in_src_revs}@{his_rev} "
+                      f"--model-hash {model_hash} --src-revs {in_src_revs}@{his_rev} "
                       f"--cache {asset_cache_dir} --config-file {config_file} --executor {executor} "
                       f"--executor-instance {executor_instance}")
+        if top_k > 0:
+            mining_cmd += f" --topk {top_k}"
+        if generate_annotations:
+            mining_cmd += " --add-annotations"
 
         return utils.run_command(mining_cmd)
 
