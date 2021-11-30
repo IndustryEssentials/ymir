@@ -99,8 +99,8 @@ class CmdImport(base.BaseCommand):
             if ignore_unknown_types:
                 logging.warning(f"unknown types: {unknown_types}")
             else:
-                logging.error(f"import annotations error, unknown types: {unknown_types}")
-                return MirCode.RC_CMD_INVALID_MIR_REPO
+                # raise an error, so monitor.txt can record this detail
+                raise ValueError(f"import annotations error, unknown types: {unknown_types}")
 
         # create and write tasks
         mir_tasks = mirpb.MirTasks()
