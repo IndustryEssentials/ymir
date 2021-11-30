@@ -90,7 +90,7 @@ class LabelStudio(LabelBase):
             use_blob_urls=True,
             title="input_dir",
             project=project_id,
-            regex_filter=".*(jpe?g|png)",
+            regex_filter=".*(jpe?g|png|bmp)",
             description="description",
         )
 
@@ -107,7 +107,7 @@ class LabelStudio(LabelBase):
             use_blob_urls=True,
             title="output_dir",
             project=project_id,
-            regex_filter=".*(jpe?g|png)",
+            regex_filter=".*(jpe?g|png|bmp)",
             description="description",
         )
 
