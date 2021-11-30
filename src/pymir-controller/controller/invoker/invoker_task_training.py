@@ -17,7 +17,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         training_config["class_names"] = label_handler.get_main_labels_by_ids(in_class_ids)
         # when gpu_count > 0, use gpu model
         if training_config["gpu_count"] > 0:
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(training_config["gpu_count"])
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(training_config["gpu_count"], lock_gpu=True)
             if not gpu_ids:
                 return gpu_ids
             else:
