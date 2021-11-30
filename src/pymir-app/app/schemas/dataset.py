@@ -68,6 +68,7 @@ class Dataset(DatasetInDB):
     config: Optional[Any] = None
     predicates: Optional[str] = None
     keywords: Optional[List[str]] = None
+    ignored_keywords: Optional[List[str]] = None
     source: Optional[TaskType] = None
     state: Optional[TaskState] = None
     progress: Optional[float] = None
@@ -89,7 +90,9 @@ class Dataset(DatasetInDB):
         values["config"] = task_config
 
         predicates = values.pop("predicates", None)
-        values["keywords"] = json.loads(predicates) if predicates else []
+        predicates = json.loads(predicates) if predicates else {}
+        values["keywords"] = predicates.get("keywords", [])
+        values["ignored_keywords"] = predicates.get("ignored_keywords", [])
 
         values["source"] = values.get("type")
         values["state"] = values.get("task_state")

@@ -462,7 +462,7 @@ class TaskResultProxy:
 
         dataset_info = self.get_dataset_info(task.user_id, task.hash)
         dataset_in = schemas.DatasetUpdate(
-            predicates=json.dumps(dataset_info["keywords"]),
+            predicates=json.dumps({"keywords": dataset_info["keywords"], "ignored_keywords": dataset_info["ignored_keywords"]}),
             asset_count=dataset_info["total"],
             keyword_count=len(dataset_info["keywords"]),
         )
@@ -498,6 +498,7 @@ class TaskResultProxy:
         assets = self.viz.get_assets()
         result = {
             "keywords": list(assets.keywords.keys()),
+            "ignored_keywords": list(assets.ignored_keywords.keys()),
             "items": assets.items,
             "total": assets.total,
         }

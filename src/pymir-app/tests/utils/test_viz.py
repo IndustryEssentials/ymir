@@ -38,6 +38,7 @@ class TestAssets:
                 }
             ],
             "class_ids_count": {},
+            "ignored_labels": {"cat": 1},
             "total": random.randint(1000, 2000),
         }
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
@@ -76,6 +77,7 @@ class TestVizClient:
                 }
             ],
             "class_ids_count": {},
+            "ignored_labels": {"cat": 1},
             "total": random.randint(1000, 2000),
         }
         resp.json.return_value = {"result": res}
