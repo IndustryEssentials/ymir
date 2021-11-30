@@ -75,6 +75,8 @@ class TestMiningCmd(unittest.TestCase):
 
         mock_image_file = os.path.join(self._storage_root, 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9')
         shutil.copyfile("tests/assets/2007_000032.jpg", mock_image_file)
+        mock_image_file = os.path.join(self._storage_root, 'a3008c032eb11c8d9ffcb58208a36682ee40900f')
+        shutil.copyfile("tests/assets/2007_000243.jpg", mock_image_file)
 
         mock_training_config_file = os.path.join(self._storage_root, 'config.yaml')
         shutil.copyfile('tests/assets/training-template.yaml', mock_training_config_file)
@@ -103,7 +105,13 @@ class TestMiningCmd(unittest.TestCase):
                     'width': 1080,
                     'height': 1620,
                     'imageChannels': 3
-                }
+                },
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'assetType': 'AssetTypeImageJpeg',
+                    'width': 1080,
+                    'height': 1620,
+                    'imageChannels': 3
+                },
             }
         }
         ParseDict(dict_metadatas, mir_metadatas)

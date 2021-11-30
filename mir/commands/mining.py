@@ -109,17 +109,28 @@ class CmdMining(base.BaseCommand):
             logging.error('empty --executor, abort')
             return MirCode.RC_CMD_INVALID_ARGS
 
+        return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
+        if return_code != MirCode.RC_OK:
+            return return_code
+
+        # check `topk` and `add_annotations`
+        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
+                                                                                      mir_branch=src_typ_rev_tid.rev,
+                                                                                      ms=mirpb.MirStorage.MIR_METADATAS)
+        assets_count = len(mir_metadatas.attributes)
+        if assets_count == 0:
+            raise ValueError('no assets found in metadatas.mir')
+        if topk and topk >= assets_count:
+            logging.warning(f"topk: {topk} >= assets count: {assets_count}, skip mining")
+            topk = None
+
         if not topk and not add_annotations:
             logging.error('invalid --topk and --add-annotations (both not set), abort')
             return MirCode.RC_CMD_INVALID_ARGS
         if topk and topk <= 0:
             logging.error(f"invalid --topk: {topk}")
             return MirCode.RC_CMD_INVALID_ARGS
-        # topk can be None (means no mining), or > 0 (means mining and select topk)
-
-        return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
-        if return_code != MirCode.RC_OK:
-            return return_code
+        # topk can be None (means no mining), or in interval (0, assets_count) (means mining and select topk)
 
         work_in_path = os.path.join(work_dir, 'in')  # docker container's input data directory
         work_out_path = os.path.join(work_dir, 'out')  # docker container's output data directory
@@ -136,7 +147,8 @@ class CmdMining(base.BaseCommand):
             logging.error('mining enviroment prepare error!')
             return ret
 
-        _prepare_assets(mir_root=mir_root,
+        _prepare_assets(mir_metadatas=mir_metadatas,
+                        mir_root=mir_root,
                         base_branch=src_typ_rev_tid.rev,
                         media_location=media_location,
                         path_prefix_in_index_file=work_asset_path,
@@ -301,18 +313,12 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
     return MirCode.RC_OK
 
 
-def _prepare_assets(mir_root: str, base_branch: str, media_location: str, path_prefix_in_index_file: str,
-                    work_asset_path: str, work_index_file: str) -> None:
-    metadata: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                             mir_branch=base_branch,
-                                                                             ms=mirpb.MirStorage.MIR_METADATAS)
-    if len(metadata.attributes) == 0:
-        raise ValueError('no assets found in metadatas.mir')
-
+def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, base_branch: str, media_location: str,
+                    path_prefix_in_index_file: str, work_asset_path: str, work_index_file: str) -> None:
     os.makedirs(work_asset_path, exist_ok=True)
     os.makedirs(os.path.dirname(work_index_file), exist_ok=True)
 
-    img_list = set(metadata.attributes.keys())
+    img_list = set(mir_metadatas.attributes.keys())
     data_exporter.export(mir_root=mir_root,
                          assets_location=media_location,
                          class_type_ids={},

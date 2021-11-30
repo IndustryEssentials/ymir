@@ -1,12 +1,11 @@
 flake8
 mypy
+pre-commit
 pytest
 pytest-cover
 pytest-xdist
-pre-commit
 types-Pillow
 types-PyYAML
 types-protobuf
 types-requests
 types-setuptools
-flake8
