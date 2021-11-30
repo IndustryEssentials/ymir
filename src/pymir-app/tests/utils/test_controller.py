@@ -70,6 +70,7 @@ class TestControllerRequest:
                 "model_hash": random_lower_string(),
                 "include_datasets": [],
                 "ex_dataset_ids": [],
+                "generate_annotations": True,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
