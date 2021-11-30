@@ -13,7 +13,6 @@ export default function StateTag({ state, size='normal', mode='all', iconStyle =
     [TASKSTATES.FINISH]: { icon: <SuccessIcon className={s.stateIcon} style={iconStyle} />, color: 'success' },
     [TASKSTATES.FAILURE]: { icon: <FailIcon className={s.stateIcon} style={iconStyle} />, color: 'error' },
   }
-  console.log('style mode: ', s, s[mode], mode)
   const target = states.find(s => s.value === state)
   return (
     <Tag

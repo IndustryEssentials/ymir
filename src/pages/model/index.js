@@ -180,9 +180,9 @@ function Keyword({ getModels, delModel, updateModel }) {
       },
       {
         key: "download",
-        type: 'link',
         label: t("model.action.download"),
-        url,
+        link: url,
+        target: '_blank',
         icon: <FileDownloadIcon />,
       },
       {

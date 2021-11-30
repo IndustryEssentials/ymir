@@ -84,7 +84,7 @@ function Verify({ getModel, verify }) {
         key={Math.random()}
         type='primary'
         className={styles.verify_uploader}
-        onChange={(result) => { setUrl(result) }}
+        onChange={(files, result) => { setUrl(result) }}
         format='img'
         label={label}
         showUploadList={false}

@@ -19,17 +19,18 @@ const moreActions = (menus) => {
   )
 }
 
-function action ({ key, onclick = () => {}, icon, label }, last) {
-return (
-  <Button key={key} type='link' className={`${s.action} ${last ? s.last : ''}`} onClick={onclick}>
-    {icon}{label}
-  </Button>
-)
+function action({ key, onclick = () => { }, icon, label, link, target }, last) {
+  const btn = (
+    <Button key={key} type='link' className={`${s.action} ${last ? s.last : ''}`} onClick={onclick}>
+      {icon}{label}
+    </Button>
+  )
+  return link ? <a target={target ? target : (isOuterLink(link) && '_blank')} href={link}>{btn}</a> : btn
 }
 
 const Actions = ({ menus, showCount = 3 }) => {
   const showActions = menus.filter(menu => !(menu.hidden && menu.hidden()))
-  const isMore = () =>  showActions.length > showCount
+  const isMore = () => showActions.length > showCount
   return (
     <Space className={s.actions} size={4}>
       {actions(showActions.filter((item, i) => i < showCount))}

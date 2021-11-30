@@ -50,6 +50,8 @@ const common = {
   'common.empty.keywords': {cn: '无标签', en: 'None', },
   'common.modify': {cn: '修改', en: 'Modify', },
   'common.all': {cn: '全部', en: 'All', },
+  'common.uploader.format.error': {cn: '上传文件格式不正确', en: 'Invalid format', },
+  'common.uploader.size.error': {cn: '文件大小最大不超过 {max}MB', en: 'File must smaller than {max}MB!', },
 }
 
 export default common
