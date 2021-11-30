@@ -32,4 +32,4 @@ LABEL_PAGE_SIZE = 500
 # gpu usage for dispach
 GPU_USAGE_THRESHOLD = float(env("GPU_USAGE_THRESHOLD", 0.8))
 # gpu lock time
-GPU_LOCK_MINUTES = int(env("GPU_LOCK_MINUTES", 30))
+GPU_LOCK_MINUTES = int(env("GPU_LOCK_MINUTES", 1))

@@ -51,11 +51,12 @@ class GPUInfo:
         return list(ava_gpus)
 
     @classmethod
-    def find_gpu_ids_by_config(cls, gpu_count: int) -> str:
+    def find_gpu_ids_by_config(cls, gpu_count: int, lock_gpu: bool = False) -> str:
         free_gpus = cls.get_available_gpus()
         if len(free_gpus) < gpu_count:
             return ""
         gpus = free_gpus[0:gpu_count]
-        cls.add_locked_gpus(gpus)
+        if lock_gpu:
+            cls.add_locked_gpus(gpus)
 
         return ",".join(gpus)
