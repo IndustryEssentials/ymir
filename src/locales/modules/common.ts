@@ -49,6 +49,7 @@ const common = {
   'common.qa.action.guide': {cn: '操作{br}指引', en: 'Guide', },
   'common.empty.keywords': {cn: '无标签', en: 'None', },
   'common.modify': {cn: '修改', en: 'Modify', },
+  'common.all': {cn: '全部', en: 'All', },
 }
 
 export default common

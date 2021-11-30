@@ -12,11 +12,10 @@ import { EmailIcon, LockIcon, SmartphoneIcon, UserIcon, UserSettingsIcon } from 
 
 const { useForm } = Form
 
-function Info({ getUserInfo, user, updateUserInfo, validatePwd }) {
+function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, }) {
 
   const [infoList, setInfoList] = useState([])
   const [usernameModify, setUsernameModify] = useState(false)
-  const [avatarModify, setAvatarModify] = useState(false)
   const [phoneModify, setPhoneModify] = useState(false)
   const [passwordModify, setPasswordModify] = useState(false)
   const [usernameForm] = useForm()
@@ -91,8 +90,9 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd }) {
       const { old_password, password } = passwordForm.getFieldsValue()
       const oldRes = await validatePwd(user.email, old_password)
       if (oldRes && oldRes.access_token) {
-        const result = await updateUserInfo({ password })
+        const result = await modifyPwd(password)
         if (result) {
+          await login(user.email, password)
           setPasswordModify(false)
           message.success(t('user.info.pwd.success'))
         }
@@ -245,6 +245,18 @@ const acts = (dispatch) => {
       return dispatch({
         type: 'user/updateUserInfo',
         payload: info,
+      })
+    },
+    modifyPwd(password) {
+      return dispatch({
+        type: 'user/modifyPwd',
+        payload: password,
+      })
+    },
+    login(username, password) {
+      return dispatch({
+        type: 'user/login',
+        payload: { username, password, }
       })
     },
     validatePwd(username, password) {

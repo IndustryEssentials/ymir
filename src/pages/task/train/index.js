@@ -8,7 +8,7 @@ import {
   DownSquareOutlined,
 } from '@ant-design/icons'
 import { formLayout } from "@/config/antd"
-import { useHistory, useParams } from "umi"
+import { useHistory, useParams, useLocation } from "umi"
 
 import TripleRates from "@/components/form/tripleRates"
 import t from "@/utils/t"
@@ -26,14 +26,12 @@ const { Option } = Select
 const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes.detect'), checked: true }]
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
-const HyperParams = () => [
-  { id: "RMS epoch-10", label: "RMS epoch-10", checked: true },
-]
 
 function Train({ getDatasets, createTrainTask, getRuntimes }) {
   const { ids } = useParams()
   const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
   const history = useHistory()
+  const location = useLocation()
   const [datasets, setDatasets] = useState([])
   const [trainSets, setTrainSets] = useState([])
   const [validationSets, setValidationSets] = useState([])
@@ -74,14 +72,12 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
     // console.log('keywords: ', tkw, vkw)
     const kws = tkw.filter(v => vkw.includes(v))
     setKeywords(kws)
-    form.setFieldsValue({ keywords: [] })
   }, [trainSets, validationSets, datasets])
 
   useEffect(async () => {
     const result = await getRuntimes({ type: CONFIGTYPES.TRAINING })
-    if (result) {
-      const params = Object.keys(result.config).map(key => ({ key, value: result.config[key] }))
-      setSeniorConfig(params)
+    if (result && !(location.state && location.state.record)) {
+      setConfig(result.config)
     }
   }, [])
   useEffect(() => {
@@ -91,6 +87,31 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
   useEffect(() => {
     setTrainSets(datasetIds)
   }, [ids])
+
+  useEffect(() => {
+    const state = location.state
+    console.log('state: ', state)
+
+    if (state?.record) {
+      const { parameters, name, config, } = state.record
+      const { include_classes, include_train_datasets, include_validation_datasets, strategy, } = parameters
+      //do somethin
+      form.setFieldsValue({
+        name: `${name}_${randomNumber()}`,
+        train_sets: include_train_datasets,
+        validation_sets: include_validation_datasets,
+        gpu_count: config.gpu_count,
+        keywords: include_classes,
+        strategy,
+      })
+      setConfig(config)
+      setTrainSets(include_train_datasets)
+      setValidationSets(include_validation_datasets)
+      setHpVisible(true)
+
+      history.replace({ state: {} })
+    }
+  }, [location.state])
 
   function validHyperparam(rule, value) {
 
@@ -106,9 +127,16 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
   function trainSetChange(value) {
     // console.log('change: ', value)
     setTrainSets(value)
+    form.setFieldsValue({ keywords: [] })
   }
   function validationSetChange(value) {
     setValidationSets(value)
+    form.setFieldsValue({ keywords: [] })
+  }
+
+  function setConfig(config) {
+    const params = Object.keys(config).map(key => ({ key, value: config[key] }))
+    setSeniorConfig(params)
   }
 
   const onFinish = async (values) => {
@@ -198,12 +226,12 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                 <div className={commonStyles.formItemLowLevel}>
                   <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
                   <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
-                  <Radio.Group options={[
-                    { value: 2, label: t('task.train.form.repeatdata.latest') },
-                    { value: 3, label: t('task.train.form.repeatdata.original') },
-                    { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                  ]} />
-                </Form.Item></div>
+                    <Radio.Group options={[
+                      { value: 2, label: t('task.train.form.repeatdata.latest') },
+                      { value: 3, label: t('task.train.form.repeatdata.original') },
+                      { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                    ]} />
+                  </Form.Item></div>
               </Form.Item>
               <Form.Item
                 label={t('task.train.form.testsets.label')}

@@ -33,7 +33,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Task({ getTasks, delTask, updateTask }) {
+function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [tasks, setTasks] = useState([])
@@ -85,6 +85,7 @@ function Task({ getTasks, delTask, updateTask }) {
     {
       title: showTitle("task.column.state"),
       dataIndex: "state",
+      align: 'center',
       render: (state, record) => RenderProgress(state, record),
     },
     {
@@ -99,7 +100,7 @@ function Task({ getTasks, delTask, updateTask }) {
       dataIndex: 'actions',
       render: (text, record) => <Actions menus={actionMenus(record)} />,
       className: styles.tab_actions,
-      align: "center",
+      align: "left",
       width: 240,
     },
   ]
@@ -139,7 +140,7 @@ function Task({ getTasks, delTask, updateTask }) {
   }
 
   function showTitle(str) {
-    return <strong>{t(str)}</strong>
+    return <div style={{ textAlign: 'center' }}><strong>{t(str)}</strong></div>
   }
   async function getData() {
     let params = {
@@ -199,19 +200,19 @@ function Task({ getTasks, delTask, updateTask }) {
   const copy = (record) => {
     const { type } = record
     const { key } = getTaskTypes().find(task => task.value === type)
-    history.push({ pathname: `/home/task/${key}`, query: record })
+    history.push({ pathname: `/home/task/${key}`,  state: { record } })
   }
 
-  const getLabels = (id) => {
+  const getLabels = (id, name) => {
     Confirm({
       content: t("task.action.getlabels.confirm.content", { name }),
       onOk: async () => {
-        const result = await getLabelData(id)
+        const result = await stopTask(id)
         if (result) {
           getData()
         }
       },
-      okText: t('task.action.getlabeldata'),
+      okText: t('task.action.labeldata'),
     })
   }
 
@@ -265,24 +266,41 @@ function Task({ getTasks, delTask, updateTask }) {
     const { id, name, state, type } = record
     const menus = [
       {
-        key: "stop",
-        label: t("dataset.action.stop"),
-        onclick: () => stop(record.id, record.name),
-        hidden: () => {
-          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0
-        },
-        icon: <StopIcon />,
-      },
-      {
         key: "copy",
-        label: t("dataset.action.copy"),
+        label: t("task.action.copy"),
         onclick: () => copy(record),
         icon: <CopyIcon />,
       },
       {
+        key: "stop",
+        label: t("task.action.stop"),
+        onclick: () => stop(record.id, record.name),
+        hidden: () => {
+          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0 || TASKTYPES.LABEL === type
+        },
+        icon: <StopIcon />,
+      },
+      {
+        key: "del",
+        label: t("task.action.del"),
+        onclick: () => del(id, name),
+        hidden: () => {
+          return [TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(state) < 0
+        },
+        icon: <DeleteIcon />,
+      },
+      {
+        key: "edit",
+        label: t("task.action.edit"),
+        onclick: () => edit(record),
+        icon: <EditIcon />,
+      },
+      {
         key: "labelplatform",
-        label: t("dataset.action.labelplatform"),
-        onclick: () => history.push(`/lsf/`),
+        label: t("task.action.labelplatform"),
+        link: '/lsf/',
+        target: '_blank',
+        // onclick: () => history.push(`/lsf/`),
         hidden: () => {
           return TASKTYPES.LABEL !== type
         },
@@ -290,27 +308,12 @@ function Task({ getTasks, delTask, updateTask }) {
       },
       {
         key: "labeldata",
-        label: t("dataset.action.labeldata"),
-        onclick: () => getLabels(id),
+        label: t("task.action.labeldata"),
+        onclick: () => getLabels(id, name),
         hidden: () => {
           return TASKTYPES.LABEL !== type
         },
         icon: <SearchEyeIcon />,
-      },
-      {
-        key: "edit",
-        label: t("dataset.action.edit"),
-        onclick: () => edit(record),
-        icon: <EditIcon />,
-      },
-      {
-        key: "del",
-        label: t("dataset.action.del"),
-        onclick: () => del(id, name),
-        hidden: () => {
-          return [TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(state) < 0
-        },
-        icon: <DeleteIcon />,
       },
     ]
     return menus

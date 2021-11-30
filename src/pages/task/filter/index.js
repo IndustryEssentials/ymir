@@ -11,8 +11,6 @@ import EmptyState from '@/components/empty/dataset'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
-import Tip from "../../../components/form/tip"
-import { trimValidator } from "../../../components/form/validators"
 const { Option } = Select
 
 function Filter({
@@ -44,6 +42,26 @@ function Filter({
     getKeywords()
   }, [datasets])
 
+  useEffect(() => {
+    const state = history.location.state
+
+    if (state?.record) {
+      const { parameters, name, } = state.record
+      const { include_classes, include_datasets, exclude_classes, strategy } = parameters
+      //do somethin
+      form.setFieldsValue({
+        name: `${name}_${randomNumber()}`,
+        datasets: include_datasets,
+        inc: include_classes,
+        exc: exclude_classes,
+        strategy,
+      })
+      setSelectedKeywords(include_classes)
+      setExclude(exclude_classes)
+      history.replace({ state: {} })
+    }
+  }, [history.location.state])
+
   const getKeywords = () => {
     const selectedDataset = form.getFieldValue('datasets')
     let ks = datasets.reduce((prev, current) => selectedDataset.indexOf(current.id) >= 0
@@ -52,17 +70,13 @@ function Filter({
     ks = [...new Set(ks)]
     ks.sort()
     setKeywords(ks)
-
-    // reset
-    setSelectedKeywords([])
-    setExclude([])
-    form.setFieldsValue({ inc: [], exc: [] })
   }
 
-  const onFinish = async ({ name, datasets }) => {
+  const onFinish = async ({ name, datasets, strategy }) => {
     const params = {
       name: name.trim(),
       datasets,
+      strategy,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
     }
@@ -79,6 +93,10 @@ function Filter({
 
   function datasetChange() {
     getKeywords()
+    // reset
+    setSelectedKeywords([])
+    setExclude([])
+    form.setFieldsValue({ inc: [], exc: [] })
   }
 
   function requireOne(rule, value) {

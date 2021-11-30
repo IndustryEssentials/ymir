@@ -4,31 +4,34 @@ import { More1Icon } from "../common/icons"
 
 const actions = (menus) => menus.map((menu, i) => action(menu, i === menus.length - 1))
 
+const isOuterLink = (link) => /^http(s)?:/i.test(link)
+
 const moreActions = (menus) => {
+  console.log('menus: ', menus)
   return (
     <Menu>
       {menus.map((menu) => (
         <Menu.Item key={menu.key}>
-          {action(menu)}
+          {menu.link ? <a target={menu.target ? menu.target : (isOuterLink(menu.link) && '_blank')} href={menu.link}>{action(menu)}</a> : action(menu)}
         </Menu.Item>
       ))}
     </Menu>
   )
 }
 
-function action (menu, last) {
+function action ({ key, onclick = () => {}, icon, label }, last) {
 return (
-  <Button key={menu.key} type='link' className={`${s.action} ${last ? s.last : ''}`} onClick={menu.onclick}>
-    {menu.icon}{menu.label}
+  <Button key={key} type='link' className={`${s.action} ${last ? s.last : ''}`} onClick={onclick}>
+    {icon}{label}
   </Button>
 )
 }
 
 const Actions = ({ menus, showCount = 3 }) => {
-  const isMore = () =>  menus.length > showCount
   const showActions = menus.filter(menu => !(menu.hidden && menu.hidden()))
+  const isMore = () =>  showActions.length > showCount
   return (
-    <Space className={s.actions} size={4} style={ isMore() ? { justifyContent: 'flex-end', width: '100%'} : {}}>
+    <Space className={s.actions} size={4}>
       {actions(showActions.filter((item, i) => i < showCount))}
       {isMore() ? (
         <Dropdown overlay={moreActions(showActions.filter((item, i) => i >= showCount))}>

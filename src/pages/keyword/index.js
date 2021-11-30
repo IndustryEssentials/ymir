@@ -39,6 +39,15 @@ function Keyword({ getKeywords, updateKeywords }) {
     getData()
   }, [query])
 
+  useEffect(() => {
+    const state = history.location.state
+    console.log('state: ', state)
+    if (state?.type === 'add') {
+      setShowAdd(true)
+      history.replace({ state: {}})
+    }
+  }, [ history.location.state ])
+
   const columns = [
     {
       title: showTitle("keyword.column.name"),
