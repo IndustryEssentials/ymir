@@ -119,7 +119,7 @@ def create_task(
         db, obj_in=task_in, task_hash=req.task_id, user_id=current_user.id
     )
 
-    update_stats(current_user.id, stats_client, task_in)
+    update_stats_for_ref_count(current_user.id, stats_client, task_in)
     logger.info("create task end: %s" % task_in.name)
 
     return {"result": task}
@@ -169,7 +169,7 @@ def order_datasets_by_strategy(objects: List[Any], strategy: MergeStrategy) -> N
     )
 
 
-def update_stats(
+def update_stats_for_ref_count(
     user_id: int, stats_client: RedisStats, task_in: schemas.TaskCreate
 ) -> None:
     task_type = task_in.type.value
@@ -408,6 +408,11 @@ class TaskResultProxy:
         if task.type is TaskType.training:
             model = self.add_new_model_if_not_exist(task)
             self.stats_client.update_model_rank(task.user_id, model.id)
+            keywords = schemas.model.extract_keywords(task.parameters)
+            if model.map and keywords:
+                self.stats_client.update_keyword_wise_model_rank(
+                    task.user_id, model.id, float(model.map), keywords
+                )
             logger.debug("task result(new model): %s", model)
             node = schemas.Model.from_orm(model)  # type: ignore
         elif task.type in [TaskType.mining, TaskType.label, TaskType.filter]:

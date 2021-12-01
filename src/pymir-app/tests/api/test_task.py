@@ -140,20 +140,20 @@ class TestUpdateStats:
     def test_update_stats_only_update_task_stats(self, mocker):
         stats = mocker.Mock()
         task = mocker.Mock(parameters=None)
-        m.update_stats(self.user_id, stats, task)
+        m.update_stats_for_ref_count(self.user_id, stats, task)
         stats.update_task_stats.assert_called()
         stats.update_model_rank.assert_not_called()
 
     def test_update_stats_for_model(self, mocker):
         stats = mocker.Mock()
         task = mocker.Mock(parameters={"model_id": 1})
-        m.update_stats(self.user_id, stats, task)
+        m.update_stats_for_ref_count(self.user_id, stats, task)
         stats.update_model_rank.assert_called_with(self.user_id, 1)
 
     def test_update_stats_for_dataset(self, mocker):
         stats = mocker.Mock()
         task = mocker.Mock(parameters={"datasets": [233]})
-        m.update_stats(self.user_id, stats, task)
+        m.update_stats_for_ref_count(self.user_id, stats, task)
         stats.update_dataset_rank.assert_called_with(self.user_id, 233)
 
 

@@ -32,6 +32,7 @@ def fake_stats_client() -> Generator:
         client = Mock()
         client.get_task_stats.return_value = {}
         client.get_top_models.return_value = [(1, 10), (2, 9), (3, 8)]
+        client.get_keyword_wise_best_models.return_value = {"cat": [(1, 0.2), (10, 0.3)], "dog": [(2, 1.0), (9, 3.1)]}
         client.get_top_datasets.return_value = [(10, 10), (20, 9), (30, 8)]
         yield client
     finally:

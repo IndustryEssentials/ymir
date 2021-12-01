@@ -52,7 +52,7 @@ def get_stats(
     if q is StatsType.dataset:
         stats["dataset"] = stats_client.get_top_datasets(current_user.id, limit=limit)
     if q is StatsType.model:
-        stats["model"] = stats_client.get_top_models(current_user.id, limit=limit)
+        stats["model"] = stats_client.get_keyword_wise_best_models(current_user.id, limit=limit)  # type: ignore
 
     if q is StatsType.task:
         precision = precision or StatsPrecision.day
