@@ -36,9 +36,9 @@ class KeywordsPaginationOut(Common):
     result: KeywordsPagination
 
 
-class KeywordsUpdateResult(BaseModel):
-    failed: List[Keyword]
+class KeywordsCreateResult(BaseModel):
+    failed: List[str]
 
 
-class KeywordsUpdateOut(Common):
-    result: KeywordsUpdateResult
+class KeywordsCreateOut(Common):
+    result: KeywordsCreateResult
