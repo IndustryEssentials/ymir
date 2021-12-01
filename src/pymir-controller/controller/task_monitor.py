@@ -108,11 +108,16 @@ class ControllerTaskMonitor:
             task_item.state = backend_pb2.TaskStateUnknown
             task_item.last_error = "invalid monitor file: {}".format(task_monitor_file)
         else:
-            task_id, timestamp, percent, state, *_ = monitor_file_lines[0].split()
+            content_row_one = monitor_file_lines[0].split("\t")
+            task_id, timestamp, percent, state, *_ = content_row_one
             if task_id != task_item.task_id:
                 raise ValueError("wrong task id: {0} vs. {1}".format(task_id, task_item.task_id))
             if task_item.update_timestamp == int(timestamp):  # nothing to update
                 return task_item
+            if len(content_row_one) > 4:
+                task_item.state_code = content_row_one[4]
+            if len(content_row_one) > 5:
+                task_item.state_message = content_row_one[5]
 
             task_item.update_timestamp = int(timestamp)
             task_item.percent = float(percent)

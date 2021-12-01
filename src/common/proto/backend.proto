@@ -33,6 +33,7 @@ enum TaskState {
 };
 
 enum RCode {
+    //grpc status codes
     RC_OK = 0;
     RC_ERROR_UNKNOWN = 1;
 
@@ -42,6 +43,10 @@ enum RCode {
     RC_SERVICE_UNKOWN_RESPONSE = 1003;
     RC_SERVICE_TASK_INVOKER_ERROR = 1004;
     RC_SERVICE_INFO_INVOKER_ERROR = 1005;
+
+    // app state_code
+    RC_TASK_LABEL_ERROR = 2000;
+
 }
 
 enum LabelFormat {
@@ -232,7 +237,10 @@ message TaskInfoItem {
     int64 finish_timestamp = 8;
     int64 update_timestamp = 9;
     float percent = 10;
+    // last_error is trace_stack_message
     string last_error = 11;
+    int32 state_code = 12;
+    string state_message = 13;
 }
 
 message RespCMDInference {
