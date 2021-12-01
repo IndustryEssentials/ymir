@@ -44,9 +44,14 @@ class CacheClient:
         redis_key = f"{self.prefix}:{self.user_id}:{key}"
         self.conn.delete(redis_key)
 
+    def batch_delete(self, keys: List[str]) -> None:
+        pipe = self.conn.pipeline()
+        for key in keys:
+            pipe.delete(key)
+        pipe.execute()
+
     def delete_personal_keywords(self) -> None:
-        for k in CACHED_KEYS:
-            self.delete(k)
+        self.batch_delete(CACHED_KEYS)
 
     def close(self) -> None:
         self.conn.close()

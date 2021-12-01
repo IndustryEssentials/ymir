@@ -12,11 +12,16 @@ from app.utils.ymir_controller import (
     ControllerRequest,
     ExtraRequestType,
 )
+from app.api.errors.errors import DuplicateKeywordError
 from app.utils.cache import CacheClient
-from app.utils.class_ids import keywords_to_labels, labels_to_keywords
+from app.utils.class_ids import (
+    keywords_to_labels,
+    labels_to_keywords,
+    find_duplication_in_labels,
+)
 from app.schemas import (
     KeywordsCreate,
-    KeywordsUpdateOut,
+    KeywordsCreateOut,
     KeywordsPaginationOut,
     KeywordOut,
     KeywordUpdate,
@@ -47,21 +52,26 @@ def get_keywords(
     return {"result": res}
 
 
-@router.post(
-    "/", response_model=KeywordsUpdateOut,
-)
+@router.post("/", response_model=KeywordsCreateOut)
 def create_keywords(
     *,
     keywords_input: KeywordsCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
+    labels: List = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Batch create given keywords and aliases to keywords list
     """
     user_id = current_user.id
-    labels = list(keywords_to_labels(keywords_input.keywords))
+    new_labels = list(keywords_to_labels(keywords_input.keywords))
+    dups = find_duplication_in_labels(labels, new_labels)
+    if keywords_input.dry_run:
+        return {"result": {"failed": dups}}
+    else:
+        raise DuplicateKeywordError()
+
     req = ControllerRequest(
         ExtraRequestType.add_label,
         user_id,
@@ -70,14 +80,8 @@ def create_keywords(
     resp = controller_client.send(req)
     logger.info("[controller] response for add label: %s", resp)
 
-    # note that for failed keywords, the result looks like: 'dog,puppy'
-    # there is not leading index
-    failed_keywords = list(labels_to_keywords(list(resp["csv_labels"]), offset=0))
-
-    if not keywords_input.dry_run:
-        # clean cached key when changes happen
-        cache.delete_personal_keywords()
-    return {"result": {"failed": failed_keywords}}
+    cache.delete_personal_keywords()
+    return {"result": {"failed": []}}
 
 
 @router.patch(

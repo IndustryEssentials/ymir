@@ -35,6 +35,24 @@ def labels_to_keywords(
             yield Keyword(**keyword)
 
 
+def extract_names_from_keyword(keyword: Keyword) -> Iterator[str]:
+    yield keyword.name
+    if keyword.aliases:
+        yield from keyword.aliases
+
+
+def extract_names_from_labels(labels: List[str]) -> Iterator[str]:
+    for keyword in labels_to_keywords(labels):
+        yield from extract_names_from_keyword(keyword)
+
+
+def find_duplication_in_labels(labels: List[str], new_labels: List[str]) -> List[str]:
+    names = set(extract_names_from_labels(labels))
+    new_names = set(extract_names_from_labels(new_labels))
+
+    return list(names & new_names)
+
+
 def get_keyword_id_to_name_mapping(labels: List[str]) -> Dict:
     mapping = {}
     for label in labels:

@@ -10,7 +10,14 @@ from .dataset import (
 )
 from .graph import Graph, GraphOut
 from .inference import InferenceCreate, InferenceOut
-from .keyword import KeywordsCreate, KeywordsPaginationOut, KeywordsUpdateOut, KeywordOut, KeywordUpdate, Keyword
+from .keyword import (
+    KeywordsCreate,
+    KeywordsPaginationOut,
+    KeywordsCreateOut,
+    KeywordOut,
+    KeywordUpdate,
+    Keyword,
+)
 from .model import Model, ModelCreate, ModelImport, ModelOut, Models, ModelUpdate
 from .msg import Msg
 from .runtime import Runtime, RuntimeCreate, RuntimeOut
