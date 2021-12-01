@@ -74,7 +74,7 @@ def lable_task_monitor() -> None:
             rds.hdel(config.MONITOR_MAPPING_KEY, task_id)
             logging.info(f'task {task_id} finished!!!')
 
-        content = f'{project_info["task_id"]} {int(datetime.now().timestamp())} {percent} {state}'
+        content = f'{project_info["task_id"]}\t{int(datetime.now().timestamp())}\t{percent}\t{state}'
         label_instance.write_project_status(project_info["monitor_file_path"], content)
 
 
