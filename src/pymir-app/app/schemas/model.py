@@ -65,7 +65,7 @@ class Model(ModelInDB):
         task_config = json.loads(task_config_str) if task_config_str else {}
         values["config"] = task_config
 
-        values["keywords"] = parameters.get("include_classes", [])
+        values["keywords"] = extract_keywords(parameters)
         # the source of a model is actually the task
         # that import the model, copy the model or
         # train the model
@@ -78,6 +78,14 @@ class Model(ModelInDB):
 
 def get_model_url(model_hash: str) -> str:
     return f"{settings.NGINX_PREFIX}/ymir-models/{model_hash}"
+
+
+def extract_keywords(parameters: Optional[Union[str, Dict]]) -> List:
+    if not parameters:
+        return []
+    if isinstance(parameters, str):
+        parameters = json.loads(parameters)
+    return parameters.get("include_classes", [])  # type: ignore
 
 
 class Models(BaseModel):

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Dict
 
 import arrow
 from redis import StrictRedis
@@ -56,6 +56,25 @@ class RedisStats:
     def update_model_rank(self, user_id: int, model_id: int) -> None:
         key = f"{self.prefix}:{user_id}:model"
         self._update_rank(self.conn, key, str(model_id))
+
+    def update_keyword_wise_model_rank(self, user_id: int, model_id: int, model_mAP: float, keywords: List[str]) -> None:
+        for keyword in keywords:
+            key = f"{self.prefix}:{user_id}:model:{keyword}"
+            self.conn.zadd(key, {str(model_id): model_mAP})
+
+    def get_keyword_wise_best_models(self, user_id: int, limit: int = 5) -> Dict[str, List[Tuple[int, float]]]:
+        """
+        Get models of each keyword, sorted by mAP
+        """
+        prefix = f"{self.prefix}:{user_id}:model:"
+        keyword_wise_models = {}
+        for key in self.get_keys(self.conn, prefix):
+            keyword = key.replace(prefix, "")
+            keyword_wise_models[keyword] = [
+                (int(model_id), mAP)
+                for model_id, mAP in self._get_rank(self.conn, key, stop=limit)
+            ]
+        return keyword_wise_models
 
     def get_top_models(self, user_id: int, limit: int = 5) -> List[Tuple[int, int]]:
         key = f"{self.prefix}:{user_id}:model"
@@ -132,6 +151,15 @@ class RedisStats:
             counter.append((int(k), int(v)))
         counter.sort()
         return counter
+
+    @staticmethod
+    def get_keys(
+        conn: StrictRedis, prefix: str
+    ) -> List:
+        """
+        Caution, use this func when you're sure there are limited keys
+        """
+        return list(conn.scan_iter(f"{prefix}*"))
 
     def close(self) -> None:
         print("bye")
