@@ -29,7 +29,10 @@ from app.utils.ymir_controller import (
     ExtraRequestType,
 )
 from app.utils.ymir_viz import VizClient
-from app.utils.class_ids import get_keyword_id_to_name_mapping, get_keyword_name_to_id_mapping
+from app.utils.class_ids import (
+    get_keyword_id_to_name_mapping,
+    get_keyword_name_to_id_mapping,
+)
 
 router = APIRouter()
 
@@ -384,6 +387,15 @@ class TaskResultProxy:
         if task_result["state"] == TaskState.done:
             self.handle_finished_task(task)
 
+        if (
+            task.type is TaskType.import_data
+            and task_result["state"] == TaskState.error
+        ):
+            # fixme:
+            #  parse error msg of failed to import_task
+            #  to get ignored_keywords
+            self.handle_failed_import_task(task, task_result)
+
         logger.debug("task progress used to be %s", task)
         updated_task = self.update_task_progress(task, task_result)
         logger.debug("task progress updated to %s", updated_task)
@@ -447,6 +459,20 @@ class TaskResultProxy:
             task,
         )
 
+    def handle_failed_import_task(self, task: schemas.Task, task_result: Dict) -> None:
+        # makeup data for failed dataset
+        error_message = task_result.get("state_message")
+        ignored_keywords = list(json.loads(error_message).keys()) if error_message else []
+        dataset_info = {
+            "keywords": [],
+            "ignored_keywords": ignored_keywords,
+            "items": 0,
+            "total": 0,
+        }
+        logger.debug("[failed task] update dataset with %s", dataset_info)
+        dataset = self.update_dataset(task, dataset_info)
+        logger.debug("[failed task] added ignored_keywords to dataset: %s", dataset)
+
     def add_new_dataset_if_not_exist(self, task: schemas.Task) -> Dataset:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if dataset:
@@ -467,12 +493,12 @@ class TaskResultProxy:
         dataset = crud.dataset.create(self.db, obj_in=dataset_in)
         return dataset
 
-    def update_dataset(self, task: schemas.Task) -> Optional[Dataset]:
+    def update_dataset(self, task: schemas.Task, dataset_info: Optional[Dict] = None) -> Optional[Dataset]:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if not dataset:
             return dataset
 
-        dataset_info = self.get_dataset_info(task.user_id, task.hash)
+        dataset_info = dataset_info or self.get_dataset_info(task.user_id, task.hash)
         dataset_in = schemas.DatasetUpdate(
             predicates=self._extract_keywords(dataset_info),
             asset_count=dataset_info["total"],
