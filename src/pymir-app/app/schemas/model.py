@@ -29,7 +29,10 @@ class ModelCreate(ModelBase):
     pass
 
 
-class ModelImport(ModelBase):
+class ModelImport(BaseModel):
+    hash: str
+    name: str
+    map: Optional[str]
     input_url: str
 
 
