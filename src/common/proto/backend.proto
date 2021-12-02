@@ -45,7 +45,8 @@ enum RCode {
     RC_SERVICE_INFO_INVOKER_ERROR = 1005;
 
     // app state_code
-    RC_TASK_LABEL_ERROR = 2000;
+    RC_TASK_UNKNOWN_ERROR = 2000;
+    RC_TASK_LABEL_CONFLICT_ERROR = 2001;
 
 }
 
