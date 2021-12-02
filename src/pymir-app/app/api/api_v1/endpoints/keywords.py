@@ -66,16 +66,16 @@ def create_keywords(
     """
     user_id = current_user.id
     new_labels = list(keywords_to_labels(keywords_input.keywords))
+    logger.info("old labels: %s\nnew labels: %s", labels, new_labels)
+
     dups = find_duplication_in_labels(labels, new_labels)
-    if keywords_input.dry_run:
+    if dups:
         return {"result": {"failed": dups}}
-    else:
-        raise DuplicateKeywordError()
 
     req = ControllerRequest(
         ExtraRequestType.add_label,
         user_id,
-        args={"labels": labels, "dry_run": keywords_input.dry_run},
+        args={"labels": new_labels, "dry_run": keywords_input.dry_run},
     )
     resp = controller_client.send(req)
     logger.info("[controller] response for add label: %s", resp)
@@ -97,6 +97,7 @@ def update_keyword_aliases(
 ) -> Any:
     user_id = current_user.id
     updated_keyword = Keyword(name=keyword, aliases=aliases_in.aliases)
+    logger.info("updated keyword: %s", updated_keyword)
     labels = list(keywords_to_labels([updated_keyword]))
     req = ControllerRequest(
         ExtraRequestType.add_label, user_id, args={"labels": labels, "dry_run": False}

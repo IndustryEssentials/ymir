@@ -159,7 +159,7 @@ class RedisStats:
         """
         Caution, use this func when you're sure there are limited keys
         """
-        return list(conn.scan_iter(f"{prefix}*"))
+        return list(k.decode() for k in conn.scan_iter(f"{prefix}*"))
 
     def close(self) -> None:
         print("bye")
