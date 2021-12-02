@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import logging
+import json
 import os
 import random
 import shutil
@@ -8,7 +9,7 @@ import shutil
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser
-from mir.tools.code import MirCode
+from mir.tools.code import MirCode, MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
 
 
@@ -99,8 +100,7 @@ class CmdImport(base.BaseCommand):
             if ignore_unknown_types:
                 logging.warning(f"unknown types: {unknown_types}")
             else:
-                # raise an error, so monitor.txt can record this detail
-                raise ValueError(f"import annotations error, unknown types: {unknown_types}")
+                raise MirRuntimeError(MirCode.RC_RUNTIME_UNKNOWN_TYPES, json.dumps(unknown_types))
 
         # create and write tasks
         mir_tasks = mirpb.MirTasks()

@@ -9,7 +9,7 @@ import os
 import traceback
 from typing import Any, Callable, Dict, List, Optional
 
-from mir.tools.code import MirCode
+from mir.tools.code import MirCode, MirRuntimeError
 from mir.tools import revs_parser, mir_repo_utils
 
 
@@ -71,7 +71,10 @@ class PhaseLogger:
         return self._local_percent
 
     # public: general
-    def update_percent_info(self, local_percent: float, task_state: PhaseStateEnum, extra_message: str = None) -> None:
+    def update_percent_info(self, local_percent: float, task_state: PhaseStateEnum,
+                            state_code: int = 0,
+                            state_content: str = None,
+                            trace_message: str = None) -> None:
         # if no monitor_file assgned, no need to write monitor percent log
         assert local_percent >= 0 and local_percent <= 1
         self._local_percent = local_percent
@@ -83,9 +86,12 @@ class PhaseLogger:
 
         with open(self.monitor_file, 'w') as f:
             timestamp = int(datetime.datetime.now().timestamp())
-            f.write(f"{self.task_name}\t{timestamp}\t{global_percent:.2f}\t{task_state}\n")
-            if extra_message:
-                f.write(f"{extra_message}\n")
+            f.write(f"{self.task_name}\t{timestamp}\t{global_percent:.2f}\t{task_state}")
+            if state_code and state_content:
+                f.write(f"\t{state_code}\t{state_content}")
+            f.write("\n")
+            if trace_message:
+                f.write(f"{trace_message}\n")
 
     def create_children(self, deltas: List[float]) -> List['PhaseLogger']:
         """
@@ -161,7 +167,9 @@ class PhaseLoggerCenter:
     def update_phase(phase: str,
                      local_percent: float = 1,
                      task_state: PhaseStateEnum = PhaseStateEnum.RUNNING,
-                     extra_message: str = None) -> None:
+                     state_code: int = 0,
+                     state_content: str = None,
+                     trace_message: str = None) -> None:
         if not phase:
             return
 
@@ -169,7 +177,9 @@ class PhaseLoggerCenter:
 
         PhaseLoggerCenter._phase_name_to_loggers[phase].update_percent_info(local_percent=local_percent,
                                                                             task_state=task_state,
-                                                                            extra_message=extra_message)
+                                                                            state_code=state_code,
+                                                                            state_content=state_content,
+                                                                            trace_message=trace_message)
 
 
 def phase_logger_in_out(f: Callable) -> Callable:
@@ -194,23 +204,35 @@ def phase_logger_in_out(f: Callable) -> Callable:
 
         try:
             ret = f(work_dir=work_dir, *args, **kwargs)
-            extra_message = f"cmd return: {ret}"
+            trace_message = f"cmd return: {ret}"
 
             if ret == MirCode.RC_OK:
                 mir_logger.update_percent_info(local_percent=1, task_state=PhaseStateEnum.DONE)
             else:
                 mir_logger.update_percent_info(local_percent=1,
                                                task_state=PhaseStateEnum.ERROR,
-                                               extra_message=extra_message)
+                                               state_code=ret,
+                                               state_content=trace_message,
+                                               trace_message=trace_message)
 
             return ret
-        except BaseException as e:
-            extra_message = f"cmd exception: {traceback.format_exc()}"
+        except MirRuntimeError as e:
+            trace_message = f"cmd exception: {traceback.format_exc()}"
 
             mir_logger.update_percent_info(local_percent=1,
                                            task_state=PhaseStateEnum.ERROR,
-                                           extra_message=extra_message)
+                                           state_code=e.error_code,
+                                           state_content=e.error_message,
+                                           trace_message=trace_message)
 
+            raise e
+        except BaseException as e:
+            trace_message = f"cmd exception: {traceback.format_exc()}"
+            mir_logger.update_percent_info(local_percent=1,
+                                           task_state=PhaseStateEnum.ERROR,
+                                           state_code=MirCode.RC_RUNTIME_ERROR_UNKNOWN,
+                                           state_content=str(e),
+                                           trace_message=trace_message)
             raise e
 
     return wrapper
