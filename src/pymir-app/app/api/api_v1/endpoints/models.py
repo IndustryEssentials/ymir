@@ -15,7 +15,7 @@ from app.api.errors.errors import (
     NoModelPermission,
     InvalidConfiguration,
 )
-from app.models.task import TaskType
+from app.models.task import TaskType, Task
 from app.utils.stats import RedisStats
 from app.utils.ymir_controller import ControllerRequest
 from app.utils.files import save_file
@@ -82,29 +82,38 @@ def import_model(
     if not settings.MODELS_PATH:
         raise InvalidConfiguration()
 
-    task_id = ControllerRequest.gen_task_id(current_user.id)
-    task_in = schemas.TaskCreate(name=task_id, type=TaskType.import_data)
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
-    )
-    crud.task.soft_remove(db, id=task.id)
+    model_info = jsonable_encoder(model_import)
+
+    task = create_task_as_placeholder(db, user_id=current_user.id)
     logger.info("[import model] task created and hided: %s", task)
 
     existing_model_hash = crud.model.get_by_hash(
         db, hash_=model_import.hash
     )
 
-    model_info = jsonable_encoder(model_import)
+    # bind imported model to the placeholding task
+    model_info["task_id"] = task.id
+    model_info["user_id"] = current_user.id
     model_in = schemas.ModelCreate(**model_info)
     model = crud.model.create(db, obj_in=model_in)
     logger.info("[import model] model record created: %s", model)
 
     if existing_model_hash:
-        logger.info("model of same hash (%s) existing, just add a new reference", model_import.hash)
+        logger.info("model of same hash (%s) exists, just add a new reference", model_import.hash)
     else:
         background_tasks.add_task(
             save_model_file, model_import.input_url, settings.MODELS_PATH
         )
+
+
+def create_task_as_placeholder(db: Session, *, user_id: int) -> Task:
+    task_id = ControllerRequest.gen_task_id(user_id)
+    task_in = schemas.TaskCreate(name=task_id, type=TaskType.import_data)
+    task = crud.task.create_task(
+        db, obj_in=task_in, task_hash=task_id, user_id=user_id
+    )
+    crud.task.soft_remove(db, id=task.id)
+    return task
 
 
 def save_model_file(model_url: str, storage_path: str) -> None:

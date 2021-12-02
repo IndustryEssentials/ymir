@@ -104,23 +104,22 @@ def create_task(
     if parameters and task_in.config:
         parameters["config"] = task_in.config
 
-    req = ControllerRequest(
-        task_in.type, current_user.id, current_workspace.hash, args=parameters
-    )
     try:
-        resp = controller_client.send(req)
-        logger.info("controller response: %s", resp)
+        task_id = ControllerRequest.gen_task_id(current_user.id)
+        resp = controller_client.create_task(
+            current_user.id, current_workspace.hash, task_id, task_in.type, parameters,
+        )
+        logger.info("[create task] controller response: %s", resp)
     except ValueError:
         # todo parse error message
         raise FailedtoCreateTask()
 
-    assert req.task_id is not None
     task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=req.task_id, user_id=current_user.id
+        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
     )
 
     update_stats_for_ref_count(current_user.id, stats_client, task_in)
-    logger.info("create task end: %s" % task_in.name)
+    logger.info("[create task] created task name: %s" % task_in.name)
 
     return {"result": task}
 
@@ -139,30 +138,36 @@ def normalize_parameters(
     if not parameters:
         return None
     p = dict(parameters)
-    normalized = {}
+    normalized = {}  # type: Dict[str, Any]
     normalized["name"] = name
     for k, v in p.items():
         if v is None:
             continue
         if k.endswith("datasets"):
             datasets = crud.dataset.get_multi_by_ids(db, ids=v)
-            # order_datasets_by_strategy(datasets, parameters.strategy)
-            normalized[k] = [dataset.hash for dataset in datasets]  # type: ignore
+            order_datasets_by_strategy(datasets, parameters.strategy)
+            normalized[k] = [dataset.hash for dataset in datasets]
         elif k.endswith("classes"):
-            normalized[k] = [keyword_name_to_id[keyword.strip()] for keyword in v]  # type: ignore
+            normalized[k] = [keyword_name_to_id[keyword.strip()] for keyword in v]
         elif k == "model_id":
             model = crud.model.get(db, id=v)
             assert model and model.hash
-            normalized["model_hash"] = model.hash  # type: ignore
+            normalized["model_hash"] = model.hash
         else:
             normalized[k] = v
     return normalized
 
 
-def order_datasets_by_strategy(objects: List[Any], strategy: MergeStrategy) -> None:
+def order_datasets_by_strategy(
+    objects: List[Any], strategy: Optional[MergeStrategy]
+) -> None:
     """
     change the order of datasets *in place*
     """
+    if not strategy:
+        return
+    if strategy is MergeStrategy.stop_upon_conflict:
+        return
     return objects.sort(
         key=attrgetter("update_datetime"),
         reverse=strategy is MergeStrategy.prefer_newest,
@@ -303,7 +308,9 @@ def terminate_task(
     if task.type in killable_task_types:
         controller_client.terminate_task(user_id=current_user.id, target_task=task)
     if task.type is not TaskType.label:
-        task = crud.task.update_task_state(db, task_id=task.id, new_state=TaskState.error)
+        task = crud.task.update_task_state(
+            db, task_id=task.id, new_state=TaskState.error
+        )
     return {"result": task}
 
 
@@ -453,7 +460,7 @@ class TaskResultProxy:
             type=task.type,
             user_id=task.user_id,
             task_id=task.id,
-            predicates=json.dumps(dataset_info["keywords"]),
+            predicates=self._extract_keywords(dataset_info),
             asset_count=dataset_info["total"],
             keyword_count=len(dataset_info["keywords"]),
         )
@@ -467,12 +474,20 @@ class TaskResultProxy:
 
         dataset_info = self.get_dataset_info(task.user_id, task.hash)
         dataset_in = schemas.DatasetUpdate(
-            predicates=json.dumps({"keywords": dataset_info["keywords"], "ignored_keywords": dataset_info["ignored_keywords"]}),
+            predicates=self._extract_keywords(dataset_info),
             asset_count=dataset_info["total"],
             keyword_count=len(dataset_info["keywords"]),
         )
         updated = crud.dataset.update(self.db, db_obj=dataset, obj_in=dataset_in)
         return updated
+
+    def _extract_keywords(self, dataset_info: Dict) -> str:
+        return json.dumps(
+            {
+                "keywords": dataset_info["keywords"],
+                "ignored_keywords": dataset_info["ignored_keywords"],
+            }
+        )
 
     def add_new_model_if_not_exist(self, task: schemas.Task) -> Model:
         self.viz.config(user_id=task.user_id, branch_id=task.hash)
@@ -498,7 +513,9 @@ class TaskResultProxy:
     def get_dataset_info(self, user_id: int, task_hash: str) -> Dict:
         labels = self.controller.get_labels_of_user(user_id)
         keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
-        self.viz.config(user_id=user_id, branch_id=task_hash, keyword_id_to_name=keyword_id_to_name)
+        self.viz.config(
+            user_id=user_id, branch_id=task_hash, keyword_id_to_name=keyword_id_to_name
+        )
 
         assets = self.viz.get_assets()
         result = {

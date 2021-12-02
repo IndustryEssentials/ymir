@@ -38,6 +38,7 @@ class TestControllerRequest:
                 "include_datasets": include_datasets,
                 "include_classes": include_classes,
                 "exclude_classes": exclude_classes,
+                "merge_strategy": m.MergeStrategy.prefer_newest,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
@@ -54,6 +55,7 @@ class TestControllerRequest:
                 "include_validation_datasets": [],
                 "include_test_datasets": [],
                 "include_classes": [],
+                "merge_strategy": m.MergeStrategy.prefer_newest,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
@@ -71,6 +73,7 @@ class TestControllerRequest:
                 "include_datasets": [],
                 "ex_dataset_ids": [],
                 "generate_annotations": True,
+                "merge_strategy": m.MergeStrategy.prefer_newest,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE

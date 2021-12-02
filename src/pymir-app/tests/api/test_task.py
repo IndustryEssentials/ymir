@@ -17,6 +17,12 @@ def mock_controller(mocker):
 
 
 @pytest.fixture(scope="function")
+def mock_controller_request(mocker):
+    r = mocker.Mock()
+    mocker.patch.object(m, "ControllerRequest", return_value=r)
+
+
+@pytest.fixture(scope="function")
 def mock_db(mocker):
     return mocker.Mock()
 
@@ -38,7 +44,7 @@ def mock_stats(mocker):
 
 class TestTaskResult:
     def test_get_task_result(
-        self, mocker, mock_controller, mock_db, mock_graph_db, mock_viz
+        self, mocker, mock_controller, mock_db, mock_graph_db, mock_viz, mock_controller_request
     ):
         task_result_proxy = m.TaskResultProxy(
             controller=mock_controller,
@@ -53,11 +59,10 @@ class TestTaskResult:
             return_value={"state": m.TaskState.done, "task_id": task_hash}
         )
         task = mocker.Mock(hash=task_hash)
-        mocker.patch.object(m, "ControllerRequest", return_value=None)
         result = task_result_proxy.get(task)
         mock_controller.send.assert_called()
 
-    def test_save_task_result(self, mocker, mock_controller, mock_db, mock_graph_db):
+    def test_save_task_result(self, mocker, mock_controller, mock_db, mock_graph_db, mock_controller_request):
         task_result_proxy = m.TaskResultProxy(
             controller=mock_controller,
             db=mock_db,
@@ -80,7 +85,6 @@ class TestTaskResult:
         user_id = random.randint(1000, 2000)
         task_hash = random_lower_string(32)
         task = mocker.Mock(hash=task_hash)
-        mocker.patch.object(m, "ControllerRequest", return_value=None)
         result = task_result_proxy.get(task)
         task_result_proxy.save(task, result)
 
@@ -163,16 +167,13 @@ def create_task(client, headers):
         "type": m.TaskType.mining,
     }
     r = client.post(f"{settings.API_V1_STR}/tasks/", headers=headers, json=j)
-
     return r
 
 
 class TestListTasks:
     def test_list_tasks_succeed(
-        self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker
+        self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker, mock_controller
     ):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
         for _ in range(3):
             r = create_task(client, normal_user_token_headers)
         r = client.get(
@@ -184,9 +185,7 @@ class TestListTasks:
 
 
 class TestDeleteTask:
-    def test_delete_task(self, client: TestClient, normal_user_token_headers, mocker):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
+    def test_delete_task(self, client: TestClient, normal_user_token_headers, mocker, mock_controller):
         r = create_task(client, normal_user_token_headers)
         assert not r.json()["result"]["is_deleted"]
         task_id = r.json()["result"]["id"]
@@ -198,10 +197,8 @@ class TestDeleteTask:
 
 class TestChangeTaskName:
     def test_change_task_name(
-        self, client: TestClient, normal_user_token_headers, mocker
+        self, client: TestClient, normal_user_token_headers, mocker, mock_controller
     ):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
         r = create_task(client, normal_user_token_headers)
         old_name = r.json()["result"]["name"]
         task_id = r.json()["result"]["id"]
@@ -216,10 +213,8 @@ class TestChangeTaskName:
 
 class TestGetTask:
     def test_get_single_task(
-        self, client: TestClient, normal_user_token_headers, mocker
+        self, client: TestClient, normal_user_token_headers, mocker, mock_controller
     ):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
         r = create_task(client, normal_user_token_headers)
         name = r.json()["result"]["name"]
         task_id = r.json()["result"]["id"]
@@ -232,7 +227,7 @@ class TestGetTask:
     def test_get_single_task_not_found(
         self, client: TestClient, normal_user_token_headers, mocker
     ):
-        task_id = 2333
+        task_id = random_lower_string(8)
         r = client.get(
             f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers
         )
