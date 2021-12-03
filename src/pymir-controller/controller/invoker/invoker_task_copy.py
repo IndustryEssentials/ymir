@@ -1,14 +1,14 @@
 import os
 
-from controller.invoker.invoker_task_base import TaskBaseInvoker, write_done_progress
+from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import code, utils
 from proto import backend_pb2
+from typing import Dict
 
 
 class TaskCopyInvoker(TaskBaseInvoker):
     @classmethod
-    @write_done_progress
-    def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: str, working_dir: str,
+    def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
                     task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         copy_request = request.req_create_task.copy
 

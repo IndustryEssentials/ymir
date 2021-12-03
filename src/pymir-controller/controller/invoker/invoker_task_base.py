@@ -1,24 +1,11 @@
 import os
 import threading
-from functools import wraps
-from typing import Any, Callable, Dict
+from typing import Dict
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.task_monitor import ControllerTaskMonitor
 from controller.utils import code, checker, tasks_util, utils
 from proto import backend_pb2
-
-
-def write_done_progress(fn: Callable) -> Callable:
-    @wraps(fn)
-    def write_done(*args: tuple, **kwargs: Any) -> Any:
-        ret = fn(*args, **kwargs)
-        print('ret: {}'.format(ret))
-        tasks_util.write_task_progress(kwargs['task_monitor_file'], kwargs['request'].task_id, 1.0,
-                                       backend_pb2.TaskStateDone)
-        return ret
-
-    return write_done
 
 
 class TaskBaseInvoker(BaseMirControllerInvoker):
@@ -79,14 +66,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                    working_dir=working_dir,
                                    task_monitor_file=task_monitor_file,
                                    request=request)
-
-        # write error message.
-        if response.code != code.ResCode.CTR_OK:
-            tasks_util.write_task_progress(monitor_file=task_monitor_file,
-                                           tid=request.task_id,
-                                           percent=1.0,
-                                           state=backend_pb2.TaskStateError,
-                                           msg=response.message)
 
         return response
 
