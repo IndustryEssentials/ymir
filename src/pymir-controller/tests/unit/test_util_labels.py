@@ -29,4 +29,8 @@ class TestLabelFileHandler:
 
         assert res == [["0", "a", "aa"], ["1", "h"], ["2", "z"], ["3", "xx", "xxx"]]
 
+        candidate_labels = ["h,a"]
+        conflict_labels = label_handler.merge_labels(candidate_labels)
+        assert conflict_labels == [["h", "a"]]
+
         self.remove_label_file("./labels.csv")
