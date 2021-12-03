@@ -42,6 +42,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         user_id: int,
         name: Optional[str] = None,
         type_: Optional[IntEnum] = None,
+        state: Optional[IntEnum] = None,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
         offset: Optional[int] = 0,
@@ -67,6 +68,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(Dataset.name.like(f"%{name}%"))
         if type_:
             query = query.filter(Dataset.type == type_)
+        if state:
+            query = query.filter(Task.state == state)
         query = query.order_by(desc(self.model.id))
         if limit:
             return query.offset(offset).limit(limit).all(), query.count()
