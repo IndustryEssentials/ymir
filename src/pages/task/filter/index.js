@@ -80,7 +80,7 @@ function Filter({
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
     }
-    const result = createFilterTask(params)
+    const result = await createFilterTask(params)
     if (result) {
       message.info(t('task.filter.create.success.msg'))
       history.replace('/home/task')

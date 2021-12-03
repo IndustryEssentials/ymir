@@ -86,8 +86,15 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     }
   }, [kStrategy])
 
+  useEffect(() => {
+    renderKeywords()
+  }, [selectedDataset])
+
   const typeChange = (type) => {
     setCurrentType(type)
+    form.setFieldsValue({ with_annotations: 0, k_strategy: 0, })
+    setShowLS(true)
+    setKStrategy(0)
   }
 
   const isType = (type) => {
@@ -96,10 +103,10 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
 
   async function submit(values) {
     if (currentType === TYPES.LOCAL && !fileToken) {
-      return message.error('Please upload local file')
+      return message.error(t('dataset.add.local.file.empty'))
     }
     const kws = form.getFieldValue('new_keywords')
-    if (kws && kws.length) {
+    if (kws && kws.length && kStrategy === 1 && isType(TYPES.INTERNAL)) {
       const addKwParams = kws.filter(k => k.type === 0).map(k => ({ name: k.name }))
       const kResult = await updateKeywords({ keywords: addKwParams })
       if (!kResult) {
@@ -242,22 +249,25 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                   : null}
               </>
             ) : null}
-            <Form.Item label={t('dataset.add.form.label.label')}>
-              <Radio.Group options={labelOptions} onChange={onLabelChange} defaultValue={labelOptions[0].value} />
+            <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
+              <Radio.Group
+                options={labelOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 1 : true)}
+                onChange={onLabelChange}
+              />
             </Form.Item>
             {showLabelStrategy ?
               <Form.Item label={t('dataset.add.form.newkw.label')}>
                 <p className={s.newkwTip}><TipsIcon className={s.tipIcon} /> {t('dataset.add.form.newkw.tip')}</p>
-                <Row><Col flex={1}><Form.Item noStyle>
+                <Row><Col flex={1}><Form.Item noStyle name='k_strategy' initialValue={0}>
                   <Radio.Group key={!isType(TYPES.INTERNAL) ? 'internal' : 'other'}
-                    options={labelStrategyOptions.filter(option => isType(TYPES.INTERNAL) ? true : option.value !== 1)}
-                    onChange={onStrategyChange} value={kStrategy} />
+                    options={labelStrategyOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 2 : option.value !== 1)}
+                    onChange={onStrategyChange} />
                 </Form.Item></Col>
                   <Col><Link to={'/home/keyword'} target='_blank'>{t('dataset.add.form.newkw.link')}</Link></Col>
                 </Row>
               </Form.Item> : null}
-              <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 4, span: 13 }}>
-            {newKeywords.length > 0 ?
+            <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 4, span: 13 }}>
+              {newKeywords.length > 0 ?
                 <Form.List name='new_keywords'>
                   {(fields, { add, remove }) => (
 
@@ -300,8 +310,8 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                     </Row>
                   )}
                 </Form.List>
-              : t('dataset.add.newkeyword.empty')}
-              </Form.Item>
+                : t('dataset.add.newkeyword.empty')}
+            </Form.Item>
             {isType(TYPES.SHARE) ? (
               <Form.Item
                 label={t('dataset.add.form.share.label')}
@@ -343,7 +353,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('dataset.add.form.upload.btn')}>
                 <Uploader
-                  onChange={(files, result) => { setFileToken(result) }}
+                  onChange={(files, result) => { setFileToken(files.length ? result : '') }}
                   max={1024}
                   info={t('dataset.add.form.upload.tip', { br: <br />, sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a> })}
                 ></Uploader>

@@ -7,7 +7,6 @@ import t from "@/utils/t"
 
 const pwdRepeat = ({ getFieldValue }) => ({
   validator(_, value) {
-    console.log("hello", value, getFieldValue("password"))
     if (value && getFieldValue("password") !== value) {
       return Promise.reject(t("signup.pwd.repeat.same.msg"))
     }

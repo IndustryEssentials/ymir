@@ -28,6 +28,8 @@ function Uploader({ className, value=[], format="zip", label, max = 200,
   function onFileChange({ file, fileList }) {
     if (file.status === 'done') {
       uploadSuccess(file.response)
+    } else {
+      onChange(fileList)
     }
     setFiles([...fileList])
   }
