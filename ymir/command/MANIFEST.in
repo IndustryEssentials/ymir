@@ -1,0 +1,4 @@
+include ymir_proto/ids/type_id_names.csv
+include mir/conf/mining-template.yaml
+include mir/conf/training-template.yaml
+include mir/tools/phase_logger_conf.json

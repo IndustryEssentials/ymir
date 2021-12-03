@@ -1,0 +1,14 @@
+# * image_height, image_width and anchors should be the same with corresponding training-template.yaml
+image_height: 608
+image_width: 608
+anchors: '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
+write_result: True
+confidence_thresh: 0.1
+nms_thresh: 0.45
+max_boxes: 50
+# shm_size: '16G'
+# gpu_id: ''
+# model_params_path: /in/model/model-0000.params
+# class_names:
+# - expose_rubbish
+# task_id: '0'

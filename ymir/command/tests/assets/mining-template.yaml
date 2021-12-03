@@ -1,0 +1,13 @@
+data_workers: 28
+model_name: yolo
+model_type: detection
+strategy: aldd_yolo
+image_height: 608
+image_width: 608
+batch_size: 16
+# shm_size: '16G'
+# gpu_id: '0,1,2,3'
+# model_params_path: /in/model/model-0000.params
+# task_id: cycle-node-mined-0
+# class_names:
+# - expose_rubbish
