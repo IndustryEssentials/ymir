@@ -33,10 +33,10 @@ class CmdImport(base.BaseCommand):
     def run_with_args(mir_root: str, index_file: str, ck_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
                       dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
         # Step 1: check args and prepare environment.
-        if not index_file or not anno_abs or not gen_abs:
-            logging.error("Missing input args")
+        if not index_file or not gen_abs:
+            logging.error(f"Missing input args: index_file: {index_file}, gen_abs: {gen_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if not os.path.isdir(anno_abs):
+        if anno_abs and not os.path.isdir(anno_abs):
             logging.error(f"annotations dir invalid: {anno_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         if not os.path.isfile(index_file):
@@ -173,11 +173,16 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                       dest="index_file",
                                       type=str,
                                       help="index of input media, one file per line")
-    importing_arg_parser.add_argument("--annotation-dir", dest="anno", type=str, help="corresponding annotation folder")
+    importing_arg_parser.add_argument("--annotation-dir",
+                                      dest="anno",
+                                      type=str,
+                                      required=False,
+                                      help="corresponding annotation folder")
     importing_arg_parser.add_argument("--gen-dir", dest="gen", type=str, help="storage path of generated data files")
     importing_arg_parser.add_argument("--dataset-name",
                                       dest="dataset_name",
                                       type=str,
+                                      required=False,
                                       help="name of the dataset to be created, use tid if not set.")
     importing_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="rev: source rev")
     importing_arg_parser.add_argument("--dst-rev",
