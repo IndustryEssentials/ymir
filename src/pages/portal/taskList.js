@@ -6,7 +6,7 @@ import { Link, useHistory } from "umi"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
 import t from '@/utils/t'
 import EmptyState from '@/components/empty/task'
-import renderTitle from "./components/boxTitle"
+import Title from "./components/boxTitle"
 import styles from './index.less'
 import { cardBody, cardHead } from "./components/styles"
 import { MytaskIcon, AddtaskIcon, } from '@/components/common/icons'
@@ -30,9 +30,9 @@ const TaskList = ({ getTasks }) => {
     return target.label
   }
 
-  return <Card className={`${styles.box} ${styles.hotModel}`} bordered={false}
+  return <Card className={`${styles.box} ${styles.taskList}`} bordered={false}
     headStyle={cardHead} bodyStyle={cardBody}
-    title={renderTitle(<><MytaskIcon className={styles.headIcon} />{t('portal.task.my.title')}</>, '/home/task')}
+    title={<Title title={<><MytaskIcon className={styles.headIcon} />{t('portal.task.my.title')}</>} link='/home/task'></Title>}
   >
     <Row gutter={10}>
       {tasks.length ? (<>

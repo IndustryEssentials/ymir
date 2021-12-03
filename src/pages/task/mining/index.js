@@ -286,8 +286,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             </Form.Item>
             <Form.Item
               label={t('task.mining.form.strategy.label')}
+            >
+            <Form.Item
               name='filter_strategy'
               initialValue={topk}
+              noStyle
             >
               <Radio.Group onChange={filterStrategyChange}>
                 <Radio value={false}>{t('common.all')}</Radio>
@@ -298,15 +301,18 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                   <InputNumber style={{ width: 120 }} min={1} max={trainSetCount - 1} precision={0} disabled={!topk} />
                 </Form.Item>
               </Radio.Group>
+              </Form.Item>
+              <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
             </Form.Item>
             <Form.Item
               label={t('task.mining.form.label.label')}
               name='inference'
+              initialValue={0}
             >
               <Radio.Group options={[
                 { value: 1, label: t('task.mining.form.label.yes') },
                 { value: 0, label: t('task.mining.form.label.no') },
-              ]} defaultValue={0} />
+              ]} />
             </Form.Item>
             <Form.Item
               label={t('task.gpu.count')}

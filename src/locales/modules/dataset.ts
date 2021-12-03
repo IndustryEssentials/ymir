@@ -117,6 +117,7 @@ const dataset = {
   'dataset.detail.info.keyword.label': { cn: '标签共{total}个', en: 'Total {total} Keywords:', },
   'dataset.import.public.include': { cn: '包含标签', en: 'Include', },
   'dataset.add.newkeyword.empty': { cn: '无新标签', en: 'None of new keywords', },
+  'dataset.add.local.file.empty': { cn: '请上传本地文件', en: 'Please upload a zip file', },
 }
 
 export default dataset

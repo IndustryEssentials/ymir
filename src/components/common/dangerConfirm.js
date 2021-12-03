@@ -1,6 +1,7 @@
-import confirm from "antd/lib/modal/confirm"
+import { Modal } from "antd"
 import { TipsIcon } from "./icons"
 
+const { confirm } = Modal
 
 const Confirm = (props) => {
   const color = 'rgb(242, 99, 123)'

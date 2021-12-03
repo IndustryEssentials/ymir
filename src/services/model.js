@@ -12,7 +12,7 @@ export function getModel(id) {
 
 /**
  * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, sort_by_map: true|false }
+ * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, sort_by: 1|2 }
  * @returns
  */
 export function getModels(params) {

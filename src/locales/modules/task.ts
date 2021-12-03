@@ -113,6 +113,7 @@ const task = {
   "task.mining.form.label.label": { cn: "是否产生新标注", en: "With Annotations", },
   "task.mining.form.label.no": { cn: "否", en: "No", },
   "task.mining.form.label.yes": { cn: "是", en: "Yes", },
+  "task.mining.topk.tip": { cn: "topk过大，有可能会返回全部数据", en: "Large top k may return all data", },
   "task.validator.same.param": { cn: "参数key重复", en: "Duplicate key of params", },
   "task.label.form.type.all": { cn: "全部重新标注", en: "All", },
   "task.label.form.member": { cn: "标注人员", en: "Labeller", },
