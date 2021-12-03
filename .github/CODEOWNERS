@@ -1,1 +1,3 @@
-*       @IndustryEssentials/ymir-cmd
+/ymir/command       @IndustryEssentials/ymir-cmd
+/ymir/backend       @IndustryEssentials/ymir-backend
+/ymir/web       @IndustryEssentials/ymir-web

@@ -6,9 +6,11 @@ name: Python application
 on:
   pull_request:
     branches: [ master, dev ]
+    paths:
+    - 'ymir/command/**'
 
 jobs:
-  build:
+  command-ci:
 
     runs-on: ubuntu-latest
 
@@ -22,14 +24,18 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install -r requirements-ci.txt
+      working-directory: ymir/command
     - name: mypy
       run: |
         mypy mir
+      working-directory: ymir/command
     - name: flake8
       run: |
         flake8 mir
+      working-directory: ymir/command
     - name: Test with pytest
       run: |
         git config --global user.name 'Deployer'
         git config --global user.email 'deployer@intellif.com'
         python tests/__main__.py
+      working-directory: ymir/command
