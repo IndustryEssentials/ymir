@@ -18,6 +18,8 @@ python -m grpc_tools.protoc \
       "$INPUT_DIR/mir_command.proto"
 
 # gen protobuf pyi for mypy
-protoc --plugin=protoc-gen-mypy=$(which protoc-gen-mypy) --mypy_out=$OUTPUT_DIR "$INPUT_DIR/mir_command.proto"
+protoc --plugin=protoc-gen-mypy=$(which protoc-gen-mypy) --mypy_out=$OUTPUT_DIR "$INPUT_DIR/mir_command.proto" \
+&& mv $OUTPUT_DIR/proto/mir_command_pb2.pyi $OUTPUT_DIR/ \
+&& rm -rf $OUTPUT_DIR/proto
 
 touch $OUTPUT_DIR/__init__.py
