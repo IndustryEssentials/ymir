@@ -319,12 +319,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.append(executor)
 
     logging.info(f"starting {task_type} docker container with cmd: {' '.join(cmd)}")
-    run_result = subprocess.run(cmd, check=True)  # run and wait
-
-    # when mining process done
-    if run_result.returncode != 0:
-        logging.info("{task_type} error occured: %s", run_result.returncode)
-        return MirCode.RC_CMD_ERROR_UNKNOWN
+    subprocess.run(cmd, check=True)  # run and wait, if non-zero value returned, raise
 
     return MirCode.RC_OK
 

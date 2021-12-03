@@ -6,6 +6,7 @@ from functools import wraps
 import json
 import math
 import os
+from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable, Dict, List, Optional
 
@@ -223,6 +224,16 @@ def phase_logger_in_out(f: Callable) -> Callable:
                                            task_state=PhaseStateEnum.ERROR,
                                            state_code=e.error_code,
                                            state_content=e.error_message,
+                                           trace_message=trace_message)
+
+            raise e
+        except CalledProcessError as e:
+            trace_message = f"cmd exception: {traceback.format_exc()}"
+
+            mir_logger.update_percent_info(local_percent=1,
+                                           task_state=PhaseStateEnum.ERROR,
+                                           state_code=MirCode.RC_RUNTIME_CONTAINER_ERROR,
+                                           state_content=str(e),
                                            trace_message=trace_message)
 
             raise e
