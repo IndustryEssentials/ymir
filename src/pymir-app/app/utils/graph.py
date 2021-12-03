@@ -29,15 +29,15 @@ class GraphClient:
     def __init__(self, redis_uri: Optional[str]):
         self.redis_con = self._get_redis_con(redis_uri)
         self._graph = None
-        self._user_id = None
+        self._user_id = None  # type: Optional[int]
 
     @property
-    def user_id(self) -> int:
-        return self._user_id  # type: ignore
+    def user_id(self) -> Optional[int]:
+        return self._user_id
 
     @user_id.setter
     def user_id(self, user_id: int) -> None:
-        self._user_id = user_id  # type: ignore
+        self._user_id = user_id
 
     @property
     def graph(self) -> Graph:

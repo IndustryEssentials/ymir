@@ -1,6 +1,7 @@
 import random
 import secrets
-from typing import Any
+from typing import Any, Optional
+import enum
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, BackgroundTasks
 from fastapi.encoders import jsonable_encoder
@@ -24,11 +25,12 @@ from app.config import settings
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    response_model=schemas.ModelOut,
-    dependencies=[Depends(deps.get_current_active_user)],
-)
+class ModelSortMethod(enum.IntEnum):
+    map = 1
+    ref_count = 2
+
+
+@router.get("/", response_model=schemas.ModelOut)
 def list_models(
     db: Session = Depends(deps.get_db),
     model_ids: str = Query(None, example="12,13,14", alias="ids"),
@@ -36,16 +38,29 @@ def list_models(
     source: TaskType = Query(None, description="the type of related task", example=1),
     offset: int = Query(None),
     limit: int = Query(None),
-    sort_by_map: bool = Query(None, description="sort model by mAP"),
+    order_by: Optional[ModelSortMethod] = Query(None),
     start_time: int = Query(None, description="from this timestamp"),
     end_time: int = Query(None, description="to this timestamp"),
     current_user: models.User = Depends(deps.get_current_active_user),
+    stats_client: RedisStats = Depends(deps.get_stats_client),
 ) -> Any:
     """
     Get list of models,
     pagination is supported by means of offset and limit
+
+    order is supported by `order_by`:
+
+    - 1: order_by map
+    - 2: order_by ref_count
     """
-    ids = [int(i) for i in model_ids.split(",")] if model_ids else []
+    if order_by is ModelSortMethod.ref_count:
+        ids = [
+            model[0]
+            for model in stats_client.get_top_models(current_user.id, limit=limit)
+        ]
+    else:
+        ids = [int(i) for i in model_ids.split(",")] if model_ids else []
+
     models, total = crud.model.get_multi_models(
         db,
         user_id=current_user.id,
@@ -54,7 +69,7 @@ def list_models(
         task_type=source,
         offset=offset,
         limit=limit,
-        order_by="map" if sort_by_map else None,
+        order_by="map" if order_by is ModelSortMethod.map else None,
         start_time=start_time,
         end_time=end_time,
     )
@@ -87,9 +102,7 @@ def import_model(
     task = create_task_as_placeholder(db, user_id=current_user.id)
     logger.info("[import model] task created and hided: %s", task)
 
-    existing_model_hash = crud.model.get_by_hash(
-        db, hash_=model_import.hash
-    )
+    existing_model_hash = crud.model.get_by_hash(db, hash_=model_import.hash)
 
     # bind imported model to the placeholding task
     model_info["task_id"] = task.id
@@ -99,7 +112,10 @@ def import_model(
     logger.info("[import model] model record created: %s", model)
 
     if existing_model_hash:
-        logger.info("model of same hash (%s) exists, just add a new reference", model_import.hash)
+        logger.info(
+            "model of same hash (%s) exists, just add a new reference",
+            model_import.hash,
+        )
     else:
         background_tasks.add_task(
             save_model_file, model_import.input_url, settings.MODELS_PATH
@@ -109,9 +125,7 @@ def import_model(
 def create_task_as_placeholder(db: Session, *, user_id: int) -> Task:
     task_id = ControllerRequest.gen_task_id(user_id)
     task_in = schemas.TaskCreate(name=task_id, type=TaskType.import_data)
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_id, user_id=user_id
-    )
+    task = crud.task.create_task(db, obj_in=task_in, task_hash=task_id, user_id=user_id)
     crud.task.soft_remove(db, id=task.id)
     return task
 
@@ -141,15 +155,20 @@ def delete_model(
     Delete model
     (soft delete actually)
     """
-    model = crud.model.get(db, id=model_id)
+    model = crud.model.get_with_task(db, user_id=current_user.id, id=model_id)
     if not model:
         raise ModelNotFound()
-
-    if model.user_id != current_user.id:
-        raise NoModelPermission()
+    model_keywords = schemas.Model.from_orm(model).keywords
 
     model = crud.model.soft_remove(db, id=model_id)
+
     stats_client.delete_model_rank(current_user.id, model_id)
+    logger.info("deleted model(%s) from ref count", model_id)
+    if model_keywords:
+        stats_client.delete_keyword_wise_model_rank(
+            current_user.id, model_id, model_keywords
+        )
+    logger.info("deleted model(%s) from keyword mAP", model_id)
     return {"result": model}
 
 

@@ -15,7 +15,6 @@ from app.models.task import TaskType, Task
 from app.schemas.dataset import ImportStrategy
 from app.schemas.task import MergeStrategy
 from id_definition.task_id import TaskId
-from app.utils.files import purge_contents_of_a_dir
 
 
 class ExtraRequestType(enum.IntEnum):
@@ -172,19 +171,13 @@ class ControllerRequest:
     ) -> mirsvrpb.GeneralReq:
         importing_request = mirsvrpb.TaskReqImporting()
         importing_request.asset_dir = args["asset_dir"]
-        importing_request.annotation_dir = args["annotation_dir"]
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
+        if strategy is not ImportStrategy.no_annotations:
+            importing_request.annotation_dir = args["annotation_dir"]
         if strategy is ImportStrategy.ignore_unknown_annotations:
             importing_request.name_strategy_ignore = True
-        elif strategy is ImportStrategy.stop_upon_unknown_annotations:
-            importing_request.name_strategy_ignore = False
-        elif strategy is ImportStrategy.no_annotations:
-            # underlying stuff requires the `annotation_dir` anyway
-            purge_contents_of_a_dir(args["annotation_dir"])
-            # name_strategy_ignore has no effect actually, but it's required
-            importing_request.name_strategy_ignore = False
         else:
-            raise ValueError("not supported strategy: %s" % strategy.name)
+            importing_request.name_strategy_ignore = False
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportData

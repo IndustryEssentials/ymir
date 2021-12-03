@@ -48,7 +48,7 @@ class ModelInDB(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase
 class Model(ModelInDB):
     parameters: Optional[Any] = None
     config: Optional[Any] = None
-    keywords: Optional[Any] = None
+    keywords: Optional[List[str]] = None
     source: Optional[int] = None
     task_type: Optional[int] = None
     task_name: Optional[str] = None

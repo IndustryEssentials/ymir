@@ -62,6 +62,11 @@ class RedisStats:
             key = f"{self.prefix}:{user_id}:model:{keyword}"
             self.conn.zadd(key, {str(model_id): model_mAP})
 
+    def delete_keyword_wise_model_rank(self, user_id: int, model_id: int, keywords: List[str]) -> None:
+        for keyword in keywords:
+            key = f"{self.prefix}:{user_id}:model:{keyword}"
+            self.conn.zrem(key, str(model_id))
+
     def get_keyword_wise_best_models(self, user_id: int, limit: int = 5) -> Dict[str, List[Tuple[int, float]]]:
         """
         Get models of each keyword, sorted by mAP

@@ -41,6 +41,7 @@ def list_dataset(
     type_: models.task.TaskType = Query(
         None, alias="type", description="type of related task"
     ),
+    state: models.task.TaskState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     start_time: int = Query(None, description="from this timestamp"),
@@ -63,6 +64,7 @@ def list_dataset(
             user_id=current_user.id,
             name=name,
             type_=type_,
+            state=state,
             offset=offset,
             limit=limit,
             start_time=start_time,
@@ -157,7 +159,10 @@ class PrepareDataset:
 
     @classmethod
     def from_dataset_input(
-        cls, user_id: int, workspace: Optional[str], dataset_import: schemas.DatasetImport
+        cls,
+        user_id: int,
+        workspace: Optional[str],
+        dataset_import: schemas.DatasetImport,
     ) -> "PrepareDataset":
         if dataset_import.input_url or dataset_import.input_path:
             task_type = TaskType.import_data
@@ -197,6 +202,7 @@ def import_dataset(
 def _import_dataset(
     db: Session, controller_client: ControllerClient, pre_dataset: PrepareDataset
 ) -> None:
+    parameters = {}  # type: Dict[str, Any]
     if pre_dataset.src_url is not None:
         # Controller will read this directory later
         # so temp_dir will not be removed here
@@ -232,10 +238,10 @@ def _import_dataset(
         parameters = {
             "src_user_id": user_id,
             "src_repo_id": repo_id,
-            "src_dataset_id": dataset.hash,  # type: ignore
+            "src_dataset_id": dataset.hash,
         }
 
-    parameters["strategy"] = pre_dataset.strategy  # type: ignore
+    parameters["strategy"] = pre_dataset.strategy
     req = ControllerRequest(
         pre_dataset.task_type,
         pre_dataset.user_id,

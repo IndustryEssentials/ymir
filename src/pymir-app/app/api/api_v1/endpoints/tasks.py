@@ -461,17 +461,24 @@ class TaskResultProxy:
 
     def handle_failed_import_task(self, task: schemas.Task, task_result: Dict) -> None:
         # makeup data for failed dataset
-        error_message = task_result.get("state_message")
-        ignored_keywords = list(json.loads(error_message).keys()) if error_message else []
         dataset_info = {
             "keywords": [],
-            "ignored_keywords": ignored_keywords,
+            "ignored_keywords": self._parse_ignored_keywords(task_result.get("state_message")),
             "items": 0,
             "total": 0,
         }
         logger.debug("[failed task] update dataset with %s", dataset_info)
         dataset = self.update_dataset(task, dataset_info)
         logger.debug("[failed task] added ignored_keywords to dataset: %s", dataset)
+
+    def _parse_ignored_keywords(self, error_message: Optional[str]) -> List[str]:
+        if not error_message:
+            return []
+        try:
+            ignored_keywords = list(json.loads(error_message).keys())
+        except Exception:
+            ignored_keywords = []
+        return ignored_keywords
 
     def add_new_dataset_if_not_exist(self, task: schemas.Task) -> Dataset:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
