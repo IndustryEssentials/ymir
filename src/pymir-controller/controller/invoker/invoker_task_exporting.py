@@ -1,14 +1,13 @@
 import os
 from typing import Dict
 
-from controller.invoker.invoker_task_base import TaskBaseInvoker, write_done_progress
+from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import code, utils
 from proto import backend_pb2
 
 
 class TaskExportingInvoker(TaskBaseInvoker):
     @classmethod
-    @write_done_progress
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict, working_dir: str,
                     task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         exporting_request = request.req_create_task.exporting

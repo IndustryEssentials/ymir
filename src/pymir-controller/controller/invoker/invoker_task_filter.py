@@ -1,14 +1,15 @@
+from typing import Dict
+
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
-from controller.invoker.invoker_task_base import TaskBaseInvoker, write_done_progress
+from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import code, invoker_call, utils
 from proto import backend_pb2
 
 
 class TaskFilterInvoker(TaskBaseInvoker):
     @classmethod
-    @write_done_progress
-    def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: str, working_dir: str,
+    def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
                     task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         # Use sub_task_id 0 as end of task.
         filter_request = request.req_create_task.filter
