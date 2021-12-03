@@ -3,7 +3,7 @@ from typing import Dict
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, invoker_call, utils
+from controller.utils import code, invoker_call, utils, tasks_util
 from proto import backend_pb2
 
 
@@ -30,6 +30,11 @@ class TaskFilterInvoker(TaskBaseInvoker):
                                                             in_dataset_ids=in_dataset_ids,
                                                             merge_strategy=request.merge_strategy)
         if merge_response.code != code.ResCode.CTR_OK:
+            tasks_util.write_task_progress(monitor_file=task_monitor_file,
+                                           tid=request.task_id,
+                                           percent=1.0,
+                                           state=backend_pb2.TaskStateError,
+                                           msg=merge_response.message)
             return merge_response
 
         sub_task_id_0 = utils.sub_task_id(request.task_id, 0)

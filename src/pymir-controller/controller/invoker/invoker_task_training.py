@@ -65,6 +65,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             merge_strategy=request.merge_strategy,
         )
         if merge_response.code != code.ResCode.CTR_OK:
+            tasks_util.write_task_progress(monitor_file=task_monitor_file,
+                                           tid=request.task_id,
+                                           percent=1.0,
+                                           state=backend_pb2.TaskStateError,
+                                           msg=merge_response.message)
             return merge_response
 
         sub_task_id = utils.sub_task_id(request.task_id, 0)

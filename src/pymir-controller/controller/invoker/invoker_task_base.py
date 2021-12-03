@@ -66,7 +66,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                    working_dir=working_dir,
                                    task_monitor_file=task_monitor_file,
                                    request=request)
-
         return response
 
     @classmethod
