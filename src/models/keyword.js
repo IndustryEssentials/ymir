@@ -1,5 +1,6 @@
 import { 
   getKeywords, 
+  updateKeyword,
   updateKeywords,
 } from "@/services/keyword"
 
@@ -25,6 +26,12 @@ export default {
     },
     *updateKeywords({ payload }, { call, put }) {
       const { code, result } = yield call(updateKeywords, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *updateKeyword({ payload }, { call, put }) {
+      const { code, result } = yield call(updateKeyword, payload)
       if (code === 0) {
         return result
       }

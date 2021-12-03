@@ -27,10 +27,12 @@ const user = {
   "user.info.avatar.empty": { cn: "上传头像文件为空", en: "Empty avatar", },
   "user.info.phone.success": { cn: "手机号码修改成功", en: "Phone number updated", },
   "user.info.pwd.success": { cn: "密码修改成功", en: "Password updated", },
-  "user.info.avatar.tip": { cn: "支持图片格式：jpg, gif, png", en: "Support images: *.jpg, *.gif, *.png", },
+  "user.info.avatar.tip": { cn: "支持图片格式：*.jpg, *.gif, *.png, *.bmp", en: "Support images: *.jpg, *.gif, *.png, *.bmp", },
   "user.info.pwd.form.old": { cn: "请输入旧密码", en: "Please input your current password", },
   "user.info.pwd.form.new": { cn: "请输入新密码", en: "Please input a new password", },
   "user.info.pwd.form.renew": { cn: "请重新输入新密码", en: "Please confirm your new password", },
+  "user.info.pwd.failed": { cn: "修改密码失败", en: "Password modify failure", },
+  "user.info.pwd.error": { cn: "密码错误", en: "Password unmatch", },
 }
 
 export default user

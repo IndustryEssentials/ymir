@@ -45,9 +45,8 @@ const model = {
     *login({ payload }, { call, put, select }) {
       const neverShow = yield select(({ user }) => user.neverShow)
       const { code, result } = yield call(login, payload)
-      const { access_token } = result
-      if (code === 0 && access_token) {
-        storage.set("access_token", access_token || "")
+      if (code === 0 && result?.access_token) {
+        storage.set("access_token", result.access_token || "")
         message.success(t("login.login.success"))
         yield put({ type: 'setGuideVisible', payload: !neverShow })
         yield put({ type: "UPDATE_LOGINED", payload: true })
@@ -57,9 +56,8 @@ const model = {
     },
     *getToken({ payload }, { call, put, select }) {
       const { code, result } = yield call(login, payload)
-      const { access_token } = result
-      if (code === 0 && access_token) {
-        storage.set("access_token", access_token || "")
+      if (code === 0 && result?.access_token) {
+        storage.set("access_token", result.access_token || "")
       }
       return result
     },

@@ -7,7 +7,6 @@ const actions = (menus) => menus.map((menu, i) => action(menu, i === menus.lengt
 const isOuterLink = (link) => /^http(s)?:/i.test(link)
 
 const moreActions = (menus) => {
-  console.log('menus: ', menus)
   return (
     <Menu>
       {menus.map((menu) => (
@@ -25,7 +24,7 @@ function action({ key, onclick = () => { }, icon, label, link, target }, last) {
       {icon}{label}
     </Button>
   )
-  return link ? <a target={target ? target : (isOuterLink(link) && '_blank')} href={link}>{btn}</a> : btn
+  return link ? <a key={key} target={target ? target : (isOuterLink(link) && '_blank')} href={link}>{btn}</a> : btn
 }
 
 const Actions = ({ menus, showCount = 3 }) => {

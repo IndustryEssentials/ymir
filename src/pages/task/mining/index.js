@@ -22,7 +22,7 @@ import { randomNumber } from "../../../utils/number"
 
 const { Option } = Select
 
-const Algorithm = () => [{ id: "ladd", label: 'LADD', checked: true }]
+const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
 const renderRadio = (types) => {
   return (
     <Radio.Group>

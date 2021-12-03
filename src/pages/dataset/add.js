@@ -11,6 +11,7 @@ import s from './add.less'
 import Breadcrumbs from '../../components/common/breadcrumb'
 import { TipsIcon } from '../../components/common/icons'
 import options from '@antv/graphin/lib/layout/utils/options'
+import { getKeywords } from '../../services/keyword'
 
 const { Option } = Select
 const { useForm } = Form
@@ -24,7 +25,7 @@ const TYPES = Object.freeze({
 })
 
 
-const Add = ({ getInternalDataset, createDataset }) => {
+const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
   const history = useHistory()
   const { id } = useParams()
   const types = [
@@ -51,11 +52,9 @@ const Add = ({ getInternalDataset, createDataset }) => {
   const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
   const [showLabelStrategy, setShowLS] = useState(true)
   const [strategy, setStrategy] = useState(2)
-  const [newKeywords, setNewKeywords] = useState(
-    [
-      // { key: 'cat' }, { key: 'dog' }, { key: 'person' }
-  ]
-    )
+  const [kStrategy, setKStrategy] = useState(0)
+  const [newKeywords, setNewKeywords] = useState([])
+  const [currentKeywords, setCurrentKeywords] = useState([])
 
 
   useEffect(async () => {
@@ -63,21 +62,29 @@ const Add = ({ getInternalDataset, createDataset }) => {
     // initState()
     if (!publicDataset.length) {
       const result = await getInternalDataset()
-      console.log('get public dataset: ', result)
       if (result) {
         setPublicDataset(result.items)
       }
     }
   }, [])
-  
+
+  // useEffect(() => {
+  //   getAllKeywords()
+  // })
+
   useEffect(() => {
     const ds = publicDataset.find(set => set.id === selectedDataset)
     if (ds) {
-      // const result = getKeywords()
-
       setNewKeywords(ds.keywords)
     }
   }, [selectedDataset])
+
+  useEffect(() => {
+    setStrategy(kStrategy === labelStrategyOptions[2].value ? 3 : 2)
+    if (kStrategy === 1) {
+      renderKeywords()
+    }
+  }, [kStrategy])
 
   const typeChange = (type) => {
     setCurrentType(type)
@@ -90,6 +97,14 @@ const Add = ({ getInternalDataset, createDataset }) => {
   async function submit(values) {
     if (currentType === TYPES.LOCAL && !fileToken) {
       return message.error('Please upload local file')
+    }
+    const kws = form.getFieldValue('new_keywords')
+    if (kws && kws.length) {
+      const addKwParams = kws.filter(k => k.type === 0).map(k => ({ name: k.name }))
+      const kResult = await updateKeywords({ keywords: addKwParams })
+      if (!kResult) {
+        return message.error(t('keyword.add.failure'))
+      }
     }
     var params = {
       ...values,
@@ -115,43 +130,52 @@ const Add = ({ getInternalDataset, createDataset }) => {
   }
 
   function onStrategyChange({ target }) {
-    setStrategy(target.value === labelStrategyOptions[2].value ? 3 : 2)
+    setKStrategy(target.value)
+  }
+
+  async function renderKeywords() {
+    const kws = getSelectedDatasetKeywords()
+    // const kws = ['cat', 'catty', 'dog', 'tree', 'people']
+    const result = await updateKeywords({ keywords: kws.map(k => ({ name: k })), dry_run: true })
+    if (result) {
+      const repeated = result.failed || []
+      const unique = kws.filter(k => repeated.indexOf(k) < 0).map(k => ({ name: k, type: 0 }))
+      setNewKeywords(unique)
+      form.setFieldsValue({ new_keywords: unique })
+    }
   }
 
   function onInternalDatasetChange(value) {
     setSelectedDataset(value)
   }
 
-  function initState() {
-    setCurrentType(TYPES.INTERNAL)
-    setSelected([])
-    setFileToken('')
-    setSelectedDataset(null)
-  }
-
-  function renderPublicKeywords() {
-    const keywords = publicDataset.reduce((prev, curr) => {
-      return prev.concat(curr.keywords)
-    }, [])
-
-
-    return (<Select
-      mode='multiple'
-      onChange={(value) => currentKeyword(value)}
-    >
-      {[...new Set(keywords)].sort().map(keyword =>
-        <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-      )}
-    </Select>)
-  }
-
   function renderSelectedKeywords() {
-    const set = publicDataset.find(d => d.id === selectedDataset)
-    return set && set.keywords.length ? set.keywords.map(key => <Tag className={s.selectedTag} key={key}>{key}</Tag>) : t('common.empty.keywords')
+    const kws = getSelectedDatasetKeywords()
+    return kws.length ? kws.map(key => <Tag className={s.selectedTag} key={key}>{key}</Tag>) : t('common.empty.keywords')
   }
 
-  function currentKeyword(values) {
-    setSelected(values)
+  function getSelectedDatasetKeywords() {
+    const set = publicDataset.find(d => d.id === selectedDataset)
+    return set?.keywords || []
+  }
+
+  let currentValue
+  let timeout
+  function searchKeywords(value) {
+    if (timeout) {
+      clearTimeout(timeout)
+      timeout = null
+    }
+    const timer = 1000
+    currentValue = value
+    const fetchKeywords = async () => {
+      const { code, result } = await getKeywords({ q: value })
+      if (code === 0 && currentValue === value && result?.items) {
+        setCurrentKeywords(result.items)
+      }
+    }
+
+    timeout = setTimeout(fetchKeywords, timer)
   }
 
   function filterDataset() {
@@ -159,12 +183,6 @@ const Add = ({ getInternalDataset, createDataset }) => {
       return dataset.keywords.some((key) => selected.indexOf(key) > -1)
     }) : publicDataset
   }
-
-  const addKwOptions = [
-    { value: 0, label: t('dataset.add.newkw.asname'), },
-    { value: 1, label: <>{t('dataset.add.newkw.asalias')}</>, },
-    { value: 2, label: t('dataset.add.newkw.ignore'), },
-  ]
 
   return (
     <div className={s.wrapper}>
@@ -233,35 +251,57 @@ const Add = ({ getInternalDataset, createDataset }) => {
                 <Row><Col flex={1}><Form.Item noStyle>
                   <Radio.Group key={!isType(TYPES.INTERNAL) ? 'internal' : 'other'}
                     options={labelStrategyOptions.filter(option => isType(TYPES.INTERNAL) ? true : option.value !== 1)}
-                    onChange={onStrategyChange} defaultValue={labelOptions[0].value} />
+                    onChange={onStrategyChange} value={kStrategy} />
                 </Form.Item></Col>
                   <Col><Link to={'/home/keyword'} target='_blank'>{t('dataset.add.form.newkw.link')}</Link></Col>
                 </Row>
               </Form.Item> : null}
-            <Form.Item hidden={true} label={t('dataset.add.form.newkws.label')}>
-            <Form.List name='hyperparam' initialValue={newKeywords}>
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(field => (
-                      <Row key={field.key} gutter={20}>
-                        <Col flex={1}>{newKeywords[field.name].key}</Col>
-                        {console.log('get field: ', field)}
-                        <Col>
-                          <Form.Item
-                            {...field}
-                            // label="Key"
-                            name={[field.name, 'key']}
-                            fieldKey={[field.fieldKey, 'key']}
-                          >
-                            <Radio.Group options={addKwOptions} defaultValue={0} />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    ))}
-                  </>
-                )}
-              </Form.List>
-            </Form.Item>
+              <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 4, span: 13 }}>
+            {newKeywords.length > 0 ?
+                <Form.List name='new_keywords'>
+                  {(fields, { add, remove }) => (
+
+                    <Row gutter={20}>
+                      {fields.map((field, index) => (
+                        <>
+                          <Col span={3}>{newKeywords[field.name]?.name}</Col>
+                          <Col span={9}>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'type']}
+                              fieldKey={[field.fieldKey, 'type']}
+                              initialValue={0}
+                              style={{ width: 120, display: 'inline-block' }}
+                            >
+                              <Select>
+                                <Select.Option value={0}>{t('dataset.add.newkw.asname')}</Select.Option>
+                                {/* <Select.Option value={1}>{t('dataset.add.newkw.asalias')}</Select.Option> */}
+                                <Select.Option value={2}>{t('dataset.add.newkw.ignore')}</Select.Option>
+                              </Select>
+                            </Form.Item>
+                            {/* <Form.Item
+                              {...field}
+                              dependencies={['new_keywords', field.name, 'type']}
+                              name={[field.name, 'key']}
+                              fieldKey={[field.fieldKey, 'key']}
+                              style={{ marginLeft: 10, width: 120, display: 'inline-block' }}
+                            >
+                              <Select
+                                showSearch
+                                onSearch={searchKeywords}
+                                notFoundContent
+                              >
+                                {currentKeywords.map(k => <Select.Option key={k.name} value={k.name}>{k.name}</Select.Option>)}
+                              </Select>
+                            </Form.Item> */}
+                          </Col>
+                        </>
+                      ))}
+                    </Row>
+                  )}
+                </Form.List>
+              : t('dataset.add.newkeyword.empty')}
+              </Form.Item>
             {isType(TYPES.SHARE) ? (
               <Form.Item
                 label={t('dataset.add.form.share.label')}
@@ -342,6 +382,12 @@ const actions = (dispatch) => {
     createDataset: (payload) => {
       return dispatch({
         type: 'dataset/createDataset',
+        payload,
+      })
+    },
+    updateKeywords: (payload) => {
+      return dispatch({
+        type: 'keyword/updateKeywords',
         payload,
       })
     },

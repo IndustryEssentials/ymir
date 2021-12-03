@@ -9,7 +9,6 @@ import { connect } from "dva"
 import { Link, useHistory, useLocation } from "umi"
 
 import t from '@/utils/t'
-// import menus from "@/config/nav"
 import LangBtn from "../common/langBtn"
 import styles from "./index.less"
 import './menu.less'
@@ -124,13 +123,13 @@ function HeaderNav({ simple = false, username, loginout, avatar }) {
 
   const menu = (
     <Menu className={styles.popMenu}>
-      <Menu.Item onClick={() => history.push('/home/user')}>
+      <Menu.Item key='user' onClick={() => history.push('/home/user')}>
         <UserIcon /> {t('common.top.menu.user')}
       </Menu.Item>
-      <Menu.Item>
+      <Menu.Item key='github'>
         <a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>
       </Menu.Item>
-      <Menu.Item onClick={out}>
+      <Menu.Item key='logout' onClick={out}>
         <LogoutOutlined /> {t('common.top.menu.logout')}
       </Menu.Item>
     </Menu>
@@ -173,9 +172,9 @@ function HeaderNav({ simple = false, username, loginout, avatar }) {
   }
 
   const searchContents = [
-    <Link className={styles.link} to={`/home/dataset/s/${searchValue}`}>{t('common.top.search.item.dataset', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/model/s/${searchValue}`}>{t('common.top.search.item.model', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/task/s/${searchValue}`}>{t('common.top.search.item.task', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/dataset/${searchValue}`}>{t('common.top.search.item.dataset', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/model/${searchValue}`}>{t('common.top.search.item.model', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/task/${searchValue}`}>{t('common.top.search.item.task', { searchValue })}</Link>,
   ]
 
   const searchContent = (

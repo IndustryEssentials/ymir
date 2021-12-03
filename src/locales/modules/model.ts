@@ -61,7 +61,7 @@ const model = {
   'model.add.form.share.placeholder': { en: 'Shared ID', cn: '请输入待分享的数据集ID', },
   'model.add.form.upload.btn': { en: 'Upload', cn: '上传文件', },
   'model.add.form.upload.info': { en: `1. Only support zip file; {br} 2. Size must less than 200M.`, cn: `1. 仅支持压缩包文件上传；{br} 2. 压缩包大小限制 200MB 以内。`, },
-  'model.verify.upload.info': {cn: '支持jpg, gif, png格式, 图片大小 < {size}M', en: 'Support *.jpg, *.gif, *.png, size < {size}M'},
+  'model.verify.upload.info': {cn: '支持jpg, png, bmp格式, 图片大小 < {size}M', en: 'Support *.jpg, *.png, *.bmp, size < {size}M'},
   'model.verify.confidence': { cn: '置信度', en: 'Confidence' },
   'model.verify.upload.label': { cn: '上传图片', en: 'Upload Image' },
   'model.verify.confidence.title': { cn: '调整置信度', en: 'Confidence' },

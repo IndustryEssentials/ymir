@@ -8,7 +8,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import Uploader from '../../components/form/uploader'
 import { phoneValidate } from "../../components/form/validators"
 import s from "./common.less"
-import { EmailIcon, LockIcon, SmartphoneIcon, UserIcon, UserSettingsIcon } from "../../components/common/icons"
+import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon, UserSettingsIcon } from "../../components/common/icons"
 
 const { useForm } = Form
 
@@ -49,7 +49,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
   const onUsernameOk = () => {
     // submit
     usernameForm.validateFields().then(async () => {
-      const username = usernameForm.getFieldValue('username')
+      const username = usernameForm.getFieldValue('username').trim()
       const result = await updateUserInfo({ username })
       if (result) {
         setUsernameModify(false)
@@ -85,13 +85,17 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
     passwordForm.validateFields().then(async () => {
       const { old_password, password } = passwordForm.getFieldsValue()
       const oldRes = await validatePwd(user.email, old_password)
-      if (oldRes && oldRes.access_token) {
+      if (oldRes?.access_token) {
         const result = await modifyPwd(password)
         if (result) {
           await getToken(user.email, password)
           setPasswordModify(false)
           message.success(t('user.info.pwd.success'))
+        } else {
+          message.error(t('user.info.pwd.failed'))
         }
+      } else {
+        message.error(t('user.info.pwd.error'))
       }
     })
   }
@@ -135,7 +139,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
                 <div className={s.avatar}>{user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 70 }} />}</div>
                 <Uploader
                   onChange={onAvatarOk}
-                  format='img'
+                  format='avatar'
                   crop={true}
                   max={20}
                   info={t('user.info.avatar.tip')}
@@ -163,7 +167,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
               { min: 2, max: 15, message: t("signup.username.length.msg", { max: 15 }), },
             ]}
           >
-            <Input allowClear placeholder={t('signup.username.placeholder')} />
+            <Input allowClear placeholder={t('signup.username.placeholder')} prefix={<UserIcon />} />
           </Form.Item>
         </Form>
       </Modal>
@@ -180,7 +184,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
             initialValue={user.phone}
             rules={[{ validator: phoneValidate }]}
           >
-            <Input allowClear placeholder={t('signup.phone.placeholder')} />
+            <Input allowClear placeholder={t('signup.phone.placeholder')} prefix={<SmartphoneIcon />} />
           </Form.Item>
         </Form>
       </Modal>
@@ -195,8 +199,12 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
         >
           <Form.Item
             name="old_password"
+            rules={[
+              { required: true, message: t("signup.pwd.required.msg"), },
+              { min: 8, max: 16, message: t("signup.pwd.length.msg", { min: 8, max: 16 }), },
+            ]}
           >
-            <Input.Password allowClear placeholder={t('user.info.pwd.form.old')} />
+            <Input.Password allowClear placeholder={t('user.info.pwd.form.old')} prefix={<KeyIcon />} />
           </Form.Item>
           <Form.Item
             name="password"
@@ -205,7 +213,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
               { type: 'string', min: 8, max: 16, message: t("signup.pwd.length.msg", { min: 8, max: 16 }), },
             ]}
           >
-            <Input.Password allowClear placeholder={t('user.info.pwd.form.new')} />
+            <Input.Password allowClear placeholder={t('user.info.pwd.form.new')} prefix={<LockIcon />} />
           </Form.Item>
           <Form.Item
             name="repwd"
@@ -215,7 +223,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
               pwdRepeat,
             ]}
           >
-            <Input.Password allowClear placeholder={t('user.info.pwd.form.renew')} />
+            <Input.Password allowClear placeholder={t('user.info.pwd.form.renew')} prefix={<LockIcon />} />
           </Form.Item>
         </Form>
       </Modal>
