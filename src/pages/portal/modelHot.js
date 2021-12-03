@@ -47,7 +47,7 @@ function ModelHot({ getModels }) {
             <Card className={styles.boxItem} hoverable title={model.name} onClick={() => { history.push(`/home/model/detail/${model.id}`) }}>
               <Descriptions column={1} colon={false} labelStyle={{ justifyContent: 'flex-end', width: '68px' }}>
                 <Descriptions.Item label={'mAP'}>{model.map}</Descriptions.Item>
-                <Descriptions.Item label={t('portal.cited')}>{model.count}</Descriptions.Item>
+                {/* <Descriptions.Item label={t('portal.cited')}>{model.count}</Descriptions.Item> */}
                 <Descriptions.Item label={t('portal.model.keywords')} contentStyle={{ flexWrap: 'wrap' }}>
                   <div className={styles.kwContainer}>{model?.keywords.map(keyword => <Tag className={styles.kwTag} key={keyword} title={keyword}>{keyword}</Tag>)}</div>
                 </Descriptions.Item>

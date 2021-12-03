@@ -17,8 +17,10 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
   const [repeats, setRepeats] = useState([])
 
   useEffect(() => {
-    setKeywords(keys)
-    form.setFieldsValue({ keywords: keys.length ? keys : [{ name: '' }] })
+    if (keys.length) {
+      setKeywords(keys)
+      form.setFieldsValue({ keywords: keys.length ? keys : [{ name: '' }] })
+    }
   }, [keys])
 
   useEffect(() => {
@@ -27,6 +29,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
 
   const close = () => {
     setShow(false)
+    setRepeats([])
     cancel()
   }
 
@@ -46,7 +49,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
           ok()
         } else {
           message.error(t('keyword.name.repeat'))
-          setRepeats(result.failed)
+          setRepeats(result.failed || [])
         }
       } else {
         message.error(t('keyword.add.failure'))
@@ -91,10 +94,11 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
       onCancel={onCancel}
       onOk={onOk}
       width={680}
+      destroyOnClose
     >
       <Form name='keywordAddForm' form={form} layout='vertical' preserve={false}>
         { repeats.length ? <div style={{ margin: '10px 0', color: '#f00' }}>{t('keyword.name.repeat')}: {repeats.join(',')}</div> : null }
-        <Form.List name='keywords'>
+        <Form.List name='keywords' initialValue={[{ name: '' }]}>
           {(fields, { add, remove }) => (
             <div className={s.content}>
               {fields.map(field => (

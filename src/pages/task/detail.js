@@ -28,6 +28,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     message: ''
   })
   const [showErrorMsg, setShowErrorMsg] = useState(false)
+  const [taskModel, setTaskModel] = useState({})
 
   useEffect(async () => {
     const result = await getTask(id)
@@ -46,12 +47,28 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     }
   }, [task.state])
 
+  useEffect(() => {
+    if (task?.parameters?.model_id) {
+      fetchModel(task.parameters.model_id)
+    }
+  }, [task.parameters])
+
   function getResult() {
     if (isType(TASKTYPES.TRAINING)) {
       // model
       fetchResultModel()
     } else {
       fetchResultDataset()
+    }
+  }
+
+  async function fetchModel(id) {
+    if (!id) {
+      return
+    }
+    const result = await getModel(id)
+    if (result) {
+      setTaskModel(result)
     }
   }
 
@@ -195,8 +212,11 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               {/* mining */}
               <Item label={t('task.filter.form.datasets.label')}>{renderDatasetName(task.filterSets)}</Item>
               <Item label={t('task.mining.form.excludeset.label')}>{renderDatasetName(task.excludeSets)}</Item>
-              <Item label={t('task.mining.form.model.label')}>{task.parameters.model_id}</Item>
+              <Item label={t('task.mining.form.model.label')}>
+                <Link to={`/home/model/detail/${task.parameters.model_id}`}>{taskModel.name || task.parameters.model_id}</Link>
+              </Item>
               <Item label={t('task.mining.form.algo.label')}>{task.parameters.mining_algorithm}</Item>
+              <Item label={t('task.mining.form.label.label')}>{task.parameters.generate_annotations ? t('common.yes') : t('common.no')}</Item>
               <Item label={t('task.mining.form.topk.label')}>{task.parameters.top_k}</Item>
               <Item label={t('task.detail.label.hyperparams')}>{renderConfig(task.config)}</Item>
             </>
@@ -237,7 +257,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
                 <Col flex={1} style={{ lineHeight: '32px' }}><Link to={`/home/dataset/detail/${dataset.id}`}>{dataset.name}</Link></Col>
                 <Col>
                   <Space>
-                    <Button icon={<ScreenIcon />} type='primary' onClick={() => history.push(`/home/task/filter/${dataset.id}`)}>{t('dataset.detail.action.filter')}</Button>
+                    <Button icon={<ScreenIcon />} type='primary' hidden={!dataset.keyword_count}
+                    onClick={() => history.push(`/home/task/filter/${dataset.id}`)}>{t('dataset.detail.action.filter')}</Button>
                     <Button icon={<TrainIcon />} type='primary' onClick={() => history.push(`/home/task/train/${dataset.id}`)}>{t('dataset.detail.action.train')}</Button>
                     <Button icon={<TaggingIcon />} type='primary' onClick={() => history.push(`/home/task/label/${dataset.id}`)}>{t('dataset.detail.action.label')}</Button>
                   </Space>

@@ -206,6 +206,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
               <Form.Item
                 label={t('task.filter.form.datasets.label')}
+                required
               >
                 <Form.Item
                   noStyle
@@ -310,8 +311,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
               initialValue={0}
             >
               <Radio.Group options={[
-                { value: 1, label: t('task.mining.form.label.yes') },
-                { value: 0, label: t('task.mining.form.label.no') },
+                { value: 1, label: t('common.yes') },
+                { value: 0, label: t('common.no') },
               ]} />
             </Form.Item>
             <Form.Item

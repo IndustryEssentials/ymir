@@ -167,7 +167,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
   ]
 
   const actionMenus = (record) => {
-    const { id, name, state } = record
+    const { id, name, state, keyword_count } = record
     let actions = []
     const menus = [
       {
@@ -183,16 +183,17 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
         icon: <VectorIcon />,
       },
       {
-        key: "filter",
-        label: t("dataset.action.filter"),
-        onclick: () => history.push(`/home/task/filter/${id}`),
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
-      },
-      {
         key: "label",
         label: t("dataset.action.label"),
         onclick: () => history.push(`/home/task/label/${id}`),
         icon: <TaggingIcon />,
+      },
+      {
+        key: "filter",
+        label: t("dataset.action.filter"),
+        onclick: () => history.push(`/home/task/filter/${id}`),
+        hidden: () => !keyword_count,
+        icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
       {
         key: "history",

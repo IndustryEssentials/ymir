@@ -30,7 +30,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
 
 
   useEffect(async () => {
-    let result = await getDatasets({ limit: 100000 })
+    let result = await getDatasets({ state: 3, limit: 100000 })
     if (result) {
       setDatasets(result.items)
     }
@@ -79,6 +79,10 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
     if (result) {
       history.replace("/home/task")
     }
+  }
+
+  function docChange(files, docFile) {
+    setDoc(files.length ? location.protocol + '//' + location.host + docFile : '')
   }
 
   function onFinishFailed(errorInfo) {
@@ -198,18 +202,8 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 ))}
               </Select>
             </Form.Item>
-            {/* next version */}
-            {/* <Form.Item
-              label={t('task.label.form.label.label')}
-              name='with_labels'
-            >
-              <Radio.Group options={[
-                { value: 1, label: t('task.mining.form.label.yes')},
-                {value: 0, label: t('task.mining.form.label.no')}, 
-              ]} defaultValue={0} />
-            </Form.Item> */}
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
-              <Uploader onChange={(files, result) => { setDoc(result) }} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
+              <Uploader onChange={docChange} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
