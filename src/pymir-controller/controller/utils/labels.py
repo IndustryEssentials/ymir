@@ -1,5 +1,6 @@
 import csv
 import os
+from collections import Counter
 from pathlib import Path
 from typing import List, Iterable
 
@@ -91,7 +92,17 @@ class LabelFileHandler:
                 existed_labels_without_id[idx] = candidate_list
             else:  # new main_names
                 candidate_labels_list_new.append(candidate_list)
-        existed_labels_set = set(x for row in existed_labels_without_id for x in row)
+
+        existed_labels_list = [x for row in existed_labels_without_id for x in row]
+        existed_labels_dups = set([k for k, v in Counter(existed_labels_list).items() if v > 1])
+        if existed_labels_dups:
+            conflict_labels = []
+            for candidate_list in candidate_labels_list:
+                if set.intersection(set(candidate_list), existed_labels_dups):  # at least one label exist.
+                    conflict_labels.append(candidate_list)
+            return conflict_labels
+
+        existed_labels_set = set(existed_labels_list)
 
         # insert new main_names.
         conflict_labels = []
