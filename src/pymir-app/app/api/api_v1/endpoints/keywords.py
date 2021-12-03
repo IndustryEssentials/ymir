@@ -18,6 +18,7 @@ from app.utils.class_ids import (
     keywords_to_labels,
     labels_to_keywords,
     find_duplication_in_labels,
+    flatten_labels,
 )
 from app.schemas import (
     KeywordsCreate,
@@ -103,10 +104,12 @@ def update_keyword_aliases(
         ExtraRequestType.add_label, user_id, args={"labels": labels, "dry_run": False}
     )
     resp = controller_client.send(req)
-
-    # clean cached key when changes happen
-    cache.delete_personal_keywords()
-    return {"result": updated_keyword}
+    logger.info("[controller] response for update label: %s", resp)
+    failed = flatten_labels(resp["csv_labels"])
+    if not failed:
+        # clean cached key when changes happen
+        cache.delete_personal_keywords()
+    return {"result": {"failed": failed}}
 
 
 def paginate(

@@ -68,3 +68,11 @@ def get_keyword_name_to_id_mapping(labels: List[str]) -> Dict:
         idx, primary_name = int(partition[0]), partition[1]
         mapping[primary_name] = idx
     return mapping
+
+
+def flatten_labels(labels: List[str]) -> List[str]:
+    """
+    labels from controller has no leading index,
+    just split it as csv to get all the names
+    """
+    return [name for label in list(labels) for name in label.split(",")]
