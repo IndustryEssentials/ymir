@@ -1,6 +1,8 @@
 
 
-const phoneValidate = (rule, value) => {
+import t from '@/utils/t'
+
+export const phoneValidate = (rule, value) => {
   const reg = /^\+?\d{5,18}$/
   if (value && !reg.test(value)) {
     return Promise.reject(t("signup.phone.format.msg"))

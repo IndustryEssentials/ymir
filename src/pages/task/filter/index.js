@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { connect } from "dva"
-import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Row, Col } from "antd"
+import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Row, Col, Radio } from "antd"
 import { useHistory, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
@@ -11,8 +11,6 @@ import EmptyState from '@/components/empty/dataset'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
-import Tip from "../../../components/form/tip"
-import { trimValidator } from "../../../components/form/validators"
 const { Option } = Select
 
 function Filter({
@@ -44,6 +42,26 @@ function Filter({
     getKeywords()
   }, [datasets])
 
+  useEffect(() => {
+    const state = history.location.state
+
+    if (state?.record) {
+      const { parameters, name, } = state.record
+      const { include_classes, include_datasets, exclude_classes, strategy } = parameters
+      //do somethin
+      form.setFieldsValue({
+        name: `${name}_${randomNumber()}`,
+        datasets: include_datasets,
+        inc: include_classes,
+        exc: exclude_classes,
+        strategy,
+      })
+      setSelectedKeywords(include_classes)
+      setExclude(exclude_classes)
+      history.replace({ state: {} })
+    }
+  }, [history.location.state])
+
   const getKeywords = () => {
     const selectedDataset = form.getFieldValue('datasets')
     let ks = datasets.reduce((prev, current) => selectedDataset.indexOf(current.id) >= 0
@@ -52,21 +70,17 @@ function Filter({
     ks = [...new Set(ks)]
     ks.sort()
     setKeywords(ks)
-
-    // reset
-    setSelectedKeywords([])
-    setExclude([])
-    form.setFieldsValue({ inc: [], exc: []})
   }
 
-  const onFinish = async ({ name, datasets }) => {
+  const onFinish = async ({ name, datasets, strategy }) => {
     const params = {
       name: name.trim(),
       datasets,
+      strategy,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
     }
-    const result = createFilterTask(params)
+    const result = await createFilterTask(params)
     if (result) {
       message.info(t('task.filter.create.success.msg'))
       history.replace('/home/task')
@@ -79,6 +93,10 @@ function Filter({
 
   function datasetChange() {
     getKeywords()
+    // reset
+    setSelectedKeywords([])
+    setExclude([])
+    form.setFieldsValue({ inc: [], exc: [] })
   }
 
   function requireOne(rule, value) {
@@ -95,6 +113,7 @@ function Filter({
       <Card className={commonStyles.container} title={t('breadcrumbs.task.filter')}>
         <Form
           form={form}
+          name='filterForm'
           {...formLayout}
           initialValues={initialValues}
           onFinish={onFinish}
@@ -107,33 +126,46 @@ function Filter({
             label={t('task.filter.form.name.label')}
             name='name'
             rules={[
-              { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'),},
+              { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
               { type: 'string', min: 2, max: 20 },
             ]}
           >
             <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
           </Form.Item>
-          <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push({ pathname: '/home/dataset', state: { type: 'add' }})} />}>
+          <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
-              name="datasets"
-              rules={[
-                { required: true, message: t('task.filter.form.datasets.required') },
-              ]}
             >
-              <Select
-                placeholder={t('task.filter.form.datasets.placeholder')}
-                mode='multiple'
-                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={datasetChange}
-                showArrow
+              <Form.Item
+                noStyle
+                name="datasets"
+                rules={[
+                  { required: true, message: t('task.filter.form.datasets.required') },
+                ]}
               >
-                {datasets.map(item => (
-                  <Option value={item.id} key={item.name}>
-                    {item.name}({item.asset_count})
-                  </Option>
-                ))}
-              </Select>
+                <Select
+                  placeholder={t('task.filter.form.datasets.placeholder')}
+                  mode='multiple'
+                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                  onChange={datasetChange}
+                  showArrow
+                >
+                  {datasets.map(item => (
+                    <Option value={item.id} key={item.name}>
+                      {item.name}({item.asset_count})
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <div className={commonStyles.formItemLowLevel}>
+                <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
+                <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
+                  <Radio.Group options={[
+                    { value: 2, label: t('task.train.form.repeatdata.latest') },
+                    { value: 3, label: t('task.train.form.repeatdata.original') },
+                    { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                  ]} />
+                </Form.Item></div>
             </Form.Item>
           </ConfigProvider>
           <Form.Item label={t('dataset.column.keyword')} required>
@@ -179,12 +211,16 @@ function Filter({
           </Form.Item>
           <Form.Item className={styles.submit} wrapperCol={{ offset: 4 }}>
             <Space size={20}>
-              <Button type="primary" size="large" htmlType="submit">
-                {t('task.filter.create')}
-              </Button>
-              <Button size="large" onClick={() => history.goBack()}>
-                {t('task.btn.back')}
-              </Button>
+              <Form.Item name='submitBtn' noStyle>
+                <Button type="primary" size="large" htmlType="submit">
+                  {t('task.filter.create')}
+                </Button>
+              </Form.Item>
+              <Form.Item name='backBtn' noStyle>
+                <Button size="large" onClick={() => history.goBack()}>
+                  {t('task.btn.back')}
+                </Button>
+              </Form.Item>
             </Space>
           </Form.Item>
         </Form>

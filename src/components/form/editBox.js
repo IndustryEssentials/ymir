@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react"
 import { Modal, Form, Input } from "antd"
 import t from '@/utils/t'
-import StateTag from "@/components/task/stateTag"
 import { getTaskTypes } from '@/constants/query'
 
 const { useForm } = Form
-const EditBox = ({ record, dataType = 'task', action = () => { } }) => {
+const EditBox = ({ children, record, dataType = 'task', action = () => { } }) => {
   const [editForm] = useForm()
   const [show, setShow] = useState(false)
   const { id, name, type, state } = record
@@ -51,19 +50,7 @@ const EditBox = ({ record, dataType = 'task', action = () => { } }) => {
       >
         <Input placeholder={t('common.editbox.form.name.placeholder')} autoComplete={'off'} allowClear />
       </Form.Item>
-      {dataType === 'task' ? <>
-        {type ? <Form.Item
-          label={t('task.column.type')}
-        >
-          {(types.find((t) => t.value === type))?.label}
-        </Form.Item> : null}
-        {state ? <Form.Item
-          label={t('task.detail.state.title')}
-        >
-          <StateTag style={{ background: 'none', border: 'none' }} state={state} />
-        </Form.Item> : null}
-      </>
-        : null}
+      {children}
     </Form>
   </Modal>
 }

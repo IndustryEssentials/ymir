@@ -11,10 +11,10 @@ function RenderProgress(state, { id, progress, create_datetime }, simple=false) 
   if (!state) {
     return
   }
-  const stateTag = <StateTag label={!simple} style={{ fontSize: 14, background: 'none', border: 'none' }} iconstyle={{fontSize: 18 }} state={state} />
+  const stateTag = <StateTag mode={simple ? 'icon' : 'text'} state={state} />
   if (state === TASKSTATES.DOING) {
     return (
-      <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px' }}>
+      <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px', textAlign: 'left' }}>
         <Col>
           <InprogressIcon style={{ fontSize: 18, color: 'rgb(250, 211, 55)'}} />
         </Col>

@@ -76,6 +76,15 @@ body {
   .ant-form-item-label {
     font-weight: bold;
     color: rgba(0, 0, 0, 0.85);
+    > label:not(.ant-form-item-required):before {
+      display: inline-block;
+      margin-right: 4px;
+      font-size: 14px;
+      font-family: SimSun, sans-serif;
+      line-height: 1;
+      content: '*';
+      opacity: 0;
+    }
   }
   .ant-radio-button-wrapper, .ant-form-item-control-input-content {
     color:rgba(0, 0, 0, 0.65);

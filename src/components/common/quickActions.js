@@ -24,7 +24,7 @@ function QuickActions({ setGuideVisible }) {
   <Row className={commonStyles.qaContent} align='middle'>
     {qaVisible ? <>
     <Col className={commonStyles.quickAction}>
-      <Link className={commonStyles.action} to={{ pathname: '/home/dataset', state: { type: 'add' }}}>{t('common.qa.action.import', { br: <br /> })}</Link>
+      <Link className={commonStyles.action} to={{ pathname: '/home/dataset/add'}}>{t('common.qa.action.import', { br: <br /> })}</Link>
     </Col>
     <Col className={commonStyles.quickAction}>
       <Link className={commonStyles.action} to='/home/task/train'>{t('common.qa.action.train', { br: <br /> })}</Link>

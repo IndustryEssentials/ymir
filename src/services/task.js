@@ -59,6 +59,24 @@ export function deleteTask(id) {
 }
 
 /**
+ * stop task( and get label data for label task)
+ * @param {number} id 
+ * @returns 
+ */
+export function stopTask(id) {
+  return request.post(`/tasks/${id}/terminate`)
+}
+
+/**
+ * stop task and get label data
+ * @param {number} id 
+ * @returns 
+ */
+export function getLabelData(id) {
+  return request.post(`/tasks/stop/${id}`, { label: 1 })
+}
+
+/**
  * update task, only support task name now
  * @param {number} id 
  * @param {string} name 
@@ -77,12 +95,14 @@ export function createFilterTask({
   datasets,
   include = [],
   exclude = [],
+  strategy,
 }) {
   return createTask({
     type: TASKTYPES.FILTER,
     name,
     parameters: {
       name,
+      strategy,
       include_datasets: datasets,
       include_classes: include,
       exclude_classes: exclude,
@@ -96,16 +116,19 @@ export function createLabelTask({
   datasets,
   label_members,
   keywords,
+  with_labels,
   doc,
 }) {
   return createTask({
     name,
     type: TASKTYPES.LABEL,
     parameters: {
+      with_labels,
       include_datasets: [datasets],
       labellers: label_members,
       include_classes: keywords,
       extra_url: doc,
+      with_labels,
     },
   })
 }
@@ -120,6 +143,7 @@ export function createTrainTask({
   network,
   keywords,
   train_type,
+  strategy,
   // gpu_count,
 }) {
   return createTask({
@@ -127,6 +151,7 @@ export function createTrainTask({
     type: TASKTYPES.TRAINING,
     config,
     parameters: {
+      strategy,
       include_train_datasets: train_sets,
       include_validation_datasets: validation_sets,
       include_classes: keywords,
@@ -146,6 +171,8 @@ export function createMiningTask({
   exclude_sets,
   algorithm,
   config,
+  strategy,
+  inference,
   name,
   // gpu_count,
 }) {
@@ -154,11 +181,13 @@ export function createMiningTask({
     name,
     config,
     parameters: {
+      strategy,
       model_id: model,
       include_datasets: datasets,
       exclude_datasets: exclude_sets,
       mining_algorithm: algorithm,
       top_k: topk,
+      generate_annotations: inference,
       // gpu_count,
     }
   })

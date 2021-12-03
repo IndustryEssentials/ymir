@@ -91,7 +91,7 @@ const Login = ({ loginApi }) => {
               <Input.Password allowClear placeholder={t('login.pwd.placeholder')} prefix={<LockIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
             </Form.Item>
 
-            <Form.Item>
+            <Form.Item name='submit'>
               <Button type="primary" htmlType="submit" className={styles.submit} block>
                 {t("login.login")}
               </Button>

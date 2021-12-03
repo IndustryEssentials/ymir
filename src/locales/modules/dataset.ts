@@ -16,6 +16,7 @@ const dataset = {
   "dataset.column.source": { cn: "来源", en: "Source", },
   "dataset.column.asset_count": { cn: "图片数", en: "Assets' Count", },
   "dataset.column.keyword": { cn: "标签", en: "Keywords", },
+  "dataset.column.ignored_keyword": { cn: "忽略标签", en: "Ignored Keywords", },
   "dataset.column.state": { cn: "状态", en: "Status", },
   "dataset.column.create_time": { cn: "创建时间", en: "Create Time", },
   "dataset.column.action": { cn: "操作", en: "Actions", },
@@ -28,6 +29,7 @@ const dataset = {
   "dataset.action.history": { cn: "历史树", en: "History", },
   "dataset.action.detail": { cn: "详情", en: "Detail", },
   "dataset.action.edit": { cn: "编辑", en: "Rename", },
+  'dataset.action.inference': { cn: '推理', en: 'Inference', },
   "dataset.empty.label": { cn: "去导入一个数据集", en: "Import A Dataset", },
   "dataset.import.label": { cn: "导入数据集", en: "Import Dataset", },
   "dataset.query.name": { cn: "名称", en: "Dataset Name", },
@@ -71,6 +73,20 @@ const dataset = {
   "dataset.add.form.name.label": { cn: "名称", en: "Name", },
   "dataset.add.form.name.required": { cn: "请输入数据集名称", en: "Dataset Name", },
   "dataset.add.form.type.label": { cn: "导入类型", en: "Type", },
+  "dataset.add.form.label.label": { cn: "导入标注", en: "Type", },
+  "dataset.add.form.newkw.label": { cn: " ", en: " ", },
+  "dataset.add.newkw.asname": { cn: "添加标签", en: "As Keyword", },
+  "dataset.add.newkw.asalias": { cn: "添加为别名", en: "As Alias", },
+  "dataset.add.newkw.ignore": { cn: "忽略此标签", en: "Ignore", },
+  "dataset.add.form.newkws.label": { cn: "添加标签", en: "Add Keywords", },
+  "dataset.add.form.newkw.link": { cn: "去添加>>", en: "Add New Keywords>>", },
+  "dataset.add.form.newkw.tip": { cn: "当导入数据集的标签不属于当前标签时，选择标签合并策略", 
+  en: "Select keyword merging strategy for new keywords", },
+  "dataset.add.label_strategy.include": { cn: "包含标注", en: "Include Annotations", },
+  "dataset.add.label_strategy.exclude": { cn: "不包含标注", en: "Exclude Annotations", },
+  "dataset.add.label_strategy.ignore": { cn: "忽略新标签和对应标注", en: "Ignore unknown keywords and annotations", },
+  "dataset.add.label_strategy.add": { cn: "添加到标签列表", en: "Add Keywords to your Keywords List", },
+  "dataset.add.label_strategy.stop": { cn: "终止任务", en: "Terminate Task", },
   "dataset.add.form.internal.label": { cn: "数据集", en: "Dataset", },
   "dataset.add.form.internal.required": { cn: "请选择公共数据集", en: "Please select public dataset", },
   "dataset.add.form.internal.placeholder": { cn: "请选择一个公共数据集", en: "Select A Public Dataset", },
@@ -84,22 +100,24 @@ const dataset = {
   "dataset.add.form.path.placeholder": { cn: "请输入服务端的绝对路径", en: "Please input absolute path of dataset on server", },
   "dataset.add.form.upload.btn": { cn: "上传文件", en: "Upload", },
   "dataset.add.form.upload.tip": {
-    cn: `1. 仅支持压缩包文件上传；{br}
+    cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
-      3. 压缩包内图片格式要求为：图片格式为jpg、jpeg、png，标注文件格式为pascal。{br}
+      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，标注文件格式为pascal。{br}
       4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}`, 
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
-      3. Images format allowed *.jpg, *.png, *.gif, annotations format supported pascal(*.xml)
+      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml)
       4. Sample: {sample}`
   },
   'dataset.detail.info': { cn: '详细信息', en: '', },
   'dataset.detail.action.filter': { cn: '筛选数据集', en: 'Filter Dataset', },
   'dataset.detail.action.train': { cn: '训练模型', en: 'Train Model', },
   'dataset.detail.action.mining': { cn: '挖掘数据', en: 'Mining', },
-  'dataset.detail.action.label': { cn: '重新标注', en: 'Relabel', },
+  'dataset.detail.action.label': { cn: '标注数据', en: 'Label', },
   'dataset.detail.info.keyword.label': { cn: '标签共{total}个', en: 'Total {total} Keywords:', },
   'dataset.import.public.include': { cn: '包含标签', en: 'Include', },
+  'dataset.add.newkeyword.empty': { cn: '无新标签', en: 'None of new keywords', },
+  'dataset.add.local.file.empty': { cn: '请上传本地文件', en: 'Please upload a zip file', },
 }
 
 export default dataset

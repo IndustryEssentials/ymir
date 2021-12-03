@@ -8,6 +8,7 @@ const routeTitle = {
   "reset_pwd.title": { cn: `${SysName}-重置密码`, en: `${SysName} - Reset Password`, },
   "datasets.title": { cn: `${SysName}-数据集列表`, en: `${SysName} - Dataset List`, },
   "dataset.title": { cn: `${SysName}-数据集详情`, en: `${SysName} - Dataset Detail`, },
+  "dataset.add.title": { cn: `${SysName}-导入数据集`, en: `${SysName} - Dataset Import`, },
   "asset.title": { cn: `${SysName}-数据详情`, en: `${SysName} - Asset Detail`, },
   "models.title": { cn: `${SysName}-模型列表`, en: `${SysName} - Model List`, },
   "model.title": { cn: `${SysName}-模型详情`, en: `${SysName} - Model Detail`, },
@@ -19,6 +20,7 @@ const routeTitle = {
   "task.mining.title": { cn: `${SysName}-新建挖掘任务`, en: `${SysName} - Create Mining Task`, },
   "task.label.title": { cn: `${SysName}-新建标注任务`, en: `${SysName} - Create Label Task`, },
   "history.title": { cn: `${SysName}-历史树`, en: `${SysName} - History Tree`, },
+  "keywords.title": { cn: `${SysName}-标签管理`, en: `${SysName} - Keywords`, },
 }
 
 export default routeTitle

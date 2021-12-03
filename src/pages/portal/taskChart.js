@@ -77,17 +77,6 @@ const TaskChart = ({ getTaskStats }) => {
   }, [series])
 
   function transferData(data) {
-    // const mockData = [
-    //   {0: 1,   1: 4,   2: 7,    3: 10, 4: 13, 5: 16, 6: 19, 7: 22, },
-    //   {0: 0,   1: 1,   2: 2,    3: 30, 4: 4,  5: 56, 6: 69, 7: 72,  },
-    //   {0: 19,  1: 17,  2: 15,   3: 13, 4: 11, 5: 9, 6: 7, 7: 5,  },
-    //   {0: 34,  1: 40,  2: 46,   3: 52, 4: 58, 5: 64, 6: 70, 7: 76,  },
-    //   {0: 90,  1: 79,  2: 68,   3: 57, 4: 46, 5: 35, 6: 24, 7: 13,  },
-    //   {0: 7,   1: 6,   2: 0,    3: 1,  4: 2,  5: 3, 6: 4, 7: 5,  },
-    //   {0: 29,  1: 20,  2: 2,    3: 11, 4: 56, 5: 65, 6: 47, 7: 38,  },
-    //   {0: 0,   1: 0,   2: 7,    3: 10, 4: 3,  5: 16, 6: 19, 7: 22,  },
-    // ]
-    // data = mockData
     const result = {}
     types.forEach(type => result[type.value] = [])
     data.forEach(item => {
@@ -124,15 +113,6 @@ const TaskChart = ({ getTaskStats }) => {
       return timestamps.map(stamp => {
         return e8(stamp).format('D/M')
       }).reverse()
-      // const wt = timestamps.map(stamp => {
-      //   return e8(stamp).format('D/M')
-      // })
-      // timestamps.reduce((prev, curr) => {
-      //   const start = e8(curr).format('D/M')
-      //   const end = e8(prev).subtract(1, 'day').format('D/M')
-      //   result.push({value: `${start}~${end}`, textStyle: { width: 80, overflow: 'breakAll', }})
-      //   return curr
-      // }, e8())
     } else {
       // year
       result = timestamps.map(stamp => {
@@ -150,14 +130,14 @@ const TaskChart = ({ getTaskStats }) => {
 
   return (
     <Card className={styles.box}
-      headStyle={cardHead} bodyStyle={{...cardBody, height: 276}} 
+      headStyle={cardHead} bodyStyle={{...cardBody, height: 281}} 
       bordered={false} title={<><BarchartIcon className={styles.headIcon} />{t('portal.task.static.title')}</>}
     >
       {series.length ? (
       <>
         {console.log('option: ',option)}
         <Radio.Group className={styles.taskTimeBtn} options={times} optionType='button' value={type} onChange={timeChange}></Radio.Group>
-        <BarChart option={option} height={236}></BarChart>
+        <BarChart option={option} height={241}></BarChart>
       </>) : <Empty /> }
     </Card>
   )

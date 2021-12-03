@@ -9,8 +9,9 @@ import {
   resetPwd,
   forgetPwd,
   getMeInfo,
+  updateUserInfo,
   signup,
-} from "@/services/Auth"
+} from "@/services/user"
 
 const neverShow = storage.get("never_show")
 
@@ -18,9 +19,9 @@ const model = {
   namespace: "user",
   state: {
     username: "",
-    password: "",
     email: "",
     phone: "",
+    avatar: '',
     id: 0,
     logined: !!storage.get("access_token"),
     neverShow,
@@ -44,13 +45,19 @@ const model = {
     *login({ payload }, { call, put, select }) {
       const neverShow = yield select(({ user }) => user.neverShow)
       const { code, result } = yield call(login, payload)
-      const { access_token } = result
-      if (code === 0 && access_token) {
-        storage.set("access_token", access_token || "")
+      if (code === 0 && result?.access_token) {
+        storage.set("access_token", result.access_token || "")
         message.success(t("login.login.success"))
         yield put({ type: 'setGuideVisible', payload: !neverShow })
         yield put({ type: "UPDATE_LOGINED", payload: true })
         yield put({ type: "getUserInfo" })
+      }
+      return result
+    },
+    *getToken({ payload }, { call, put, select }) {
+      const { code, result } = yield call(login, payload)
+      if (code === 0 && result?.access_token) {
+        storage.set("access_token", result.access_token || "")
       }
       return result
     },
@@ -61,22 +68,36 @@ const model = {
         return true
       }
     },
-    // *modifyPwd({ payload }, { call, put, select }) {
-    //   const { code, result } = yield call(modifyPwd, payload)
-    //   if (code === 0) {
-    //     return result
-    //   }
-    // },
+    *modifyPwd({ payload }, { call, put }) {
+      const { code, result } = yield call(modifyPwd, payload)
+      if (code === 0) {
+        yield put({
+          type: "UPDATE_USERINFO",
+          payload: result,
+        })
+        return result
+      }
+    },
     *resetPwd({ payload }, { call, put, select }) {
       const { code, result } = yield call(resetPwd, payload)
       return code === 0
     },
     *getUserInfo({ payload }, { call, put, select }) {
       const user = yield select(({ user }) => user)
-      if (user.id) {
+      if (!payload && user.id) {
         return user
       }
       const { result } = yield call(getMeInfo)
+      if (result) {
+        yield put({
+          type: "UPDATE_USERINFO",
+          payload: result,
+        })
+        return result
+      }
+    },
+    *updateUserInfo({ payload }, { call, put, select }) {
+      const { result } = yield call(updateUserInfo, payload)
       if (result) {
         yield put({
           type: "UPDATE_USERINFO",
@@ -104,6 +125,7 @@ const model = {
         username: payload.username,
         email: payload.email,
         phone: payload.phone,
+        avatar: payload.avatar,
         id: payload.id,
       }
     },

@@ -1,6 +1,6 @@
 @font-face {
   font-family: "iconfont"; /* Project id  */
-  src: url('iconfont.ttf?t=1636368847277') format('truetype');
+  src: url('iconfont.ttf?t=1637547674523') format('truetype');
 }
 
 .iconfont {
@@ -313,5 +313,13 @@
 
 .icon-no-sjj:before {
   content: "\e6c5";
+}
+
+.icon-reasoning:before {
+  content: "\e6e1";
+}
+
+.icon-clear:before {
+  content: "\e6e2";
 }
 

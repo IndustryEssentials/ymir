@@ -105,7 +105,7 @@ const Add = ({ visible, cancel = () => { }, ok = () => { }, createModel }) => {
         {isType(TYPES.LOCAL) ? (
           <Form.Item label={t('model.add.form.upload.btn')}>
             <Uploader
-              onChange={(result) => { setFileToken(result) }}
+              onChange={(files, result) => { setFileToken(result) }}
               info={t('model.add.form.upload.info', { br: <br /> })}
             ></Uploader>
           </Form.Item>
