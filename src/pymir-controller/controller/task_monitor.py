@@ -115,7 +115,7 @@ class ControllerTaskMonitor:
             if task_item.update_timestamp == int(timestamp):  # nothing to update
                 return task_item
             if len(content_row_one) > 4:
-                task_item.state_code = content_row_one[4]
+                task_item.state_code = int(content_row_one[4])
             if len(content_row_one) > 5:
                 task_item.state_message = content_row_one[5]
 
