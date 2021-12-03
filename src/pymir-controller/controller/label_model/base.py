@@ -14,7 +14,7 @@ def catch_label_task_error(f: Callable) -> Callable:
         try:
             _ret = f(*args, **kwargs)
         except Exception as e:
-            status = f'{kwargs["task_id"]} {int(datetime.now().timestamp())} 0 {config.TASK_ERROR}'
+            status = f'{kwargs["task_id"]}\t{int(datetime.now().timestamp())}\t0\t{config.TASK_ERROR}'
             LabelBase.write_project_status(kwargs["monitor_file_path"], f"{status}\n{e}")
             _ret = None
         return _ret
@@ -78,7 +78,6 @@ class LabelBase(ABC):
         monitor_file_path: str,
         des_annotation_path: str,
         repo_root: str,
-        index_file: str,
         media_location: str,
         import_work_dir: str
     ) -> None:
@@ -89,9 +88,8 @@ class LabelBase(ABC):
             monitor_file_path=monitor_file_path,
             des_annotation_path=des_annotation_path,
             repo_root=repo_root,
-            index_file=index_file,
             media_location=media_location,
             import_work_dir=import_work_dir
         )
 
-        rds.hmset(config.MONITOR_MAPPING_KEY, {project_id: json.dumps(label_task_content)})
+        rds.hmset(config.MONITOR_MAPPING_KEY, {task_id: json.dumps(label_task_content)})

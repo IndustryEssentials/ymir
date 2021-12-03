@@ -13,3 +13,4 @@ pytest-cov==2.12.1
 pytest-mock==3.6.1
 tox==3.24.0
 pytest-xdist
+redislite

@@ -1,3 +1,4 @@
+import random
 from typing import Dict
 
 from fastapi.testclient import TestClient
@@ -7,7 +8,7 @@ from app import crud, models, schemas
 from app.config import settings
 from app.models.task import TaskType
 from tests.utils.utils import random_lower_string
-
+from app.api.api_v1.endpoints import models as m
 
 def insert_model(db: Session, client: TestClient, token) -> models.Model:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=token)
@@ -157,3 +158,11 @@ class TestGetModel:
             f"{settings.API_V1_STR}/models/233333", headers=normal_user_token_headers
         )
         assert r.status_code == 404
+
+
+class TestCreatePlaceholderTask:
+    def test_create_placeholder_task(self, db, mocker):
+        user_id = random.randint(1000, 2000)
+        t = m.create_task_as_placeholder(db, user_id=user_id)
+        assert t.user_id == user_id
+        assert t.is_deleted == True

@@ -1,13 +1,14 @@
 import json
 import os
+from pathlib import Path
 
 import pytest
 import requests
-from ymir.ids.class_ids import ClassIdManager
 
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.invoker.invoker_task_labeling import TaskLabelingInvoker
 from controller.label_model import label_studio
+from controller.utils.labels import LabelFileHandler
 
 
 @pytest.fixture()
@@ -16,7 +17,8 @@ def mock_many(mocker):
     mocker.patch.object(TaskExportingInvoker, "exporting_cmd")
     mocker.patch("builtins.open", mocker.mock_open(read_data="data"))
     mocker.patch("os.listdir", return_value=[])
-    mocker.patch.object(ClassIdManager, "main_name_for_id", return_value="fake")
+    mocker.patch.object(Path, "touch")
+    mocker.patch.object(LabelFileHandler, "get_main_labels_by_ids", return_value=["fake"])
 
 
 class Req:

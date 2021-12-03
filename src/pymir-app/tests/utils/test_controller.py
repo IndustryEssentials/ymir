@@ -38,10 +38,11 @@ class TestControllerRequest:
                 "include_datasets": include_datasets,
                 "include_classes": include_classes,
                 "exclude_classes": exclude_classes,
+                "strategy": m.MergeStrategy.prefer_newest,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeFilter
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeFilter
 
     def test_training(self):
         task_type = m.TaskType.training
@@ -54,10 +55,11 @@ class TestControllerRequest:
                 "include_validation_datasets": [],
                 "include_test_datasets": [],
                 "include_classes": [],
+                "strategy": m.MergeStrategy.prefer_newest,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeTraining
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeTraining
 
     def test_mining(self):
         task_type = m.TaskType.mining
@@ -70,10 +72,12 @@ class TestControllerRequest:
                 "model_hash": random_lower_string(),
                 "include_datasets": [],
                 "ex_dataset_ids": [],
+                "generate_annotations": True,
+                "strategy": m.MergeStrategy.prefer_newest,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeMining
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeMining
 
     def test_label(self):
         task_type = m.TaskType.label
@@ -90,7 +94,7 @@ class TestControllerRequest:
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeLabel
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeLabel
 
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
@@ -105,7 +109,18 @@ class TestControllerRequest:
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mir_common.TaskTypeCopyData
+        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeCopyData
+
+    def test_kill(self, mocker):
+        task_type = m.ExtraRequestType.kill
+        user_id = random.randint(1000, 2000)
+        task = mocker.Mock(hash=random_lower_string(), type=m.TaskType.label)
+
+        kill_label_task = m.ControllerRequest(task_type, user_id, args={"target_container": task.hash, "is_label_task": True})
+        assert kill_label_task.req.req_type == m.mirsvrpb.CMD_LABLE_TASK_TERMINATE
+
+        kill_other_task = m.ControllerRequest(task_type, user_id, args={"target_container": task.hash, "is_label_task": False})
+        assert kill_other_task.req.req_type == m.mirsvrpb.CMD_KILL
 
 
 class TestControllerClient:

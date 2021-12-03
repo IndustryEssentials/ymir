@@ -2,11 +2,11 @@ import os
 from typing import List, Dict
 
 from google.protobuf import message as pb_message
-
 from mir.tools import mir_storage_ops
+
+from proto import backend_pb2
 from src import config
 from src.libs import utils
-import ymir.protos.mir_common_pb2 as mir_common
 
 
 class MirStorageLoader:
@@ -17,24 +17,25 @@ class MirStorageLoader:
     @utils.time_it
     def load_raw_message(self, mir_storages: List[pb_message.Message]) -> Dict:
         # using as_dict flag means already MessageToDict
-        mir_raw_data = mir_storage_ops.MirStorageOps.load(mir_root=self.mir_root,
-                                                          mir_branch=self.branch_id,
-                                                          mir_storages=mir_storages,
-                                                          as_dict=True)
+        mir_raw_data = mir_storage_ops.MirStorageOps.load(
+            mir_root=self.mir_root, mir_branch=self.branch_id, mir_storages=mir_storages, as_dict=True
+        )
 
         return mir_raw_data
 
     def get_tasks_content(self) -> Dict:
-        raw_task_message = self.load_raw_message([mir_common.MirStorage.MIR_TASKS])
+        raw_task_message = self.load_raw_message([backend_pb2.MirStorage.MIR_TASKS])
 
-        return raw_task_message[mir_common.MirStorage.MIR_TASKS]
+        return raw_task_message[backend_pb2.MirStorage.MIR_TASKS]
 
     def get_keywords_content(self) -> Dict:
-        raw_keywords_message = self.load_raw_message([mir_common.MirStorage.MIR_KEYWORDS])
+        raw_keywords_message = self.load_raw_message([backend_pb2.MirStorage.MIR_KEYWORDS])
 
-        return raw_keywords_message[mir_common.MirStorage.MIR_KEYWORDS]
+        return raw_keywords_message[backend_pb2.MirStorage.MIR_KEYWORDS]
 
-    def format_mir_content(self, all_metadata: Dict, all_annotations: Dict, all_keywords: Dict) -> Dict:
+    def format_mir_content(
+        self, all_tasks_info: Dict, all_metadata: Dict, all_annotations: Dict, all_keywords: Dict
+    ) -> Dict:
         """
         return like this structure
         {
@@ -46,6 +47,7 @@ class MirStorageLoader:
                 }
             },
             "class_ids_index": {3: ["asset_id",], "class_ids_count": {3: 34}},
+            "ignored_labels": {'cat':5, },
         }
         """
         head_task_id = all_annotations["head_task_id"]
@@ -64,17 +66,14 @@ class MirStorageLoader:
             class_ids = keywords_asset_id["predifined_keyids"] if keywords_asset_id else []
 
             asset_id_annotation = asset_id_annotation["annotations"] if asset_id_annotation else asset_id_annotation
-            asset_detail = dict(
-                metadata=asset_id_metadata,
-                annotations=asset_id_annotation,
-                class_ids=class_ids,
-            )
+            asset_detail = dict(metadata=asset_id_metadata, annotations=asset_id_annotation, class_ids=class_ids,)
             assets_detail[asset_id] = asset_detail
 
         result = dict(
             asset_ids_detail=assets_detail,
             class_ids_index=all_keywords["index_predifined_keyids"],
             class_ids_count=all_keywords["predifined_keyids_cnt"],
+            ignored_labels=all_tasks_info["tasks"][self.branch_id].get("unknown_types", {}),
         )
 
         return result
@@ -91,14 +90,21 @@ class MirStorageLoader:
                 }
             },
             "class_ids_index": {3: ["asset_id",], "class_ids_count": {3: 34}},
+            "ignored_labels": {'cat':5},
         }
         """
         raw_message = self.load_raw_message(
-            [mir_common.MirStorage.MIR_ANNOTATIONS, mir_common.MirStorage.MIR_METADATAS])
-        annotations_message = raw_message[mir_common.MirStorage.MIR_ANNOTATIONS]
-        metadatas_message = raw_message[mir_common.MirStorage.MIR_METADATAS]
+            [
+                backend_pb2.MirStorage.MIR_ANNOTATIONS,
+                backend_pb2.MirStorage.MIR_METADATAS,
+                backend_pb2.MirStorage.MIR_TASKS,
+            ]
+        )
+        annotations_message = raw_message[backend_pb2.MirStorage.MIR_ANNOTATIONS]
+        metadatas_message = raw_message[backend_pb2.MirStorage.MIR_METADATAS]
+        tasks_message = raw_message[backend_pb2.MirStorage.MIR_TASKS]
         keywords_message = self.get_keywords_content()
 
-        result = self.format_mir_content(metadatas_message, annotations_message, keywords_message)
+        result = self.format_mir_content(tasks_message, metadatas_message, annotations_message, keywords_message)
 
         return result

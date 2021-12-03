@@ -3,4 +3,4 @@
 set -e
 
 IMAGE_NAME='pymir/backend_dev:latest'
-docker build -f Dockerfile -t ${IMAGE_NAME} .
+docker build -f Dockerfile-dev -t ${IMAGE_NAME} .

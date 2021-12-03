@@ -22,25 +22,18 @@ class ModelBase(BaseModel):
         description="input parameters of related training task"
     )
     task_id: Optional[int]
-    user_id: int
-
-
-class ModelInput(BaseModel):
-    name: str = Field(description="dataset name")
-    input_url: Optional[AnyHttpUrl] = Field(description="from url")
-    input_model_id: Optional[int] = Field(description="from other's model")
-    input_token: Optional[str] = Field(description="from uploaded file token")
-
-    @root_validator
-    def check_input_source(cls, values: Any) -> Any:
-        fields = ("input_url", "input_model_id", "input_token")
-        if all(values.get(i) is None for i in fields):
-            raise ValueError("Missing input source")
-        return values
+    user_id: Optional[int]
 
 
 class ModelCreate(ModelBase):
     pass
+
+
+class ModelImport(BaseModel):
+    hash: str
+    name: str
+    map: Optional[str]
+    input_url: str
 
 
 class ModelUpdate(BaseModel):
@@ -55,7 +48,7 @@ class ModelInDB(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase
 class Model(ModelInDB):
     parameters: Optional[Any] = None
     config: Optional[Any] = None
-    keywords: Optional[Any] = None
+    keywords: Optional[List[str]] = None
     source: Optional[int] = None
     task_type: Optional[int] = None
     task_name: Optional[str] = None
@@ -75,7 +68,7 @@ class Model(ModelInDB):
         task_config = json.loads(task_config_str) if task_config_str else {}
         values["config"] = task_config
 
-        values["keywords"] = parameters.get("include_classes", [])
+        values["keywords"] = extract_keywords(parameters)
         # the source of a model is actually the task
         # that import the model, copy the model or
         # train the model
@@ -88,6 +81,14 @@ class Model(ModelInDB):
 
 def get_model_url(model_hash: str) -> str:
     return f"{settings.NGINX_PREFIX}/ymir-models/{model_hash}"
+
+
+def extract_keywords(parameters: Optional[Union[str, Dict]]) -> List:
+    if not parameters:
+        return []
+    if isinstance(parameters, str):
+        parameters = json.loads(parameters)
+    return parameters.get("include_classes", [])  # type: ignore
 
 
 class Models(BaseModel):

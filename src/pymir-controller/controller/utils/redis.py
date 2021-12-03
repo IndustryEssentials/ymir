@@ -1,6 +1,9 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import redis
+import json
+from controller.utils.app_logger import logger
+
 from controller.config import REDIS_URI
 
 
@@ -10,6 +13,14 @@ class MiddlewareRedis:
 
     def hmset(self, name: str, mapping: Dict) -> bool:
         return self._client.hmset(name, mapping)
+
+    def hget(self, name: str, key: str) -> Optional[Dict]:
+        try:
+            res = self._client.hget(name, key)
+            return json.loads(str(res))
+        except json.JSONDecodeError as e:
+            logger.error(f"{e}")
+            return None
 
     def hgetall(self, name: str) -> Dict:
         return self._client.hgetall(name)

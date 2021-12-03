@@ -8,7 +8,7 @@ REDIS_URI = env("VIZ_REDIS_URI")
 
 # redis key info
 ASSET_ID_DETAIL = "detail"
-ASSETS_CLASS_IDS_COUNT = "class_ids_count"
+ASSETS_ATTRIBUTES = "assets_attributes"
 ASSETS_CLASS_ID_INDEX = "index"
 
 # the middle data structure, it will save into cache,like Redis

@@ -1,16 +1,16 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.task_monitor import ControllerTaskMonitor
 from controller.utils import checker, code, utils
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 class GetTaskInfoInvoker(BaseMirControllerInvoker):
-    def pre_invoke(self) -> mirsvrpb.GeneralResp:
+    def pre_invoke(self) -> backend_pb2.GeneralResp:
         return checker.check_request(request=self._request, prerequisites=[
             checker.Prerequisites.CHECK_TASKINFO_IDS,
         ])
 
-    def invoke(self) -> mirsvrpb.GeneralResp:
+    def invoke(self) -> backend_pb2.GeneralResp:
         resp = utils.make_general_response(code.ResCode.CTR_OK, "")
         task_monitor = ControllerTaskMonitor(storage_root='')
         for task_id in self._request.req_get_task_info.task_ids:

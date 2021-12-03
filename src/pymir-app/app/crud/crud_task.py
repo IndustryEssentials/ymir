@@ -13,12 +13,7 @@ from app.schemas.task import TaskCreate, TaskUpdate
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
     def create_task(
-        self,
-        db: Session,
-        *,
-        obj_in: TaskCreate,
-        task_hash: str,
-        user_id: int,
+        self, db: Session, *, obj_in: TaskCreate, task_hash: str, user_id: int,
     ) -> Task:
         config = obj_in.config
         if isinstance(config, dict):

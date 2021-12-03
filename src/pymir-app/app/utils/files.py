@@ -21,6 +21,8 @@ from requests.exceptions import (
     Timeout,
 )
 
+from app.config import settings
+
 env = os.environ.get
 
 BUF_SIZE = 65536
@@ -111,9 +113,9 @@ def prepare_dataset(url: Union[AnyHttpUrl, str], output_dir: Union[str, Path]) -
     return dict(locate_dirs(output_dir, ["images", "annotations"]))
 
 
-def save_file(url: Union[AnyHttpUrl, str], output_dir: Path) -> Path:
+def save_file(url: Union[AnyHttpUrl, str], output_dir: Union[str, Path]) -> Path:
     filename = Path(urlparse(url).path).name
-    output_file = output_dir / filename
+    output_file = Path(output_dir) / filename
     save_file_content(url, output_file)
     return output_file
 

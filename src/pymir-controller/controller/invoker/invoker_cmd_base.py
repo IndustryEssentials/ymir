@@ -3,10 +3,9 @@ import os
 from abc import ABC, abstractmethod
 
 from google.protobuf import json_format
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
-from ymir.protos import mir_common_pb2 as mir_common
 
 from controller.utils import code, checker
+from proto import backend_pb2
 
 
 class BaseMirControllerInvoker(ABC):
@@ -22,7 +21,7 @@ class BaseMirControllerInvoker(ABC):
     """
     def __init__(self,
                  sandbox_root: str,
-                 request: mirsvrpb.GeneralReq,
+                 request: backend_pb2.GeneralReq,
                  assets_config: dict,
                  async_mode: bool = False) -> None:
         super().__init__()
@@ -55,7 +54,7 @@ class BaseMirControllerInvoker(ABC):
         self._work_dir = self.prepare_work_dir()
 
     # functions about invoke and pre_invoke
-    def server_invoke(self) -> mirsvrpb.GeneralResp:
+    def server_invoke(self) -> backend_pb2.GeneralResp:
         logging.info(str(self))
 
         response = self.pre_invoke()
@@ -65,19 +64,19 @@ class BaseMirControllerInvoker(ABC):
         return self.invoke()
 
     @abstractmethod
-    def pre_invoke(self) -> mirsvrpb.GeneralResp:
+    def pre_invoke(self) -> backend_pb2.GeneralResp:
         pass
 
     @abstractmethod
-    def invoke(self) -> mirsvrpb.GeneralResp:
+    def invoke(self) -> backend_pb2.GeneralResp:
         pass
 
     def prepare_work_dir(self) -> str:
         # Prepare working dir.
-        if self._request.req_type == mirsvrpb.TASK_CREATE:
-            type_dir = mir_common.TaskType.Name(self._request.req_create_task.task_type)
+        if self._request.req_type == backend_pb2.TASK_CREATE:
+            type_dir = backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
         else:
-            type_dir = mirsvrpb.RequestType.Name(self._request.req_type)
+            type_dir = backend_pb2.RequestType.Name(self._request.req_type)
 
         work_dir = os.path.join(self._sandbox_root, "work_dir", type_dir, self._request.task_id)
         os.makedirs(os.path.join(work_dir, "out"), exist_ok=True)

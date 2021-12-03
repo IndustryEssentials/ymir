@@ -8,11 +8,10 @@ from typing import Any, Dict
 from controller.utils import utils
 from controller.utils.code import ResCode
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-import ymir.protos.mir_controller_service_pb2_grpc as mirgrpc
-import ymir.protos.mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2, backend_pb2_grpc
 
 
-class MirControllerService(mirgrpc.mir_controller_serviceServicer):
+class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
     __slots__ = ("_sandbox_root", "_user_to_container_ids", "_docker_image_name")
 
     user_to_container_ids = {}  # type: Dict[str, str]
@@ -29,7 +28,7 @@ class MirControllerService(mirgrpc.mir_controller_serviceServicer):
     def assets_config(self) -> Dict:
         return self._assets_config
 
-    def data_manage_request(self, request: mirsvrpb.GeneralReq, context: Any) -> mirsvrpb.GeneralResp:
+    def data_manage_request(self, request: backend_pb2.GeneralReq, context: Any) -> backend_pb2.GeneralResp:
         if request.req_type not in RequestTypeToInvoker:
             message = "unknown invoker for req_type: {}".format(request.req_type)  # type: str
             logging.error(message)
@@ -43,7 +42,7 @@ class MirControllerService(mirgrpc.mir_controller_serviceServicer):
                                 async_mode=True)
         invoker_result = invoker.server_invoke()
 
-        if isinstance(invoker_result, mirsvrpb.GeneralResp):
+        if isinstance(invoker_result, backend_pb2.GeneralResp):
             return invoker_result
         return utils.make_general_response(ResCode.CTR_SERVICE_UNKOWN_RESPONSE,
                                            "unknown result type: {}".format(type(invoker_result)))

@@ -1,7 +1,6 @@
 from typing import List
 
-from ymir.protos import mir_common_pb2
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 def join_tvt_branch_tid(branch_id: str, tvt_type: str = None, tid: str = None) -> str:
@@ -15,31 +14,31 @@ def join_tvt_branch_tid(branch_id: str, tvt_type: str = None, tid: str = None) -
     return ret
 
 
-def build_tvt_dataset_id(tvt_dataset_id: str) -> mirsvrpb.TaskReqTraining.TrainingDatasetType:
+def build_tvt_dataset_id(tvt_dataset_id: str) -> backend_pb2.TaskReqTraining.TrainingDatasetType:
     _prefix_to_tvt = {
-        'tr': mir_common_pb2.TvtTypeTraining,
-        'va': mir_common_pb2.TvtTypeValidation,
-        'te': mir_common_pb2.TvtTypeTest,
+        'tr': backend_pb2.TvtTypeTraining,
+        'va': backend_pb2.TvtTypeValidation,
+        'te': backend_pb2.TvtTypeTest,
     }
-    dataset_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
+    dataset_type = backend_pb2.TaskReqTraining.TrainingDatasetType()
     split_data = tvt_dataset_id.split(':')
     if len(split_data) == 2:
         dataset_type.dataset_type = _prefix_to_tvt[split_data[0].lower()]
         dataset_type.dataset_id = split_data[1]
     elif len(split_data) == 1:
-        dataset_type.dataset_type = mir_common_pb2.TvtTypeUnknown
+        dataset_type.dataset_type = backend_pb2.TvtTypeUnknown
         dataset_type.dataset_id = tvt_dataset_id
     else:
         raise RuntimeError("invalid tvt_dataset_id: {}".format(tvt_dataset_id))
     return dataset_type
 
 
-def join_tvt_dataset_id(tvt_type: mir_common_pb2.TvtType, dataset_id: str) -> str:
+def join_tvt_dataset_id(tvt_type: backend_pb2.TvtType, dataset_id: str) -> str:
     _tvt_to_prefix = {
-        mir_common_pb2.TvtTypeUnknown: '',
-        mir_common_pb2.TvtTypeTraining: 'tr:',
-        mir_common_pb2.TvtTypeValidation: 'va:',
-        mir_common_pb2.TvtTypeTest: 'te:',
+        backend_pb2.TvtTypeUnknown: '',
+        backend_pb2.TvtTypeTraining: 'tr:',
+        backend_pb2.TvtTypeValidation: 'va:',
+        backend_pb2.TvtTypeTest: 'te:',
     }
     return ''.join([_tvt_to_prefix[tvt_type], dataset_id])
 

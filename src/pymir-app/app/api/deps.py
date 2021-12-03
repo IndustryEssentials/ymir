@@ -1,7 +1,9 @@
-from typing import Generator
+import json
+from typing import Generator, List, Dict
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.logger import logger
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -16,7 +18,20 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.db.session import SessionLocal
-from app.utils import graph, security, stats, ymir_controller, ymir_viz
+from app.utils import (
+    class_ids,
+    graph,
+    security,
+    stats,
+    ymir_controller,
+    ymir_viz,
+    cache as ymir_cache,
+)
+from app.utils.ymir_controller import (
+    ControllerClient,
+    ControllerRequest,
+    ExtraRequestType,
+)
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
 
@@ -82,9 +97,7 @@ def get_controller_client() -> Generator:
 
 def get_viz_client() -> Generator:
     try:
-        client = ymir_viz.VizClient(
-            host=settings.VIZ_HOST,
-        )
+        client = ymir_viz.VizClient(host=settings.VIZ_HOST,)
         yield client
     finally:
         client.close()
@@ -110,3 +123,30 @@ def get_stats_client(
         yield client
     finally:
         client.close()
+
+
+def get_cache(
+    current_user: models.User = Depends(get_current_active_user),
+) -> Generator:
+    try:
+        cache_client = ymir_cache.CacheClient(settings.REDIS_URI, current_user.id)
+        yield cache_client
+    finally:
+        cache_client.close()
+
+
+def get_personal_labels(
+    current_user: models.User = Depends(get_current_active_user),
+    cache: ymir_cache.CacheClient = Depends(get_cache),
+    controller_client: ControllerClient = Depends(get_controller_client),
+) -> List:
+    # todo: make a cache wrapper
+    cached = cache.get(ymir_cache.KEYWORDS_CACHE_KEY)
+    if cached:
+        logger.info("cache hit")
+        return json.loads(cached)
+
+    logger.info("cache miss")
+    csv_labels = controller_client.get_labels_of_user(current_user.id)
+    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(csv_labels))
+    return csv_labels

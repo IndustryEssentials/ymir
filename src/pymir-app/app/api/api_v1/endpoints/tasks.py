@@ -1,5 +1,6 @@
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
+from operator import attrgetter
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
@@ -16,7 +17,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.models import Dataset, Model
 from app.models.task import Task, TaskState, TaskType
-from app.utils.class_ids import REVERSED_CLASS_TYPES
+from app.schemas.task import MergeStrategy
 from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
@@ -28,13 +29,16 @@ from app.utils.ymir_controller import (
     ExtraRequestType,
 )
 from app.utils.ymir_viz import VizClient
+from app.utils.class_ids import (
+    get_keyword_id_to_name_mapping,
+    get_keyword_name_to_id_mapping,
+)
 
 router = APIRouter()
 
 
 @router.get(
-    "/",
-    response_model=schemas.TaskOut,
+    "/", response_model=schemas.TaskOut,
 )
 def list_tasks(
     db: Session = Depends(deps.get_db),
@@ -66,8 +70,7 @@ def list_tasks(
 
 
 @router.post(
-    "/",
-    response_model=schemas.TaskOut,
+    "/", response_model=schemas.TaskOut,
 )
 def create_task(
     *,
@@ -77,9 +80,15 @@ def create_task(
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     stats_client: RedisStats = Depends(deps.get_stats_client),
+    labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Create task
+
+    Note that if you selected multiple datasets, use `strategy` to choose primary one:
+     - stop_upon_conflict = 1
+     - prefer_newest = 2
+     - prefer_oldest = 3
     """
     logger.debug("create task start: %s" % task_in.name)
     task = crud.task.get_by_user_and_name(
@@ -88,36 +97,41 @@ def create_task(
     if task:
         raise DuplicateTaskError()
 
-    # todo
-    #  maybe using pydantic to do the normalization
-    parameters = normalize_parameters(db, task_in.name, task_in.parameters)
+    keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
+
+    # todo: using pydantic to do the normalization
+    parameters = normalize_parameters(
+        db, task_in.name, task_in.parameters, keyword_name_to_id
+    )
 
     if parameters and task_in.config:
         parameters["config"] = task_in.config
 
-    req = ControllerRequest(
-        task_in.type, current_user.id, current_workspace.hash, args=parameters
-    )
     try:
-        resp = controller_client.send(req)
-        logger.info("controller response: %s", resp)
+        task_id = ControllerRequest.gen_task_id(current_user.id)
+        resp = controller_client.create_task(
+            current_user.id, current_workspace.hash, task_id, task_in.type, parameters,
+        )
+        logger.info("[create task] controller response: %s", resp)
     except ValueError:
         # todo parse error message
         raise FailedtoCreateTask()
 
-    assert req.task_id is not None
     task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=req.task_id, user_id=current_user.id
+        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
     )
 
-    update_stats(current_user.id, stats_client, task_in)
-    logger.info("create task end: %s" % task_in.name)
+    update_stats_for_ref_count(current_user.id, stats_client, task_in)
+    logger.info("[create task] created task name: %s" % task_in.name)
 
     return {"result": task}
 
 
 def normalize_parameters(
-    db: Session, name: str, parameters: Optional[schemas.TaskParameter]
+    db: Session,
+    name: str,
+    parameters: Optional[schemas.TaskParameter],
+    keyword_name_to_id: Dict,
 ) -> Optional[Dict]:
     """
     Normalize task parameters, including:
@@ -127,26 +141,43 @@ def normalize_parameters(
     if not parameters:
         return None
     p = dict(parameters)
-    normalized = {}
+    normalized = {}  # type: Dict[str, Any]
     normalized["name"] = name
     for k, v in p.items():
         if v is None:
             continue
         if k.endswith("datasets"):
             datasets = crud.dataset.get_multi_by_ids(db, ids=v)
-            normalized[k] = [dataset.hash for dataset in datasets]  # type: ignore
+            order_datasets_by_strategy(datasets, parameters.strategy)
+            normalized[k] = [dataset.hash for dataset in datasets]
         elif k.endswith("classes"):
-            normalized[k] = [REVERSED_CLASS_TYPES[keyword.strip()] for keyword in v]  # type: ignore
+            normalized[k] = [keyword_name_to_id[keyword.strip()] for keyword in v]
         elif k == "model_id":
             model = crud.model.get(db, id=v)
             assert model and model.hash
-            normalized["model_hash"] = model.hash  # type: ignore
+            normalized["model_hash"] = model.hash
         else:
             normalized[k] = v
     return normalized
 
 
-def update_stats(
+def order_datasets_by_strategy(
+    objects: List[Any], strategy: Optional[MergeStrategy]
+) -> None:
+    """
+    change the order of datasets *in place*
+    """
+    if not strategy:
+        return
+    if strategy is MergeStrategy.stop_upon_conflict:
+        return
+    return objects.sort(
+        key=attrgetter("update_datetime"),
+        reverse=strategy is MergeStrategy.prefer_newest,
+    )
+
+
+def update_stats_for_ref_count(
     user_id: int, stats_client: RedisStats, task_in: schemas.TaskCreate
 ) -> None:
     task_type = task_in.type.value
@@ -201,18 +232,18 @@ def delete_task(
     "/{task_id}",
     response_model=schemas.TaskOut,
     response_model_exclude_none=True,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={404: {"description": "Task Not Found"}},
 )
 def get_task(
     db: Session = Depends(deps.get_db),
     task_id: int = Path(..., example="12"),
+    current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
     Get verbose information of specific task
     """
-    task = crud.task.get(db, id=task_id)
+    task = crud.task.get_by_user_and_id(db, user_id=current_user.id, id=task_id)
     if not task:
         raise TaskNotFound()
     result = {}
@@ -265,6 +296,28 @@ def update_task_name(
 
 
 @router.post(
+    "/{task_id}/terminate", response_model=schemas.TaskOut,
+)
+def terminate_task(
+    db: Session = Depends(deps.get_db),
+    task_id: int = Path(..., example="12"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    task = crud.task.get(db, id=task_id)
+    if not task:
+        raise TaskNotFound()
+    killable_task_types = [TaskType.training, TaskType.mining, TaskType.label]
+    if task.type in killable_task_types:
+        controller_client.terminate_task(user_id=current_user.id, target_task=task)
+    if task.type is not TaskType.label:
+        task = crud.task.update_task_state(
+            db, task_id=task.id, new_state=TaskState.error
+        )
+    return {"result": task}
+
+
+@router.post(
     "/update_status",
     response_model=schemas.TaskOut,
     dependencies=[Depends(deps.get_current_active_user)],
@@ -281,9 +334,7 @@ def update_task_status(
     Batch update given tasks status
     """
     tasks = crud.task.get_tasks_by_states(
-        db,
-        states=[TaskState.pending, TaskState.running],
-        including_deleted=True,
+        db, states=[TaskState.pending, TaskState.running], including_deleted=True,
     )
     task_result_proxy = TaskResultProxy(
         db=db,
@@ -336,6 +387,15 @@ class TaskResultProxy:
         if task_result["state"] == TaskState.done:
             self.handle_finished_task(task)
 
+        if (
+            task.type is TaskType.import_data
+            and task_result["state"] == TaskState.error
+        ):
+            # fixme:
+            #  parse error msg of failed to import_task
+            #  to get ignored_keywords
+            self.handle_failed_import_task(task, task_result)
+
         logger.debug("task progress used to be %s", task)
         updated_task = self.update_task_progress(task, task_result)
         logger.debug("task progress updated to %s", updated_task)
@@ -367,6 +427,11 @@ class TaskResultProxy:
         if task.type is TaskType.training:
             model = self.add_new_model_if_not_exist(task)
             self.stats_client.update_model_rank(task.user_id, model.id)
+            keywords = schemas.model.extract_keywords(task.parameters)
+            if model.map and keywords:
+                self.stats_client.update_keyword_wise_model_rank(
+                    task.user_id, model.id, float(model.map), keywords
+                )
             logger.debug("task result(new model): %s", model)
             node = schemas.Model.from_orm(model)  # type: ignore
         elif task.type in [TaskType.mining, TaskType.label, TaskType.filter]:
@@ -394,6 +459,27 @@ class TaskResultProxy:
             task,
         )
 
+    def handle_failed_import_task(self, task: schemas.Task, task_result: Dict) -> None:
+        # makeup data for failed dataset
+        dataset_info = {
+            "keywords": [],
+            "ignored_keywords": self._parse_ignored_keywords(task_result.get("state_message")),
+            "items": 0,
+            "total": 0,
+        }
+        logger.debug("[failed task] update dataset with %s", dataset_info)
+        dataset = self.update_dataset(task, dataset_info)
+        logger.debug("[failed task] added ignored_keywords to dataset: %s", dataset)
+
+    def _parse_ignored_keywords(self, error_message: Optional[str]) -> List[str]:
+        if not error_message:
+            return []
+        try:
+            ignored_keywords = list(json.loads(error_message).keys())
+        except Exception:
+            ignored_keywords = []
+        return ignored_keywords
+
     def add_new_dataset_if_not_exist(self, task: schemas.Task) -> Dataset:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if dataset:
@@ -407,29 +493,38 @@ class TaskResultProxy:
             type=task.type,
             user_id=task.user_id,
             task_id=task.id,
-            predicates=json.dumps(dataset_info["keywords"]),
+            predicates=self._extract_keywords(dataset_info),
             asset_count=dataset_info["total"],
             keyword_count=len(dataset_info["keywords"]),
         )
         dataset = crud.dataset.create(self.db, obj_in=dataset_in)
         return dataset
 
-    def update_dataset(self, task: schemas.Task) -> Optional[Dataset]:
+    def update_dataset(self, task: schemas.Task, dataset_info: Optional[Dict] = None) -> Optional[Dataset]:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if not dataset:
             return dataset
 
-        dataset_info = self.get_dataset_info(task.user_id, task.hash)
+        dataset_info = dataset_info or self.get_dataset_info(task.user_id, task.hash)
         dataset_in = schemas.DatasetUpdate(
-            predicates=json.dumps(dataset_info["keywords"]),
+            predicates=self._extract_keywords(dataset_info),
             asset_count=dataset_info["total"],
             keyword_count=len(dataset_info["keywords"]),
         )
         updated = crud.dataset.update(self.db, db_obj=dataset, obj_in=dataset_in)
         return updated
 
+    def _extract_keywords(self, dataset_info: Dict) -> str:
+        return json.dumps(
+            {
+                "keywords": dataset_info["keywords"],
+                "ignored_keywords": dataset_info["ignored_keywords"],
+            }
+        )
+
     def add_new_model_if_not_exist(self, task: schemas.Task) -> Model:
-        model_info = self.viz.get_model(user_id=task.user_id, branch_id=task.hash)
+        self.viz.config(user_id=task.user_id, branch_id=task.hash)
+        model_info = self.viz.get_model()
         if not model_info:
             raise ValueError("model not ready yet")
 
@@ -449,12 +544,16 @@ class TaskResultProxy:
         return model
 
     def get_dataset_info(self, user_id: int, task_hash: str) -> Dict:
-        assets = self.viz.get_assets(
-            user_id=user_id,
-            branch_id=task_hash,
+        labels = self.controller.get_labels_of_user(user_id)
+        keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
+        self.viz.config(
+            user_id=user_id, branch_id=task_hash, keyword_id_to_name=keyword_id_to_name
         )
+
+        assets = self.viz.get_assets()
         result = {
             "keywords": list(assets.keywords.keys()),
+            "ignored_keywords": list(assets.ignored_keywords.keys()),
             "items": assets.items,
             "total": assets.total,
         }

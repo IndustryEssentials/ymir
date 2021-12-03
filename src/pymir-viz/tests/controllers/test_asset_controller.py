@@ -1,6 +1,6 @@
 import pytest
 
-import ymir.protos.mir_common_pb2 as mir_common
+from proto import backend_pb2
 from mir.tools.mir_storage_ops import MirStorageOps
 
 
@@ -68,13 +68,24 @@ def mock_mir_content(mocker):
         }
     }
 
+    mir_tasks_content = {
+        "tasks": {
+            '5928508c-1bc0-43dc-a094-0352079e39b5': {
+                "unknown_types": {
+                    "nuknow_cat": 5
+                },
+            }
+        }
+    }
+
     mocker.patch.object(
         MirStorageOps,
         "load",
         return_value={
-            mir_common.MirStorage.MIR_METADATAS: dict_metadatas,
-            mir_common.MirStorage.MIR_ANNOTATIONS: dict_annotations,
-            mir_common.MirStorage.MIR_KEYWORDS: dict_keywords,
+            backend_pb2.MirStorage.MIR_METADATAS: dict_metadatas,
+            backend_pb2.MirStorage.MIR_ANNOTATIONS: dict_annotations,
+            backend_pb2.MirStorage.MIR_KEYWORDS: dict_keywords,
+            backend_pb2.MirStorage.MIR_TASKS: mir_tasks_content,
         },
     )
 
@@ -99,6 +110,9 @@ class TestAssetController:
                     "class_ids": [2, 52]
                 },
             ],
+            "ignored_labels": {
+                "nuknow_cat": 5
+            },
             "limit":
             20,
             "offset":
@@ -119,6 +133,9 @@ class TestAssetController:
                 "asset_id": "430df22960b0f369318705800139fcc8ec38a3e4",
                 "class_ids": [2, 52]
             }],
+            "ignored_labels": {
+                "nuknow_cat": 5
+            },
             "limit": 20,
             "offset": 0,
             "total": 1,
@@ -132,7 +149,7 @@ class TestAssetController:
     def test_get_assert_id_info(self, test_client, mock_mir_content):
         user_id = "user_id"
         repo_id = "repo_id"
-        branch_id = "branch_id"
+        branch_id = "5928508c-1bc0-43dc-a094-0352079e39b5"
         asset_id = "d4e4a60147f1e35bc7f5bc89284aa16073b043c9"
 
         expect_data = {

@@ -5,12 +5,11 @@ import unittest
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
+import tests.utils as test_utils
 from controller import task_monitor
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
-
-import tests.utils as test_utils
+from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
@@ -41,7 +40,7 @@ class TestInvokerTaskInfo(unittest.TestCase):
 
         # Add a mock task file.
         self._ctr_task_monitor = task_monitor.ControllerTaskMonitor(storage_root=self._storage_root)
-        task_info = mirsvrpb.TaskMonitorStorageItem()
+        task_info = backend_pb2.TaskMonitorStorageItem()
         self._ctr_task_monitor.save_task(self._task_id, task_info)
 
         logging.info("preparing done.")
@@ -67,18 +66,18 @@ class TestInvokerTaskInfo(unittest.TestCase):
         test_utils.mir_repo_init(self._mir_repo_root)
 
     def test_invoker_task_info_00(self):
-        task_info_req = mirsvrpb.ReqGetTaskInfo()
+        task_info_req = backend_pb2.ReqGetTaskInfo()
         task_info_req.task_ids.extend([self._task_id])
         response = make_invoker_cmd_call(sandbox_root=self._sandbox_root,
-                                         req_type=mirsvrpb.TASK_INFO,
-                                         invoker=RequestTypeToInvoker[mirsvrpb.TASK_INFO],
+                                         req_type=backend_pb2.TASK_INFO,
+                                         invoker=RequestTypeToInvoker[backend_pb2.TASK_INFO],
                                          user_id=self._user_name,
                                          task_id=self._task_id,
                                          repo_id=self._mir_repo_name,
                                          task_info_req=task_info_req)
         print(MessageToDict(response))
 
-        expected_ret = mirsvrpb.GeneralResp()
+        expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'resp_get_task_info': {'task_infos': {self._task_id: {}}}}
         ParseDict(expected_dict, expected_ret)
         self.assertEqual(response, expected_ret)
