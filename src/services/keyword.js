@@ -14,10 +14,28 @@ export function getKeywords(params) {
 /**
  * new and update keywords
  * @param {array} keywords 
+ * @param {boolean} dry_run only check, fake update
  * @returns 
  */
-export function updateKeywords(keywords = []) {
+export function updateKeywords({ keywords = [], dry_run = false }) {
   return request.post('/keywords/', {
     keywords,
+    dry_run,
+  })
+}
+
+/**
+ * update keyword
+ * @param {string} name
+ * @param {array} [aliases] 
+ * @returns 
+ */
+export function updateKeyword({ name, aliases = [] }) {
+  return request({
+    method: 'PATCH',
+    url: `/keywords/${name}`,
+    data: {
+      aliases,
+    }
   })
 }

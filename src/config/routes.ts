@@ -18,18 +18,6 @@ const Routes = [
         breadcrumbName: 'portal.title',
       },
       {
-        path: "/home/task",
-        name: "task",
-        component: "@/pages/task/index",
-        title: 'tasks.title',
-      },
-      {
-        path: "/home/task/s/:keyword?",
-        name: "taskS",
-        component: "@/pages/task/index",
-        title: 'tasks.title',
-      },
-      {
         path: "/home/task/detail/:id",
         name: "taskDetail",
         component: "@/pages/task/detail",
@@ -60,7 +48,19 @@ const Routes = [
         title: 'task.label.title',
       },
       {
-        path: "/home/dataset",
+        path: "/home/task/:keyword?",
+        name: "task",
+        component: "@/pages/task/index",
+        title: 'tasks.title',
+      },
+      {
+        path: "/home/dataset/add/:id?",
+        name: "datasetImport",
+        component: "@/pages/dataset/add",
+        title: "dataset.add.title",
+      },
+      {
+        path: "/home/dataset/:keyword?",
         name: "dataset",
         component: "@/pages/dataset/index",
         title: "datasets.title",
@@ -78,28 +78,10 @@ const Routes = [
         title: "dataset.title",
       },
       {
-        path: "/home/dataset/add/:id?",
-        name: "datasetImport",
-        component: "@/pages/dataset/add",
-        title: "dataset.add.title",
-      },
-      {
         path: "/home/dataset/asset/:id/:hash",
         name: "datasetAsset",
         component: "@/pages/dataset/asset",
         title: "asset.title",
-      },
-      {
-        path: "/home/model",
-        name: "model",
-        component: "@/pages/model/index",
-        title: "models.title",
-      },
-      {
-        path: "/home/model/s/:keyword?",
-        name: "modelS",
-        component: "@/pages/model/index",
-        title: "models.title",
       },
       {
         path: "/home/model/detail/:id",
@@ -118,6 +100,12 @@ const Routes = [
         name: "modelVerify",
         component: "@/pages/model/verify",
         title: "model.verify.title",
+      },
+      {
+        path: "/home/model/:keyword?",
+        name: "model",
+        component: "@/pages/model/index",
+        title: "models.title",
       },
       {
         path: "/home/modify_pwd",

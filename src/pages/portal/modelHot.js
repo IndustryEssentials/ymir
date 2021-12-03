@@ -17,25 +17,13 @@ function ModelHot({ title, count = 4, batchModels, getHotModel }) {
   const [models, setModels] = useState([])
 
   useEffect(async () => {
-    // setModels([
-    //   {
-    //     id: 1003,
-    //     name: 'model name1',
-    //     keywords: ['cat', 'dog', 'person', 'bottle', 'hat', 'cow', 'red hat', 'car', 'screen', 'fruit', 'pig', 'door'],
-    //     map: 0.67,
-    //     count: 15,
-    //   },
-    //   {
-    //     id: 1004,
-    //     name: 'model name2',
-    //     keywords: ['cat', 'dog', 'person', 'bottle', 'hat'],
-    //     map: 0.52,
-    //     count: 12,
-    //   },
-    // ])
     const hots = await getHotModel(count)
     if (hots && hots.model) {
-      const list = hots.model
+      const arr = Object.keys(hots.model)
+      if (!arr.length) {
+        return
+      }
+      const list = hots.model[arr[0]]
       const ids = list.map(hot => hot[0])
       if (!ids.length) {
         return

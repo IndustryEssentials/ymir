@@ -25,7 +25,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Keyword({ getKeywords, updateKeywords }) {
+function Keyword({ getKeywords }) {
   const history = useHistory()
   const [keywords, setKeywords] = useState([])
   const [total, setTotal] = useState(0)
@@ -41,7 +41,6 @@ function Keyword({ getKeywords, updateKeywords }) {
 
   useEffect(() => {
     const state = history.location.state
-    console.log('state: ', state)
     if (state?.type === 'add') {
       setShowAdd(true)
       history.replace({ state: {}})
@@ -122,21 +121,6 @@ function Keyword({ getKeywords, updateKeywords }) {
     setSelected([record])
     setShowAdd(true)
   }
-
-
-  // const saveName = async (record, name) => {
-  //   const result = await updateKeywords(record.id, name)
-  //   if (result) {
-  //     setKeywords((models) =>
-  //       models.map((model) => {
-  //         if (model.id === record.id) {
-  //           model.name = name
-  //         }
-  //         return model
-  //       })
-  //     )
-  //   }
-  // }
 
   const add = () => {
     setShowAdd(true)
@@ -221,7 +205,7 @@ function Keyword({ getKeywords, updateKeywords }) {
               onChange={({ current, pageSize }) =>
                 pageChange({ current, pageSize })
               }
-              rowKey={(record) => record.id}
+              rowKey={(record) => record.name}
               pagination={{
                 showQuickJumper: true,
                 showSizeChanger: true,
@@ -254,12 +238,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'keyword/getKeywords',
         payload,
-      })
-    },
-    updateKeywords: (id, name) => {
-      return dispatch({
-        type: 'keyword/updateKeywords',
-        payload: { id, name },
       })
     },
   }

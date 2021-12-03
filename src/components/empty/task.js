@@ -12,7 +12,7 @@ export default ({ style = {}}) => {
     <Space className={styles.empty} style={style} direction="vertical">
       <NavTaskIcon className={styles.primaryIcon} style={{ fontSize: 80 }} />
       <h3>{t("task.empty.label")}</h3>
-      <Button type="primary" onClick={() => history.push('/home/task/train')}>
+      <Button type="primary" onClick={() => history.push('/home/task')}>
         <AddIcon /> {t('task.add.label')}
       </Button>
     </Space>

@@ -9,7 +9,8 @@ import t from '@/utils/t'
 import 'antd/es/slider/style'
 
 const typeFormat = {
-  img: ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'],
+  img: ['image/jpeg', 'image/png', 'image/bmp'],
+  avatar: ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'],
   zip: ['application/zip'],
   doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/pdf'],
 }
@@ -74,7 +75,7 @@ function Uploader({ className, value=[], format="zip", label, max = 200,
 
   return (
     <>
-      { format === 'img' && crop ? <ImgCrop rotate beforeCrop={beforeCrop}>{uploader}</ImgCrop> : uploader}
+      { format === 'avatar' && crop ? <ImgCrop rotate beforeCrop={beforeCrop}>{uploader}</ImgCrop> : uploader}
       {info ? <p style={{ margin: '10px 0' }}>{info}</p> : null }
     </>
   )

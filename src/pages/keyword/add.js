@@ -9,11 +9,12 @@ import { AddDelTwoIcon, AddIcon, AddTwoIcon } from '../../components/common/icon
 const { Option } = Select
 const { useForm } = Form
 
-const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKeywords }) => {
+const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKeywords, updateKeyword }) => {
 
   const [form] = useForm()
   const [show, setShow] = useState(visible)
   const [keywords, setKeywords] = useState([])
+  const [repeats, setRepeats] = useState([])
 
   useEffect(() => {
     setKeywords(keys)
@@ -30,19 +31,25 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
   }
 
   const onOk = async () => {
+    setRepeats([])
 
     form.validateFields().then(async () => {
       const { keywords } = form.getFieldsValue()
       const kws = keywords.filter(k => k && k.name)
         .map(k => ({ name: k?.name.trim(), aliases: k.aliases ? k.aliases.map(a => a.trim()) : []}))
-      const result = await updateKeywords(kws)
+      const result = keys.length ? await updateKeyword(kws[0]) : await updateKeywords({ keywords: kws })
       if (result) {
-        message.success(t('keyword.add.success'))
-        form.resetFields()
-        close()
-        ok()
+        if (result.failed && !result.failed.length) {
+          message.success(t('keyword.add.success'))
+          form.resetFields()
+          close()
+          ok()
+        } else {
+          message.error(t('keyword.name.repeat'))
+          setRepeats(result.failed)
+        }
       } else {
-        // todo
+        message.error(t('keyword.add.failure'))
       }
     }).catch(err => console.error('validate error: ', err))
     
@@ -85,13 +92,14 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
       onOk={onOk}
       width={680}
     >
-      <Form name='keywordAddForm' form={form} layout='vertical'>
+      <Form name='keywordAddForm' form={form} layout='vertical' preserve={false}>
+        { repeats.length ? <div style={{ margin: '10px 0', color: '#f00' }}>{t('keyword.name.repeat')}: {repeats.join(',')}</div> : null }
         <Form.List name='keywords'>
           {(fields, { add, remove }) => (
             <div className={s.content}>
               {fields.map(field => (
                 <Row key={field.key} gutter={20} wrap={false}>
-                  <Col flex={'300px'}>
+                  <Col span={8}>
                     <Form.Item
                       {...field}
                       label={field.name === 0 ? t('keyword.add.name.label') : null}
@@ -100,7 +108,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                       name={[field.name, 'name']}
                       fieldKey={[field.fieldKey, 'name']}
                       rules={[
-                        { whitespace: true, required: true },
+                        { whitespace: true, required: true, message: t('keyword.add.name.required') },
                         { max: 32 },
                         { validator: validChar },
                         { validator: repeatKeywords }
@@ -109,7 +117,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                       <Input disabled={!!keys.length} allowClear placeholder={t('keyword.add.name.placeholder')} />
                     </Form.Item>
                   </Col>
-                  <Col flex={1}>
+                  <Col span={13}>
                     <Form.Item
                       {...field}
                       // label="Value"
@@ -123,13 +131,14 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                     >
                       <Select
                         mode='tags'
+                        style={{ width: '100%' }}
                         tokenSeparators={[',']}
                         placeholder={t('keyword.add.alias.placeholder')}
                       >
                       </Select>
                     </Form.Item>
                   </Col>
-                  <Col flex={'100px'} style={{ alignSelf: field.name ? '' : 'center' }}>
+                  <Col span={3} style={{ alignSelf: field.name ? '' : 'center' }}>
                     <Space>
                       {fields.length <= 1 ? null : <AddDelTwoIcon className={s.removeBtn} onClick={() => remove(field.name)} title={'remove the row'} />}
                       {!keys.length && (field.name === fields.length - 1) ? <AddTwoIcon className={s.addBtn} onClick={() => add()} title={'add a new row'} /> : null}
@@ -151,6 +160,12 @@ const actions = (dispatch) => {
     updateKeywords: (payload) => {
       return dispatch({
         type: 'keyword/updateKeywords',
+        payload,
+      })
+    },
+    updateKeyword: (payload) => {
+      return dispatch({
+        type: 'keyword/updateKeyword',
         payload,
       })
     },

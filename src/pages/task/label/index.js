@@ -47,16 +47,17 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
       const { parameters, name, } = state.record
       const { include_classes, include_datasets, labellers, extra_url } = parameters
       //do somethin
-      form.setFieldsValue({
+      const fvalue = {
         name: `${name}_${randomNumber()}`,
         datasets: include_datasets[0],
         label_members: labellers[0],
         checker: labellers.length > 1 ? labellers.slice(1) : [],
         keywords: include_classes,
-        desc: [
-          {uid: -1, status: 'done', name: extra_url.replace(/.*\/([^\/]+)$/, '$1'), url: extra_url }
-        ]
-      })
+      }
+      if (extra_url) {
+        fvalue.desc = [{ uid: -1, status: 'done', name: extra_url.replace(/.*\/([^\/]+)$/, '$1'), url: extra_url }]
+      }
+      form.setFieldsValue(fvalue)
       setDoc(extra_url)
       setAsChecker(labellers.length > 1)
 

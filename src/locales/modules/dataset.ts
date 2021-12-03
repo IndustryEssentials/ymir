@@ -16,6 +16,7 @@ const dataset = {
   "dataset.column.source": { cn: "来源", en: "Source", },
   "dataset.column.asset_count": { cn: "图片数", en: "Assets' Count", },
   "dataset.column.keyword": { cn: "标签", en: "Keywords", },
+  "dataset.column.ignored_keyword": { cn: "忽略标签", en: "Ignored Keywords", },
   "dataset.column.state": { cn: "状态", en: "Status", },
   "dataset.column.create_time": { cn: "创建时间", en: "Create Time", },
   "dataset.column.action": { cn: "操作", en: "Actions", },
@@ -101,20 +102,21 @@ const dataset = {
   "dataset.add.form.upload.tip": {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
-      3. 压缩包内图片格式要求为：图片格式为jpg、jpeg、png、bmp，标注文件格式为pascal。{br}
+      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，标注文件格式为pascal。{br}
       4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}`, 
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
-      3. Images format allowed *.jpg, *.png, *.gif, *.bmp, annotations format supported pascal(*.xml)
+      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml)
       4. Sample: {sample}`
   },
   'dataset.detail.info': { cn: '详细信息', en: '', },
   'dataset.detail.action.filter': { cn: '筛选数据集', en: 'Filter Dataset', },
   'dataset.detail.action.train': { cn: '训练模型', en: 'Train Model', },
   'dataset.detail.action.mining': { cn: '挖掘数据', en: 'Mining', },
-  'dataset.detail.action.label': { cn: '重新标注', en: 'Relabel', },
+  'dataset.detail.action.label': { cn: '标注数据', en: 'Label', },
   'dataset.detail.info.keyword.label': { cn: '标签共{total}个', en: 'Total {total} Keywords:', },
   'dataset.import.public.include': { cn: '包含标签', en: 'Include', },
+  'dataset.add.newkeyword.empty': { cn: '无新标签', en: 'None of new keywords', },
 }
 
 export default dataset

@@ -373,7 +373,7 @@ function Keyword({ getModels, delModel, updateModel }) {
       </div>
       <EditBox record={current} action={saveName}>
         {current.source ? <Form.Item label={t('model.column.source')}>
-          <TypeTag type={current.source} id={current.id} name={current.task_name} />
+          <TypeTag types={types} type={current.source} id={current.id} name={current.task_name} />
         </Form.Item> : null}
         {current.keywords ? <Form.Item label={t('model.column.target')}>
           {t('dataset.column.keyword.label', { keywords: current.keywords.join(', '), total: current.keywords.length })}
