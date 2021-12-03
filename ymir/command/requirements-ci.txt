@@ -1,0 +1,11 @@
+flake8
+mypy
+pre-commit
+pytest
+pytest-cover
+pytest-xdist
+types-Pillow
+types-PyYAML
+types-protobuf
+types-requests
+types-setuptools

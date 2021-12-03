@@ -1,0 +1,36 @@
+{
+    "import": [
+        {
+            "name": "hash",
+            "delta": 0.4
+        },
+        {
+            "name": "metadatas",
+            "delta": 0.3
+        },
+        {
+            "name": "others",
+            "delta": 0.3
+        }
+    ],
+    "copy": [
+        {
+            "name": "read",
+            "delta": 0.4
+        },
+        {
+            "name": "change",
+            "delta": 0.2
+        },
+        {
+            "name": "new",
+            "delta": 0.4
+        }
+    ],
+    "export": [
+        {
+            "name": "others",
+            "delta": 1.0
+        }
+    ]
+}
