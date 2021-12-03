@@ -171,7 +171,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
           </Form.Item>
         </Form>
       </Modal>
-      <Modal title={t('user.info.list.phone')} visible={phoneModify} onCancel={onPhoneCancel} onOk={onPhoneOk}>
+      <Modal title={t('user.info.list.phone')} visible={phoneModify} onCancel={onPhoneCancel} onOk={onPhoneOk} destroyOnClose>
         <Form
           form={phoneForm}
           name='phoneForm'
@@ -188,7 +188,7 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
           </Form.Item>
         </Form>
       </Modal>
-      <Modal title={t('user.info.list.password')} visible={passwordModify} onCancel={onPasswordCancel} onOk={onPasswordOk}>
+      <Modal title={t('user.info.list.password')} visible={passwordModify} onCancel={onPasswordCancel} onOk={onPasswordOk} destroyOnClose>
 
         <Form
           form={passwordForm}

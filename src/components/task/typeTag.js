@@ -7,7 +7,6 @@ const TypeTag = ({ types = getDatasetTypes(),  type, id, name }) => {
 
   
   const target = types.find((t) => t.value === type)
-  console.log('params: ', type, id, name, target)
   if (!target) {
     return type
   }

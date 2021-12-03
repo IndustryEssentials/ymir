@@ -71,7 +71,7 @@ function Sets({ title, count = 3, batchDatasets, getHotDataset, getDatasets }) {
           <Statistic className={styles.boxItemTitleCount} title={t("portal.dataset.keyword.count")} value={humanize(set.keywords.length)} />
         </Col>
         <Col span={8} title={set.count}>
-          <Statistic className={styles.boxItemTitleCount} title={t("portal.cited")} value={humanize(set.count)} />
+          <Statistic className={styles.boxItemTitleCount} title={t("portal.cited")} value={set.count !== undefined ? humanize(set.count) : ' '} />
         </Col>
       </Row>
     </>

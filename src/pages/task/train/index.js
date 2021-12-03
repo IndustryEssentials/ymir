@@ -274,7 +274,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                 { required: true, message: t('task.train.form.keywords.required') }
               ]}
             >
-              <Select mode="multiple" showArrow>
+              <Select mode="multiple" showArrow placeholder={t('task.train.keywords.placeholder')}>
                 {keywords.map(keyword => (
                   <Option key={keyword} value={keyword}>
                     {keyword}
