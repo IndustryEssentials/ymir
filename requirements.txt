@@ -36,4 +36,4 @@ gunicorn==20.1.0
 python_dateutil==2.7.0
 setuptools>=21.0.0
 ymir-cmd==0.0.2
-ymir-proto==0.1.5
+grpclib==0.4.2

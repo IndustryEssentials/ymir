@@ -1,10 +1,10 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
+from proto import backend_pb2
 
 
 class BranchDeleteInvoker(BaseMirControllerInvoker):
-    def pre_invoke(self) -> mirsvrpb.GeneralResp:
+    def pre_invoke(self) -> backend_pb2.GeneralResp:
         return checker.check_request(request=self._request,
                                      prerequisites=[
                                          checker.Prerequisites.CHECK_USER_ID,
@@ -14,8 +14,8 @@ class BranchDeleteInvoker(BaseMirControllerInvoker):
                                      ],
                                      mir_root=self._repo_root)
 
-    def invoke(self) -> mirsvrpb.GeneralResp:
-        if self._request.req_type != mirsvrpb.CMD_BRANCH_DEL:
+    def invoke(self) -> backend_pb2.GeneralResp:
+        if self._request.req_type != backend_pb2.CMD_BRANCH_DEL:
             raise RuntimeError("Mismatched req_type")
 
         force_flag = "-D" if self._request.force else "-d"

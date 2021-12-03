@@ -27,8 +27,7 @@ async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
 
 
 async def http422_error_handler(
-    _: Request,
-    exc: Union[RequestValidationError, ValidationError],
+    _: Request, exc: Union[RequestValidationError, ValidationError],
 ) -> JSONResponse:
     return JSONResponse(
         {
@@ -111,6 +110,11 @@ class FailedtoCreateModel(ControllerError):
 class RequiredFieldMissing(APIError):
     code = error_codes.REQUIRED_FIELD_MISSING
     message = "Required Field Missing"
+
+
+class InvalidConfiguration(APIError):
+    code = error_codes.INVALID_CONFIGURATION
+    message = "API Configuration Error"
 
 
 class FieldValidationFailed(APIError):
@@ -217,3 +221,8 @@ class DuplicateModelError(DuplicateError):
 class DuplicateTaskError(DuplicateError):
     code = error_codes.TASK_DUPLICATED_NAME
     message = "Duplicated Task Name"
+
+
+class DuplicateKeywordError(DuplicateError):
+    code = error_codes.KEYWORD_DUPLICATED
+    message = "Duplicated Keyword"

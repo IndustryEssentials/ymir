@@ -11,7 +11,15 @@ from tests.utils.utils import random_lower_string
 
 @pytest.fixture(scope="function")
 def mock_controller(mocker):
-    return mocker.Mock()
+    c = mocker.Mock()
+    c.get_labels_of_user.return_value = ["0,cat", "1,dog,puppy"]
+    return c
+
+
+@pytest.fixture(scope="function")
+def mock_controller_request(mocker):
+    r = mocker.Mock()
+    mocker.patch.object(m, "ControllerRequest", return_value=r)
 
 
 @pytest.fixture(scope="function")
@@ -36,7 +44,7 @@ def mock_stats(mocker):
 
 class TestTaskResult:
     def test_get_task_result(
-        self, mocker, mock_controller, mock_db, mock_graph_db, mock_viz
+        self, mocker, mock_controller, mock_db, mock_graph_db, mock_viz, mock_controller_request
     ):
         task_result_proxy = m.TaskResultProxy(
             controller=mock_controller,
@@ -51,11 +59,10 @@ class TestTaskResult:
             return_value={"state": m.TaskState.done, "task_id": task_hash}
         )
         task = mocker.Mock(hash=task_hash)
-        mocker.patch.object(m, "ControllerRequest", return_value=None)
         result = task_result_proxy.get(task)
         mock_controller.send.assert_called()
 
-    def test_save_task_result(self, mocker, mock_controller, mock_db, mock_graph_db):
+    def test_save_task_result(self, mocker, mock_controller, mock_db, mock_graph_db, mock_controller_request):
         task_result_proxy = m.TaskResultProxy(
             controller=mock_controller,
             db=mock_db,
@@ -78,16 +85,16 @@ class TestTaskResult:
         user_id = random.randint(1000, 2000)
         task_hash = random_lower_string(32)
         task = mocker.Mock(hash=task_hash)
-        mocker.patch.object(m, "ControllerRequest", return_value=None)
         result = task_result_proxy.get(task)
         task_result_proxy.save(task, result)
 
     def test_get_dataset_info(self, mocker, mock_controller, mock_db, mock_graph_db):
         viz = mocker.Mock()
         keywords = {"a": 1, "b": 2, "c": 3, "d": 4}
+        ignored_keywords = {"x": 1, "y": 2, "z": 3}
         items = list(range(random.randint(10, 100)))
         viz.get_assets.return_value = mocker.Mock(
-            keywords=keywords, items=items, total=len(items)
+            keywords=keywords, items=items, total=len(items), ignored_keywords=ignored_keywords,
         )
         proxy = m.TaskResultProxy(
             controller=mock_controller,
@@ -112,20 +119,22 @@ class TestNormalizeParameters:
     def test_normalize_task_parameters_succeed(self, mocker):
         mocker.patch.object(m, "crud")
         params = {
-            "some_classes": [],
-            "some_datasets": [],
+            "include_classes": "cat,dog,boy".split(","),
+            "include_datasets": [1, 2, 3],
             "model_id": 233,
             "name": random_lower_string(5),
             "else": None,
         }
-        res = m.normalize_parameters(mocker.Mock(), random_lower_string(5), params)
-        assert "some_classes" in res
-        assert "some_datasets" in res
+        keywords_mapping = {"cat": 1, "dog": 2, "boy": 3}
+        params = m.schemas.TaskParameter(**params)
+        res = m.normalize_parameters(mocker.Mock(), random_lower_string(5), params, keywords_mapping)
+        assert res["include_classes"] == [1, 2, 3]
+        assert "include_datasets" in res
         assert "model_hash" in res
 
     def test_normalize_task_parameters_skip(self, mocker):
         assert (
-            m.normalize_parameters(mocker.Mock(), random_lower_string(5), None) is None
+            m.normalize_parameters(mocker.Mock(), random_lower_string(5), None, {}) is None
         )
 
 
@@ -135,20 +144,20 @@ class TestUpdateStats:
     def test_update_stats_only_update_task_stats(self, mocker):
         stats = mocker.Mock()
         task = mocker.Mock(parameters=None)
-        m.update_stats(self.user_id, stats, task)
+        m.update_stats_for_ref_count(self.user_id, stats, task)
         stats.update_task_stats.assert_called()
         stats.update_model_rank.assert_not_called()
 
     def test_update_stats_for_model(self, mocker):
         stats = mocker.Mock()
         task = mocker.Mock(parameters={"model_id": 1})
-        m.update_stats(self.user_id, stats, task)
+        m.update_stats_for_ref_count(self.user_id, stats, task)
         stats.update_model_rank.assert_called_with(self.user_id, 1)
 
     def test_update_stats_for_dataset(self, mocker):
         stats = mocker.Mock()
         task = mocker.Mock(parameters={"datasets": [233]})
-        m.update_stats(self.user_id, stats, task)
+        m.update_stats_for_ref_count(self.user_id, stats, task)
         stats.update_dataset_rank.assert_called_with(self.user_id, 233)
 
 
@@ -158,16 +167,13 @@ def create_task(client, headers):
         "type": m.TaskType.mining,
     }
     r = client.post(f"{settings.API_V1_STR}/tasks/", headers=headers, json=j)
-
     return r
 
 
 class TestListTasks:
     def test_list_tasks_succeed(
-        self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker
+        self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker, mock_controller
     ):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
         for _ in range(3):
             r = create_task(client, normal_user_token_headers)
         r = client.get(
@@ -179,9 +185,7 @@ class TestListTasks:
 
 
 class TestDeleteTask:
-    def test_delete_task(self, client: TestClient, normal_user_token_headers, mocker):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
+    def test_delete_task(self, client: TestClient, normal_user_token_headers, mocker, mock_controller):
         r = create_task(client, normal_user_token_headers)
         assert not r.json()["result"]["is_deleted"]
         task_id = r.json()["result"]["id"]
@@ -193,10 +197,8 @@ class TestDeleteTask:
 
 class TestChangeTaskName:
     def test_change_task_name(
-        self, client: TestClient, normal_user_token_headers, mocker
+        self, client: TestClient, normal_user_token_headers, mocker, mock_controller
     ):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
         r = create_task(client, normal_user_token_headers)
         old_name = r.json()["result"]["name"]
         task_id = r.json()["result"]["id"]
@@ -211,10 +213,8 @@ class TestChangeTaskName:
 
 class TestGetTask:
     def test_get_single_task(
-        self, client: TestClient, normal_user_token_headers, mocker
+        self, client: TestClient, normal_user_token_headers, mocker, mock_controller
     ):
-        req = mocker.Mock(task_id="task_id_233")
-        mocker.patch.object(m, "ControllerRequest", return_value=req)
         r = create_task(client, normal_user_token_headers)
         name = r.json()["result"]["name"]
         task_id = r.json()["result"]["id"]
@@ -227,7 +227,7 @@ class TestGetTask:
     def test_get_single_task_not_found(
         self, client: TestClient, normal_user_token_headers, mocker
     ):
-        task_id = 2333
+        task_id = random_lower_string(8)
         r = client.get(
             f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers
         )

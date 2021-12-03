@@ -11,9 +11,13 @@ from tests.utils.utils import random_lower_string, random_url
 
 
 @pytest.fixture(scope="function", autouse=True)
-def patch_prepare_dataset(mocker):
+def patch_prepare_dataset(mocker, tmp_path):
+    annotations_dir = tmp_path / "anno"
+    annotations_dir.mkdir()
+    images_dir = tmp_path / "img"
+    images_dir.mkdir()
     mocker.patch.object(
-        m, "prepare_dataset", return_value={"annotations": "", "images": ""}
+        m, "prepare_dataset", return_value={"annotations": str(annotations_dir), "images": str(images_dir)}
     )
 
 
@@ -46,6 +50,7 @@ def create_dataset(client, headers):
     j = {
         "name": random_lower_string(),
         "input_url": random_url(),
+        "strategy": 1,
     }
     r = client.post(f"{settings.API_V1_STR}/datasets/", headers=headers, json=j)
     return r
@@ -97,6 +102,7 @@ class TestCreateDataset:
         j = {
             "name": random_lower_string(),
             "input_url": random_url(),
+            "strategy": 1,
         }
         r = client.post(
             f"{settings.API_V1_STR}/datasets/",

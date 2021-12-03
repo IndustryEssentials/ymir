@@ -21,10 +21,14 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         Task.config.label("task_config"),
     ]
 
-    def get_with_task(self, db: Session, *, id: int) -> Optional[Model]:
+    def get_with_task(self, db: Session, *, user_id: int, id: int) -> Optional[Model]:
         query = db.query(*self.interested_fields)
         query = query.join(Task, self.model.task_id == Task.id)
-        query = query.filter(self.model.id == id, not_(self.model.is_deleted))
+        query = query.filter(
+            self.model.id == id,
+            self.model.user_id == user_id,
+            not_(self.model.is_deleted),
+        )
         return query.first()
 
     def get_multi_models(

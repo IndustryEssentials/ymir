@@ -11,17 +11,15 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
 
-RUN pip install --no-cache-dir "uvicorn[standard]" gunicorn
+RUN pip install --no-cache-dir "uvicorn[standard]" --index-url=https://mirrors.aliyun.com/pypi/simple gunicorn
 
 RUN mkdir -p /data/sharing/
 RUN mkdir -p /app_logs/
 
 COPY requirements.txt ./
-RUN pip3 install -r requirements.txt
+RUN pip3 install --index-url=https://mirrors.aliyun.com/pypi/simple -r requirements.txt
 
-RUN pip3 uninstall -y ymir-cmd
-RUN git clone -b dev https://under-chaos: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@github.com/IndustryEssentials/ymir-cmd.git
-RUN pip3 install -e ./ymir-cmd/
+RUN pip3 install --index-url=https://mirrors.aliyun.com/pypi/simple --force-reinstall -U git+https://github.com/IndustryEssentials/ymir-cmd.git@dev
 
 COPY ./src /app
 WORKDIR /app
@@ -31,5 +29,5 @@ COPY ./deploy/git.config /root/.gitconfig
 
 COPY ./deploy/supervisor /app/supervisor
 
-ENV PYTHONPATH=/app/pymir-app:/app/pymir-controller:/app/pymir-viz
+ENV PYTHONPATH=/app/pymir-app:/app/pymir-controller:/app/pymir-viz:/app/common
 

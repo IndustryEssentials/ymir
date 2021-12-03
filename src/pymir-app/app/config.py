@@ -32,8 +32,11 @@ class Settings(BaseSettings):
 
     USE_200_EVERYWHERE: bool = True
 
+    IS_TESTING: bool = False
+
     # paths to share data with Controller, etc
     SHARED_DATA_DIR: str = "./"
+    MODELS_PATH: Optional[str] = None
 
     # redis
     REDIS_URI: str = "redis://redis:6379/0"
@@ -60,7 +63,7 @@ class Settings(BaseSettings):
     # RUNTIME
     RUNTIMES: Optional[
         str
-    ] = '[{"name": "default_training_image", "hash": "c142fa8de527", "type": 1, "config": "{\\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"learning_rate\\": 0.0013, \\"max_batches\\": 20000, \\"warmup_iterations\\": 1000, \\"pretrained_model_params\\": \\"/fake_model\\", \\"batch\\": 64, \\"subdivisions\\": 32, \\"shm_size\\": \\"16G\\"}"}, {"name": "default_mining_image", "hash": "36b26c2071cf", "type": 2, "config": "{\\"data_workers\\": 28, \\"model_name\\": \\"yolo\\", \\"model_type\\": \\"detection\\", \\"strategy\\": \\"aldd_yolo\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"batch_size\\": 16}"}, {"name": "default_inference_image", "hash": "36b26c2071cf", "type": 100, "config": "{\\"image_height\\": 608, \\"image_width\\": 608, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"write_result\\": true, \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}]'
+    ] = '[{"name": "default_training_image", "hash": "c142fa8de527", "type": 1, "config": "{\\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"learning_rate\\": 0.0013, \\"max_batches\\": 20000, \\"warmup_iterations\\": 1000, \\"pretrained_model_params\\": \\"/fake_model\\", \\"batch\\": 64, \\"subdivisions\\": 32, \\"shm_size\\": \\"16G\\"}"}, {"name": "default_mining_image", "hash": "36b26c2071cf", "type": 2, "config": "{\\"image_height\\": 608, \\"image_width\\": 608, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"write_result\\": true, \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50, \\"data_workers\\": 28, \\"model_name\\": \\"yolo\\", \\"model_type\\": \\"detection\\", \\"strategy\\": \\"aldd_yolo\\", \\"batch_size\\": 16}"}, {"name": "default_inference_image", "hash": "36b26c2071cf", "type": 100, "config": "{\\"image_height\\": 608, \\"image_width\\": 608, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"write_result\\": true, \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50, \\"data_workers\\": 28, \\"model_name\\": \\"yolo\\", \\"model_type\\": \\"detection\\", \\"strategy\\": \\"aldd_yolo\\", \\"batch_size\\": 16}"}]'
 
 
 settings = Settings(_env_file=".env")  # type: ignore

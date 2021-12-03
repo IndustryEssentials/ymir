@@ -1,9 +1,10 @@
 from collections import defaultdict
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import arrow
-import redis
+from redis import StrictRedis
 from arrow.arrow import Arrow
+from app.config import settings
 
 PRECISION = ["day", "week", "month"]
 
@@ -12,8 +13,16 @@ class RedisStats:
     def __init__(self, url: str, stats_group: List, tz: str = "Asia/Shanghai"):
         self.prefix = "stats"
         self.stats_group = stats_group
-        self.conn = redis.StrictRedis.from_url(url)
+        self.conn = self._get_redis_con(url)
         self.tz = tz
+
+    def _get_redis_con(self, redis_uri: str) -> StrictRedis:
+        if settings.IS_TESTING:
+            import redislite
+            redis_con = redislite.StrictRedis('/tmp/redis.db')
+        else:
+            redis_con = StrictRedis.from_url(redis_uri)
+        return redis_con
 
     def update_task_stats(self, user_id: int, task_type: int) -> None:
         """
@@ -48,6 +57,30 @@ class RedisStats:
         key = f"{self.prefix}:{user_id}:model"
         self._update_rank(self.conn, key, str(model_id))
 
+    def update_keyword_wise_model_rank(self, user_id: int, model_id: int, model_mAP: float, keywords: List[str]) -> None:
+        for keyword in keywords:
+            key = f"{self.prefix}:{user_id}:model:{keyword}"
+            self.conn.zadd(key, {str(model_id): model_mAP})
+
+    def delete_keyword_wise_model_rank(self, user_id: int, model_id: int, keywords: List[str]) -> None:
+        for keyword in keywords:
+            key = f"{self.prefix}:{user_id}:model:{keyword}"
+            self.conn.zrem(key, str(model_id))
+
+    def get_keyword_wise_best_models(self, user_id: int, limit: int = 5) -> Dict[str, List[Tuple[int, float]]]:
+        """
+        Get models of each keyword, sorted by mAP
+        """
+        prefix = f"{self.prefix}:{user_id}:model:"
+        keyword_wise_models = {}
+        for key in self.get_keys(self.conn, prefix):
+            keyword = key.replace(prefix, "")
+            keyword_wise_models[keyword] = [
+                (int(model_id), mAP)
+                for model_id, mAP in self._get_rank(self.conn, key, stop=limit)
+            ]
+        return keyword_wise_models
+
     def get_top_models(self, user_id: int, limit: int = 5) -> List[Tuple[int, int]]:
         key = f"{self.prefix}:{user_id}:model"
         return [
@@ -76,7 +109,7 @@ class RedisStats:
 
     @staticmethod
     def _update_rank(
-        conn: redis.StrictRedis, key: str, name: str, count: int = 1
+        conn: StrictRedis, key: str, name: str, count: int = 1
     ) -> None:
         # name, amount, value
         # "Increment the score of ``value`` in sorted set ``name`` by ``amount``"
@@ -84,17 +117,17 @@ class RedisStats:
 
     @staticmethod
     def _get_rank(
-        conn: redis.StrictRedis, key: str, start: int = 0, stop: int = -1
+        conn: StrictRedis, key: str, start: int = 0, stop: int = -1
     ) -> List:
         return conn.zrange(key, start, stop, withscores=True, desc=True)
 
     @staticmethod
-    def _delete_rank(conn: redis.StrictRedis, key: str, name: str) -> None:
+    def _delete_rank(conn: StrictRedis, key: str, name: str) -> None:
         conn.zrem(key, name)
 
     @staticmethod
     def update_counter(
-        conn: redis.StrictRedis,
+        conn: StrictRedis,
         prefix: str,
         name: str,
         tz: str,
@@ -112,7 +145,7 @@ class RedisStats:
 
     @staticmethod
     def get_counter(
-        conn: redis.StrictRedis, prefix: str, name: str, precision: str
+        conn: StrictRedis, prefix: str, name: str, precision: str
     ) -> List:
         assert precision in PRECISION
 
@@ -123,6 +156,15 @@ class RedisStats:
             counter.append((int(k), int(v)))
         counter.sort()
         return counter
+
+    @staticmethod
+    def get_keys(
+        conn: StrictRedis, prefix: str
+    ) -> List:
+        """
+        Caution, use this func when you're sure there are limited keys
+        """
+        return list(k.decode() for k in conn.scan_iter(f"{prefix}*"))
 
     def close(self) -> None:
         print("bye")

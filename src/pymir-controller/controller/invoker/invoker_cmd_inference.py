@@ -6,11 +6,11 @@ from typing import Dict
 import yaml
 from PIL import Image
 from google.protobuf import json_format
-from ymir.protos import mir_controller_service_pb2 as mirsvrpb
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import code, utils, checker
 from controller.utils.app_logger import logger
+from proto import backend_pb2
 
 
 class InferenceCMDInvoker(BaseMirControllerInvoker):
@@ -60,23 +60,23 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         return infer_result
 
     @classmethod
-    def generate_inference_response(cls, inference_result: Dict) -> mirsvrpb.GeneralResp:
+    def generate_inference_response(cls, inference_result: Dict) -> backend_pb2.GeneralResp:
         resp = utils.make_general_response(code.ResCode.CTR_OK, "")
-        resutl = dict(imageAnnotations=inference_result["detection"])
-        resp_inference = mirsvrpb.RespCMDInference()
-        json_format.ParseDict(resutl, resp_inference, ignore_unknown_fields=False)
+        result = dict(imageAnnotations=inference_result["detection"])
+        resp_inference = backend_pb2.RespCMDInference()
+        json_format.ParseDict(result, resp_inference, ignore_unknown_fields=False)
         resp.detection.CopyFrom(resp_inference)
 
         return resp
 
-    def pre_invoke(self) -> mirsvrpb.GeneralResp:
+    def pre_invoke(self) -> backend_pb2.GeneralResp:
         return checker.check_request(
             request=self._request,
             prerequisites=[checker.Prerequisites.CHECK_USER_ID, checker.Prerequisites.CHECK_REPO_ID],
             mir_root=self._repo_root,
         )
 
-    def invoke(self) -> mirsvrpb.GeneralResp:
+    def invoke(self) -> backend_pb2.GeneralResp:
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
         config_file = self.gen_inference_config(self._request.model_config, self._work_dir)
 
@@ -94,7 +94,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def inference_cmd(cls, work_dir: str, model_location: str, config_file: str, model_hash: str, index_file: str,
-                      executor: str) -> mirsvrpb.GeneralResp:
+                      executor: str) -> backend_pb2.GeneralResp:
         infer_cmd = (f"{utils.mir_executable()} infer -w {work_dir} --model-location {model_location} --index-file "
                      f"{index_file} --model-hash {model_hash} --config-file {config_file} --executor {executor}")
         return utils.run_command(infer_cmd)

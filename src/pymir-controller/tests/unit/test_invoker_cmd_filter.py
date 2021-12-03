@@ -6,11 +6,11 @@ from unittest import mock
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-import ymir.protos.mir_controller_service_pb2 as mirsvrpb
+import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-
-import tests.utils as test_utils
+from controller.utils.labels import LabelFileHandler
+from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
@@ -68,11 +68,13 @@ class TestInvokerFilterBranch(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
+        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["car", "person"])
+        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["car", "person"])
         in_class_ids = [1, 2]
         ex_class_ids = [3]
-        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[mirsvrpb.CMD_FILTER],
+        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_FILTER],
                                          sandbox_root=self._sandbox_root,
-                                         req_type=mirsvrpb.CMD_FILTER,
+                                         req_type=backend_pb2.CMD_FILTER,
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
@@ -84,10 +86,10 @@ class TestInvokerFilterBranch(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd = "cd {0} && mir filter --dst-rev {1}@{1} --src-revs {2}@{2} -p '{3}' -P '{4}'".format(
-            self._mir_repo_root, self._task_id, self.in_dataset_ids[0], 'car;person', 'surfboard')
+            self._mir_repo_root, self._task_id, self.in_dataset_ids[0], 'car;person', 'car;person')
         mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True)
 
-        expected_ret = mirsvrpb.GeneralResp()
+        expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}
         ParseDict(expected_dict, expected_ret)
         self.assertEqual(response, expected_ret)
