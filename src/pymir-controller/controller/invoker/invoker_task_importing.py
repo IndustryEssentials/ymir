@@ -15,8 +15,14 @@ class TaskImportingInvoker(TaskBaseInvoker):
 
         # Prepare media index-file
         media_dir, anno_dir = importing_request.asset_dir, importing_request.annotation_dir
-        if not (os.access(media_dir, os.R_OK) and os.access(anno_dir, os.R_OK)):
-            error_str = "invalid permissions: \n{}\n{}".format(media_dir, anno_dir)
+        if anno_dir:
+            if not os.access(anno_dir, os.R_OK):
+                error_str = f"invalid permissions of annotation_dir: {anno_dir}"
+                logging.error(error_str)
+                return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, error_str)
+
+        if not os.access(media_dir, os.R_OK):
+            error_str = f"invalid permissions of media_dir:{media_dir}"
             logging.error(error_str)
             return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, error_str)
 
@@ -42,10 +48,10 @@ class TaskImportingInvoker(TaskBaseInvoker):
                       media_location: str, work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
         importing_cmd = (
             f"cd {repo_root} && mir import --dataset-name {task_id} --dst-rev {task_id}@{task_id} "
-            f"--src-revs master --index-file {index_file} --annotation-dir {annotation_dir} "
-            f"--gen-dir {media_location} -w {work_dir}"
+            f"--src-revs master --index-file {index_file} --gen-dir {media_location} -w {work_dir}"
         )
-
+        if annotation_dir:
+            importing_cmd += f" --annotation-dir {annotation_dir}"
         if name_strategy_ignore:
             importing_cmd += " --ignore-unknown-types"
 
