@@ -1,0 +1,11 @@
+.git/
+.idea/
+venv/
+doc/
+codegen_output/
+doc/
+.cache
+.pytest_cache/
+.tox/
+.env
+__pycache__
