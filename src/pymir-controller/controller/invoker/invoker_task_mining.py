@@ -5,7 +5,7 @@ import yaml
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils, invoker_call, gpu_utils
+from controller.utils import code, utils, invoker_call, gpu_utils, tasks_util
 from proto import backend_pb2
 
 
@@ -74,6 +74,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
         mining_image = assets_config["mining_image"]
         config_file = cls.gen_mining_config(mining_request.mining_config, working_dir)
         if not config_file:
+            msg = "Not enough GPU available"
+            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
             return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, "Not enough GPU available")
 
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
