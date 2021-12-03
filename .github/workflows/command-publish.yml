@@ -13,7 +13,7 @@ on:
     types: [published]
 
 jobs:
-  deploy:
+  command-publish:
 
     runs-on: ubuntu-latest
 
@@ -27,6 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
+      working-directory: ymir/command
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -34,3 +35,4 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
+      working-directory: ymir/command
