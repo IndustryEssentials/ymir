@@ -1,4 +1,4 @@
-import { login, loginout, getMeInfo, signup, resetPwd, modifyPwd, forgetPwd } from "../Auth"
+import { login, loginout, getMeInfo, signup, resetPwd, modifyPwd, forgetPwd } from "../user"
 import request from '@/utils/request'
 
 jest.mock('@/utils/request', () => {
@@ -8,7 +8,7 @@ jest.mock('@/utils/request', () => {
   return req
 })
 
-describe("service: auth", () => {
+describe("service: user", () => {
   it("login -> success", () => {
     const params = { username: "idol", password: "1q2w3e" }
     const expected = "token"
@@ -91,16 +91,16 @@ describe("service: auth", () => {
   })
   it('modifyPwd -> success', () => {
     
-    const params = { old: 'oldpassword', newPassword: 'newpassword' }
+    const password = 'newpassword'
     const expected = "ok"
-    request.post.mockImplementationOnce(() => {
+    request.mockImplementationOnce(() => {
       return Promise.resolve({
         code: 0,
         result: expected,
       })
     })
 
-    modifyPwd(params).then(({ code, result }) => {
+    modifyPwd(password).then(({ code, result }) => {
       expect(code).toBe(0)
       expect(result).toEqual(expected)
     })

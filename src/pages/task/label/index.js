@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Input, Card, Button, Form, Row, Col, Checkbox, ConfigProvider, Space, } from "antd"
+import { Select, Input, Card, Button, Form, Row, Col, Checkbox, ConfigProvider, Space, Radio, } from "antd"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
@@ -30,15 +30,40 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
 
 
   useEffect(async () => {
-    let result = await getDatasets({ limit: 100000 })
+    let result = await getDatasets({ state: 3, limit: 100000 })
     if (result) {
       setDatasets(result.items)
     }
   }, [])
 
   useEffect(() => {
-    getKeywords()
+    getKeywords({ limit: 100000 })
   }, [])
+
+  useEffect(() => {
+    const state = history.location.state
+
+    if (state?.record) {
+      const { parameters, name, } = state.record
+      const { include_classes, include_datasets, labellers, extra_url } = parameters
+      //do somethin
+      const fvalue = {
+        name: `${name}_${randomNumber()}`,
+        datasets: include_datasets[0],
+        label_members: labellers[0],
+        checker: labellers.length > 1 ? labellers.slice(1) : [],
+        keywords: include_classes,
+      }
+      if (extra_url) {
+        fvalue.desc = [{ uid: -1, status: 'done', name: extra_url.replace(/.*\/([^\/]+)$/, '$1'), url: extra_url }]
+      }
+      form.setFieldsValue(fvalue)
+      setDoc(extra_url)
+      setAsChecker(labellers.length > 1)
+
+      history.replace({ state: {} })
+    }
+  }, [history.location.state])
 
   const onFinish = async (values) => {
     const { label_members, checker } = values
@@ -54,6 +79,10 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
     if (result) {
       history.replace("/home/task")
     }
+  }
+
+  function docChange(files, docFile) {
+    setDoc(files.length ? location.protocol + '//' + location.host + docFile : '')
   }
 
   function onFinishFailed(errorInfo) {
@@ -75,6 +104,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             className={styles.form}
             {...formLayout}
             form={form}
+            name='labelForm'
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
@@ -92,7 +122,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push({ pathname: '/home/dataset', state: { type: 'add' }})} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
               <Form.Item
                 label={t('task.filter.form.datasets.label')}
                 name="datasets"
@@ -130,7 +160,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                   </Form.Item>
                 </Col>
                 <Col>
-                  <Checkbox onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
+                  <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
                 </Col>
               </Row>
             </Form.Item>
@@ -161,25 +191,32 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 { required: true, message: t('task.label.form.target.placeholder') }
               ]}
             >
-              <Select mode="multiple" showArrow>
+              <Select mode="multiple" showArrow
+                filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                 {keywords.map(keyword => (
-                  <Option key={keyword} value={keyword}>
-                    {keyword}
+                  <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                    <Row>
+                      <Col flex={1}>{keyword.name}</Col>
+                    </Row>
                   </Option>
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item label={t('task.label.form.desc.label')}>
-              <Uploader onChange={(result) => { setDoc(result) }} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
+            <Form.Item label={t('task.label.form.desc.label')} name='desc'>
+              <Uploader onChange={docChange} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
-                <Button type="primary" size="large" htmlType="submit">
-                  {t('task.filter.create')}
-                </Button>
-                <Button size="large" onClick={() => history.goBack()}>
-                  {t('task.btn.back')}
-                </Button>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('task.filter.create')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
               </Space>
               <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/lsf/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
             </Form.Item>
@@ -206,7 +243,7 @@ const dis = (dispatch) => {
     },
     getKeywords(payload) {
       return dispatch({
-        type: 'common/getKeywords',
+        type: 'keyword/getKeywords',
         payload,
       })
     },
@@ -215,7 +252,7 @@ const dis = (dispatch) => {
 
 const stat = (state) => {
   return {
-    keywords: state.common.keywords,
+    keywords: state.keyword.keywords.items,
   }
 }
 

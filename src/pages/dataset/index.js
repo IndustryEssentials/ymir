@@ -13,18 +13,19 @@ import { numFormat } from "@/utils/number"
 import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
-import Add from './add'
 import { TASKSTATES } from '@/constants/task'
 import { getDatasetTypes, getTimes } from '@/constants/query'
 import { getSetStates } from '@/constants/column'
 import Breadcrumbs from "../../components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, TipsIcon, More1Icon } from "../../components/common/icons"
+import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, TipsIcon, More1Icon, EditIcon, DeleteIcon, TreeIcon } from "../../components/common/icons"
 import StateTag from "../../components/task/stateTag"
 import EditBox from "../../components/form/editBox"
 import Rect from '@/components/guide/rect'
 import Guide from "../../components/guide/guide"
 import RenderProgress from "../../components/common/progress"
+import TypeTag from "../../components/task/typeTag"
+import Actions from "../../components/table/actions"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -90,23 +91,6 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     }
   }, [location.state])
 
-
-  const renderSource = (type, record) => {
-    const target = types.find((t) => t.value === type)
-    if (!target) {
-      return type
-    }
-
-    if ([2, 3, 4].indexOf(target.value) >= 0) {
-      // train
-      return (
-        <Link to={`/home/task/detail/${record.task_id}`}>{t(`dataset.action.${target.key}`)}: {record.task_name}</Link>
-      )
-    } else {
-      return target.label
-    }
-  }
-
   const columns = [
     {
       title: showTitle("dataset.column.name"),
@@ -121,7 +105,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     {
       title: showTitle("dataset.column.source"),
       dataIndex: "type",
-      render: renderSource,
+      render: (type, { id, task_name }) => <TypeTag type={type} id={id} name={task_name} />,
       ellipsis: true,
     },
     {
@@ -133,6 +117,20 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     {
       title: showTitle("dataset.column.keyword"),
       dataIndex: "keywords",
+      render: (keywords) => {
+        const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
+        return <Tooltip placement='left' title={label}
+          color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
+          mouseEnterDelay={0.5}
+        >{label}</Tooltip>
+      },
+      ellipsis: {
+        showTitle: false,
+      },
+    },
+    {
+      title: showTitle("dataset.column.ignored_keyword"),
+      dataIndex: "ignored_keywords",
       render: (keywords) => {
         const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
         return <Tooltip placement='left' title={label}
@@ -161,33 +159,67 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
       title: showTitle("dataset.column.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => actions(record),
+      render: (text, record) => <Actions menus={actionMenus(record)} />,
       className: styles.tab_actions,
       align: "center",
       width: 300,
     },
   ]
 
-  const moreActionsList = (record) => {
-    const { id, name } = record
-    return [
+  const actionMenus = (record) => {
+    const { id, name, state, keyword_count } = record
+    let actions = []
+    const menus = [
+      {
+        key: "train",
+        label: t("dataset.action.train"),
+        onclick: () => history.push(`/home/task/train/${id}`),
+        icon: <TrainIcon />,
+      },
+      {
+        key: "mining",
+        label: t("dataset.action.mining"),
+        onclick: () => history.push(`/home/task/mining/${id}`),
+        icon: <VectorIcon />,
+      },
+      {
+        key: "label",
+        label: t("dataset.action.label"),
+        onclick: () => history.push(`/home/task/label/${id}`),
+        icon: <TaggingIcon />,
+      },
+      {
+        key: "filter",
+        label: t("dataset.action.filter"),
+        onclick: () => history.push(`/home/task/filter/${id}`),
+        hidden: () => !keyword_count,
+        icon: <ScreenIcon className={styles.addBtnIcon} />,
+      },
       {
         key: "history",
         label: t("dataset.action.history"),
         onclick: () => history.push(`/home/history/dataset/${id}`),
+        icon: <TreeIcon />,
       },
       {
         key: "edit",
         label: t("dataset.action.edit"),
         onclick: () => edit(record),
-      },
-      {
-        key: "del",
-        label: t("dataset.action.del"),
-        onclick: () => del(id, name),
-        className: styles.action_del,
+        icon: <EditIcon />,
       },
     ]
+    const delMenu = {
+      key: "del",
+      label: t("dataset.action.del"),
+      onclick: () => del(id, name),
+      icon: <DeleteIcon />,
+    }
+    if (isImported(state)) {
+      actions = [...menus, delMenu]
+    } else if (isImportFail(state)) {
+      actions = [delMenu]
+    }
+    return actions
   }
 
   const pageChange = ({ current, pageSize }) => {
@@ -228,7 +260,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
 
   const del = (id, name) => {
     confirm({
-      icon: <TipsIcon style={{color: 'rgb(242, 99, 123)'}} />,
+      icon: <TipsIcon style={{ color: 'rgb(242, 99, 123)' }} />,
       content: t("dataset.action.del.confirm.content", { name }),
       onOk: async () => {
         const result = await delDataset(id)
@@ -239,7 +271,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
         }
       },
       okText: t('task.action.del'),
-      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)',  }}
+      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)', } }
     })
   }
 
@@ -268,7 +300,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
   }
 
   const add = () => {
-    setShowAdd(true)
+    history.push('/home/dataset/add')
   }
 
 
@@ -310,55 +342,11 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     return TASKSTATES.FINISH === state
   }
 
-  function renderDel(record) {
-    const del = moreActionsList(record).find(action => action.key === 'del')
-    return <Button type='link' className={del.className} onClick={del.onclick}>{del.label}</Button>
-  }
-
   const addBtn = (
     <Button type="primary" onClick={add}>
       <ImportIcon /> {t("dataset.import.label")}
     </Button>
   )
-
-  const actions = (record) => {
-    return isImported(record.state) ? (
-      <Space size={4}>
-
-        <Link className={styles.action} to={`/home/task/filter/${record.id}`}>
-          <ScreenIcon className={styles.addBtnIcon} />{t("dataset.action.filter")}
-        </Link> <span className={styles.l}>|</span>
-        <Link className={styles.action} to={`/home/task/train/${record.id}`}>
-          <TrainIcon className={styles.addBtnIcon} />{t("dataset.action.train")}
-        </Link> <span className={styles.l}>|</span>
-        <Link className={styles.action} to={`/home/task/mining/${record.id}`}>
-          <VectorIcon className={styles.addBtnIcon} />{t("dataset.action.mining")}
-        </Link> <span className={styles.l}>|</span>
-        <Link className={styles.action} to={`/home/task/label/${record.id}`}>
-          <TaggingIcon className={styles.addBtnIcon} />{t("dataset.action.label")}
-        </Link>
-        <Dropdown className={styles.action} overlay={moreActions(record)}>
-          <More1Icon style={{ fontSize: 16, lineHeight: '16px', verticalAlign: 'middle', color: '#3BA0FF' }} />
-        </Dropdown>
-      </Space>
-    ) : (isImportFail(record.state) ? renderDel(record) : null)
-  }
-
-  const moreActions = (record) => {
-    return (
-      <Menu>
-        {moreActionsList(record).map((action) => (
-          <Menu.Item
-            className={action.className}
-            key={action.key}
-            onClick={action.onclick}
-          >
-            {action.label}
-          </Menu.Item>
-        ))}
-      </Menu>
-    )
-  }
 
   return (
     <div className={styles.dataset}>
@@ -389,6 +377,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
       <div className={styles.list}>
         <div className={styles.search}>
           <Form
+            name='queryForm'
             form={form}
             // layout="inline"
             labelCol={{ flex: '100px' }}
@@ -481,8 +470,18 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
           </ConfigProvider>
         </div>
       </div>
-      <Add visible={showAdd} id={location.state?.id} cancel={() => setShowAdd(false)} ok={() => { history.replace('/home/dataset'); resetQuery(); getData() }} />
-      <EditBox record={current} action={saveName} dataType='dataset' />
+      <EditBox record={current} action={saveName}>
+        {current.type ? <Form.Item
+          label={t('dataset.column.source')}
+        >
+          <TypeTag type={current.type} id={current.id} name={current.task_name} />
+        </Form.Item> : null}
+        {current.state ? <Form.Item
+          label={t('dataset.column.state')}
+        >
+          <StateTag mode='text' state={current.state} />
+        </Form.Item> : null}
+      </EditBox>
     </div>
   )
 }

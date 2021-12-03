@@ -7,7 +7,7 @@
   }
   .boxItem {
     padding: 0 10px;
-    height: 236px;
+    height: 242px;
     overflow: hidden;
     :global(.ant-card-head-title) {
       padding: 10px 0;
@@ -86,6 +86,11 @@
       margin: 0 0 4px;
     }
   }
+  .myDataset, .hotModel {
+    .boxItem {
+      height: 236px;
+    }
+  }
   .hotModel {
     :global(.ant-descriptions-item) {
       padding-bottom: 10px;
@@ -98,6 +103,20 @@
     }
     .action {
       color: rgba(0, 0, 0, 0.85);
+    }
+    .boxItem {
+      height: 214px;
+    }
+    .kwtag {
+      cursor: pointer;
+      border: 1px solid @primary-color;
+      color: @primary-color;
+      background-color: #fff;
+    }
+    .current {
+      background-color: @btn-primary-bg;
+      color: #fff;
+      border: 1px solid @btn-primary-bg;
     }
   }  /** model lsit **/
   .modelListItem {

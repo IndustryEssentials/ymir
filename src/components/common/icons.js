@@ -85,4 +85,8 @@ export const RecreateIcon = iconFont('recreate')
 export const EqualizerIcon = iconFont('equalizer')
 export const GithubIcon = iconFont('github')
 export const ArrowUpIcon = iconFont('arrow-up')
+export const FunnelIcon = iconFont('funnel')
+export const UserSettingsIcon = iconFont('user-settings')
+export const ReasoningIcon = iconFont('reasoning')
+export const ClearIcon = iconFont('clear')
 

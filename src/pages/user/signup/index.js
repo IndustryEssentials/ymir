@@ -9,21 +9,14 @@ import HeaderNav from "@/components/nav"
 import Foot from "@/components/common/footer"
 import styles from "../common.less"
 import { EmailIcon, UserIcon, SmartphoneIcon, LockIcon, KeyIcon } from '@/components/common/icons'
+import { phoneValidate } from "../../../components/form/validators"
 
 const { Header, Footer, Content } = Layout
 
 const Signup = ({ signupApi, loginApi, history }) => {
-  const phoneValidate = (rule, value) => {
-    const reg = /^\+?\d{5,18}$/
-    if (value && !reg.test(value)) {
-      return Promise.reject(t("signup.phone.format.msg"))
-    }
-    return Promise.resolve()
-  }
 
   const pwdRepeat = ({ getFieldValue }) => ({
     validator(_, value) {
-      console.log("hello", value, getFieldValue("password"))
       if (value && getFieldValue("password") !== value) {
         return Promise.reject(t("signup.pwd.repeat.same.msg"))
       }
@@ -69,7 +62,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
             <Form
               className={styles.form}
               {...layout420}
-              name="basic"
+              name="signupForm"
               initialValues={{}}
               onFinish={signup}
               onFinishFailed={onFinishFailed}
@@ -150,7 +143,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                 <Input.Password allowClear placeholder={t('signup.repwd.placeholder')} prefix={<KeyIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
 
-              <Form.Item wrapperCol={{ span: 24 }}>
+              <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
                 <Button type="primary" htmlType="submit" className={styles.submit} block>
                   {t("signup.signup")}
                 </Button>

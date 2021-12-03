@@ -7,22 +7,24 @@ const { Item } = Breadcrumb
 
 const getCrumbs = () => [
   { path: '/home/portal', label: t('breadcrumbs.portal'), pid: 0, id: 1 },
-  { path: '/home/task', label: t('breadcrumbs.tasks'), pid: 1, id: 2 },
-  { path: '/home/model', label: t('breadcrumbs.models'), pid: 1, id: 3 },
-  { path: '/home/dataset', label: t('breadcrumbs.datasets'), pid: 1, id: 4 },
-  { path: '/home/task/s/:keyword?', label: t('breadcrumbs.task.search'), pid: 2, id: 5 },
+  { path: '/home/task/:keyword?', label: t('breadcrumbs.tasks'), pid: 1, id: 2 },
+  { path: '/home/model/:keyword?', label: t('breadcrumbs.models'), pid: 1, id: 3 },
+  { path: '/home/dataset/:keyword?', label: t('breadcrumbs.datasets'), pid: 1, id: 4 },
   { path: '/home/task/filter/:ids?', label: t('breadcrumbs.task.filter'), pid: 2, id: 6 },
   { path: '/home/task/train/:ids?', label: t('breadcrumbs.task.training'), pid: 2, id: 7 },
   { path: '/home/task/label/:id?', label: t('breadcrumbs.task.label'), pid: 2, id: 8 },
   { path: '/home/task/mining/:ids?', label: t('breadcrumbs.task.mining'), pid: 2, id: 9 },
   { path: '/home/task/detail/:id', label: t('breadcrumbs.task'), pid: 2, id: 10 },
-  { path: '/home/dataset/s/:keyword?', label: t('breadcrumbs.datasets.search'), pid: 1, id: 12 },
   { path: '/home/dataset/detail/:id', label: t('breadcrumbs.dataset'), pid: 4, id: 13 },
   { path: '/home/dataset/asset/:id/:hash', label: t('breadcrumbs.dataset.asset'), pid: 13, id: 14 },
-  { path: '/home/model/s/:keyword?', label: t('breadcrumbs.models.search'), pid: 1, id: 15 },
   { path: '/home/model/detail/:id', label: t('breadcrumbs.model'), pid: 3, id: 16 },
   { path: '/home/model/verify/:id', label: t('breadcrumbs.model.verify'), pid: 16, id: 17 },
   { path: '/home/history/:type/:id', label: t('breadcrumbs.history'), pid: 1, id: 18 },
+  { path: '/home/keyword', label: t('breadcrumbs.keyword'), pid: 1, id: 19 },
+  { path: '/home/configure', label: t('breadcrumbs.configure'), pid: 1, id: 20 },
+  { path: '/home/configure/permission', label: t('breadcrumbs.configure.permission'), pid: 20, id: 21 },
+  { path: '/home/dataset/add/:id?', label: t('breadcrumbs.dataset.add'), pid: 4, id: 22 },
+  { path: '/home/user', label: t('breadcrumbs.user.info'), pid: 1, id: 23 },
 ]
 
 function getCrumbItems(path, crumbs) {

@@ -15,10 +15,12 @@ import { TASKSTATES, TASKTYPES } from "../../constants/task"
 import { getTaskTypes, getTimes, getTaskStates } from '@/constants/query'
 import Breadcrumbs from "../../components/common/breadcrumb"
 import styles from "./index.less"
-import { DeleteIcon, EditIcon, InprogressIcon, ScreenIcon, TaggingIcon, TipsIcon, TrainIcon, VectorIcon } from "../../components/common/icons"
+import { CopyIcon, DeleteIcon, EditIcon, FlagIcon, InprogressIcon, ScreenIcon, SearchEyeIcon, StopIcon, TaggingIcon, TipsIcon, TrainIcon, VectorIcon } from "../../components/common/icons"
 import EditBox from "../../components/form/editBox"
 import StateTag from "../../components/task/stateTag"
 import RenderProgress from "../../components/common/progress"
+import Actions from "../../components/table/actions"
+import Confirm from "../../components/common/dangerConfirm"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -31,7 +33,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Task({ getTasks, delTask, updateTask }) {
+function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [tasks, setTasks] = useState([])
@@ -83,6 +85,7 @@ function Task({ getTasks, delTask, updateTask }) {
     {
       title: showTitle("task.column.state"),
       dataIndex: "state",
+      align: 'center',
       render: (state, record) => RenderProgress(state, record),
     },
     {
@@ -95,9 +98,9 @@ function Task({ getTasks, delTask, updateTask }) {
       title: showTitle("task.column.action"),
       key: "action",
       dataIndex: 'actions',
-      render: (text, record) => actions(record),
+      render: (text, record) => <Actions menus={actionMenus(record)} />,
       className: styles.tab_actions,
-      align: "center",
+      align: "left",
       width: 240,
     },
   ]
@@ -137,7 +140,7 @@ function Task({ getTasks, delTask, updateTask }) {
   }
 
   function showTitle(str) {
-    return <strong>{t(str)}</strong>
+    return <div style={{ textAlign: 'center' }}><strong>{t(str)}</strong></div>
   }
   async function getData() {
     let params = {
@@ -168,8 +171,7 @@ function Task({ getTasks, delTask, updateTask }) {
   }
 
   const del = (id, name) => {
-    confirm({
-      icon: <TipsIcon style={{color: 'rgb(242, 99, 123)'}} />,
+    Confirm({
       content: t("task.action.del.confirm.content", { name }),
       onOk: async () => {
         const result = await delTask(id)
@@ -180,7 +182,37 @@ function Task({ getTasks, delTask, updateTask }) {
         }
       },
       okText: t('task.action.del'),
-      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)',  }}
+    })
+  }
+  const stop = (id, name) => {
+    Confirm({
+      content: t("task.action.stop.confirm.content", { name }),
+      onOk: async () => {
+        const result = await stopTask(id)
+        if (result) {
+          getData()
+        }
+      },
+      okText: t('task.action.stop'),
+    })
+  }
+
+  const copy = (record) => {
+    const { type } = record
+    const { key } = getTaskTypes().find(task => task.value === type)
+    history.push({ pathname: `/home/task/${key}`,  state: { record } })
+  }
+
+  const getLabels = (id, name) => {
+    Confirm({
+      content: t("task.action.getlabels.confirm.content", { name }),
+      onOk: async () => {
+        const result = await stopTask(id)
+        if (result) {
+          getData()
+        }
+      },
+      okText: t('task.action.labeldata'),
     })
   }
 
@@ -230,44 +262,62 @@ function Task({ getTasks, delTask, updateTask }) {
     form.resetFields()
   }
 
-  const actions = (record) => {
-    return (
-      <Space className={styles.column_actions}>
-        <Button
-          type='link'
-          className={styles.action}
-          onClick={() => edit(record)}
-          icon={<EditIcon style={{fontSize: 16}} />}
-        >
-          {t("task.action.edit")}
-        </Button>
-        {[TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(record.state) >= 0 ?
-          <Button
-            type="link"
-            className={`${styles.action} ${styles.action_del}`}
-            onClick={() => del(record.id, record.name)}
-            icon={<DeleteIcon style={{fontSize: 16}} />}
-          >
-            {t("task.action.del")}
-          </Button>
-          : null}
-      </Space>
-    )
+  const actionMenus = (record) => {
+    const { id, name, state, type } = record
+    const menus = [
+      {
+        key: "copy",
+        label: t("task.action.copy"),
+        onclick: () => copy(record),
+        icon: <CopyIcon />,
+      },
+      {
+        key: "stop",
+        label: t("task.action.stop"),
+        onclick: () => stop(record.id, record.name),
+        hidden: () => {
+          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0 || TASKTYPES.LABEL === type
+        },
+        icon: <StopIcon />,
+      },
+      {
+        key: "del",
+        label: t("task.action.del"),
+        onclick: () => del(id, name),
+        hidden: () => {
+          return [TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(state) < 0
+        },
+        icon: <DeleteIcon />,
+      },
+      {
+        key: "edit",
+        label: t("task.action.edit"),
+        onclick: () => edit(record),
+        icon: <EditIcon />,
+      },
+      {
+        key: "labelplatform",
+        label: t("task.action.labelplatform"),
+        link: '/lsf/',
+        target: '_blank',
+        // onclick: () => history.push(`/lsf/`),
+        hidden: () => {
+          return TASKTYPES.LABEL !== type
+        },
+        icon: <FlagIcon />,
+      },
+      {
+        key: "labeldata",
+        label: t("task.action.labeldata"),
+        onclick: () => getLabels(id, name),
+        hidden: () => {
+          return TASKTYPES.LABEL !== type
+        },
+        icon: <SearchEyeIcon />,
+      },
+    ]
+    return menus
   }
-
-  // const addMoreMenu = (
-  //   <Menu>
-  //     {addMore.map((action) => (
-  //       <Menu.Item
-  //         className={action.className}
-  //         key={action.key}
-  //         onClick={action.onclick}
-  //       >
-  //         {action.label}
-  //       </Menu.Item>
-  //     ))}
-  //   </Menu>
-  // )
 
   const addBtn = addMore.map(action => <Button
     className={action.className}
@@ -292,6 +342,7 @@ function Task({ getTasks, delTask, updateTask }) {
   const renderQuery = (
     <div className={styles.search}>
       <Form
+        name='queryForm'
         form={form}
         // layout="inline"
         labelCol={{ flex: '100px' }}
@@ -377,7 +428,18 @@ function Task({ getTasks, delTask, updateTask }) {
           ></Table>
         </ConfigProvider>
       </div>
-      <EditBox record={current} action={saveName} />
+      <EditBox record={current} action={saveName}>
+        {current.type ? <Form.Item
+          label={t('task.column.type')}
+        >
+          {(types.find((t) => t.value === current.type))?.label}
+        </Form.Item> : null}
+        {current.state ? <Form.Item
+          label={t('task.detail.state.title')}
+        >
+          <StateTag mode='text' state={current.state} />
+        </Form.Item> : null}
+      </EditBox>
     </div>
   )
 }
@@ -400,6 +462,18 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'task/deleteTask',
         payload,
+      })
+    },
+    stopTask: (id) => {
+      return dispatch({
+        type: 'task/stopTask',
+        payload: id,
+      })
+    },
+    getLabelData: (id) => {
+      return dispatch({
+        type: 'task/getLabelData',
+        payload: id,
       })
     },
     updateTask: (id, name) => {

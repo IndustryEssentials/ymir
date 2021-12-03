@@ -77,29 +77,29 @@ function ModelDetail({ getModel }) {
       <Breadcrumbs suffix={model.name} />
       <Card title={renderTitle()}>
       {/* <h3 className={styles.title}>{t("dataset.detail.title")}</h3> */}
-      <Descriptions bordered column={1} labelStyle={{ width: '200px' }} title={t('model.detail.title')}>
+      <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')}>
         <Item label={t('model.detail.label.name')}>{model.name}</Item>
         <Item label={t('model.detail.label.id')}>{model.id}</Item>
         <Item label={t('model.detail.label.map')}>{percentFormat(model.map)}</Item>
         <Item label={t('model.detail.label.source')}><Link to={`/home/task/detail/${model.task_id}`}>{model.task_name}</Link></Item>
-        <Item label={t('model.detail.label.training_dataset')}>
+        <Item label={t('model.detail.label.training_dataset')} span={2}>
           {renderDataset(model?.trainSets)}
         </Item>
-        <Item label={t('model.detail.label.verify_dataset')}>
+        <Item label={t('model.detail.label.verify_dataset')} span={2}>
           {renderDataset(model?.testSets)}
         </Item>
-        <Item label={t('model.detail.label.dataset_percent')}>{renderDatasetPercent()}</Item>
-        <Item label={t('model.detail.label.train_type')}>{model.parameters?.train_type || 'Object Detection'}</Item>
-        <Item label={t('model.detail.label.train_goal')}>{model.keywords?.map(keyword => (<Tag key={keyword}>{keyword}</Tag>))}</Item>
+        <Item label={t('model.detail.label.dataset_percent')} span={2}>{renderDatasetPercent()}</Item>
+        <Item label={t('model.detail.label.train_type')} span={2}>{model.parameters?.train_type || 'Object Detection'}</Item>
+        <Item label={t('model.detail.label.train_goal')} span={2}>{model.keywords?.map(keyword => (<Tag key={keyword}>{keyword}</Tag>))}</Item>
         <Item label={t('model.detail.label.framework')}>{model.parameters?.network} </Item>
         <Item label={t('model.detail.label.backbone')}>{model.parameters?.backbone}</Item>
         {/* <Item label={t('model.detail.label.hyperparams')}>
           {renderConfig(model.config)}
         </Item> */}
-        <Item label={''}><Space>
-          <Button type="primary"><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button>
+        <Item label={''} span={2}><Space>
+          <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button>
+          <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/mining?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
         </Space></Item>
       </Descriptions>
       </Card>

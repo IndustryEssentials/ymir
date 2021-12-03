@@ -233,7 +233,7 @@ function History({ getHistory, getDataset, getModel }) {
   }
 
   function renderDatasetLink (sets) {
-    return sets.map(set => <Link key={set.id} to={`/home/dataset/detail/${set.id}`}>{set.name}</Link>)
+    return sets.map(set => <Link className={styles.link} key={set.id} to={`/home/dataset/detail/${set.id}`}>{set.name}</Link>)
   }
 
   const renderTitle = (

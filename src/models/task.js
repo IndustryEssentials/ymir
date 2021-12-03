@@ -4,6 +4,8 @@ import {
   deleteTask,
   updateTask,
   createTask,
+  stopTask,
+  getLabelData,
   createFilterTask,
   createMiningTask,
   createTrainTask,
@@ -68,6 +70,18 @@ export default {
           type: "UPDATE_TASKS",
           payload: result,
         })
+        return result
+      }
+    },
+    *stopTask({ payload }, { call, put }) {
+      let { code, result } = yield call(stopTask, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *getLabelData({ payload }, { call, put }) {
+      let { code, result } = yield call(getLabelData, payload)
+      if (code === 0) {
         return result
       }
     },

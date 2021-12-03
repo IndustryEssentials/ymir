@@ -37,7 +37,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
         <Col>
           <span
             title={t('portal.dataset.origin.copy.title')}
-            onClick={(ev) => history.push({ pathname: '/home/dataset', state: { type: 'add', id: set.id }})}
+            onClick={(ev) => history.push(`/home/dataset/add/${set.id}`)}
             style={{ cursor: 'pointer' }}
           >
             <CopyIcon />
@@ -55,7 +55,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
 
   return (
     <Card className={`${styles.box} ${styles.oset}`} bordered={false}
-      headStyle={cardHead} bodyStyle={{ ...cardBody, height: 276 }}
+      headStyle={cardHead} bodyStyle={{ ...cardBody, height: 281 }}
       title={<><MetadatasetIcon className={styles.headIcon} />{t('portal.dataset.origin.title')}</>}
     >
       {sets.length ?
@@ -65,7 +65,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
               <Row gutter={10}>
                 {row.map(set => <Col key={set.id} span={12}>
                   <Card className={styles.boxItem} title={boxItemTitle(set)}
-                    style={{ position: 'relative', height: 236 }}
+                    style={{ position: 'relative', height: 241 }}
                     headStyle={{ padding: 0 }} bodyStyle={{ padding: '10px 0', position: 'relative', top: '-20px' }}
                   >
                     <div style={{ display: 'inline-block', marginBottom: 10, marginLeft: 10, backgroundColor: '#fff' }}>

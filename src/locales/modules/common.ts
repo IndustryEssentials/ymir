@@ -1,9 +1,16 @@
 const common = {
   'common.top.menu.logout': { cn: '退出', en: 'Logout', },
+  'common.top.menu.user': { cn: '用户管理', en: 'User', },
+  'common.top.menu.community': { cn: '开源社区', en: 'GitHub', },
   'common.top.menu.home': { cn: "主页", en: "Home", },
   'common.top.menu.task': { cn: "任务管理", en: "Task", },
   'common.top.menu.dataset': { cn: "数据集管理", en: "Dataset", },
   'common.top.menu.model': { cn: "模型管理", en: "Model", },
+  'common.top.menu.data': { cn: "数据管理", en: "Data", },
+  'common.top.menu.keyword': { cn: "标签管理", en: "Keyword", },
+  'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
+  'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
+  'common.top.menu.resource': { cn: "资源配置", en: "Resource", },
   'common.top.search.item.dataset': { cn: '包含 {searchValue} 的数据集', en: 'Dataset Name include: {searchValue}', },
   'common.top.search.item.model': { cn: '包含 {searchValue} 的模型', en: 'Model Name include: {searchValue}', },
   'common.top.search.item.task': { cn: '包含 {searchValue} 的任务', en: 'Task Name include: {searchValue}', },
@@ -41,6 +48,12 @@ const common = {
   'common.qa.action.train': {cn: '训练{br}模型', en: 'Train Model', },
   'common.qa.action.guide': {cn: '操作{br}指引', en: 'Guide', },
   'common.empty.keywords': {cn: '无标签', en: 'None', },
+  'common.modify': {cn: '修改', en: 'Modify', },
+  'common.all': {cn: '全部', en: 'All', },
+  'common.yes': {cn: '是', en: 'Yes', },
+  'common.no': {cn: '否', en: 'No', },
+  'common.uploader.format.error': {cn: '上传文件格式不正确', en: 'Invalid format', },
+  'common.uploader.size.error': {cn: '文件大小最大不超过 {max}MB', en: 'File must smaller than {max}MB!', },
 }
 
 export default common
