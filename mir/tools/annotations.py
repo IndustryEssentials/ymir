@@ -131,8 +131,8 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
     """
     unknown_types_and_count: Dict[str, int] = defaultdict(int)
 
-    if (not in_sha1_file) or (not annotations_dir_path):
-        logging.error("empty sha1_file or annotations_dir_path")
+    if not in_sha1_file:
+        logging.error("empty sha1_file")
         return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
 
     # read type_id_name_dict and type_name_id_dict
@@ -162,8 +162,8 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
     missing_annotations_counter = 0
     for asset_hash, main_file_name, file_path in assethash_filename_list:
         # for each asset, import it's annotations
-        annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml')
-        if not os.path.isfile(annotation_file):
+        annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml') if annotations_dir_path else None
+        if not annotation_file or not os.path.isfile(annotation_file):
             missing_annotations_counter += 1
         else:
             # if have annotation file, import annotations and predefined key ids

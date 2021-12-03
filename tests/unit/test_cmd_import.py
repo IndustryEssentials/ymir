@@ -42,6 +42,7 @@ class TestCmdImport(unittest.TestCase):
         os.chdir(self._cur_path)
 
     def test_import_cmd_00(self):
+        # normal
         mir_root = self._mir_repo_root
         gen_folder = os.path.join(self._storage_root, 'gen')
         args = type('', (), {})()
@@ -58,7 +59,7 @@ class TestCmdImport(unittest.TestCase):
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         assert ret == MirCode.RC_OK
-        self._check_repo(self._mir_repo_root, with_person_ignored=False)
+        self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True)
 
         # not write person label
         self._prepare_labels_csv(['cat', 'airplane,aeroplane'])
@@ -68,7 +69,15 @@ class TestCmdImport(unittest.TestCase):
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         assert ret == MirCode.RC_OK
-        self._check_repo(self._mir_repo_root, with_person_ignored=True)
+        self._check_repo(self._mir_repo_root, with_person_ignored=True, with_annotations=True)
+
+        # have no annotations
+        args.anno = None
+        args.ignore_unknown_types = False
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        assert ret == MirCode.RC_OK
+        self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=False)
 
         # check for relative path, currently should return an error code
         args.mir_root = 'abc'
@@ -76,7 +85,7 @@ class TestCmdImport(unittest.TestCase):
         ret = importing_instance.run()
         assert ret != MirCode.RC_OK
 
-    def _check_repo(self, repo_root: str, with_person_ignored: bool):
+    def _check_repo(self, repo_root: str, with_person_ignored: bool, with_annotations: bool):
         mir_annotations = mirpb.MirAnnotations()
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
             mir_annotations.ParseFromString(f.read())
@@ -173,70 +182,75 @@ class TestCmdImport(unittest.TestCase):
                     }
                 }
             }
+        if not with_annotations:
+            dict_annotations_expect = {}
         self.assertDictEqual(dict_annotations_expect, dict_annotations)
 
         mir_keywords = mirpb.MirKeywords()
         with open(os.path.join(repo_root, 'keywords.mir'), 'rb') as f:
             mir_keywords.ParseFromString(f.read())
         dict_keywords = MessageToDict(mir_keywords, preserving_proto_field_name=True)
-        dup_asset_id = '430df22960b0f369318705800139fcc8ec38a3e4'
-        dict_keywords['keywords'][dup_asset_id]['predifined_keyids'] = sorted(
-            dict_keywords['keywords'][dup_asset_id]['predifined_keyids'])  # Protobuf does not care about order of list.
-        dup_keywords_id = 1
-        dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'] = sorted(
-            dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'])
-        if with_person_ignored:
-            dict_keywords_expect = {
-                'keywords': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                        'predifined_keyids': [1],
+        if with_annotations:
+            dup_asset_id = '430df22960b0f369318705800139fcc8ec38a3e4'
+            dict_keywords['keywords'][dup_asset_id]['predifined_keyids'] = sorted(
+                dict_keywords['keywords'][dup_asset_id]['predifined_keyids'])  # Protobuf does not care about order of list.
+            dup_keywords_id = 1
+            dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'] = sorted(
+                dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'])
+            if with_person_ignored:
+                dict_keywords_expect = {
+                    'keywords': {
+                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                            'predifined_keyids': [1],
+                        },
+                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                            'predifined_keyids': [1],
+                        }
                     },
-                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                        'predifined_keyids': [1],
-                    }
-                },
-                'predifined_keyids_cnt': {
-                    1: 2
-                },
-                'predifined_keyids_total': 2,
-                'index_predifined_keyids': {
-                    1: {
-                        'asset_ids':
-                        ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
-                    }
-                },
-            }
+                    'predifined_keyids_cnt': {
+                        1: 2
+                    },
+                    'predifined_keyids_total': 2,
+                    'index_predifined_keyids': {
+                        1: {
+                            'asset_ids':
+                            ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
+                        }
+                    },
+                }
+            else:
+                dict_keywords_expect = {
+                    'keywords': {
+                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                            'predifined_keyids': [1],
+                        },
+                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                            'predifined_keyids': [1, 2],
+                        }
+                    },
+                    'predifined_keyids_cnt': {
+                        1: 2,
+                        2: 1
+                    },
+                    'predifined_keyids_total': 3,
+                    'index_predifined_keyids': {
+                        2: {
+                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4']
+                        },
+                        1: {
+                            'asset_ids':
+                            ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
+                        }
+                    },
+                }
+            try:
+                self.assertDictEqual(dict_keywords, dict_keywords_expect)
+            except AssertionError as e:
+                logging.info(f"expected: {dict_keywords_expect}")
+                logging.info(f"actual: {dict_keywords}")
+                raise e
         else:
-            dict_keywords_expect = {
-                'keywords': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                        'predifined_keyids': [1],
-                    },
-                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                        'predifined_keyids': [1, 2],
-                    }
-                },
-                'predifined_keyids_cnt': {
-                    1: 2,
-                    2: 1
-                },
-                'predifined_keyids_total': 3,
-                'index_predifined_keyids': {
-                    2: {
-                        'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4']
-                    },
-                    1: {
-                        'asset_ids':
-                        ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
-                    }
-                },
-            }
-        try:
-            self.assertDictEqual(dict_keywords, dict_keywords_expect)
-        except AssertionError as e:
-            logging.info(f"expected: {dict_keywords_expect}")
-            logging.info(f"actual: {dict_keywords}")
-            raise e
+            self.assertEqual(0, len(dict_keywords))
 
         mir_metadatas = mirpb.MirMetadatas()
         with open(os.path.join(repo_root, 'metadatas.mir'), 'rb') as f:
