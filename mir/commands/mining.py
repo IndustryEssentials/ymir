@@ -120,16 +120,13 @@ class CmdMining(base.BaseCommand):
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
             raise ValueError('no assets found in metadatas.mir')
-        if topk and topk >= assets_count:
-            logging.warning(f"topk: {topk} >= assets count: {assets_count}, skip mining")
-            topk = None
-
-        if not topk and not add_annotations:
-            logging.error('invalid --topk and --add-annotations (both not set), abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if topk and topk <= 0:
-            logging.error(f"invalid --topk: {topk}")
-            return MirCode.RC_CMD_INVALID_ARGS
+        if topk:
+            if topk >= assets_count:
+                logging.warning(f"topk: {topk} >= assets count: {assets_count}, skip mining")
+                topk = None
+            elif topk <= 0:
+                logging.error(f"invalid --topk: {topk}")
+                return MirCode.RC_CMD_INVALID_ARGS
         # topk can be None (means no mining), or in interval (0, assets_count) (means mining and select topk)
 
         work_in_path = os.path.join(work_dir, 'in')  # docker container's input data directory
@@ -191,7 +188,6 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
                                                    mir_storages=mir_storage.get_all_mir_storage())
     mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
     mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
-    mir_keywords: mirpb.MirKeywords = mir_datas[mirpb.MirStorage.MIR_KEYWORDS]
     mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
 
     #   parse new: topk and new annotations (both optional)

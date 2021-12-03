@@ -103,8 +103,8 @@ class CmdInfer(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not run_infer and not run_mining:
-            logging.error('invalid run_infer and run_mining: both false')
-            return MirCode.RC_CMD_INVALID_ARGS
+            logging.warning('invalid run_infer and run_mining: both false')
+            return MirCode.RC_OK
 
         if not executor:
             logging.error('empty --executor, abort')
