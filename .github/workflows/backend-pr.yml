@@ -7,14 +7,16 @@ on:
     branches:
       - master
       - dev
+    paths:
+      - 'ymir/backend/**'
 
 env:
-  PYTHONPATH: ./
+  PYTHONPATH: ./ymir/backend
   FIRST_ADMIN: admin@example.com
   FIRST_ADMIN_PASSWORD: fake_passwd
 
 jobs:
-  unittest:
+  backend-ci:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -25,6 +27,8 @@ jobs:
     - name: Install dependencies
       run: |
         pip install tox
+      working-directory: ymir/backend
     - name: Test with tox
       run: |
         tox
+      working-directory: ymir/backend
