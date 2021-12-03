@@ -16,7 +16,7 @@ setup(
     python_requires=">=3.8.10",
     author_email="ymir-team@intellif.com",
     description="mir: A data version control tool for Ymir",
-    url="https://github.com/IndustryEssentials/ymir-cmd",
+    url="https://github.com/IndustryEssentials/ymir",
     packages=find_packages(exclude=["*tests*"]),
     install_requires=requirements,
     include_package_data=True,
