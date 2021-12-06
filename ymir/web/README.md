@@ -1,11 +1,11 @@
 ### YMIR web is an open-source, focusing on ai learning, including training, mining, labelling, all-in-one platform.
 ## Development
-### - Requirement: NodeJS [nodejs website](http://nodejs.cn/) （10.x < version < 17.x）
+### - Requirement: NodeJS [nodejs website](http://nodejs.cn/) （10.x < version <= 16.x）
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/IndustryEssentials/ymir-web.git
-   cd ymir-web
+   git clone https://github.com/IndustryEssentials/ymir.git
+   cd ymir/ymir/web
    ```
 
 2. Install required dependencies
@@ -25,11 +25,3 @@
    npm run build
    ```
    Now you have *.js and *.css files in the `ymir/` directory
-## Ecosystem
-
-| Project | Description |
-|-|-|
-| [ymir](https://github.com/IndustryEssentials/ymir) | Docker images for whole YMIR system. You can install YMIR by one command.|
-| ymir-web | Frontend part, written in JavaScript and React |
-| [ymir-backend](https://github.com/IndustryEssentials/ymir-backend) | Server backend, supply API, and connect cmd |
-| [ymir-cmd](https://github.com/IndustryEssentials/ymir-cmd) | Base, data storage and processing, and open a set of commands for Senior Algorithm Engineer |
