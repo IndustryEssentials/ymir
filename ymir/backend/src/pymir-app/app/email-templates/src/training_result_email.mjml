@@ -1,0 +1,20 @@
+<mjml>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555">您的任务已完成</mj-text>
+        <mj-text font-size="16px" color="#555">任务id: {{ task_hash }}</mj-text>
+        <mj-text font-size="16px" color="#555">任务类型: {{ task_type }}</mj-text>
+        <mj-text font-size="16px" color="#555">commit id: {{ commit_id }}</mj-text>
+        <mj-text font-size="16px" color="#555">model hash: {{ model_hash }}</mj-text>
+        <mj-text font-size="16px" color="#555">mAP: {{ mean_average_precision }}</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-button padding="50px 0px" href="{{ link }}">在 Ymir portal中查看</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

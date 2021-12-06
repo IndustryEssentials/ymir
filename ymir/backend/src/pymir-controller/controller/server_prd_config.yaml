@@ -1,0 +1,19 @@
+SERVICE:
+  port: "50066"
+ASSETS:
+  assetskvlocation: ${ASSETS_PATH}
+  assetskvprotocol: file
+  assetsuploadlocation: ${ASSETS_PATH}
+  assetsuploadprotocol: file
+  modelskvlocation: ${MODELS_PATH}
+  modelskvprotocol: file
+  modelsuploadlocation: ${MODELS_PATH}
+  modelsuploadprotocol: file
+  training_image: industryessentials/executor-det-yolov4-training:release-0.1.3
+  mining_image: industryessentials/executor-det-yolov4-mining:release-0.1.3
+SANDBOX:
+  sandboxowner: ymir-root
+  sandboxownergroup: ymir-root
+  sandboxroot: ${SANDBOX}
+TASK_MONITOR:
+  storageroot: ${MONTIOR}
