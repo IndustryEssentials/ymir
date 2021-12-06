@@ -640,11 +640,11 @@ YMIR-command-api.211028
 
 The YMIR project consists of three components:
 
-1. [Back-end](https://github.com/IndustryEssentials/ymir-backend), task distribution and management.
+1. [Back-end](https://github.com/IndustryEssentials/ymir/tree/master/ymir/backend), task distribution and management.
 
-2. [Front-end](https://github.com/IndustryEssentials/ymir-web), interactive interface.
+2. [Front-end](https://github.com/IndustryEssentials/ymir/tree/master/ymir/web), interactive interface.
 
-3. [Command line](https://github.com/IndustryEssentials/ymir-cmd), a command-line interface (CLI) for managing the underlying annotation and image data.
+3. [Command line](https://github.com/IndustryEssentials/ymir/tree/master/ymir/command), a command-line interface (CLI) for managing the underlying annotation and image data.
 
 ## 5.2. Code contribution
 
