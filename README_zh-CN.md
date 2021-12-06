@@ -107,7 +107,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 # 2. 安装
 
-![YMIR总流程图](docs/images/YMIR%E6%80%BB%E6%B5%81%E7%A8%8B%E5%9B%BE.jpeg)
+![YMIR总流程图](docs/images/YMIR%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B.jpeg)
 
 **用户如何选择安装GUI or CMD：**
 
