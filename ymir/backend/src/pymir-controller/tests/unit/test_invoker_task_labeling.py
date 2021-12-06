@@ -75,4 +75,4 @@ class TestTaskLabelingInvoker:
         mocker.patch.object(requests, "get", return_value=mock_resp)
         res = label_studio.LabelStudio().get_task_completion_percent(1)
 
-        assert res == 0
+        assert res == 1.0
