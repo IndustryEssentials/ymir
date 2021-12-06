@@ -4,8 +4,8 @@
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/IndustryEssentials/ymir-web.git
-   cd ymir-web
+   git clone https://github.com/IndustryEssentials/ymir.git
+   cd ymir
    ```
 
 2. Install required dependencies
