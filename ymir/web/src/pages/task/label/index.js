@@ -51,7 +51,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
         name: `${name}_${randomNumber()}`,
         datasets: include_datasets[0],
         label_members: labellers[0],
-        checker: labellers.length > 1 ? labellers.slice(1) : [],
+        checker: labellers.length > 1 ? labellers[1] : '',
         keywords: include_classes,
       }
       if (extra_url) {
@@ -75,6 +75,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
       label_members: emails,
       doc,
     }
+    console.log('test submit: ', params)
     const result = await createLabelTask(params)
     if (result) {
       history.replace("/home/task")
@@ -170,10 +171,10 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                   <Form.Item
                     name="checker"
                     noStyle
-                    rules={[
-                      { required: asChecker, message: t('task.label.form.member.required') },
+                    rules={asChecker ? [
+                      { required: true, message: t('task.label.form.member.required') },
                       { type: 'email', message: t('task.label.form.member.email.msg') },
-                    ]}
+                    ] : []}
                   >
                     <Input allowClear />
                   </Form.Item>
