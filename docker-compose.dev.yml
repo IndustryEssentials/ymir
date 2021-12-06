@@ -3,7 +3,7 @@ services:
   backend:
     image: ymir-backend:local_test
     build:
-      context: git@github.com:IndustryEssentials/ymir-backend.git
+      context: git@github.com:IndustryEssentials/ymir.git#:/ymir/backend
       dockerfile: Dockerfile-dev
     env_file:
       - .env
@@ -73,7 +73,9 @@ services:
 
   nginx:
     image: ymir-web:local_test
-    build: git@github.com:IndustryEssentials/ymir-web.git
+    build: 
+      context: git@github.com:IndustryEssentials/ymir.git#:/ymir/web
+      dockerfile: Dockerfile-dev
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
