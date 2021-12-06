@@ -45,6 +45,9 @@ class ControllerTaskMonitor:
         self._task_storage_file = os.path.join(storage_root, "task_storage.yaml")
         self.load_tasks()
 
+        # set task to error when start service except label task
+        self._monitor_process_func(is_init=True)
+
         self._start_monitor()
 
     def load_tasks(self) -> None:
@@ -52,9 +55,7 @@ class ControllerTaskMonitor:
             with open(self._task_storage_file) as f:
                 storage_yaml = yaml.safe_load(f)
             for task_id, task_monitor_file in storage_yaml.items():
-                task_type_label = backend_pb2.TaskType.Name(backend_pb2.TaskType.TaskTypeLabel)
-                if task_type_label not in task_monitor_file:
-                    self._task_storage[task_id] = task_monitor_file
+                self._task_storage[task_id] = task_monitor_file
 
     def save_tasks(self) -> None:
         with open(self._task_storage_file, 'w') as outfile:
@@ -79,7 +80,7 @@ class ControllerTaskMonitor:
             json_format.ParseDict(storage_dict, task_storage_item, ignore_unknown_fields=False)
         return task_storage_item
 
-    def _monitor_process_func(self) -> None:
+    def _monitor_process_func(self, is_init: bool = False) -> None:
         # for each task in `self._task_storage`:
         #   update state according to corresponding monitor file.
         finished_task_ids = set()
@@ -88,7 +89,7 @@ class ControllerTaskMonitor:
                 logging.warning("cannot find task_monitor_file: {}".format(task_monitor_file))
                 continue  # cannt find task file.
 
-            task_item = self._update_task_item(task_monitor_file, task_id)
+            task_item = self._update_task_item(task_monitor_file, task_id, is_init)
             if task_item.state in [backend_pb2.TaskStateDone, backend_pb2.TaskStateError]:
                 logging.debug("monitor found finished task: %s, state: %s", task_id, task_item.state)
                 finished_task_ids.add(task_id)
@@ -97,7 +98,7 @@ class ControllerTaskMonitor:
 
         self.save_tasks()
 
-    def _update_task_item(self, task_monitor_file: str, task_id: str) -> backend_pb2.TaskMonitorStorageItem:
+    def _update_task_item(self, task_monitor_file: str, task_id: str, is_init: bool = False) -> backend_pb2.TaskMonitorStorageItem:
         task_storage_item = self.load_task(task_id=task_id)
         task_item = task_storage_item.general_info
 
@@ -127,6 +128,16 @@ class ControllerTaskMonitor:
             # error messages
             if len(monitor_file_lines) > 1:
                 task_item.last_error = "\n".join(monitor_file_lines[1:100])
+
+        # set task to error when start service except label task
+        if is_init:
+            if not (
+                    task_storage_item.request.req_type
+                    == backend_pb2.RequestType.Name(backend_pb2.RequestType.TASK_CREATE)
+                    and task_storage_item.request.req_create_task.task_type
+                    == backend_pb2.TaskType.Name(backend_pb2.TaskType.TaskTypeLabel)
+            ):
+                task_item.state = backend_pb2.TaskStateError
 
         self.save_task(task_id=task_id, task_storage_item=task_storage_item)
         return task_item
