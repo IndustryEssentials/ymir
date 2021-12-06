@@ -135,6 +135,7 @@ function Filter({
           <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
+              required
             >
               <Form.Item
                 noStyle

@@ -12,6 +12,7 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from pydantic import AnyHttpUrl
+from fastapi.logger import logger
 from requests.exceptions import (
     ConnectionError,
     HTTPError,
@@ -137,3 +138,17 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
     for example, /x/y/z is relative to /x/
     """
     return Path(path_short) in Path(path_long).parents
+
+
+def is_valid_import_path(src_path: Union[str, Path]) -> bool:
+    src_path = Path(src_path)
+    annotation_path = src_path / "annotations"
+    if not (src_path.is_dir() and annotation_path.is_dir()):
+        return False
+    if not is_relative_to(annotation_path, settings.SHARED_DATA_DIR):
+        logger.error(
+            "import path (%s) not within shared_dir (%s)"
+            % (annotation_path, settings.SHARED_DATA_DIR)
+        )
+        return False
+    return True
