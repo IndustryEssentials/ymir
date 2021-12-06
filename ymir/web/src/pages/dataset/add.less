@@ -1,0 +1,36 @@
+.wrapper {
+  height: 100%;
+}
+.container {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+  :global(.ant-card-body) {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+.newkwTip {
+  @color:  rgb(79, 187, 187);
+  background: fade(@primary-color, 10);
+  border-radius: 2px;
+  border: 1px solid fade(@primary-color, 50);
+  line-height: 40px;
+  padding: 0 15px;
+  color: @color;
+  .tipIcon {
+    color: @color;
+    font-size: 18px;
+  }
+}
+.checkTag {
+  margin-bottom: 2px;
+  margin-top: 2px;
+  border: 1px solid #ccc;
+}
+
+.selectedTag {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}

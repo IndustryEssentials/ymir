@@ -1,0 +1,108 @@
+.rect {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 5;
+  justify-content: space-between;
+  align-items: center;
+  .footer {
+    flex: 1;
+  }
+  .header, .footer, .content {
+    width: 100%;
+  }
+  .header, .footer, .left, .right {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+.guide {
+  .mainTitle {
+    h3 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+  }
+  .mainSteps {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+    .step {
+      width: 20%;
+      .stepBox {
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        // width: 20%;
+        height: 280px;
+        overflow: hidden;
+        h2 {
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          white-space: nowrap;
+          position: relative;
+          margin-left: -14px;
+          padding: 0 15px;
+          // overflow: hidden;
+          &:before, &:after {
+            content: ' ';
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background: #fff;
+            transform: rotate(45deg);
+            border-width: 1px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.15) transparent transparent;
+            position: absolute;
+            top: 4px;
+          }
+          &:before {
+            left: -14px;
+          }
+          &:after {
+            right: -14px;            
+          }
+        }
+        &:global(.ant-card-hoverable:hover) {
+          border-color: @primary-color;
+          .stepIcon {
+            color:rgba(0, 0, 0, 0.85);
+          }
+          .stepButton {
+            border-color: @primary-color;
+            background: @primary-color;
+            color: #fff;
+          }
+          h2 {
+            background-color: @primary-color;
+            border-color: @primary-color;
+            color: #fff;
+            font-weight: 800;
+            &:after {
+              background-color: @primary-color;
+              border-color: @primary-color;
+            }
+            &:before {
+              border-color: @primary-color @primary-color transparent transparent;
+            }
+          }
+        }
+      }
+      // flex: 1;
+      .stepIcon {
+        font-size: 44px;
+        color: rgba(0, 0, 0, 0.65);
+      }
+      .stepTip {
+        text-align: left;
+        height: 88px;
+      }
+      .stepButton {
+        // background: rgba(0, 0, 0, 0.25);
+        // color: #fff;
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+.wrapper {
+  height: 100%;
+}
+.container {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+  :global(.ant-card-body) {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+// .formContainer {
+//   margin: 0 auto;
+// }
+.label {
+  text-align: right;
+}
+.formItemLowLevel {
+  margin-top: 10px;
+  .label {
+    margin-right: 10px;
+    color: @primary-color;
+  }
+}
