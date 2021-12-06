@@ -48,7 +48,7 @@ class ControllerTaskMonitor:
         self._start_monitor()
 
     # set task to error when start service except label task
-    def init_some_task_state(self, task_id: str) -> bool:
+    def remove_stale_task(self, task_id: str) -> bool:
         task_storage_file = self._task_file_location(task_id)
         with open(task_storage_file) as f:
             storage_dict = yaml.safe_load(f)
@@ -68,7 +68,7 @@ class ControllerTaskMonitor:
             with open(self._task_storage_file) as f:
                 storage_yaml = yaml.safe_load(f)
             for task_id, task_monitor_file in storage_yaml.items():
-                if not self.init_some_task_state(task_id):
+                if not self.remove_stale_task(task_id):
                     self._task_storage[task_id] = task_monitor_file
 
     def save_tasks(self) -> None:
