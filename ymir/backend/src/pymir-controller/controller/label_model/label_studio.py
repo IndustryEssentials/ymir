@@ -121,7 +121,7 @@ class LabelStudio(LabelBase):
     def get_task_completion_percent(self, project_id: int) -> float:
         def safe_div(a: int, b: int) -> float:
             if b == 0:
-                return 0.0
+                return 1.0
             return a / b
 
         content = self.get_project_info(project_id)
