@@ -22,7 +22,11 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.models.task import TaskState, TaskType
-from app.utils.files import FailedToDownload, is_relative_to, prepare_dataset
+from app.utils.files import (
+    FailedToDownload,
+    is_valid_import_path,
+    prepare_dataset,
+)
 from app.utils.stats import RedisStats
 from app.utils.ymir_controller import ControllerClient, ControllerRequest
 from app.utils.ymir_viz import VizClient
@@ -218,12 +222,7 @@ def _import_dataset(
         }
     elif pre_dataset.src_path is not None:
         src_path = pathlib.Path(pre_dataset.src_path)
-        if not is_relative_to(src_path, settings.SHARED_DATA_DIR):
-            logger.error(
-                "failed to access input_path: %s. make sure it's within shared path: %s",
-                src_path,
-                settings.SHARED_DATA_DIR,
-            )
+        if not is_valid_import_path(src_path):
             raise FailedtoCreateDataset()
         parameters = {
             "annotation_dir": str(src_path / "annotations"),
