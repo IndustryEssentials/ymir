@@ -47,12 +47,31 @@ class ControllerTaskMonitor:
 
         self._start_monitor()
 
+    # set task to error when start service except label task
+    def remove_stale_task(self, task_id: str) -> bool:
+        task_storage_file = self._task_file_location(task_id)
+        with open(task_storage_file) as f:
+            storage_dict = yaml.safe_load(f)
+        request = storage_dict.get("request", None)
+        if (
+            request
+            and request.get("req_type") == backend_pb2.RequestType.TASK_CREATE
+            and request["req_create_task"]["task_type"] == backend_pb2.TaskType.TaskTypeLabel
+        ):
+            return False
+
+        storage_dict["general_info"]["state"] = backend_pb2.TaskStateError
+        with open(task_storage_file, "w") as f:
+            yaml.dump(storage_dict, f)
+        return True
+
     def load_tasks(self) -> None:
         if os.path.isfile(self._task_storage_file):
             with open(self._task_storage_file) as f:
                 storage_yaml = yaml.safe_load(f)
             for task_id, task_monitor_file in storage_yaml.items():
-                self._task_storage[task_id] = task_monitor_file
+                if not self.remove_stale_task(task_id):
+                    self._task_storage[task_id] = task_monitor_file
 
     def save_tasks(self) -> None:
         with open(self._task_storage_file, 'w') as outfile:
