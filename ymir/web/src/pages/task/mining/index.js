@@ -96,12 +96,13 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     if (state?.record) {
       const { parameters, name, config, } = state.record
       const { include_datasets, exclude_datasets, strategy, top_k, model_id } = parameters
-      //do somethin
+      const sets = include_datasets || []
+      const xsets = exclude_datasets || []
       setTopk(!!top_k)
       form.setFieldsValue({
         name: `${name}_${randomNumber()}`,
-        datasets: include_datasets,
-        exclude_sets: exclude_datasets,
+        datasets: sets,
+        exclude_sets: xsets,
         filter_strategy: !!top_k,
         model: model_id,
         topk: top_k,
@@ -109,8 +110,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
         strategy,
       })
       setConfig(config)
-      setSelectedSets(include_datasets)
-      setExcludeSets(exclude_datasets)
+      setSelectedSets(sets)
+      setExcludeSets(xsets)
       setHpVisible(true)
 
       history.replace({ state: {} })

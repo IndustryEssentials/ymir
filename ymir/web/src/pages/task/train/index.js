@@ -95,18 +95,19 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
     if (state?.record) {
       const { parameters, name, config, } = state.record
       const { include_classes, include_train_datasets, include_validation_datasets, strategy, } = parameters
-      //do somethin
+      const tSets = include_train_datasets || []
+      const vSets = include_validation_datasets || []
       form.setFieldsValue({
         name: `${name}_${randomNumber()}`,
-        train_sets: include_train_datasets,
-        validation_sets: include_validation_datasets,
+        train_sets: tSets,
+        validation_sets: vSets,
         gpu_count: config.gpu_count,
         keywords: include_classes,
         strategy,
       })
       setConfig(config)
-      setTrainSets(include_train_datasets)
-      setValidationSets(include_validation_datasets)
+      setTrainSets(tSets)
+      setValidationSets(vSets)
       setHpVisible(true)
 
       history.replace({ state: {} })
@@ -201,6 +202,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
               <Form.Item
                 label={t('task.train.form.trainsets.label')}
+                required
               >
                 <Form.Item
                   noStyle
