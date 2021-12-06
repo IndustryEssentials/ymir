@@ -59,8 +59,8 @@ def lable_task_monitor() -> None:
                 label_instance.convert_annotation_to_voc(project_info['project_id'], project_info["des_annotation_path"])
             except requests.HTTPError as e:
                 # TODO:(chao) add sentry
-                logger.error(f'get label task {task_id} voc error: {e}, continue next')
-                continue
+                logger.error(f'get label task {task_id} voc error: {e}, set task_id:{task_id} error')
+                state = config.TASK_ERROR
             index_file = _gen_index_file(project_info["des_annotation_path"])
             trigger_mir_import(
                 project_info["repo_root"],
