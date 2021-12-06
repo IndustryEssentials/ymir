@@ -20,7 +20,8 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 16.x
-    - name: Test with npm
+        cache: 'npm'
+        cache-dependency-path: ymir/web/package-lock.json
       run: |
         npm install
         npm run build --prod
