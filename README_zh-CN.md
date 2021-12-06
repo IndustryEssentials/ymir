@@ -622,11 +622,11 @@ Ymir-command-api.211028
 
 YMIR项目由三部分组成:
 
-1. 后端 [https://github.com/IndustryEssentials/ymir-backend](https://github.com/IndustryEssentials/ymir-backend)，负责任务分发与管理
+1. 后端 [https://github.com/IndustryEssentials/ymir-backend](https://github.com/IndustryEssentials/ymir/tree/master/ymir/backend)，负责任务分发与管理
 
-2. 前端 [https://github.com/IndustryEssentials/ymir-web](https://github.com/IndustryEssentials/ymir-web)，交互界面
+2. 前端 [https://github.com/IndustryEssentials/ymir-web](https://github.com/IndustryEssentials/ymir/tree/master/ymir/web)，交互界面
 
-3. 命令行 [https://github.com/IndustryEssentials/ymir-cmd](https://github.com/IndustryEssentials/ymir-cmd)，CLI界面，管理底层标注与图像数据
+3. 命令行 [https://github.com/IndustryEssentials/ymir-cmd](https://github.com/IndustryEssentials/ymir/tree/master/ymir/command)，CLI界面，管理底层标注与图像数据
 
 ## 5.2  代码贡献
 
