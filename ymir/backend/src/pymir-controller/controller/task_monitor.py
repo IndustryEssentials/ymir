@@ -52,16 +52,19 @@ class ControllerTaskMonitor:
         task_storage_file = self._task_file_location(task_id)
         with open(task_storage_file) as f:
             storage_dict = yaml.safe_load(f)
-        if not (
-                storage_dict["request"].get("req_type") == backend_pb2.RequestType.TASK_CREATE
-                and storage_dict["request"]["req_create_task"].get("task_type") == backend_pb2.TaskType.TaskTypeLabel
+        request = storage_dict.get("request", None)
+        if (
+            request
+            and request.get("req_type") == backend_pb2.RequestType.TASK_CREATE
+            and request["req_create_task"]["task_type"] == backend_pb2.TaskType.TaskTypeLabel
         ):
-            storage_dict["general_info"]["state"] = backend_pb2.TaskStateError
-            with open(task_storage_file, "w") as f:
-                yaml.dump(storage_dict, f)
-            return True
+            return False
 
-        return False
+        storage_dict["general_info"]["state"] = backend_pb2.TaskStateError
+        with open(task_storage_file, "w") as f:
+            yaml.dump(storage_dict, f)
+        return True
+
 
     def load_tasks(self) -> None:
         if os.path.isfile(self._task_storage_file):
