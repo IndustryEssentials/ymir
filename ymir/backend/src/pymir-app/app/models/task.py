@@ -1,7 +1,16 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, SmallInteger, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Integer,
+    SmallInteger,
+    String,
+    Text,
+)
 
 from app.config import settings
 from app.db.base_class import Base
@@ -35,8 +44,8 @@ class Task(Base):
     type = Column(Enum(TaskType), index=True)
     state = Column(Enum(TaskState), index=True)
     progress = Column(SmallInteger)
-    parameters = Column(String(settings.PARA_LEN_LIMIT))
-    config = Column(String(settings.PARA_LEN_LIMIT))
+    parameters = Column(Text(settings.PARA_LEN_LIMIT))
+    config = Column(Text(settings.PARA_LEN_LIMIT))
     user_id = Column(Integer, index=True)
     is_deleted = Column(Boolean, default=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
