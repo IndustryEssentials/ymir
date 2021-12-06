@@ -65,7 +65,6 @@ class ControllerTaskMonitor:
             yaml.dump(storage_dict, f)
         return True
 
-
     def load_tasks(self) -> None:
         if os.path.isfile(self._task_storage_file):
             with open(self._task_storage_file) as f:
