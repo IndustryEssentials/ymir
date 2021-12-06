@@ -52,7 +52,9 @@ class ControllerTaskMonitor:
             with open(self._task_storage_file) as f:
                 storage_yaml = yaml.safe_load(f)
             for task_id, task_monitor_file in storage_yaml.items():
-                self._task_storage[task_id] = task_monitor_file
+                task_type_label = backend_pb2.TaskType.Name(backend_pb2.TaskType.TaskTypeLabel)
+                if task_type_label not in task_monitor_file:
+                    self._task_storage[task_id] = task_monitor_file
 
     def save_tasks(self) -> None:
         with open(self._task_storage_file, 'w') as outfile:
