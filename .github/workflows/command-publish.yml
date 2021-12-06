@@ -9,9 +9,9 @@
 name: Upload Python Package
 
 on:
-  release:
-    tags: ['cmd-[0-9]+.[0-9]+.[0-9]+']
-    types: [published]
+  push:
+    tags:        
+      - 'command-[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   command-publish:
