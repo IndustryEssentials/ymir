@@ -86,7 +86,7 @@ def create_keywords(
 
 
 @router.patch(
-    "/{keyword}", response_model=KeywordOut,
+    "/{keyword}", response_model=KeywordsCreateOut,
 )
 def update_keyword_aliases(
     *,
