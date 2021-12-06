@@ -198,4 +198,44 @@ describe("models: task", () => {
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
   })
+  
+  it("effects: stopTask", () => {
+    const saga = task.effects.stopTask
+    const id = 235
+    const creator = {
+      type: "stopTask",
+      payload: id,
+    }
+    const expected = { id }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.value.id).toBe(id)
+    expect(end.done).toBe(true)
+  })
+  
+  it("effects: getLabelData", () => {
+    const saga = task.effects.getLabelData
+    const id = 236
+    const creator = {
+      type: "getLabelData",
+      payload: id,
+    }
+    const expected = { id }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.value.id).toBe(id)
+    expect(end.done).toBe(true)
+  })
 })
