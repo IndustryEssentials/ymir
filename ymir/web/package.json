@@ -1,6 +1,6 @@
 {
-  "name": "pymir-web",
-  "version": "0.1.11",
+  "name": "ymir-web",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "local": "APP_ROOT=../pages/demo1 umi dev",
@@ -25,6 +25,7 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "./src/**/*.{js,ts,tsx}",
+      "!./src/assets/**",
       "!./src/components/**",
       "!./src/pages/**",
       "!./src/layouts/**",

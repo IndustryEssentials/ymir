@@ -73,18 +73,20 @@ describe("models: model", () => {
     const saga = model.effects.getModel
     const modelId = 615
     const datasetId = 809
+    const vsId = 810
     const creator = {
       type: "getModel",
       payload: { id: modelId },
     }
-        
+
     const expected = {
       id: modelId,
       parameters: {
-        include_train_datasets: [datasetId]
+        include_train_datasets: [datasetId],
+        include_validation_datasets: [vsId],
       }
     }
-    const datasets = [product(datasetId)]
+    const datasets = [product(datasetId), product(vsId), product(0), product(1)]
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -141,7 +143,7 @@ describe("models: model", () => {
     const expected = { id: 619 }
     const creator = {
       type: "updateModel",
-      payload: { ...expected, name: 'itisanewname'},
+      payload: { ...expected, name: 'itisanewname' },
     }
 
     const generator = saga(creator, { put, call })
@@ -153,6 +155,32 @@ describe("models: model", () => {
 
     // console.log('model model - createFilterTask: ', start, end)
     expect(end.value.id).toBe(expected.id)
+    expect(end.done).toBe(true)
+  })
+  it("effects: verify", () => {
+    const saga = model.effects.verify
+    const id = 620
+    const url = '/test.jpg'
+    const creator = {
+      type: "verify",
+      payload: { id, urls: [url] },
+    }
+    const expected = {
+      model_id: id,
+      annotations: [
+        { img_url: url, detections: [{ box: { x: 20, y: 52, w: 79, h: 102 } }] }
+      ]
+    }
+
+    const generator = saga(creator, { put, call })
+    const start = generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    // console.log('model model - createFilterTask: ', start, end)
+    expect(end.value.model_id).toBe(id)
     expect(end.done).toBe(true)
   })
 })
