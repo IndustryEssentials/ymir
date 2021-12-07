@@ -32,5 +32,19 @@
             "name": "others",
             "delta": 1.0
         }
+    ],
+    "filter": [
+        {
+            "name": "read",
+            "delta": 0.2
+        },
+        {
+            "name": "change",
+            "delta": 0.6
+        },
+        {
+            "name": "new",
+            "delta": 0.2
+        }
     ]
 }
