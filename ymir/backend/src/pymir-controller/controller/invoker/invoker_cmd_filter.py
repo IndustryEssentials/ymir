@@ -3,6 +3,7 @@ import os
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, code, revs, utils, labels
 from proto import backend_pb2
+from typing import Optional
 
 
 class FilterBranchInvoker(BaseMirControllerInvoker):
@@ -22,13 +23,13 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
                                      mir_root=self._repo_root)
 
     # check parent filter task
-    def check_filter_task_work_dir(self):
+    def get_parent_filter_task_work_dir(self) -> Optional[str]:
         parent_task_type = backend_pb2.TaskType.Name(backend_pb2.TaskType.TaskTypeFilter)
         parent_work_dir = os.path.join(self._sandbox_root, "work_dir", parent_task_type, self._request.dst_task_id)
         if os.path.exists(parent_work_dir):
             return parent_work_dir
         else:
-            return False
+            return None
 
     def invoke(self) -> backend_pb2.GeneralResp:
         if self._request.req_type != backend_pb2.CMD_FILTER:
@@ -46,7 +47,7 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
         if self._request.ex_class_ids:
             filter_command += " -P '{}'".format(';'.join(label_handler.get_main_labels_by_ids(self._request.ex_class_ids)))
 
-        parent_work_dir = self.check_filter_task_work_dir()
+        parent_work_dir = self.get_parent_filter_task_work_dir()
         if parent_work_dir:
             filter_command += f" -w {parent_work_dir}"
 
