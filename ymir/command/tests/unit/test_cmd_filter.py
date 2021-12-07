@@ -231,6 +231,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cks = ex_cks
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
+        fake_args.work_dir = ''
         cmd = cmd_filter.CmdFilter(fake_args)
         cmd_run_result = cmd.run()
 
@@ -262,6 +263,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cks = None
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
+        fake_args.work_dir = ''
         cmd = cmd_filter.CmdFilter(fake_args)
         cmd_run_result = cmd.run()
         child_conn.send(cmd_run_result)
