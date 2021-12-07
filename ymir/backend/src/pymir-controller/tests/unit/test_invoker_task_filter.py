@@ -91,14 +91,12 @@ class TestInvokerTaskFilter(unittest.TestCase):
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
         print(MessageToDict(response))
 
-        working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeFilter), self._task_id)
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
                               "--src-revs '{3}@{3};{4}'".format(self._mir_repo_root, self._task_id, self._sub_task_id,
                                                                 self._guest_id1, self._guest_id2))
         expected_cmd_filter = ("cd {0} && mir filter --dst-rev {1}@{1} --src-revs {1}@{2} "
-                               "-p '{3}' -P '{4}' -w {5}".format(self._mir_repo_root, self._task_id, self._sub_task_id,
-                                                          'frisbee;car', 'frisbee;car', working_dir))
+                               "-p '{3}' -P '{4}'".format(self._mir_repo_root, self._task_id, self._sub_task_id,
+                                                          'frisbee;car', 'frisbee;car'))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge, capture_output=True, shell=True),
             mock.call(expected_cmd_filter, capture_output=True, shell=True),
