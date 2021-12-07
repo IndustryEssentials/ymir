@@ -19,6 +19,7 @@ RUN mkdir -p /app_logs/
 COPY requirements.txt ./
 RUN pip3 install --index-url=https://mirrors.aliyun.com/pypi/simple -r requirements.txt
 
+RUN pip3 install --index-url=https://mirrors.aliyun.com/pypi/simple --force-reinstall -U git+https://github.com/IndustryEssentials/ymir-cmd.git@dev
 
 COPY ./src /app
 WORKDIR /app
