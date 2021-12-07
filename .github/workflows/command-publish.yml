@@ -10,8 +10,8 @@ name: Upload Python Package
 
 on:
   push:
-    tags:        
-      - 'command-[0-9]+.[0-9]+.[0-9]+'
+    tags:
+      - 'command-[0-9]+.[0-9]+.[0-9]+(.[0-9]+)?'
 
 jobs:
   command-publish:
