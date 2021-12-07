@@ -50,7 +50,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
                                                              in_class_ids=filter_request.in_class_ids,
                                                              ex_class_ids=filter_request.ex_class_ids)
 
-        if merge_response.code == code.ResCode.CTR_OK:
+        if filter_response.code == code.ResCode.CTR_OK:
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
@@ -59,7 +59,8 @@ class TaskFilterInvoker(TaskBaseInvoker):
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=backend_pb2.TaskStateError)
+                                           state=backend_pb2.TaskStateError,
+                                           msg=filter_response.message)
 
         return filter_response
 
