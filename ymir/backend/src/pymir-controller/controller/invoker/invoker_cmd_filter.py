@@ -1,6 +1,7 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, code, revs, utils, labels
 from proto import backend_pb2
+import os
 
 
 class FilterBranchInvoker(BaseMirControllerInvoker):
@@ -19,6 +20,15 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
                                      ],
                                      mir_root=self._repo_root)
 
+    # check father filter task
+    def check_filter_task_work_dir(self):
+        father_task_type = backend_pb2.TaskType.Name(backend_pb2.TaskType.TaskTypeFilter)
+        father_work_dir = os.path.join(self._sandbox_root, "work_dir", father_task_type, self._request.dst_task_id)
+        if os.path.exists(father_work_dir):
+            return father_work_dir
+        else:
+            return False
+
     def invoke(self) -> backend_pb2.GeneralResp:
         if self._request.req_type != backend_pb2.CMD_FILTER:
             raise RuntimeError("Mismatched req_type")
@@ -34,6 +44,11 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
             filter_command += " -p '{}'".format(';'.join(label_handler.get_main_labels_by_ids(self._request.in_class_ids)))
         if self._request.ex_class_ids:
             filter_command += " -P '{}'".format(';'.join(label_handler.get_main_labels_by_ids(self._request.ex_class_ids)))
+
+        father_work_dir = self.check_filter_task_work_dir()
+        if father_work_dir:
+            filter_command += f" -w {father_work_dir}"
+
         return utils.run_command(filter_command)
 
     def _repr(self) -> str:
