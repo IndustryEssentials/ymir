@@ -1,7 +1,8 @@
+import os
+
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, code, revs, utils, labels
 from proto import backend_pb2
-import os
 
 
 class FilterBranchInvoker(BaseMirControllerInvoker):
