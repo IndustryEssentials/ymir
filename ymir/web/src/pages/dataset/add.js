@@ -353,8 +353,9 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('dataset.add.form.upload.btn')}>
                 <Uploader
-                  onChange={(files, result) => { setFileToken(files.length ? result : '') }}
+                  onChange={(files, result) => { setFileToken(result) }}
                   max={1024}
+                  onRemove={() => setFileToken('')}
                   info={t('dataset.add.form.upload.tip', { br: <br />, sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a> })}
                 ></Uploader>
               </Form.Item>
