@@ -28,6 +28,7 @@ def create_random_user(db: Session) -> User:
     password = random_lower_string()
     user_in = UserCreate(username=email, email=email, password=password)
     user = crud.user.create(db=db, obj_in=user_in)
+    user = crud.user.activate(db=db, id=user.id)
     return user
 
 
@@ -47,6 +48,7 @@ def authentication_token_from_email(
     else:
         user_in_update = UserUpdate(email=email, password=password)
         user = crud.user.update(db, db_obj=user, obj_in=user_in_update)
+    user = crud.user.activate(db, id=user.id)
     workspace = crud.workspace.get_by_user_id(db, user_id=user.id)
     if not workspace:
         workspace_in = WorkspaceCreate(

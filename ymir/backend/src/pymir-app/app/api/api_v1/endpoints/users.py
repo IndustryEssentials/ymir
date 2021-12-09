@@ -1,8 +1,9 @@
-from typing import Any
+from enum import IntEnum
+from typing import Any, Optional
 
-from fastapi import APIRouter, Body, Depends
-from fastapi.logger import logger
+from fastapi import APIRouter, Body, Depends, Query, Security
 from fastapi.encoders import jsonable_encoder
+from fastapi.logger import logger
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,7 @@ from app.api.errors.errors import (
     FailedtoCreateWorkspace,
     UserNotFound,
 )
+from app.constants.role import Roles
 from app.utils.ymir_controller import (
     ControllerClient,
     ControllerRequest,
@@ -20,6 +22,36 @@ from app.utils.ymir_controller import (
 )
 
 router = APIRouter()
+
+
+@router.get(
+    "/",
+    response_model=schemas.UsersOut,
+)
+def list_users(
+    db: Session = Depends(deps.get_db),
+    offset: int = Query(None),
+    limit: int = Query(None),
+    state: Optional[schemas.UserState] = Query(None),
+    current_user: models.User = Security(
+        deps.get_current_active_super_admin,
+        #       scopes=[Roles.SUPER_ADMIN.name],
+    ),
+) -> Any:
+    """
+    Get list of users,
+    pagination is supported by means of offset and limit
+
+    UserState:
+    - registered = 1
+    - active = 2
+    - declined = 3
+    - deactivated = 4
+    """
+    users, total = crud.user.get_multi_with_filter(
+        db, offset=offset, limit=limit, state=state
+    )
+    return {"result": {"total": total, "items": users}}
 
 
 @router.post(
@@ -110,19 +142,62 @@ def update_myself(
 @router.get(
     "/{user_id}",
     response_model=schemas.UserOut,
-    dependencies=[Depends(deps.get_current_active_admin)],
     responses={404: {"description": "User Not Found"}},
 )
 def get_user(
     user_id: int,
     db: Session = Depends(deps.get_db),
+    current_user: models.User = Security(
+        deps.get_current_active_user,
+        scopes=[Roles.ADMIN.name, Roles.SUPER_ADMIN.name],
+    ),
 ) -> Any:
     """
     Query user information,
-    Admin permission is required
+    Admin permission (Admin and Super admin) is required
     """
     user = crud.user.get(db, id=user_id)
     if not user:
         raise UserNotFound()
 
+    return {"result": user}
+
+
+class RolesEnum(IntEnum):
+    """
+    helper class to make Swagger doc looks better
+    """
+
+    NORMAL = 1
+    ADMIN = 2
+    SUPER_ADMIN = 3
+
+
+@router.patch(
+    "/{user_id}",
+    response_model=schemas.UserOut,
+    responses={404: {"description": "User Not Found"}},
+)
+def update_user_state(
+    user_id: int,
+    state: Optional[schemas.UserState] = Body(None),
+    role: Optional[RolesEnum] = Body(None),
+    is_deleted: Optional[bool] = Body(None),
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Security(
+        deps.get_current_active_super_admin,
+    ),
+) -> Any:
+    """
+    Change user state (activate, decline, deactivate, etc),
+    Super Admin permission is required
+    """
+    user = crud.user.get(db, id=user_id)
+    if not user:
+        raise UserNotFound()
+
+    if state:
+        user = crud.user.update_state(db, id=user_id, state=state)
+    if role:
+        user = crud.user.update_role(db, id=user_id, role=role)
     return {"result": user}
