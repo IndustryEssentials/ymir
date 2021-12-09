@@ -27,7 +27,8 @@ async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
 
 
 async def http422_error_handler(
-    _: Request, exc: Union[RequestValidationError, ValidationError],
+    _: Request,
+    exc: Union[RequestValidationError, ValidationError],
 ) -> JSONResponse:
     return JSONResponse(
         {
@@ -161,6 +162,11 @@ class PermissionDenied(APIError):
     status_code = 403
 
 
+class NotEligibleRole(PermissionDenied):
+    code = error_codes.USER_ROLE_NOT_ELIGIBLE
+    message = "User Role is not Eligible"
+
+
 class NoDatasetPermission(PermissionDenied):
     code = error_codes.DATASET_NOT_ACCESSIBLE
     message = "No Permission to Access or Modify Dataset"
@@ -188,10 +194,16 @@ class InvalidToken(APIError):
     message = "Invalid Token"
 
 
+class InvalidScope(APIError):
+    status_code = 401
+    code = error_codes.INVALID_SCOPE
+    message = "Invalid Scope"
+
+
 class InactiveUser(APIError):
     status_code = 401
     code = error_codes.USER_NOT_ACTIVE
-    message = "User is Deleted"
+    message = "User is Inactive"
 
 
 class DuplicateError(APIError):

@@ -11,7 +11,7 @@ from app.config import settings
 from app.db.session import SessionLocal
 from app.main import app
 from tests.utils.user import authentication_token_from_email
-from tests.utils.utils import get_admin_token_headers
+from tests.utils.utils import get_admin_token_headers, get_super_admin_token_headers
 
 
 @pytest.fixture(scope="session")
@@ -32,7 +32,10 @@ def fake_stats_client() -> Generator:
         client = Mock()
         client.get_task_stats.return_value = {}
         client.get_top_models.return_value = [(1, 10), (2, 9), (3, 8)]
-        client.get_keyword_wise_best_models.return_value = {"cat": [(1, 0.2), (10, 0.3)], "dog": [(2, 1.0), (9, 3.1)]}
+        client.get_keyword_wise_best_models.return_value = {
+            "cat": [(1, 0.2), (10, 0.3)],
+            "dog": [(2, 1.0), (9, 3.1)],
+        }
         client.get_top_datasets.return_value = [(10, 10), (20, 9), (30, 8)]
         yield client
     finally:
@@ -80,6 +83,7 @@ def fake_cache_client() -> Generator:
     finally:
         client.close()
 
+
 app.dependency_overrides[deps.get_controller_client] = fake_controller_client
 app.dependency_overrides[deps.get_stats_client] = fake_stats_client
 app.dependency_overrides[deps.get_viz_client] = fake_viz_client
@@ -103,3 +107,8 @@ def normal_user_token_headers(client: TestClient, db: Session) -> Dict[str, str]
 @pytest.fixture(scope="module")
 def admin_token_headers(client: TestClient) -> Dict[str, str]:
     return get_admin_token_headers(client)
+
+
+@pytest.fixture(scope="module")
+def super_admin_token_headers(client: TestClient) -> Dict[str, str]:
+    return get_super_admin_token_headers(client)
