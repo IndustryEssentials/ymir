@@ -88,30 +88,32 @@ def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
     return True
 
 
-def _update_mir_tasks(mir_root: str, base_branch: str, dst_branch: str, task_id: str, model_sha1: str,
-                      mAP: float) -> None:
+def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
+                      model_sha1: str, mAP: float) -> None:
     """
     add a new mir single task into mir_tasks from branch base_branch, and save it to a new branch: dst_branch
     """
     task = mirpb.Task()
     task.type = mirpb.TaskTypeTraining
     task.name = "training done"
-    task.task_id = task_id
+    task.task_id = dst_rev_tid.tid
     task.timestamp = int(datetime.datetime.now().timestamp())
     task.model.model_hash = model_sha1
     task.model.mean_average_precision = mAP
 
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                          mir_branch=base_branch,
+                                                                          mir_branch=src_rev_tid.rev,
+                                                                          mir_task_id=src_rev_tid.tid,
                                                                           ms=mirpb.MirStorage.MIR_TASKS)
     mir_storage_ops.add_mir_task(mir_tasks, task)
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                  mir_branch=dst_branch,
-                                                  his_branch=base_branch,
+                                                  mir_branch=dst_rev_tid.rev,
+                                                  task_id=dst_rev_tid.tid,
+                                                  his_branch=src_rev_tid.rev,
                                                   mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
-                                                  commit_message=task_id)
+                                                  commit_message=dst_rev_tid.tid)
 
-    logging.info("task id: {}, model hash: {}, mAP: {}".format(task_id, model_sha1, mAP))
+    logging.info("task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
 
 
 # add this function for mock unit test.
@@ -209,6 +211,7 @@ class CmdTrain(base.BaseCommand):
         unused_ids = set()  # type: Set[str]
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
                                                        mir_branch=src_typ_rev_tid.rev,
+                                                       mir_task_id=src_typ_rev_tid.tid,
                                                        mir_storages=[mirpb.MirStorage.MIR_METADATAS])
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         for asset_id, asset_attr in mir_metadatas.attributes.items():
@@ -263,6 +266,7 @@ class CmdTrain(base.BaseCommand):
                              need_ext=True,
                              need_id_sub_folder=False,
                              base_branch=src_typ_rev_tid.rev,
+                             base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_train, 'index.tsv'),
                              index_prefix='/in/train')
@@ -280,6 +284,7 @@ class CmdTrain(base.BaseCommand):
                              need_ext=True,
                              need_id_sub_folder=False,
                              base_branch=src_typ_rev_tid.rev,
+                             base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_val, 'index.tsv'),
                              index_prefix='/in/val')
@@ -298,6 +303,7 @@ class CmdTrain(base.BaseCommand):
                                  need_ext=True,
                                  need_id_sub_folder=False,
                                  base_branch=src_typ_rev_tid.rev,
+                                 base_task_id=src_typ_rev_tid.tid,
                                  format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                                  index_file_path=os.path.join(work_dir_in_test, 'index.tsv'),
                                  index_prefix='/in/test')
@@ -334,9 +340,8 @@ class CmdTrain(base.BaseCommand):
         # update metadatas and task with finish state and model hash
         logging.info("creating task")
         _update_mir_tasks(mir_root=mir_root,
-                          base_branch=src_typ_rev_tid.rev,
-                          dst_branch=dst_typ_rev_tid.rev,
-                          task_id=task_id,
+                          src_rev_tid=src_typ_rev_tid,
+                          dst_rev_tid=dst_typ_rev_tid,
                           model_sha1=model_sha1,
                           mAP=model_mAP)
 

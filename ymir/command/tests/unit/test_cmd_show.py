@@ -13,7 +13,6 @@ from tests import utils as test_utils
 class TestCmdShow(unittest.TestCase):
     def _prepare_mir_repo_branch_mining(self, mir_repo_root):
         mir_annotations = mirpb.MirAnnotations()
-        mir_keywords = mirpb.MirKeywords()
         mir_metadatas = mirpb.MirMetadatas()
         mir_tasks = mirpb.MirTasks()
 
@@ -41,8 +40,14 @@ class TestCmdShow(unittest.TestCase):
         }
         ParseDict(dict_tasks, mir_tasks)
 
-        test_utils.mir_repo_commit_all(mir_repo_root, mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
-                                       "prepare_branch_status")
+        test_utils.mir_repo_commit_all(mir_root=mir_repo_root,
+                                       mir_metadatas=mir_metadatas,
+                                       mir_annotations=mir_annotations,
+                                       mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
+                                       no_space_message="prepare_branch_status")
 
     def test_show_00(self):
         mir_root = test_utils.dir_test_root(self.id().split(".")[-3:])

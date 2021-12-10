@@ -101,8 +101,8 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
-    def _prepare_mir_branch(self, assets_and_keywords: Dict[str, Tuple[List[int], List[str]]], size: int, task_id: str,
-                            task_timestamp: int, commit_msg: str):
+    def _prepare_mir_branch(self, assets_and_keywords: Dict[str, Tuple[List[int], List[str]]], size: int,
+                            branch_name_and_task_id: str, task_timestamp: int, commit_msg: str):
         mir_annotations = mirpb.MirAnnotations()
         mir_keywords = mirpb.MirKeywords()
         mir_metadatas = mirpb.MirMetadatas()
@@ -120,11 +120,11 @@ class TestMergeCmd(unittest.TestCase):
                                                                                        y=(asset_idx + 1) * 100)
         dict_annotations = {
             "task_annotations": {
-                task_id: {
+                branch_name_and_task_id: {
                     "image_annotations": image_annotations
                 }
             },
-            'head_task_id': task_id
+            'head_task_id': branch_name_and_task_id
         }
         ParseDict(dict_annotations, mir_annotations)
 
@@ -136,18 +136,24 @@ class TestMergeCmd(unittest.TestCase):
 
         dict_tasks = {
             'tasks': {
-                task_id:
-                TestMergeCmd._generate_task(task_id=task_id,
+                branch_name_and_task_id:
+                TestMergeCmd._generate_task(task_id=branch_name_and_task_id,
                                             name="mining",
                                             type=mirpb.TaskTypeMining,
                                             timestamp=task_timestamp)
             },
-            'head_task_id': task_id
+            'head_task_id': branch_name_and_task_id
         }
         ParseDict(dict_tasks, mir_tasks)
 
-        test_utils.mir_repo_commit_all(self._mir_root, mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
-                                       commit_msg)
+        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
+                                       mir_metadatas=mir_metadatas,
+                                       mir_annotations=mir_annotations,
+                                       mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch=branch_name_and_task_id,
+                                       task_id=branch_name_and_task_id,
+                                       no_space_message=commit_msg)
 
     def _prepare_mir_branch_a(self):
         """
@@ -163,7 +169,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1000,
-                                 task_id="a",
+                                 branch_name_and_task_id="a",
                                  task_timestamp=1624376173,
                                  commit_msg="prepare_branch_merge_a")
 
@@ -180,7 +186,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1100,
-                                 task_id="b",
+                                 branch_name_and_task_id="b",
                                  task_timestamp=1624376173 + 10,
                                  commit_msg="prepare_branch_merge_b")
 
@@ -197,7 +203,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1300,
-                                 task_id="d",
+                                 branch_name_and_task_id="d",
                                  task_timestamp=1624376173 + 30,
                                  commit_msg="prepare_branch_merge_d")
 
@@ -323,9 +329,7 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_tasks = {
             'tasks': {
                 "a":
-                TestMergeCmd._generate_task(task_id="a",
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
+                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
                                             timestamp=1624376173),
                 "b":
                 TestMergeCmd._generate_task(task_id="b",
@@ -413,9 +417,7 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_tasks = {
             'tasks': {
                 "a":
-                TestMergeCmd._generate_task(task_id="a",
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
+                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
                                             timestamp=1624376173),
                 "d":
                 TestMergeCmd._generate_task(task_id="d",
@@ -489,9 +491,7 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_tasks = {
             'tasks': {
                 "a":
-                TestMergeCmd._generate_task(task_id="a",
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
+                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
                                             timestamp=1624376173),
                 "d":
                 TestMergeCmd._generate_task(task_id="d",
@@ -556,9 +556,7 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_tasks = {
             'tasks': {
                 "a":
-                TestMergeCmd._generate_task(task_id="a",
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
+                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
                                             timestamp=1624376173),
                 'merge-task-id':
                 TestMergeCmd._generate_task(task_id="merge-task-id",
