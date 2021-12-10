@@ -11,6 +11,8 @@ const common = {
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
   'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
   'common.top.menu.resource': { cn: "资源配置", en: "Resource", },
+  'common.top.menu.mirror': { cn: "我的镜像", en: "Mirror", },
+  'common.top.menu.mirror.center': { cn: "公共资源", en: "Mirror Center", },
   'common.top.search.item.dataset': { cn: '包含 {searchValue} 的数据集', en: 'Dataset Name include: {searchValue}', },
   'common.top.search.item.model': { cn: '包含 {searchValue} 的模型', en: 'Model Name include: {searchValue}', },
   'common.top.search.item.task': { cn: '包含 {searchValue} 的任务', en: 'Task Name include: {searchValue}', },

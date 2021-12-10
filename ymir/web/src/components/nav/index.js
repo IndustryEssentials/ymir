@@ -9,6 +9,7 @@ import { connect } from "dva"
 import { Link, useHistory, useLocation } from "umi"
 
 import t from '@/utils/t'
+import { ROLES } from '@/constants/role'
 import LangBtn from "../common/langBtn"
 import styles from "./index.less"
 import './menu.less'
@@ -52,42 +53,41 @@ const menus = () => [
     key: "/home/model",
     icon: <NavModelmanageIcon className={styles.navIcon} />,
   },
-  // {
-  //   label: t('common.top.menu.configure'),
-  //   key: "/home/configures",
-  //   icon: <NavModelmanageIcon className={styles.navIcon} />,
-  //   sub: [
-  //     {
-  //       label: t('common.top.menu.resource'),
-  //       key: "/home/configure",
-  //       icon: <NavModelmanageIcon className={styles.navIcon} />,
-  //     },
-  //     {
-  //       label: t('common.top.menu.permission'),
-  //       key: "/home/configure/permission",
-  //       icon: <NavModelmanageIcon className={styles.navIcon} />,
-  //     },
-  //   ]
-  // },
+  {
+    label: t('common.top.menu.configure'),
+    key: "/home/configures",
+    icon: <NavModelmanageIcon className={styles.navIcon} />,
+    sub: [
+      {
+        label: t('common.top.menu.mirror'),
+        key: "/home/mirror",
+        icon: <NavModelmanageIcon className={styles.navIcon} />,
+      },
+      // {
+      //   label: t('common.top.menu.mirror.center'),
+      //   key: "/home/mirror_center",
+      //   icon: <NavModelmanageIcon className={styles.navIcon} />,
+      // },
+      {
+        label: t('common.top.menu.permission'),
+        key: "/home/permission",
+        permission: ROLES.SUPER,
+        icon: <NavModelmanageIcon className={styles.navIcon} />,
+      },
+    ]
+  },
 ]
-
-const plateMenusPath = (ms) => {
-  let result = []
-  const mes = ms || menus()
-  mes.forEach((menu) => {
-    result.push(menu.key)
-    if (menu.sub) {
-      result = [...result, ...plateMenusPath(menu.sub)]
-    }
-  })
-  return result
-}
 
 function getParantPath(path) {
   return path.replace(/^(\/home\/[^\/]+).*/, "$1")
 }
 
-function HeaderNav({ simple = false, username, loginout, avatar }) {
+function validPermission(role, permission) {
+  console.log('permission: ', role, permission)
+  return role >= (permission || role)
+}
+
+function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   // const location = useLocation()
   const [defaultKeys, setDefaultKeys] = useState(null)
   const location = useLocation()
@@ -156,7 +156,7 @@ function HeaderNav({ simple = false, username, loginout, avatar }) {
           </SubMenu>
         )
       } else {
-        return (
+        return validPermission(role, menu.permission) ? (
           <Menu.Item key={menu.key} onClick={() => handleClick(menu.key)} ref={e => {
             const ref = ReactDOM.findDOMNode(e)
             if (ref) {
@@ -166,7 +166,7 @@ function HeaderNav({ simple = false, username, loginout, avatar }) {
             {menu.icon}
             {menu.label}
           </Menu.Item>
-        )
+        ) : null
       }
     })
   }
@@ -230,6 +230,7 @@ const mapStateToProps = (state) => {
     username: state.user.username,
     avatar: state.user.avatar,
     current: state.watchRoute.current,
+    role: state.user.role,
   }
 }
 
