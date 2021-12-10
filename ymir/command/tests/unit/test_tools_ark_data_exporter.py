@@ -181,8 +181,10 @@ class TestArkDataExporter(unittest.TestCase):
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,
                                        mir_metadatas=mir_metadatas,
                                        mir_annotations=mir_annotations,
-                                       mir_keywords=mir_keywords,
                                        mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='a',
                                        no_space_message='test_tools_data_exporter_branch_a')
 
     # private: check result
@@ -235,6 +237,7 @@ class TestArkDataExporter(unittest.TestCase):
                              need_ext=True,
                              need_id_sub_folder=False,
                              base_branch='a',
+                             base_task_id='a',
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(train_path, 'index.tsv'),
                              index_prefix=None)
@@ -265,6 +268,7 @@ class TestArkDataExporter(unittest.TestCase):
                              need_ext=True,
                              need_id_sub_folder=False,
                              base_branch='a',
+                             base_task_id='a',
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC,
                              index_file_path=os.path.join(train_path, 'index.tsv'),
                              index_prefix=None)
