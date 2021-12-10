@@ -60,7 +60,7 @@ const ModelList = ({ getModels, getHotModel, batchModels }) => {
   }
 
   return <Card className={`${styles.box} ${styles.modelList}`}
-    headStyle={cardHead} bodyStyle={cardBody}
+    headStyle={cardHead} bodyStyle={{ ...cardBody, height: 281 }}
     title={<><OptimalModelIcon className={styles.headIcon} />{t('portal.model.best.title')}</>}
   >
     <Space>{keywords.map(k => <Tag className={`${k === current ? styles.current : ''} ${styles.kwtag}`} key={k} onClick={() => changeKeyword(k)}>{k}</Tag>)}</Space>
