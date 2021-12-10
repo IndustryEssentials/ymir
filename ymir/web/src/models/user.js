@@ -23,7 +23,7 @@ const model = {
     phone: "",
     avatar: '',
     id: 0,
-    role: 1,
+    role: 2,
     logined: !!storage.get("access_token"),
     neverShow,
     guideVisible: false,
