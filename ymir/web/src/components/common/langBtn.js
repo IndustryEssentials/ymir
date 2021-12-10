@@ -14,7 +14,7 @@ function LangBtn({ dark = false }) {
   const [current, setCurrent] = useState(all[0])
 
   useEffect(() => {
-    const current = all.find(lang => lang.value === currentLang) || all[0]
+    const current = all.find(lang => lang.value === currentLang) || all[1]
     setLocale(current.value)
     setCurrent(current)
   }, [currentLang])
