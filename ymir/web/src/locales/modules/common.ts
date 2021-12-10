@@ -52,6 +52,8 @@ const common = {
   'common.all': {cn: '全部', en: 'All', },
   'common.yes': {cn: '是', en: 'Yes', },
   'common.no': {cn: '否', en: 'No', },
+  'common.hot': {cn: '最热', en: 'Hot', },
+  'common.latest': {cn: '最新', en: 'Latest', },
   'common.uploader.format.error': {cn: '上传文件格式不正确', en: 'Invalid format', },
   'common.uploader.size.error': {cn: '文件大小最大不超过 {max}MB', en: 'File must smaller than {max}MB!', },
 }

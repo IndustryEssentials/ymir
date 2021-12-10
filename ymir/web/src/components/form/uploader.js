@@ -15,11 +15,11 @@ const typeFormat = {
   doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/pdf'],
 }
 
-function Uploader({ className, value=[], format="zip", label, max = 200, 
-  maxCount = 1, info = '', type='', crop = false, showUploadList = true, onChange = ()=> {}}) {
+function Uploader({ className, value=null, format="zip", label, max = 200, 
+  maxCount = 1, info = '', type='', crop = false, showUploadList = true, onChange = ()=> {}, onRemove = () => {}}) {
 
   label = label || t('model.add.form.upload.btn')
-  const [files, setFiles] = useState([])
+  const [files, setFiles] = useState(null)
 
   useEffect(() => {
     value && value.length && setFiles(value)
@@ -28,8 +28,6 @@ function Uploader({ className, value=[], format="zip", label, max = 200,
   function onFileChange({ file, fileList }) {
     if (file.status === 'done') {
       uploadSuccess(file.response)
-    } else {
-      onChange(fileList)
     }
     setFiles([...fileList])
   }
@@ -68,6 +66,7 @@ function Uploader({ className, value=[], format="zip", label, max = 200,
         headers={{ "Authorization": `Bearer ${storage.get("access_token")}` }}
         accept={format}
         onChange={onFileChange}
+        onRemove={onRemove}
         beforeUpload={beforeUpload}
         maxCount={maxCount}
         showUploadList={showUploadList}
