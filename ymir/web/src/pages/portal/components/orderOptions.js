@@ -6,6 +6,6 @@ export const ORDER = Object.freeze({
 })
 
 export const options = [
-  { value: '', label: t('最新') },
-  { value: ORDER.hot, label: t('最热') },
+  { value: ORDER.hot, label: t('common.hot') },
+  { value: '', label: t('common.latest') },
 ]
