@@ -40,6 +40,7 @@ class CmdShow(base.BaseCommand):
     def _show_general(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid) -> None:
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
                                                        mir_branch=src_typ_rev_tid.rev,
+                                                       mir_task_id=src_typ_rev_tid.tid,
                                                        mir_storages=mir_storage.get_all_mir_storage())
 
         mir_metadatas: mirpb.MirMetadatas = mir_datas.get(mirpb.MirStorage.MIR_METADATAS, None)
@@ -79,6 +80,7 @@ class CmdShow(base.BaseCommand):
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
         mir_keywords: mirpb.MirKeywords = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                                     mir_branch=src_typ_rev_tid.rev,
+                                                                                    mir_task_id=src_typ_rev_tid.tid,
                                                                                     ms=mirpb.MIR_KEYWORDS)
         cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         if verbose:
@@ -97,6 +99,7 @@ class CmdShow(base.BaseCommand):
     def _show_cks(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
         mir_keywords: mirpb.MirKeywords = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                                     mir_branch=src_typ_rev_tid.rev,
+                                                                                    mir_task_id=src_typ_rev_tid.tid,
                                                                                     ms=mirpb.MIR_KEYWORDS)
         if verbose:
             print(f"customized keywords ({len(mir_keywords.customized_keywords_cnt)}):")

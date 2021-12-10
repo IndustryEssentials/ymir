@@ -69,7 +69,6 @@ class TestMiningCmd(unittest.TestCase):
 
     def _prepare_mir_repo_branch_mining(self):
         mir_annotations = mirpb.MirAnnotations()
-        mir_keywords = mirpb.MirKeywords()
         mir_metadatas = mirpb.MirMetadatas()
         mir_tasks = mirpb.MirTasks()
 
@@ -129,9 +128,14 @@ class TestMiningCmd(unittest.TestCase):
         }
         ParseDict(dict_tasks, mir_tasks)
 
-        print("self._mir_repo_root: ", self._mir_repo_root)
-        test_utils.mir_repo_commit_all(self._mir_repo_root, mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
-                                       "prepare_branch_mining")
+        test_utils.mir_repo_commit_all(mir_root=self._mir_repo_root,
+                                       mir_metadatas=mir_metadatas,
+                                       mir_annotations=mir_annotations,
+                                       mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
+                                       no_space_message="prepare_branch_mining")
 
     # public: test cases
     @mock.patch("mir.commands.infer.CmdInfer.run_with_args", side_effect=_mock_run_func)
