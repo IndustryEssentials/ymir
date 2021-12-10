@@ -11,13 +11,6 @@ class LabelAddInvoker(BaseMirControllerInvoker):
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        from sentry_sdk import capture_exception
-        try:
-            raise ValueError("ddddddddddddddddd")
-        except ValueError as e:
-            capture_exception(e)
-        print("===============================================")
-
         response = utils.make_general_response(code.ResCode.CTR_OK, "")
         label_handler = labels.LabelFileHandler(self._user_root)
         conflict_rows = label_handler.merge_labels(self._request.private_labels, self._request.check_only)
