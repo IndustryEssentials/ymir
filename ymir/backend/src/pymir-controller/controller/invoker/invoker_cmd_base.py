@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from google.protobuf import json_format
 
-from controller.utils import code, checker, metrics_manager
+from controller.utils import code, checker, metrics
 from proto import backend_pb2
 
 
@@ -64,7 +64,7 @@ class BaseMirControllerInvoker(ABC):
             metrics_name += backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
         else:
             metrics_name += 'None'
-        metrics_manager.MetricsManager.send_counter(metrics_name)
+        metrics.send_counter(metrics_name)
 
     # functions about invoke and pre_invoke
     def server_invoke(self) -> backend_pb2.GeneralResp:

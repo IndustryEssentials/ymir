@@ -34,10 +34,10 @@ class MetricsManager:
                              socket.SOCK_DGRAM)  # UDP
         sock.sendto(metrics_name.encode(), (server_host, server_port))
 
-    @classmethod
-    def send_counter(cls, content: str) -> None:
-        manager = cls(False, "", "", "")
-        manager._send_counter(content)
+
+def send_counter(content: str) -> None:
+    manager = MetricsManager(False, "uuid", "localhost", "0")
+    manager._send_counter(content)
 
 
 # server as client.
