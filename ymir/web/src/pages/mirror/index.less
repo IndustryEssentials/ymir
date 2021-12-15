@@ -1,71 +1,58 @@
 .list {
-  padding: 20px;
-  min-height: calc(100vh - 180px);
-  background: #fff;
-  box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.06);
-  border-radius: 2px;
-  .tab_actions {
-    text-align: right;
-    .l {
-      color: rgba(0, 0, 0, 0.06);
+  :global(.ant-list-item), :global(.ant-list-item:last-child) {
+    padding: 10px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin: 10px 0;
+    border-radius: 2px;
+    &:hover {
+      border-color: @primary-color;
+      background-color: fade(@primary-color, 5);
     }
-    .addBtnIcon {
-      font-size: 16px;
-      margin-right: 3px;
+    &.falure {
+      border-color:rgb(242, 99, 123);
     }
+  }
+  :global(.ant-list-item-meta-title) {
+    font-size: 18px;
+  }
+  .info {
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.85);
+  }
+  .related {
+    color: rgba(0, 0, 0, 0.65);
   }
 }
 .title {
   font-weight: bold;
-}
-.column_actions .action {
-  display: inline-block;
-  padding: 0;
-  line-height: 32px;
-}
-.search {
-  :global(.ant-form-item) {
-    margin-bottom: 10px;
+  position: relative;
+  .tabs {
+    :global(.ant-tabs-tab-btn) {
+      font-size: 16px !important;
+    }
   }
-}
-// .queryColumn{
-//   margin-bottom: 10px;
-// }
-// .tab_actions {
-//   text-align: right;
-// }
-.column_name {
-  cursor: pointer;
-  .edit {
-    display: none;
-    color: skyblue;
-  }
-  &:hover {
-    .edit {
-      display: inline-block;
+  .search {
+    position: absolute;
+    right: 0;
+    :global(.ant-form-item:last-child) {
+      margin-right: 0;
+    }
+    :global(.ant-form-item-control) {
+      font-weight: normal;
     }
   }
 }
-
-.action_del {
-  // color: red;
-}
-.emptyIcon {
-  font-size: 80px;
-  color: #40a9ff;
-}
-.blue {
-  color: #40a9ff;
-  font-weight: bold;
-}
-
-.table {
-  position: relative;
-  table {
-    position: relative;
-    z-index: 2;
+.addBtn {
+  margin: 10px 0;
+  padding: 10px;
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  width: 100%;
+  color: @primary-color;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  &:hover {
+    border-color: @primary-color;
   }
-}
-.verify_uploader {
-  width: 600px;
 }
