@@ -72,6 +72,9 @@ class BaseMirControllerInvoker(ABC):
         pass
 
     def prepare_work_dir(self) -> str:
+        if self._request.req_type == backend_pb2.RequestType.TASK_INFO:
+            return ''
+
         # Prepare working dir.
         if self._request.req_type == backend_pb2.TASK_CREATE:
             type_dir = backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
