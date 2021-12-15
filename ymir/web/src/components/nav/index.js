@@ -9,7 +9,7 @@ import { connect } from "dva"
 import { Link, useHistory, useLocation } from "umi"
 
 import t from '@/utils/t'
-import { ROLES } from '@/constants/role'
+import { ROLES } from '@/constants/user'
 import LangBtn from "../common/langBtn"
 import styles from "./index.less"
 import './menu.less'

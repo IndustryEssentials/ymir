@@ -10,6 +10,8 @@ import {
   forgetPwd,
   getMeInfo,
   updateUserInfo,
+  getUsers,
+  setUserState,
   signup,
 } from "@/services/user"
 
@@ -117,6 +119,37 @@ const model = {
         phone: '',
       }})
       return true
+    },
+    *getActiveUsers({ payload }, { call }) {
+      const { result } = yield call(getUsers, { ...payload, state: 2 })
+      if (result) {
+        return result
+      }
+    },
+    *getUsers({ payload }, { call }) {
+      const { result } = yield call(getUsers, payload)
+      if (result) {
+        return result
+      }
+    },
+    *setUserRole({ payload }, { call }) {
+      const { id, role } = payload
+      const { result } = yield call(setUserState, { id, role })
+      if (result) {
+        return result
+      }
+    },
+    *setUserState({ payload }, { call }) {
+      const { result } = yield call(setUserState, payload)
+      if (result) {
+        return result
+      }
+    },
+    *off({ payload }, { call }) {
+      const { result } = yield call(setUserState, { id: payload, state: 4 })
+      if (result) {
+        return result
+      }
     },
   },
   reducers: {

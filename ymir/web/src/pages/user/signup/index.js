@@ -1,7 +1,7 @@
 import React from "react"
 import { connect } from "dva"
 import { useIntl, Link } from "umi"
-import { Form, Input, Button, Checkbox, Layout, Row, Col } from "antd"
+import { Form, Input, Button, Checkbox, Layout, Row, Col, message } from "antd"
 
 import t from "@/utils/t"
 import { layout420 } from "@/config/antd"
@@ -32,10 +32,8 @@ const Signup = ({ signupApi, loginApi, history }) => {
     }
     const res = await signupApi(params)
     if (res) {
-      const result = await loginApi({ username: email, password })
-      if (result) {
-        history.push("/home/portal")
-      }
+      history.push("/login")
+      message.warn('user.signup.success')
     }
   }
 
@@ -56,7 +54,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                 <h2>{t("signup.title.page")}</h2>
               </Col>
               <Col className={styles.back}>
-                {t('signup.login.tip')}<Link to={"/home/login"}>{t('signup.login.label')}</Link>
+                {t('signup.login.tip')}<Link to={"/login"}>{t('signup.login.label')}</Link>
               </Col>
             </Row>
             <Form

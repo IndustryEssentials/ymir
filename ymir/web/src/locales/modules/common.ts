@@ -58,6 +58,8 @@ const common = {
   'common.latest': {cn: '最新', en: 'Latest', },
   'common.uploader.format.error': {cn: '上传文件格式不正确', en: 'Invalid format', },
   'common.uploader.size.error': {cn: '文件大小最大不超过 {max}MB', en: 'File must smaller than {max}MB!', },
+  'common.action': {cn: '操作', en: 'Action', },
+  'common.state': {cn: '状态', en: 'State', },
 }
 
 export default common
