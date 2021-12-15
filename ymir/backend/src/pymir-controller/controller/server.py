@@ -7,12 +7,14 @@ from concurrent import futures
 from typing import Any
 
 import grpc
+import sentry_sdk
 import yaml
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from controller import server_impl as mir_controller_service
 from controller import task_monitor
+from controller.config import CONTROLLER_SENTRY_DSN
 from proto import backend_pb2_grpc
 
 path_matcher = re.compile(r"\$\{([^}^{]+)\}")
@@ -53,6 +55,7 @@ def main(main_args: Any) -> int:
     else:
         logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.INFO)
 
+    sentry_sdk.init(CONTROLLER_SENTRY_DSN)
     server_config = parse_config_file(main_args.config_file)
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)

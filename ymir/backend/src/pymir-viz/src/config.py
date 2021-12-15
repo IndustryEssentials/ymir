@@ -18,3 +18,5 @@ MIDDLE_STRUCTURE_VERSION = "0.1"
 ALL_INDEX_CLASSIDS = "__all_index_classids__"
 # set flag status when generating cache
 CACHE_STATUS = "status"
+
+VIZ_SENTRY_DSN = env("VIZ_SENTRY_DSN", None)
