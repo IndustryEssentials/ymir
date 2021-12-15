@@ -86,7 +86,7 @@ enum RequestType {
     CMD_LABEL_GET = 13;
     CMD_KILL = 14;
     CMD_LABLE_TASK_TERMINATE = 15;
-    CMD_IMAGE = 16;
+    CMD_PULL_IMAGE = 16;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -129,7 +129,6 @@ message GeneralReq {
     bool check_only=18;
     string executor_instance = 19;
     MergeStrategy merge_strategy = 20;
-    string image_name = 21;
     ReqCreateTask req_create_task = 1001;
     ReqGetTaskInfo req_get_task_info = 1002;
 }
@@ -140,7 +139,6 @@ message GeneralResp {
     string message = 3;
     repeated string ext_strs = 4;
     repeated string csv_labels = 5;
-    string model_config = 6;
     RespGetTaskInfo resp_get_task_info = 1000;
     RespCMDInference detection = 1001;
 }
