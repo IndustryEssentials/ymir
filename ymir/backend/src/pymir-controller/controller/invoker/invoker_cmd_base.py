@@ -64,7 +64,7 @@ class BaseMirControllerInvoker(ABC):
             metrics_name += backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
         else:
             metrics_name += 'None'
-        metrics.send_counter(metrics_name)
+        metrics.send_counter_metrics(metrics_name)
 
     # functions about invoke and pre_invoke
     def server_invoke(self) -> backend_pb2.GeneralResp:

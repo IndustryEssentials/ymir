@@ -19,7 +19,7 @@ class MetricsManager:
         self._server_port = int(server_port)
         logging.info(f'Metrics init: perm-{permission_pass} uuid-{uuid} host-{server_host} port-{server_port}')
 
-    def _send_counter(self, content: str) -> None:
+    def send_counter(self, content: str) -> None:
         if not self._permission_pass:
             return
         if not self._uuid or not self._server_host or not self._server_port:
@@ -35,9 +35,9 @@ class MetricsManager:
         sock.sendto(metrics_name.encode(), (server_host, server_port))
 
 
-def send_counter(content: str) -> None:
-    manager = MetricsManager(False, "uuid", "localhost", "0")
-    manager._send_counter(content)
+def send_counter_metrics(content: str) -> None:
+    manager = MetricsManager(False, "uuid", "localhost", "9125")
+    manager.send_counter(content)
 
 
 # server as client.
