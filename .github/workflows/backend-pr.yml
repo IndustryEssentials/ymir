@@ -27,8 +27,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install tox
-        git config --global user.name 'Deployer'
-        git config --global user.email 'deployer@intellif.com'
       working-directory: ymir/backend
     - name: Test with tox
       run: |
