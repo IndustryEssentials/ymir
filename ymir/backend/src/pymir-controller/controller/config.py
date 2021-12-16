@@ -35,3 +35,7 @@ GPU_USAGE_THRESHOLD = float(env("GPU_USAGE_THRESHOLD", 0.8))
 GPU_LOCK_MINUTES = int(env("GPU_LOCK_MINUTES", 1))
 
 CONTROLLER_SENTRY_DSN = env("CONTROLLER_SENTRY_DSN", None)
+
+IMAGE_TRAINING_CONFIG_PATH = "/img-man/training-template.yaml"
+IMAGE_MINING_CONFIG_PATH = "/img-man/mining-template.yaml"
+IMAGE_INFER_CONFIG_PATH = "/img-man/infer-template.yaml"

@@ -105,7 +105,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
             "cd {0} && mir export --media-location {1} --asset-dir {1} --annotation-dir {1} --src-revs {2} "
             "--format {3} -w {4}".format(self._mir_repo_root, self._storage_root, self._base_task_id, 'voc', working_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_importing, capture_output=True, shell=True),
+            mock.call(expected_cmd_importing, capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()
