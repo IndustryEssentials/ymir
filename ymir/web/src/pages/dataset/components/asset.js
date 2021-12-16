@@ -6,13 +6,11 @@ import { connect } from "dva"
 
 import { getDateFromTimestamp } from "@/utils/date"
 import t from "@/utils/t"
-import { getDataset } from '@/services/dataset'
-import Breadcrumbs from "@/components/common/breadcrumb"
 import Hash from "@/components/common/hash"
 import AssetAnnotation from "@/components/dataset/asset_annotation"
 import styles from "./asset.less"
 import { NavDatasetIcon } from '@/components/common/icons'
-import { EyeOffIcon, EyeOnIcon } from "../../components/common/icons"
+import { EyeOffIcon, EyeOnIcon } from "@/components/common/icons"
 
 const { CheckableTag } = Tag
 
@@ -28,16 +26,19 @@ const KeywordColor = [
   "gold",
 ]
 
-function Assets({ getAsset }) {
+function Asset({ id, hash, getAsset }) {
   const history = useHistory()
-  const { id, hash } = useParams()
   const [asset, setAsset] = useState({})
-  const [datasetName, setDatasetName] = useState('')
+  const [current,  setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
 
+  useEffect(() => {
+    hash && setCurrent(hash)
+  }, [hash])
+
   useEffect(async () => {
-    const result = await getAsset(id, hash)
+    const result = await getAsset(id, current)
     const compare = (a, b) => {
       const aa = (a.keyword || a).toUpperCase()
       const bb = (b.keyword || b).toUpperCase()
@@ -53,16 +54,7 @@ function Assets({ getAsset }) {
     const annotations = result.annotations.sort(compare)
     setAsset({ ...result, keywords, annotations })
     setSelectedKeywords(keywords)
-  }, [id, hash])
-
-  useEffect(async () => {
-    const { code, result } = await getDataset(id)
-    //  console.log('dataset: ', code, result)
-    if (code === 0 && result) {
-      const { name, asset_count } = result
-      setDatasetName(`${result.name}(${asset_count})`)
-    }
-  }, [id])
+  }, [id, current])
 
   useEffect(() => {
     setShowAnnotations((asset.annotations || []).filter(anno => selectedKeywords.indexOf(anno.keyword) >= 0))
@@ -82,13 +74,12 @@ function Assets({ getAsset }) {
   async function randomAsset() {
     const result = await getAsset(id, "random")
     if (result) {
-      history.push(`/home/dataset/asset/${id}/${result.hash}`)
+      setCurrent(result.hash)
     }
   }
 
   return asset.hash ? (
     <div className={styles.asset}>
-      <Breadcrumbs titles={{ 2: datasetName }} />
       <div className={styles.info}>
         <Row className={styles.infoRow} wrap={false}>
           <Col span={18} className={styles.asset_img}>
@@ -116,7 +107,7 @@ function Assets({ getAsset }) {
                 labelStyle={{ justifyContent: 'flex-end', padding: '10px' }}
               >
                 <Descriptions.Item label={t("dataset.asset.info.id")} span={2}>
-                  <Hash value={hash} />
+                  <Hash value={current} />
                 </Descriptions.Item>
                 <Descriptions.Item label={t("dataset.asset.info.width")}>
                   {asset.metadata?.width}
@@ -185,4 +176,4 @@ const actions = (dispatch) => {
   }
 }
 
-export default connect(null, actions)(Assets)
+export default connect(null, actions)(Asset)
