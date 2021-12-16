@@ -17,3 +17,8 @@ SANDBOX:
   sandboxroot: /tmp/ymir-controller-sandbox-root/sandbox
 TASK_MONITOR:
   storageroot: /tmp/ymir-controller-sandbox-root/monitor
+METRICS:
+  allow_feedback: ${ALLOW_ANONYMOUS_FEEDBACK}
+  anonymous_uuid: ${ANONYMOUS_UUID}
+  server_host: localhost
+  server_port: "9125"
