@@ -139,7 +139,7 @@ const Routes = [
       {
         path: "/home/mirror/detail",
         name: "mirrorDetail",
-        component: "@/pages/mirror/Detail",
+        component: "@/pages/mirror/detail",
         title: "mirror.title",
       },
       {
