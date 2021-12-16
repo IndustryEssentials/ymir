@@ -39,6 +39,4 @@ supervisor==4.2.2
 types-redis==3.5.7
 types-requests==2.25.2
 ymir-cmd==0.2.1
-grpclib==0.4.2
-sentry-sdk[flask]==1.1.0
 jsonschema==3.2.0

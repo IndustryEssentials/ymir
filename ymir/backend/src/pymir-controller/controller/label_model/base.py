@@ -92,4 +92,4 @@ class LabelBase(ABC):
             import_work_dir=import_work_dir
         )
 
-        rds.hset(config.MONITOR_MAPPING_KEY, {task_id: json.dumps(label_task_content)})
+        rds.hset(name=config.MONITOR_MAPPING_KEY, mapping={task_id: json.dumps(label_task_content)})
