@@ -20,6 +20,10 @@ class TypRevTid:
         else:
             return False
 
+    @property
+    def rev_tid(self) -> str:
+        return join_rev_tid(self.rev, self.tid)
+
 
 # public: parse methods
 def parse_arg_revs(src_revs: str) -> List[TypRevTid]:
@@ -41,6 +45,10 @@ def parse_single_arg_rev(src_rev: str) -> TypRevTid:
         raise ValueError(f"src_rev: {src_rev} is not single")
 
     return __parse_single_arg_rev(src_rev)
+
+
+def join_rev_tid(rev: str, tid: str) -> str:
+    return f"{rev}@{tid}" if tid else rev
 
 
 # private: parse methods

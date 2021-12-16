@@ -204,7 +204,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
               </Select>
             </Form.Item>
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
-              <Uploader onChange={docChange} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
+              <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>

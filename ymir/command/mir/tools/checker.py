@@ -32,8 +32,8 @@ _ERROR_INFOS = {
     Prerequisites.IS_OUTSIDE_GIT_REPO: 'mir_root is already a git repo',
     Prerequisites.IS_INSIDE_MIR_REPO: 'mir_root is not a mir repo',
     Prerequisites.IS_OUTSIDE_MIR_REPO: 'mir_root is already a mir repo',
-    Prerequisites.IS_DIRTY: 'mir repo is clean, nothing to commit',
-    Prerequisites.IS_CLEAN: 'mir repo is dirty',
+    Prerequisites.IS_DIRTY: 'mir repo is clean (need dirty)',
+    Prerequisites.IS_CLEAN: 'mir repo is dirty (need clean)',
     Prerequisites.HAVE_LABELS: f"can not find {class_ids.ids_file_name()}",
     Prerequisites.HAVE_NO_LABELS: f"already have {class_ids.ids_file_name()}",
 }

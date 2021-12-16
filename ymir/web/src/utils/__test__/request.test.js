@@ -1,12 +1,14 @@
-import { history } from "umi"
-// import request from '../request'
-import storage from "@/utils/storage"
+import { history, getDvaApp } from "umi"
 import { message } from "antd"
-// console.log('history: ', history)
 
 const token = 'itistokenstring'
 
 jest.mock("umi", () => {
+  const dvaApp = {
+    _store: {
+      dispatch: jest.fn(),
+    }
+  }
   return {
     history: {
       push: jest.fn(),
@@ -15,6 +17,7 @@ jest.mock("umi", () => {
         pathname: 'testpathname',
       }
     },
+    getDvaApp: jest.fn(() => dvaApp),
   }
 })
 
@@ -104,8 +107,8 @@ describe("utils: request", () => {
     expect(() => {
       reqHandler.rejected(res)
     }).toThrow()
-    expect(storage.remove).toHaveBeenCalled()
-    expect(history.replace).toHaveBeenCalled()
+    expect(getDvaApp).toHaveBeenCalled()
+    expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
     
     res = {
       request: {

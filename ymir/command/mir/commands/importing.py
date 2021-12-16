@@ -121,6 +121,7 @@ class CmdImport(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=dst_typ_rev_tid.tid,
                                                       mir_datas=mir_data,
                                                       commit_message=dst_typ_rev_tid.tid)
 

@@ -1,4 +1,3 @@
-import umeng from "./services/umeng"
 
 export const dva = {
   config: {
