@@ -136,39 +136,35 @@ function Filter({
             <Form.Item
               label={t('task.filter.form.datasets.label')}
               required
+              name="datasets"
+              rules={[
+                { required: true, message: t('task.filter.form.datasets.required') },
+              ]}
             >
-              <Form.Item
-                noStyle
-                name="datasets"
-                rules={[
-                  { required: true, message: t('task.filter.form.datasets.required') },
-                ]}
+              <Select
+                placeholder={t('task.filter.form.datasets.placeholder')}
+                mode='multiple'
+                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                onChange={datasetChange}
+                showArrow
               >
-                <Select
-                  placeholder={t('task.filter.form.datasets.placeholder')}
-                  mode='multiple'
-                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                  onChange={datasetChange}
-                  showArrow
-                >
-                  {datasets.map(item => (
-                    <Option value={item.id} key={item.name}>
-                      {item.name}({item.asset_count})
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <div className={commonStyles.formItemLowLevel}>
-                <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
-                <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
-                  <Radio.Group options={[
-                    { value: 2, label: t('task.train.form.repeatdata.latest') },
-                    { value: 3, label: t('task.train.form.repeatdata.original') },
-                    { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                  ]} />
-                </Form.Item></div>
+                {datasets.map(item => (
+                  <Option value={item.id} key={item.name}>
+                    {item.name}({item.asset_count})
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </ConfigProvider>
+          <Form.Item name='strategy'
+            hidden={form.getFieldValue('datasets')?.length < 2}
+            initialValue={2} label={t('task.train.form.repeatdata.label')}>
+            <Radio.Group options={[
+              { value: 2, label: t('task.train.form.repeatdata.latest') },
+              { value: 3, label: t('task.train.form.repeatdata.original') },
+              { value: 1, label: t('task.train.form.repeatdata.terminate') },
+            ]} />
+          </Form.Item>
           <Form.Item label={t('dataset.column.keyword')} required>
             <Form.Item
               label={t('task.filter.form.include.label')}
