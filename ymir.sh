@@ -34,8 +34,7 @@ sed -i '' "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_F
 check_permission() {
 cat <<- EOF
 Would you allow YMIR to send us automatic reports helps us prioritize what to fix and improve in YMIR?
-These reports can include things like when task type, how much resources you’re using.
-NO personal information is collected.
+These reports can include things like task type, how much resources you’re using. NO personal information collected.
 EOF
 
 while true; do
