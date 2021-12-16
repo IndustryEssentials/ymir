@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react"
 import { useParams, useHistory } from "umi"
 import { connect } from "dva"
-import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag } from "antd"
+import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag, Modal } from "antd"
 
 import styles from "./detail.less"
 import t from "@/utils/t"
 import Breadcrumbs from "../../components/common/breadcrumb"
 import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "../../components/common/icons"
+import Asset from "./components/asset"
 
 const { Option } = Select
 
@@ -37,6 +38,8 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const [total, setTotal] = useState(0)
   const [keywords, setKeywords] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [assetVisible, setAssetVisible] = useState(false)
+  const [currentAsset, setCurrentAsset] = useState(null)
 
   useEffect(async () => {
     const data = await getDataset(id)
@@ -71,7 +74,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setKeywords(Object.keys(keywords).map((key) => ({ key, count: keywords[key] })))
   }
   const goAsset = (hash) => {
-    history.push(`/home/dataset/asset/${id}/${hash}`)
+    // history.push(`/home/dataset/asset/${id}/${hash}`)
+    setCurrentAsset(hash)
+    setAssetVisible(true)
   }
 
   const randomPage = () => {
@@ -153,9 +158,16 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     </Col>
   </Row>
 
+  const assetDetail = <Modal className={styles.assetDetail} 
+    title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
+    width={null} footer={null}>
+    <Asset id={id} hash={currentAsset} />
+  </Modal>
+
   return (
     <div className={styles.datasetDetail}>
       <Breadcrumbs />
+      {assetDetail}
       <div className={styles.actions}>
         <Space>
           <Button
