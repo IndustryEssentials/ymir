@@ -3,9 +3,11 @@ import os
 import pathlib
 import requests
 import shutil
-from typing import Dict, List, Optional, Union
+import tarfile
+from typing import Dict, List, Optional, Tuple, Union
 
 from PIL import Image, UnidentifiedImageError
+import yaml
 
 from mir import scm
 
@@ -153,3 +155,105 @@ def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str,
         raise ValueError("asset_location is not set.")
 
     return {id: os.path.join(asset_location, id) for id in asset_ids}
+
+
+class ModelStorage:
+    def __init__(self) -> None:
+        self.params = ''
+        self.json = ''
+        self.weights = ''
+        self.config = ''
+
+    def get_all_models(self) -> List[str]:
+        all_models = []
+        if self.params and self.json:
+            all_models.append(self.params)
+            all_models.append(self.json)
+        if self.weights:
+            all_models.append(self.weights)
+        return all_models
+
+
+def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> ModelStorage:
+    """
+    unpack model to `dst_model_path`
+
+    Args:
+        model_location (str): model storage dir
+        model_hash (str): hash to model package
+        dst_model_path (str): path to destination model directory
+
+    Returns:
+        ModelStorage: rel path to params, json, weights file and config file (start from dest_root)
+    """
+    model_id_rel_paths = store_assets_to_dir(asset_ids=[model_hash],
+                                             out_root=dst_model_path,
+                                             sub_folder='.',
+                                             asset_location=model_location,
+                                             create_prefix=False,
+                                             need_suffix=False)
+    model_file = os.path.join(dst_model_path, model_id_rel_paths[model_hash])
+    return _unpack_models(tar_file=model_file, dest_root=dst_model_path)
+
+
+def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
+    """
+    unpack model to dest root directory
+
+    Args:
+        tar_file (str): path to model package
+        dest_root (str): destination save directory
+
+    Raises:
+        ValueError: if dest_root is not a directory
+        ValueError: if tar_file is not a file
+        ValueError: if model package lack params, json or config file
+
+    Returns:
+        ModelStorage: rel path to params, json, weights and config file (start from dest_root)
+    """
+    if not os.path.isdir(dest_root):
+        raise ValueError(f"dest_root is not a directory: {dest_root}")
+    if not os.path.isfile(tar_file):
+        raise ValueError(f"tar_file is not a file: {tar_file}")
+
+    # params_file, json_file, weights_file, config_file = '', '', '', ''
+    model_storage = ModelStorage()
+    with tarfile.open(tar_file, 'r') as tar_gz:
+        for item in tar_gz:
+            logging.info(f"extracting {item} -> {dest_root}")
+            if 'json' in item.name:
+                model_storage.json = item.name
+            if 'params' in item.name:
+                model_storage.params = item.name
+            if 'config.yaml' in item.name:
+                model_storage.config = item.name
+            if 'weights' in item.name:
+                model_storage.weights = item.name
+            tar_gz.extract(item, dest_root)
+
+    if not model_storage.params or not model_storage.json or not model_storage.config:
+        raise ValueError(f"empty params file, json file or config file in model package: {tar_file}")
+
+    return model_storage
+
+
+def get_training_class_names(training_config_file: str) -> List[str]:
+    """get class names from training config file
+
+    Args:
+        training_config_file (str): path to training config file, NOT YOUR MINING OR INFER CONFIG FILE!
+
+    Raises:
+        ValueError: when class_names key not in training config file
+
+    Returns:
+        List[str]: list of class names
+    """
+    with open(training_config_file, 'r') as f:
+        training_config = yaml.safe_load(f.read())
+
+    if 'class_names' not in training_config or len(training_config['class_names']) == 0:
+        raise ValueError(f"can not find class_names in {training_config_file}")
+
+    return training_config['class_names']

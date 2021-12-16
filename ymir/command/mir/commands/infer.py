@@ -119,10 +119,12 @@ class CmdInfer(base.BaseCommand):
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        rel_model_params_path, _, rel_model_config_path = prepare_model(model_location, model_hash, work_model_path)
+        model_storage = mir_utils.prepare_model(model_location, model_hash, work_model_path)
+        rel_model_params_path = model_storage.params
+        rel_model_config_path = model_storage.config
 
         training_config_path = os.path.join(work_model_path, rel_model_config_path)
-        class_names = get_training_class_names(training_config_file=training_config_path)
+        class_names = mir_utils.get_training_class_names(training_config_file=training_config_path)
         prepare_config_file(config_file=config_file,
                             dst_config_file=work_config_file,
                             class_names=class_names,
@@ -245,49 +247,6 @@ def _get_max_boxes(config_file: str) -> int:
 
 # might used both by mining and infer
 # public: general
-def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> Tuple[str, str, str]:
-    """
-    unpack model to `dst_model_path`
-
-    Args:
-        model_location (str): model storage dir
-        model_hash (str): hash to model package
-        dst_model_path (str): path to destination model directory
-
-    Returns:
-        Tuple[str, str, str]: rel path to params file, json file and config file (start from dest_root)
-    """
-    model_id_rel_paths = mir_utils.store_assets_to_dir(asset_ids=[model_hash],
-                                                       out_root=dst_model_path,
-                                                       sub_folder='.',
-                                                       asset_location=model_location,
-                                                       create_prefix=False,
-                                                       need_suffix=False)
-    model_file = os.path.join(dst_model_path, model_id_rel_paths[model_hash])
-    return _unpack_models(tar_file=model_file, dest_root=dst_model_path)
-
-
-def get_training_class_names(training_config_file: str) -> List[str]:
-    """get class names from training config file
-
-    Args:
-        training_config_file (str): path to training config file, NOT YOUR MINING OR INFER CONFIG FILE!
-
-    Raises:
-        ValueError: when class_names key not in training config file
-
-    Returns:
-        List[str]: list of class names
-    """
-    with open(training_config_file, 'r') as f:
-        training_config = yaml.safe_load(f.read())
-
-    if 'class_names' not in training_config or len(training_config['class_names']) == 0:
-        raise ValueError(f"can not find class_names in {training_config_file}")
-
-    return training_config['class_names']
-
-
 def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -> None:
     with open(config_file, 'r') as f:
         infer_config = yaml.safe_load(f)
@@ -324,57 +283,13 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     return MirCode.RC_OK
 
 
-# protected: general
-def _unpack_models(tar_file: str, dest_root: str) -> Tuple[str, str, str]:
-    """
-    unpack model to dest root directory
-
-    Args:
-        tar_file (str): path to model package
-        dest_root (str): destination save directory
-
-    Raises:
-        ValueError: if dest_root is not a directory
-        ValueError: if tar_file is not a file
-        ValueError: if model package lack params, json or config file
-
-    Returns:
-        Tuple[str, str, str]: rel path to params file, json file and config file (start from dest_root)
-    """
-    if not os.path.isdir(dest_root):
-        raise ValueError(f"dest_root is not a directory: {dest_root}")
-    if not os.path.isfile(tar_file):
-        raise ValueError(f"tar_file is not a file: {tar_file}")
-
-    params_file, json_file, config_file = None, None, None
-    with tarfile.open(tar_file, 'r') as tar_gz:
-        for item in tar_gz:
-            logging.info(f"extracting {item} -> {dest_root}")
-            if 'json' in item.name:
-                json_file = item.name
-            if 'params' in item.name:
-                params_file = item.name
-            if 'config.yaml' in item.name:
-                config_file = item.name
-            tar_gz.extract(item, dest_root)
-
-    if not params_file or not json_file or not config_file:
-        raise ValueError(f"empty params file, json file or config file in model package: {tar_file}")
-
-    return params_file, json_file, config_file
-
-
 # public: cli bind
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                        parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
     infer_arg_parser = subparsers.add_parser('infer',
                                              description='use this command to inference images',
                                              help='inference images')
-    infer_arg_parser.add_argument('--index-file',
-                                  dest='index_file',
-                                  type=str,
-                                  required=True,
-                                  help='path to index file')
+    infer_arg_parser.add_argument('--index-file', dest='index_file', type=str, required=True, help='path to index file')
     infer_arg_parser.add_argument('-w',
                                   required=True,
                                   dest='work_dir',

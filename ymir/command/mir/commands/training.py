@@ -12,15 +12,14 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.phase_logger import phase_logger_in_out
 
 
 def _process_model_storage(out_root: str, config_file_path: str, model_upload_location: str,
                            ymir_info: dict) -> Tuple[str, float]:
-    models = _find_models(os.path.join(out_root, "models"))
-    model_paths = models[0]
-    model_mAP = models[1]
+    model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
     if not model_paths:
         raise ValueError("can not find models")
     tar_path = os.path.join(out_root, "models.tar.gz")
@@ -114,21 +113,41 @@ def _update_mir_tasks(mir_root: str, base_branch: str, dst_branch: str, task_id:
     logging.info("task id: {}, model hash: {}, mAP: {}".format(task_id, model_sha1, mAP))
 
 
-# add this function for mock unit test.
 def _run_train_cmd(cmd: str) -> int:
+    """
+    invoke training command
+
+    Args:
+        cmd (str): command
+
+    Returns:
+        int: MirCode.RC_OK if success
+
+    Raises:
+        Exception: if anything goes wrong
+    """
     logging.info("training with cmd: {}".format(cmd))
     subprocess.run(cmd.split(" "), check=True)  # run and wait, if non-zero value returned, raise
 
     return MirCode.RC_OK
 
 
-def _generate_config(config: Any, out_config_path: str, task_id: str) -> None:
+def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained_model_params: List[str]) -> None:
     config["task_id"] = task_id
+    config['pretrained_model_params'] = pretrained_model_params
 
     logging.debug("config: {}".format(config))
 
     with open(out_config_path, "w") as f:
         yaml.dump(config, f)
+
+
+def _get_shm_size(config_file_path: str) -> str:
+    with open(config_file_path, 'r') as f:
+        config = yaml.safe_load(f.read())
+    if 'shm_size' not in config:
+        return '16G'
+    return config['shm_size']
 
 
 class CmdTrain(base.BaseCommand):
@@ -137,6 +156,7 @@ class CmdTrain(base.BaseCommand):
 
         return CmdTrain.run_with_args(work_dir=self.args.work_dir,
                                       model_upload_location=self.args.model_path,
+                                      pretrained_model_hash=self.args.model_hash,
                                       src_revs=self.args.src_revs,
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
@@ -149,6 +169,7 @@ class CmdTrain(base.BaseCommand):
     @phase_logger_in_out
     def run_with_args(work_dir: str,
                       model_upload_location: str,
+                      pretrained_model_hash: str,
                       executor: str,
                       executor_instance: str,
                       src_revs: str,
@@ -201,6 +222,21 @@ class CmdTrain(base.BaseCommand):
         task_id = dst_typ_rev_tid.tid
         if not executor_instance:
             executor_instance = f"default-training-{task_id}"
+
+        # if have model_hash, export model
+        model_storage = mir_utils.ModelStorage()
+        if pretrained_model_hash:
+            work_model_path = os.path.join(work_dir, 'in', 'models')
+            model_storage = mir_utils.prepare_model(model_location=model_upload_location,
+                                                    model_hash=pretrained_model_hash,
+                                                    dst_model_path=work_model_path)
+
+            # check class names
+            pretrained_class_names = mir_utils.get_training_class_names(
+                training_config_file=os.path.join(work_model_path, model_storage.config))
+            if pretrained_class_names != class_names:
+                logging.error(f"class names mismatch: pretrained: {pretrained_class_names}, current: {class_names}")
+                return MirCode.RC_CMD_INVALID_ARGS
 
         # get train_ids, val_ids, test_ids
         train_ids = set()  # type: Set[str]
@@ -306,7 +342,11 @@ class CmdTrain(base.BaseCommand):
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
-        _generate_config(config=config, out_config_path=out_config_path, task_id=task_id)
+        pretrained_model_params = [os.path.join('/in/models', name) for name in model_storage.get_all_models()]
+        _generate_config(config=config,
+                         out_config_path=out_config_path,
+                         task_id=task_id,
+                         pretrained_model_params=pretrained_model_params)
 
         # start train docker and wait
         path_binds = []
@@ -317,9 +357,11 @@ class CmdTrain(base.BaseCommand):
         cmd = (f"nvidia-docker run --rm --shm-size={shm_size} {joint_path_binds} --user {os.getuid()}:{os.getgid()} "
                f"--name {executor_instance} {executor}")
 
-        ret = _run_train_cmd(cmd)
-        if ret != MirCode.RC_OK:
-            return ret
+        try:
+            _run_train_cmd(cmd)
+        except Exception as e:
+            logging.warning(f"training exception: {e}")
+            # don't exit, proceed if model exists
 
         # save model
         logging.info("saving models")
@@ -345,14 +387,6 @@ class CmdTrain(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _get_shm_size(config_file_path: str) -> str:
-    with open(config_file_path, 'r') as f:
-        config = yaml.safe_load(f.read())
-    if 'shm_size' not in config:
-        return '16G'
-    return config['shm_size']
-
-
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                        parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
     train_arg_parser = subparsers.add_parser("train",
@@ -369,6 +403,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   dest="media_location",
                                   type=str,
                                   help="media storage location for models")
+    train_arg_parser.add_argument('--model-hash',
+                                  dest='model_hash',
+                                  type=str,
+                                  required=False,
+                                  help='model hash to be used')
     train_arg_parser.add_argument("-w", required=True, dest="work_dir", type=str, help="work place for training")
     train_arg_parser.add_argument("--executor",
                                   required=True,

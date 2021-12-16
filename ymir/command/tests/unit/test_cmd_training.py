@@ -227,6 +227,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.model_path = self._models_location
         fake_args.media_location = self._assets_location
+        fake_args.model_hash = ''
         fake_args.work_dir = self._working_root
         fake_args.force = True
         fake_args.force_rebuild = False
