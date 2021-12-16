@@ -98,7 +98,7 @@ const task = {
   "task.train.form.hyperparam.label": { cn: "超参数", en: "Hyper Params", },
   "task.train.form.traintypes.detect": { cn: "目标检测", en: "Object Detection", },
   "task.train.total.label": { cn: "共 {total} 个", en: "Total {total} assets", },
-  "task.train.form.repeatdata.label": { cn: "当数据重复时：", en: "Found duplicate data: ", },
+  "task.train.form.repeatdata.label": { cn: "当数据重复时", en: "Found duplicate data", },
   "task.train.form.repeatdata.terminate": { cn: "终止任务", en: "Terminate Task", },
   "task.train.form.repeatdata.latest": { cn: "采用最新的标注", en: "Use Data With Latest Annotation", },
   "task.train.form.repeatdata.original": { cn: "采用最初的标注", en: "Use Data With Original Annotation", },
