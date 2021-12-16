@@ -208,37 +208,33 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
               <Form.Item
                 label={t('task.filter.form.datasets.label')}
                 required
+                name="datasets"
+                rules={[
+                  { required: true, message: t('task.filter.form.datasets.required') },
+                ]}
               >
-                <Form.Item
-                  noStyle
-                  name="datasets"
-                  rules={[
-                    { required: true, message: t('task.filter.form.datasets.required') },
-                  ]}
+                <Select
+                  placeholder={t('task.filter.form.datasets.placeholder')}
+                  mode='multiple'
+                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                  onChange={setsChange}
+                  showArrow
                 >
-                  <Select
-                    placeholder={t('task.filter.form.datasets.placeholder')}
-                    mode='multiple'
-                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                    onChange={setsChange}
-                    showArrow
-                  >
-                    {datasets.map(item => excludeSets.indexOf(item.id) < 0 ? (
-                      <Option value={item.id} key={item.name}>
-                        {item.name}({item.asset_count})
-                      </Option>
-                    ) : null)}
-                  </Select>
-                </Form.Item>
-                <div className={commonStyles.formItemLowLevel}>
-                  <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
-                  <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
-                    <Radio.Group options={[
-                      { value: 2, label: t('task.train.form.repeatdata.latest') },
-                      { value: 3, label: t('task.train.form.repeatdata.original') },
-                      { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                    ]} />
-                  </Form.Item></div>
+                  {datasets.map(item => excludeSets.indexOf(item.id) < 0 ? (
+                    <Option value={item.id} key={item.name}>
+                      {item.name}({item.asset_count})
+                    </Option>
+                  ) : null)}
+                </Select>
+              </Form.Item>
+              <Form.Item name='strategy'
+                hidden={selectedSets.length < 2}
+                initialValue={2} label={t('task.train.form.repeatdata.label')}>
+                <Radio.Group options={[
+                  { value: 2, label: t('task.train.form.repeatdata.latest') },
+                  { value: 3, label: t('task.train.form.repeatdata.original') },
+                  { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                ]} />
               </Form.Item>
               <Form.Item
                 label={t('task.mining.form.excludeset.label')}
@@ -289,20 +285,20 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             <Form.Item
               label={t('task.mining.form.strategy.label')}
             >
-            <Form.Item
-              name='filter_strategy'
-              initialValue={topk}
-              noStyle
-            >
-              <Radio.Group onChange={filterStrategyChange}>
-                <Radio value={false}>{t('common.all')}</Radio>
-                <Radio checked value={true}>{t('task.mining.form.topk.label')}</Radio>
-                <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
-                  { type: 'number', min: 1, max: trainSetCount - 1 || 1 }
-                ] : null}>
-                  <InputNumber style={{ width: 120 }} min={1} max={trainSetCount - 1} precision={0} disabled={!topk} />
-                </Form.Item>
-              </Radio.Group>
+              <Form.Item
+                name='filter_strategy'
+                initialValue={topk}
+                noStyle
+              >
+                <Radio.Group onChange={filterStrategyChange}>
+                  <Radio value={false}>{t('common.all')}</Radio>
+                  <Radio checked value={true}>{t('task.mining.form.topk.label')}</Radio>
+                  <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
+                    { type: 'number', min: 1, max: trainSetCount - 1 || 1 }
+                  ] : null}>
+                    <InputNumber style={{ width: 120 }} min={1} max={trainSetCount - 1} precision={0} disabled={!topk} />
+                  </Form.Item>
+                </Radio.Group>
               </Form.Item>
               <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
             </Form.Item>
