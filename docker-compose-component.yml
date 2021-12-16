@@ -16,11 +16,13 @@ services:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
     restart: on-failure
     networks:
-      extnetwork:
-        ipv4_address: 172.168.255.2
+      - extnetwork
 
 networks:
     extnetwork:
+      driver: bridge
       ipam:
+        driver: default
         config:
         - subnet: 172.168.255.0/24
+          gateway: 172.168.255.1
