@@ -102,12 +102,12 @@ class TestAssetController:
             },
             "elements": [
                 {
-                    "asset_id": "d4e4a60147f1e35bc7f5bc89284aa16073b043c9",
-                    "class_ids": [52]
-                },
-                {
                     "asset_id": "430df22960b0f369318705800139fcc8ec38a3e4",
                     "class_ids": [2, 52]
+                },
+                {
+                    "asset_id": "d4e4a60147f1e35bc7f5bc89284aa16073b043c9",
+                    "class_ids": [52]
                 },
             ],
             "ignored_labels": {

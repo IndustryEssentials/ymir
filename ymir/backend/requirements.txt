@@ -38,3 +38,4 @@ setuptools>=21.0.0
 ymir-cmd==0.2.1
 grpclib==0.4.2
 sentry-sdk[flask]==1.1.0
+jsonschema==3.2.0
