@@ -124,6 +124,30 @@ const Routes = [
         component: "@/pages/user/info",
         title: "keywords.title",
       },
+      {
+        path: "/home/mirror",
+        name: "mirror",
+        component: "@/pages/mirror/index",
+        title: "mirrors.title",
+      },
+      {
+        path: "/home/mirror_center",
+        name: "mirrorCenter",
+        component: "@/pages/mirror/center",
+        title: "mirrors.center.title",
+      },
+      {
+        path: "/home/mirror/detail",
+        name: "mirrorDetail",
+        component: "@/pages/mirror/detail",
+        title: "mirror.title",
+      },
+      {
+        path: "/home/permission",
+        name: "permission",
+        component: "@/pages/user/permission",
+        title: "user.permission.title",
+      },
     ],
   },
   {

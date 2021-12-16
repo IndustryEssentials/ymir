@@ -10,19 +10,27 @@ import {
   forgetPwd,
   getMeInfo,
   updateUserInfo,
+  getUsers,
+  setUserState,
   signup,
 } from "@/services/user"
+import { ROLES } from '@/constants/user'
 
 const neverShow = storage.get("never_show")
+
+const emptyUser = {
+  username: "",
+  email: "",
+  phone: "",
+  avatar: '',
+  id: 0,
+  role: ROLES.USER,
+}
 
 const model = {
   namespace: "user",
   state: {
-    username: "",
-    email: "",
-    phone: "",
-    avatar: '',
-    id: 0,
+    ...emptyUser,
     logined: !!storage.get("access_token"),
     neverShow,
     guideVisible: false,
@@ -109,13 +117,39 @@ const model = {
     *loginout({ payload }, { call, put, select }) {
       storage.remove("access_token")
       yield put({ type: "UPDATE_LOGINED", payload: false })
-      yield put({ type: 'UPDATE_USERINFO', payload: {
-        username: '',
-        email: '',
-        id: '',
-        phone: '',
-      }})
+      yield put({ type: 'UPDATE_USERINFO', payload: emptyUser})
       return true
+    },
+    *getActiveUsers({ payload }, { call }) {
+      const { result } = yield call(getUsers, { ...payload, state: 2 })
+      if (result) {
+        return result
+      }
+    },
+    *getUsers({ payload }, { call }) {
+      const { result } = yield call(getUsers, payload)
+      if (result) {
+        return result
+      }
+    },
+    *setUserRole({ payload }, { call }) {
+      const { id, role } = payload
+      const { result } = yield call(setUserState, { id, role })
+      if (result) {
+        return result
+      }
+    },
+    *setUserState({ payload }, { call }) {
+      const { result } = yield call(setUserState, payload)
+      if (result) {
+        return result
+      }
+    },
+    *off({ payload }, { call }) {
+      const { result } = yield call(setUserState, { id: payload, state: 4 })
+      if (result) {
+        return result
+      }
     },
   },
   reducers: {
@@ -127,6 +161,7 @@ const model = {
         phone: payload.phone,
         avatar: payload.avatar,
         id: payload.id,
+        role: payload.role,
       }
     },
     UPDATE_LOGINED(state, { payload }) {

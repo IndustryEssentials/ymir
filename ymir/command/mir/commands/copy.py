@@ -60,6 +60,7 @@ class CmdCopy(base.BaseCommand):
         # read from src mir root
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=src_mir_root,
                                                        mir_branch=src_typ_rev_tid.rev,
+                                                       mir_task_id=src_typ_rev_tid.tid,
                                                        mir_storages=mir_storage.get_all_mir_storage())
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
@@ -129,6 +130,7 @@ class CmdCopy(base.BaseCommand):
         del mir_datas[mirpb.MirStorage.MIR_KEYWORDS]
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch='master',
                                                       mir_datas=mir_datas,
                                                       commit_message=task.name)
