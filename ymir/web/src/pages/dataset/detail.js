@@ -142,7 +142,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
       >
         <Option value={0} key="all">
-          {t("dataset.all")}
+          {t("common.all")}
         </Option>
         {keywords.map((kw) => (
           <Option value={kw.key} key={kw.key} title={`${kw.key} (${kw.count})`}>

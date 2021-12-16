@@ -58,3 +58,32 @@ export function resetPwd({ new_password, token }) {
   new_password = sha1(new_password)
   return request.post("/reset-password/", { new_password, token })
 }
+
+/**
+ * get users, only for super admin
+ * @param {object} params 
+ * {
+ *   limit   20
+ *   offset  0
+ *   state   user state, registered = 1 active = 2 declined = 3 deactivated = 4
+ * }
+ * @returns 
+ */
+export function getUsers(params) {
+  return request.get('/users/', { params })
+}
+
+/**
+ * set user state, only for super admin
+ * @param {number} id 
+ * @param {number} state  user state 
+ * @param {number} role user role
+ * @returns 
+ */
+export function setUserState({ id, state, role }) {
+  return request({
+    url: `/users/${id}`, 
+    method: 'PATCH',
+    data: { state, role },
+  })
+}
