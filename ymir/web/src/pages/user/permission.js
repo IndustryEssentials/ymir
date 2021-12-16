@@ -10,8 +10,8 @@ import AuditList from "./permission/AuditList"
 import s from './permission.less'
 
 const tabsTitle = [
-  { tab: t('权限管理'), key: 'permission', },
-  { tab: t('注册申请'), key: 'audit', },
+  { tab: t('permission.tabs.permission'), key: 'permission', },
+  { tab: t('permission.tabs.audit'), key: 'audit', },
 ]
 
 const Permission = () => {

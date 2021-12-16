@@ -60,6 +60,7 @@ const common = {
   'common.uploader.size.error': {cn: '文件大小最大不超过 {max}MB', en: 'File must smaller than {max}MB!', },
   'common.action': {cn: '操作', en: 'Action', },
   'common.state': {cn: '状态', en: 'State', },
+  'common.del': {cn: '删除', en: 'Delete', },
 }
 
 export default common

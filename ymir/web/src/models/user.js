@@ -14,18 +14,23 @@ import {
   setUserState,
   signup,
 } from "@/services/user"
+import { ROLES } from '@/constants/user'
 
 const neverShow = storage.get("never_show")
+
+const emptyUser = {
+  username: "",
+  email: "",
+  phone: "",
+  avatar: '',
+  id: 0,
+  role: ROLES.USER,
+}
 
 const model = {
   namespace: "user",
   state: {
-    username: "",
-    email: "",
-    phone: "",
-    avatar: '',
-    id: 0,
-    role: 2,
+    ...emptyUser,
     logined: !!storage.get("access_token"),
     neverShow,
     guideVisible: false,
@@ -112,12 +117,7 @@ const model = {
     *loginout({ payload }, { call, put, select }) {
       storage.remove("access_token")
       yield put({ type: "UPDATE_LOGINED", payload: false })
-      yield put({ type: 'UPDATE_USERINFO', payload: {
-        username: '',
-        email: '',
-        id: '',
-        phone: '',
-      }})
+      yield put({ type: 'UPDATE_USERINFO', payload: emptyUser})
       return true
     },
     *getActiveUsers({ payload }, { call }) {
@@ -161,6 +161,7 @@ const model = {
         phone: payload.phone,
         avatar: payload.avatar,
         id: payload.id,
+        role: payload.role,
       }
     },
     UPDATE_LOGINED(state, { payload }) {

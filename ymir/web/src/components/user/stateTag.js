@@ -5,7 +5,7 @@ import { SuccessIcon, FailIcon, ShutIcon, TipsIcon } from '../common/icons'
 
 export default function StateTag({ state }) {
   const maps = {
-    [STATES.REGISTED]: { icon: <TipsIcon className={s.stateIcon} />, color: 'warning' },
+    [STATES.REGISTERED]: { icon: <TipsIcon className={s.stateIcon} />, color: 'warning' },
     [STATES.ACTIVE]: { icon: <SuccessIcon className={s.stateIcon} />, color: 'success' },
     [STATES.DECLINED]: { icon: <FailIcon className={s.stateIcon} />, color: 'error' },
     [STATES.DEACTIVED]: { icon: <ShutIcon className={s.stateIcon} style={{ color: 'rgba(0, 0, 0, 0.25)'}} /> },

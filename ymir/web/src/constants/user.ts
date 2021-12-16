@@ -1,13 +1,13 @@
 import t from "@/utils/t"
 
 export const ROLES = Object.freeze({
-  SUPER: 2,
-  ADMIN: 1,
-  USER: 0,
+  SUPER: 3,
+  ADMIN: 2,
+  USER: 1,
 })
 
 export const STATES = Object.freeze({
-  REGISTED: 1,
+  REGISTERED: 1,
   ACTIVE: 2,
   DECLINED: 3,
   DEACTIVED: 4,
@@ -24,7 +24,7 @@ export const getRolesLabel = (role: number | undefined) => {
 
 export const getUserState = (state: number | undefined) => {
   const states = Object.freeze({
-    [STATES.REGISTED]: t('user.state.registed'),
+    [STATES.REGISTERED]: t('user.state.registered'),
     [STATES.ACTIVE]: t('user.state.active'),
     [STATES.DECLINED]: t('user.state.declined'),
     [STATES.DEACTIVED]: t('user.state.deactived'),

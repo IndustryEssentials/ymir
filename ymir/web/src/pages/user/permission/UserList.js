@@ -5,9 +5,10 @@ import { useState, useEffect } from "react"
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import { ROLES, getRolesLabel } from '@/constants/user'
-import { AddTwoIcon } from "../../../components/common/icons"
+import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from "../../../components/common/icons"
 import s from '../permission.less'
 import Actions from "@/components/table/actions"
+import confirm from '@/components/common/dangerConfirm'
 
 const initQuery = {
   limit: 20,
@@ -43,7 +44,7 @@ function UserList({ getUsers, setUserRole, off }) {
       title: showTitle("user.column.last"),
       key: "last_login_datetime",
       dataIndex: "last_login_datetime",
-      render: (datetime) => format(datetime),
+      render: (datetime) => datetime ? format(datetime) : null,
       width: 200,
       align: 'center',
     },
@@ -59,28 +60,28 @@ function UserList({ getUsers, setUserRole, off }) {
   ]
 
   const actionMenus = (record) => {
-    const { id, name, role } = record
+    const { id, username, role } = record
     return [
       {
         key: "add",
         label: t("user.action.admin"),
-        onclick: () => setAdmin(id, name),
+        onclick: () => setAdmin(id),
         hidden: () => role !== ROLES.USER,
         icon: <AddTwoIcon />,
       },
       {
         key: "remove",
         label: t("user.action.user"),
-        onclick: () => setUser(id, name),
+        onclick: () => setUser(id),
         hidden: () => role !== ROLES.ADMIN,
-        icon: <AddTwoIcon />,
+        icon: <AddDelTwoIcon />,
       },
       {
         key: "off",
         label: t("user.action.off"),
-        onclick: () => off(id, name),
+        onclick: () => setOff(id, username),
         hidden: () => role === ROLES.SUPER,
-        icon: <AddTwoIcon />,
+        icon: <ShutIcon />,
       },
     ]
   }
@@ -99,31 +100,38 @@ function UserList({ getUsers, setUserRole, off }) {
     setQuery({ limit, offset })
   }
 
-  function setAdmin(id, name) {
+  function setAdmin(id) {
     setRole(id, ROLES.ADMIN)
   }
 
-  function setUser(id, name) {
+  function setUser(id) {
     setRole(id, ROLES.USER, t('permission.role.user.succcess'))
   }
 
   async function setRole(id, role, msg = t('permission.role.admin.succcess')) {
-    const result = await setUserRole({ id, role })
+    const result = await setUserRole(id, role)
     if (result) {
       message.success(msg)
       getUserList()
     }
   }
 
-  async function off(id, name) {
-    const result = await off(id)
-    if (result) {
-      message.success(t('permission.off.succcess'))
-      getUserList()
-    }
+  function setOff(id, name) {
+    confirm({
+      content: t("permission.off.confirm", { name }),
+      onOk: async () => {
+        const result = await off(id)
+        if (result) {
+          message.success(t('permission.off.succcess'))
+          getUserList()
+        }
+      },
+      okText: t('user.action.off'),
+    })
+
   }
 
-  
+
   function showTitle(str) {
     return <strong>{t(str)}</strong>
   }

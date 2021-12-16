@@ -33,7 +33,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
     const res = await signupApi(params)
     if (res) {
       history.push("/login")
-      message.warn('user.signup.success')
+      message.warn(t('user.signup.success'))
     }
   }
 

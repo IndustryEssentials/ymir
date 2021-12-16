@@ -72,7 +72,7 @@ function AuditList({ getUsers, setUserState }) {
         key: "reject",
         label: t("user.action.reject"),
         onclick: () => reject(id, name),
-        hidden: () => state !== STATES.REGISTED,
+        hidden: () => state !== STATES.REGISTERED,
         icon: <AddDelTwoIcon />,
       },
     ]
