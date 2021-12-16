@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     TOKEN_URL: str = "/auth/token"
     GRPC_CHANNEL: str = "controller:50066"
     DEFAULT_LIMIT: int = 20
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # Eight days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours
     SECRET_KEY: str = secrets.token_urlsafe(32)
     HASH_LEN_LIMIT: int = 50
     NAME_LEN_LIMIT: int = 100

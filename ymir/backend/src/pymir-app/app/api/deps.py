@@ -1,9 +1,9 @@
 import json
-from typing import Generator, List, Dict
+from typing import Dict, Generator, List
 
-from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, Security
 from fastapi.logger import logger
+from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -11,29 +11,30 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api.errors.errors import (
     InactiveUser,
+    InvalidScope,
     InvalidToken,
     UserNotAdmin,
     UserNotFound,
     WorkspaceNotFound,
 )
 from app.config import settings
+from app.constants.role import Roles
 from app.db.session import SessionLocal
-from app.utils import (
-    class_ids,
-    graph,
-    security,
-    stats,
-    ymir_controller,
-    ymir_viz,
-    cache as ymir_cache,
-)
+from app.utils import cache as ymir_cache
+from app.utils import class_ids, graph, security, stats, ymir_controller, ymir_viz
 from app.utils.ymir_controller import (
     ControllerClient,
     ControllerRequest,
     ExtraRequestType,
 )
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
+reusable_oauth2 = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_STR}/auth/token",
+    scopes={
+        role.name: role.description
+        for role in [Roles.NORMAL, Roles.ADMIN, Roles.SUPER_ADMIN]
+    },
+)
 
 
 # Dependents
@@ -46,7 +47,9 @@ def get_db() -> Generator:
 
 
 def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
+    security_scopes: SecurityScopes,
+    db: Session = Depends(get_db),
+    token: str = Depends(reusable_oauth2),
 ) -> models.User:
     try:
         payload = jwt.decode(
@@ -54,17 +57,31 @@ def get_current_user(
         )
         token_data = schemas.TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
+        logger.exception("Invalid JWT token")
         raise InvalidToken()
-    user = crud.user.get(db, id=token_data.sub)
+    user = crud.user.get(db, id=token_data.id)
     if not user:
         raise UserNotFound()
+
+    current_role = min(
+        getattr(schemas.UserRole, token_data.role),
+        schemas.UserRole(user.role),
+    )
+
+    if security_scopes.scopes and current_role.name not in security_scopes.scopes:
+        logger.error(
+            "Invalid JWT token scope: %s not in %s",
+            current_role.name,
+            security_scopes.scopes,
+        )
+        raise InvalidScope()
     return user
 
 
 def get_current_active_user(
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Security(get_current_user, scopes=[]),
 ) -> models.User:
-    if crud.user.is_deleted(current_user):
+    if not crud.user.is_active(current_user):
         raise InactiveUser()
     return current_user
 
@@ -80,10 +97,18 @@ def get_current_workspace(
 
 
 def get_current_active_admin(
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Security(
+        get_current_user, scopes=[Roles.ADMIN.name, Roles.SUPER_ADMIN.name]
+    ),
 ) -> models.User:
-    if not crud.user.is_admin(current_user):
-        raise UserNotAdmin()
+    return current_user
+
+
+def get_current_active_super_admin(
+    current_user: models.User = Security(
+        get_current_user, scopes=[Roles.SUPER_ADMIN.name]
+    ),
+) -> models.User:
     return current_user
 
 
@@ -97,7 +122,9 @@ def get_controller_client() -> Generator:
 
 def get_viz_client() -> Generator:
     try:
-        client = ymir_viz.VizClient(host=settings.VIZ_HOST,)
+        client = ymir_viz.VizClient(
+            host=settings.VIZ_HOST,
+        )
         yield client
     finally:
         client.close()
