@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from google.protobuf import json_format
 
-from controller.utils import code, checker
+from controller.utils import code, checker, metrics
 from proto import backend_pb2
 
 
@@ -52,6 +52,19 @@ class BaseMirControllerInvoker(ABC):
         self._assets_config = assets_config
         self._async_mode = async_mode
         self._work_dir = self.prepare_work_dir()
+
+        self._send_request_metrics()
+
+    def _send_request_metrics(self) -> None:
+        if self._request.req_type == backend_pb2.RequestType.TASK_INFO:
+            return
+
+        metrics_name = backend_pb2.RequestType.Name(self._request.req_type) + '.'
+        if self._request.req_type == backend_pb2.TASK_CREATE:
+            metrics_name += backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
+        else:
+            metrics_name += 'None'
+        metrics.send_counter_metrics(metrics_name)
 
     # functions about invoke and pre_invoke
     def server_invoke(self) -> backend_pb2.GeneralResp:

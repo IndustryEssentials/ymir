@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
-    EMAILS_FROM_EMAIL: Optional[EmailStr] = "ymir-notice@intellif.com"  # type: ignore
+    EMAILS_FROM_EMAIL: Optional[EmailStr] = "test@ymir.ai"  # type: ignore
     EMAILS_FROM_NAME: Optional[str] = "ymir-project"
     EMAIL_TEMPLATES_DIR: str = "/app/pymir-app/app/email-templates/build"
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48

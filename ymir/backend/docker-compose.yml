@@ -15,6 +15,8 @@ services:
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
       - DATA_SOURCE=/data/sharing
+      - ALLOW_ANONYMOUS_FEEDBACK=${ALLOW_ANONYMOUS_FEEDBACK}
+      - ANONYMOUS_UUID=${ANONYMOUS_UUID}
       # viz
       - SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
       - VIZ_REDIS_URI=redis://:@viz-redis
