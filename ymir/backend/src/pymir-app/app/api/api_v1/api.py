@@ -7,6 +7,7 @@ from app.api.api_v1.endpoints import (
     keywords,
     login,
     models,
+    roles,
     runtimes,
     stats,
     tasks,
@@ -29,3 +30,4 @@ api_router.include_router(graphs.router, prefix="/graphs", tags=["graphs"])
 api_router.include_router(workspaces.router, prefix="/workspaces", tags=["workspaces"])
 api_router.include_router(runtimes.router, prefix="/runtimes", tags=["runtimes"])
 api_router.include_router(inferences.router, prefix="/inferences", tags=["inference"])
+api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
