@@ -17,6 +17,7 @@ from mir.tools.code import MirCode
 from mir.tools.phase_logger import phase_logger_in_out
 
 
+# private: post process
 def _process_model_storage(out_root: str, config_file_path: str, model_upload_location: str,
                            ymir_info: dict) -> Tuple[str, float]:
     model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
@@ -113,6 +114,7 @@ def _update_mir_tasks(mir_root: str, base_branch: str, dst_branch: str, task_id:
     logging.info("task id: {}, model hash: {}, mAP: {}".format(task_id, model_sha1, mAP))
 
 
+# private: process
 def _run_train_cmd(cmd: str) -> int:
     """
     invoke training command
@@ -132,6 +134,7 @@ def _run_train_cmd(cmd: str) -> int:
     return MirCode.RC_OK
 
 
+# private: pre process
 def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained_model_params: List[str]) -> None:
     config["task_id"] = task_id
     config['pretrained_model_params'] = pretrained_model_params
@@ -148,6 +151,38 @@ def _get_shm_size(config_file_path: str) -> str:
     if 'shm_size' not in config:
         return '16G'
     return config['shm_size']
+
+
+def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str,
+                               class_names: List[str]) -> List[str]:
+    """
+    prepare pretrained models
+    * extract models to dst_model_dir
+    * compare class names
+    * returns model file names
+
+    Args:
+        model_location (str): model location
+        model_hash (str): model package hash
+        dst_model_dir (str): dir where you want to extract model files to
+        class_names (List[str]): class names for this training
+
+    Returns:
+        List[str]: model names
+    """
+    if not model_hash:
+        return []
+    model_storage = mir_utils.prepare_model(model_location=model_location,
+                                            model_hash=model_hash,
+                                            dst_model_path=dst_model_dir)
+
+    # check class names
+    pretrained_class_names = mir_utils.get_training_class_names(
+        training_config_file=os.path.join(dst_model_dir, model_storage.config))
+    if pretrained_class_names != class_names:
+        raise ValueError(f"class names mismatch: pretrained: {pretrained_class_names}, current: {class_names}")
+
+    return model_storage.get_all_models()
 
 
 class CmdTrain(base.BaseCommand):
@@ -224,19 +259,10 @@ class CmdTrain(base.BaseCommand):
             executor_instance = f"default-training-{task_id}"
 
         # if have model_hash, export model
-        model_storage = mir_utils.ModelStorage()
-        if pretrained_model_hash:
-            work_model_path = os.path.join(work_dir, 'in', 'models')
-            model_storage = mir_utils.prepare_model(model_location=model_upload_location,
-                                                    model_hash=pretrained_model_hash,
-                                                    dst_model_path=work_model_path)
-
-            # check class names
-            pretrained_class_names = mir_utils.get_training_class_names(
-                training_config_file=os.path.join(work_model_path, model_storage.config))
-            if pretrained_class_names != class_names:
-                logging.error(f"class names mismatch: pretrained: {pretrained_class_names}, current: {class_names}")
-                return MirCode.RC_CMD_INVALID_ARGS
+        pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
+                                                            model_hash=pretrained_model_hash,
+                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'),
+                                                            class_names=class_names)
 
         # get train_ids, val_ids, test_ids
         train_ids = set()  # type: Set[str]
@@ -342,7 +368,7 @@ class CmdTrain(base.BaseCommand):
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
-        pretrained_model_params = [os.path.join('/in/models', name) for name in model_storage.get_all_models()]
+        pretrained_model_params = [os.path.join('/in/models', name) for name in pretrained_model_names]
         _generate_config(config=config,
                          out_config_path=out_config_path,
                          task_id=task_id,
