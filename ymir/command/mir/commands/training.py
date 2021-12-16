@@ -374,11 +374,10 @@ class CmdTrain(base.BaseCommand):
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
-        pretrained_model_params = [os.path.join('/in/models', name) for name in pretrained_model_names]
         _generate_config(config=config,
                          out_config_path=out_config_path,
                          task_id=task_id,
-                         pretrained_model_params=pretrained_model_params)
+                         pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
 
         # start train docker and wait
         path_binds = []
