@@ -11,8 +11,8 @@ class MiddlewareRedis:
     def __init__(self, rds_client: redis.Redis):
         self._client = rds_client
 
-    def hmset(self, name: str, mapping: Dict) -> bool:
-        return self._client.hmset(name, mapping)
+    def hset(self, name: str, mapping: Dict) -> int:
+        return self._client.hset(name=name, mapping=mapping)
 
     def hget(self, name: str, key: str) -> Optional[Dict]:
         try:

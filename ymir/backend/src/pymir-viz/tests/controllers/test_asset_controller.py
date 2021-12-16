@@ -2,7 +2,8 @@ import pytest
 
 from proto import backend_pb2
 from mir.tools.mir_storage_ops import MirStorageOps
-
+from src.libs.cache import redis_cache, RedisCache
+from src.libs import cache
 
 @pytest.fixture()
 def mock_mir_content(mocker):
@@ -89,6 +90,8 @@ def mock_mir_content(mocker):
         },
     )
 
+    mocker.patch.object(RedisCache, "get")
+
 
 class TestAssetController:
     def test_get_asserts_info(self, test_client, mock_mir_content):
@@ -102,12 +105,12 @@ class TestAssetController:
             },
             "elements": [
                 {
-                    "asset_id": "430df22960b0f369318705800139fcc8ec38a3e4",
-                    "class_ids": [2, 52]
-                },
-                {
                     "asset_id": "d4e4a60147f1e35bc7f5bc89284aa16073b043c9",
                     "class_ids": [52]
+                },
+                {
+                    "asset_id": "430df22960b0f369318705800139fcc8ec38a3e4",
+                    "class_ids": [2, 52]
                 },
             ],
             "ignored_labels": {
