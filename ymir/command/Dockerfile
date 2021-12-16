@@ -2,7 +2,7 @@ ARG IMAGE=python:3.8.10
 FROM ${IMAGE}
 
 RUN git config --global user.name 'Deployer'
-RUN git config --global user.email 'deployer@intellif.com'
+RUN git config --global user.email 'deployer@ymir.ai'
 
 COPY requirements.txt /dist/
 
