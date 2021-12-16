@@ -3,7 +3,6 @@ const model = {
   "model.list.actions.detail": { en: "Detail", cn: "详情", },
   "model.detail.title": { en: "Model Detail", cn: "模型详情", },
   "model.asset.title": { en: "Model Assets", cn: "数据详情", },
-  "model.all": { en: "All", cn: "全部", },
   "model.type.import": { en: "Import", cn: "导入", },
   "model.type.share": { en: "Share", cn: "用户共享", },
   "model.type.train": { en: "Train Task", cn: "训练任务", },

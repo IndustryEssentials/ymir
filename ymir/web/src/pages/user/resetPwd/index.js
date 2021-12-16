@@ -52,7 +52,7 @@ const ResetPwd = ({ resetPwd }) => {
                 <h2>{t("reset_pwd.title.page")}</h2>
               </Col>
               <Col>
-                <Button type="link" onClick={() => history.replace('/home/login')}>
+                <Button type="link" onClick={() => history.replace('/login')}>
                   {t("reset_pwd.back")}
                 </Button>
               </Col>

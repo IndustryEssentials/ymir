@@ -11,6 +11,8 @@ const common = {
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
   'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
   'common.top.menu.resource': { cn: "资源配置", en: "Resource", },
+  'common.top.menu.mirror': { cn: "我的镜像", en: "Images", },
+  'common.top.menu.mirror.center': { cn: "公共资源", en: "Images Center", },
   'common.top.search.item.dataset': { cn: '包含 {searchValue} 的数据集', en: 'Dataset Name include: {searchValue}', },
   'common.top.search.item.model': { cn: '包含 {searchValue} 的模型', en: 'Model Name include: {searchValue}', },
   'common.top.search.item.task': { cn: '包含 {searchValue} 的任务', en: 'Task Name include: {searchValue}', },
@@ -56,6 +58,9 @@ const common = {
   'common.latest': {cn: '最新', en: 'Latest', },
   'common.uploader.format.error': {cn: '上传文件格式不正确', en: 'Invalid format', },
   'common.uploader.size.error': {cn: '文件大小最大不超过 {max}MB', en: 'File must smaller than {max}MB!', },
+  'common.action': {cn: '操作', en: 'Action', },
+  'common.state': {cn: '状态', en: 'State', },
+  'common.del': {cn: '删除', en: 'Delete', },
 }
 
 export default common

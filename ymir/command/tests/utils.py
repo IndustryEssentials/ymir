@@ -5,8 +5,9 @@ from typing import Type, List
 
 from mir.commands.init import CmdInit
 from mir.commands.checkout import CmdCheckout
-from mir.commands.commit import CmdCommit
+from mir.protos import mir_command_pb2 as mirpb
 from mir.tools.code import MirCode
+from mir.tools.mir_storage_ops import MirStorageOps
 
 
 def dir_test_root(sub_dirs: List[str]) -> str:
@@ -40,20 +41,19 @@ def mir_repo_checkout(mir_root: str, branch_name: str):
     assert return_code == MirCode.RC_OK, "checkout commit failed"
 
 
-def mir_repo_commit_all(mir_root: str, mir_metadatas, mir_annotations, mir_keywords, mir_tasks, no_space_message: str):
-    metadatas_path = os.path.join(mir_root, "metadatas.mir")
-    annotations_path = os.path.join(mir_root, "annotations.mir")
-    keywords_path = os.path.join(mir_root, "keywords.mir")
-    tasks_path = os.path.join(mir_root, "tasks.mir")
-    with open(metadatas_path, "wb") as m_f, \
-         open(annotations_path, "wb") as a_f, \
-         open(keywords_path, "wb") as k_f, \
-         open(tasks_path, "wb") as t_f:
-        m_f.write(mir_metadatas.SerializeToString())
-        a_f.write(mir_annotations.SerializeToString())
-        k_f.write(mir_keywords.SerializeToString())
-        t_f.write(mir_tasks.SerializeToString())
-    return_code = CmdCommit.run_with_args(mir_root=mir_root, msg=no_space_message)
+def mir_repo_commit_all(mir_root: str, mir_metadatas, mir_annotations, mir_tasks, no_space_message: str, task_id: str,
+                        src_branch: str, dst_branch: str):
+    mir_datas = {
+        mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+        mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+        mirpb.MirStorage.MIR_TASKS: mir_tasks,
+    }
+    return_code = MirStorageOps.save_and_commit(mir_root=mir_root,
+                                                mir_branch=dst_branch,
+                                                task_id=task_id,
+                                                his_branch=src_branch,
+                                                mir_datas=mir_datas,
+                                                commit_message=no_space_message)
     assert return_code == MirCode.RC_OK, "commit all failed"
 
 

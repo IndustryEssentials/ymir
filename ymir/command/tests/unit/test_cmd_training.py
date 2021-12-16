@@ -184,8 +184,10 @@ class TestCmdTraining(unittest.TestCase):
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,
                                        mir_metadatas=mir_metadatas,
                                        mir_annotations=mir_annotations,
-                                       mir_keywords=mir_keywords,
                                        mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='a',
                                        no_space_message="test_cmd_training_branch_a")
 
     def __prepare_assets(self):

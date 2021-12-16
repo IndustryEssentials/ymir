@@ -5,6 +5,10 @@ set -e
 EXECUTOR_TRAINING='industryessentials/executor-det-yolov4-training'
 EXECUTOR_MINING='industryessentials/executor-det-yolov4-mining'
 
+FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
+FIELD_UUID='ANONYMOUS_UUID'
+ENV_FILE='.env'
+
 stop() {
 docker-compose down
 }
@@ -16,7 +20,35 @@ docker-compose pull
 stop
 }
 
+choose_yes () {
+sed -i '' "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE}
+
+uuid=$(uuidgen)
+sed -i '' "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" .env
+}
+
+choose_no () {
+sed -i '' "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE}
+}
+
+check_permission() {
+cat <<- EOF
+Would you allow YMIR to send us automatic reports helps us prioritize what to fix and improve in YMIR?
+These reports can include things like task type, how much resources you’re using. NO personal information collected.
+EOF
+
+while true; do
+    read -p "You choose (Y/n)?" yn
+    case $yn in
+        [Yy]*|'' ) choose_yes; break;;
+        [Nn]* ) choose_no; break;;
+        * ) echo "Please answer (y)es or (n)o.";;
+    esac
+done
+}
+
 start() {
+check_permission
 pre_start
 docker-compose up -d
 }

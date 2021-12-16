@@ -550,6 +550,62 @@
       "font_class": "clear",
       "unicode": "e6e2",
       "unicode_decimal": 59106
+    },
+    {
+      "icon_id": "91376543",
+      "name": "quote-nub",
+      "font_class": "quote-nub",
+      "unicode": "e6e3",
+      "unicode_decimal": 59107
+    },
+    {
+      "icon_id": "91376544",
+      "name": "clear",
+      "font_class": "clear1",
+      "unicode": "e6e4",
+      "unicode_decimal": 59108
+    },
+    {
+      "icon_id": "91376545",
+      "name": "sta",
+      "font_class": "sta",
+      "unicode": "e6e5",
+      "unicode_decimal": 59109
+    },
+    {
+      "icon_id": "91376546",
+      "name": "star-half",
+      "font_class": "star-half",
+      "unicode": "e6e6",
+      "unicode_decimal": 59110
+    },
+    {
+      "icon_id": "91376547",
+      "name": "share",
+      "font_class": "share",
+      "unicode": "e6e7",
+      "unicode_decimal": 59111
+    },
+    {
+      "icon_id": "91376548",
+      "name": "user-shared",
+      "font_class": "user-shared",
+      "unicode": "e6e8",
+      "unicode_decimal": 59112
+    },
+    {
+      "icon_id": "91376549",
+      "name": "user-associated",
+      "font_class": "user-associated",
+      "unicode": "e6e9",
+      "unicode_decimal": 59113
+    },
+    {
+      "icon_id": "91376550",
+      "name": "tv",
+      "font_class": "tv",
+      "unicode": "e6ea",
+      "unicode_decimal": 59114
     }
   ]
 }

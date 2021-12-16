@@ -11,6 +11,7 @@ import breadcrumbs from "./modules/breadcrumbs"
 import portal from "./modules/portal"
 import keyword from './modules/keyword'
 import user from './modules/user'
+import mirror from './modules/mirror'
 
 const lang = {
   ...common,
@@ -25,5 +26,6 @@ const lang = {
   ...errors,
   ...keyword,
   ...user,
+  ...mirror,
 }
 export default trans(lang, 'en')

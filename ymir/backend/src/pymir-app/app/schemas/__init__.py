@@ -11,18 +11,28 @@ from .dataset import (
 from .graph import Graph, GraphOut
 from .inference import InferenceCreate, InferenceOut
 from .keyword import (
-    KeywordsCreate,
-    KeywordsPaginationOut,
-    KeywordsCreateOut,
-    KeywordOut,
-    KeywordUpdate,
     Keyword,
+    KeywordOut,
+    KeywordsCreate,
+    KeywordsCreateOut,
+    KeywordsPaginationOut,
+    KeywordUpdate,
 )
 from .model import Model, ModelCreate, ModelImport, ModelOut, Models, ModelUpdate
 from .msg import Msg
+from .role import Role, RoleCreate, RoleOut
 from .runtime import Runtime, RuntimeCreate, RuntimeOut
 from .stats import Stats, StatsOut
 from .task import Task, TaskCreate, TaskOut, TaskParameter, Tasks, TaskUpdate
 from .token import Token, TokenOut, TokenPayload
-from .user import User, UserCreate, UserInDB, UserOut, UserUpdate
+from .user import (
+    User,
+    UserCreate,
+    UserInDB,
+    UserOut,
+    UserRole,
+    UsersOut,
+    UserState,
+    UserUpdate,
+)
 from .workspace import Workspace, WorkspaceCreate, WorkspaceOut

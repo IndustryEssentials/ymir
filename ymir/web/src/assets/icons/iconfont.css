@@ -1,6 +1,6 @@
 @font-face {
   font-family: "iconfont"; /* Project id  */
-  src: url('iconfont.ttf?t=1637547674523') format('truetype');
+  src: url('iconfont.ttf?t=1639447169094') format('truetype');
 }
 
 .iconfont {
@@ -321,5 +321,37 @@
 
 .icon-clear:before {
   content: "\e6e2";
+}
+
+.icon-quote-nub:before {
+  content: "\e6e3";
+}
+
+.icon-clear1:before {
+  content: "\e6e4";
+}
+
+.icon-sta:before {
+  content: "\e6e5";
+}
+
+.icon-star-half:before {
+  content: "\e6e6";
+}
+
+.icon-share:before {
+  content: "\e6e7";
+}
+
+.icon-user-shared:before {
+  content: "\e6e8";
+}
+
+.icon-user-associated:before {
+  content: "\e6e9";
+}
+
+.icon-tv:before {
+  content: "\e6ea";
 }
 
