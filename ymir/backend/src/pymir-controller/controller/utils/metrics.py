@@ -13,6 +13,7 @@ class MetricsManager:
     def __init__(self, permission_pass: bool, uuid: str, server_host: str, server_port: str) -> None:
         if not uuid or not server_host or not server_port:
             raise RuntimeError("MetricsManager not initialized.")
+        # _permission_pass indicates whether the permession is granted to record task metrics.
         self._permission_pass = permission_pass
         self._uuid = uuid
         self._server_host = server_host
@@ -43,10 +44,10 @@ def send_counter_metrics(content: str) -> None:
 # server as client.
 def _parse_args() -> Any:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', type=str, default='localhost')
-    parser.add_argument('--port', type=int, default=9125)
-    parser.add_argument('--uuid', type=str, default='uuid')
-    parser.add_argument('--content', type=str, default='test')
+    parser.add_argument('--host', type=str, help='host name/ip to send metrics data.', default='localhost')
+    parser.add_argument('--port', type=int, help='host port to send metrics data.', default=9125)
+    parser.add_argument('--uuid', type=str, help='unique identifier, added to the head field of metrics name.', default='uuid')
+    parser.add_argument('--content', type=str, help='content data to be sent.', default='test')
     return parser.parse_args()
 
 
