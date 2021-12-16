@@ -31,8 +31,9 @@ class MetricsManager:
 
     @classmethod
     def send_udp_package(cls, metrics_name: str, server_host: str, server_port: int) -> None:
-        sock = socket.socket(socket.AF_INET,  # Internet
-                             socket.SOCK_DGRAM)  # UDP
+        sock = socket.socket(
+            socket.AF_INET,  # Internet
+            socket.SOCK_DGRAM)  # UDP
         sock.sendto(metrics_name.encode(), (server_host, server_port))
 
 
@@ -46,13 +47,18 @@ def _parse_args() -> Any:
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', type=str, help='host name/ip to send metrics data.', default='localhost')
     parser.add_argument('--port', type=int, help='host port to send metrics data.', default=9125)
-    parser.add_argument('--uuid', type=str, help='unique identifier, added to the head field of metrics name.', default='uuid')
+    parser.add_argument('--uuid',
+                        type=str,
+                        help='unique identifier, added to the head field of metrics name.',
+                        default='uuid')
     parser.add_argument('--content', type=str, help='content data to be sent.', default='test')
     return parser.parse_args()
 
 
 def main(main_args: Any) -> int:
-    manager = MetricsManager(permission_pass=True, uuid=main_args.uuid, server_host=main_args.host,
+    manager = MetricsManager(permission_pass=True,
+                             uuid=main_args.uuid,
+                             server_host=main_args.host,
                              server_port=main_args.port)
     manager.send_counter(main_args.content)
     return 0
