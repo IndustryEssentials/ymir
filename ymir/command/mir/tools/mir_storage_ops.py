@@ -4,10 +4,11 @@ from typing import Any, List, Dict, Optional
 import fasteners  # type: ignore
 from google.protobuf import json_format
 
+from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import exodus, mir_storage, mir_repo_utils
+from mir.tools import exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools.code import MirCode
 
 
@@ -65,9 +66,14 @@ class MirStorageOps():
             with open(mir_file_path, "wb") as m_f:
                 m_f.write(mir_data.SerializeToString())
 
+    @classmethod
+    def __add_git_tag(cls, mir_root: str, tag: str) -> None:
+        repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
+        repo_git.tag(tag)
+
     # public: save and load
     @classmethod
-    def save_and_commit(cls, mir_root: str, mir_branch: str, his_branch: Optional[str],
+    def save_and_commit(cls, mir_root: str, mir_branch: str, task_id: str, his_branch: Optional[str],
                         mir_datas: Dict['mirpb.MirStorage.V', Any], commit_message: str) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
@@ -76,6 +82,7 @@ class MirStorageOps():
         Args:
             mir_root (str): path to mir repo
             mir_branch (str): branch you wish to save to, if not exists, create new one
+            task_id (str): task id for this commit
             his_branch (Optional[str]): if `mir_branch` not exists, this is the branch where you wish to start with
             mir_datas (Dict[mirpb.MirStorage.V, pb_message.Message]): datas you wish to save, need no mir_keywords
             commit_message (str): commit messages
@@ -92,6 +99,8 @@ class MirStorageOps():
             raise ValueError("empty commit message")
         if not mir_branch:
             raise ValueError("empty mir branch")
+        if not task_id:
+            raise ValueError('empty task id')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise ValueError('need no mir_keywords')
 
@@ -122,6 +131,11 @@ class MirStorageOps():
             cls.__save(mir_root=mir_root, mir_datas=mir_datas)
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=commit_message)
+            if ret_code != MirCode.RC_OK:
+                return ret_code
+
+            # also have a tag for this commit
+            cls.__add_git_tag(mir_root=mir_root, tag=revs_parser.join_rev_tid(mir_branch, task_id))
 
         return ret_code
 
@@ -130,23 +144,37 @@ class MirStorageOps():
              mir_root: str,
              mir_branch: str,
              mir_storages: List['mirpb.MirStorage.V'],
+             mir_task_id: str = '',
              as_dict: bool = False) -> Dict['mirpb.MirStorage.V', Any]:
         ret = {}
         for ms in mir_storages:
-            ret[ms] = cls.load_single(mir_root=mir_root, mir_branch=mir_branch, ms=ms, as_dict=as_dict)
+            ret[ms] = cls.load_single(mir_root=mir_root,
+                                      mir_branch=mir_branch,
+                                      mir_task_id=mir_task_id,
+                                      ms=ms,
+                                      as_dict=as_dict)
         return ret
 
     @classmethod
-    def load_single(cls, mir_root: str, mir_branch: str, ms: 'mirpb.MirStorage.V', as_dict: bool = False) -> Any:
+    def load_single(cls,
+                    mir_root: str,
+                    mir_branch: str,
+                    ms: 'mirpb.MirStorage.V',
+                    mir_task_id: str = '',
+                    as_dict: bool = False) -> Any:
+        rev = revs_parser.join_rev_tid(mir_branch, mir_task_id)
+
         mir_pb_type = mir_storage.mir_type(ms)
         mir_storage_data = mir_pb_type()
-        with exodus.open_mir(mir_root=mir_root, file_name=mir_storage.mir_path(ms), rev=mir_branch, mode="rb") as f:
+        with exodus.open_mir(mir_root=mir_root, file_name=mir_storage.mir_path(ms), rev=rev, mode="rb") as f:
             mir_storage_data.ParseFromString(f.read())
+
         if as_dict:
             mir_storage_data = json_format.MessageToDict(mir_storage_data,
                                                          preserving_proto_field_name=True,
                                                          use_integers_for_enums=True,
                                                          including_default_value_fields=True)
+
         return mir_storage_data
 
 

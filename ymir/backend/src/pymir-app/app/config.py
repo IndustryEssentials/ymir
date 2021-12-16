@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     TOKEN_URL: str = "/auth/token"
     GRPC_CHANNEL: str = "controller:50066"
     DEFAULT_LIMIT: int = 20
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # Eight days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours
     SECRET_KEY: str = secrets.token_urlsafe(32)
     HASH_LEN_LIMIT: int = 50
     NAME_LEN_LIMIT: int = 100
@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
-    EMAILS_FROM_EMAIL: Optional[EmailStr] = "ymir-notice@intellif.com"  # type: ignore
+    EMAILS_FROM_EMAIL: Optional[EmailStr] = "test@ymir.ai"  # type: ignore
     EMAILS_FROM_NAME: Optional[str] = "ymir-project"
     EMAIL_TEMPLATES_DIR: str = "/app/pymir-app/app/email-templates/build"
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48

@@ -17,3 +17,8 @@ SANDBOX:
   sandboxroot: ${SANDBOX}
 TASK_MONITOR:
   storageroot: ${MONTIOR}
+METRICS:
+  allow_feedback: ${ALLOW_ANONYMOUS_FEEDBACK}
+  anonymous_uuid: ${ANONYMOUS_UUID}
+  server_host: ymir.ai
+  server_port: "9125"

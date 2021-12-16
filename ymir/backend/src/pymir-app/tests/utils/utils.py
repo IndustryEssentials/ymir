@@ -28,6 +28,20 @@ def get_admin_token_headers(client: TestClient) -> Dict[str, str]:
     login_data = {
         "username": settings.FIRST_ADMIN,
         "password": settings.FIRST_ADMIN_PASSWORD,
+        "scope": "ADMIN",
+    }
+    r = client.post(f"{settings.API_V1_STR}/auth/token", data=login_data)
+    tokens = r.json()["result"]
+    a_token = tokens["access_token"]
+    headers = {"Authorization": f"Bearer {a_token}"}
+    return headers
+
+
+def get_super_admin_token_headers(client: TestClient) -> Dict[str, str]:
+    login_data = {
+        "username": settings.FIRST_ADMIN,
+        "password": settings.FIRST_ADMIN_PASSWORD,
+        "scope": "NORMAL ADMIN SUPER_ADMIN",
     }
     r = client.post(f"{settings.API_V1_STR}/auth/token", data=login_data)
     tokens = r.json()["result"]

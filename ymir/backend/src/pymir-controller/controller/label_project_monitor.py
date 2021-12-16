@@ -5,6 +5,7 @@ import sys
 from datetime import datetime
 
 import requests
+import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -58,7 +59,7 @@ def lable_task_monitor() -> None:
             try:
                 label_instance.convert_annotation_to_voc(project_info['project_id'], project_info["des_annotation_path"])
             except requests.HTTPError as e:
-                # TODO:(chao) add sentry
+                sentry_sdk.capture_exception(e)
                 logger.error(f'get label task {task_id} voc error: {e}, set task_id:{task_id} error')
                 state = config.TASK_ERROR
             index_file = _gen_index_file(project_info["des_annotation_path"])

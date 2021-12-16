@@ -2,7 +2,7 @@ import pathlib
 import random
 import tempfile
 from dataclasses import dataclass
-from typing import Any, Optional, Dict, List
+from typing import Any, Dict, List, Optional
 from zipfile import BadZipFile
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -22,21 +22,18 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.models.task import TaskState, TaskType
-from app.utils.files import (
-    FailedToDownload,
-    is_valid_import_path,
-    prepare_dataset,
-)
+from app.utils.class_ids import get_keyword_id_to_name_mapping
+from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.stats import RedisStats
 from app.utils.ymir_controller import ControllerClient, ControllerRequest
 from app.utils.ymir_viz import VizClient
-from app.utils.class_ids import get_keyword_id_to_name_mapping
 
 router = APIRouter()
 
 
 @router.get(
-    "/", response_model=schemas.DatasetOut,
+    "/",
+    response_model=schemas.DatasetOut,
 )
 def list_dataset(
     db: Session = Depends(deps.get_db),
@@ -78,7 +75,8 @@ def list_dataset(
 
 
 @router.get(
-    "/public", response_model=schemas.DatasetOut,
+    "/public",
+    response_model=schemas.DatasetOut,
 )
 def get_public_datasets(
     db: Session = Depends(deps.get_db),
@@ -89,13 +87,15 @@ def get_public_datasets(
     public datasets come from User 1
     """
     datasets, total = crud.dataset.get_datasets_of_user(
-        db, user_id=settings.PUBLIC_DATASET_OWNER,
+        db,
+        user_id=settings.PUBLIC_DATASET_OWNER,
     )
     return {"result": {"total": total, "items": datasets}}
 
 
 @router.post(
-    "/", response_model=schemas.DatasetOut,
+    "/",
+    response_model=schemas.DatasetOut,
 )
 def create_dataset(
     *,
@@ -418,7 +418,7 @@ def get_random_asset_id_of_dataset(
         branch_id=dataset.task_hash,  # type: ignore
         keyword_id_to_name=keyword_id_to_name,
     )
-    assets = viz_client.get_assets(keyword_id=None, offset=offset, limit=1,)
+    assets = viz_client.get_assets(keyword_id=None, offset=offset, limit=1)
     if assets.total == 0:
         raise AssetNotFound()
     return {"result": assets.items[0]}
@@ -427,7 +427,7 @@ def get_random_asset_id_of_dataset(
 def get_random_asset_offset(dataset: models.Dataset) -> int:
     if not dataset.asset_count:
         raise AssetNotFound()
-    offset = random.randint(0, dataset.asset_count)
+    offset = random.randint(0, dataset.asset_count - 1)
     return offset
 
 

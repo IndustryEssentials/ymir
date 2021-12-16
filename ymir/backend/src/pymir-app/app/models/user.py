@@ -13,8 +13,10 @@ class User(Base):
     phone = Column(String(20), unique=True, index=True)
     avatar = Column(String(100))
     hashed_password = Column(String(200), nullable=False)
+    state = Column(Integer, index=True, default=1)
+    role = Column(Integer, index=True, default=1)
     is_deleted = Column(Boolean(), default=False)
-    is_admin = Column(Boolean(), default=False)
+    last_login_datetime = Column(DateTime, nullable=True)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
         DateTime,

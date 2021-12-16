@@ -59,6 +59,7 @@ class CmdExport(base.BaseCommand):
         # asset ids
         mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                                       mir_branch=src_typ_rev_tid.rev,
+                                                                                      mir_task_id=src_typ_rev_tid.tid,
                                                                                       ms=mirpb.MIR_METADATAS)
         asset_ids = set()
         for k in mir_metadatas.attributes.keys():
@@ -77,6 +78,7 @@ class CmdExport(base.BaseCommand):
                              need_ext=True,
                              need_id_sub_folder=False,
                              base_branch=src_typ_rev_tid.rev,
+                             base_task_id=src_typ_rev_tid.tid,
                              format_type=format_type)
 
         return MirCode.RC_OK

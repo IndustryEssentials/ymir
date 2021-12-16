@@ -82,8 +82,10 @@ class TestCmdCopy(unittest.TestCase):
         test_utils.mir_repo_commit_all(mir_root=self._src_mir_root,
                                        mir_metadatas=mir_metadatas,
                                        mir_annotations=mir_annotations,
-                                       mir_keywords=mir_keywords,
                                        mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='t0',
                                        no_space_message="commit for src branch a")
 
     def __create_image_annotations(self, type_ids: List[int]) -> mirpb.SingleImageAnnotations:
@@ -99,6 +101,7 @@ class TestCmdCopy(unittest.TestCase):
     def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool):
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
                                                        mir_branch=dst_branch,
+                                                       mir_task_id='',
                                                        mir_storages=mir_storage.get_all_mir_storage())
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MIR_METADATAS]
         metadatas_keys = set(mir_metadatas.attributes.keys())

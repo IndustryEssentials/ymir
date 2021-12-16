@@ -182,8 +182,10 @@ class TestCmdExport(unittest.TestCase):
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,
                                        mir_metadatas=mir_metadatas,
                                        mir_annotations=mir_annotations,
-                                       mir_keywords=mir_keywords,
                                        mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='a',
                                        no_space_message='test_tools_data_exporter_branch_a')
 
     # private: mocked
@@ -198,7 +200,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.asset_dir = self._dest_root
         fake_args.annotation_dir = self._dest_root
         fake_args.media_location = self._assets_location
-        fake_args.src_revs = 'a'
+        fake_args.src_revs = 'a@a'
         fake_args.format = 'voc'
         fake_args.work_dir = ''
         runner = exporting.CmdExport(fake_args)
@@ -215,4 +217,5 @@ class TestCmdExport(unittest.TestCase):
                                             need_ext=True,
                                             need_id_sub_folder=False,
                                             base_branch='a',
+                                            base_task_id='a',  # see: fake_args.src_revs = 'a@a'
                                             format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC)
