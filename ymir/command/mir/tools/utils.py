@@ -232,6 +232,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
                 model_storage.weights = item.name
             tar_gz.extract(item, dest_root)
 
+    os.remove(tar_file)
+
     if not model_storage.params or not model_storage.json or not model_storage.config:
         raise ValueError(f"empty params file, json file or config file in model package: {tar_file}")
 
