@@ -44,7 +44,7 @@ const common = {
   'common.guide.step4.btn': { cn: '去标注', en: 'Label', },
   'common.guide.step5.title': { cn: '模型再训练', en: 'Train Again', },
   'common.guide.step5.content': { cn: '将标注后的结果和原数据集合并再训练，实现模型的优化。', en: 'Optimize model by training merging dataset of labelled and origin data.', },
-  'common.guide..step6.title': { cn: '模型标注', en: 'Label', },
+  'common.guide.step6.title': { cn: '模型标注', en: 'Label', },
   'common.guide.step6.content': { cn: '针对数据集，进行标注，再将标注后的结果和原数据集合并，实现模型的优化。', en: 'Label dataset, and merge original dataset for training optimal model.', },
   'common.guide.nevershow': { cn: '下次不再显示', en: 'Never show again', },
   'common.guide.action.label': {cn: '操作指引', en: 'Guide', },
