@@ -53,11 +53,8 @@ class ControllerTaskMonitor:
         with open(task_storage_file) as f:
             storage_dict = yaml.safe_load(f)
         request = storage_dict.get("request", None)
-        if (
-            request
-            and request.get("req_type") == backend_pb2.RequestType.TASK_CREATE
-            and request["req_create_task"]["task_type"] == backend_pb2.TaskType.TaskTypeLabel
-        ):
+        if (request and request.get("req_type") == backend_pb2.RequestType.TASK_CREATE
+                and request["req_create_task"]["task_type"] == backend_pb2.TaskType.TaskTypeLabel):
             return False
 
         storage_dict["general_info"]["state"] = backend_pb2.TaskStateError
@@ -158,6 +155,7 @@ class ControllerTaskMonitor:
     def _start_monitor(self) -> None:
         if self._monitor_process:
             return  # if already started, does nothing
+        mp.set_start_method(method="fork", force=True)
         self._monitor_process = _ScheduledProcess(self._task_interval, self._monitor_process_func)
         self._monitor_process.start()
 
@@ -187,7 +185,8 @@ class ControllerTaskMonitor:
         task_storage_item.request.CopyFrom(request)
         return task_storage_item
 
-    def register_task(self, task_id: str, repo_root: str, task_monitor_file: str, request: backend_pb2.GeneralReq) -> None:
+    def register_task(self, task_id: str, repo_root: str, task_monitor_file: str,
+                      request: backend_pb2.GeneralReq) -> None:
         self._start_monitor()  # In case monitor has not been started.
 
         if task_id in self._task_storage:
