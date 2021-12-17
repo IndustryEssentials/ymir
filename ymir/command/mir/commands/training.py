@@ -139,7 +139,10 @@ def _run_train_cmd(cmd: str) -> int:
 # private: pre process
 def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained_model_params: List[str]) -> None:
     config["task_id"] = task_id
-    config['pretrained_model_params'] = pretrained_model_params
+    if pretrained_model_params:
+        config['pretrained_model_params'] = pretrained_model_params
+    elif 'pretrained_model_params' in config:
+        del config['pretrained_model_params']
 
     logging.debug("config: {}".format(config))
 
@@ -184,7 +187,7 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
     if pretrained_class_names != class_names:
         raise ValueError(f"class names mismatch: pretrained: {pretrained_class_names}, current: {class_names}")
 
-    return model_storage.get_all_models()
+    return model_storage.models
 
 
 class CmdTrain(base.BaseCommand):

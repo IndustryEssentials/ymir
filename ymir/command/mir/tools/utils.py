@@ -159,19 +159,9 @@ def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str,
 
 class ModelStorage:
     def __init__(self) -> None:
-        self.params = ''
-        self.json = ''
-        self.weights = ''
+        self.models: List[str] = []
         self.config = ''
-
-    def get_all_models(self) -> List[str]:
-        all_models = []
-        if self.params and self.json:
-            all_models.append(self.params)
-            all_models.append(self.json)
-        if self.weights:
-            all_models.append(self.weights)
-        return all_models
+        self.ymir_info = ''
 
 
 def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> ModelStorage:
@@ -222,20 +212,15 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     with tarfile.open(tar_file, 'r') as tar_gz:
         for item in tar_gz:
             logging.info(f"extracting {item} -> {dest_root}")
-            if 'json' in item.name:
-                model_storage.json = item.name
-            if 'params' in item.name:
-                model_storage.params = item.name
             if 'config.yaml' in item.name:
                 model_storage.config = item.name
-            if 'weights' in item.name:
-                model_storage.weights = item.name
+            elif 'ymir-info.yaml' in item.name:
+                model_storage.ymir_info = item.name
+            else:
+                model_storage.models.append(item.name)
             tar_gz.extract(item, dest_root)
 
     os.remove(tar_file)
-
-    if not model_storage.params or not model_storage.json or not model_storage.config:
-        raise ValueError(f"empty params file, json file or config file in model package: {tar_file}")
 
     return model_storage
 
