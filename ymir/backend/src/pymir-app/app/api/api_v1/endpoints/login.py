@@ -11,9 +11,11 @@ from app.api.errors.errors import (
     InactiveUser,
     IncorrectEmailOrPassword,
     InvalidToken,
+    NotEligibleRole,
     UserNotFound,
 )
 from app.config import settings
+from app.constants.role import Role
 from app.utils import security
 from app.utils.email import send_reset_password_email
 
@@ -40,15 +42,41 @@ def login_access_token(
     )
     if not user:
         raise IncorrectEmailOrPassword()
-    elif crud.user.is_deleted(user):
+    if not crud.user.is_active(user):
         raise InactiveUser()
+    highest_role = schemas.UserRole(user.role)
+
+    # User can request specific roles
+    # choose the role of highest rank yet within limit
+    if form_data.scopes:
+        claimed_role = max(
+            getattr(schemas.UserRole, scope) for scope in form_data.scopes
+        )
+    else:
+        claimed_role = highest_role
+
+    # make sure the claimed_role is valid
+    if claimed_role > highest_role:
+        raise NotEligibleRole()
+
+    # grant user adequate role
+    role = min(claimed_role, highest_role)
+
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    token_payload = {
+        "id": user.id,
+        "role": role.name,
+    }
     payload = {
         "access_token": security.create_access_token(
-            user.id, expires_delta=access_token_expires
+            token_payload, expires_delta=access_token_expires
         ),
         "token_type": "bearer",
     }
+
+    # update last login time
+    crud.user.update_login_time(db, user=user)
+
     return {"result": payload, **payload}
 
 

@@ -7,12 +7,15 @@ from concurrent import futures
 from typing import Any
 
 import grpc
+import sentry_sdk
 import yaml
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from controller import server_impl as mir_controller_service
 from controller import task_monitor
+from controller.config import CONTROLLER_SENTRY_DSN
+from controller.utils import metrics
 from proto import backend_pb2_grpc
 
 path_matcher = re.compile(r"\$\{([^}^{]+)\}")
@@ -53,6 +56,7 @@ def main(main_args: Any) -> int:
     else:
         logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.INFO)
 
+    sentry_sdk.init(CONTROLLER_SENTRY_DSN)
     server_config = parse_config_file(main_args.config_file)
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)
@@ -61,6 +65,14 @@ def main(main_args: Any) -> int:
     monitor_storage_root = server_config['TASK_MONITOR']['storageroot']
     os.makedirs(monitor_storage_root, exist_ok=True)
     ctr_task_monitor = task_monitor.ControllerTaskMonitor(storage_root=monitor_storage_root)
+
+    # start metrics manager
+    metrics_config = server_config['METRICS']
+    manager = metrics.MetricsManager(permission_pass=metrics_config['allow_feedback'],
+                                     uuid=metrics_config['anonymous_uuid'],
+                                     server_host=metrics_config['server_host'],
+                                     server_port=metrics_config['server_port'])
+    manager.send_counter('init.start')
 
     # start grpc server
     port = server_config['SERVICE']['port']

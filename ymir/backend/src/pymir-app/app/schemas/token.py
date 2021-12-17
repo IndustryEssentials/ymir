@@ -17,4 +17,5 @@ class TokenOut(Common):
 
 
 class TokenPayload(BaseModel):
-    sub: Optional[int] = None
+    id: int
+    role: str

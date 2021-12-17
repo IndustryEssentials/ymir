@@ -46,6 +46,14 @@ const Guide = ({ visible, neverShow, setGuideVisible, setNeverShow }) => {
           </Card>
         </Col>
         <Col className={s.step}>
+          <Card className={s.stepBox} hoverable onClick = {() => go('/home/task/label')}>
+            <h2>{t('common.guide.step6.title')}</h2>
+            <p><TaggingIcon className={s.stepIcon} /></p>
+            <p className={s.stepTip}>{t('common.guide.step6.content')}</p>
+            <p><Button className={s.stepButton}>{t('common.guide.step4.btn')}</Button></p>
+          </Card>
+        </Col>
+        <Col className={s.step}>
           <Card className={s.stepBox} hoverable onClick = {() => go('/home/task/train')}>
             <h2>{t('common.guide..step2.title')}</h2>
             <p><TrainIcon className={s.stepIcon} /></p>
@@ -63,7 +71,7 @@ const Guide = ({ visible, neverShow, setGuideVisible, setNeverShow }) => {
         </Col>
         <Col className={s.step}>
           <Card className={s.stepBox} hoverable onClick = {() => go('/home/task/label')}>
-            <h2>{t('common.guide..step4.title')}</h2>
+            <h2>{t('common.guide.step4.title')}</h2>
             <p><TaggingIcon className={s.stepIcon} /></p>
             <p className={s.stepTip}>{t('common.guide.step4.content')}</p>
             <p><Button className={s.stepButton}>{t('common.guide.step4.btn')}</Button></p>

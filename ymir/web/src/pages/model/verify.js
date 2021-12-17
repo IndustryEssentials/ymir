@@ -81,10 +81,10 @@ function Verify({ getModel, verify }) {
   function renderUploadBtn(label = t('model.verify.upload.label')) {
     return (
       <Uploader
-        key={Math.random()}
+        key={'uploader'}
         type='primary'
         className={styles.verify_uploader}
-        onChange={(files, result) => { setUrl(result) }}
+        onChange={(files, result) => { setUrl(files.length ? result : '') }}
         format='img'
         label={label}
         showUploadList={false}
@@ -170,7 +170,7 @@ function Verify({ getModel, verify }) {
                 <Descriptions.Item label={t("model.column.create_time")}>
                   {format(model.create_datetime)}
                 </Descriptions.Item>
-                <Descriptions.Item label={t("dataset.asset.info.keyword")} span={2}>
+                <Descriptions.Item label={t("dataset.asset.info.keyword")}>
                   {model.keywords?.map((keyword, i) => (
                     <CheckableTag
                       checked={selectedKeywords.indexOf(keyword) > -1}
@@ -183,7 +183,7 @@ function Verify({ getModel, verify }) {
                   ))}
                 </Descriptions.Item>
               </Descriptions>
-              <p style={{ marginTop: 20 }}>{url ? renderUploadBtn(t('model.verify.reverify.label')) : null}</p>
+              <div style={{ marginTop: 20 }}>{url ? renderUploadBtn(t('model.verify.reverify.label')) : null}</div>
             </Card>
           </Col>
         </Row>
