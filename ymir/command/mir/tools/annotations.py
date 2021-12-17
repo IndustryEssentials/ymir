@@ -147,7 +147,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
     assethash_filename_list = []  # type: List[Tuple[str, str, str]]
     with open(in_sha1_file, "r") as in_file:
         for line in in_file.readlines():
-            line_components = line.strip().split()
+            line_components = line.strip().split('\t')
             if not line_components or len(line_components) < 2:
                 logging.warning("incomplete line: %s", line)
                 continue
