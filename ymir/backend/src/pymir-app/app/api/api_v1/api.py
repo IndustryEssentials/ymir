@@ -3,12 +3,12 @@ from fastapi import APIRouter
 from app.api.api_v1.endpoints import (
     datasets,
     graphs,
+    images,
     inferences,
     keywords,
     login,
     models,
     roles,
-    runtimes,
     stats,
     tasks,
     upload,
@@ -28,6 +28,6 @@ api_router.include_router(models.router, prefix="/models", tags=["models"])
 api_router.include_router(keywords.router, prefix="/keywords", tags=["keywords"])
 api_router.include_router(graphs.router, prefix="/graphs", tags=["graphs"])
 api_router.include_router(workspaces.router, prefix="/workspaces", tags=["workspaces"])
-api_router.include_router(runtimes.router, prefix="/runtimes", tags=["runtimes"])
+api_router.include_router(images.router, prefix="/images", tags=["docker_images"])
 api_router.include_router(inferences.router, prefix="/inferences", tags=["inference"])
 api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
