@@ -13,7 +13,7 @@ export default defineConfig({
       pathRewrite: { "^/api": "/api" },
     },
     '/ymir-': {
-      target: "http://192.168.13.107:9999/",
+      target: "http://192.168.13.107:7777/",
       changeOrigin: true,
       pathRewrite: { 
         "^/ymir-storage": "/ymir-storage",
