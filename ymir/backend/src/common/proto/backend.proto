@@ -21,6 +21,7 @@ enum TaskType {
     TaskTypeExportData = 6;
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
+    TaskTypeInfer = 9;
 };
 
 enum TaskState {
@@ -129,6 +130,7 @@ message GeneralReq {
     bool check_only=18;
     string executor_instance = 19;
     MergeStrategy merge_strategy = 20;
+    TaskType operate_task_type = 21;
     ReqCreateTask req_create_task = 1001;
     ReqGetTaskInfo req_get_task_info = 1002;
 }
@@ -139,6 +141,7 @@ message GeneralResp {
     string message = 3;
     repeated string ext_strs = 4;
     repeated string csv_labels = 5;
+    string hash_id = 6;
     RespGetTaskInfo resp_get_task_info = 1000;
     RespCMDInference detection = 1001;
 }
