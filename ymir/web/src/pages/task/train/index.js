@@ -13,13 +13,13 @@ import { useHistory, useParams, useLocation } from "umi"
 import TripleRates from "@/components/form/tripleRates"
 import t from "@/utils/t"
 import { TASKSTATES } from '@/constants/task'
-import { CONFIGTYPES } from '@/constants/mirror'
-import Breadcrumbs from "../../../components/common/breadcrumb"
+import { TYPES } from '@/constants/image'
+import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { AddDelTwoIcon } from '@/components/common/icons'
-import { randomNumber } from "../../../utils/number"
+import { randomNumber } from "@/utils/number"
 
 const { Option } = Select
 
@@ -75,7 +75,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
   }, [trainSets, validationSets, datasets])
 
   useEffect(async () => {
-    const result = await getRuntimes({ type: CONFIGTYPES.TRAINING })
+    const result = await getRuntimes({ type: TYPES.TRAINING })
     if (result && !(location.state && location.state.record)) {
       setConfig(result.config)
     }

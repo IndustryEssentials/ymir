@@ -1,6 +1,8 @@
 const image = {
   "images.title": { en: "Image List", cn: "镜像列表", },
   "image.title": { en: "Image Detail", cn: "镜像详情", },
+  "image.add.title": { en: "Create Image", cn: "添加镜像", },
+  "image.modify.title": { en: "Modify Image", cn: "编辑镜像", },
   "image.type.mining": { en: "Mining Image", cn: "挖掘镜像", },
   "image.type.train": { en: "Training Image", cn: "训练镜像", },
   "image.column.type": { en: "Image Type", cn: "镜像类型", },
@@ -13,10 +15,11 @@ const image = {
   "image.tab.public.title": { en: "Public Images", cn: "公共镜像", },
   "image.new.label": { en: "New Image", cn: "新增镜像", },
   "image.list.item.type": { en: "Image Type: ", cn: "镜像类型：", },
-  "image.list.item.remote": { en: "Image URL:", cn: "镜像地址：", },
+  "image.list.item.url": { en: "Image URL:", cn: "镜像地址：", },
   "image.list.item.desc": { en: "Image Description:", cn: "描述：", },
   "image.list.item.related": { en: "Connect Image", cn: "关联镜像：", },
   "image.list.train.btn": { en: "Train", cn: "去训练", },
+  "image.list.mining.btn": { en: "Train", cn: "去挖掘", },
 }
 
 export default image

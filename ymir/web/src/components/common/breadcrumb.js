@@ -26,7 +26,7 @@ const getCrumbs = () => [
   { path: '/home/user', label: t('breadcrumbs.user.info'), pid: 1, id: 23 },
   { path: '/home/image', label: t('breadcrumbs.images'), pid: 1, id: 24 },
   { path: '/home/image/detail/:id', label: t('breadcrumbs.image'), pid: 24, id: 25 },
-  // { path: '/home/image', label: t('breadcrumbs.images'), pid: 1, id: 24 },
+  { path: '/home/image/add/:id?', label: t('breadcrumbs.image.add'), pid: 24, id: 26 },
 ]
 
 function getCrumbItems(path, crumbs) {

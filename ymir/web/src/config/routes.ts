@@ -128,13 +128,19 @@ const Routes = [
         path: "/home/image_center",
         name: "imageCenter",
         component: "@/pages/image/center",
-        title: "mirrors.center.title",
+        title: "images.center.title",
       },
       {
         path: "/home/image/detail",
-        name: "mirrorDetail",
+        name: "imageDetail",
         component: "@/pages/image/detail",
         title: "image.title",
+      },
+      {
+        path: "/home/image/add/:id?",
+        name: "imageAdd",
+        component: "@/pages/image/add",
+        title: "image.add.title",
       },
       {
         path: "/home/permission",

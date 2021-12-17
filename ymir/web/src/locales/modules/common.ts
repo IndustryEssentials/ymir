@@ -22,7 +22,7 @@ const common = {
   'common.history.task.training': { cn: '训练', en: 'Training', },
   'common.history.task.filter': { cn: '筛选', en: 'Filter', },
   'common.history.task.label': { cn: '标注', en: 'Label', },
-  'common.back': { cn: '返回>', en: 'Back>', },
+  'common.back': { cn: '返回', en: 'Back', },
   'common.fold': { cn: '收起', en: 'Fold', },
   'common.unfold': { cn: '展开', en: 'Unfold', },
   'common.editbox.action.edit': { cn: '编辑名称', en: 'Edit Name', }, 

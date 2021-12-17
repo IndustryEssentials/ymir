@@ -1,126 +1,120 @@
 import { useEffect, useState } from 'react'
-import { Button, Form, Input, message, Modal, Select, Upload } from 'antd'
+import { Button, Card, Form, Input, message, Modal, Select, Space, Radio } from 'antd'
 import { connect } from 'dva'
-import {
-  CloudUploadOutlined,
-} from "@ant-design/icons"
+import { useParams, useHistory } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
-import Uploader from '../../components/form/uploader'
+import { getImageTypeLabel } from '@/constants/image'
+import Breadcrumbs from '../../components/common/breadcrumb'
 
-const { Option } = Select
 const { useForm } = Form
 
-const TYPES = Object.freeze({
-  SHARE: 1,
-  LOCAL: 2,
-})
-
-const Add = ({ visible, cancel = () => { }, ok = () => { }, createModel }) => {
-
-  const types = [
-    { id: TYPES.SHARE, label: t('model.add.types.share') },
-    // { id: TYPES.LOCAL, label: t('model.add.types.local') },
-  ]
+const Add = ({ }) => {
+  const { id } = useParams()
+  const history = useHistory()
   const [form] = useForm()
-  const [show, setShow] = useState(visible)
-  const [currentType, setCurrentType] = useState(TYPES.SHARE)
-  const [fileToken, setFileToken] = useState('')
+  const [isEdit, setEdit] = useState(false)
+  const [userInput, setUserInput] = useState(false)
+
+  const types = Object.keys(getImageTypeLabel()).map(value => ({ value, label: getImageTypeLabel(value) }))
 
   useEffect(() => {
-    setShow(visible)
-  }, [visible])
+    setEdit(!!id)
+  }, [id])
 
-  const typeChange = (type) => {
-    setCurrentType(type)
-  }
-
-  const isType = (type) => {
-    return currentType === type
-  }
-
-  const close = () => {
-    setShow(false)
-    cancel()
-  }
-
-  const onOk = async () => {
-
-    if (form.validateFields()) {
-      const values = form.getFieldsValue()
-      var params = {
-        ...values,
-      }
-      if (fileToken) {
-        params.input_url = fileToken
-      }
-      const result = await createModel(params)
-      if (result) {
-        message.success(t('model.add.success'))
-        form.resetFields()
-        close()
-        ok()
-      }
+  const submit = async (values) => {
+    var params = {
+      ...values,
+    }
+    const result = await createImage(params)
+    if (result) {
+      message.success(t('image.add.success'))
+      form.resetFields()
+      close()
+      ok()
     }
   }
-  const onCancel = () => {
-    close()
+
+  const checkImageUrl = (_, value) => {
+    const reg = /^[a-z0-9\-._]{1,256}(:[a-z0-9.-_]+)?$/
+    if (!value || reg.test(value)) {
+      return Promise.resolve()
+    }
+    return Promise.reject(t('image.add.form.url.invalid'))
+  }
+  const urlChange = ({ target }) => {
+    const name = form.getFieldValue('name')
+    if (!userInput) {
+      form.setFieldsValue({ name: target.value })
+    }
   }
   return (
-    <Modal
-      visible={show}
-      title={t('model.import.label')}
-      onCancel={onCancel}
-      onOk={onOk}
-    >
-      <Form form={form} labelCol={{ span: 4 }}>
-        <Form.Item
-          label={t('model.add.form.name')}
-          name='name'
-          rules={[
-            { required: true, message: t('model.add.form.name.placeholder') }
-          ]}
-        >
-          <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
-        </Form.Item>
-        <Form.Item label={t('model.add.form.type')}>
-          <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.SHARE}>
-            {types.map(type => (
-              <Option value={type.id} key={type.id}>{type.label}</Option>
-            ))}
-          </Select>
-        </Form.Item>
-        {isType(TYPES.SHARE) ? (
-          <Form.Item
-            label={t('model.add.form.share.label')}
-            name='input_model_id'
-            rules={[
-              { required: true, message: t('model.add.form.share.valid.msg') }
-            ]}
-          >
-            <Input placeholder={t('model.add.form.share.placeholder')} allowClear />
-          </Form.Item>
-        ) : null}
-        {isType(TYPES.LOCAL) ? (
-          <Form.Item label={t('model.add.form.upload.btn')}>
-            <Uploader
-              onChange={(files, result) => { setFileToken(result) }}
-              info={t('model.add.form.upload.info', { br: <br /> })}
-            ></Uploader>
-          </Form.Item>
-        ) : null}
-      </Form>
-    </Modal>
+    <div className={s.imageAdd}>
+      <Breadcrumbs />
+      <Card className={s.container} title={t('breadcrumbs.dataset.add')}>
+        <div className={s.formContainer}>
+          <Form form={form} labelCol={{ span: 4 }} onFinish={submit}>
+            <Form.Item
+              label={t('image.add.form.url')}
+              name='url'
+              rules={[
+                { required: true, message: t('image.add.form.url.required') },
+                { validator: checkImageUrl },
+              ]}
+            >
+              <Input placeholder={t('image.add.form.url.placeholder')} autoComplete='off' allowClear onChange={urlChange} />
+            </Form.Item>
+            <Form.Item
+              label={t('image.add.form.name')}
+              name='name'
+              rules={[
+                { required: true, message: t('image.add.form.name.placeholder') }
+              ]}
+            >
+              <Input placeholder={t('image.add.form.name.placeholder')} autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
+            </Form.Item>
+            <Form.Item
+              label={t('image.add.form.share.label')}
+              name='input_image_id'
+              rules={[
+                { required: true, message: t('image.add.form.share.valid.msg') }
+              ]}
+            >
+              <Input placeholder={t('image.add.form.share.placeholder')} allowClear />
+            </Form.Item>
+            <Form.Item label={t('image.add.form.type')} name='type' initialValue={types[0].value}>
+              <Radio.Group
+                options={types}
+              />
+            </Form.Item>
+            <Form.Item wrapperCol={{ offset: 4 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('image.add.submit')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('common.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
+          </Form>
+        </div>
+      </Card>
+    </div>
   )
 }
 
 
 const actions = (dispatch) => {
   return {
-    createModel: (payload) => {
+    createImage: (payload) => {
       return dispatch({
-        type: 'model/createModel',
+        type: 'image/createImage',
         payload,
       })
     },
