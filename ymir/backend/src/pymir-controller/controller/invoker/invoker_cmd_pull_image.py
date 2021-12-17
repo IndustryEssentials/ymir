@@ -50,7 +50,7 @@ class ImageHandler(BaseMirControllerInvoker):
             response = utils.make_general_response(code.ResCode.CTR_OK, config_response.message)
             response.hash_id = hash_response.message
         else:
-            response = utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, config_response.message)
+            response = utils.make_general_response(backend_pb2.RCode.RC_SERVICE_IMAGE_ERROR, config_response.message)
 
         return response
 
