@@ -1,7 +1,8 @@
 import pytest
+from mir.tools.mir_storage_ops import MirStorageOps
 
 from proto import backend_pb2
-from mir.tools.mir_storage_ops import MirStorageOps
+from src.libs.cache import RedisCache
 
 
 @pytest.fixture()
@@ -88,6 +89,8 @@ def mock_mir_content(mocker):
             backend_pb2.MirStorage.MIR_TASKS: mir_tasks_content,
         },
     )
+
+    mocker.patch.object(RedisCache, "get")
 
 
 class TestAssetController:
