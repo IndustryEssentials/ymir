@@ -48,6 +48,8 @@ services:
       - viz-redis
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure
+    networks:
+      - ymirnetwork
 
   redis:
     image: industryessentials/ymir-backend-redis
@@ -56,10 +58,14 @@ services:
       - ${YMIR_PATH}/redis:/var/log/redis
       - ${YMIR_PATH}/redis:/data
     restart: on-failure
+    networks:
+      - ymirnetwork
 
   viz-redis:
     image: industryessentials/ymir-viz-redis
     restart: on-failure
+    networks:
+      - ymirnetwork
 
   nginx:
     image: industryessentials/ymir-web
@@ -73,6 +79,8 @@ services:
     ports:
       - ${NGINX_PORT}:80
     restart: on-failure
+    networks:
+      - ymirnetwork
 
   db:
     image: 'mysql/mysql-server:8.0.25'
@@ -84,5 +92,14 @@ services:
     volumes:
       - ${YMIR_PATH}/mysql:/var/lib/mysql
     restart: on-failure
+    networks:
+      - ymirnetwork
 
-
+networks:
+  ymirnetwork:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.168.254.0/24
+        gateway: 172.168.254.1

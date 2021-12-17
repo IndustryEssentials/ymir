@@ -55,7 +55,7 @@ class BaseModel:
         redis_cache.set(f"{cache_key}:{config.CACHE_STATUS}", {"flag": 0})
         with redis_cache.pipeline() as pipe:
             for asset_id, asset_id_detail in asset_content["asset_ids_detail"].items():
-                pipe.hmset(f"{cache_key}:{config.ASSET_ID_DETAIL}", {asset_id: json.dumps(asset_id_detail)})
+                pipe.hset(name=f"{cache_key}:{config.ASSET_ID_DETAIL}", mapping={asset_id: json.dumps(asset_id_detail)})
             pipe.execute()
 
         with redis_cache.pipeline() as pipe:

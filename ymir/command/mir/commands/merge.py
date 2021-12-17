@@ -191,6 +191,7 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
     """
     mir_data = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
                                                   mir_branch=guest_typ_rev_tid.rev,
+                                                  mir_task_id=guest_typ_rev_tid.tid,
                                                   mir_storages=mir_storage.get_all_mir_storage())
 
     guest_mir_metadatas: mirpb.MirMetadatas = mir_data.get(mirpb.MirStorage.MIR_METADATAS, None)
@@ -238,14 +239,14 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
 
 
 def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                      host_mir_keywords: mirpb.MirKeywords, mir_root: str, branch_id: str) -> int:
+                      host_mir_keywords: mirpb.MirKeywords, mir_root: str, branch_id: str, task_id: str) -> int:
     if not branch_id:
         raise RuntimeError('empty exclude id')
     if not host_mir_metadatas:
         raise RuntimeError('invalid host_mir_metadatas')
 
     guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(
-        mir_root=mir_root, mir_branch=branch_id, ms=mirpb.MirStorage.MIR_METADATAS)
+        mir_root=mir_root, mir_branch=branch_id, mir_task_id=task_id, ms=mirpb.MirStorage.MIR_METADATAS)
     if not guest_mir_metadatas:
         raise RuntimeError("guest repo {}:{} has no metadata.".format(mir_root, branch_id))
 
@@ -314,7 +315,8 @@ class CmdMerge(base.BaseCommand):
                                     host_mir_annotations=host_mir_annotations,
                                     host_mir_keywords=host_mir_keywords,
                                     mir_root=mir_root,
-                                    branch_id=typ_rev_tid.rev)
+                                    branch_id=typ_rev_tid.rev,
+                                    task_id=typ_rev_tid.tid)
 
             if ret != MirCode.RC_OK:
                 return ret
@@ -335,6 +337,7 @@ class CmdMerge(base.BaseCommand):
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=host_typ_rev_tid.rev,
                                                       mir_datas=mir_data,
                                                       commit_message=task.name)

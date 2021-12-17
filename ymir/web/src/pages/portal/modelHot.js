@@ -10,14 +10,14 @@ import QuickAction from "./components/quickAction"
 import styles from './index.less'
 import { cardBody, cardHead } from "./components/styles"
 import { MymodelIcon, TrainIcon, } from '@/components/common/icons'
-import { options } from "./components/orderOptions"
+import { options, ORDER } from "./components/orderOptions"
 
 function ModelHot({ getModels }) {
   const history = useHistory()
   const [models, setModels] = useState([])
 
   useEffect(async () => {
-    fetchModels()
+    fetchModels(ORDER.hot)
   }, [])
 
   function changeOrder({ target }) {
