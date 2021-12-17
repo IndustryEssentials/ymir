@@ -42,8 +42,8 @@ export const getDatasetTypes = () => [
   { key: "public_import", value: TASKTYPES.PUBLIC, label: t("dataset.type.import"), hidden: true },
 ]
 
-export const getMirrorTypes = () => [
+export const getImageTypes = () => [
   { key: "all", value: "", label: t("common.all") },
-  { key: "train", value: CONFIGTYPES.TRAINING, label: t("mirror.type.train") },
-  { key: "mining", value: CONFIGTYPES.MINING, label: t("mirror.type.mining") },
+  { key: "train", value: CONFIGTYPES.TRAINING, label: t("image.type.train") },
+  { key: "mining", value: CONFIGTYPES.MINING, label: t("image.type.mining") },
 ]

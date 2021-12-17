@@ -5,7 +5,7 @@ import { Link, useHistory, useParams } from "umi"
 import { Form, List, Input, Menu, Modal, Radio, Card, Skeleton, Space, Button, Pagination, Col, Row, } from "antd"
 
 import t from "@/utils/t"
-import { getMirrorTypes } from '@/constants/query'
+import { getImageTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, AddIcon, SearchIcon, MoreIcon, UserSettingsIcon, ShareIcon, LinkIcon } from "../../components/common/icons"
 
@@ -13,8 +13,8 @@ const { confirm } = Modal
 const { useForm } = Form
 
 const tabsTitle = [
-  { tab: t('mirror.tab.my.title'), key: 'my', },
-  { tab: t('mirror.tab.public.title'), key: 'public', },
+  { tab: t('image.tab.my.title'), key: 'my', },
+  { tab: t('image.tab.public.title'), key: 'public', },
 ]
 
 const initQuery = {
@@ -24,10 +24,10 @@ const initQuery = {
   limit: 20,
 }
 
-function Mirror({ getMirrors, delMirror, updateMirror }) {
+function Image({ getImages, delImage, updateImage }) {
   const { keyword } = useParams()
   const history = useHistory()
-  const [mirrors, setMirrors] = useState([])
+  const [images, setImages] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [active, setActive] = useState(tabsTitle[0].key)
@@ -45,7 +45,7 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
     }
   }, [keyword])
 
-  const types = getMirrorTypes()
+  const types = getImageTypes()
 
 
   const pageChange = ({ current, pageSize }) => {
@@ -63,36 +63,36 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
     if (query.name) {
       params.name = query.name
     }
-    // const result = await getMirrors(params)
+    // const result = await getImages(params)
     // mock data
     const result = {
       items: [
-        { id: 0, name: 'mirror 0', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 1, name: 'mirror 1', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 1, },
-        { id: 2, name: 'mirror 2', type: 2, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 1, },
-        { id: 3, name: 'mirror 3', type: 2, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 1, },
-        { id: 4, name: 'mirror 4', type: 2, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 2, },
-        { id: 5, name: 'mirror 5', type: 2, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 6, name: 'mirror 6', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 4, },
-        { id: 7, name: 'mirror 7', type: 2, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 8, name: 'mirror 8', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 9, name: 'mirror 9', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 10, name: 'mirror 10', type: 2, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 11, name: 'mirror 11', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 12, name: 'mirror 12', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 13, name: 'mirror 13', type: 2, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 14, name: 'mirror 14', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 15, name: 'mirror 15', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 16, name: 'mirror 16', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 17, name: 'mirror 17', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 18, name: 'mirror 18', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 19, name: 'mirror 19', type: 1, remote: 'docker hub name', desc: 'mirror desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 0, name: 'image 0', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
+        { id: 1, name: 'image 1', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 1, },
+        { id: 2, name: 'image 2', type: 2, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 1, },
+        { id: 3, name: 'image 3', type: 2, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 1, },
+        { id: 4, name: 'image 4', type: 2, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 2, },
+        { id: 5, name: 'image 5', type: 2, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 6, name: 'image 6', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 4, },
+        { id: 7, name: 'image 7', type: 2, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
+        { id: 8, name: 'image 8', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
+        { id: 9, name: 'image 9', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
+        { id: 10, name: 'image 10', type: 2, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 11, name: 'image 11', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 12, name: 'image 12', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 13, name: 'image 13', type: 2, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 14, name: 'image 14', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 15, name: 'image 15', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 16, name: 'image 16', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 17, name: 'image 17', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 18, name: 'image 18', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
+        { id: 19, name: 'image 19', type: 1, remote: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
       ],
       total: 56,
     }
     if (result) {
       const { items, total } = result
-      setMirrors(() => items)
+      setImages(() => items)
       setTotal(total)
     }
   }
@@ -102,32 +102,32 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
     return [
       {
         key: "link",
-        label: t("mirror.action.link"),
-        onclick: () => history.push(`/home/mirror/detail/${id}`),
+        label: t("image.action.link"),
+        onclick: () => history.push(`/home/image/detail/${id}`),
         icon: <LinkIcon />,
       },
       {
         key: "share",
-        label: t("mirror.action.share"),
-        onclick: () => history.push('/home/mirror/share'),
+        label: t("image.action.share"),
+        onclick: () => history.push('/home/image/share'),
         icon: <ShareIcon />,
       },
       {
         key: "edit",
-        label: t("mirror.action.edit"),
-        onclick: () => history.push(`/home/mirror/detail/${id}`),
+        label: t("image.action.edit"),
+        onclick: () => history.push(`/home/image/detail/${id}`),
         icon: <EditIcon />,
       },
       {
         key: "del",
-        label: t("mirror.action.del"),
+        label: t("image.action.del"),
         onclick: () => del(id, name),
         className: styles.action_del,
         icon: <DeleteIcon />,
       },
       {
         key: "detail",
-        label: t("mirror.action.detail"),
+        label: t("image.action.detail"),
         onclick: () => history.push(`/home/model/verify/${id}`),
         icon: <MoreIcon />,
       },
@@ -144,9 +144,9 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
       icon: <TipsIcon style={{ color: 'rgb(242, 99, 123)' }} />,
       content: t("model.action.del.confirm.content", { name }),
       onOk: async () => {
-        const result = await delMirror(id)
+        const result = await delImage(id)
         if (result) {
-          setMirrors(mirrors.filter((model) => model.id !== id))
+          setImages(images.filter((model) => model.id !== id))
           setTotal(old => old - 1)
           getData()
         }
@@ -158,10 +158,10 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
 
 
   const saveName = async (record, name) => {
-    const result = await updateMirror(record.id, name)
+    const result = await updateImage(record.id, name)
     if (result) {
-      setMirrors((mirrors) =>
-        mirrors.map((model) => {
+      setImages((images) =>
+        images.map((model) => {
           if (model.id === record.id) {
             model.name = name
           }
@@ -221,7 +221,7 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
   }
 
   const addBtn = (
-    <div className={styles.addBtn}><AddIcon />{t('mirror.new.label')}</div>
+    <div className={styles.addBtn}><AddIcon />{t('image.new.label')}</div>
   )
 
   const renderItem = (item) => {
@@ -231,13 +231,13 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
     </Row>
     const desc = <Row><Col className={styles.desc} flex={1}>
       <Space className={styles.info}>
-        <span className={styles.infoItem}><span className={styles.infoLabel}>{t('mirror.list.item.type')}</span>{item.type}</span>
-        <span className={styles.infoItem}><span className={styles.infoLabel}>{t('mirror.list.item.remote')}</span>{item.remote}</span>
-        <span className={styles.infoItem}><span className={styles.infoLabel}>{t('mirror.list.item.desc')}</span>{item.desc}</span>
+        <span className={styles.infoItem}><span className={styles.infoLabel}>{t('image.list.item.type')}</span>{item.type}</span>
+        <span className={styles.infoItem}><span className={styles.infoLabel}>{t('image.list.item.remote')}</span>{item.remote}</span>
+        <span className={styles.infoItem}><span className={styles.infoLabel}>{t('image.list.item.desc')}</span>{item.desc}</span>
       </Space>
-      <div className={styles.related}>{t('mirror.list.item.related')}{item.relative.join(',')}</div>
+      <div className={styles.related}>{t('image.list.item.related')}{item.relative.join(',')}</div>
     </Col>
-      <Col><Button key='train' onClick={() => history.push(`/home/task/train?mirror=${item.id}`)}>{t('mirror.list.train.btn')}</Button></Col>
+      <Col><Button key='train' onClick={() => history.push(`/home/task/train?image=${item.id}`)}>{t('image.list.train.btn')}</Button></Col>
     </Row>
     return <List.Item className={item.state ? 'success' : 'failure'}>
       <Skeleton active loading={item.loading}>
@@ -247,23 +247,23 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
     </List.Item>
   }
 
-  const myMirror = (
+  const myImage = (
     <div className={styles.my}>
       {addBtn}
       <List
         className={styles.list}
-        dataSource={mirrors}
+        dataSource={images}
         renderItem={renderItem}
       />
       <Pagination onChange={() => getData()} defaultCurrent={1} defaultPageSize={query.limit} total={total} showQuickJumper showSizeChanger></Pagination>
     </div>
   )
 
-  const publicMirror = ('')
+  const publicImage = ('')
 
   const contents = {
-    my: myMirror,
-    public: publicMirror,
+    my: myImage,
+    public: publicImage,
   }
 
   const searchPanel = (
@@ -278,7 +278,7 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
     >
       <Form.Item
         name="type"
-        label={t("mirror.column.type")}
+        label={t("image.column.type")}
       >
         <Radio.Group options={types} optionType="button"></Radio.Group>
       </Form.Item>
@@ -289,7 +289,7 @@ function Mirror({ getMirrors, delMirror, updateMirror }) {
   )
 
   return (
-    <div className={styles.mirror}>
+    <div className={styles.image}>
       <Breadcrumbs />
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} tabBarExtraContent={searchPanel}>
         {contents[active]}
@@ -306,25 +306,25 @@ const props = (state) => {
 
 const actions = (dispatch) => {
   return {
-    getMirrors: (payload) => {
+    getImages: (payload) => {
       return dispatch({
-        type: 'mirror/getMirrors',
+        type: 'image/getImages',
         payload,
       })
     },
-    delMirror: (payload) => {
+    delImage: (payload) => {
       return dispatch({
-        type: 'mirror/delMirror',
+        type: 'image/delImage',
         payload,
       })
     },
-    updateMirror: (id, name) => {
+    updateImage: (id, name) => {
       return dispatch({
-        type: 'mirror/updateMirror',
+        type: 'image/updateImage',
         payload: { id, name },
       })
     },
   }
 }
 
-export default connect(props, actions)(Mirror)
+export default connect(props, actions)(Image)

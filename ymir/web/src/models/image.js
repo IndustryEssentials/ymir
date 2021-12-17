@@ -1,39 +1,39 @@
 import { 
-  getMirror, 
-  getMirrors,
-  delMirror,
-  createMirror,
-  updateMirror,
-} from "@/services/mirror"
+  getImage, 
+  getImages,
+  delImage,
+  createImage,
+  updateImage,
+} from "@/services/image"
 
 export default {
-  namespace: "mirror",
+  namespace: "image",
   state: {
-    mirrors: {
+    images: {
       items: [],
       total: 0,
     },
-    mirror: {},
+    image: {},
   },
   effects: {
-    *getMirrors({ payload }, { call, put }) {
-      const { code, result } = yield call(getMirrors, payload)
+    *getImages({ payload }, { call, put }) {
+      const { code, result } = yield call(getImages, payload)
       if (code === 0) {
         yield put({
-          type: "UPDATE_MIRRORS",
+          type: "UPDATE_IMAGES",
           payload: result,
         })
       }
       return result
     },
-    *batchMirrors({ payload }, { call, put }) {
-      const { code, result } = yield call(batchMirrors, payload)
+    *batchImages({ payload }, { call, put }) {
+      const { code, result } = yield call(batchImages, payload)
       if (code === 0) {
         return result.items
       }
     },
-    *getMirror({ payload }, { call, put }) {
-      const { code, result } = yield call(getMirror, payload)
+    *getImage({ payload }, { call, put }) {
+      const { code, result } = yield call(getImage, payload)
       if (code === 0) {
         const pa = result.parameters || {}
         const trainSets = pa?.include_train_datasets || []
@@ -50,32 +50,32 @@ export default {
           }
         }
         yield put({
-          type: "UPDATE_MIRROR",
+          type: "UPDATE_IMAGE",
           payload: result,
         })
       }
       return result
     },
-    *delMirror({ payload }, { call, put }) {
-      const { code, result } = yield call(delMirror, payload)
+    *delImage({ payload }, { call, put }) {
+      const { code, result } = yield call(delImage, payload)
       return result
     },
-    *createMirror({ payload }, { call, put }) {
-      const { code, result } = yield call(createMirror, payload)
+    *createImage({ payload }, { call, put }) {
+      const { code, result } = yield call(createImage, payload)
       if (code === 0) {
         return result
       }
     },
-    *updateMirror({ payload }, { call, put }) {
+    *updateImage({ payload }, { call, put }) {
       const { id, name } = payload
-      const { code, result } = yield call(updateMirror, id, name)
+      const { code, result } = yield call(updateImage, id, name)
       if (code === 0) {
         return result
       }
     },
     *verify({ payload }, { call }) {
       const { id, urls } = payload
-      console.log('mirror of mirrors: ', id, urls)
+      console.log('image of images: ', id, urls)
       const { code, result } = yield call(verify, id, urls)
       if (code === 0) {
         return result
@@ -83,16 +83,16 @@ export default {
     },
   },
   reducers: {
-    UPDATE_MIRRORS(state, { payload }) {
+    UPDATE_IMAGES(state, { payload }) {
       return {
         ...state,
-        mirrors: payload
+        images: payload
       }
     },
-    UPDATE_MIRROR(state, { payload }) {
+    UPDATE_IMAGE(state, { payload }) {
       return {
         ...state,
-        mirror: payload
+        image: payload
       }
     },
   },
