@@ -8,6 +8,7 @@ import yaml
 from google.protobuf import json_format
 
 from controller.utils import singleton, tasks_util
+from controller.utils.tasks_util import task_state_code_to_str
 from proto import backend_pb2
 
 
@@ -104,7 +105,8 @@ class ControllerTaskMonitor:
 
             task_item = self._update_task_item(task_monitor_file, task_id)
             if task_item.state in [backend_pb2.TaskStateDone, backend_pb2.TaskStateError]:
-                logging.debug("monitor found finished task: %s, state: %s", task_id, task_item.state)
+                logging.debug("monitor found finished task: %s, state: %s-%s", task_id, task_item.state,
+                              task_state_code_to_str(task_item.state))
                 finished_task_ids.add(task_id)
         for task_id in finished_task_ids:
             del self._task_storage[task_id]

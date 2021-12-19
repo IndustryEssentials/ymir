@@ -4,19 +4,52 @@ import os
 import re
 import sys
 from concurrent import futures
-from typing import Any
+from typing import Any, Dict
 
 import grpc
 import sentry_sdk
 import yaml
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-from controller import server_impl as mir_controller_service
 from controller import task_monitor
-from controller.config import CONTROLLER_SENTRY_DSN
-from controller.utils import metrics
-from proto import backend_pb2_grpc
+from controller.utils import code, metrics, utils, invoker_mapping
+from proto import backend_pb2, backend_pb2_grpc
+
+
+class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
+    __slots__ = ("_sandbox_root", "_user_to_container_ids", "_docker_image_name")
+
+    user_to_container_ids = {}  # type: Dict[str, str]
+
+    def __init__(self, sandbox_root: str, assets_config: dict) -> None:
+        self._sandbox_root = sandbox_root
+        self._assets_config = assets_config
+
+    @property
+    def sandbox_root(self) -> str:
+        return self._sandbox_root
+
+    @property
+    def assets_config(self) -> Dict:
+        return self._assets_config
+
+    def data_manage_request(self, request: backend_pb2.GeneralReq, context: Any) -> backend_pb2.GeneralResp:
+        if request.req_type not in invoker_mapping.RequestTypeToInvoker:
+            message = "unknown invoker for req_type: {}".format(request.req_type)  # type: str
+            logging.error(message)
+            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, message)
+
+        invoker_class = invoker_mapping.RequestTypeToInvoker[request.req_type]
+        invoker = invoker_class(sandbox_root=self.sandbox_root,
+                                request=request,
+                                assets_config=self.assets_config,
+                                async_mode=True)
+        invoker_result = invoker.server_invoke()
+
+        if isinstance(invoker_result, backend_pb2.GeneralResp):
+            return invoker_result
+        return utils.make_general_response(code.ResCode.CTR_SERVICE_UNKOWN_RESPONSE,
+                                           "unknown result type: {}".format(type(invoker_result)))
+
 
 path_matcher = re.compile(r"\$\{([^}^{]+)\}")
 
@@ -47,6 +80,7 @@ def parse_config_file(config_file: str) -> Any:
 
 
 def main(main_args: Any) -> int:
+    # set debug
     if main_args.debug:
         logging.basicConfig(stream=sys.stdout,
                             format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
@@ -55,8 +89,8 @@ def main(main_args: Any) -> int:
         logging.debug("in debug mode")
     else:
         logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.INFO)
+    sentry_sdk.init(os.environ.get("CONTROLLER_SENTRY_DSN", None))
 
-    sentry_sdk.init(CONTROLLER_SENTRY_DSN)
     server_config = parse_config_file(main_args.config_file)
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)
@@ -76,8 +110,8 @@ def main(main_args: Any) -> int:
 
     # start grpc server
     port = server_config['SERVICE']['port']
-    mc_service_impl = mir_controller_service.MirControllerService(sandbox_root=sandbox_root,
-                                                                  assets_config=server_config['ASSETS'])
+    mc_service_impl = MirControllerService(sandbox_root=sandbox_root,
+                                           assets_config=server_config['ASSETS'])
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     backend_pb2_grpc.add_mir_controller_serviceServicer_to_server(mc_service_impl, server)
     server.add_insecure_port("[::]:{}".format(port))
