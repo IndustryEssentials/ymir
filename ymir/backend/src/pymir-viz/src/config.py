@@ -4,7 +4,7 @@ env = os.environ.get
 
 SANDBOX_ROOT = env("SANDBOX_ROOT", '/data/mir_root')
 
-REDIS_URI = env("VIZ_REDIS_URI", "redis://")
+VIZ_REDIS_URI = env("VIZ_REDIS_URI", "redis://")
 
 # redis key info
 ASSET_ID_DETAIL = "detail"
