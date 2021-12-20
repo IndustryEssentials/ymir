@@ -10,7 +10,7 @@ services:
     runtime: nvidia
     environment:
       # controller
-      - REDIS_URI=redis://redis:6379/0
+      - CTR_REDIS_URI=redis://redis:6379/0
       - NVIDIA_VISIBLE_DEVICES=all
       - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
       - MONTIOR=${YMIR_PATH}/ymir-data/monitor
@@ -72,7 +72,7 @@ services:
 
   nginx:
     image: ymir-web:local_test
-    build: 
+    build:
       context: git@github.com:IndustryEssentials/ymir.git#:/ymir/web
       dockerfile: Dockerfile-dev
     volumes:
