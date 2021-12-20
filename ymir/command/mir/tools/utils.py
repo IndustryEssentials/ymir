@@ -4,7 +4,7 @@ import pathlib
 import requests
 import shutil
 import tarfile
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from PIL import Image, UnidentifiedImageError
 import yaml
@@ -160,8 +160,12 @@ def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str,
 class ModelStorage:
     def __init__(self) -> None:
         self.models: List[str] = []
-        self.config = ''
-        self.ymir_info = ''
+        self.executor_config: Dict[str, Any] = {}
+        self.task_context: Dict[str, Any] = {}
+
+    @property
+    def class_names(self) -> List[str]:
+        return self.executor_config.get('class_names', [])
 
 
 def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> ModelStorage:
@@ -212,17 +216,17 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     with tarfile.open(tar_file, 'r') as tar_gz:
         for item in tar_gz:
             logging.info(f"extracting {item} -> {dest_root}")
-            if 'config.yaml' in item.name:
-                model_storage.config = item.name
-            elif 'ymir-info.yaml' in item.name:
-                model_storage.ymir_info = item.name
-            else:
-                model_storage.models.append(item.name)
             tar_gz.extract(item, dest_root)
 
     os.remove(tar_file)
 
-    if not model_storage.models or not model_storage.config or not model_storage.ymir_info:
+    with open(os.path.join(dest_root, 'ymir-info.yaml'), 'r') as f:
+        ymir_info_dict = yaml.safe_load(f.read())
+        model_storage.models = ymir_info_dict.get('models', [])
+        model_storage.executor_config = ymir_info_dict.get('executor_config', {})
+        model_storage.task_context = ymir_info_dict.get('task_context', {})
+
+    if not model_storage.models or not model_storage.executor_config or not model_storage.task_context:
         raise ValueError(f"unpack model failed: not enough info: {tar_file}")
 
     return model_storage

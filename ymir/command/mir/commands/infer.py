@@ -120,11 +120,10 @@ class CmdInfer(base.BaseCommand):
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
         model_storage = mir_utils.prepare_model(model_location, model_hash, work_model_path)
-        rel_model_config_path = model_storage.config
         model_names = model_storage.models
-
-        training_config_path = os.path.join(work_model_path, rel_model_config_path)
-        class_names = mir_utils.get_training_class_names(training_config_file=training_config_path)
+        class_names = model_storage.class_names
+        if not class_names:
+            raise ValueError(f"empty class names in model: {model_hash}")
         prepare_config_file(config_file=config_file,
                             dst_config_file=work_config_file,
                             class_names=class_names,

@@ -5,7 +5,7 @@ import os
 import shutil
 import subprocess
 import tarfile
-from typing import Any, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import yaml
 
@@ -18,15 +18,16 @@ from mir.tools.phase_logger import phase_logger_in_out
 
 
 # private: post process
-def _process_model_storage(out_root: str, config_file_path: str, model_upload_location: str,
-                           ymir_info: dict) -> Tuple[str, float]:
+def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
+                           task_context: dict) -> Tuple[str, float]:
     model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
     if not model_paths:
         raise ValueError("can not find models")
+
     tar_path = os.path.join(out_root, "models.tar.gz")
     _pack_models_and_config(model_paths=model_paths,
-                            config_file_path=config_file_path,
-                            ymir_info=dict(**ymir_info, mAP=model_mAP),
+                            executor_config=executor_config,
+                            task_context=dict(**task_context, mAP=model_mAP, type='training'),
                             dest_path=tar_path)
     model_sha1 = hash_utils.sha1sum_for_file(tar_path)
 
@@ -58,7 +59,7 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
     return ([os.path.join(model_root, name) for name in model_names], model_mAP)
 
 
-def _pack_models_and_config(model_paths: List[str], config_file_path: str, ymir_info: dict, dest_path: str) -> bool:
+def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
     if not model_paths or not dest_path:
         raise ValueError("invalid model_paths or dest_path")
 
@@ -67,14 +68,17 @@ def _pack_models_and_config(model_paths: List[str], config_file_path: str, ymir_
         for model_path in model_paths:
             logging.info(f"    packing {model_path} -> {os.path.basename(model_path)}")
             dest_tar_gz.add(model_path, os.path.basename(model_path))
-        logging.info(f"    packing {config_file_path} -> config.yaml")
-        dest_tar_gz.add(config_file_path, 'config.yaml')
+
+        ymir_info_dict: Dict[str, Any] = {}
+        ymir_info_dict['executor_config'] = executor_config
+        ymir_info_dict['task_context'] = task_context
+        ymir_info_dict['models'] = [os.path.basename(model_path) for model_path in model_paths]
 
         # pack ymir-info.yaml
         ymir_info_file_name = 'ymir-info.yaml'
-        ymir_info_file_path = os.path.join(os.path.dirname(config_file_path), ymir_info_file_name)
+        ymir_info_file_path = os.path.join(os.path.dirname(dest_path), ymir_info_file_name)
         with open(ymir_info_file_path, 'w') as f:
-            f.write(yaml.dump(ymir_info if ymir_info else {}))
+            f.write(yaml.dump(ymir_info_dict))
         logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
         dest_tar_gz.add(ymir_info_file_path, ymir_info_file_name)
     return True
@@ -137,17 +141,20 @@ def _run_train_cmd(cmd: str) -> int:
 
 
 # private: pre process
-def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained_model_params: List[str]) -> None:
+def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained_model_params: List[str]) -> dict:
     config["task_id"] = task_id
     if pretrained_model_params:
         config['pretrained_model_params'] = pretrained_model_params
     elif 'pretrained_model_params' in config:
+        logging.info('removed pretrained')  # for test
         del config['pretrained_model_params']
 
-    logging.debug("config: {}".format(config))
+    logging.info("config: {}".format(config))
 
     with open(out_config_path, "w") as f:
         yaml.dump(config, f)
+
+    return config
 
 
 def _get_shm_size(config_file_path: str) -> str:
@@ -182,10 +189,8 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
                                             dst_model_path=dst_model_dir)
 
     # check class names
-    pretrained_class_names = mir_utils.get_training_class_names(
-        training_config_file=os.path.join(dst_model_dir, model_storage.config))
-    if pretrained_class_names != class_names:
-        raise ValueError(f"class names mismatch: pretrained: {pretrained_class_names}, current: {class_names}")
+    if model_storage.class_names != class_names:
+        raise ValueError(f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
 
     return model_storage.models
 
@@ -377,10 +382,13 @@ class CmdTrain(base.BaseCommand):
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
-        _generate_config(config=config,
-                         out_config_path=out_config_path,
-                         task_id=task_id,
-                         pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
+        executor_config = _generate_config(
+            config=config,
+            out_config_path=out_config_path,
+            task_id=task_id,
+            pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
+
+        logging.info(f"executor config: {executor_config}")  # for test
 
         # start train docker and wait
         path_binds = []
@@ -400,9 +408,9 @@ class CmdTrain(base.BaseCommand):
         # save model
         logging.info("saving models")
         model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
-                                                       config_file_path=out_config_path,
                                                        model_upload_location=model_upload_location,
-                                                       ymir_info={
+                                                       executor_config=executor_config,
+                                                       task_context={
                                                            'src_revs': src_revs,
                                                            'dst_rev': dst_rev,
                                                            'executor': executor
