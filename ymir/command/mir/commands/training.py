@@ -63,22 +63,22 @@ def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_
     if not model_paths or not dest_path:
         raise ValueError("invalid model_paths or dest_path")
 
+    ymir_info_dict: Dict[str, Any] = {}
+    ymir_info_dict['executor_config'] = executor_config
+    ymir_info_dict['task_context'] = task_context
+    ymir_info_dict['models'] = [os.path.basename(model_path) for model_path in model_paths]
+    ymir_info_file_name = 'ymir-info.yaml'
+    ymir_info_file_path = os.path.join(os.path.dirname(dest_path), ymir_info_file_name)
+    with open(ymir_info_file_path, 'w') as f:
+        f.write(yaml.dump(ymir_info_dict))
+
     with tarfile.open(dest_path, "w:gz") as dest_tar_gz:
         logging.info("packing models and configs")
         for model_path in model_paths:
             logging.info(f"    packing {model_path} -> {os.path.basename(model_path)}")
             dest_tar_gz.add(model_path, os.path.basename(model_path))
 
-        ymir_info_dict: Dict[str, Any] = {}
-        ymir_info_dict['executor_config'] = executor_config
-        ymir_info_dict['task_context'] = task_context
-        ymir_info_dict['models'] = [os.path.basename(model_path) for model_path in model_paths]
-
         # pack ymir-info.yaml
-        ymir_info_file_name = 'ymir-info.yaml'
-        ymir_info_file_path = os.path.join(os.path.dirname(dest_path), ymir_info_file_name)
-        with open(ymir_info_file_path, 'w') as f:
-            f.write(yaml.dump(ymir_info_dict))
         logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
         dest_tar_gz.add(ymir_info_file_path, ymir_info_file_name)
     return True
@@ -146,7 +146,6 @@ def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained
     if pretrained_model_params:
         config['pretrained_model_params'] = pretrained_model_params
     elif 'pretrained_model_params' in config:
-        logging.info('removed pretrained')  # for test
         del config['pretrained_model_params']
 
     logging.info("config: {}".format(config))
@@ -387,8 +386,6 @@ class CmdTrain(base.BaseCommand):
             out_config_path=out_config_path,
             task_id=task_id,
             pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
-
-        logging.info(f"executor config: {executor_config}")  # for test
 
         # start train docker and wait
         path_binds = []

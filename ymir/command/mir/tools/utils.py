@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 import logging
 import os
 import pathlib
@@ -157,15 +158,17 @@ def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str,
     return {id: os.path.join(asset_location, id) for id in asset_ids}
 
 
+@dataclass
 class ModelStorage:
-    def __init__(self) -> None:
-        self.models: List[str] = []
-        self.executor_config: Dict[str, Any] = {}
-        self.task_context: Dict[str, Any] = {}
+    models: List[str] = field(default_factory=list)
+    executor_config: Dict[str, Any] = field(default_factory=dict)
+    task_context: Dict[str, Any] = field(default_factory=dict)
+    is_valid: bool = field(init=False)
+    class_names: List[str] = field(init=False)
 
-    @property
-    def class_names(self) -> List[str]:
-        return self.executor_config.get('class_names', [])
+    def __post_init__(self) -> None:
+        self.class_names = self.executor_config.get('class_names', [])
+        self.is_valid = bool(self.models) and bool(self.executor_config) and bool(self.task_context)
 
 
 def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> ModelStorage:
@@ -187,7 +190,9 @@ def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> 
                                              create_prefix=False,
                                              need_suffix=False)
     model_file = os.path.join(dst_model_path, model_id_rel_paths[model_hash])
-    return _unpack_models(tar_file=model_file, dest_root=dst_model_path)
+    model_storage = _unpack_models(tar_file=model_file, dest_root=dst_model_path)
+    os.remove(model_file)
+    return model_storage
 
 
 def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
@@ -201,10 +206,10 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     Raises:
         ValueError: if dest_root is not a directory
         ValueError: if tar_file is not a file
-        ValueError: if model package lack params, json or config file
+        ValueError: if model package is invalid (lacks params, json or config file)
 
     Returns:
-        ModelStorage: rel path to params, json, weights and config file (start from dest_root)
+        ModelStorage: model names (start from dest_root), executor config and task context
     """
     if not os.path.isdir(dest_root):
         raise ValueError(f"dest_root is not a directory: {dest_root}")
@@ -212,21 +217,18 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
         raise ValueError(f"tar_file is not a file: {tar_file}")
 
     # params_file, json_file, weights_file, config_file = '', '', '', ''
-    model_storage = ModelStorage()
     with tarfile.open(tar_file, 'r') as tar_gz:
         for item in tar_gz:
             logging.info(f"extracting {item} -> {dest_root}")
             tar_gz.extract(item, dest_root)
 
-    os.remove(tar_file)
-
     with open(os.path.join(dest_root, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
-        model_storage.models = ymir_info_dict.get('models', [])
-        model_storage.executor_config = ymir_info_dict.get('executor_config', {})
-        model_storage.task_context = ymir_info_dict.get('task_context', {})
+    model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
+                                 executor_config=ymir_info_dict.get('executor_config', {}),
+                                 task_context=ymir_info_dict.get('task_context', {}))
 
-    if not model_storage.models or not model_storage.executor_config or not model_storage.task_context:
+    if not model_storage.is_valid:
         raise ValueError(f"unpack model failed: not enough info: {tar_file}")
 
     return model_storage
