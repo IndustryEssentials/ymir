@@ -17,27 +17,34 @@ class ImageHandler(BaseMirControllerInvoker):
 
     @staticmethod
     def get_image_config(raw_image_config: str) -> Optional[str]:
-        image_config = yaml.safe_load(raw_image_config)
-        if not isinstance(image_config, dict):
+        try:
+            image_config = yaml.safe_load(raw_image_config)
+            if not isinstance(image_config, dict):
+                raise ValueError(f"raw image config error: {raw_image_config}")
+            image_config_str = json.dumps(image_config)
+        except Exception as e:
             error_message = f"raw image config error: {raw_image_config}"
             logger.error(error_message)
             sentry_sdk.capture_message(error_message)
             return None
-
-        return json.dumps(image_config)
+        else:
+            return image_config_str
 
     def invoke(self) -> backend_pb2.GeneralResp:
         if self._request.req_type != backend_pb2.CMD_PULL_IMAGE:
             raise RuntimeError("Mismatched req_type")
 
+        check_image_command = f"docker image inspect {self._request.singleton_op} --format='ignore me'"
+        check_response = utils.run_command(check_image_command)
+        if check_response.code != code.ResCode.CTR_OK:
+            pull_command = f"docker pull {self._request.singleton_op}"
+            pull_command_response = utils.run_command(pull_command)
+            if pull_command_response.code != code.ResCode.CTR_OK:
+                return utils.make_general_response(
+                    backend_pb2.RCode.RC_SERVICE_IMAGE_ERROR, pull_command_response.message
+                )
+
         config_result = dict()
-
-        pull_command = f"docker pull {self._request.singleton_op}"
-        pull_command_response = utils.run_command(pull_command)
-
-        if pull_command_response.code != code.ResCode.CTR_OK:
-            return utils.make_general_response(backend_pb2.RCode.RC_SERVICE_IMAGE_ERROR, pull_command_response.message)
-
         for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
             config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
             config_response = utils.run_command(config_command)
