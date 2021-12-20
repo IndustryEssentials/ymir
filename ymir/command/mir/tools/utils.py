@@ -230,24 +230,3 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
         raise ValueError(f"unpack model failed: not enough info: {tar_file}")
 
     return model_storage
-
-
-def get_training_class_names(training_config_file: str) -> List[str]:
-    """get class names from training config file
-
-    Args:
-        training_config_file (str): path to training config file, NOT YOUR MINING OR INFER CONFIG FILE!
-
-    Raises:
-        ValueError: when class_names key not in training config file
-
-    Returns:
-        List[str]: list of class names
-    """
-    with open(training_config_file, 'r') as f:
-        training_config = yaml.safe_load(f.read())
-
-    if 'class_names' not in training_config or len(training_config['class_names']) == 0:
-        raise ValueError(f"can not find class_names in {training_config_file}")
-
-    return training_config['class_names']
