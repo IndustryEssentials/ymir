@@ -26,15 +26,15 @@ class TaskLabelingInvoker(TaskBaseInvoker):
         task_id = request.task_id
 
         label_runner.start_label_task(
-            repo_root,
-            working_dir,
-            media_location,
-            task_id,
-            labeling_request.project_name,
-            labeling_request.dataset_id,
-            keywords,
-            labeler_accounts,
-            labeling_request.expert_instruction_url,
+            repo_root=repo_root,
+            working_dir=working_dir,
+            media_location=media_location,
+            task_id=task_id,
+            project_name=labeling_request.project_name,
+            dataset_id=labeling_request.dataset_id,
+            keywords=keywords,
+            collaborators=labeler_accounts,
+            expert_instruction=labeling_request.expert_instruction_url,
         )
 
         return utils.make_general_response(code.ResCode.CTR_OK, "")
