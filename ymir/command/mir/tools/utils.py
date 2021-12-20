@@ -222,6 +222,9 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
 
     os.remove(tar_file)
 
+    if not model_storage.models or not model_storage.config or not model_storage.ymir_info:
+        raise ValueError(f"unpack model failed: not enough info: {tar_file}")
+
     return model_storage
 
 
