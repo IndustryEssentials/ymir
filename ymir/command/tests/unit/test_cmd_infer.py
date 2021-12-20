@@ -67,14 +67,21 @@ class TestCmdInfer(unittest.TestCase):
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
         training_config['class_names'] = ['person', 'cat']
 
-        with open(os.path.join(self._models_location, 'config.yaml'), 'w') as f:
-            yaml.dump(training_config, f)
+        ymir_info_dict = {}
+        ymir_info_dict['executor_config'] = training_config
+        ymir_info_dict['models'] = ['model.params', 'model.json']
+        ymir_info_dict['task_context'] = {}
+        ymir_info_dict['task_context']['src_revs'] = 'master'
+        ymir_info_dict['task_context']['dst_rev'] = 'a'
+
+        with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
+            yaml.dump(ymir_info_dict, f)
 
         # pack model
         with tarfile.open(os.path.join(self._models_location, 'fake_model_hash'), "w:gz") as dest_tar_gz:
             dest_tar_gz.add(os.path.join(self._models_location, 'model.params'), 'model.params')
             dest_tar_gz.add(os.path.join(self._models_location, 'model.json'), 'model.json')
-            dest_tar_gz.add(os.path.join(self._models_location, 'config.yaml'), 'config.yaml')
+            dest_tar_gz.add(os.path.join(self._models_location, 'ymir-info.yaml'), 'ymir-info.yaml')
 
     def _prepare_config_file(self):
         test_assets_root = TestCmdInfer._test_assets_root()
