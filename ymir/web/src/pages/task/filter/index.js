@@ -11,6 +11,8 @@ import EmptyState from '@/components/empty/dataset'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
+import { TipsIcon } from '@/components/common/icons'
+import Tip from "../../../components/form/tip"
 const { Option } = Select
 
 function Filter({
@@ -122,6 +124,7 @@ function Filter({
           size='large'
           colon={false}
         >
+          <Tip content={t('tip.task.filter.name')}>
           <Form.Item
             label={t('task.filter.form.name.label')}
             name='name'
@@ -132,6 +135,7 @@ function Filter({
           >
             <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
           </Form.Item>
+          </Tip>
           <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
