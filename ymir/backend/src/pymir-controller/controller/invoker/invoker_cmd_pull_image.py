@@ -4,7 +4,7 @@ from typing import Optional
 import sentry_sdk
 import yaml
 
-from controller.config import IMAGE_INFER_CONFIG_PATH, IMAGE_MINING_CONFIG_PATH, IMAGE_TRAINING_CONFIG_PATH
+from controller.config import common_task as common_task_config
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils, code
 from controller.utils.app_logger import logger
@@ -30,27 +30,23 @@ class ImageHandler(BaseMirControllerInvoker):
         if self._request.req_type != backend_pb2.CMD_PULL_IMAGE:
             raise RuntimeError("Mismatched req_type")
 
-        if self._request.operate_task_type == backend_pb2.TaskType.TaskTypeTraining:
-            image_config_path = IMAGE_TRAINING_CONFIG_PATH
-        elif self._request.operate_task_type == backend_pb2.TaskType.TaskTypeMining:
-            image_config_path = IMAGE_MINING_CONFIG_PATH
-        elif self._request.operate_task_type == backend_pb2.TaskType.TaskTypeInfer:
-            image_config_path = IMAGE_INFER_CONFIG_PATH
-        else:
-            raise ValueError(f"operate_task_type error:{self._request.operate_task_type}")
+        config_result = dict()
 
-        config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
-        config_response = utils.run_command(config_command)
+        pull_command = f"docker pull {self._request.singleton_op}"
+        pull_command_response = utils.run_command(pull_command)
 
-        image_config = self.get_image_config(config_response.message)
-        if image_config:
-            hash_command = f"docker images {self._request.singleton_op} --format {'{{.ID}}'} --no-trunc"
-            hash_response = utils.run_command(hash_command)
+        if pull_command_response.code != code.ResCode.CTR_OK:
+            return utils.make_general_response(backend_pb2.RCode.RC_SERVICE_IMAGE_ERROR, pull_command_response.message)
 
-            response = utils.make_general_response(code.ResCode.CTR_OK, config_response.message)
-            response.hash_id = hash_response.message
-        else:
-            response = utils.make_general_response(backend_pb2.RCode.RC_SERVICE_IMAGE_ERROR, config_response.message)
+        for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
+            config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
+            config_response = utils.run_command(config_command)
+            config_result[image_type] = self.get_image_config(config_response.message)
+
+        hash_command = f"docker images {self._request.singleton_op} --format {'{{.ID}}'} --no-trunc"
+        response = utils.run_command(hash_command)
+        response.hash_id = response.message
+        response.message = json.dumps(config_result)
 
         return response
 

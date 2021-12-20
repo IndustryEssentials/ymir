@@ -4,7 +4,7 @@ import redis
 import json
 from controller.utils.app_logger import logger
 
-from controller.config import REDIS_URI
+from controller.config import common_task as common_task_config
 
 
 class MiddlewareRedis:
@@ -39,7 +39,7 @@ class MiddlewareRedis:
 
 
 def get_redis_connect() -> redis.Redis:
-    return redis.StrictRedis.from_url(REDIS_URI, encoding="utf8", decode_responses=True)
+    return redis.StrictRedis.from_url(common_task_config.CTR_REDIS_URI, encoding="utf8", decode_responses=True)
 
 
 rds = MiddlewareRedis(get_redis_connect())
