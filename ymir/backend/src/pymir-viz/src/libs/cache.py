@@ -54,7 +54,7 @@ class RedisCache:
 
 
 def get_connect() -> redis.Redis:
-    return redis.StrictRedis.from_url(str(config.REDIS_URI), encoding="utf8", decode_responses=True)
+    return redis.StrictRedis.from_url(str(config.VIZ_REDIS_URI), encoding="utf8", decode_responses=True)
 
 
 # redis_cache = RedisCache(get_connect())
