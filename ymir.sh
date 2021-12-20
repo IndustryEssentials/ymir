@@ -48,7 +48,7 @@ done
 }
 
 start() {
-check_permission
+# check_permission
 pre_start
 docker-compose up -d
 }

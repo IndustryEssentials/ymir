@@ -75,3 +75,10 @@ output/
 \.settings/
 
 .venv
+
+# tmp files on running
+.vscode/
+mysql/
+redis/
+ymir-data/
+
