@@ -124,7 +124,7 @@ function Filter({
           size='large'
           colon={false}
         >
-          <Tip content={t('tip.filter.name')}>
+          <Tip content={t('tip.task.filter.name')}>
           <Form.Item
             label={t('task.filter.form.name.label')}
             name='name'
