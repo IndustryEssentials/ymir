@@ -142,6 +142,7 @@ message GeneralResp {
     repeated string ext_strs = 4;
     repeated string csv_labels = 5;
     string hash_id = 6;
+    map<int32 , string> docker_image_config = 7;
     RespGetTaskInfo resp_get_task_info = 1000;
     RespCMDInference detection = 1001;
 }

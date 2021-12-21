@@ -44,16 +44,16 @@ class ImageHandler(BaseMirControllerInvoker):
                     backend_pb2.RCode.RC_SERVICE_DOCKER_IMAGE_ERROR, pull_command_response.message
                 )
 
-        config_result = dict()
-        for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
-            config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
-            config_response = utils.run_command(config_command)
-            config_result[image_type] = self.get_image_config(config_response.message)
-
         hash_command = f"docker images {self._request.singleton_op} --format {'{{.ID}}'} --no-trunc"
         response = utils.run_command(hash_command)
         response.hash_id = response.message
-        response.message = json.dumps(config_result)
+
+        for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
+            config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
+            config_response = utils.run_command(config_command)
+            image_config = self.get_image_config(config_response.message)
+            if image_config:
+                response.docker_image_config[image_type] = image_config
 
         return response
 
