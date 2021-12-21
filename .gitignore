@@ -75,3 +75,5 @@ output/
 \.settings/
 
 .venv
+
+.vscode
