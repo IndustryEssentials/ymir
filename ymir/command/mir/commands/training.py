@@ -73,7 +73,6 @@ def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_
         f.write(yaml.dump(model_storage.as_dict()))
 
     with tarfile.open(dest_path, "w:gz") as dest_tar_gz:
-        logging.info("packing models and configs")
         for model_path in model_paths:
             logging.info(f"    packing {model_path} -> {os.path.basename(model_path)}")
             dest_tar_gz.add(model_path, os.path.basename(model_path))
