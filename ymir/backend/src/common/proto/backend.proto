@@ -21,6 +21,7 @@ enum TaskType {
     TaskTypeExportData = 6;
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
+    TaskTypeInfer = 9;
 };
 
 enum TaskState {
@@ -43,6 +44,7 @@ enum RCode {
     RC_SERVICE_UNKOWN_RESPONSE = 1003;
     RC_SERVICE_TASK_INVOKER_ERROR = 1004;
     RC_SERVICE_INFO_INVOKER_ERROR = 1005;
+    RC_SERVICE_DOCKER_IMAGE_ERROR = 1006;
 
     // app state_code
     RC_TASK_UNKNOWN_ERROR = 2000;
@@ -139,6 +141,8 @@ message GeneralResp {
     string message = 3;
     repeated string ext_strs = 4;
     repeated string csv_labels = 5;
+    string hash_id = 6;
+    map<int32 , string> docker_image_config = 7;
     RespGetTaskInfo resp_get_task_info = 1000;
     RespCMDInference detection = 1001;
 }
