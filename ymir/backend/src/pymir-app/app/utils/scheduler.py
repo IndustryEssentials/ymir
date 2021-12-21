@@ -11,7 +11,7 @@ env = os.environ.get
 
 CHECK_INTERVAL_IN_SECONDS = int(env("CHECK_INTERVAL_IN_SECONDS", 30))
 API_HOST = env("API_HOST", "backend")
-REDIS_URI = env("REDIS_URI", "redis://redis:6379")
+REDIS_URI = env("CTR_REDIS_URI", "redis://redis:6379")
 FIRST_ADMIN = env("FIRST_ADMIN")
 FIRST_ADMIN_PASSWORD = env("FIRST_ADMIN_PASSWORD")
 

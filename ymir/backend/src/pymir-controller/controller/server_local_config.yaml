@@ -9,8 +9,8 @@ ASSETS:
   modelskvprotocol: file
   modelsuploadlocation: /tmp/ymir-controller-sandbox-root/ymir-models/
   modelsuploadprotocol: file
-  training_image: pymir/executor-det-yolov4-training:release-0.1.1
-  mining_image: pymir/executor-det-yolov4-mining:release-0.1.1
+  training_image: industryessentials/executor-det-yolov4-training:release-0.1.3
+  mining_image: industryessentials/executor-det-yolov4-mining:release-0.1.3
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
@@ -18,7 +18,7 @@ SANDBOX:
 TASK_MONITOR:
   storageroot: /tmp/ymir-controller-sandbox-root/monitor
 METRICS:
-  allow_feedback: ${ALLOW_ANONYMOUS_FEEDBACK}
-  anonymous_uuid: ${ANONYMOUS_UUID}
+  allow_feedback: True
+  anonymous_uuid: localtest
   server_host: localhost
   server_port: "9125"
