@@ -44,7 +44,7 @@ enum RCode {
     RC_SERVICE_UNKOWN_RESPONSE = 1003;
     RC_SERVICE_TASK_INVOKER_ERROR = 1004;
     RC_SERVICE_INFO_INVOKER_ERROR = 1005;
-    RC_SERVICE_IMAGE_ERROR = 1006;
+    RC_SERVICE_DOCKER_IMAGE_ERROR = 1006;
 
     // app state_code
     RC_TASK_UNKNOWN_ERROR = 2000;
@@ -131,7 +131,6 @@ message GeneralReq {
     bool check_only=18;
     string executor_instance = 19;
     MergeStrategy merge_strategy = 20;
-    TaskType operate_task_type = 21;
     ReqCreateTask req_create_task = 1001;
     ReqGetTaskInfo req_get_task_info = 1002;
 }

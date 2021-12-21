@@ -41,7 +41,7 @@ class ImageHandler(BaseMirControllerInvoker):
             pull_command_response = utils.run_command(pull_command)
             if pull_command_response.code != code.ResCode.CTR_OK:
                 return utils.make_general_response(
-                    backend_pb2.RCode.RC_SERVICE_IMAGE_ERROR, pull_command_response.message
+                    backend_pb2.RCode.RC_SERVICE_DOCKER_IMAGE_ERROR, pull_command_response.message
                 )
 
         config_result = dict()
