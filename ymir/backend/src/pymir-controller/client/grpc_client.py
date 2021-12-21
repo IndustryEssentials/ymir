@@ -91,7 +91,6 @@ def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
     mine_task_req = backend_pb2.TaskReqMining()
     if args.get('top_k', None):
         mine_task_req.top_k = args['top_k']
-    # mine_task_req.model_hash = args['model_hash']
     mine_task_req.in_dataset_ids[:] = args['in_dataset_ids']
     if args.get('ex_dataset_ids', None):
         mine_task_req.ex_dataset_ids[:] = args['ex_dataset_ids']
