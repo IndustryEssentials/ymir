@@ -87,7 +87,6 @@ class TestInvokerTaskMining(unittest.TestCase):
         top_k, model_hash = 300, 'abc'
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
-        # mine_task_req.model_hash = model_hash
         mine_task_req.in_dataset_ids[:] = [self._guest_id1, self._guest_id2]
         mine_task_req.ex_dataset_ids[:] = [self._guest_id3]
         mine_task_req.mining_config = json.dumps(mining_config)
