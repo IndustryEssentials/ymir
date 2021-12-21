@@ -5,7 +5,7 @@ import pathlib
 import requests
 import shutil
 import tarfile
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 from PIL import Image, UnidentifiedImageError
 import yaml

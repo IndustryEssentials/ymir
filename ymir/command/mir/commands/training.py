@@ -5,7 +5,7 @@ import os
 import shutil
 import subprocess
 import tarfile
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, List, Optional, Set, Tuple
 
 import yaml
 
