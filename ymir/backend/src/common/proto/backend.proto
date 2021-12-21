@@ -183,6 +183,7 @@ message TaskReqTraining {
 message TaskReqMining {
     repeated string in_dataset_ids = 1;
     repeated string ex_dataset_ids = 2;
+    string model_hash = 3; // deprecated
     int32 top_k = 4;  // > 0, will keep all if set to 0.
     string mining_config = 5;
     bool generate_annotations = 6;
