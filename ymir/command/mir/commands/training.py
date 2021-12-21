@@ -63,14 +63,14 @@ def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_
     if not model_paths or not dest_path:
         raise ValueError("invalid model_paths or dest_path")
 
-    ymir_info_dict: Dict[str, Any] = {}
-    ymir_info_dict['executor_config'] = executor_config
-    ymir_info_dict['task_context'] = task_context
-    ymir_info_dict['models'] = [os.path.basename(model_path) for model_path in model_paths]
+    logging.info(f"packing models to {dest_path}")
+    model_storage = mir_utils.ModelStorage(executor_config=executor_config,
+                                           task_context=task_context,
+                                           models=[os.path.basename(model_path) for model_path in model_paths])
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(os.path.dirname(dest_path), ymir_info_file_name)
     with open(ymir_info_file_path, 'w') as f:
-        f.write(yaml.dump(ymir_info_dict))
+        f.write(yaml.dump(model_storage.as_dict()))
 
     with tarfile.open(dest_path, "w:gz") as dest_tar_gz:
         logging.info("packing models and configs")

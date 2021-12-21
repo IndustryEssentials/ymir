@@ -3,6 +3,7 @@ import shutil
 import tarfile
 import unittest
 from unittest import mock
+from mir.tools.utils import ModelStorage
 
 import yaml
 
@@ -67,15 +68,12 @@ class TestCmdInfer(unittest.TestCase):
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
         training_config['class_names'] = ['person', 'cat']
 
-        ymir_info_dict = {}
-        ymir_info_dict['executor_config'] = training_config
-        ymir_info_dict['models'] = ['model.params', 'model.json']
-        ymir_info_dict['task_context'] = {}
-        ymir_info_dict['task_context']['src_revs'] = 'master'
-        ymir_info_dict['task_context']['dst_rev'] = 'a'
+        model_storage = ModelStorage(models=['model.params', 'model.json'],
+                                     executor_config=training_config,
+                                     task_context={'src_revs': 'master', 'dst_rev': 'a'})
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
-            yaml.dump(ymir_info_dict, f)
+            yaml.dump(model_storage.as_dict(), f)
 
         # pack model
         with tarfile.open(os.path.join(self._models_location, 'fake_model_hash'), "w:gz") as dest_tar_gz:

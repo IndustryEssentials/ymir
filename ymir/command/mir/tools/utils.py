@@ -163,12 +163,16 @@ class ModelStorage:
     models: List[str] = field(default_factory=list)
     executor_config: Dict[str, Any] = field(default_factory=dict)
     task_context: Dict[str, Any] = field(default_factory=dict)
-    is_valid: bool = field(init=False)
     class_names: List[str] = field(init=False)
 
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
-        self.is_valid = bool(self.models) and bool(self.executor_config) and bool(self.task_context)
+        # check valid
+        if not self.models or not self.executor_config or not self.task_context or not self.class_names:
+            raise ValueError('ModelStorage invalid: not enough infomations')
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {'models': self.models, 'executor_config': self.executor_config, 'task_context': self.task_context}
 
 
 def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> ModelStorage:
@@ -217,6 +221,7 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
         raise ValueError(f"tar_file is not a file: {tar_file}")
 
     # params_file, json_file, weights_file, config_file = '', '', '', ''
+    logging.info(f"extracting models from {tar_file}")
     with tarfile.open(tar_file, 'r') as tar_gz:
         for item in tar_gz:
             logging.info(f"extracting {item} -> {dest_root}")
@@ -227,8 +232,5 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
                                  executor_config=ymir_info_dict.get('executor_config', {}),
                                  task_context=ymir_info_dict.get('task_context', {}))
-
-    if not model_storage.is_valid:
-        raise ValueError(f"unpack model failed: not enough info: {tar_file}")
 
     return model_storage
