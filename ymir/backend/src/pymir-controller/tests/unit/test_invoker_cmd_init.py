@@ -69,7 +69,7 @@ class TestInvokerInit(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd = f"cd {os.path.join(self._user_root, self._mir_repo_name)} && mir init"
-        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True)
+        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

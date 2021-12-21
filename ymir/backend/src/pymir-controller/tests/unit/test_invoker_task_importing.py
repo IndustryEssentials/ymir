@@ -105,7 +105,7 @@ class TestInvokerTaskImporting(unittest.TestCase):
                                       self._mir_repo_root, self._task_id, 'master',
                                       os.path.join(working_dir, 'index.txt'), self._storage_root, working_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_importing, capture_output=True, shell=True),
+            mock.call(expected_cmd_importing, capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

@@ -98,8 +98,8 @@ class TestInvokerTaskFilter(unittest.TestCase):
                                "-p '{3}' -P '{4}'".format(self._mir_repo_root, self._task_id, self._sub_task_id,
                                                           'frisbee;car', 'frisbee;car'))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True),
-            mock.call(expected_cmd_filter, capture_output=True, shell=True),
+            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_filter, capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()
