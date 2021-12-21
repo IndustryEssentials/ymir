@@ -41,7 +41,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         if mining_request.top_k < 0:
             return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
                                                "invalid topk: {}".format(mining_request.top_k))
-        if not mining_request.model_hash:
+        if not request.model_hash:
             return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid model_hash")
 
         if not mining_request.in_dataset_ids:
@@ -76,7 +76,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         sub_task_id_0 = utils.sub_task_id(request.task_id, 0)
         models_location = assets_config["modelskvlocation"]
         media_location = assets_config["assetskvlocation"]
-        mining_image = assets_config["mining_image"]
+        mining_image = request.singleton_op
         config_file = cls.gen_mining_config(mining_request.mining_config, working_dir)
         if not config_file:
             msg = "Not enough GPU available"
@@ -92,7 +92,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          model_location=models_location,
                                          media_location=media_location,
                                          top_k=mining_request.top_k,
-                                         model_hash=mining_request.model_hash,
+                                         model_hash=request.model_hash,
                                          his_rev=sub_task_id_1,
                                          in_src_revs=request.task_id,
                                          executor=mining_image,

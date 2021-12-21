@@ -116,7 +116,6 @@ class TestInvokerTaskTraining(unittest.TestCase):
         assets_config = {
             'modelsuploadlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
-            'training_image': training_image
         }
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
@@ -127,7 +126,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          task_id=self._task_id,
                                          req_create_task=req_create_task,
                                          executor_instance=self._task_id,
-                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
+                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
+                                         singleton_op=training_image)
         print(MessageToDict(response))
 
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "

@@ -90,7 +90,8 @@ def make_invoker_cmd_call(invoker: Any,
                           req_create_task: backend_pb2.ReqCreateTask = None,
                           task_info_req: backend_pb2.ReqGetTaskInfo = None,
                           async_mode: bool = False,
-                          merge_strategy: int = None) -> backend_pb2.GeneralReq:
+                          merge_strategy: int = None,
+                          model_hash: str = None) -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,
@@ -107,6 +108,7 @@ def make_invoker_cmd_call(invoker: Any,
                                req_create_task=req_create_task,
                                task_info_req=task_info_req,
                                executor_instance=executor_instance,
-                               merge_strategy=merge_strategy)
+                               merge_strategy=merge_strategy,
+                               model_hash=model_hash)
     invoker = invoker(sandbox_root=sandbox_root, request=request, assets_config=assets_config, async_mode=async_mode)
     return invoker.server_invoke()

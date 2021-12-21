@@ -86,7 +86,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             model_location=self._assets_config["modelskvlocation"],
             model_hash=self._request.model_hash,
             index_file=index_file,
-            executor=self._assets_config["mining_image"],
+            executor=self._request.singleton_op,
         )
         inference_result = self.get_inference_result(self._work_dir)
 
