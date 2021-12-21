@@ -16,19 +16,18 @@ class ImageHandler(BaseMirControllerInvoker):
         return checker.check_request(request=self._request, prerequisites=[checker.Prerequisites.CHECK_USER_ID],)
 
     @staticmethod
-    def get_image_config(raw_image_config: str) -> Optional[str]:
+    def convert_image_config(raw_image_config: str) -> Optional[str]:
         try:
             image_config = yaml.safe_load(raw_image_config)
             if not isinstance(image_config, dict):
                 raise ValueError(f"raw image config error: {raw_image_config}")
-            image_config_str = json.dumps(image_config)
         except Exception as e:
             error_message = f"raw image config error: {raw_image_config}"
             logger.error(error_message)
             sentry_sdk.capture_message(error_message)
             return None
-        else:
-            return image_config_str
+
+        return json.dumps(image_config)
 
     def invoke(self) -> backend_pb2.GeneralResp:
         if self._request.req_type != backend_pb2.CMD_PULL_IMAGE:
@@ -51,7 +50,7 @@ class ImageHandler(BaseMirControllerInvoker):
         for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
             config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
             config_response = utils.run_command(config_command)
-            image_config = self.get_image_config(config_response.message)
+            image_config = self.convert_image_config(config_response.message)
             if image_config:
                 response.docker_image_config[image_type] = image_config
 
