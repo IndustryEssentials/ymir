@@ -22,8 +22,10 @@ services:
       - .env
     ports:
       - ${TENSORBOARD_OPEN_PORT}:6006
+    environment:
+      - TENSORBOARD_ROOT=/ymir-tensorboard-logs
     volumes:
-      - "${YMIR_PATH}/ymir-data/tensorboard:/ymir-tensorboard-logs"
+      - "${YMIR_PATH}/ymir-tensorboard-logs:/ymir-tensorboard-logs"
     command: tensorboard --log-dir /ymir-tensorboard-logs --port ${TENSORBOARD_OPEN_PORT}
     restart: on-failure
     networks:
