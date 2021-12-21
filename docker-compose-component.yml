@@ -12,7 +12,6 @@ services:
       - FRONTEND_SENTRY_DSN=
     volumes:
       - "${YMIR_PATH}/label-studio_data:/label-studio/data"
-      - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
     restart: on-failure
     networks:

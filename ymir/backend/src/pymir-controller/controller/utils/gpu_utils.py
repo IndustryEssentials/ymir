@@ -3,7 +3,7 @@ from typing import List, Dict, Set
 
 from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, nvmlShutdown
 
-from controller.config import GPU_LOCKING_SET, GPU_LOCK_MINUTES, GPU_USAGE_THRESHOLD
+from controller.config import gpu_task as gpu_task_config
 from controller.utils.redis import rds
 
 
@@ -24,23 +24,26 @@ class GPUInfo:
     @staticmethod
     def get_free_gpus() -> Set:
         gpus_info = GPUInfo.get_gpus_info()
-        runtime_free_gpus = {i for i, free_percent in gpus_info.items() if free_percent > GPU_USAGE_THRESHOLD}
+        runtime_free_gpus = {
+            i
+            for i, free_percent in gpus_info.items() if free_percent > gpu_task_config.GPU_USAGE_THRESHOLD
+        }
 
         return runtime_free_gpus
 
     @classmethod
     def get_locked_gpus(cls) -> Set:
         # lock gpu about 30 minutes for loading
-        cut_off_time = time.time() - 60 * GPU_LOCK_MINUTES
-        rds.zremrangebyscore(GPU_LOCKING_SET, cut_off_time)
-        locked_gpus = rds.zrange(GPU_LOCKING_SET)
+        cut_off_time = time.time() - 60 * gpu_task_config.GPU_LOCK_MINUTES
+        rds.zremrangebyscore(gpu_task_config.GPU_LOCKING_SET, cut_off_time)
+        locked_gpus = rds.zrange(gpu_task_config.GPU_LOCKING_SET)
 
         return set(locked_gpus)
 
     @classmethod
     def add_locked_gpus(cls, gpus: List[str]) -> None:
         gpu_mapping = {gpu: time.time() for gpu in gpus}
-        rds.zadd(GPU_LOCKING_SET, gpu_mapping)
+        rds.zadd(gpu_task_config.GPU_LOCKING_SET, gpu_mapping)
 
     @classmethod
     def get_available_gpus(cls) -> List:
