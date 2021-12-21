@@ -45,7 +45,7 @@ class ImageHandler(BaseMirControllerInvoker):
 
         hash_command = f"docker images {self._request.singleton_op} --format {'{{.ID}}'} --no-trunc"
         response = utils.run_command(hash_command)
-        response.hash_id = response.message
+        response.hash_id = response.message.strip().split(":")[1][:12]
 
         for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
             config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
