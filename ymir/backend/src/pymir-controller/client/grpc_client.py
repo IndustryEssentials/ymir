@@ -91,7 +91,7 @@ def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
     mine_task_req = backend_pb2.TaskReqMining()
     if args.get('top_k', None):
         mine_task_req.top_k = args['top_k']
-    mine_task_req.model_hash = args['model_hash']
+    # mine_task_req.model_hash = args['model_hash']
     mine_task_req.in_dataset_ids[:] = args['in_dataset_ids']
     if args.get('ex_dataset_ids', None):
         mine_task_req.ex_dataset_ids[:] = args['ex_dataset_ids']
@@ -140,6 +140,7 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
     req = invoker_call.make_cmd_request(user_id=args["user"],
                                         repo_id=args["repo"],
                                         task_id=args["tid"],
+                                        model_hash=args["model_hash"],
                                         req_type=backend_pb2.TASK_CREATE,
                                         req_create_task=task_req)
     logging.info(json_format.MessageToDict(req, preserving_proto_field_name=True, use_integers_for_enums=True))
@@ -173,6 +174,7 @@ def get_parser() -> Any:
     common_group.add_argument("-u", "--user", type=str, help="default user")
     common_group.add_argument("-r", "--repo", type=str, help="default mir repo")
     common_group.add_argument("-t", "--tid", type=str, help="task id")
+    common_group.add_argument("--model_hash", type=str, help="model hash")
     common_group.add_argument("--labels", type=str, help="labels to be added, seperated by comma.")
 
     # CMD CALL
