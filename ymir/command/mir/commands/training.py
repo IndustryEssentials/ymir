@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 import subprocess
+from subprocess import CalledProcessError
 import tarfile
 from typing import Any, List, Optional, Set, Tuple
 
@@ -397,7 +398,7 @@ class CmdTrain(base.BaseCommand):
 
         try:
             _run_train_cmd(cmd)
-        except Exception as e:
+        except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
 

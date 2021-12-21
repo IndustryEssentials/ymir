@@ -3,9 +3,8 @@ import json
 import logging
 import os
 import subprocess
-import tarfile
 import time
-from typing import Any, List, Tuple, Optional
+from typing import Any, Tuple, Optional
 
 import yaml
 

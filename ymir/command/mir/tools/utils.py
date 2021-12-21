@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 import logging
 import os
 import pathlib
@@ -172,7 +172,7 @@ class ModelStorage:
             raise ValueError('ModelStorage invalid: not enough infomations')
 
     def as_dict(self) -> Dict[str, Any]:
-        return {'models': self.models, 'executor_config': self.executor_config, 'task_context': self.task_context}
+        return asdict(self)
 
 
 def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> ModelStorage:
