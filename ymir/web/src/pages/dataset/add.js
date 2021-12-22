@@ -12,6 +12,7 @@ import Breadcrumbs from '../../components/common/breadcrumb'
 import { TipsIcon } from '../../components/common/icons'
 import options from '@antv/graphin/lib/layout/utils/options'
 import { getKeywords } from '../../services/keyword'
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
 const { useForm } = Form
@@ -219,15 +220,21 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             >
               <Input autoComplete={'off'} allowClear />
             </Form.Item>
-            <Form.Item label={t('dataset.add.form.type.label')}>
-              <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
-                {types.map(type => (
-                  <Option value={type.id} key={type.id}>{type.label}</Option>
-                ))}
-              </Select>
-            </Form.Item>
+
+            {/* <Tip content={t('tip.task.filter.type')}> */}
+              <Form.Item label={t('dataset.add.form.type.label')}>
+                <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
+                  {types.map(type => (
+                    <Option value={type.id} key={type.id}>{type.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            {/* </Tip> */}
+
             {isType(TYPES.INTERNAL) ? (
               <>
+              
+              <Tip content={t('tip.task.filter.datasets')}>
                 <Form.Item
                   label={t('dataset.add.form.internal.label')}
                   name='input_dataset_id'
@@ -242,19 +249,26 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                     ))}
                   </Select>
                 </Form.Item>
+              </Tip>
+
                 {selectedDataset ?
                   <Form.Item label={t('dataset.import.public.include')}>
                     {renderSelectedKeywords()}
                   </Form.Item>
+                  
                   : null}
               </>
             ) : null}
-            <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
-              <Radio.Group
-                options={labelOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 1 : true)}
-                onChange={onLabelChange}
-              />
-            </Form.Item>
+
+            {/* <Tip content={t('tip.task.filter.addlable')}> */}
+              <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
+                <Radio.Group
+                  options={labelOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 1 : true)}
+                  onChange={onLabelChange}
+                />
+              </Form.Item>
+            {/* </Tip> */}
+
             {showLabelStrategy ?
               <Form.Item label={t('dataset.add.form.newkw.label')}>
                 <p className={s.newkwTip}><TipsIcon className={s.tipIcon} /> {t('dataset.add.form.newkw.tip')}</p>
