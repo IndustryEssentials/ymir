@@ -316,6 +316,7 @@ class CmdTrain(base.BaseCommand):
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
+        os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
