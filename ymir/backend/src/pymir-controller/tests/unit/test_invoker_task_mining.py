@@ -135,8 +135,8 @@ class TestInvokerTaskMining(unittest.TestCase):
                 self._mir_repo_root, self._task_id, working_dir, self._storage_root, top_k, model_hash,
                 self._sub_task_id, output_config, assets_config['mining_image'], asset_cache_dir, self._task_id))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True),
-            mock.call(mining_cmd, capture_output=True, shell=True),
+            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
+            mock.call(mining_cmd, capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()
