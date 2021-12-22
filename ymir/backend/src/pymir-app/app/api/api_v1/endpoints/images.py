@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
+    DockerImageHavingRelationships,
     DockerImageNotFound,
     DuplicateDockerImageError,
     DuplicateWorkspaceError,
@@ -43,7 +44,7 @@ def list_docker_images(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None),
-    state: DockerImageState = Query(DockerImageState.done),
+    state: DockerImageState = Query(None),
     type_: DockerImageType = Query(None, alias="type"),
 ) -> Any:
     """
@@ -109,7 +110,15 @@ def import_docker_image(
 
     # note: we've created a placeholder record beforehand, update it first
     image_configs = parse_docker_image_config(resp)
-    first_image_config = next(image_configs)
+    try:
+        first_image_config = next(image_configs)
+    except StopIteration:
+        logger.error("[create image] failed to parse docker image via controller")
+        crud.docker_image.update_state(
+            db, docker_image=docker_image, state=DockerImageState.error
+        )
+        return
+
     docker_image_update = DockerImageUpdateConfig(
         **{**docker_image_dict, **first_image_config}
     )
@@ -197,6 +206,12 @@ def delete_docker_image(
     docker_image = crud.docker_image.get(db, id=docker_image_id)
     if not docker_image:
         raise DockerImageNotFound()
+
+    having_relationships = crud.image_relationship.having_relationships(
+        db, image_id=docker_image_id
+    )
+    if having_relationships:
+        raise DockerImageHavingRelationships()
 
     docker_image = crud.docker_image.soft_remove(db, id=docker_image_id)
     return {"result": docker_image}

@@ -132,8 +132,8 @@ class ControllerRequest:
         for dataset in datasets:
             train_task_req.in_dataset_types.append(dataset)
         train_task_req.in_class_ids[:] = args["include_classes"]
-        if "config" in args:
-            train_task_req.training_config = args["config"]
+        if "model_hash" in args:
+            request.model_hash = args["model_hash"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeTraining
@@ -141,6 +141,8 @@ class ControllerRequest:
         req_create_task.training.CopyFrom(train_task_req)
 
         request.req_type = mirsvrpb.TASK_CREATE
+        request.singleton_op = args["docker_image"]
+        request.docker_image_config = args["docker_config"]
         request.merge_strategy = MERGE_STRATEGY_MAPPING[args["strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
         return request
@@ -151,12 +153,9 @@ class ControllerRequest:
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k", None):
             mine_task_req.top_k = args["top_k"]
-        mine_task_req.model_hash = args["model_hash"]
         mine_task_req.in_dataset_ids[:] = args["include_datasets"]
         mine_task_req.generate_annotations = args["generate_annotations"]
-        if "config" in args:
-            mine_task_req.mining_config = args["config"]
-        if args.get("exclude_datasets", None):
+        if "exclude_datasets" in args:
             mine_task_req.ex_dataset_ids[:] = args["exclude_datasets"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
@@ -166,6 +165,9 @@ class ControllerRequest:
 
         request.req_type = mirsvrpb.TASK_CREATE
         request.merge_strategy = MERGE_STRATEGY_MAPPING[args["strategy"]]
+        request.singleton_op = args["docker_image"]
+        request.docker_image_config = args["docker_config"]
+        request.model_hash = args["model_hash"]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
@@ -240,7 +242,8 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_INFERENCE
         request.model_hash = args["model_hash"]
         request.asset_dir = args["asset_dir"]
-        request.model_config = args["config"]
+        request.singleton_op = args["docker_image"]
+        request.docker_image_config = args["docker_config"]
         return request
 
     def prepare_add_label(
@@ -260,10 +263,7 @@ class ControllerRequest:
     def prepare_kill(
         self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
-        if args["is_label_task"]:
-            request.req_type = mirsvrpb.CMD_LABLE_TASK_TERMINATE
-        else:
-            request.req_type = mirsvrpb.CMD_TERMINATE
+        request.req_type = mirsvrpb.CMD_TERMINATE
         request.executor_instance = args["target_container"]
         return request
 
@@ -317,10 +317,7 @@ class ControllerClient:
         req = ControllerRequest(
             ExtraRequestType.kill,
             user_id=user_id,
-            args={
-                "target_container": target_task.hash,
-                "is_label_task": target_task.type is TaskType.label,
-            },
+            args={"target_container": target_task.hash},
         )
         return self.send(req)
 
