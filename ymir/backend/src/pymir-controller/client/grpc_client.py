@@ -194,7 +194,6 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--ex_class_ids", nargs="*", type=int)
     parser_create_task.add_argument("--in_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
-    parser_create_task.add_argument("--model_hash", type=str, help="model_hash")
     parser_create_task.add_argument("--asset_dir", type=str)
     parser_create_task.add_argument("--annotation_dir", type=str)
     parser_create_task.add_argument("--top_k", type=int)
