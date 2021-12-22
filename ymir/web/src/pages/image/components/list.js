@@ -2,29 +2,34 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import { Link, useHistory, useParams } from "umi"
-import { Form, List, Input, Menu, Modal, Radio, Card, Skeleton, Space, Button, Pagination, Col, Row, } from "antd"
+import { Form, List, Input, Menu, Modal, Radio, Card, Skeleton, Space, Button, Pagination, Col, Row, message, } from "antd"
 
 import t from "@/utils/t"
 import { ROLES } from '@/constants/user'
-import { TYPES, STATES } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
+import confirm from '@/components/common/dangerConfirm'
+import ShareModal from "./share"
+import LinkModal from './link'
 import s from "./list.less"
 import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/icons"
 
-const { confirm } = Modal
-
 const initQuery = {
-  name: "",
-  type: "",
+  name: null,
+  type: null,
   offset: 0,
   limit: 20,
 }
 
-const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
+const { useForm } = Form
+
+const ImageList = ({ username, role, filter, getImages, delImage, updateImage }) => {
 
   const history = useHistory()
   const [images, setImages] = useState([])
   const [total, setTotal] = useState(1)
   const [query, setQuery] = useState(initQuery)
+  const shareModalRef = useRef(null)
+  const linkModalRef = useRef(null)
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -32,7 +37,7 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
   }, [query])
 
   useEffect(() => {
-    filter && setQuery({ ...query, ...filter })
+    JSON.stringify(filter) !== JSON.stringify(query) && setQuery({ ...query, ...filter })
   }, [filter])
 
   const pageChange = ({ current, pageSize }) => {
@@ -46,34 +51,7 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
       ...query,
     }
 
-    // const result = await getImages(params)
-    // mock data
-    const result = {
-      items: [
-        { id: 0, name: 'image 0', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 1, name: 'image 1', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 1, },
-        { id: 2, name: 'image 2', type: 2, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 1, },
-        { id: 3, name: 'image 3', type: 2, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 1, },
-        { id: 4, name: 'image 4', type: 2, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 2, },
-        { id: 5, name: 'image 5', type: 2, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 6, name: 'image 6', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 4, },
-        { id: 7, name: 'image 7', type: 2, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 8, name: 'image 8', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 9, name: 'image 9', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 0, },
-        { id: 10, name: 'image 10', type: 2, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 11, name: 'image 11', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 12, name: 'image 12', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 13, name: 'image 13', type: 2, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 14, name: 'image 14', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 15, name: 'image 15', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 16, name: 'image 16', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 17, name: 'image 17', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 18, name: 'image 18', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-        { id: 19, name: 'image 19', type: 1, url: 'docker hub name', desc: 'image desc', relative: [2, 3, 4, 5], state: 3, },
-      ],
-      total: 56,
-    }
-    console.log('get data result: ', result)
+    const result = await getImages(params)
     if (result) {
       const { items, total } = result
       setImages(() => items)
@@ -82,13 +60,13 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
   }
 
   const moreList = (record) => {
-    const { id, name, state, type, url, links } = record
+    const { id, name, state, type, url, related } = record
 
     const menus = [
       {
         key: "link",
         label: t("image.action.link"),
-        onclick: () => link(id, name, links),
+        onclick: () => link(id, name, related),
         hidden: () => !isTrain(type) || !isDone(state),
         icon: <LinkIcon />,
       },
@@ -129,8 +107,7 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
 
   const del = (id, name) => {
     confirm({
-      icon: <TipsIcon style={{ color: 'rgb(242, 99, 123)' }} />,
-      content: t("model.action.del.confirm.content", { name }),
+      content: t("image.del.confirm.content", { name }),
       onOk: async () => {
         const result = await delImage(id)
         if (result) {
@@ -139,17 +116,16 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
           getData()
         }
       },
-      okText: t('task.action.del'),
-      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)', } }
+      okText: t('common.del'),
     })
   }
 
   const share = (id, name) => {
-    // todo , open a modal for entering share info.
+    shareModalRef.current.show(id, name)
   }
 
-  const links = (id, name, links) => {
-    // todo , open a modal for linking
+  const link = (id, name, related) => {
+    linkModalRef.current.show({ id, name, related })
   }
 
   function isAdmin() {
@@ -160,7 +136,7 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
     return type === TYPES.TRAINING
   }
 
-  function isDone (state) {
+  function isDone(state) {
     return state === STATES.DONE
   }
 
@@ -194,11 +170,11 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
     const type = isTrain(item.type) ? 'train' : 'mining'
     const desc = <Row><Col className={s.desc} flex={1}>
       <Space className={s.info}>
-        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{item.type}</span>
+        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{getImageTypeLabel(item.type)}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.url')}</span>{item.url}</span>
-        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.desc}</span>
+        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
       </Space>
-      <div className={s.related}>{t('image.list.item.related')}{item.relative.join(',')}</div>
+      <div className={s.related}>{t('image.list.item.related')}{item?.related}</div>
     </Col>
       <Col>
         <Button key={type} onClick={() => history.push(`/home/task/${type}?image=${item.id}`)}>
@@ -217,7 +193,7 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
 
   return (
     <div className={s.imageContent}>
-      {addBtn}
+      {isAdmin() ? addBtn : null}
       <List
         className={s.list}
         dataSource={images}
@@ -225,7 +201,10 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
       />
       <Pagination className={s.pager} onChange={pageChange}
         defaultCurrent={1} defaultPageSize={query.limit} total={total}
+        showTotal={() => t('image.list.total', { total })}
         showQuickJumper showSizeChanger />
+      <ShareModal ref={shareModalRef} />
+      <LinkModal ref={linkModalRef} />
     </div>
   )
 }
@@ -234,6 +213,7 @@ const ImageList = ({ role, filter, getImages, delImage, updateImage }) => {
 const props = (state) => {
   return {
     role: state.user.role,
+    username: state.user.username,
   }
 }
 

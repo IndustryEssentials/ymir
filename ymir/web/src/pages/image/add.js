@@ -6,38 +6,42 @@ import { useParams, useHistory } from "umi"
 import s from './add.less'
 import t from '@/utils/t'
 import { getImageTypeLabel } from '@/constants/image'
-import Breadcrumbs from '../../components/common/breadcrumb'
+import Breadcrumbs from '@/components/common/breadcrumb'
+import Tip from '@/components/form/tip'
 
 const { useForm } = Form
 
-const Add = ({ }) => {
+const Add = ({ getImage, createImage, updateImage }) => {
   const { id } = useParams()
   const history = useHistory()
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [userInput, setUserInput] = useState(false)
+  const [image, setImage] = useState({ id })
 
   const types = Object.keys(getImageTypeLabel()).map(value => ({ value, label: getImageTypeLabel(value) }))
 
   useEffect(() => {
     setEdit(!!id)
+
+    fetchImage()
   }, [id])
 
-  const submit = async (values) => {
-    var params = {
-      ...values,
+  useEffect(() => {
+    const { name, url , description } = image
+    if (name) {
+      form.setFieldsValue({
+        name, url, description,
+      })
     }
-    const result = await createImage(params)
-    if (result) {
-      message.success(t('image.add.success'))
-      form.resetFields()
-      close()
-      ok()
-    }
+  }, [image])
+
+  const submit = (values) => {
+    isEdit ? update(values) : create(values)
   }
 
   const checkImageUrl = (_, value) => {
-    const reg = /^[a-z0-9\-._]{1,256}(:[a-z0-9.-_]+)?$/
+    const reg = /^[a-zA-Z0-9\-._]{1,256}(:[a-zA-Z0-9.-_]+)?$/
     if (!value || reg.test(value)) {
       return Promise.resolve()
     }
@@ -49,12 +53,44 @@ const Add = ({ }) => {
       form.setFieldsValue({ name: target.value })
     }
   }
+  async function fetchImage() {
+    const result = await getImage(id)
+    if (result) {
+      setImage(result)
+    }
+  }
+
+  async function create (values) {
+    var params = {
+      ...values,
+    }
+    const result = await createImage(params)
+    if (result) {
+      message.success(t('image.add.success'))
+      history.push('/home/image')
+    }
+  }
+
+  async function update({ name, description }) {
+    var params = {
+      id,
+      name,
+      description,
+    }
+    const result = await updateImage(params)
+    if (result) {
+      message.success(t('image.update.success'))
+      history.push('/home/image')
+    }
+  }
+
   return (
     <div className={s.imageAdd}>
       <Breadcrumbs />
-      <Card className={s.container} title={t('breadcrumbs.dataset.add')}>
+      <Card className={s.container} title={t('breadcrumbs.image.add')}>
         <div className={s.formContainer}>
           <Form form={form} labelCol={{ span: 4 }} onFinish={submit}>
+            <Tip content={t('tip.image.add.name')}>
             <Form.Item
               label={t('image.add.form.url')}
               name='url'
@@ -63,36 +99,36 @@ const Add = ({ }) => {
                 { validator: checkImageUrl },
               ]}
             >
-              <Input placeholder={t('image.add.form.url.placeholder')} autoComplete='off' allowClear onChange={urlChange} />
+              <Input placeholder={t('image.add.form.url.placeholder')} disabled={isEdit} autoComplete='off' allowClear onChange={urlChange} />
             </Form.Item>
+            </Tip>
+            <Tip content={t('tip.image.add.url')}>
             <Form.Item
               label={t('image.add.form.name')}
               name='name'
               rules={[
-                { required: true, message: t('image.add.form.name.placeholder') }
+                { required: true, whitespace: true, message: t('image.add.form.name.placeholder') },
+                { max: 50 },
               ]}
             >
-              <Input placeholder={t('image.add.form.name.placeholder')} autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
+              <Input placeholder={t('image.add.form.name.placeholder')} maxLength={50}
+                autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
             </Form.Item>
-            <Form.Item
-              label={t('image.add.form.share.label')}
-              name='input_image_id'
+            </Tip>
+            <Tip content={t('tip.image.add.desc')}>
+            <Form.Item label={t('image.add.form.desc')} name='description'
               rules={[
-                { required: true, message: t('image.add.form.share.valid.msg') }
+                { max: 500 },
               ]}
             >
-              <Input placeholder={t('image.add.form.share.placeholder')} allowClear />
+              <Input.TextArea />
             </Form.Item>
-            <Form.Item label={t('image.add.form.type')} name='type' initialValue={types[0].value}>
-              <Radio.Group
-                options={types}
-              />
-            </Form.Item>
+            </Tip>
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
-                    {t('image.add.submit')}
+                    {isEdit ? t('image.update.submit') : t('image.add.submit')}
                   </Button>
                 </Form.Item>
                 <Form.Item name='backBtn' noStyle>
@@ -116,6 +152,18 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'image/createImage',
         payload,
+      })
+    },
+    updateImage: (payload) => {
+      return dispatch({
+        type: 'image/updateImage',
+        payload,
+      })
+    },
+    getImage: (id) => {
+      return dispatch({
+        type: 'image/getImage',
+        payload: id,
       })
     },
   }

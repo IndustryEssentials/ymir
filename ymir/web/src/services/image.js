@@ -48,12 +48,29 @@ export function createImage(image) {
   return request.post("/images/", image)
 }
 
-export function updateImage(id, name) {
+export function updateImage(id, { name, description }) {
   return request({
     method: "patch",
     url: `/images/${id}`,
     data: {
       name,
+      description,
     },
+  })
+}
+
+export function shareImage(id, { username, email, phone, org }) {
+  console.log('share image: ', id, username, phone, org)
+  return request.post(`/images/${id}/share`, {
+    submitter: username, 
+    email,
+    phone,
+    organization: org,
+  })
+}
+
+export function relateImage(id, relations) {
+  return request.post(`/images/${id}/related`, {
+    dest_image_ids: relations,
   })
 }

@@ -83,7 +83,6 @@ function getParantPath(path) {
 }
 
 function validPermission(role, permission) {
-  console.log('permission: ', role, permission)
   return role >= (permission || role)
 }
 

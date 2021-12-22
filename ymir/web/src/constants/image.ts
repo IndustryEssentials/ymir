@@ -3,12 +3,13 @@ import t from '@/utils/t'
 export const TYPES = Object.freeze({
   TRAINING: 1,
   MINING: 2,
+  INFERENCE: 9,
 })
 
 export const STATES = Object.freeze({
   PENDING: 1,
-  DONE: 2,
-  ERROR: 3,
+  DONE: 3,
+  ERROR: 4,
 })
 
 export const getImageTypeLabel = (type: number | undefined) => {

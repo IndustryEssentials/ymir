@@ -26,6 +26,7 @@ const errors = {
   'error7003': { cn: '任务未授权访问', en: 'TASK_NOT_ACCESSIBLE: ', },
   'error8001': { cn: '找不到对应的历史树', en: 'HISTORY NOT FOUND', },
   'error9001': { cn: '调用 Inference 失败', en: 'INFERENCE FAILED', },
+  'error1010': { cn: '用户角色权限不匹配', en: 'INVALID USER ROLE', },
 }
 
 export default errors

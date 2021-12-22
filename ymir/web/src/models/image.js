@@ -4,6 +4,8 @@ import {
   delImage,
   createImage,
   updateImage,
+  shareImage,
+  relateImage,
 } from "@/services/image"
 
 export default {
@@ -67,8 +69,23 @@ export default {
       }
     },
     *updateImage({ payload }, { call, put }) {
-      const { id, name } = payload
-      const { code, result } = yield call(updateImage, id, name)
+      const { id, name, description } = payload
+      const { code, result } = yield call(updateImage, id, { name, description, })
+      if (code === 0) {
+        return result
+      }
+    },
+    *shareImage({ payload }, { call, put }) {
+      const { id, ...res } = payload
+      console.log('model share image: ', id, res)
+      const { code, result } = yield call(shareImage, id, res)
+      if (code === 0) {
+        return result
+      }
+    },
+    *relateImage({ payload }, { call, put }) {
+      const { id, relations } = payload
+      const { code, result } = yield call(relateImage, id, relations)
       if (code === 0) {
         return result
       }
