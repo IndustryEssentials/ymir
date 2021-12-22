@@ -2,7 +2,7 @@ import { defineConfig } from "umi"
 
 export default defineConfig({
   define: {
-    "process.env.APIURL": "http://localhost:8000/api/v1/",
+    "process.env.APIURL": "/api/v1/",
   },
 
   // // development api proxy
