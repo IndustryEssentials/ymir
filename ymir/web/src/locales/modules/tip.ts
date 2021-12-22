@@ -33,7 +33,9 @@ const tip = {
   // "tip.task.filter.type": { cn: "导入类型", en: "", },
   // "tip.task.filter.addlable": { cn: "包含标注", en: "", },
  
-
+  //标签弹出添加别名
+  "tip.task.filter.alias": { cn: "和主名表示同一类标签，当导入的数据集标签为别名时，界面展示为主名", en: "", },
+  
 }
 
 export default tip
