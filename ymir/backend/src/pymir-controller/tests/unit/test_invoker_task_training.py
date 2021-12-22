@@ -106,7 +106,6 @@ class TestInvokerTaskTraining(unittest.TestCase):
         train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_dataset_types.append(training_data_type_2)
         train_task_req.in_class_ids[:] = [0, 1]
-        # train_task_req.training_config = json.dumps(training_config)
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = backend_pb2.TaskTypeTraining
