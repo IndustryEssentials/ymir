@@ -77,7 +77,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         models_location = assets_config["modelskvlocation"]
         media_location = assets_config["assetskvlocation"]
         mining_image = request.singleton_op
-        config_file = cls.gen_mining_config(mining_request.mining_config, working_dir)
+        config_file = cls.gen_mining_config(request.singleton_op_config, working_dir)
         if not config_file:
             msg = "Not enough GPU available"
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)

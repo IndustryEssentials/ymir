@@ -106,7 +106,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_dataset_types.append(training_data_type_2)
         train_task_req.in_class_ids[:] = [0, 1]
-        train_task_req.training_config = json.dumps(training_config)
+        # train_task_req.training_config = json.dumps(training_config)
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = backend_pb2.TaskTypeTraining
@@ -127,7 +127,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          req_create_task=req_create_task,
                                          executor_instance=self._task_id,
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
-                                         singleton_op=training_image)
+                                         singleton_op=training_image,
+                                         singleton_op_config=json.dumps(training_config))
         print(MessageToDict(response))
 
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
