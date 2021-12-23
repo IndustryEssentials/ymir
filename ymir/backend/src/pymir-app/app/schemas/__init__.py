@@ -9,6 +9,15 @@ from .dataset import (
     ImportStrategy,
 )
 from .graph import Graph, GraphOut
+from .image import (
+    DockerImage,
+    DockerImageCreate,
+    DockerImageOut,
+    DockerImagesOut,
+    DockerImageState,
+    DockerImageUpdate,
+)
+from .image_relationship import ImageRelationshipsCreate, ImageRelationshipsOut
 from .inference import InferenceCreate, InferenceOut
 from .keyword import (
     Keyword,
@@ -21,7 +30,6 @@ from .keyword import (
 from .model import Model, ModelCreate, ModelImport, ModelOut, Models, ModelUpdate
 from .msg import Msg
 from .role import Role, RoleCreate, RoleOut
-from .runtime import Runtime, RuntimeCreate, RuntimeOut
 from .stats import Stats, StatsOut
 from .task import Task, TaskCreate, TaskOut, TaskParameter, Tasks, TaskUpdate
 from .token import Token, TokenOut, TokenPayload
