@@ -78,12 +78,6 @@ const Routes = [
         title: "dataset.title",
       },
       {
-        path: "/home/dataset/asset/:id/:hash",
-        name: "datasetAsset",
-        component: "@/pages/dataset/asset",
-        title: "asset.title",
-      },
-      {
         path: "/home/model/detail/:id",
         name: "modelDetail",
         component: "@/pages/model/detail",

@@ -1,13 +1,10 @@
 import argparse
 import logging
-import os
 import sys
 from typing import Any, Dict, List, Optional
 
 import grpc
 from google.protobuf import json_format
-
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from controller.utils import invoker_call, revs
 from proto import backend_pb2
@@ -37,10 +34,14 @@ def _build_cmd_create_repo_req(args: Dict) -> backend_pb2.GeneralReq:
 
 
 def _build_cmd_add_labels_req(args: Dict) -> backend_pb2.GeneralReq:
+    if "labels" not in args:
+        raise RuntimeError("private_labels not set.")
     return invoker_call.make_cmd_request(user_id=args["user"],
                                          repo_id=args["repo"],
                                          task_id=args["tid"],
+                                         private_labels=args["labels"].split(';'),
                                          req_type=backend_pb2.CMD_LABEL_ADD)
+
 
 def _build_cmd_get_labels_req(args: Dict) -> backend_pb2.GeneralReq:
     return invoker_call.make_cmd_request(user_id=args["user"],
@@ -90,7 +91,6 @@ def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
     mine_task_req = backend_pb2.TaskReqMining()
     if args.get('top_k', None):
         mine_task_req.top_k = args['top_k']
-    mine_task_req.model_hash = args['model_hash']
     mine_task_req.in_dataset_ids[:] = args['in_dataset_ids']
     if args.get('ex_dataset_ids', None):
         mine_task_req.ex_dataset_ids[:] = args['ex_dataset_ids']
@@ -139,6 +139,7 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
     req = invoker_call.make_cmd_request(user_id=args["user"],
                                         repo_id=args["repo"],
                                         task_id=args["tid"],
+                                        model_hash=args["model_hash"],
                                         req_type=backend_pb2.TASK_CREATE,
                                         req_create_task=task_req)
     logging.info(json_format.MessageToDict(req, preserving_proto_field_name=True, use_integers_for_enums=True))
@@ -165,17 +166,22 @@ def get_parser() -> Any:
     common_group.add_argument(
         "-g",
         "--grpc",
-        default="127.0.0.1:50066",
+        default="127.0.0.1:50051",
         type=str,
         help="grpc channel",
     )
     common_group.add_argument("-u", "--user", type=str, help="default user")
     common_group.add_argument("-r", "--repo", type=str, help="default mir repo")
     common_group.add_argument("-t", "--tid", type=str, help="task id")
+    common_group.add_argument("--model_hash", type=str, help="model hash")
+    common_group.add_argument("--labels", type=str, help="labels to be added, seperated by comma.")
 
     # CMD CALL
     parser_create_task = sub_parsers.add_parser("cmd_call", help="create sync cmd call")
-    parser_create_task.add_argument("--task_type", choices=["create_repo", "add_labels", "get_labels"], type=str, help="task type")
+    parser_create_task.add_argument("--task_type",
+                                    choices=["create_repo", "add_labels", "get_labels"],
+                                    type=str,
+                                    help="task type")
     parser_create_task.set_defaults(func=call_cmd)
 
     # CREATE TASK
@@ -188,7 +194,6 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--ex_class_ids", nargs="*", type=int)
     parser_create_task.add_argument("--in_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
-    parser_create_task.add_argument("--model_hash", type=str, help="model_hash")
     parser_create_task.add_argument("--asset_dir", type=str)
     parser_create_task.add_argument("--annotation_dir", type=str)
     parser_create_task.add_argument("--top_k", type=int)

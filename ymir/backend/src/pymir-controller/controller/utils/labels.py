@@ -4,7 +4,7 @@ from collections import Counter
 from pathlib import Path
 from typing import List, Iterable
 
-from controller.config import RESERVE_COLUMN
+from controller.config import label_task as label_task_config
 from controller.utils.app_logger import logger
 
 
@@ -67,7 +67,7 @@ class LabelFileHandler:
                 expected_id += 1
 
                 if not with_reserve:
-                    cur_labels.pop(RESERVE_COLUMN)
+                    cur_labels.pop(label_task_config.LABEL_RESERVE_COLUMN)
                 if not with_id:
                     cur_labels.pop(0)
                 all_labels.append(cur_labels)

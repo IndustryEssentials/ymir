@@ -1,5 +1,5 @@
-from controller import config
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
+from controller.config import label_task as label_task_config
 from controller.label_model.label_studio import LabelStudio
 from controller.utils import checker, utils, code
 from controller.utils.redis import rds
@@ -8,7 +8,7 @@ from proto import backend_pb2
 
 class FinishLabelTaskInvoker(BaseMirControllerInvoker):
     def get_project_id_by_task_id(self, task_id: str) -> int:
-        content = rds.hget(config.MONITOR_MAPPING_KEY, task_id)
+        content = rds.hget(label_task_config.MONITOR_MAPPING_KEY, task_id)
         if content is None:
             raise ValueError("error! get project id: {} by task id{task_id}")
         return content["project_id"]  # type: ignore

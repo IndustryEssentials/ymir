@@ -10,7 +10,7 @@ from xml.etree import ElementTree
 
 import requests
 
-from controller import config
+from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
 from controller.utils.app_logger import logger
 
@@ -18,8 +18,8 @@ from controller.utils.app_logger import logger
 class RequestHandler:
     def __init__(
         self,
-        host: str = config.LABEL_STUDIO_HOST,
-        headers: Dict[str, str] = {"Authorization": config.LABEL_STUDIO_TOKEN},
+        host: str = label_task_config.LABEL_STUDIO_HOST,
+        headers: Dict[str, str] = {"Authorization": label_task_config.LABEL_STUDIO_TOKEN},
     ):
         self.host = host
         self.headers = headers
@@ -138,9 +138,9 @@ class LabelStudio(LabelBase):
         unlabeled_task_ids = []
         url_path = f"/api/projects/{project_id}/tasks/"
 
-        for page in range(1, math.ceil(task_num / config.LABEL_PAGE_SIZE) + 1):
+        for page in range(1, math.ceil(task_num / label_task_config.LABEL_PAGE_SIZE) + 1):
             params = {
-                "page_size": config.LABEL_PAGE_SIZE,
+                "page_size": label_task_config.LABEL_PAGE_SIZE,
                 "page": page,
             }
             all_content = self.requests.get(url_path=url_path, params=params)
@@ -189,11 +189,11 @@ class LabelStudio(LabelBase):
 
     @catch_label_task_error
     def run(self, task_id: str, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-            asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str,
+            input_asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str,
             media_location: str, import_work_dir: str) -> None:
         logger.info("start LabelStudio run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
-        storage_id = self.set_import_storage(project_id, asset_dir)
+        storage_id = self.set_import_storage(project_id, input_asset_dir)
         self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
         self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root,

@@ -16,7 +16,6 @@ const getCrumbs = () => [
   { path: '/home/task/mining/:ids?', label: t('breadcrumbs.task.mining'), pid: 2, id: 9 },
   { path: '/home/task/detail/:id', label: t('breadcrumbs.task'), pid: 2, id: 10 },
   { path: '/home/dataset/detail/:id', label: t('breadcrumbs.dataset'), pid: 4, id: 13 },
-  { path: '/home/dataset/asset/:id/:hash', label: t('breadcrumbs.dataset.asset'), pid: 13, id: 14 },
   { path: '/home/model/detail/:id', label: t('breadcrumbs.model'), pid: 3, id: 16 },
   { path: '/home/model/verify/:id', label: t('breadcrumbs.model.verify'), pid: 16, id: 17 },
   { path: '/home/history/:type/:id', label: t('breadcrumbs.history'), pid: 1, id: 18 },

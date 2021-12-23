@@ -6,21 +6,21 @@ from proto import backend_pb2
 
 def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
     _task_state_to_enum = {
-        "pending": backend_pb2.TaskStatePending,
-        "running": backend_pb2.TaskStateRunning,
-        "runing": backend_pb2.TaskStateRunning,
-        "done": backend_pb2.TaskStateDone,
-        "error": backend_pb2.TaskStateError,
+        "pending": backend_pb2.TaskState.TaskStatePending,
+        "running": backend_pb2.TaskState.TaskStateRunning,
+        "runing": backend_pb2.TaskState.TaskStateRunning,
+        "done": backend_pb2.TaskState.TaskStateDone,
+        "error": backend_pb2.TaskState.TaskStateError,
     }
     return _task_state_to_enum[state]
 
 
 def task_state_code_to_str(state: backend_pb2.TaskState) -> str:
     _dict_enum_to_str = {
-        backend_pb2.TaskStatePending: "pending",
-        backend_pb2.TaskStateRunning: "running",
-        backend_pb2.TaskStateDone: "done",
-        backend_pb2.TaskStateError: "error",
+        backend_pb2.TaskState.TaskStatePending: "pending",
+        backend_pb2.TaskState.TaskStateRunning: "running",
+        backend_pb2.TaskState.TaskStateDone: "done",
+        backend_pb2.TaskState.TaskStateError: "error",
     }
     return _dict_enum_to_str[state]
 
