@@ -31,7 +31,7 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         if filters.get("state"):
             query = query.filter(DockerImage.state == int(filters["state"]))
         if filters.get("type"):
-            query = query.filter(DockerImage.name == int(filters["type"]))
+            query = query.filter(DockerImage.type == int(filters["type"]))
 
         query = query.order_by(desc(self.model.create_datetime))
         if limit:
@@ -61,6 +61,12 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         self, db: Session, *, docker_image: DockerImage, state: DockerImageState
     ) -> DockerImage:
         update_data = {"state": int(state)}
+        return self.update(db, db_obj=docker_image, obj_in=update_data)
+
+    def update_sharing_status(
+        self, db: Session, *, docker_image: DockerImage, is_shared: bool = True
+    ) -> DockerImage:
+        update_data = {"is_shared": is_shared}
         return self.update(db, db_obj=docker_image, obj_in=update_data)
 
 
