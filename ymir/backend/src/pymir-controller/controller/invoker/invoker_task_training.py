@@ -75,9 +75,9 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         sub_task_id = utils.sub_task_id(request.task_id, 0)
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
-        training_image = assets_config["training_image"]
+        training_image = request.singleton_op
         config_file = cls.gen_training_config(
-            repo_root, train_request.training_config, train_request.in_class_ids, working_dir
+            repo_root, request.singleton_op_config, train_request.in_class_ids, working_dir
         )
         if not config_file:
             msg = "Not enough GPU available"
@@ -95,6 +95,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             in_src_revs=request.task_id,
             training_image=training_image,
             executor_instance=executor_instance,
+            model_hash=request.model_hash,
         )
         return train_response
 
@@ -111,6 +112,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         in_src_revs: str,
         training_image: str,
         executor_instance: str,
+        model_hash: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = (
             f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
@@ -118,6 +120,9 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
             f"--executor-instance {executor_instance}"
         )
+        if model_hash:
+            training_cmd += f" --model-hash {model_hash}"
+
         return utils.run_command(training_cmd)
 
     def _repr(self) -> str:
