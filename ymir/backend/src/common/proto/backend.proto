@@ -126,7 +126,7 @@ message GeneralReq {
     string commit_message = 13;
     string model_hash = 14;
     string asset_dir = 15;
-    string model_config = 16;
+    string singleton_op_config = 16;
     repeated string private_labels = 17;
     bool check_only=18;
     string executor_instance = 19;
@@ -177,15 +177,15 @@ message TaskReqTraining {
     }
     repeated TrainingDatasetType in_dataset_types = 1;
     repeated int32 in_class_ids = 2;
-    string training_config = 3;
+    string training_config = 3 [deprecated = true];
 }
 
 message TaskReqMining {
     repeated string in_dataset_ids = 1;
     repeated string ex_dataset_ids = 2;
-    string model_hash = 3;  // training model hash
+    string model_hash = 3 [deprecated = true];
     int32 top_k = 4;  // > 0, will keep all if set to 0.
-    string mining_config = 5;
+    string mining_config = 5 [deprecated = true];
     bool generate_annotations = 6;
 }
 
