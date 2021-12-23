@@ -263,4 +263,8 @@ def share_image(
         logger.exception("[share image] failed to share docker image")
         raise FailedtoShareDockerImage()
 
+    # mark this image as shared
+    docker_image = crud.docker_image.update_sharing_status(
+        db=db, docker_image=docker_image, is_shared=True
+    )
     return {"result": docker_image}
