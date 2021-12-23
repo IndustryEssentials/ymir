@@ -78,7 +78,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     def invoke(self) -> backend_pb2.GeneralResp:
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
-        config_file = self.gen_inference_config(self._request.singleton_op_config, self._work_dir)
+        config_file = self.gen_inference_config(self._request.docker_image_config, self._work_dir)
 
         self.inference_cmd(
             work_dir=self._work_dir,
