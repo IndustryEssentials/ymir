@@ -14,6 +14,7 @@
     "test": "umi-test",
     "test:coverage": "umi-test --coverage"
   },
+  "pre-push": ["test"],
   "prettier": {
     "semi": false,
     "tabWidth": 2
@@ -71,6 +72,7 @@
     "@umijs/test": "^3.5.20",
     "cross-env": "^7.0.3",
     "lint-staged": "^10.0.7",
+    "pre-push": "^0.1.1",
     "prettier": "^2.2.0",
     "react": "17.x",
     "react-dom": "17.x",
