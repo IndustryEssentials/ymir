@@ -3,7 +3,7 @@ services:
   backend:
     image: ymir-backend:local_test
     build:
-      context: git@github.com:IndustryEssentials/ymir.git#:/ymir/backend
+      context: git@github.com:IndustryEssentials/ymir.git#dev:/ymir/backend
       dockerfile: Dockerfile-dev
     env_file:
       - .env
@@ -55,13 +55,13 @@ services:
       - devnetwork
 
   viz-redis:
-    image: ymir/ymir-viz-redis
+    image: industryessentials/ymir-viz-redis
     restart: on-failure
     networks:
       - devnetwork
     
   redis:
-    image: ymir/ymir-backend-redis
+    image: industryessentials/ymir-backend-redis
     command: redis-server /config/redis/redis.conf --loadmodule /usr/lib/redis/modules/redisgraph.so
     volumes:
       - ${YMIR_PATH}/redis:/var/log/redis
@@ -73,7 +73,7 @@ services:
   nginx:
     image: ymir-web:local_test
     build:
-      context: git@github.com:IndustryEssentials/ymir.git#:/ymir/web
+      context: git@github.com:IndustryEssentials/ymir.git#dev:/ymir/web
       dockerfile: Dockerfile-dev
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
