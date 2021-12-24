@@ -98,7 +98,7 @@ const task = {
   "task.train.form.testsets.label": { cn: "测试集", en: "Test Sets", },
   "task.train.form.keywords.label": { cn: "训练目标", en: "Train Classes", },
 
-  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Training target context: Please select target tags to be used for model training, multi-selection support", },
+  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Training target context: Please select target keyword to be used for model training, multi-selection support", },
 
   "task.train.form.keywords.required": { cn: "请选择训练目标", en: "Please select your train classes", },
   "task.train.form.traintype.label": { cn: "训练类型", en: "Train Type", },
