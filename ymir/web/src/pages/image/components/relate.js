@@ -6,7 +6,7 @@ import t from '@/utils/t'
 import { TYPES, STATES } from '@/constants/image'
 
 const { useForm } = Form
-const RelateModal = forwardRef(({ getMiningImage, link, }, ref) => {
+const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => {} }, ref) => {
   const [visible, setVisible] = useState(false)
   const [links, setLinks] = useState([])
   const [images, setImages] = useState([])
@@ -15,7 +15,7 @@ const RelateModal = forwardRef(({ getMiningImage, link, }, ref) => {
   const [linkForm] = useForm()
 
   useEffect(() => {
-    linkForm.setFieldsValue({ relations: links })
+    linkForm.setFieldsValue({ relations: links.map(image => image.id) })
   }, [links])
 
   useEffect(() => {
@@ -37,10 +37,11 @@ const RelateModal = forwardRef(({ getMiningImage, link, }, ref) => {
   const submitLink = () => {
     linkForm.validateFields().then(async () => {
       const { relations } = linkForm.getFieldValue()
-      const result = await link(id, relations)
+      const result = await relate(id, relations)
       if (result) {
         message.success(t('image.link.success'))
         setVisible(false)
+        ok()
       } 
     })
   }
@@ -85,7 +86,7 @@ const actions = (dispatch) => {
         payload: id,
       })
     },
-    link(id, relations) {
+    relate(id, relations) {
       return dispatch({
         type: 'image/relateImage',
         payload: { id, relations },

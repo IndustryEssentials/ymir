@@ -7,9 +7,8 @@ import { Form, List, Input, Menu, Modal, Radio, Card, Skeleton, Space, Button, P
 import t from "@/utils/t"
 import { ROLES } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
-import confirm from '@/components/common/dangerConfirm'
 import ShareModal from "./share"
-import LinkModal from './relate'
+import RelateModal from './relate'
 import Del from './del'
 import s from "./list.less"
 import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/icons"
@@ -63,7 +62,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
   }
 
   const moreList = (record) => {
-    const { id, name, state, type, url, related } = record
+    const { id, name, state, type, url, related, is_shared } = record
 
     const menus = [
       {
@@ -77,7 +76,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
         key: "share",
         label: t("image.action.share"),
         onclick: () => share(id, name),
-        hidden: () => !isDone(state),
+        hidden: () => !isDone(state) || is_shared,
         icon: <ShareIcon />,
       },
       {
@@ -115,6 +114,10 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
   const delOk = () => {
     setImages(images.filter((model) => model.id !== id))
     setTotal(old => old - 1)
+    getData()
+  }
+
+  const relateOk = () => {
     getData()
   }
 
@@ -202,7 +205,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
         showTotal={() => t('image.list.total', { total })}
         showQuickJumper showSizeChanger />
       <ShareModal ref={shareModalRef} />
-      <LinkModal ref={linkModalRef} />
+      <RelateModal ref={linkModalRef} ok={relateOk} />
       <Del ref={delRef} ok={delOk} />
     </div>
   )
