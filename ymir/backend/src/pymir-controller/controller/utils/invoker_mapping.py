@@ -14,7 +14,8 @@ from controller.invoker import (
     invoker_cmd_label_get,
     invoker_cmd_label_add,
     invoker_cmd_terminate,
-    invoker_cmd_pull_image
+    invoker_cmd_pull_image,
+    invoker_cmd_gpu
 )
 
 from proto import backend_pb2
@@ -37,4 +38,5 @@ RequestTypeToInvoker = {
     backend_pb2.CMD_LABEL_GET: invoker_cmd_label_get.LabelGetInvoker,
     backend_pb2.CMD_TERMINATE: invoker_cmd_terminate.CMDTerminateInvoker,
     backend_pb2.CMD_PULL_IMAGE: invoker_cmd_pull_image.ImageHandler,
+    backend_pb2.CMD_GPU_GET: invoker_cmd_gpu.GPUInvoker
 }

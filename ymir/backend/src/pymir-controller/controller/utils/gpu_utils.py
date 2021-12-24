@@ -1,17 +1,32 @@
 import time
 from typing import List, Dict, Set
-
-from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, nvmlShutdown
+import sentry_sdk
+from pynvml import (
+    nvmlInit,
+    nvmlDeviceGetCount,
+    nvmlDeviceGetHandleByIndex,
+    nvmlDeviceGetMemoryInfo,
+    nvmlShutdown,
+    NVMLError,
+)
 
 from controller.config import gpu_task as gpu_task_config
 from controller.utils.redis import rds
+from controller.utils.app_logger import logger
 
 
 class GPUInfo:
     @staticmethod
     def get_gpus_info() -> Dict:
         gpu_info = dict()
-        nvmlInit()
+        try:
+            nvmlInit()
+        except NVMLError as e:
+            logger.warning(f"No GPU {e}")
+            sentry_sdk.capture_exception(e)
+
+            return gpu_info
+
         for i in range(nvmlDeviceGetCount()):
             handle = nvmlDeviceGetHandleByIndex(i)
             gpu_mem_info = nvmlDeviceGetMemoryInfo(handle)
