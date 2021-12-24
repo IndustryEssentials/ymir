@@ -31,10 +31,11 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
             if container_response.code != code.ResCode.CTR_OK:
                 app_logger.logger.warning(container_response.message)
                 sentry_sdk.capture_message(container_response.message)
-
         elif self._request.terminated_task_type == backend_pb2.TaskType.TaskTypeLabel:
             project_id = self.get_project_id_by_task_id(self._request.executor_instance)
             LabelStudio().delete_unlabeled_task(project_id)
+        else:
+            app_logger.logger.info(f"Do nothing to terminate task_type:{self._request.req_type}")
 
         return utils.make_general_response(code.ResCode.CTR_OK, "")
 
