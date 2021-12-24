@@ -11,6 +11,7 @@ import Uploader from "../../../components/form/uploader"
 import Breadcrumbs from "../../../components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import { randomNumber } from "../../../utils/number"
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
 
@@ -123,86 +124,100 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
+            
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+              {/* <Tip content={t('tip.task.filter.datasets')}> */}
+                <Form.Item
+                  label={t('task.filter.form.datasets.label')}
+                  name="datasets"
+                  rules={[
+                    { required: true, message: t('task.filter.form.datasets.required') },
+                  ]}
+                >
+                  <Select
+                    placeholder={t('task.filter.form.datasets.placeholder')}
+                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                  >
+                    {datasets.map(item => (
+                      <Option value={item.id} key={item.name}>
+                        {item.name}({item.asset_count})
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              {/* </Tip> */}
+            </ConfigProvider>
+
+            <Tip content={t('tip.task.filter.labelmember')}>
               <Form.Item
-                label={t('task.filter.form.datasets.label')}
-                name="datasets"
+                label={t('task.label.form.member')}
+                required
+              >
+                <Row gutter={20}>
+                  <Col flex={1}>
+                    <Form.Item
+                      name="label_members"
+                      noStyle
+                      rules={[
+                        { required: true, message: t('task.label.form.member.required') },
+                        { type: 'email', message: t('task.label.form.member.email.msg') },
+                      ]}
+                    >
+                      <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
+                  </Col>
+                </Row>
+              </Form.Item>
+            </Tip>
+
+            <Tip hidden={!asChecker} content={t('tip.task.filter.labelplatacc')}>
+              <Form.Item hidden={!asChecker} label={t('task.label.form.plat.label')} required>
+                <Row gutter={20}>
+                  <Col flex={1}>
+                    <Form.Item
+                      name="checker"
+                      noStyle
+                      rules={asChecker ? [
+                        { required: true, message: t('task.label.form.member.required') },
+                        { type: 'email', message: t('task.label.form.member.email.msg') },
+                      ] : []}
+                    >
+                      <Input placeholder={t('task.label.form.member.labelplatacc')} allowClear />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <a target='_blank' href={'/lsf/'}>{t('task.label.form.plat.go')}</a>
+                  </Col>
+                </Row>
+              </Form.Item>
+            </Tip>
+          
+
+            <Tip content={t('tip.task.filter.labeltarget')}>
+              <Form.Item
+                label={t('task.label.form.target.label')}
+                name="keywords"
                 rules={[
-                  { required: true, message: t('task.filter.form.datasets.required') },
+                  { required: true, message: t('task.label.form.target.placeholder') }
                 ]}
               >
-                <Select
-                  placeholder={t('task.filter.form.datasets.placeholder')}
-                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                >
-                  {datasets.map(item => (
-                    <Option value={item.id} key={item.name}>
-                      {item.name}({item.asset_count})
+                <Select mode="multiple" showArrow
+                  placeholder={t('task.label.form.member.labeltarget')} 
+                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+                  {keywords.map(keyword => (
+                    <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                      <Row>
+                        <Col flex={1}>{keyword.name}</Col>
+                      </Row>
                     </Option>
                   ))}
                 </Select>
               </Form.Item>
-            </ConfigProvider>
-            <Form.Item
-              label={t('task.label.form.member')}
-              required
-            >
-              <Row gutter={20}>
-                <Col flex={1}>
-                  <Form.Item
-                    name="label_members"
-                    noStyle
-                    rules={[
-                      { required: true, message: t('task.label.form.member.required') },
-                      { type: 'email', message: t('task.label.form.member.email.msg') },
-                    ]}
-                  >
-                    <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
-                  </Form.Item>
-                </Col>
-                <Col>
-                  <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
-                </Col>
-              </Row>
-            </Form.Item>
-            <Form.Item hidden={!asChecker} label={t('task.label.form.plat.label')} required>
-              <Row gutter={20}>
-                <Col flex={1}>
-                  <Form.Item
-                    name="checker"
-                    noStyle
-                    rules={asChecker ? [
-                      { required: true, message: t('task.label.form.member.required') },
-                      { type: 'email', message: t('task.label.form.member.email.msg') },
-                    ] : []}
-                  >
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-                <Col>
-                  <a target='_blank' href={'/lsf/'}>{t('task.label.form.plat.go')}</a>
-                </Col>
-              </Row>
-            </Form.Item>
+            </Tip>
 
-            <Form.Item
-              label={t('task.label.form.target.label')}
-              name="keywords"
-              rules={[
-                { required: true, message: t('task.label.form.target.placeholder') }
-              ]}
-            >
-              <Select mode="multiple" showArrow
-                filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-                {keywords.map(keyword => (
-                  <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                    <Row>
-                      <Col flex={1}>{keyword.name}</Col>
-                    </Row>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
               <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>

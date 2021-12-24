@@ -1,6 +1,6 @@
 import json
-from typing import Any, Dict, List, Optional, Union, Callable
 from operator import attrgetter
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
@@ -18,6 +18,10 @@ from app.config import settings
 from app.models import Dataset, Model
 from app.models.task import Task, TaskState, TaskType
 from app.schemas.task import MergeStrategy
+from app.utils.class_ids import (
+    get_keyword_id_to_name_mapping,
+    get_keyword_name_to_id_mapping,
+)
 from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
@@ -29,16 +33,13 @@ from app.utils.ymir_controller import (
     ExtraRequestType,
 )
 from app.utils.ymir_viz import VizClient
-from app.utils.class_ids import (
-    get_keyword_id_to_name_mapping,
-    get_keyword_name_to_id_mapping,
-)
 
 router = APIRouter()
 
 
 @router.get(
-    "/", response_model=schemas.TaskOut,
+    "/",
+    response_model=schemas.TaskOut,
 )
 def list_tasks(
     db: Session = Depends(deps.get_db),
@@ -70,7 +71,8 @@ def list_tasks(
 
 
 @router.post(
-    "/", response_model=schemas.TaskOut,
+    "/",
+    response_model=schemas.TaskOut,
 )
 def create_task(
     *,
@@ -105,12 +107,16 @@ def create_task(
     )
 
     if parameters and task_in.config:
-        parameters["config"] = task_in.config
+        parameters["docker_config"] = task_in.config
 
     try:
         task_id = ControllerRequest.gen_task_id(current_user.id)
         resp = controller_client.create_task(
-            current_user.id, current_workspace.hash, task_id, task_in.type, parameters,
+            current_user.id,
+            current_workspace.hash,
+            task_id,
+            task_in.type,
+            parameters,
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
@@ -154,8 +160,8 @@ def normalize_parameters(
             normalized[k] = [keyword_name_to_id[keyword.strip()] for keyword in v]
         elif k == "model_id":
             model = crud.model.get(db, id=v)
-            assert model and model.hash
-            normalized["model_hash"] = model.hash
+            if model and model.hash:
+                normalized["model_hash"] = model.hash
         else:
             normalized[k] = v
     return normalized
@@ -296,7 +302,8 @@ def update_task_name(
 
 
 @router.post(
-    "/{task_id}/terminate", response_model=schemas.TaskOut,
+    "/{task_id}/terminate",
+    response_model=schemas.TaskOut,
 )
 def terminate_task(
     db: Session = Depends(deps.get_db),
@@ -334,7 +341,9 @@ def update_task_status(
     Batch update given tasks status
     """
     tasks = crud.task.get_tasks_by_states(
-        db, states=[TaskState.pending, TaskState.running], including_deleted=True,
+        db,
+        states=[TaskState.pending, TaskState.running],
+        including_deleted=True,
     )
     task_result_proxy = TaskResultProxy(
         db=db,
@@ -343,9 +352,9 @@ def update_task_status(
         viz=viz_client,
         stats_client=stats_client,
     )
-    for user_id, _tasks in groupby(tasks, "user_id"):
-        for _task in _tasks:
-            task = schemas.Task.from_orm(_task)
+    for _, tasks_ in groupby(tasks, "user_id"):
+        for task_ in tasks_:
+            task = schemas.Task.from_orm(task_)
             task_result = task_result_proxy.get(task)
             task_result_proxy.save(task, task_result)
 
@@ -463,7 +472,9 @@ class TaskResultProxy:
         # makeup data for failed dataset
         dataset_info = {
             "keywords": [],
-            "ignored_keywords": self._parse_ignored_keywords(task_result.get("state_message")),
+            "ignored_keywords": self._parse_ignored_keywords(
+                task_result.get("state_message")
+            ),
             "items": 0,
             "total": 0,
         }
@@ -500,7 +511,9 @@ class TaskResultProxy:
         dataset = crud.dataset.create(self.db, obj_in=dataset_in)
         return dataset
 
-    def update_dataset(self, task: schemas.Task, dataset_info: Optional[Dict] = None) -> Optional[Dataset]:
+    def update_dataset(
+        self, task: schemas.Task, dataset_info: Optional[Dict] = None
+    ) -> Optional[Dataset]:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if not dataset:
             return dataset

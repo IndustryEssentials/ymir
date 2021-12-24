@@ -41,7 +41,7 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
 
     def get_inference_docker_image(self, db: Session) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
-        query = query.filter(self.model.type == DockerImageType.infer)
+        query = query.filter(self.model.type == int(DockerImageType.infer))
         return query.first()
 
     def update(
