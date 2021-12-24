@@ -78,7 +78,7 @@ class TestInvokerBranchDelete(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd = "cd {0} && mir branch -d {1}".format(self._mir_repo_root, self._singleton_op)
-        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True)
+        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

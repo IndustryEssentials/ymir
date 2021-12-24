@@ -13,19 +13,14 @@ def mir_executable() -> str:
 
 
 def run_command(cmd: str) -> backend_pb2.GeneralResp:
-    logging.info("starting cmd: \n{}\n".format(cmd))
-    run_result = subprocess.run(cmd, capture_output=True, shell=True)  # run and wait
-    returncode = run_result.returncode
-    stdout = '\n'.join(str(run_result.stdout).split('\\n'))
-    # when mining process done
-    if returncode != 0:
-        stderr = '\n'.join(str(run_result.stderr).split('\\n'))
-        error_str = "stdout: {}\nstderr: {}".format(stdout, stderr)
-        logging.info("error occured, code: {}\n{}\n".format(returncode, error_str))
-        return make_general_response(ResCode.CTR_ERROR_UNKNOWN, error_str)
+    logging.info(f"starting cmd: \n{cmd}\n")
+    result = subprocess.run(cmd, capture_output=True, shell=True, text=True)  # run and wait
+    if result.returncode != 0:
+        logging.error(f"run cmd error:\n {result.stderr}")
+        return make_general_response(ResCode.CTR_ERROR_UNKNOWN, result.stderr)
 
-    logging.info("cmd succeed stdout: \n{}".format(stdout))
-    return make_general_response(ResCode.CTR_OK, stdout)
+    logging.info(f"run cmd succeed: \n {result.stdout}")
+    return make_general_response(ResCode.CTR_OK, result.stdout)
 
 
 def check_valid_input_string(inputs: str,

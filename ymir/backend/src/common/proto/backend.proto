@@ -21,6 +21,7 @@ enum TaskType {
     TaskTypeExportData = 6;
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
+    TaskTypeInfer = 9;
 };
 
 enum TaskState {
@@ -43,6 +44,7 @@ enum RCode {
     RC_SERVICE_UNKOWN_RESPONSE = 1003;
     RC_SERVICE_TASK_INVOKER_ERROR = 1004;
     RC_SERVICE_INFO_INVOKER_ERROR = 1005;
+    RC_SERVICE_DOCKER_IMAGE_ERROR = 1006;
 
     // app state_code
     RC_TASK_UNKNOWN_ERROR = 2000;
@@ -124,7 +126,7 @@ message GeneralReq {
     string commit_message = 13;
     string model_hash = 14;
     string asset_dir = 15;
-    string model_config = 16;
+    string singleton_op_config = 16;
     repeated string private_labels = 17;
     bool check_only=18;
     string executor_instance = 19;
@@ -139,6 +141,8 @@ message GeneralResp {
     string message = 3;
     repeated string ext_strs = 4;
     repeated string csv_labels = 5;
+    string hash_id = 6;
+    map<int32 , string> docker_image_config = 7;
     RespGetTaskInfo resp_get_task_info = 1000;
     RespCMDInference detection = 1001;
 }
@@ -173,15 +177,15 @@ message TaskReqTraining {
     }
     repeated TrainingDatasetType in_dataset_types = 1;
     repeated int32 in_class_ids = 2;
-    string training_config = 3;
+    string training_config = 3 [deprecated = true];
 }
 
 message TaskReqMining {
     repeated string in_dataset_ids = 1;
     repeated string ex_dataset_ids = 2;
-    string model_hash = 3;  // training model hash
+    string model_hash = 3 [deprecated = true];
     int32 top_k = 4;  // > 0, will keep all if set to 0.
-    string mining_config = 5;
+    string mining_config = 5 [deprecated = true];
     bool generate_annotations = 6;
 }
 
