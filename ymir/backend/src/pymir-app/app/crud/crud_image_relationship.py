@@ -20,6 +20,13 @@ class CRUDImageRelationship(
             db.query(self.model).filter(self.model.src_image_id == src_image_id).all()
         )
 
+    def get_relationships_of_dest_image(
+        self, db: Session, *, dest_image_id: int
+    ) -> List[DockerImageRelationship]:
+        return (
+            db.query(self.model).filter(self.model.dest_image_id == dest_image_id).all()
+        )
+
     def delete_relationships_of_src_image(
         self, db: Session, *, src_image_id: int
     ) -> None:
@@ -42,6 +49,12 @@ class CRUDImageRelationship(
         db.bulk_save_objects(db_objs)
         db.commit()
         return db_objs
+
+    def having_relationships(self, db: Session, *, image_id: int) -> bool:
+        return bool(
+            self.get_relationships_of_src_image(db, src_image_id=image_id)
+            or self.get_relationships_of_dest_image(db, dest_image_id=image_id)
+        )
 
 
 image_relationship = CRUDImageRelationship(DockerImageRelationship)

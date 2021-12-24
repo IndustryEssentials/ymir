@@ -56,6 +56,8 @@ class TestControllerRequest:
                 "include_test_datasets": [],
                 "include_classes": [],
                 "strategy": m.MergeStrategy.prefer_newest,
+                "docker_image": "yolov4-training:test",
+                "docker_config": "{}",
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
@@ -74,6 +76,8 @@ class TestControllerRequest:
                 "ex_dataset_ids": [],
                 "generate_annotations": True,
                 "strategy": m.MergeStrategy.prefer_newest,
+                "docker_image": "yolov4-training:test",
+                "docker_config": "{}",
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
@@ -116,11 +120,12 @@ class TestControllerRequest:
         user_id = random.randint(1000, 2000)
         task = mocker.Mock(hash=random_lower_string(), type=m.TaskType.label)
 
-        kill_label_task = m.ControllerRequest(task_type, user_id, args={"target_container": task.hash, "is_label_task": True})
-        assert kill_label_task.req.req_type == m.mirsvrpb.CMD_LABLE_TASK_TERMINATE
-
-        kill_other_task = m.ControllerRequest(task_type, user_id, args={"target_container": task.hash, "is_label_task": False})
-        assert kill_other_task.req.req_type == m.mirsvrpb.CMD_KILL
+        kill_other_task = m.ControllerRequest(
+            task_type,
+            user_id,
+            args={"target_container": task.hash},
+        )
+        assert kill_other_task.req.req_type == m.mirsvrpb.CMD_TERMINATE
 
 
 class TestControllerClient:
