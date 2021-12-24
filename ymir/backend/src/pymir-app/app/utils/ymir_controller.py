@@ -263,7 +263,7 @@ class ControllerRequest:
         if args["is_label_task"]:
             request.req_type = mirsvrpb.CMD_LABLE_TASK_TERMINATE
         else:
-            request.req_type = mirsvrpb.CMD_KILL
+            request.req_type = mirsvrpb.CMD_TERMINATE
         request.executor_instance = args["target_container"]
         return request
 
