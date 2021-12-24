@@ -5,6 +5,7 @@ import { connect } from 'dva'
 import s from './add.less'
 import t from '@/utils/t'
 import { AddDelTwoIcon, AddIcon, AddTwoIcon } from '../../components/common/icons'
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
 const { useForm } = Form
@@ -122,6 +123,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                     </Form.Item>
                   </Col>
                   <Col span={13}>
+                  <Tip content={t('tip.task.filter.alias')}>
                     <Form.Item
                       {...field}
                       // label="Value"
@@ -141,6 +143,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                       >
                       </Select>
                     </Form.Item>
+                  </Tip>
                   </Col>
                   <Col span={3} style={{ alignSelf: field.name ? '' : 'center' }}>
                     <Space>
