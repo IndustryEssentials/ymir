@@ -18,7 +18,7 @@ from controller.utils.app_logger import logger
 class GPUInfo:
     @staticmethod
     def get_gpus_info() -> Dict:
-        gpu_info = dict()
+        gpu_info = dict()  # type: Dict[str, float]
         try:
             nvmlInit()
         except NVMLError as e:
