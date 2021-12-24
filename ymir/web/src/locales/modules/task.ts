@@ -84,11 +84,11 @@ const task = {
   "task.filter.form.datasets.required": { cn: "数据集不能为空，请选择数据集", en: "Datasets is required, please select dataset more than one", },
   "task.filter.form.datasets.placeholder": { cn: "请选择数据集", en: "Select/Filter Datasets", },
 
-  "task.filter.form.filter.datasets.placeholder": { cn: "请选择需要筛选的数据集，可多选", en: "Select/Filter Datasets", },
-  "task.filter.form.training.datasets.placeholder": { cn: "请选择用于训练的数据集，可多选", en: "Select/Filter Datasets", },
-  "task.filter.form.test.datasets.placeholder": { cn: "请选择用于测试的数据集，可多选", en: "Select/Filter Datasets", },
-  "task.filter.form.mining.datasets.placeholder": { cn: "请选择用于挖掘的数据集，可多选", en: "Select/Filter Datasets", },
-  "task.filter.form.exclude.datasets.placeholder": { cn: "请选择想要排除的数据，可多选", en: "Select/Filter Datasets", },
+  "task.filter.form.filter.datasets.placeholder": { cn: "请选择需要筛选的数据集，可多选", en: "Please select the dataset to be filtered, multi-selection support", },
+  "task.filter.form.training.datasets.placeholder": { cn: "请选择用于训练的数据集，可多选", en: "Training set context: Please select the dataset to be used for training, multi-selection support", },
+  "task.filter.form.test.datasets.placeholder": { cn: "请选择用于测试的数据集，可多选", en: "Please select the dataset to be used for testing, multi-selection support", },
+  "task.filter.form.mining.datasets.placeholder": { cn: "请选择用于挖掘的数据集，可多选", en: "", },
+  "task.filter.form.exclude.datasets.placeholder": { cn: "请选择想要排除的数据，可多选", en: "Please select the dataset you want to exclude, multi-selection support", },
   
   "task.filter.form.include.label": { cn: "筛选标签", en: "Keywords", },
   "task.filter.form.include.required": { cn: "请选择筛选标签", en: "Please select keywords for filter", },
@@ -97,7 +97,9 @@ const task = {
   "task.train.form.trainsets.label": { cn: "训练集", en: "Train Sets", },
   "task.train.form.testsets.label": { cn: "测试集", en: "Test Sets", },
   "task.train.form.keywords.label": { cn: "训练目标", en: "Train Classes", },
-  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Train Classes is both in train sets and test sets", },
+
+  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Training target context: Please select target tags to be used for model training, multi-selection support", },
+
   "task.train.form.keywords.required": { cn: "请选择训练目标", en: "Please select your train classes", },
   "task.train.form.traintype.label": { cn: "训练类型", en: "Train Type", },
   "task.train.form.network.label": { cn: "算法框架", en: "Network", },
@@ -114,7 +116,7 @@ const task = {
   "task.mining.form.model.label": { cn: "模型", en: "Model", },
   "task.mining.form.model.required": { cn: "请选择模型", en: "Plese select a model", },
 
-  "task.mining.form.mining.model.required": { cn: "请选择用于数据挖掘的模型", en: "Plese select a model", },
+  "task.mining.form.mining.model.required": { cn: "请选择用于数据挖掘的模型", en: "please select the model used for data mining", },
 
   "task.mining.form.algo.label": { cn: "挖掘算法", en: "Mining Algorithm", },
   "task.mining.form.strategy.label": { cn: "筛选策略", en: "Filter Strategy", },
@@ -130,8 +132,8 @@ const task = {
   "task.label.form.member.required": { cn: "请输入标注人员的邮箱", en: "Please enter labeller's email", },
   "task.label.form.member.placeholder": { cn: "请输入标注人员的邮箱", en: "Please input labeller's email", },
 
-  "task.label.form.member.labelplatacc": { cn: "请输入当前用户在标注平台上的注册邮箱", en: "Please input labeller's email", },
-  "task.label.form.member.labeltarget": { cn: "请选择用于标注的目标标签，可多选", en: "Please input labeller's email", },
+  "task.label.form.member.labelplatacc": { cn: "请输入当前用户在标注平台上的注册邮箱", en: "Please enter the current user's registered email on the labeling platform", },
+  "task.label.form.member.labeltarget": { cn: "请选择用于标注的目标标签，可多选", en: "Please select target tags for marking, multiple options available", },
 
   "task.label.form.member.email.msg": { cn: "请输入正确的邮箱格式", en: "Please input valid EMAIL", },
   "task.label.form.target.label": { cn: "标注目标", en: "Label Classes", },
