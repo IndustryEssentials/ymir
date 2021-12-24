@@ -253,3 +253,8 @@ class DuplicateDockerImageError(DuplicateError):
 class FailedtoShareDockerImage(APIError):
     code = error_codes.FAILED_TO_SHARE_DOCKER_IMAGE
     message = "Failed to Share Docker Image"
+
+
+class DockerImageHavingRelationships(APIError):
+    code = error_codes.DOCKER_IMAGE_HAVING_RELATIONSHIPS
+    message = "Docker Image Has Reminding Relationships"
