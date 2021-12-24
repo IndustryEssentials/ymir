@@ -44,8 +44,8 @@ def call_inference(
         logger.error("Failed to find model id: %s", inference_in.model_id)
         raise ModelNotFound()
 
-    runtime = crud.runtime.get_inference_runtime(db)
-    if not runtime:
+    docker_image = crud.docker_image.get_inference_docker_image(db)
+    if not docker_image:
         logger.error("Failed to find inference model config")
         raise InvalidInferenceConfig()
 
@@ -64,7 +64,7 @@ def call_inference(
         args={
             "model_hash": model.hash,
             "asset_dir": asset_dir,
-            "config": runtime.config,
+            "config": docker_image.config,
         },
     )
     try:
