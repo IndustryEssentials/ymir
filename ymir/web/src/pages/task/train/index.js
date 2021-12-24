@@ -19,7 +19,8 @@ import EmptyState from '@/components/empty/dataset'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { AddDelTwoIcon } from '@/components/common/icons'
-import { randomNumber } from "@/utils/number"
+import { randomNumber } from "../../../utils/number"
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
 
@@ -189,17 +190,20 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
             size='large'
             colon={false}
           >
-            <Form.Item
-              label={t('task.filter.form.name.label')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
-                { type: 'string', min: 2, max: 20 },
-              ]}
-            >
-              <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
-            </Form.Item>
+            
+              <Form.Item
+                label={t('task.filter.form.name.label')}
+                name='name'
+                rules={[
+                  { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
+                  { type: 'string', min: 2, max: 20 },
+                ]}
+              >
+                <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
+              </Form.Item>
+
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+            
               <Form.Item
                 label={t('task.train.form.trainsets.label')}
                 required
@@ -209,7 +213,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                 ]}
               >
                 <Select
-                  placeholder={t('task.filter.form.datasets.placeholder')}
+                  placeholder={t('task.filter.form.training.datasets.placeholder')}
                   mode='multiple'
                   filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                   onChange={trainSetChange}
@@ -222,97 +226,119 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                   ) : null)}
                 </Select>
               </Form.Item>
+              <Tip content={t('tip.task.filter.testsets')}>
+                <Form.Item
+                  label={t('task.train.form.testsets.label')}
+                  name="validation_sets"
+                  rules={[
+                    { required: true, message: t('task.filter.form.datasets.required') },
+                  ]}
+                >
+                  <Select
+                    placeholder={t('task.filter.form.test.datasets.placeholder')}
+                    mode='multiple'
+                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    onChange={validationSetChange}
+                    showArrow
+                  >
+                    {datasets.map(item => trainSets.indexOf(item.id) < 0 ? (
+                      <Option value={item.id} key={item.name}>
+                        {item.name}({item.asset_count})
+                      </Option>
+                    ) : null)}
+                  </Select>
+                </Form.Item>
+              </Tip>
+            </ConfigProvider>
+
+            
+              <Form.Item name='strategy'
+                hidden={trainSets.length < 2 && validationSets.length < 2}
+                initialValue={2} label={t('task.train.form.repeatdata.label')}>
+                <Radio.Group options={[
+                  { value: 2, label: t('task.train.form.repeatdata.latest') },
+                  { value: 3, label: t('task.train.form.repeatdata.original') },
+                  { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                ]} />
+              </Form.Item>
+              
+              <Form.Item wrapperCol={{ offset: 4, span: 12 }} hidden={![...trainSets, ...validationSets].length}>
+                <TripleRates
+                  data={datasets}
+                  parts={[
+                    { ids: trainSets, label: t('task.train.form.trainsets.label') },
+                    { ids: validationSets, label: t('task.train.form.testsets.label') },
+                  ]}
+                ></TripleRates>
+              </Form.Item>
+
+            <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item
-                label={t('task.train.form.testsets.label')}
-                name="validation_sets"
+                label={t('task.train.form.keywords.label')}
+                // next version
+                // >
+                //   <Form.Item
+                name="keywords"
                 rules={[
-                  { required: true, message: t('task.filter.form.datasets.required') },
+                  { required: true, message: t('task.train.form.keywords.required') }
                 ]}
               >
-                <Select
-                  placeholder={t('task.filter.form.datasets.placeholder')}
-                  mode='multiple'
-                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                  onChange={validationSetChange}
-                  showArrow
-                >
-                  {datasets.map(item => trainSets.indexOf(item.id) < 0 ? (
-                    <Option value={item.id} key={item.name}>
-                      {item.name}({item.asset_count})
+                <Select mode="multiple" showArrow placeholder={t('task.train.keywords.placeholder')}>
+                  {keywords.map(keyword => (
+                    <Option key={keyword} value={keyword}>
+                      {keyword}
                     </Option>
-                  ) : null)}
+                  ))}
                 </Select>
+                {/* next version */}
+                {/* </Form.Item>
+                <div className={styles.formItemLowLevel}><span className={styles.label}>{t('常用标签: ')}</span><Form.Item name='label_strategy' colon={true} initialValue={0} noStyle>
+                  <Tag>cat</Tag>
+                  <Tag>dog</Tag>
+                  <Tag>person</Tag>
+                  <Tag>pig</Tag>
+                </Form.Item></div> */}
               </Form.Item>
-            </ConfigProvider>
-            <Form.Item name='strategy'
-              hidden={trainSets.length < 2 && validationSets.length < 2}
-              initialValue={2} label={t('task.train.form.repeatdata.label')}>
-              <Radio.Group options={[
-                { value: 2, label: t('task.train.form.repeatdata.latest') },
-                { value: 3, label: t('task.train.form.repeatdata.original') },
-                { value: 1, label: t('task.train.form.repeatdata.terminate') },
-              ]} />
-            </Form.Item>
-            <Form.Item wrapperCol={{ offset: 4, span: 12 }} hidden={![...trainSets, ...validationSets].length}>
-              <TripleRates
-                data={datasets}
-                parts={[
-                  { ids: trainSets, label: t('task.train.form.trainsets.label') },
-                  { ids: validationSets, label: t('task.train.form.testsets.label') },
-                ]}
-              ></TripleRates>
-            </Form.Item>
-            <Form.Item
-              label={t('task.train.form.keywords.label')}
-              // next version
-              // >
-              //   <Form.Item
-              name="keywords"
-              rules={[
-                { required: true, message: t('task.train.form.keywords.required') }
-              ]}
-            >
-              <Select mode="multiple" showArrow placeholder={t('task.train.keywords.placeholder')}>
-                {keywords.map(keyword => (
-                  <Option key={keyword} value={keyword}>
-                    {keyword}
-                  </Option>
-                ))}
-              </Select>
-              {/* next version */}
-              {/* </Form.Item>
-              <div className={styles.formItemLowLevel}><span className={styles.label}>{t('常用标签: ')}</span><Form.Item name='label_strategy' colon={true} initialValue={0} noStyle>
-                <Tag>cat</Tag>
-                <Tag>dog</Tag>
-                <Tag>person</Tag>
-                <Tag>pig</Tag>
-              </Form.Item></div> */}
-            </Form.Item>
-            <Form.Item
-              label={t('task.train.form.traintype.label')}
-              name="train_type"
-            >
-              {renderRadio(TrainType())}
-            </Form.Item>
-            <Form.Item
-              label={t('task.train.form.network.label')}
-              name="network"
-            >
-              {renderRadio(FrameworkType())}
-            </Form.Item>
-            <Form.Item
-              label={t('task.train.form.backbone.label')}
-              name="backbone"
-            >
-              {renderRadio(Backbone())}
-            </Form.Item>
-            <Form.Item
-              label={t('task.gpu.count')}
-              name="gpu_count"
-              rules={[{ type: 'number', min: 1, max: 1000 }]}
-            >
-              <InputNumber min={1} max={1000} precision={0} />
-            </Form.Item>
+            </Tip>
+
+            {/* <Tip content={t('tip.task.filter.traintype')}> */}
+              <Form.Item
+                label={t('task.train.form.traintype.label')}
+                name="train_type"
+              >
+                {renderRadio(TrainType())}
+              </Form.Item>
+            {/* </Tip> */}
+
+            {/* <Tip content={t('tip.task.filter.network')}> */}
+              <Form.Item
+                label={t('task.train.form.network.label')}
+                name="network"
+              >
+                {renderRadio(FrameworkType())}
+              </Form.Item>
+            {/* </Tip> */}
+
+            {/* <Tip content={t('tip.task.filter.backbone')}> */}
+              <Form.Item
+                label={t('task.train.form.backbone.label')}
+                name="backbone"
+              >
+                {renderRadio(Backbone())}
+              </Form.Item>
+            {/* </Tip> */}
+
+            <Tip content={t('tip.task.filter.gpucount')}>
+              <Form.Item
+                label={t('task.gpu.count')}
+                name="gpu_count"
+                rules={[{ type: 'number', min: 1, max: 1000 }]}
+              >
+                <InputNumber min={1} max={1000} precision={0} />
+              </Form.Item>
+            </Tip>
+
+            <Tip content={t('tip.task.filter.hyperparams')}>
             <Form.Item
               label={t('task.train.form.hyperparam.label')}
               rules={[{ validator: validHyperparam }]}
@@ -379,6 +405,8 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
               </Form.List> : null}
 
             </Form.Item>
+            </Tip>
+
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>

@@ -1,5 +1,5 @@
-import json
 import enum
+import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
@@ -54,6 +54,9 @@ class TaskParameter(BaseModel):
     mining_algorithm: Optional[str]
     top_k: Optional[int]
     generate_annotations: Optional[bool]
+
+    # training & mining & infer
+    docker_image: Optional[str]
 
 
 class TaskCreate(TaskBase):

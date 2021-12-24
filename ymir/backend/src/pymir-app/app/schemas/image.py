@@ -16,7 +16,7 @@ from app.schemas.common import (
 
 class DockerImageBase(BaseModel):
     name: str
-    type: Optional[DockerImageType]
+    type: Optional[DockerImageType] = DockerImageType.unknown
     state: Optional[DockerImageState] = DockerImageState.pending
     hash: Optional[str]
     url: Optional[str]
