@@ -22,7 +22,7 @@ class GPUInfo:
         try:
             nvmlInit()
         except NVMLError as e:
-            logger.warning(f"No GPU {e}")
+            logger.warning(f"No NVDIA GPU Driver {e}")
             sentry_sdk.capture_exception(e)
 
             return gpu_info
