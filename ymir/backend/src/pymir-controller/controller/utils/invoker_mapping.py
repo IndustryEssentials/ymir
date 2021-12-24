@@ -38,5 +38,5 @@ RequestTypeToInvoker = {
     backend_pb2.CMD_LABEL_GET: invoker_cmd_label_get.LabelGetInvoker,
     backend_pb2.CMD_TERMINATE: invoker_cmd_terminate.CMDTerminateInvoker,
     backend_pb2.CMD_PULL_IMAGE: invoker_cmd_pull_image.ImageHandler,
-    backend_pb2.CMD_GPU_GET: invoker_cmd_gpu.GPUInfoInvoker
+    backend_pb2.CMD_GPU_INFO_GET: invoker_cmd_gpu.GPUInfoInvoker
 }
