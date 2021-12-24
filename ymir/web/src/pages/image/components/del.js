@@ -16,7 +16,7 @@ const Del = forwardRef(({ delImage, ok = () => {} }, ref) => {
       onOk: async () => {
         const result = await delImage(id)
         if (result) {
-          ok()
+          ok(id)
         }
       },
       okText: t('common.del'),

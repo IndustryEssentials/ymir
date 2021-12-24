@@ -1,6 +1,7 @@
 import t from '@/utils/t'
 
 export const TYPES = Object.freeze({
+  UNKOWN: 0,
   TRAINING: 1,
   MINING: 2,
   INFERENCE: 9,
@@ -17,6 +18,7 @@ export const getImageTypeLabel = (type: number | null) => {
     return ''
   }
   const labels = {
+    [TYPES.UNKOWN]: t('image.type.unkown'),
     [TYPES.TRAINING]: t('image.type.train'),
     [TYPES.MINING]: t('image.type.mining'),
     [TYPES.INFERENCE]: t('image.type.inference'),
@@ -25,6 +27,11 @@ export const getImageTypeLabel = (type: number | null) => {
   return labels[type]
 }
 
+/**
+ * get image state label, default: ''
+ * @param {number} state image state
+ * @returns 
+ */
 export const getImageStateLabel = (state: number | undefined) => {
   if (!state) {
     return ''

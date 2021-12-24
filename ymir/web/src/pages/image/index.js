@@ -17,8 +17,8 @@ const tabsTitle = [
 ]
 
 const initQuery = {
-  name: null,
-  type: null,
+  name: undefined,
+  type: undefined,
   offset: 0,
   limit: 20,
 }
@@ -78,7 +78,7 @@ function Image({ role, getImages, delImage, updateImage }) {
       name='queryForm'
       form={form}
       layout="inline"
-      initialValues={{ name: keyword || "", type: null }}
+      initialValues={{ name: keyword || "" }}
       onValuesChange={search}
       size='large'
       colon={false}

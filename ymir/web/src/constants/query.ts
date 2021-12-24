@@ -43,7 +43,7 @@ export const getDatasetTypes = () => [
 ]
 
 export const getImageTypes = () => [
-  { key: "all", value: null, label: t("common.all") },
+  { key: "all", value: undefined, label: t("common.all") },
   { key: "train", value: TYPES.TRAINING, label: t("image.type.train") },
   { key: "mining", value: TYPES.MINING, label: t("image.type.mining") },
 ]

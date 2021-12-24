@@ -1,8 +1,8 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
-import { Link, useHistory, useParams } from "umi"
-import { Form, List, Input, Menu, Modal, Radio, Card, Skeleton, Space, Button, Pagination, Col, Row, message, } from "antd"
+import { useHistory } from "umi"
+import { List, Skeleton, Space, Button, Pagination, Col, Row, } from "antd"
 
 import t from "@/utils/t"
 import { ROLES } from '@/constants/user'
@@ -15,15 +15,13 @@ import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIco
 import ImagesLink from "./imagesLink"
 
 const initQuery = {
-  name: null,
-  type: null,
+  name: undefined,
+  type: undefined,
   offset: 0,
   limit: 20,
 }
 
-const { useForm } = Form
-
-const ImageList = ({ username, role, filter, getImages, delImage, updateImage }) => {
+const ImageList = ({ role, filter, getImages }) => {
 
   const history = useHistory()
   const [images, setImages] = useState([])
@@ -111,8 +109,8 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
     delRef.current.del(id, name)
   }
 
-  const delOk = () => {
-    setImages(images.filter((model) => model.id !== id))
+  const delOk = (id) => {
+    setImages(images.filter(image => image.id !== id))
     setTotal(old => old - 1)
     getData()
   }
