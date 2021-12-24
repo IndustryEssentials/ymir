@@ -24,7 +24,7 @@ const Add = ({ getImage, createImage, updateImage }) => {
   useEffect(() => {
     setEdit(!!id)
 
-    fetchImage()
+    id && fetchImage()
   }, [id])
 
   useEffect(() => {

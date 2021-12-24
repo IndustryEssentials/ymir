@@ -9,9 +9,11 @@ import { ROLES } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
 import confirm from '@/components/common/dangerConfirm'
 import ShareModal from "./share"
-import LinkModal from './link'
+import LinkModal from './relate'
+import Del from './del'
 import s from "./list.less"
 import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/icons"
+import ImagesLink from "./imagesLink"
 
 const initQuery = {
   name: null,
@@ -30,6 +32,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
   const [query, setQuery] = useState(initQuery)
   const shareModalRef = useRef(null)
   const linkModalRef = useRef(null)
+  const delRef = useRef(null)
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -67,14 +70,14 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
         key: "link",
         label: t("image.action.link"),
         onclick: () => link(id, name, related),
-        hidden: () => !isTrain(type) || !isDone(state),
+        hidden: () => (!isTrain(type) || !isDone(state)),
         icon: <LinkIcon />,
       },
       {
         key: "share",
         label: t("image.action.share"),
         onclick: () => share(id, name),
-        hidden: () => !isDone(),
+        hidden: () => !isDone(state),
         icon: <ShareIcon />,
       },
       {
@@ -94,7 +97,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
     const detail = {
       key: "detail",
       label: t("image.action.detail"),
-      onclick: () => history.push(`/home/model/verify/${id}`),
+      onclick: () => history.push(`/home/image/detail/${id}`),
       icon: <MoreIcon />,
     }
     return isAdmin() ? [...menus, detail] : [detail]
@@ -106,18 +109,13 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
   }
 
   const del = (id, name) => {
-    confirm({
-      content: t("image.del.confirm.content", { name }),
-      onOk: async () => {
-        const result = await delImage(id)
-        if (result) {
-          setImages(images.filter((model) => model.id !== id))
-          setTotal(old => old - 1)
-          getData()
-        }
-      },
-      okText: t('common.del'),
-    })
+    delRef.current.del(id, name)
+  }
+
+  const delOk = () => {
+    setImages(images.filter((model) => model.id !== id))
+    setTotal(old => old - 1)
+    getData()
   }
 
   const share = (id, name) => {
@@ -143,7 +141,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
   const more = (item) => {
     return (
       <Space>
-        {moreList(item).map((action) => (
+        {moreList(item).filter(menu => !(menu.hidden && menu.hidden())).map((action) => (
           <a
             type='link'
             className={action.className}
@@ -174,7 +172,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.url')}</span>{item.url}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
       </Space>
-      <div className={s.related}>{t('image.list.item.related')}{item?.related}</div>
+      { isTrain(item.type) && item.related?.length ? <div className={s.related}><span>{t('image.list.item.related')}</span><ImagesLink images={item.related} /></div> : null }
     </Col>
       <Col>
         <Button key={type} onClick={() => history.push(`/home/task/${type}?image=${item.id}`)}>
@@ -205,6 +203,7 @@ const ImageList = ({ username, role, filter, getImages, delImage, updateImage })
         showQuickJumper showSizeChanger />
       <ShareModal ref={shareModalRef} />
       <LinkModal ref={linkModalRef} />
+      <Del ref={delRef} ok={delOk} />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Select } from "antd"
+import { Modal, Form, Input, Select, message } from "antd"
 import { forwardRef, useEffect, useState, useImperativeHandle } from "react"
 import { connect } from 'dva'
 
@@ -6,7 +6,7 @@ import t from '@/utils/t'
 import { TYPES, STATES } from '@/constants/image'
 
 const { useForm } = Form
-const LinkModal = forwardRef(({ getMiningImage, link, }, ref) => {
+const RelateModal = forwardRef(({ getMiningImage, link, }, ref) => {
   const [visible, setVisible] = useState(false)
   const [links, setLinks] = useState([])
   const [images, setImages] = useState([])
@@ -24,6 +24,7 @@ const LinkModal = forwardRef(({ getMiningImage, link, }, ref) => {
 
   useImperativeHandle(ref, () => ({
     show: ({ id, name, related }) => {
+      console.log('image name: ', id, name, related)
       setVisible(true)
       setId(id)
       setImageName(name)
@@ -61,7 +62,7 @@ const LinkModal = forwardRef(({ getMiningImage, link, }, ref) => {
   >
     <Form.Item label={t('image.link.name')}>{imageName}</Form.Item>
     <Form.Item
-      name="links"
+      name="relations"
       label={t('image.links.title')}
     >
       <Select allowClear placeholder={t('image.links.placeholder')} mode="multiple" options={images.map(image => ({ value: image.id, label: image.name }))}>
@@ -98,4 +99,4 @@ const actions = (dispatch) => {
     }
   }
 }
-export default connect(props, actions, null, { forwardRef: true })(LinkModal)
+export default connect(props, actions, null, { forwardRef: true })(RelateModal)

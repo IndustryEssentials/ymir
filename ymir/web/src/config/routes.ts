@@ -131,7 +131,7 @@ const Routes = [
         title: "images.center.title",
       },
       {
-        path: "/home/image/detail",
+        path: "/home/image/detail/:id",
         name: "imageDetail",
         component: "@/pages/image/detail",
         title: "image.title",

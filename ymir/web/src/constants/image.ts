@@ -12,10 +12,27 @@ export const STATES = Object.freeze({
   ERROR: 4,
 })
 
-export const getImageTypeLabel = (type: number | undefined) => {
-  const labels = Object.freeze({
+export const getImageTypeLabel = (type: number | null) => {
+  if (!type) {
+    return ''
+  }
+  const labels = {
     [TYPES.TRAINING]: t('image.type.train'),
     [TYPES.MINING]: t('image.type.mining'),
-  })
-  return typeof type !== 'undefined' ? labels[type] : labels
+    [TYPES.INFERENCE]: t('image.type.inference'),
+  }
+
+  return labels[type]
+}
+
+export const getImageStateLabel = (state: number | undefined) => {
+  if (!state) {
+    return ''
+  }
+  const labels = {
+    [STATES.PENDING]: t('image.state.pending'),
+    [STATES.DONE]: t('image.state.done'),
+    [STATES.ERROR]: t('image.state.error'),
+  }
+  return labels[state]
 }

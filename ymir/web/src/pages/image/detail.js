@@ -1,59 +1,63 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Descriptions, List, Space, Tag, Card, Button, Row, Col } from "antd"
 import { connect } from 'dva'
 import { useParams, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
 import Breadcrumbs from "../../components/common/breadcrumb"
-import TripleRates from "@/components/form/tripleRates"
+import { TYPES, STATES, getImageTypeLabel, getImageStateLabel } from '@/constants/image'
+import { ROLES } from '@/constants/user'
+import LinkModal from "./components/relate"
+import ShareModal from "./components/share"
+import Del from './components/del'
 import styles from "./detail.less"
+import { EditIcon, VectorIcon, TrainIcon, } from '@/components/common/icons'
+import ImagesLink from "./components/imagesLink"
 
 const { Item } = Descriptions
 
-function ModelDetail({ getModel }) {
+function ImageDetail({ role, getImage }) {
   const { id } = useParams()
   const history = useHistory()
-  const [model, setModel] = useState({ id })
+  const [image, setImage] = useState({ id })
+  const shareModalRef = useRef(null)
+  const linkModalRef = useRef(null)
+  const delRef = useRef(null)
 
   useEffect(async () => {
-    const result = await getModel(id)
+    const result = await getImage(id)
     if (result) {
-      // console.log('model: ', result)
-      setModel(result)
+      // console.log('image: ', result)
+      setImage(result)
     }
   }, [id])
 
-  const percentFormat = (value) => {
-    return Number(value) * 100 + '%'
+  function relateImage() {
+    const { name, related } = image
+    linkModalRef.current.show({ id, name, related })
+  }
+  const share = () => {
+    shareModalRef.current.show(id, image.name)
   }
 
-  function renderDataset(sets = []) {
-    if (!sets.length) {
-      return
-    }
-    return (
-      <Space>
-        { sets.map(item => item ? <Link key={item.id} to={`/home/dataset/detail/${item.id}`}>{item.name}</Link> : null) }
-        <span>
-          {t('dataset.detail.pager.total', { total: sets.reduce((prev, curr) => prev + curr.asset_count, 0) })}
-        </span>
-      </Space>
-    )
+  const del = () => {
+    delRef.current.del(id, image.name)
   }
 
-  function renderDatasetPercent() {
-    const trainSets = (model?.trainSets || []).map(ds => ds.id)
-    const testSets = (model?.testSets || []).map(ds => ds.id)
-    const sets = [...(model?.trainSets || []), ...(model?.testSets || [])]
-    return (
-      <TripleRates
-        data={sets}
-        parts={[
-          { ids: trainSets, label: t('task.train.form.trainsets.label') },
-          { ids: testSets, label: t('task.train.form.testsets.label') },
-        ]}
-      ></TripleRates>
-    )
+  const delOk = () => {
+    history.push('/home/image')
+  }
+
+  function isAdmin() {
+    return role > ROLES.USER
+  }
+
+  function isTrain(type) {
+    return type === TYPES.TRAINING
+  }
+
+  function isDone(state) {
+    return state === STATES.DONE
   }
 
   function renderConfig(config = {}) {
@@ -63,46 +67,51 @@ function ModelDetail({ getModel }) {
     </Row>)
   }
 
-  function renderTitle () {
+  function renderTaskBtn() {
+    const type = isTrain(image.type) ? 'train' : 'mining'
+    return <Button onClick={() => history.push(`/home/task/${type}?image=${id}`)}>
+      {isTrain(image.type) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
+    </Button>
+  }
+
+  function renderTitle() {
     return (
       <Row>
-        <Col flex={1}>{model.name}</Col>
+        <Col flex={1}>{image.name} <Link to={`/home/image/add/${id}`}><EditIcon /></Link></Col>
         <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
       </Row>
     )
   }
 
   return (
-    <div className={styles.modelDetail}>
-      <Breadcrumbs suffix={model.name} />
+    <div className={styles.imageDetail}>
+      <Breadcrumbs />
       <Card title={renderTitle()}>
-      {/* <h3 className={styles.title}>{t("dataset.detail.title")}</h3> */}
-      <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')}>
-        <Item label={t('model.detail.label.name')}>{model.name}</Item>
-        <Item label={t('model.detail.label.id')}>{model.id}</Item>
-        <Item label={t('model.detail.label.map')}>{percentFormat(model.map)}</Item>
-        <Item label={t('model.detail.label.source')}><Link to={`/home/task/detail/${model.task_id}`}>{model.task_name}</Link></Item>
-        <Item label={t('model.detail.label.training_dataset')} span={2}>
-          {renderDataset(model?.trainSets)}
-        </Item>
-        <Item label={t('model.detail.label.verify_dataset')} span={2}>
-          {renderDataset(model?.testSets)}
-        </Item>
-        <Item label={t('model.detail.label.dataset_percent')} span={2}>{renderDatasetPercent()}</Item>
-        <Item label={t('model.detail.label.train_type')} span={2}>{model.parameters?.train_type || 'Object Detection'}</Item>
-        <Item label={t('model.detail.label.train_goal')} span={2}>{model.keywords?.map(keyword => (<Tag key={keyword}>{keyword}</Tag>))}</Item>
-        <Item label={t('model.detail.label.framework')}>{model.parameters?.network} </Item>
-        <Item label={t('model.detail.label.backbone')}>{model.parameters?.backbone}</Item>
-        {/* <Item label={t('model.detail.label.hyperparams')}>
-          {renderConfig(model.config)}
-        </Item> */}
-        <Item label={''} span={2}><Space>
-          <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button>
-          <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/mining?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
-        </Space></Item>
-      </Descriptions>
+        <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('image.detail.title')}>
+          <Item label={t('image.detail.label.name')}>{image.name}</Item>
+          <Item label={t('image.detail.label.type')}>{getImageTypeLabel(image.type)}</Item>
+          <Item label={t('image.detail.label.url')}>{image.url}</Item>
+          <Item label={t('image.detail.label.share')}>{image.is_shared ? t('common.yes') : t('common.no')}</Item>
+          <Item label={t('image.detail.label.related')} span={2}>
+            <Row><Col flex={1}><ImagesLink images={image.related} /></Col>
+              {isAdmin() ? <Col><Button type="primary" onClick={() => relateImage()}>{t('image.detail.relate')}</Button></Col> : null}
+            </Row>
+          </Item>
+          <Item label={t('image.detail.label.config')} span={2}>
+            {renderConfig(image.config)}
+          </Item>
+          <Item label={t('image.detail.label.state')} span={2}>{getImageStateLabel(image.state)}</Item>
+          <Item label={''} span={2}><Space>
+            {renderTaskBtn()}
+            {isAdmin() ? <>
+              <Button onClick={share}>{t('image.action.share')}</Button>
+              <Button onClick={del}>{t('common.del')}</Button> </> : null}
+          </Space></Item>
+        </Descriptions>
       </Card>
+      <LinkModal ref={linkModalRef} />
+      <ShareModal ref={shareModalRef} />
+      <Del ref={delRef} ok={delOk} />
     </div>
   )
 }
@@ -110,25 +119,19 @@ function ModelDetail({ getModel }) {
 
 const props = (state) => {
   return {
-    logined: state.user.logined,
+    role: state.user.role,
   }
 }
 
 const actions = (dispatch) => {
   return {
-    getModel(payload) {
+    getImage(id) {
       return dispatch({
-        type: 'model/getModel',
-        payload,
-      })
-    },
-    batchDatasets(ids) {
-      return dispatch({
-        type: 'dataset/batchDatasets',
-        payload: ids,
+        type: 'image/getImage',
+        payload: id,
       })
     },
   }
 }
 
-export default connect(props, actions)(ModelDetail)
+export default connect(props, actions)(ImageDetail)
