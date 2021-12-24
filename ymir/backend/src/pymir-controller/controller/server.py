@@ -68,7 +68,10 @@ def path_constructor(loader: Any, node: Any) -> str:
     if not match:
         return ''
     env_var = match.group()[2:-1]
-    return os.environ.get(env_var) + value[match.end():]
+    env_value = os.environ.get(env_var)
+    if not env_value:
+        logging.info(f"env empty for key: {env_var}")
+    return env_value + value[match.end():]
 
 
 def parse_config_file(config_file: str) -> Any:
@@ -92,6 +95,7 @@ def main(main_args: Any) -> int:
     sentry_sdk.init(os.environ.get("CONTROLLER_SENTRY_DSN", None))
 
     server_config = parse_config_file(main_args.config_file)
+    logging.info(f"server config: {server_config}")
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)
 

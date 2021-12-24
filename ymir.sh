@@ -21,14 +21,14 @@ stop
 }
 
 choose_yes () {
-sed -i '' "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE}
+sed -i "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE}
 
 uuid=$(uuidgen)
-sed -i '' "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" .env
+sed -i "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" .env
 }
 
 choose_no () {
-sed -i '' "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE}
+sed -i "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE}
 }
 
 check_permission() {
@@ -48,7 +48,7 @@ done
 }
 
 start() {
-# check_permission
+check_permission
 pre_start
 docker-compose up -d
 }

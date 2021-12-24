@@ -26,7 +26,7 @@ services:
       - TENSORBOARD_ROOT=/ymir-tensorboard-logs
     volumes:
       - "${YMIR_PATH}/ymir-tensorboard-logs:/ymir-tensorboard-logs"
-    command: tensorboard --log-dir /ymir-tensorboard-logs --port ${TENSORBOARD_OPEN_PORT}
+    command: tensorboard --logdir /ymir-tensorboard-logs --port ${TENSORBOARD_OPEN_PORT} --bind_all
     restart: on-failure
     networks:
       - extnetwork

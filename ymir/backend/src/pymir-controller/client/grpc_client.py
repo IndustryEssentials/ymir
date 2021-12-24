@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import grpc
 from google.protobuf import json_format
@@ -73,7 +73,7 @@ def _build_task_filter_req(args: Dict) -> backend_pb2.GeneralReq:
     return req_create_task
 
 
-def _build_task_training_req(args: Dict) -> backend_pb2.GeneralReq:
+def _build_task_training_req(args: Dict) -> Tuple[backend_pb2.GeneralReq, str, str]:
     train_task_req = backend_pb2.TaskReqTraining()
     for in_dataset_id in args['in_dataset_ids']:
         train_task_req.in_dataset_types.append(revs.build_tvt_dataset_id(in_dataset_id))
@@ -84,7 +84,10 @@ def _build_task_training_req(args: Dict) -> backend_pb2.GeneralReq:
     req_create_task.no_task_monitor = True
     req_create_task.training.CopyFrom(train_task_req)
 
-    return req_create_task
+    with open('/home/zhaozhiwei/datasets/training-config.yaml', 'r') as f:
+        config_str = f.read()
+
+    return req_create_task, config_str, 'yolov4-training:test'
 
 
 def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
@@ -136,12 +139,27 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
     req_name = "_build_task_{}_req".format(args["task_type"])
     req_func = getattr(sys.modules[__name__], req_name)
     task_req = req_func(args)
-    req = invoker_call.make_cmd_request(user_id=args["user"],
-                                        repo_id=args["repo"],
-                                        task_id=args["tid"],
-                                        model_hash=args["model_hash"],
-                                        req_type=backend_pb2.TASK_CREATE,
-                                        req_create_task=task_req)
+    if isinstance(task_req, tuple):
+        req = invoker_call.make_cmd_request(user_id=args["user"],
+                                            repo_id=args["repo"],
+                                            task_id=args["tid"],
+                                            model_hash=args["model_hash"],
+                                            req_type=backend_pb2.TASK_CREATE,
+                                            req_create_task=task_req[0],
+                                            executor_instance=args['tid'],
+                                            merge_strategy=1,
+                                            singleton_op_config=task_req[1],
+                                            singleton_op=task_req[2])
+    else:
+        req = invoker_call.make_cmd_request(user_id=args["user"],
+                                            repo_id=args["repo"],
+                                            task_id=args["tid"],
+                                            model_hash=args["model_hash"],
+                                            req_type=backend_pb2.TASK_CREATE,
+                                            req_create_task=task_req,
+                                            executor_instance=args['tid'],
+                                            merge_strategy=1,
+                                            singleton_op_config='')
     logging.info(json_format.MessageToDict(req, preserving_proto_field_name=True, use_integers_for_enums=True))
     return client.process_req(req)
 
@@ -166,7 +184,7 @@ def get_parser() -> Any:
     common_group.add_argument(
         "-g",
         "--grpc",
-        default="127.0.0.1:50051",
+        default="127.0.0.1:50066",
         type=str,
         help="grpc channel",
     )
@@ -223,6 +241,7 @@ def run() -> None:
         print("invalid argument, try -h to get more info")
         return
 
+    logging.info(f"args: {args}")
     client = ControllerClient(args.grpc, args.repo, args.user)
     args.func(client, args=args)
 
