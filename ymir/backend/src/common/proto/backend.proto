@@ -89,6 +89,7 @@ enum RequestType {
     CMD_TERMINATE = 14;
     CMD_LABLE_TASK_TERMINATE = 15 [deprecated = true];
     CMD_PULL_IMAGE = 16;
+    CMD_GPU_INFO_GET = 17;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -144,6 +145,7 @@ message GeneralResp {
     repeated string csv_labels = 5;
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
+    int32 available_gpu_counts = 8;
     RespGetTaskInfo resp_get_task_info = 1000;
     RespCMDInference detection = 1001;
 }
