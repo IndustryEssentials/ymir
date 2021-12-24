@@ -133,7 +133,7 @@ const task = {
   "task.label.form.member.placeholder": { cn: "请输入标注人员的邮箱", en: "Please input labeller's email", },
 
   "task.label.form.member.labelplatacc": { cn: "请输入当前用户在标注平台上的注册邮箱", en: "Please enter the current user's registered email on the labeling platform", },
-  "task.label.form.member.labeltarget": { cn: "请选择用于标注的目标标签，可多选", en: "Please select target tags for marking, multiple options available", },
+  "task.label.form.member.labeltarget": { cn: "请选择用于标注的目标标签，可多选", en: "Please select target keyword for marking, multiple options available", },
 
   "task.label.form.member.email.msg": { cn: "请输入正确的邮箱格式", en: "Please input valid EMAIL", },
   "task.label.form.target.label": { cn: "标注目标", en: "Label Classes", },

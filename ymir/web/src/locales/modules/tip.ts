@@ -1,11 +1,11 @@
 const tip = {
   // 新建筛选标签
-  "tip.task.filter.includelable": { cn: "期望生成的数据集包含选中的标签值", en: "Filtering tips: the generated dataset  expect to contain the selected tags", },
-  "tip.task.filter.excludelable": { cn: "期望生成的数据集不包含选中的标签值", en: "Excluding tips: the generated dataset expect to not contain the selected tags", },
+  "tip.task.filter.includelable": { cn: "期望生成的数据集包含选中的标签值", en: "Filtering tips: the generated dataset  expect to contain the selected keyword", },
+  "tip.task.filter.excludelable": { cn: "期望生成的数据集不包含选中的标签值", en: "Excluding tips: the generated dataset expect to not contain the selected keyword", },
 
   // 新建训练任务
   "tip.task.filter.testsets": { cn: "训练集和测试集的图片不可重复", en: "The images of the training set and the testing set cannot be duplicated.", },
-  "tip.task.filter.keywords": { cn: "训练目标标签必须同时包含在训练集和测试集中", en: "Both the training and testing sets must contain target tags", },
+  "tip.task.filter.keywords": { cn: "训练目标标签必须同时包含在训练集和测试集中", en: "Both the training and testing sets must contain target keyword", },
   // "tip.task.filter.traintype": { cn: "训练类型提示", en: "", },
   // "tip.task.filter.network": { cn: "算法框架提示", en: "", },
   // "tip.task.filter.backbone": { cn: "骨干网络结构提示", en: "", },
@@ -25,7 +25,7 @@ const tip = {
   // 新建标注任务
   "tip.task.filter.labelmember": { cn: "请确保标注人员的账号已提前注册", en: "Please make sure the annotator account has been registered in advance", },
   "tip.task.filter.labelplatacc": { cn: "该账号可到标注平台查看标注进度，请提前注册", en: "The account can be used to view the labeling progress on the labeling platform, please register in advance", },
-  "tip.task.filter.labeltarget": { cn: "仅支持在当前用户标签列表中选择，如果当前列表没有期望标注的目标标签，请前往标签列表添加", en: "Only support the current user‘s tag list to choose,if the current list does not have the target tag, please go to the tag list to add ", },
+  "tip.task.filter.labeltarget": { cn: "仅支持在当前用户标签列表中选择，如果当前列表没有期望标注的目标标签，请前往标签列表添加", en: "Only support the current user‘s keyword list to choose,if the current list does not have the target keyword, please go to the keyword list to add ", },
 
   // 导入数据集
   
@@ -34,7 +34,7 @@ const tip = {
   // "tip.task.filter.addlable": { cn: "包含标注", en: "", },
  
   //标签弹出添加别名
-  "tip.task.filter.alias": { cn: "和主名表示同一类标签，当导入的数据集标签为别名时，界面展示为主名", en: "The same type of tag as the main name, when the imported dataset contains an alias tag, the interface shows the tag's main name", },
+  "tip.task.filter.alias": { cn: "和主名表示同一类标签，当导入的数据集标签为别名时，界面展示为主名", en: "The same type of keyword as the main name, when the imported dataset contains an alias keyword, the interface shows the keyword's main name", },
   
 }
 
