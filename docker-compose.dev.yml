@@ -61,7 +61,7 @@ services:
     restart: on-failure:10
     networks:
       - devnetwork
-    
+
   redis:
     image: industryessentials/ymir-backend-redis
     command: redis-server /config/redis/redis.conf --loadmodule /usr/lib/redis/modules/redisgraph.so
@@ -115,6 +115,22 @@ services:
     restart: on-failure:10
     networks:
       - ymirnetwork
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+      - "9009:9009"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+     - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
+    networks:
+      - devnetwork
 
 networks:
   devnetwork:
