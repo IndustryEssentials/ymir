@@ -111,7 +111,7 @@ class TestInvokerTaskMining(unittest.TestCase):
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
                                          singleton_op='mining_image',
                                          model_hash=model_hash,
-                                         singleton_op_config=json.dumps(mining_config),)
+                                         docker_image_config=json.dumps(mining_config),)
         print(MessageToDict(response))
 
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "

@@ -77,7 +77,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op
         config_file = cls.gen_training_config(
-            repo_root, request.singleton_op_config, train_request.in_class_ids, working_dir
+            repo_root, request.docker_image_config, train_request.in_class_ids, working_dir
         )
         if not config_file:
             msg = "Not enough GPU available"

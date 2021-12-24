@@ -120,7 +120,7 @@ class TestControllerRequest:
         assert kill_label_task.req.req_type == m.mirsvrpb.CMD_LABLE_TASK_TERMINATE
 
         kill_other_task = m.ControllerRequest(task_type, user_id, args={"target_container": task.hash, "is_label_task": False})
-        assert kill_other_task.req.req_type == m.mirsvrpb.CMD_KILL
+        assert kill_other_task.req.req_type == m.mirsvrpb.CMD_TERMINATE
 
 
 class TestControllerClient:
