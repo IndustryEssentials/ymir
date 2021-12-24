@@ -12,7 +12,7 @@ import styles from "./index.less"
 import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
 import { TipsIcon } from '@/components/common/icons'
-import Tip from "../../../components/form/tip"
+import Tip from "@/components/form/tip"
 const { Option } = Select
 
 function Filter({
@@ -124,18 +124,17 @@ function Filter({
           size='large'
           colon={false}
         >
-          <Tip content={t('tip.task.filter.name')}>
-          <Form.Item
-            label={t('task.filter.form.name.label')}
-            name='name'
-            rules={[
-              { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
-              { type: 'string', min: 2, max: 20 },
-            ]}
-          >
-            <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
-          </Form.Item>
-          </Tip>
+            <Form.Item
+              label={t('task.filter.form.name.label')}
+              name='name'
+              rules={[
+                { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
+                { type: 'string', min: 2, max: 20 },
+              ]}
+            >
+              <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
+            </Form.Item>
+
           <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
@@ -146,7 +145,7 @@ function Filter({
               ]}
             >
               <Select
-                placeholder={t('task.filter.form.datasets.placeholder')}
+                placeholder={t('task.filter.form.filter.datasets.placeholder')}
                 mode='multiple'
                 filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                 onChange={datasetChange}
@@ -160,6 +159,7 @@ function Filter({
               </Select>
             </Form.Item>
           </ConfigProvider>
+    
           <Form.Item name='strategy'
             hidden={form.getFieldValue('datasets')?.length < 2}
             initialValue={2} label={t('task.train.form.repeatdata.label')}>
@@ -169,47 +169,53 @@ function Filter({
               { value: 1, label: t('task.train.form.repeatdata.terminate') },
             ]} />
           </Form.Item>
+
           <Form.Item label={t('dataset.column.keyword')} required>
-            <Form.Item
-              label={t('task.filter.form.include.label')}
-              labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-              name='inc'
-              // hidden={!keywords.length}
-              rules={[
-                { validator: requireOne },
-              ]}
-            >
-              <Select
-                mode='multiple'
-                onChange={(value) => setSelectedKeywords(value)}
-                showArrow
-              >
-                {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
-                  ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                  : null)}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label={t('task.filter.form.exclude.label')}
-              labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-              name='exc'
-              // hidden={!keywords.length}
-              help={t('task.filter.tip.keyword.required')}
-              rules={[
-                { validator: requireOne },
-              ]}
-            >
-              <Select
-                mode='multiple'
-                onChange={(value) => setExclude(value)}
-                showArrow
-              >
-                {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
-                  ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                  : null)}
-              </Select>
-            </Form.Item>
+            <Tip content={t('tip.task.filter.includelable')}>
+                <Form.Item
+                  label={t('task.filter.form.include.label')}
+                  labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
+                  name='inc'
+                  // hidden={!keywords.length}
+                  rules={[
+                    { validator: requireOne },
+                  ]}
+                >
+                  <Select
+                    mode='multiple'
+                    onChange={(value) => setSelectedKeywords(value)}
+                    showArrow
+                  >
+                    {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
+                      ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                      : null)}
+                  </Select>
+                </Form.Item>
+              </Tip>
+              <Tip content={t('tip.task.filter.excludelable')}>
+                <Form.Item
+                  label={t('task.filter.form.exclude.label')}
+                  labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
+                  name='exc'
+                  // hidden={!keywords.length}
+                  help={t('task.filter.tip.keyword.required')}
+                  rules={[
+                    { validator: requireOne },
+                  ]}
+                >
+                <Select
+                  mode='multiple'
+                  onChange={(value) => setExclude(value)}
+                  showArrow
+                >
+                  {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
+                    ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                    : null)}
+                </Select>
+              </Form.Item>
+            </Tip>
           </Form.Item>
+
           <Form.Item className={styles.submit} wrapperCol={{ offset: 4 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>
