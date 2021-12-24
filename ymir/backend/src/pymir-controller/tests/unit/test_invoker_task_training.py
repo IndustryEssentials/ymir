@@ -106,7 +106,6 @@ class TestInvokerTaskTraining(unittest.TestCase):
         train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_dataset_types.append(training_data_type_2)
         train_task_req.in_class_ids[:] = [0, 1]
-        train_task_req.training_config = json.dumps(training_config)
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = backend_pb2.TaskTypeTraining
@@ -116,7 +115,6 @@ class TestInvokerTaskTraining(unittest.TestCase):
         assets_config = {
             'modelsuploadlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
-            'training_image': training_image
         }
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
@@ -127,7 +125,9 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          task_id=self._task_id,
                                          req_create_task=req_create_task,
                                          executor_instance=self._task_id,
-                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
+                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
+                                         singleton_op=training_image,
+                                         docker_image_config=json.dumps(training_config))
         print(MessageToDict(response))
 
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
@@ -152,8 +152,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
                             self._mir_repo_root, self._task_id, self._storage_root, working_dir, self._sub_task_id,
                             output_config, training_image, self._task_id))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True),
-            mock.call(training_cmd, capture_output=True, shell=True),
+            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
+            mock.call(training_cmd, capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

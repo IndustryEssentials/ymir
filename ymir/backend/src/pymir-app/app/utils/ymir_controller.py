@@ -3,18 +3,19 @@ import itertools
 import secrets
 import time
 from dataclasses import dataclass
-from typing import Dict, Generator, List, Union, Optional
+from typing import Dict, Generator, List, Optional, Union
 
 import grpc
+from fastapi.logger import logger
 from google.protobuf import json_format  # type: ignore
+from id_definition.task_id import TaskId
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
-from fastapi.logger import logger
 
-from app.models.task import TaskType, Task
+from app.models.task import Task, TaskType
 from app.schemas.dataset import ImportStrategy
+from app.schemas.image import DockerImageType
 from app.schemas.task import MergeStrategy
-from id_definition.task_id import TaskId
 
 
 class ExtraRequestType(enum.IntEnum):
@@ -24,6 +25,7 @@ class ExtraRequestType(enum.IntEnum):
     add_label = 400
     get_label = 401
     kill = 500
+    pull_image = 600
 
 
 MERGE_STRATEGY_MAPPING = {
@@ -120,7 +122,8 @@ class ControllerRequest:
                 mirsvrpb.TvtTypeTraining, args.get("include_train_datasets", [])
             ),
             gen_typed_datasets(
-                mirsvrpb.TvtTypeValidation, args.get("include_validation_datasets", []),
+                mirsvrpb.TvtTypeValidation,
+                args.get("include_validation_datasets", []),
             ),
             gen_typed_datasets(
                 mirsvrpb.TvtTypeTest, args.get("include_test_datasets", [])
@@ -260,8 +263,15 @@ class ControllerRequest:
         if args["is_label_task"]:
             request.req_type = mirsvrpb.CMD_LABLE_TASK_TERMINATE
         else:
-            request.req_type = mirsvrpb.CMD_KILL
+            request.req_type = mirsvrpb.CMD_TERMINATE
         request.executor_instance = args["target_container"]
+        return request
+
+    def prepare_pull_image(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_PULL_IMAGE
+        request.singleton_op = args["url"]
         return request
 
 
@@ -298,7 +308,9 @@ class ControllerClient:
         task_type: TaskType,
         task_parameters: Optional[Dict],
     ) -> Dict:
-        req = ControllerRequest(task_type, user_id, workspace_id, task_id, args=task_parameters)
+        req = ControllerRequest(
+            task_type, user_id, workspace_id, task_id, args=task_parameters
+        )
         return self.send(req)
 
     def terminate_task(self, user_id: int, target_task: Task) -> Dict:
@@ -309,5 +321,13 @@ class ControllerClient:
                 "target_container": target_task.hash,
                 "is_label_task": target_task.type is TaskType.label,
             },
+        )
+        return self.send(req)
+
+    def pull_docker_image(self, url: str, user_id: int) -> Dict:
+        req = ControllerRequest(
+            ExtraRequestType.pull_image,
+            user_id=user_id,
+            args={"url": url},
         )
         return self.send(req)

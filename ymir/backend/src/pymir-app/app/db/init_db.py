@@ -38,9 +38,14 @@ def init_db(db: Session) -> None:
         user = crud.user.activate(db, user=user)
         user = crud.user.update_role(db, user=user, role=schemas.UserRole.SUPER_ADMIN)
 
-    runtime = crud.runtime.get_multi_runtimes(db)
-    if not runtime and settings.RUNTIMES:
+    docker_images = crud.docker_image.get_multi(db)
+    if not docker_images and settings.RUNTIMES:
         runtime_configs = json.loads(settings.RUNTIMES)
         for config in runtime_configs:
-            runtime_in = schemas.RuntimeCreate(**config)
-            crud.runtime.create(db, obj_in=runtime_in)  # noqa: F841
+            docker_image_in = schemas.DockerImageCreate(**config)
+            docker_image = crud.docker_image.create(
+                db, obj_in=docker_image_in
+            )  # noqa: F841
+            crud.docker_image.update_state(
+                db, docker_image=docker_image, state=schemas.DockerImageState.done
+            )

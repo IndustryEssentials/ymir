@@ -87,10 +87,8 @@ class TestInvokerTaskMining(unittest.TestCase):
         top_k, model_hash = 300, 'abc'
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
-        mine_task_req.model_hash = model_hash
         mine_task_req.in_dataset_ids[:] = [self._guest_id1, self._guest_id2]
         mine_task_req.ex_dataset_ids[:] = [self._guest_id3]
-        mine_task_req.mining_config = json.dumps(mining_config)
         mine_task_req.generate_annotations = False
 
         req_create_task = backend_pb2.ReqCreateTask()
@@ -100,7 +98,6 @@ class TestInvokerTaskMining(unittest.TestCase):
         assets_config = {
             'modelskvlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
-            'mining_image': 'mining_image'
         }
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
@@ -111,7 +108,10 @@ class TestInvokerTaskMining(unittest.TestCase):
                                          task_id=self._task_id,
                                          req_create_task=req_create_task,
                                          executor_instance=self._task_id,
-                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
+                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
+                                         singleton_op='mining_image',
+                                         model_hash=model_hash,
+                                         docker_image_config=json.dumps(mining_config),)
         print(MessageToDict(response))
 
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
@@ -133,10 +133,10 @@ class TestInvokerTaskMining(unittest.TestCase):
             "--model-hash {5} --src-revs {1}@{6} --cache {9} --config-file {7} --executor {8} "
             "--executor-instance {10} --topk {4}".format(
                 self._mir_repo_root, self._task_id, working_dir, self._storage_root, top_k, model_hash,
-                self._sub_task_id, output_config, assets_config['mining_image'], asset_cache_dir, self._task_id))
+                self._sub_task_id, output_config, 'mining_image', asset_cache_dir, self._task_id))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True),
-            mock.call(mining_cmd, capture_output=True, shell=True),
+            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
+            mock.call(mining_cmd, capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

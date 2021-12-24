@@ -87,7 +87,7 @@ class TestInvokerFilterBranch(unittest.TestCase):
 
         expected_cmd = "cd {0} && mir filter --dst-rev {1}@{1} --src-revs {2}@{2} -p '{3}' -P '{4}'".format(
             self._mir_repo_root, self._task_id, self.in_dataset_ids[0], 'car;person', 'car;person')
-        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True)
+        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

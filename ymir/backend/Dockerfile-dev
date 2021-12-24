@@ -20,7 +20,7 @@ COPY requirements.txt ./
 RUN pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 
 RUN pip3 uninstall -y ymir-cmd
-RUN pip3 install --force-reinstall -U -e "git+https://github.com/IndustryEssentials/ymir.git/@dev#egg=ymir-cmd&subdirectory=ymir/command"
+RUN pip3 install --force-reinstall -U "git+https://github.com/IndustryEssentials/ymir.git/@dev#egg=ymir-cmd&subdirectory=ymir/command"
 
 COPY ./src /app
 WORKDIR /app
