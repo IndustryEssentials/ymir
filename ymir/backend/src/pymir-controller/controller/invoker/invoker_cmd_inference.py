@@ -78,7 +78,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     def invoke(self) -> backend_pb2.GeneralResp:
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
-        config_file = self.gen_inference_config(self._request.model_config, self._work_dir)
+        config_file = self.gen_inference_config(self._request.docker_image_config, self._work_dir)
 
         self.inference_cmd(
             work_dir=self._work_dir,
@@ -86,7 +86,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             model_location=self._assets_config["modelskvlocation"],
             model_hash=self._request.model_hash,
             index_file=index_file,
-            executor=self._assets_config["mining_image"],
+            executor=self._request.singleton_op,
         )
         inference_result = self.get_inference_result(self._work_dir)
 

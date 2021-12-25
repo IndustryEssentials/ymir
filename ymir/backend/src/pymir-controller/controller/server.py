@@ -72,8 +72,8 @@ def path_constructor(loader: Any, node: Any) -> str:
 
 
 def parse_config_file(config_file: str) -> Any:
-    yaml.add_implicit_resolver("./test.yml", path_matcher, None, yaml.SafeLoader)
-    yaml.add_constructor("./test.yml", path_constructor, yaml.SafeLoader)
+    yaml.add_implicit_resolver("!path", path_matcher, None, yaml.SafeLoader)
+    yaml.add_constructor("!path", path_constructor, yaml.SafeLoader)
 
     with open(config_file) as f:
         return yaml.safe_load(f)

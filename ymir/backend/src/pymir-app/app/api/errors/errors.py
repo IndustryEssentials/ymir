@@ -158,6 +158,11 @@ class GraphNotFound(NotFound):
     message = "Graph Not Found"
 
 
+class DockerImageNotFound(NotFound):
+    code = error_codes.DOCKER_IMAGE_NOT_FOUND
+    message = "Docker Image Not Found"
+
+
 class PermissionDenied(APIError):
     status_code = 403
 
@@ -238,3 +243,18 @@ class DuplicateTaskError(DuplicateError):
 class DuplicateKeywordError(DuplicateError):
     code = error_codes.KEYWORD_DUPLICATED
     message = "Duplicated Keyword"
+
+
+class DuplicateDockerImageError(DuplicateError):
+    code = error_codes.DOCKER_IMAGE_DUPLICATED
+    message = "Duplicated Docker Image"
+
+
+class FailedtoShareDockerImage(APIError):
+    code = error_codes.FAILED_TO_SHARE_DOCKER_IMAGE
+    message = "Failed to Share Docker Image"
+
+
+class DockerImageHavingRelationships(APIError):
+    code = error_codes.DOCKER_IMAGE_HAVING_RELATIONSHIPS
+    message = "Docker Image Has Reminding Relationships"
