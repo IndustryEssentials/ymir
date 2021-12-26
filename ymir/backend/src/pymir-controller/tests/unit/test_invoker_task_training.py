@@ -149,13 +149,15 @@ class TestInvokerTaskTraining(unittest.TestCase):
         training_config["gpu_id"] = '1'
         self.assertDictEqual(training_config, config)
 
+        tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._mir_repo_name)
+
         training_cmd = ("cd {0} && mir train --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --config-file {5} --executor {6} "
                         "--executor-instance {7} --tensorboard {8}".format(
                             self._mir_repo_root, self._task_id, self._storage_root, working_dir, self._sub_task_id,
-                            output_config, training_image, self._task_id, self._tensorboard_root))
+                            output_config, training_image, self._task_id, tensorboard_dir))
         mock_run.assert_has_calls(calls=[
-            # mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
             mock.call(training_cmd, capture_output=True, shell=True, text=True),
         ])
 
