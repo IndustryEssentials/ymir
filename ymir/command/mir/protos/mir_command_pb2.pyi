@@ -632,7 +632,7 @@ class Task(google.protobuf.message.Message):
     def unknown_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
         """/ (special for import task): unknown types for cmd import"""
         pass
-    code: global___RCode.V = ...
+    code: builtins.int = ...
     """/ return code of task"""
 
     error_msg: typing.Text = ...
@@ -649,7 +649,7 @@ class Task(google.protobuf.message.Message):
         timestamp : builtins.int = ...,
         model : typing.Optional[global___ModelMeta] = ...,
         unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
-        code : global___RCode.V = ...,
+        code : builtins.int = ...,
         error_msg : typing.Text = ...,
         args : typing.Text = ...,
         ancestor_task_id : typing.Text = ...,

@@ -10,6 +10,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode, MirRuntimeError
+from mir.tools.commit_on_error import commit_on_error
 from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
 
 
@@ -29,6 +30,7 @@ class CmdImport(base.BaseCommand):
                                        ignore_unknown_types=self.args.ignore_unknown_types)
 
     @staticmethod
+    @commit_on_error
     @phase_logger_in_out
     def run_with_args(mir_root: str, index_file: str, ck_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
                       dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:

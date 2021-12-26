@@ -74,7 +74,8 @@ class CmdShow(base.BaseCommand):
     @classmethod
     def _show_general_tasks(cls, mir_tasks: mirpb.MirTasks) -> None:
         hid = mir_tasks.head_task_id
-        print(f"tasks.mir: hid: {hid}")
+        code = mir_tasks.tasks[hid].code
+        print(f"tasks.mir: hid: {hid}, code: {code}")
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:

@@ -7,6 +7,7 @@ from typing import Dict, List, Set, Tuple
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage, mir_storage_ops
+from mir.tools.commit_on_error import commit_on_error
 from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
 from mir.tools.code import MirCode
 
@@ -23,6 +24,7 @@ class CmdCopy(base.BaseCommand):
                                      work_dir=self.args.work_dir)
 
     @staticmethod
+    @commit_on_error
     @phase_logger_in_out
     def run_with_args(mir_root: str,
                       src_mir_root: str,
