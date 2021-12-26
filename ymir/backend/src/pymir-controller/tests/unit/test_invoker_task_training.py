@@ -155,8 +155,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
                             self._mir_repo_root, self._task_id, self._storage_root, working_dir, self._sub_task_id,
                             output_config, training_image, self._task_id, self._tensorboard_root))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
-            # mock.call(training_cmd, capture_output=True, shell=True, text=True),
+            # mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
+            mock.call(training_cmd, capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()
