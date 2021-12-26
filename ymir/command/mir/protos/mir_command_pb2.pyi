@@ -12,221 +12,213 @@ import typing_extensions
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor = ...
 
-class _TvtType:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _TvtTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_TvtType.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    TvtTypeUnknown: TvtType.ValueType = ...  # 0
-    TvtTypeTraining: TvtType.ValueType = ...  # 1
-    TvtTypeValidation: TvtType.ValueType = ...  # 2
-    TvtTypeTest: TvtType.ValueType = ...  # 3
 class TvtType(_TvtType, metaclass=_TvtTypeEnumTypeWrapper):
     """/ assertion type: training, validation or test"""
     pass
+class _TvtType:
+    V = typing.NewType('V', builtins.int)
+class _TvtTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_TvtType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    TvtTypeUnknown = TvtType.V(0)
+    TvtTypeTraining = TvtType.V(1)
+    TvtTypeValidation = TvtType.V(2)
+    TvtTypeTest = TvtType.V(3)
 
-TvtTypeUnknown: TvtType.ValueType = ...  # 0
-TvtTypeTraining: TvtType.ValueType = ...  # 1
-TvtTypeValidation: TvtType.ValueType = ...  # 2
-TvtTypeTest: TvtType.ValueType = ...  # 3
+TvtTypeUnknown = TvtType.V(0)
+TvtTypeTraining = TvtType.V(1)
+TvtTypeValidation = TvtType.V(2)
+TvtTypeTest = TvtType.V(3)
 global___TvtType = TvtType
 
 
-class _AssetType:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _AssetTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AssetType.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    AssetTypeUnknown: AssetType.ValueType = ...  # 0
-    AssetTypeImageJpeg: AssetType.ValueType = ...  # 1
-    AssetTypeImagePng: AssetType.ValueType = ...  # 2
-    AssetTypeImagePixelMat: AssetType.ValueType = ...  # 3
-    AssetTypeImageYuv420p: AssetType.ValueType = ...  # 4
-    AssetTypeImageYuv420sp: AssetType.ValueType = ...  # 5
-    AssetTypeImageYuv422p: AssetType.ValueType = ...  # 6
-    AssetTypeImageYuv422sp: AssetType.ValueType = ...  # 7
-    AssetTypeImageBmp: AssetType.ValueType = ...  # 8
-    AssetTypeVideoMp4: AssetType.ValueType = ...  # 101
 class AssetType(_AssetType, metaclass=_AssetTypeEnumTypeWrapper):
     pass
+class _AssetType:
+    V = typing.NewType('V', builtins.int)
+class _AssetTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AssetType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    AssetTypeUnknown = AssetType.V(0)
+    AssetTypeImageJpeg = AssetType.V(1)
+    AssetTypeImagePng = AssetType.V(2)
+    AssetTypeImagePixelMat = AssetType.V(3)
+    AssetTypeImageYuv420p = AssetType.V(4)
+    AssetTypeImageYuv420sp = AssetType.V(5)
+    AssetTypeImageYuv422p = AssetType.V(6)
+    AssetTypeImageYuv422sp = AssetType.V(7)
+    AssetTypeImageBmp = AssetType.V(8)
+    AssetTypeVideoMp4 = AssetType.V(101)
 
-AssetTypeUnknown: AssetType.ValueType = ...  # 0
-AssetTypeImageJpeg: AssetType.ValueType = ...  # 1
-AssetTypeImagePng: AssetType.ValueType = ...  # 2
-AssetTypeImagePixelMat: AssetType.ValueType = ...  # 3
-AssetTypeImageYuv420p: AssetType.ValueType = ...  # 4
-AssetTypeImageYuv420sp: AssetType.ValueType = ...  # 5
-AssetTypeImageYuv422p: AssetType.ValueType = ...  # 6
-AssetTypeImageYuv422sp: AssetType.ValueType = ...  # 7
-AssetTypeImageBmp: AssetType.ValueType = ...  # 8
-AssetTypeVideoMp4: AssetType.ValueType = ...  # 101
+AssetTypeUnknown = AssetType.V(0)
+AssetTypeImageJpeg = AssetType.V(1)
+AssetTypeImagePng = AssetType.V(2)
+AssetTypeImagePixelMat = AssetType.V(3)
+AssetTypeImageYuv420p = AssetType.V(4)
+AssetTypeImageYuv420sp = AssetType.V(5)
+AssetTypeImageYuv422p = AssetType.V(6)
+AssetTypeImageYuv422sp = AssetType.V(7)
+AssetTypeImageBmp = AssetType.V(8)
+AssetTypeVideoMp4 = AssetType.V(101)
 global___AssetType = AssetType
 
 
-class _TaskType:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_TaskType.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    TaskTypeUnknown: TaskType.ValueType = ...  # 0
-    TaskTypeTraining: TaskType.ValueType = ...  # 1
-    TaskTypeMining: TaskType.ValueType = ...  # 2
-    TaskTypeLabel: TaskType.ValueType = ...  # 3
-    TaskTypeFilter: TaskType.ValueType = ...  # 4
-    TaskTypeImportData: TaskType.ValueType = ...  # 5
-    TaskTypeExportData: TaskType.ValueType = ...  # 6
-    TaskTypeCopyData: TaskType.ValueType = ...  # 7
-    TaskTypeMerge: TaskType.ValueType = ...  # 8
 class TaskType(_TaskType, metaclass=_TaskTypeEnumTypeWrapper):
     """/ task type"""
     pass
+class _TaskType:
+    V = typing.NewType('V', builtins.int)
+class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_TaskType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    TaskTypeUnknown = TaskType.V(0)
+    TaskTypeTraining = TaskType.V(1)
+    TaskTypeMining = TaskType.V(2)
+    TaskTypeLabel = TaskType.V(3)
+    TaskTypeFilter = TaskType.V(4)
+    TaskTypeImportData = TaskType.V(5)
+    TaskTypeExportData = TaskType.V(6)
+    TaskTypeCopyData = TaskType.V(7)
+    TaskTypeMerge = TaskType.V(8)
 
-TaskTypeUnknown: TaskType.ValueType = ...  # 0
-TaskTypeTraining: TaskType.ValueType = ...  # 1
-TaskTypeMining: TaskType.ValueType = ...  # 2
-TaskTypeLabel: TaskType.ValueType = ...  # 3
-TaskTypeFilter: TaskType.ValueType = ...  # 4
-TaskTypeImportData: TaskType.ValueType = ...  # 5
-TaskTypeExportData: TaskType.ValueType = ...  # 6
-TaskTypeCopyData: TaskType.ValueType = ...  # 7
-TaskTypeMerge: TaskType.ValueType = ...  # 8
+TaskTypeUnknown = TaskType.V(0)
+TaskTypeTraining = TaskType.V(1)
+TaskTypeMining = TaskType.V(2)
+TaskTypeLabel = TaskType.V(3)
+TaskTypeFilter = TaskType.V(4)
+TaskTypeImportData = TaskType.V(5)
+TaskTypeExportData = TaskType.V(6)
+TaskTypeCopyData = TaskType.V(7)
+TaskTypeMerge = TaskType.V(8)
 global___TaskType = TaskType
 
 
-class _TaskState:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _TaskStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_TaskState.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    TaskStateUnknown: TaskState.ValueType = ...  # 0
-    TaskStatePending: TaskState.ValueType = ...  # 1
-    TaskStateRunning: TaskState.ValueType = ...  # 2
-    TaskStateDone: TaskState.ValueType = ...  # 3
-    TaskStateError: TaskState.ValueType = ...  # 4
-    TaskStateMiss: TaskState.ValueType = ...  # 5
 class TaskState(_TaskState, metaclass=_TaskStateEnumTypeWrapper):
     pass
+class _TaskState:
+    V = typing.NewType('V', builtins.int)
+class _TaskStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_TaskState.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    TaskStateUnknown = TaskState.V(0)
+    TaskStatePending = TaskState.V(1)
+    TaskStateRunning = TaskState.V(2)
+    TaskStateDone = TaskState.V(3)
+    TaskStateError = TaskState.V(4)
+    TaskStateMiss = TaskState.V(5)
 
-TaskStateUnknown: TaskState.ValueType = ...  # 0
-TaskStatePending: TaskState.ValueType = ...  # 1
-TaskStateRunning: TaskState.ValueType = ...  # 2
-TaskStateDone: TaskState.ValueType = ...  # 3
-TaskStateError: TaskState.ValueType = ...  # 4
-TaskStateMiss: TaskState.ValueType = ...  # 5
+TaskStateUnknown = TaskState.V(0)
+TaskStatePending = TaskState.V(1)
+TaskStateRunning = TaskState.V(2)
+TaskStateDone = TaskState.V(3)
+TaskStateError = TaskState.V(4)
+TaskStateMiss = TaskState.V(5)
 global___TaskState = TaskState
 
 
-class _Sha1Type:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _Sha1TypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_Sha1Type.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    SHA1_TYPE_UNKNOWN: Sha1Type.ValueType = ...  # 0
-    SHA1_TYPE_ASSET: Sha1Type.ValueType = ...  # 1
-    SHA1_TYPE_COMMIT: Sha1Type.ValueType = ...  # 2
 class Sha1Type(_Sha1Type, metaclass=_Sha1TypeEnumTypeWrapper):
     pass
+class _Sha1Type:
+    V = typing.NewType('V', builtins.int)
+class _Sha1TypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_Sha1Type.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    SHA1_TYPE_UNKNOWN = Sha1Type.V(0)
+    SHA1_TYPE_ASSET = Sha1Type.V(1)
+    SHA1_TYPE_COMMIT = Sha1Type.V(2)
 
-SHA1_TYPE_UNKNOWN: Sha1Type.ValueType = ...  # 0
-SHA1_TYPE_ASSET: Sha1Type.ValueType = ...  # 1
-SHA1_TYPE_COMMIT: Sha1Type.ValueType = ...  # 2
+SHA1_TYPE_UNKNOWN = Sha1Type.V(0)
+SHA1_TYPE_ASSET = Sha1Type.V(1)
+SHA1_TYPE_COMMIT = Sha1Type.V(2)
 global___Sha1Type = Sha1Type
 
 
-class _RCode:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _RCodeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_RCode.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    RC_OK: RCode.ValueType = ...  # 0
-    RC_ERROR_UNKNOWN: RCode.ValueType = ...  # 1
-    RC_CMD_ERROR_UNKNOWN: RCode.ValueType = ...  # 100
-    RC_CMD_CORRUPT_MIR_FILE: RCode.ValueType = ...  # 101
-    RC_CMD_INVALID_MIR_FILE: RCode.ValueType = ...  # 102
-    RC_CMD_INVALID_MIR_REPO: RCode.ValueType = ...  # 103
-    RC_CMD_INVALID_ARGS: RCode.ValueType = ...  # 104
-    RC_CMD_INVALID_BRANCH_OR_TAG: RCode.ValueType = ...  # 105
-    RC_CMD_INVALID_COMMAND: RCode.ValueType = ...  # 106
-    RC_CMD_MIR_FILE_NOT_FOUND: RCode.ValueType = ...  # 107
-    RC_CMD_CONFLICTS_OCCURED: RCode.ValueType = ...  # 108
-    RC_CMD_EMPTY_METADATAS: RCode.ValueType = ...  # 109
-    RC_CMD_EMPTY_TRAIN_SET: RCode.ValueType = ...  # 110
-    RC_CMD_EMPTY_VAL_SET: RCode.ValueType = ...  # 111
-    RC_CMD_DIRTY_REPO: RCode.ValueType = ...  # 112
-    RC_CMD_NOTHING_TO_MERGE: RCode.ValueType = ...  # 113
-    RC_SERVICE_ERROR_UNKNOWN: RCode.ValueType = ...  # 1000
-    RC_SERVICE_INVALID_REQ: RCode.ValueType = ...  # 1001
-    RC_SERVICE_INVOKE_ERROR: RCode.ValueType = ...  # 1002
-    RC_SERVICE_UNKOWN_RESPONSE: RCode.ValueType = ...  # 1003
-    RC_SERVICE_TASK_INVOKER_ERROR: RCode.ValueType = ...  # 1004
-    RC_SERVICE_INFO_INVOKER_ERROR: RCode.ValueType = ...  # 1005
-    RC_RUNTIME_ERROR_UNKNOWN: RCode.ValueType = ...  # 2000
-    RC_RUNTIME_UNKNOWN_TYPES: RCode.ValueType = ...  # 2001
-    RC_RUNTIME_CONTAINER_ERROR: RCode.ValueType = ...  # 2003
 class RCode(_RCode, metaclass=_RCodeEnumTypeWrapper):
     pass
+class _RCode:
+    V = typing.NewType('V', builtins.int)
+class _RCodeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_RCode.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    RC_OK = RCode.V(0)
+    RC_ERROR_UNKNOWN = RCode.V(1)
+    RC_CMD_ERROR_UNKNOWN = RCode.V(100)
+    RC_CMD_CORRUPT_MIR_FILE = RCode.V(101)
+    RC_CMD_INVALID_MIR_FILE = RCode.V(102)
+    RC_CMD_INVALID_MIR_REPO = RCode.V(103)
+    RC_CMD_INVALID_ARGS = RCode.V(104)
+    RC_CMD_INVALID_BRANCH_OR_TAG = RCode.V(105)
+    RC_CMD_INVALID_COMMAND = RCode.V(106)
+    RC_CMD_MIR_FILE_NOT_FOUND = RCode.V(107)
+    RC_CMD_CONFLICTS_OCCURED = RCode.V(108)
+    RC_CMD_EMPTY_METADATAS = RCode.V(109)
+    RC_CMD_EMPTY_TRAIN_SET = RCode.V(110)
+    RC_CMD_EMPTY_VAL_SET = RCode.V(111)
+    RC_CMD_DIRTY_REPO = RCode.V(112)
+    RC_CMD_NOTHING_TO_MERGE = RCode.V(113)
+    RC_SERVICE_ERROR_UNKNOWN = RCode.V(1000)
+    RC_SERVICE_INVALID_REQ = RCode.V(1001)
+    RC_SERVICE_INVOKE_ERROR = RCode.V(1002)
+    RC_SERVICE_UNKOWN_RESPONSE = RCode.V(1003)
+    RC_SERVICE_TASK_INVOKER_ERROR = RCode.V(1004)
+    RC_SERVICE_INFO_INVOKER_ERROR = RCode.V(1005)
+    RC_RUNTIME_ERROR_UNKNOWN = RCode.V(2000)
+    RC_RUNTIME_UNKNOWN_TYPES = RCode.V(2001)
+    RC_RUNTIME_CONTAINER_ERROR = RCode.V(2003)
 
-RC_OK: RCode.ValueType = ...  # 0
-RC_ERROR_UNKNOWN: RCode.ValueType = ...  # 1
-RC_CMD_ERROR_UNKNOWN: RCode.ValueType = ...  # 100
-RC_CMD_CORRUPT_MIR_FILE: RCode.ValueType = ...  # 101
-RC_CMD_INVALID_MIR_FILE: RCode.ValueType = ...  # 102
-RC_CMD_INVALID_MIR_REPO: RCode.ValueType = ...  # 103
-RC_CMD_INVALID_ARGS: RCode.ValueType = ...  # 104
-RC_CMD_INVALID_BRANCH_OR_TAG: RCode.ValueType = ...  # 105
-RC_CMD_INVALID_COMMAND: RCode.ValueType = ...  # 106
-RC_CMD_MIR_FILE_NOT_FOUND: RCode.ValueType = ...  # 107
-RC_CMD_CONFLICTS_OCCURED: RCode.ValueType = ...  # 108
-RC_CMD_EMPTY_METADATAS: RCode.ValueType = ...  # 109
-RC_CMD_EMPTY_TRAIN_SET: RCode.ValueType = ...  # 110
-RC_CMD_EMPTY_VAL_SET: RCode.ValueType = ...  # 111
-RC_CMD_DIRTY_REPO: RCode.ValueType = ...  # 112
-RC_CMD_NOTHING_TO_MERGE: RCode.ValueType = ...  # 113
-RC_SERVICE_ERROR_UNKNOWN: RCode.ValueType = ...  # 1000
-RC_SERVICE_INVALID_REQ: RCode.ValueType = ...  # 1001
-RC_SERVICE_INVOKE_ERROR: RCode.ValueType = ...  # 1002
-RC_SERVICE_UNKOWN_RESPONSE: RCode.ValueType = ...  # 1003
-RC_SERVICE_TASK_INVOKER_ERROR: RCode.ValueType = ...  # 1004
-RC_SERVICE_INFO_INVOKER_ERROR: RCode.ValueType = ...  # 1005
-RC_RUNTIME_ERROR_UNKNOWN: RCode.ValueType = ...  # 2000
-RC_RUNTIME_UNKNOWN_TYPES: RCode.ValueType = ...  # 2001
-RC_RUNTIME_CONTAINER_ERROR: RCode.ValueType = ...  # 2003
+RC_OK = RCode.V(0)
+RC_ERROR_UNKNOWN = RCode.V(1)
+RC_CMD_ERROR_UNKNOWN = RCode.V(100)
+RC_CMD_CORRUPT_MIR_FILE = RCode.V(101)
+RC_CMD_INVALID_MIR_FILE = RCode.V(102)
+RC_CMD_INVALID_MIR_REPO = RCode.V(103)
+RC_CMD_INVALID_ARGS = RCode.V(104)
+RC_CMD_INVALID_BRANCH_OR_TAG = RCode.V(105)
+RC_CMD_INVALID_COMMAND = RCode.V(106)
+RC_CMD_MIR_FILE_NOT_FOUND = RCode.V(107)
+RC_CMD_CONFLICTS_OCCURED = RCode.V(108)
+RC_CMD_EMPTY_METADATAS = RCode.V(109)
+RC_CMD_EMPTY_TRAIN_SET = RCode.V(110)
+RC_CMD_EMPTY_VAL_SET = RCode.V(111)
+RC_CMD_DIRTY_REPO = RCode.V(112)
+RC_CMD_NOTHING_TO_MERGE = RCode.V(113)
+RC_SERVICE_ERROR_UNKNOWN = RCode.V(1000)
+RC_SERVICE_INVALID_REQ = RCode.V(1001)
+RC_SERVICE_INVOKE_ERROR = RCode.V(1002)
+RC_SERVICE_UNKOWN_RESPONSE = RCode.V(1003)
+RC_SERVICE_TASK_INVOKER_ERROR = RCode.V(1004)
+RC_SERVICE_INFO_INVOKER_ERROR = RCode.V(1005)
+RC_RUNTIME_ERROR_UNKNOWN = RCode.V(2000)
+RC_RUNTIME_UNKNOWN_TYPES = RCode.V(2001)
+RC_RUNTIME_CONTAINER_ERROR = RCode.V(2003)
 global___RCode = RCode
 
 
-class _MirStorage:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _MirStorageEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_MirStorage.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    MIR_METADATAS: MirStorage.ValueType = ...  # 0
-    MIR_ANNOTATIONS: MirStorage.ValueType = ...  # 1
-    MIR_KEYWORDS: MirStorage.ValueType = ...  # 2
-    MIR_TASKS: MirStorage.ValueType = ...  # 3
 class MirStorage(_MirStorage, metaclass=_MirStorageEnumTypeWrapper):
     pass
+class _MirStorage:
+    V = typing.NewType('V', builtins.int)
+class _MirStorageEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_MirStorage.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    MIR_METADATAS = MirStorage.V(0)
+    MIR_ANNOTATIONS = MirStorage.V(1)
+    MIR_KEYWORDS = MirStorage.V(2)
+    MIR_TASKS = MirStorage.V(3)
 
-MIR_METADATAS: MirStorage.ValueType = ...  # 0
-MIR_ANNOTATIONS: MirStorage.ValueType = ...  # 1
-MIR_KEYWORDS: MirStorage.ValueType = ...  # 2
-MIR_TASKS: MirStorage.ValueType = ...  # 3
+MIR_METADATAS = MirStorage.V(0)
+MIR_ANNOTATIONS = MirStorage.V(1)
+MIR_KEYWORDS = MirStorage.V(2)
+MIR_TASKS = MirStorage.V(3)
 global___MirStorage = MirStorage
 
 
-class _LabelFormat:
-    ValueType = typing.NewType('ValueType', builtins.int)
-    V: typing_extensions.TypeAlias = ValueType
-class _LabelFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_LabelFormat.ValueType], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    NO_ANNOTATION: LabelFormat.ValueType = ...  # 0
-    PASCAL_VOC: LabelFormat.ValueType = ...  # 1
-    IF_ARK: LabelFormat.ValueType = ...  # 2
 class LabelFormat(_LabelFormat, metaclass=_LabelFormatEnumTypeWrapper):
     pass
+class _LabelFormat:
+    V = typing.NewType('V', builtins.int)
+class _LabelFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_LabelFormat.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    NO_ANNOTATION = LabelFormat.V(0)
+    PASCAL_VOC = LabelFormat.V(1)
+    IF_ARK = LabelFormat.V(2)
 
-NO_ANNOTATION: LabelFormat.ValueType = ...  # 0
-PASCAL_VOC: LabelFormat.ValueType = ...  # 1
-IF_ARK: LabelFormat.ValueType = ...  # 2
+NO_ANNOTATION = LabelFormat.V(0)
+PASCAL_VOC = LabelFormat.V(1)
+IF_ARK = LabelFormat.V(2)
 global___LabelFormat = LabelFormat
 
 
@@ -272,8 +264,8 @@ class MetadataAttributes(google.protobuf.message.Message):
     dataset_name: typing.Text = ...
     @property
     def timestamp(self) -> global___Timestamp: ...
-    tvt_type: global___TvtType.ValueType = ...
-    asset_type: global___AssetType.ValueType = ...
+    tvt_type: global___TvtType.V = ...
+    asset_type: global___AssetType.V = ...
     width: builtins.int = ...
     """/ column number"""
 
@@ -287,8 +279,8 @@ class MetadataAttributes(google.protobuf.message.Message):
         *,
         dataset_name : typing.Text = ...,
         timestamp : typing.Optional[global___Timestamp] = ...,
-        tvt_type : global___TvtType.ValueType = ...,
-        asset_type : global___AssetType.ValueType = ...,
+        tvt_type : global___TvtType.V = ...,
+        asset_type : global___AssetType.V = ...,
         width : builtins.int = ...,
         height : builtins.int = ...,
         image_channels : builtins.int = ...,
@@ -618,7 +610,7 @@ class Task(google.protobuf.message.Message):
     CODE_FIELD_NUMBER: builtins.int
     ARGS_FIELD_NUMBER: builtins.int
     ANCESTOR_TASK_ID_FIELD_NUMBER: builtins.int
-    type: global___TaskType.ValueType = ...
+    type: global___TaskType.V = ...
     name: typing.Text = ...
     """/ user defined task name"""
 
@@ -639,7 +631,7 @@ class Task(google.protobuf.message.Message):
     def unknown_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
         """/ (special for import task): unknown types for cmd import"""
         pass
-    code: global___RCode.ValueType = ...
+    code: global___RCode.V = ...
     """/ return code of task"""
 
     args: typing.Text = ...
@@ -648,14 +640,14 @@ class Task(google.protobuf.message.Message):
     ancestor_task_id: typing.Text = ...
     def __init__(self,
         *,
-        type : global___TaskType.ValueType = ...,
+        type : global___TaskType.V = ...,
         name : typing.Text = ...,
         task_id : typing.Text = ...,
         base_task_id : typing.Text = ...,
         timestamp : builtins.int = ...,
         model : typing.Optional[global___ModelMeta] = ...,
         unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
-        code : global___RCode.ValueType = ...,
+        code : global___RCode.V = ...,
         args : typing.Text = ...,
         ancestor_task_id : typing.Text = ...,
         ) -> None: ...
