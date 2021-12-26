@@ -117,7 +117,7 @@ def _get_union_keywords(host_keywords: Any, guest_keywords: Any, strategy: str) 
     elif strategy == "guest":
         merged_keywords_set = guest_keywords_set
     else:
-        raise Exception("unknown strategy type: " + strategy)
+        raise RuntimeError("unknown strategy type: " + strategy)
     return merged_keywords_set
 
 

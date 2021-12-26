@@ -6,7 +6,7 @@ import google.protobuf.json_format as pb_format
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import exodus
-from mir.tools.code import MirCode
+from mir.tools.code import MirCode, MirRuntimeError
 import tests.utils as test_utils
 
 
@@ -59,10 +59,10 @@ class TestExodus(unittest.TestCase):
                 pass
         except (TypeError, ValueError) as e:
             actual_exception = e
-        except exodus.ExodusError as e:
+        except MirRuntimeError as e:
             actual_exception = e
-            self.assertIsInstance(actual_exception, exodus.ExodusError)
-            self.assertEqual(actual_exception.code, expected_code)
+            self.assertIsInstance(actual_exception, MirRuntimeError)
+            self.assertEqual(actual_exception.error_code, expected_code)
         except FileNotFoundError as e:
             actual_exception = e
             self.assertIsInstance(actual_exception, FileNotFoundError)

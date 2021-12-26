@@ -20,6 +20,12 @@ def _generate_mir_task(code: int, error_msg: str, dst_typ_rev_tid: revs_parser.T
 
 
 def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str) -> None:
+    if not src_revs:
+        src_revs = 'master'
+    if not dst_rev:
+        # not enough infos for us to generate a commit, because in ymir-command, dst-rev is always provided
+        return
+
     src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
     dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
 
@@ -55,11 +61,6 @@ def commit_on_error(f: Callable) -> Callable:
             ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, *args, **kwargs)
 
             if ret != MirCode.RC_OK:
-                if not mir_root:
-                    mir_root = '.'
-                if not src_revs:
-                    src_revs = 'master'
-
                 trace_message = f"cmd return: {ret}"
                 _commit_error(code=ret, error_msg=trace_message, mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev)
 

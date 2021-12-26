@@ -11,7 +11,7 @@ import yaml
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, mir_storage, mir_storage_ops, revs_parser
-from mir.tools.code import MirCode
+from mir.tools.code import MirCode, MirRuntimeError
 from mir.tools.commit_on_error import commit_on_error
 from mir.tools.phase_logger import phase_logger_in_out
 
@@ -255,7 +255,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
     if not os.path.isfile(file_path):
-        raise RuntimeError(f"Cannot find result file {file_path}")
+        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_FILE, f"Cannot find result file {file_path}")
 
     asset_ids_set: Set[str] = set()
     idx_cnt = 0

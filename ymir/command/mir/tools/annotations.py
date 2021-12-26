@@ -6,7 +6,7 @@ from typing import Dict, List, Set, Tuple
 import xml.dom.minidom
 
 from mir.tools import class_ids, mir_storage_ops
-from mir.tools.code import MirCode
+from mir.tools.code import MirCode, MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter, PhaseStateEnum
 from mir.protos import mir_command_pb2 as mirpb
 
@@ -26,7 +26,7 @@ def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> xml.d
     tag_nodes = node.getElementsByTagName(tag_name)
     if len(tag_nodes) > 0 and len(tag_nodes[0].childNodes) > 0:
         return tag_nodes[0]
-    raise KeyError(f"found no element for key: {tag_name}")
+    raise MirRuntimeError(MirCode.RC_CMD_ERROR_UNKNOWN, f"found no element for key: {tag_name}")
 
 
 def _get_dom_xml_tag_data(node: xml.dom.minidom.Element, tag_name: str) -> str:
