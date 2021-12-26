@@ -117,7 +117,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         assets_config = {
             'modelsuploadlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
-            # 'tensorboard_root': self._tensorboard_root,
+            'tensorboard_root': '',
         }
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
