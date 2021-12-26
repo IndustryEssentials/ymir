@@ -84,8 +84,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
             return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, msg)
 
-        tensorboard_root = assets_config.get('tensorboard_root', '')
-        tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id) if tensorboard_root else ''
+        tensorboard_root = assets_config.get['tensorboard_root']
+        tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         train_response = cls.training_cmd(
@@ -124,10 +124,9 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
             f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
             f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
-            f"--executor-instance {executor_instance}"
+            f"--executor-instance {executor_instance} "
+            f"--tensorboard {tensorboard}"
         )
-        if tensorboard:
-            training_cmd += f" --tensorboard {tensorboard}"
         if model_hash:
             training_cmd += f" --model-hash {model_hash}"
 
