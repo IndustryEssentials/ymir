@@ -6,6 +6,7 @@ from typing import Any, Callable, List, Tuple, Optional, Set, Union
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
+from mir.tools.commit_on_error import commit_on_error
 from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
 from mir.tools.code import MirCode
 
@@ -60,6 +61,7 @@ class CmdFilter(base.BaseCommand):
 
     # public: run cmd
     @staticmethod
+    @commit_on_error
     @phase_logger_in_out
     def run_with_args(mir_root: str, in_cis: Optional[str], ex_cis: Optional[str], in_cks: Optional[str],
                       ex_cks: Optional[str], src_revs: str, dst_rev: str, work_dir: str) -> int:  # type: ignore
