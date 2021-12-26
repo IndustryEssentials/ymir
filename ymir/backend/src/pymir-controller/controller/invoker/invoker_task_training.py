@@ -84,8 +84,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
             return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, msg)
 
-        tensorboard_root = assets_config['tensorboard_root']
-        tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
+        tensorboard_root = assets_config.get('tensorboard_root', '')
+        tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id) if tensorboard_root else ''
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         train_response = cls.training_cmd(
