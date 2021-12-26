@@ -30,6 +30,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self._user_name = "user"
         self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
+        self._tensorboard_root_name = 'tensorboard_root'
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzd5'
         self._sub_task_id = utils.sub_task_id(self._task_id, 1)
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
@@ -39,6 +40,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self._user_root = os.path.join(self._sandbox_root, self._user_name)
         self._mir_repo_root = os.path.join(self._user_root, self._mir_repo_name)
         self._storage_root = os.path.join(self._sandbox_root, self._storage_name)
+        self._tensorboard_root = os.path.join(self._sandbox_root, self._tensorboard_root_name)
 
     def setUp(self):
         test_utils.check_commands()
@@ -115,6 +117,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         assets_config = {
             'modelsuploadlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
+            'tensorboard_root': self._tensorboard_root,
         }
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
