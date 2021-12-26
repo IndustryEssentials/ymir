@@ -30,11 +30,13 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                               ms=mirpb.MIR_TASKS,
                                                               mir_task_id=src_typ_rev_tid.tid)
 
+    mir_annotations = mirpb.MirAnnotations()
+    mir_annotations.task_annotations[dst_typ_rev_tid.tid]  # an empty task annotations for hid
     task = _generate_mir_task(code=code, error_msg=error_msg, dst_typ_rev_tid=dst_typ_rev_tid)
     mir_storage_ops.add_mir_task(mir_tasks, task)
     mir_datas = {
         mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-        mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
+        mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         mirpb.MirStorage.MIR_TASKS: mir_tasks,
     }
 
@@ -70,7 +72,7 @@ def commit_on_error(f: Callable) -> Callable:
                           src_revs=src_revs,
                           dst_rev=dst_rev)
             raise e
-        except Exception as e:
+        except ValueError as e:
             trace_message = f"cmd exception: {traceback.format_exc()}"
             _commit_error(code=MirCode.RC_RUNTIME_ERROR_UNKNOWN,
                           error_msg=trace_message,
