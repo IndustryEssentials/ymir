@@ -144,6 +144,7 @@ export function createTrainTask({
   keywords,
   train_type,
   strategy,
+  docker_image,
   // gpu_count,
 }) {
   return createTask({
@@ -159,6 +160,7 @@ export function createTrainTask({
       hyperparameter,
       network,
       train_type,
+      docker_image,
       // gpu_count,
     }
   })
@@ -174,6 +176,7 @@ export function createMiningTask({
   strategy,
   inference,
   name,
+  docker_image,
   // gpu_count,
 }) {
   return createTask({
@@ -188,6 +191,7 @@ export function createMiningTask({
       mining_algorithm: algorithm,
       top_k: topk,
       generate_annotations: inference,
+      docker_image,
       // gpu_count,
     }
   })

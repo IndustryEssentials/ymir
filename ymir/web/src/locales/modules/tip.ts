@@ -9,6 +9,7 @@ const tip = {
   // 新建训练任务
   "tip.task.filter.testsets": { cn: "训练集和测试集的图片不可重复", en: "The images of the training set and the testing set cannot be duplicated.", },
   "tip.task.filter.keywords": { cn: "训练目标标签必须同时包含在训练集和测试集中", en: "Both the training and testing sets must contain target keyword", },
+  "tip.task.train.image": { cn: "训练镜像会附带配置参数，不同的训练镜像会有不同的配置参数", en: "Training docker image have its own senior config", },
   // "tip.task.filter.traintype": { cn: "训练类型提示", en: "", },
   // "tip.task.filter.network": { cn: "算法框架提示", en: "", },
   // "tip.task.filter.backbone": { cn: "骨干网络结构提示", en: "", },
