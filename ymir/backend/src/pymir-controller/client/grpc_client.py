@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import grpc
 from google.protobuf import json_format
