@@ -21,6 +21,8 @@ const breadcrumbs = {
   'breadcrumbs.configure': { cn: '资源配置', en: 'Configure', },
   'breadcrumbs.configure.permission': { cn: '权限配置', en: 'Permission', },
   'breadcrumbs.user.info': { cn: '用户管理', en: 'User Information', },
+  'breadcrumbs.images': { cn: '镜像列表', en: 'Images', },
+  'breadcrumbs.image': { cn: '镜像详情', en: 'Image', },
 }
 
 export default breadcrumbs

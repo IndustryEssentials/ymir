@@ -160,7 +160,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   const renderTitle = (
     <Row>
       <Col flex={1}><strong>{t('task.detail.title')}</strong></Col>
-      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}</Button></Col>
+      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
     </Row>
   )
 

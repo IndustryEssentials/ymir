@@ -1,4 +1,7 @@
 const tip = {
+  'tip.image.add.name': { en: "Image name from Docker Hub. E.G. image_name:tag. Default tag: latest.", cn: "镜像地址，dockerhub上镜像的名称，可以带tag，不带tag默认latest", },
+  'tip.image.add.url': { en: "Image name", cn: "镜像名称", },
+  'tip.image.add.desc': { en: "Image description for type, function etc.", cn: "描述镜像的类型，功能以及使用注意等等", },
   // 新建筛选标签
   "tip.task.filter.includelable": { cn: "期望生成的数据集包含选中的标签值", en: "Filtering tips: the generated dataset  expect to contain the selected keyword", },
   "tip.task.filter.excludelable": { cn: "期望生成的数据集不包含选中的标签值", en: "Excluding tips: the generated dataset expect to not contain the selected keyword", },
