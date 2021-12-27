@@ -21,7 +21,7 @@ services:
     env_file:
       - .env
     ports:
-      - ${TENSORBOARD_OPEN_PORT}:16006
+      - ${TENSORBOARD_OPEN_PORT}:6006
     environment:
       - TENSORBOARD_ROOT=/ymir-tensorboard-logs
     volumes:
