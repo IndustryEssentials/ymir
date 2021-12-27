@@ -88,7 +88,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         if not tensorboard_root:
             msg = "empty tensorboard_root"
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
-            return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, msg)
+            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, msg)
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
