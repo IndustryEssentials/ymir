@@ -10,8 +10,6 @@ ASSETS:
   modelsuploadlocation: ${MODELS_PATH}
   modelsuploadprotocol: file
   tensorboard_root: ${TENSORBOARD_ROOT}
-  training_image: industryessentials/executor-det-yolov4-training:release-0.1.3
-  mining_image: industryessentials/executor-det-yolov4-mining:release-0.1.3
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
