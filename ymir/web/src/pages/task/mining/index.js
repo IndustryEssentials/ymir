@@ -193,7 +193,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             size='large'
             colon={false}
           >
-            
+            <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.name.label')}
               name='name'
@@ -204,10 +204,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
+            </Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
 
-       
+            <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
               required
@@ -230,8 +231,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                 ) : null)}
               </Select>
             </Form.Item>
-        
-
+            </Tip>
+            <Tip hidden={true}>
               <Form.Item name='strategy'
                 hidden={selectedSets.length < 2}
                 initialValue={2} label={t('task.train.form.repeatdata.label')}>
@@ -241,6 +242,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                   { value: 1, label: t('task.train.form.repeatdata.terminate') },
                 ]} />
               </Form.Item>
+            </Tip>
 
               <Tip content={t('tip.task.filter.excludeset')}>
                 <Form.Item
@@ -297,14 +299,14 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
               </Form.Item>
             </Tip>
 
-            {/* <Tip content={t('tip.task.filter.miningalgo')}> */}
+            <Tip hidden={true}>
               <Form.Item
                 label={t('task.mining.form.algo.label')}
                 name="algorithm"
               >
                 {renderRadio(Algorithm())}
               </Form.Item>
-            {/* </Tip> */}
+            </Tip>
 
             <Tip content={t('tip.task.filter.strategy')}>
               <Form.Item
@@ -419,8 +421,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
 
               </Form.Item>
             </Tip> : null }
-
-            <Form.Item wrapperCol={{ offset: 4 }}>
+            <Tip hidden={true}>
+            <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
@@ -434,6 +436,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                 </Form.Item>
               </Space>
             </Form.Item>
+            </Tip>
           </Form>
         </div>
       </Card>

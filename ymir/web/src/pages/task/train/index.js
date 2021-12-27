@@ -189,6 +189,7 @@ function Train({ getDatasets, createTrainTask }) {
             colon={false}
           >
             
+            <Tip hidden={true}>
               <Form.Item
                 label={t('task.filter.form.name.label')}
                 name='name'
@@ -199,9 +200,10 @@ function Train({ getDatasets, createTrainTask }) {
               >
                 <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
               </Form.Item>
+            </Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
-            
+            <Tip hidden={true}>
               <Form.Item
                 label={t('task.train.form.trainsets.label')}
                 required
@@ -224,6 +226,7 @@ function Train({ getDatasets, createTrainTask }) {
                   ) : null)}
                 </Select>
               </Form.Item>
+            </Tip>
               <Tip content={t('tip.task.filter.testsets')}>
                 <Form.Item
                   label={t('task.train.form.testsets.label')}
@@ -249,7 +252,7 @@ function Train({ getDatasets, createTrainTask }) {
               </Tip>
             </ConfigProvider>
 
-            
+            <Tip hidden={true}>
               <Form.Item name='strategy'
                 hidden={trainSets.length < 2 && validationSets.length < 2}
                 initialValue={2} label={t('task.train.form.repeatdata.label')}>
@@ -259,7 +262,9 @@ function Train({ getDatasets, createTrainTask }) {
                   { value: 1, label: t('task.train.form.repeatdata.terminate') },
                 ]} />
               </Form.Item>
+            </Tip>
               
+            <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 4, span: 12 }} hidden={![...trainSets, ...validationSets].length}>
                 <TripleRates
                   data={datasets}
@@ -269,6 +274,7 @@ function Train({ getDatasets, createTrainTask }) {
                   ]}
                 ></TripleRates>
               </Form.Item>
+            </Tip>
 
             <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item
@@ -307,32 +313,32 @@ function Train({ getDatasets, createTrainTask }) {
               </Form.Item>
             </Tip>
 
-            {/* <Tip content={t('tip.task.filter.traintype')}> */}
+            <Tip hidden={true}>
               <Form.Item
                 label={t('task.train.form.traintype.label')}
                 name="train_type"
               >
                 {renderRadio(TrainType())}
               </Form.Item>
-            {/* </Tip> */}
+            </Tip>
 
-            {/* <Tip content={t('tip.task.filter.network')}> */}
+            <Tip hidden={true}>
               <Form.Item
                 label={t('task.train.form.network.label')}
                 name="network"
               >
                 {renderRadio(FrameworkType())}
               </Form.Item>
-            {/* </Tip> */}
+            </Tip>
 
-            {/* <Tip content={t('tip.task.filter.backbone')}> */}
+            <Tip hidden={true}>
               <Form.Item
                 label={t('task.train.form.backbone.label')}
                 name="backbone"
               >
                 {renderRadio(Backbone())}
               </Form.Item>
-            {/* </Tip> */}
+            </Tip>
 
             <Tip content={t('tip.task.filter.gpucount')}>
               <Form.Item
@@ -412,8 +418,8 @@ function Train({ getDatasets, createTrainTask }) {
 
             </Form.Item>
             </Tip> : null }
-
-            <Form.Item wrapperCol={{ offset: 4 }}>
+            <Tip hidden={true}>
+            <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
@@ -427,6 +433,7 @@ function Train({ getDatasets, createTrainTask }) {
                 </Form.Item>
               </Space>
             </Form.Item>
+            </Tip>
           </Form>
         </div>
       </Card>
