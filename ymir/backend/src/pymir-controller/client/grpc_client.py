@@ -84,10 +84,13 @@ def _build_task_training_req(args: Dict) -> Tuple[backend_pb2.GeneralReq, str, s
     req_create_task.no_task_monitor = True
     req_create_task.training.CopyFrom(train_task_req)
 
-    with open('/home/zhaozhiwei/datasets/training-config.yaml', 'r') as f:
+    # set your own training-config.yaml path and docker image name
+    training_config_path = '/path/to/training-config.yaml'
+    training_docker_image_name = 'industryessentials/executor-det-yolov4-training:release-0.1.3'
+    with open(training_config_path, 'r') as f:
         config_str = f.read()
 
-    return req_create_task, config_str, 'yolov4-training:test'
+    return req_create_task, config_str, training_docker_image_name
 
 
 def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
