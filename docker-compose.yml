@@ -52,7 +52,7 @@ services:
       - viz-redis
       - tensorboard
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
-    restart: on-failure
+    restart: on-failure:10
     networks:
       - ymirnetwork
 
@@ -62,13 +62,13 @@ services:
     volumes:
       - ${YMIR_PATH}/redis:/var/log/redis
       - ${YMIR_PATH}/redis:/data
-    restart: on-failure
+    restart: on-failure:10
     networks:
       - ymirnetwork
 
   viz-redis:
     image: industryessentials/ymir-viz-redis
-    restart: on-failure
+    restart: on-failure:10
     networks:
       - ymirnetwork
 
@@ -83,7 +83,7 @@ services:
       - LABEL_STUDIO_OPEN_PORT=${LABEL_STUDIO_OPEN_PORT}
     ports:
       - ${NGINX_PORT}:80
-    restart: on-failure
+    restart: on-failure:10
     networks:
       - ymirnetwork
 
@@ -96,7 +96,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - ${YMIR_PATH}/mysql:/var/lib/mysql
-    restart: on-failure
+    restart: on-failure:10
     networks:
       - ymirnetwork
 
