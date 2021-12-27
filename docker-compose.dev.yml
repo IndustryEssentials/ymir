@@ -105,6 +105,19 @@ services:
     networks:
       - devnetwork
 
+  tensorboard:
+    image: tensorflow/tensorflow:latest
+    env_file:
+      - .env
+    ports:
+      - ${TENSORBOARD_OPEN_PORT}:6006
+    volumes:
+      - "${YMIR_PATH}/ymir-tensorboard-logs:/ymir-tensorboard-logs"
+    command: tensorboard --logdir /ymir-tensorboard-logs --port 6006 --bind_all
+    restart: on-failure
+    networks:
+      - ymirnetwork
+
 networks:
   devnetwork:
     driver: bridge

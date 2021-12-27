@@ -16,20 +16,6 @@ services:
     restart: on-failure
     networks:
       - extnetwork
-  tensorboard:
-    image: tensorflow/tensorflow:latest
-    env_file:
-      - .env
-    ports:
-      - ${TENSORBOARD_OPEN_PORT}:6006
-    environment:
-      - TENSORBOARD_ROOT=/ymir-tensorboard-logs
-    volumes:
-      - "${YMIR_PATH}/ymir-tensorboard-logs:/ymir-tensorboard-logs"
-    command: tensorboard --logdir /ymir-tensorboard-logs --port ${TENSORBOARD_OPEN_PORT} --bind_all
-    restart: on-failure
-    networks:
-      - extnetwork
 
 networks:
     extnetwork:

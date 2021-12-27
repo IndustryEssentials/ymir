@@ -75,7 +75,7 @@ def _build_task_filter_req(args: Dict) -> backend_pb2.GeneralReq:
     return req_create_task
 
 
-def _build_task_training_req(args: Dict) -> Tuple[backend_pb2.GeneralReq, str, str]:
+def _build_task_training_req(args: Dict) -> backend_pb2.GeneralReq:
     train_task_req = backend_pb2.TaskReqTraining()
     for in_dataset_id in args['in_dataset_ids']:
         train_task_req.in_dataset_types.append(revs.build_tvt_dataset_id(in_dataset_id))
@@ -133,14 +133,12 @@ def _build_task_labeling_req(args: Dict) -> backend_pb2.GeneralReq:
     return req_create_task
 
 
-def _get_executor_config_and_name(args: Any) -> Tuple[str, str]:
-    executor_config_path, executor_name = args['executor_config'], args['executor_name']
-    if not executor_config_path or not executor_name:
-        return '', ''
-
-    with open(executor_config_path, 'r') as f:
-        executor_config = f.read()
-    return executor_name, executor_config
+def _get_executor_name_and_config(args: Any) -> Tuple[str, str]:
+    executor_config = ''
+    if args['executor_config']:
+        with open(args['executor_config'], 'r') as f:
+            executor_config = f.read()
+    return args['executor_name'], executor_config
 
 
 def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
@@ -148,7 +146,7 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
     req_name = "_build_task_{}_req".format(args["task_type"])
     req_func = getattr(sys.modules[__name__], req_name)
     task_req = req_func(args)
-    executor_name, executor_config = _get_executor_config_and_name(args)
+    executor_name, executor_config = _get_executor_name_and_config(args)
     req = invoker_call.make_cmd_request(user_id=args["user"],
                                         repo_id=args["repo"],
                                         task_id=args["tid"],
