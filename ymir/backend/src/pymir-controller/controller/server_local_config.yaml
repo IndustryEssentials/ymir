@@ -9,7 +9,7 @@ ASSETS:
   modelskvprotocol: file
   modelsuploadlocation: /tmp/ymir-controller-sandbox-root/ymir-models/
   modelsuploadprotocol: file
-  tensorboard_root: ${TENSORBOARD_ROOT}
+  tensorboard_root: /tmp/ymir-controller-sandbox-root/ymir-tensorboard-logs
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
