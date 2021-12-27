@@ -48,7 +48,7 @@ const model = {
   'model.detail.label.train_goal': { en: 'Train Classes', cn: '训练目标', },
   'model.detail.label.framework': { en: 'Network', cn: '算法框架', },
   'model.detail.label.backbone': { en: 'Backbone', cn: '骨干网络结构', },
-  'model.detail.label.hyperparams': { en: 'Hyper Parameters', cn: '超参数', },
+  'model.detail.label.hyperparams': { en: 'Senior Config', cn: '高级参数', },
   'model.add.types.share': { en: 'Share', cn: '用户分享模型', },
   'model.add.types.local': { en: 'Local', cn: '本地导入', },
   'model.add.success': { en: 'Import model success!', cn: '导入模型成功！', },

@@ -11,7 +11,7 @@ import breadcrumbs from "./modules/breadcrumbs"
 import portal from "./modules/portal"
 import keyword from './modules/keyword'
 import user from './modules/user'
-import mirror from './modules/mirror'
+import image from './modules/image'
 import tip from './modules/tip'
 
 export default {
@@ -27,6 +27,6 @@ export default {
   ...errors,
   ...keyword,
   ...user,
-  ...mirror,
+  ...image,
   ...tip,
 }

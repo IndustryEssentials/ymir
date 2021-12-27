@@ -239,7 +239,7 @@ function History({ getHistory, getDataset, getModel }) {
   const renderTitle = (
     <Row>
       <Col flex={1}>{t('breadcrumbs.history')}</Col>
-      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}</Button></Col>
+      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
     </Row>
   )
 
