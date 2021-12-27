@@ -133,12 +133,12 @@ def _build_task_labeling_req(args: Dict) -> backend_pb2.GeneralReq:
     return req_create_task
 
 
-def _get_executor_name_and_config(args: Any) -> Tuple[str, str]:
+def _get_executor_config(args: Any) -> str:
     executor_config = ''
     if args['executor_config']:
         with open(args['executor_config'], 'r') as f:
             executor_config = f.read()
-    return args['executor_name'], executor_config
+    return executor_config
 
 
 def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
@@ -146,7 +146,6 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
     req_name = "_build_task_{}_req".format(args["task_type"])
     req_func = getattr(sys.modules[__name__], req_name)
     task_req = req_func(args)
-    executor_name, executor_config = _get_executor_name_and_config(args)
     req = invoker_call.make_cmd_request(user_id=args["user"],
                                         repo_id=args["repo"],
                                         task_id=args["tid"],
@@ -155,8 +154,8 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
                                         req_create_task=task_req,
                                         executor_instance=args['tid'],
                                         merge_strategy=1,
-                                        docker_image_config=executor_config,
-                                        singleton_op=executor_name)
+                                        docker_image_config=_get_executor_config(args),
+                                        singleton_op=args['executor_name'])
     logging.info(json_format.MessageToDict(req, preserving_proto_field_name=True, use_integers_for_enums=True))
     return client.process_req(req)
 
