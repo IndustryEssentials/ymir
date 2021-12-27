@@ -95,7 +95,6 @@ def main(main_args: Any) -> int:
     sentry_sdk.init(os.environ.get("CONTROLLER_SENTRY_DSN", None))
 
     server_config = parse_config_file(main_args.config_file)
-    logging.info(f"server config: {server_config}")
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)
 
