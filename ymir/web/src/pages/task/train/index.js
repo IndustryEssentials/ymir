@@ -21,6 +21,7 @@ import commonStyles from "../common.less"
 import { AddDelTwoIcon } from '@/components/common/icons'
 import { randomNumber } from "../../../utils/number"
 import Tip from "@/components/form/tip"
+import ImageSelect from "../components/imageSelect"
 
 const { Option } = Select
 
@@ -28,11 +29,12 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ getDatasets, createTrainTask, getRuntimes }) {
+function Train({ getDatasets, createTrainTask }) {
   const { ids } = useParams()
   const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
   const history = useHistory()
   const location = useLocation()
+  const { mid, image } = location.query
   const [datasets, setDatasets] = useState([])
   const [trainSets, setTrainSets] = useState([])
   const [validationSets, setValidationSets] = useState([])
@@ -40,6 +42,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
+  const [imageUrl, setImageUrl] = useState(null)
   const hpMaxSize = 30
 
   const renderRadio = (types) => {
@@ -75,12 +78,6 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
     setKeywords(kws)
   }, [trainSets, validationSets, datasets])
 
-  useEffect(async () => {
-    const result = await getRuntimes({ type: TYPES.TRAINING })
-    if (result && !(location.state && location.state.record)) {
-      setConfig(result.config)
-    }
-  }, [])
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
@@ -91,7 +88,6 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
 
   useEffect(() => {
     const state = location.state
-    console.log('state: ', state)
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
@@ -152,6 +148,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
     const params = {
       ...values,
       name: values.name.trim(),
+      docker_image: imageUrl,
       config,
     }
     const result = await createTrainTask(params)
@@ -168,6 +165,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
   const initialValues = {
     name: 'task_train_' + randomNumber(),
     train_sets: datasetIds,
+    docker_image: image ? parseInt(image) : undefined,
     train_type: getCheckedValue(TrainType()),
     network: getCheckedValue(FrameworkType()),
     backbone: getCheckedValue(Backbone()),
@@ -301,6 +299,14 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
               </Form.Item>
             </Tip>
 
+            <Tip content={t('tip.task.train.image')}>
+              <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
+                {required: true, message: t('task.train.form.image.required')}
+              ]}>
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
+              </Form.Item>
+            </Tip>
+
             {/* <Tip content={t('tip.task.filter.traintype')}> */}
               <Form.Item
                 label={t('task.train.form.traintype.label')}
@@ -338,7 +344,7 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
               </Form.Item>
             </Tip>
 
-            <Tip content={t('tip.task.filter.hyperparams')}>
+            {seniorConfig.length ? <Tip content={t('tip.task.filter.hyperparams')}>
             <Form.Item
               label={t('task.train.form.hyperparam.label')}
               rules={[{ validator: validHyperparam }]}
@@ -352,14 +358,14 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                 </Button>
               </div>
 
-              {hpVisible ? <Form.List name='hyperparam'>
+              <Form.List name='hyperparam'>
                 {(fields, { add, remove }) => (
                   <>
-                    <div className={styles.paramContainer}>
+                    <div className={styles.paramContainer} hidden={!hpVisible}>
                       <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                        <Col flex={'240px'}>Key</Col>
-                        <Col flex={1}>Value</Col>
-                        <Col span={2}>Action</Col>
+                        <Col flex={'240px'}>{t('common.key')}</Col>
+                        <Col flex={1}>{t('common.value')}</Col>
+                        <Col span={2}>{t('common.action')}</Col>
                       </Row>
                       {fields.map(field => (
                         <Row key={field.key} gutter={20}>
@@ -402,10 +408,10 @@ function Train({ getDatasets, createTrainTask, getRuntimes }) {
                     </div>
                   </>
                 )}
-              </Form.List> : null}
+              </Form.List>
 
             </Form.Item>
-            </Tip>
+            </Tip> : null }
 
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space size={20}>
@@ -439,12 +445,6 @@ const dis = (dispatch) => {
     createTrainTask(payload) {
       return dispatch({
         type: "task/createTrainTask",
-        payload,
-      })
-    },
-    getRuntimes(payload) {
-      return dispatch({
-        type: "common/getRuntimes",
         payload,
       })
     },

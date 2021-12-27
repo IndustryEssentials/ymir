@@ -51,14 +51,14 @@ const image = {
   'image.share.title': { en: "Share Image {name}", cn: "共享镜像 {name}", },
   'image.links.placeholder': { en: "Please select mining images for train image", cn: "请选择关联训练镜像的挖掘镜像", },
   'image.detail.title': { en: "Image Detail", cn: "镜像详情", },
-  'image.detail.label.name': { en: "Image Name", cn: "镜像名称", },
-  'image.detail.label.type': { en: "Image Type", cn: "镜像类型", },
-  'image.detail.label.url': { en: "Image Url", cn: "镜像地址", },
-  'image.detail.label.share': { en: "Image Shared", cn: "是否共享镜像", },
-  'image.detail.label.related': { en: "Image Related", cn: "关联镜像", },
-  'image.detail.label.config': { en: "Image Config", cn: "镜像配置参数", },
+  'image.detail.label.name': { en: "Name", cn: "镜像名称", },
+  'image.detail.label.type': { en: "Type", cn: "镜像类型", },
+  'image.detail.label.url': { en: "Url", cn: "镜像地址", },
+  'image.detail.label.share': { en: "Shared", cn: "是否共享镜像", },
+  'image.detail.label.related': { en: "Related", cn: "关联镜像", },
+  'image.detail.label.config': { en: "Senior Config", cn: "镜像高级参数", },
   'image.detail.label.state': { en: "Image State", cn: "镜像状态", },
-  'image.detail.relate': { en: "Relate Image", cn: "去关联", },
+  'image.detail.relate': { en: "Relate", cn: "去关联", },
 }
 
 export default image

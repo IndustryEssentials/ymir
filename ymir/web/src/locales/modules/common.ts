@@ -63,6 +63,8 @@ const common = {
   'common.action': {cn: '操作', en: 'Action', },
   'common.state': {cn: '状态', en: 'State', },
   'common.del': {cn: '删除', en: 'Delete', },
+  'common.key': {cn: '键', en: 'Key', },
+  'common.value': {cn: '值', en: 'Value', },
 }
 
 export default common
