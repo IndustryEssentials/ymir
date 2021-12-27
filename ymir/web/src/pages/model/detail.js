@@ -67,7 +67,7 @@ function ModelDetail({ getModel }) {
     return (
       <Row>
         <Col flex={1}>{model.name}</Col>
-        <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}</Button></Col>
+        <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
       </Row>
     )
   }

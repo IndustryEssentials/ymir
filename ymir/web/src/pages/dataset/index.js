@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./index.less"
 import { Link, useHistory, useLocation, useParams } from "umi"
-import { Form, Button, Input, Select, Table, Menu, Dropdown, Space, Modal, ConfigProvider, Row, Col, Radio, Tag, Tooltip, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Radio, Tag, Tooltip, } from "antd"
 import {
-  SearchOutlined,
   SyncOutlined,
 } from "@ant-design/icons"
 import moment from "moment"
@@ -14,18 +13,21 @@ import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
 import { TASKSTATES } from '@/constants/task'
-import { getDatasetTypes, getTimes } from '@/constants/query'
 import { getSetStates } from '@/constants/column'
-import Breadcrumbs from "../../components/common/breadcrumb"
+import { getDatasetTypes, getTimes } from '@/constants/query'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, TipsIcon, More1Icon, EditIcon, DeleteIcon, TreeIcon } from "../../components/common/icons"
-import StateTag from "../../components/task/stateTag"
-import EditBox from "../../components/form/editBox"
-import Rect from '@/components/guide/rect'
-import Guide from "../../components/guide/guide"
-import RenderProgress from "../../components/common/progress"
-import TypeTag from "../../components/task/typeTag"
-import Actions from "../../components/table/actions"
+import StateTag from "@/components/task/stateTag"
+import EditBox from "@/components/form/editBox"
+// import Rect from '@/components/guide/rect'
+// import Guide from "../../components/guide/guide"
+import RenderProgress from "@/components/common/progress"
+import TypeTag from "@/components/task/typeTag"
+import Actions from "@/components/table/actions"
+
+import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, SearchIcon,
+  TipsIcon, EditIcon, DeleteIcon, TreeIcon } from "@/components/common/icons"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -390,7 +392,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
             <Row>
               <Col className={styles.queryColumn} span={12}>
                 <Form.Item name="name" label={t('dataset.query.name')}>
-                  <Input placeholder={t("dataset.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchOutlined />} />
+                  <Input placeholder={t("dataset.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
                 </Form.Item>
               </Col>
               <Col className={styles.queryColumn} span={12}>

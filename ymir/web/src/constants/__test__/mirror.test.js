@@ -1,11 +1,11 @@
-import { CONFIGTYPES } from '../mirror'
+import { TYPES } from '../image'
 
 describe("constants: mirror", () => {
   it("have right mapping and object is freeze", () => {
-    expect(CONFIGTYPES.TRAINING).toBe(1)
-    expect(CONFIGTYPES.MINING).toBe(2)
+    expect(TYPES.TRAINING).toBe(1)
+    expect(TYPES.MINING).toBe(2)
 
-    function tryExtendAttr () { CONFIGTYPES.newAttr = 'test' }
+    function tryExtendAttr () { TYPES.newAttr = 'test' }
     expect(tryExtendAttr).toThrowError('object is not extensible')
   })
 })

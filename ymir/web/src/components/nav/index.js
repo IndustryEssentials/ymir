@@ -59,13 +59,13 @@ const menus = () => [
     icon: <NavModelmanageIcon className={styles.navIcon} />,
     sub: [
       {
-        label: t('common.top.menu.mirror'),
-        key: "/home/mirror",
+        label: t('common.top.menu.image'),
+        key: "/home/image",
         icon: <NavModelmanageIcon className={styles.navIcon} />,
       },
       // {
-      //   label: t('common.top.menu.mirror.center'),
-      //   key: "/home/mirror_center",
+      //   label: t('common.top.menu.image.center'),
+      //   key: "/home/image_center",
       //   icon: <NavModelmanageIcon className={styles.navIcon} />,
       // },
       {
@@ -83,7 +83,6 @@ function getParantPath(path) {
 }
 
 function validPermission(role, permission) {
-  console.log('permission: ', role, permission)
   return role >= (permission || role)
 }
 

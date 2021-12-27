@@ -13,7 +13,7 @@ import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
 import { TASKSTATES } from '@/constants/task'
-import { CONFIGTYPES } from '@/constants/mirror'
+import { TYPES } from '@/constants/image'
 import { useHistory, useParams, useLocation } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyStateDataset from '@/components/empty/dataset'
@@ -70,7 +70,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
   }, [])
 
   useEffect(async () => {
-    const result = await getRuntimes({ type: CONFIGTYPES.MINING })
+    const result = await getRuntimes({ type: TYPES.MINING })
     if (result && !(location.state && location.state.record)) {
       setConfig(result.config)
     }
