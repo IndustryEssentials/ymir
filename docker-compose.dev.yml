@@ -30,6 +30,8 @@ services:
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
       - API_HOST=127.0.0.1:80
+      # tensorboard
+      - TENSORBOARD_ROOT=${YMIR_PATH}/ymir-tensorboard-logs
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
       - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
@@ -45,6 +47,8 @@ services:
       # app
       - ${YMIR_PATH}/ymir-storage:/ymir-storage
       - ${YMIR_PATH}/importing_pic:/data/sharing
+      # tensorboard
+      - "${YMIR_PATH}/ymir-tensorboard-logs:${YMIR_PATH}/ymir-tensorboard-logs"
     depends_on:
       - db
       - redis
