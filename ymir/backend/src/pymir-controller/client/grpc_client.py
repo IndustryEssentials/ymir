@@ -17,6 +17,8 @@ class ControllerClient:
         self.stub = backend_pb2_grpc.mir_controller_serviceStub(channel)
         self.user = user
         self.repo = repo
+        self.executor_config = ''
+        self.executor_name = ''
 
     def process_req(self, req: Any) -> Any:
         resp = self.stub.data_manage_request(req)
@@ -131,6 +133,14 @@ def _build_task_labeling_req(args: Dict) -> backend_pb2.GeneralReq:
     return req_create_task
 
 
+def _get_executor_config(args: Any) -> str:
+    executor_config = ''
+    if args['executor_config']:
+        with open(args['executor_config'], 'r') as f:
+            executor_config = f.read()
+    return executor_config
+
+
 def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
     args = vars(args)
     req_name = "_build_task_{}_req".format(args["task_type"])
@@ -141,7 +151,11 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
                                         task_id=args["tid"],
                                         model_hash=args["model_hash"],
                                         req_type=backend_pb2.TASK_CREATE,
-                                        req_create_task=task_req)
+                                        req_create_task=task_req,
+                                        executor_instance=args['tid'],
+                                        merge_strategy=1,
+                                        docker_image_config=_get_executor_config(args),
+                                        singleton_op=args['executor_name'])
     logging.info(json_format.MessageToDict(req, preserving_proto_field_name=True, use_integers_for_enums=True))
     return client.process_req(req)
 
@@ -166,7 +180,7 @@ def get_parser() -> Any:
     common_group.add_argument(
         "-g",
         "--grpc",
-        default="127.0.0.1:50051",
+        default="127.0.0.1:50066",
         type=str,
         help="grpc channel",
     )
@@ -200,6 +214,8 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--expert_instruction_url", type=str)
     parser_create_task.add_argument("--labeler_accounts", nargs="*", type=str)
     parser_create_task.add_argument("--project_name", type=str)
+    parser_create_task.add_argument("--executor_config", type=str, default='')
+    parser_create_task.add_argument("--executor_name", type=str, default='')
     parser_create_task.set_defaults(func=call_create_task)
 
     # GET TASK INFO
@@ -223,6 +239,7 @@ def run() -> None:
         print("invalid argument, try -h to get more info")
         return
 
+    logging.info(f"args: {args}")
     client = ControllerClient(args.grpc, args.repo, args.user)
     args.func(client, args=args)
 

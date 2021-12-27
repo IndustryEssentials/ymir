@@ -13,7 +13,7 @@ services:
     volumes:
       - "${YMIR_PATH}/label-studio_data:/label-studio/data"
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
-    restart: on-failure
+    restart: on-failure:10
     networks:
       - extnetwork
 
