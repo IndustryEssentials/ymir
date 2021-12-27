@@ -21,14 +21,14 @@ stop
 }
 
 choose_yes () {
-sed -i '' "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE}
+sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE} && rm -f *.bk
 
 uuid=$(uuidgen)
-sed -i '' "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" .env
+sed -i.bk "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" .env && rm -f *.bk
 }
 
 choose_no () {
-sed -i '' "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE}
+sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE} && rm -f *.bk
 }
 
 check_permission() {
