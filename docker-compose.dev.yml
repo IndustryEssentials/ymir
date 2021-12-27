@@ -48,7 +48,7 @@ services:
       - ${YMIR_PATH}/ymir-storage:/ymir-storage
       - ${YMIR_PATH}/importing_pic:/data/sharing
       # tensorboard
-      - "${YMIR_PATH}/ymir-tensorboard-logs:${YMIR_PATH}/ymir-tensorboard-logs"
+      - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
     depends_on:
       - db
       - redis
