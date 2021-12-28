@@ -7,6 +7,8 @@ from aiohttp import ClientSession
 from arq import cron
 from arq.connections import RedisSettings
 
+from app.utils.security import frontend_hash
+
 env = os.environ.get
 
 CHECK_INTERVAL_IN_SECONDS = int(env("CHECK_INTERVAL_IN_SECONDS", 30))
@@ -14,6 +16,7 @@ API_HOST = env("API_HOST", "backend")
 REDIS_URI = env("CTR_REDIS_URI", "redis://redis:6379")
 FIRST_ADMIN = env("FIRST_ADMIN")
 FIRST_ADMIN_PASSWORD = env("FIRST_ADMIN_PASSWORD")
+IS_TESTING = bool(env("IS_TESTING", False))
 
 
 async def update_task_status(ctx: Dict) -> int:
@@ -22,7 +25,14 @@ async def update_task_status(ctx: Dict) -> int:
     to check all the unfinished tasks
     """
     session = ClientSession()
-    data = {"username": FIRST_ADMIN, "password": FIRST_ADMIN_PASSWORD}
+
+    password = FIRST_ADMIN_PASSWORD
+    if not password:
+        raise EnvironmentError("Missing Env")
+    if not IS_TESTING:
+        password = frontend_hash(password)
+
+    data = {"username": FIRST_ADMIN, "password": password}
     token_url = f"http://{API_HOST}/api/v1/auth/token"
     async with session.post(token_url, data=data) as response:
         content = await response.json()

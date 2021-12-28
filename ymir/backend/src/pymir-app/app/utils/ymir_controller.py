@@ -275,7 +275,9 @@ class ControllerRequest:
         request.singleton_op = args["url"]
         return request
 
-    def prepare_get_gpu_info(self, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralReq:
+    def prepare_get_gpu_info(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_GPU_INFO_GET
         return request
 
