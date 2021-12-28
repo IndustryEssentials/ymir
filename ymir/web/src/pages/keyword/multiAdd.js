@@ -30,16 +30,17 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => {} }, ref) => {
   }
 
   function transKeywords(text) {
-    const keywords = []
+    let keywords = []
     try {
-      text.replace(/(.+):(.+)/g, function (a, key, value) {
-        const aliases = value.trim().split(/\s*,\s*/).filter(alias => !!alias)
-        const name = key.trim()
-        if (name) {
-          keywords.push({
-            name: key.trim(),
-            aliases: aliases,
-          })
+      keywords = text.split(/\s*\n\s*/).map(line => {
+        const pair = line.split(/\s*:\s*/)
+        let aliases = []
+        if (pair[1]) {
+          aliases = pair[1].split(/\s*,\s*/).filter(alias => !!alias)
+        }
+        return {
+          name: pair[0],
+          aliases,
         }
       })
     } catch(e) {
