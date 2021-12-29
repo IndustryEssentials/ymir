@@ -84,5 +84,6 @@ def commit_on_error(f: Callable) -> Callable:
                               dst_rev=dst_rev,
                               predefined_mir_tasks=e.mir_tasks)
             raise e
+        # other kind of errors: no commit, default behaviour
 
     return wrapper
