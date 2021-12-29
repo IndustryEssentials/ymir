@@ -607,8 +607,8 @@ class Task(google.protobuf.message.Message):
     TIMESTAMP_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
     UNKNOWN_TYPES_FIELD_NUMBER: builtins.int
-    CODE_FIELD_NUMBER: builtins.int
-    ERROR_MSG_FIELD_NUMBER: builtins.int
+    RETURN_CODE_FIELD_NUMBER: builtins.int
+    RETURN_MSG_FIELD_NUMBER: builtins.int
     ARGS_FIELD_NUMBER: builtins.int
     ANCESTOR_TASK_ID_FIELD_NUMBER: builtins.int
     type: global___TaskType.V = ...
@@ -632,10 +632,10 @@ class Task(google.protobuf.message.Message):
     def unknown_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
         """/ (special for import task): unknown types for cmd import"""
         pass
-    code: builtins.int = ...
+    return_code: builtins.int = ...
     """/ return code of task"""
 
-    error_msg: typing.Text = ...
+    return_msg: typing.Text = ...
     args: typing.Text = ...
     """/ serialization result of arguments of this task, in yaml format"""
 
@@ -649,13 +649,13 @@ class Task(google.protobuf.message.Message):
         timestamp : builtins.int = ...,
         model : typing.Optional[global___ModelMeta] = ...,
         unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
-        code : builtins.int = ...,
-        error_msg : typing.Text = ...,
+        return_code : builtins.int = ...,
+        return_msg : typing.Text = ...,
         args : typing.Text = ...,
         ancestor_task_id : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ancestor_task_id",b"ancestor_task_id","args",b"args","base_task_id",b"base_task_id","code",b"code","error_msg",b"error_msg","model",b"model","name",b"name","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ancestor_task_id",b"ancestor_task_id","args",b"args","base_task_id",b"base_task_id","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):

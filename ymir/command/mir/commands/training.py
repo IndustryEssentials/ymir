@@ -110,8 +110,8 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
     task.timestamp = int(datetime.datetime.now().timestamp())
     task.model.model_hash = model_sha1
     task.model.mean_average_precision = mAP
-    task.code = task_ret_code
-    task.error_msg = task_err_msg
+    task.return_code = task_ret_code
+    task.return_msg = task_err_msg
 
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                           mir_branch=src_rev_tid.rev,

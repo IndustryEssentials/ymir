@@ -199,8 +199,8 @@ message Task {
     /// (special for import task): unknown types for cmd import
     map<string, int32> unknown_types = 7;
     /// return code of task
-    int32 code = 8;
-    string error_msg = 9;
+    int32 return_code = 8;
+    string return_msg = 9;
     /// serialization result of arguments of this task, in yaml format
     string args = 100;
     string ancestor_task_id = 101;

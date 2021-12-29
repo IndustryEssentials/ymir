@@ -75,7 +75,7 @@ class CmdShow(base.BaseCommand):
     def _show_general_tasks(cls, mir_tasks: mirpb.MirTasks) -> None:
         hid = mir_tasks.head_task_id
         task = mir_tasks.tasks[hid]
-        print(f"tasks.mir: hid: {hid}, code: {task.code}, error msg: {task.error_msg}\n"
+        print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
               f"    model hash: {task.model.model_hash}, map: {task.model.mean_average_precision}")
 
     @classmethod

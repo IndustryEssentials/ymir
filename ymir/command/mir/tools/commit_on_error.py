@@ -15,8 +15,8 @@ def _generate_mir_task(code: int, error_msg: str, dst_typ_rev_tid: revs_parser.T
     task.task_id = dst_typ_rev_tid.tid
     task.name = dst_typ_rev_tid.tid
     task.timestamp = int(datetime.datetime.now().timestamp())
-    task.code = code
-    task.error_msg = error_msg
+    task.return_code = code
+    task.return_msg = error_msg
     return task
 
 
