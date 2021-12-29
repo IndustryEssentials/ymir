@@ -29,7 +29,7 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ getDatasets, createTrainTask }) {
+function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const { ids } = useParams()
   const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
   const history = useHistory()
@@ -43,6 +43,7 @@ function Train({ getDatasets, createTrainTask }) {
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
   const [imageUrl, setImageUrl] = useState(null)
+  const [gpu_count, setGPU] = useState(0)
   const hpMaxSize = 30
 
   const renderRadio = (types) => {
@@ -56,6 +57,10 @@ function Train({ getDatasets, createTrainTask }) {
       </Radio.Group>
     )
   }
+
+  useEffect(() => {
+    fetchSysInfo()
+  }, [])
 
   useEffect(async () => {
     let result = await getDatasets({ limit: 100000 })
@@ -119,6 +124,13 @@ function Train({ getDatasets, createTrainTask }) {
       return Promise.reject(t('task.validator.same.param'))
     } else {
       return Promise.resolve()
+    }
+  }
+
+  async function fetchSysInfo() {
+    const result = await getSysInfo()
+    if (result) {
+      setGPU(result.gpu_count)
     }
   }
 
@@ -343,10 +355,14 @@ function Train({ getDatasets, createTrainTask }) {
             <Tip content={t('tip.task.filter.gpucount')}>
               <Form.Item
                 label={t('task.gpu.count')}
-                name="gpu_count"
-                rules={[{ type: 'number', min: 1, max: 1000 }]}
               >
-                <InputNumber min={1} max={1000} precision={0} />
+                <Form.Item
+                  noStyle
+                  name="gpu_count"
+                  rules={[{ type: 'number', min: 1, max: gpu_count }]}
+                >
+                  <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
+                  <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
 
@@ -422,7 +438,7 @@ function Train({ getDatasets, createTrainTask }) {
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit">
+                  <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
                     {t('task.filter.create')}
                   </Button>
                 </Form.Item>
@@ -447,6 +463,11 @@ const dis = (dispatch) => {
       return dispatch({
         type: "dataset/getDatasets",
         payload,
+      })
+    },
+    getSysInfo() {
+      return dispatch({
+        type: "common/getSysInfo",
       })
     },
     createTrainTask(payload) {
