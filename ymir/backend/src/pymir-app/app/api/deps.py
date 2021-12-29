@@ -3,7 +3,7 @@ from typing import Dict, Generator, List
 
 from fastapi import Depends, Security
 from fastapi.logger import logger
-from fastapi.security import OAuth2PasswordBearer, SecurityScopes
+from fastapi.security import APIKeyHeader, OAuth2PasswordBearer, SecurityScopes
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -19,9 +19,11 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.role import Roles
+from app.constants.state import TaskType
 from app.db.session import SessionLocal
 from app.utils import cache as ymir_cache
 from app.utils import class_ids, graph, security, stats, ymir_controller, ymir_viz
+from app.utils.security import verify_api_key
 from app.utils.ymir_controller import (
     ControllerClient,
     ControllerRequest,
@@ -36,8 +38,23 @@ reusable_oauth2 = OAuth2PasswordBearer(
     },
 )
 
+API_KEY_NAME = "api-key"  # use dash to compatible with Nginx
+api_key_header = APIKeyHeader(
+    name=API_KEY_NAME, scheme_name="API key header", auto_error=False
+)
+
 
 # Dependents
+
+# apiKey approach
+def api_key_security(header_param: str = Security(api_key_header)) -> str:
+    if header_param and verify_api_key(header_param):
+        return header_param
+    else:
+        raise InvalidToken()
+
+
+# OAuth2 approach
 def get_db() -> Generator:
     try:
         db = SessionLocal()
@@ -130,7 +147,15 @@ def get_viz_client() -> Generator:
         client.close()
 
 
-def get_graph_client(
+def get_graph_client() -> Generator:
+    try:
+        client = graph.GraphClient(redis_uri=settings.REDIS_URI)
+        yield client
+    finally:
+        client.close()
+
+
+def get_graph_client_of_user(
     current_user: models.User = Depends(get_current_active_user),
 ) -> Generator:
     try:
@@ -141,10 +166,8 @@ def get_graph_client(
         client.close()
 
 
-def get_stats_client(
-    current_user: models.User = Depends(get_current_active_user),
-) -> Generator:
-    task_types = [t.value for t in models.task.TaskType]
+def get_stats_client() -> Generator:
+    task_types = [t.value for t in TaskType]
     try:
         client = stats.RedisStats(settings.REDIS_URI, task_types)
         yield client

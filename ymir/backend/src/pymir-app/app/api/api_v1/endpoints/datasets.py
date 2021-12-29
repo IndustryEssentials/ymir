@@ -21,7 +21,8 @@ from app.api.errors.errors import (
     NoDatasetPermission,
 )
 from app.config import settings
-from app.models.task import TaskState, TaskType
+from app.constants.state import TaskState, TaskType
+from app.models.task import Task
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.stats import RedisStats
@@ -39,10 +40,8 @@ def list_dataset(
     db: Session = Depends(deps.get_db),
     dataset_ids: str = Query(None, example="12,13,14", alias="ids"),
     name: str = Query(None, description="search by dataset's name"),
-    type_: models.task.TaskType = Query(
-        None, alias="type", description="type of related task"
-    ),
-    state: models.task.TaskState = Query(None),
+    type_: TaskType = Query(None, alias="type", description="type of related task"),
+    state: TaskState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     start_time: int = Query(None, description="from this timestamp"),
@@ -143,9 +142,7 @@ def create_dataset(
     logger.info("[create dataset] dataset record created: %s", dataset)
 
     # run background task when related task record has been created
-    background_tasks.add_task(
-        import_dataset, db, controller_client, pre_dataset, task.id
-    )
+    background_tasks.add_task(import_dataset, db, controller_client, pre_dataset, task)
 
     return {"result": dataset}
 
@@ -194,13 +191,13 @@ def import_dataset(
     db: Session,
     controller_client: ControllerClient,
     pre_dataset: PrepareDataset,
-    task_id: int,
+    task: Task,
 ) -> None:
     try:
         _import_dataset(db, controller_client, pre_dataset)
     except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound) as e:
         logger.error("[create dataset] failed to import dataset: %s", e)
-        crud.task.update_task_state(db, task_id=task_id, new_state=TaskState.error)
+        crud.task.update_state(db, task=task, new_state=TaskState.error)
 
 
 def _import_dataset(
