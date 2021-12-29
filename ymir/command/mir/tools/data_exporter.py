@@ -12,6 +12,8 @@ import xml.etree.ElementTree as ElementTree
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, mir_storage_ops
 from mir.tools import utils as mir_utils
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 class ExportError(Exception):
@@ -78,7 +80,9 @@ def export(mir_root: str,
         bool: returns True if success
     """
     if not mir_root:
-        raise ValueError("invalid mir_repo")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message="invalid mir_repo",
+                              needs_new_commit=False)
 
     # export assets
     os.makedirs(asset_dir, exist_ok=True)
@@ -127,7 +131,8 @@ def export(mir_root: str,
                                                dest_path=annotation_dir,
                                                mir_root=mir_root)
     else:
-        raise ValueError(f"unsupported format: {format_type.name}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"unsupported format: {format_type.name}")
 
     return True
 
@@ -150,7 +155,8 @@ def _generate_asset_index_file(asset_rel_paths: Collection,
         FileExistsError: if index file already exists, and override set to False
     """
     if not asset_rel_paths or not index_file_path:
-        raise ValueError('empty asset_rel_paths or index_file_path')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='empty asset_rel_paths or index_file_path')
     if os.path.exists(index_file_path):
         if overwrite:
             logging.warning(f"index file already exists, overwriting: {index_file_path}")
@@ -182,7 +188,8 @@ def _annotations_by_assets(mir_annotations: mirpb.MirAnnotations, class_type_ids
     assets_to_det_annotations_dict = {}  # type: Dict[str, List[mirpb.Annotation]]
 
     if base_task_id not in mir_annotations.task_annotations:
-        raise ValueError(f"base task id: {base_task_id} not in mir_annotations")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message=f"base task id: {base_task_id} not in mir_annotations")
 
     task_annotations = mir_annotations.task_annotations[base_task_id]
     for asset_id, image_annotations in task_annotations.image_annotations.items():
@@ -199,7 +206,7 @@ def _annotations_by_assets(mir_annotations: mirpb.MirAnnotations, class_type_ids
 def _export_detect_ark_annotations_to_path(annotations_dict: Dict[str, List[mirpb.Annotation]], asset_ids: List[str],
                                            dest_path: str, class_type_mapping: Optional[Dict[int, int]]) -> None:
     if not asset_ids:
-        raise ValueError("empty asset ids")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty asset ids")
 
     os.makedirs(dest_path, exist_ok=True)
 
@@ -226,12 +233,12 @@ def _export_detect_ark_annotations_to_path(annotations_dict: Dict[str, List[mirp
 
 # private: export annotations: voc
 def _export_detect_voc_annotations_to_path(annotations_dict: Dict[str, List[mirpb.Annotation]],
-                                           mir_metadatas: mirpb.MirMetadatas, asset_ids: List[str],
-                                           dest_path: str, mir_root: str) -> None:
+                                           mir_metadatas: mirpb.MirMetadatas, asset_ids: List[str], dest_path: str,
+                                           mir_root: str) -> None:
     if not asset_ids:
-        raise ValueError('empty asset_ids')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty asset_ids')
     if not mir_metadatas:
-        raise ValueError('invalid mir_metadatas')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid mir_metadatas')
 
     os.makedirs(dest_path, exist_ok=True)
 
@@ -241,7 +248,8 @@ def _export_detect_voc_annotations_to_path(annotations_dict: Dict[str, List[mirp
     empty_counter = 0
     for asset_id in asset_ids:
         if asset_id not in mir_metadatas.attributes:
-            raise ValueError(f"can not find asset id: {asset_id} in mir_metadatas")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message=f"can not find asset id: {asset_id} in mir_metadatas")
 
         if asset_id not in annotations_dict:
             missing_counter += 1

@@ -9,8 +9,9 @@ import shutil
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser
-from mir.tools.code import MirCode, MirRuntimeError
+from mir.tools.code import MirCode
 from mir.tools.commit_on_error import commit_on_error
+from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
 
 

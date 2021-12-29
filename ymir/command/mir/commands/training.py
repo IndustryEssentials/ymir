@@ -15,6 +15,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import phase_logger_in_out
 
 
@@ -23,7 +24,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                            task_context: dict) -> Tuple[str, float]:
     model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
     if not model_paths:
-        raise ValueError("can not find models")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE, error_message='can not find models')
 
     tar_path = os.path.join(out_root, "models.tar.gz")
     _pack_models_and_config(model_paths=model_paths,
@@ -62,7 +63,8 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
 
 def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
     if not model_paths or not dest_path:
-        raise ValueError("invalid model_paths or dest_path")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message='invalid model_paths or dest_path')
 
     logging.info(f"packing models to {dest_path}")
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
@@ -86,7 +88,8 @@ def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_
 
 def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
     if not model_pack_path or not dest_path:
-        raise ValueError("invalid model_pack_path or dest_path")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message='invalid model_pack_path or dest_path')
 
     shutil.copyfile(model_pack_path, dest_path)
     return True
@@ -189,7 +192,9 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
 
     # check class names
     if model_storage.class_names != class_names:
-        raise ValueError(f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
+        raise MirRuntimeError(
+            error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            error_message=f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
 
     return model_storage.models
 

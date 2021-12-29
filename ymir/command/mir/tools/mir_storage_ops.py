@@ -10,6 +10,7 @@ from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 class MirStorageDatas:
@@ -96,17 +97,18 @@ class MirStorageOps():
         if not mir_root:
             mir_root = '.'
         if not commit_message:
-            raise ValueError("empty commit message")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not mir_branch:
-            raise ValueError("empty mir branch")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty mir branch")
         if not task_id:
-            raise ValueError('empty task id')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
-            raise ValueError('need no mir_keywords')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
 
         branch_exists = mir_repo_utils.mir_check_branch_exists(mir_root=mir_root, branch=mir_branch)
         if not branch_exists and not his_branch:
-            raise ValueError(f"branch {mir_branch} not exists, and his_branch not provided")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
+                                  error_message=f"branch {mir_branch} not exists, and his_branch not provided")
 
         # checkout to proper branch
         # if mir_branch exists, checkout mir_branch
@@ -215,7 +217,8 @@ def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations) -> Non
         mir_annotations.head_task_id = task_ids[0]
     elif len(task_ids) > 1:
         # * now we allows only one task id in each mir_annotations
-        raise ValueError(f'more then one task ids found in mir_annotations: {task_ids}')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message=f'more then one task ids found in mir_annotations: {task_ids}')
 
 
 def add_mir_task(mir_tasks: mirpb.MirTasks, task: mirpb.Task) -> None:
@@ -227,13 +230,14 @@ def add_mir_task(mir_tasks: mirpb.MirTasks, task: mirpb.Task) -> None:
         task (mirpb.Task): new task you wish to add
 
     Raises:
-        ValueError: if `task` has no task_id
-        ValueError: if `task.task_id` already exists
+        MirRuntimeError: if `task` has no task_id
+        MirRuntimeError: if `task.task_id` already exists
     """
     if not task.task_id:
-        raise ValueError("empty task id")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
     if task.task_id in mir_tasks.tasks:
-        raise ValueError(f"tasl id {task.task_id} already exists")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
+                              error_message=f"tasl id {task.task_id} already exists")
 
     orig_head_task_id = mir_tasks.head_task_id
     task.ancestor_task_id = orig_head_task_id

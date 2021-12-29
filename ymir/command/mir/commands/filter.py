@@ -7,6 +7,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.commit_on_error import commit_on_error
+from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
 from mir.tools.code import MirCode
 
@@ -112,10 +113,11 @@ class CmdFilter(base.BaseCommand):
         PhaseLoggerCenter.update_phase(phase='filter.read')
 
         if task_id in mir_tasks.tasks:
-            logging.error(f"invalid args: task id already exists: {task_id}")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
+                                  error_message=f"invalid args: task id already exists: {task_id}")
         if not base_task_id:
-            raise ValueError("no base task id in tasks.mir")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message='no base task id in tasks.mir')
 
         assert len(mir_annotations.task_annotations.keys()) == 1
         base_task_annotations = mir_annotations.task_annotations[base_task_id]  # type: mirpb.SingleTaskAnnotations
@@ -140,8 +142,9 @@ class CmdFilter(base.BaseCommand):
                 logging.info(f"assets count after {message}: {len(asset_ids_set)}")
 
         if not asset_ids_set:
-            logging.info("matched nothing with pred: {}, excludes: {}, please try another preds".format(in_cis, ex_cis))
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(
+                error_code=MirCode.RC_CMD_INVALID_ARGS,
+                error_message=f"matched nothing with pred: {in_cis}, excludes: {ex_cis}, please try another preds")
 
         matched_mir_metadatas = mirpb.MirMetadatas()
         matched_mir_annotations = mirpb.MirAnnotations()

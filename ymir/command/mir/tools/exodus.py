@@ -9,7 +9,8 @@ from typing import Any, Optional
 import yaml
 
 from mir import scm
-from mir.tools.code import MirCode, MirRuntimeError
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 def locate_file_in_rev(mir_root: str, file_name: str, rev: str) -> str:
@@ -21,7 +22,7 @@ def locate_file_in_rev(mir_root: str, file_name: str, rev: str) -> str:
     rev: branch name, commit id, or tag name
     """
     if not mir_root or not file_name or not rev:
-        raise ValueError("invalid args")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args')
 
     scm_git = scm.Scm(mir_root if mir_root else ".", scm_executable="git")
 
@@ -90,7 +91,7 @@ class open_mir():
 
     def __enter__(self) -> Any:
         if not self._mir_root or not self._file_name or not self._mode:
-            raise ValueError("invalid arguments")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid arguments')
 
         self._fd = _open_branch_tag_commit_file(mir_root=self._mir_root,
                                                 file_name=self._file_name,

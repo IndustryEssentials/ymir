@@ -10,8 +10,9 @@ from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable, Dict, List, Optional
 
-from mir.tools.code import MirCode, MirRuntimeError
 from mir.tools import revs_parser, mir_repo_utils
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 class PhaseStateEnum(str, Enum):

@@ -5,9 +5,10 @@ from typing import Dict, List, Set, Tuple
 
 import xml.dom.minidom
 
-from mir.tools import class_ids, mir_storage_ops
-from mir.tools.code import MirCode, MirRuntimeError
-from mir.tools.phase_logger import PhaseLoggerCenter, PhaseStateEnum
+from mir.tools import class_ids
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
+from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -103,7 +104,8 @@ def _read_customized_Keywords(ck_file: str) -> Dict[str, Set[str]]:
             continue
 
         if components[0] in name_cks:
-            raise ValueError(f'dumplicate asset name in ck file: {components[0]}')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message=f'dumplicate asset name in ck file: {components[0]}')
 
         name_cks[components[0]] = set(components[1:])
 

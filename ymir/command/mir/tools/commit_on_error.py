@@ -3,8 +3,9 @@ from functools import wraps
 import traceback
 from typing import Any, Callable
 
-from mir.tools import mir_storage, mir_storage_ops, revs_parser
-from mir.tools.code import MirCode, MirRuntimeError
+from mir.tools import mir_storage_ops, revs_parser
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -60,18 +61,19 @@ def commit_on_error(f: Callable) -> Callable:
         try:
             ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, *args, **kwargs)
 
-            if ret != MirCode.RC_OK:
+            if ret != MirCode.RC_OK and ret != MirCode.RC_CMD_INVALID_ARGS:
                 trace_message = f"cmd return: {ret}"
                 _commit_error(code=ret, error_msg=trace_message, mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev)
 
             return ret
         except MirRuntimeError as e:
             trace_message = f"cmd exception: {traceback.format_exc()}"
-            _commit_error(code=e.error_code,
-                          error_msg=trace_message,
-                          mir_root=mir_root,
-                          src_revs=src_revs,
-                          dst_rev=dst_rev)
+            if e.needs_new_commit:
+                _commit_error(code=e.error_code,
+                              error_msg=trace_message,
+                              mir_root=mir_root,
+                              src_revs=src_revs,
+                              dst_rev=dst_rev)
             raise e
         except ValueError as e:
             trace_message = f"cmd exception: {traceback.format_exc()}"

@@ -6,7 +6,8 @@ import google.protobuf.json_format as pb_format
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import exodus
-from mir.tools.code import MirCode, MirRuntimeError
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 import tests.utils as test_utils
 
 
@@ -39,10 +40,10 @@ class TestExodus(unittest.TestCase):
         self._test_open_abnormal_cases("fake-file", "coco-2017-train", MirCode.RC_CMD_INVALID_MIR_FILE)
         # empty args
         self._test_open_abnormal_cases("fake-file", "", MirCode.RC_CMD_INVALID_ARGS)
-        self._test_open_abnormal_cases("", "fake-branch")
+        self._test_open_abnormal_cases("", "fake-branch", MirCode.RC_CMD_INVALID_ARGS)
         self._test_open_abnormal_cases("", "", MirCode.RC_CMD_INVALID_ARGS)
         self._test_open_abnormal_cases("fake-file", None, MirCode.RC_CMD_INVALID_ARGS)
-        self._test_open_abnormal_cases(None, "fake-branch")
+        self._test_open_abnormal_cases(None, "fake-branch", MirCode.RC_CMD_INVALID_ARGS)
         self._test_open_abnormal_cases(None, None, MirCode.RC_CMD_INVALID_ARGS)
 
     # protected: test cases
@@ -52,7 +53,7 @@ class TestExodus(unittest.TestCase):
             contents = f.read()
             self.assertNotEqual(len(contents), 0)
 
-    def _test_open_abnormal_cases(self, file_name: str, branch: str, expected_code=0):
+    def _test_open_abnormal_cases(self, file_name: str, branch: str, expected_code: int):
         actual_exception = None
         try:
             with exodus.open_mir(mir_root=self._mir_root, file_name=file_name, rev=branch, mode="rb"):

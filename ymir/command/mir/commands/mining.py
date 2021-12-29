@@ -11,8 +11,9 @@ import yaml
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, mir_storage, mir_storage_ops, revs_parser
-from mir.tools.code import MirCode, MirRuntimeError
+from mir.tools.code import MirCode
 from mir.tools.commit_on_error import commit_on_error
+from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import phase_logger_in_out
 
 
@@ -122,7 +123,8 @@ class CmdMining(base.BaseCommand):
                                                                                       ms=mirpb.MirStorage.MIR_METADATAS)
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
-            raise ValueError('no assets found in metadatas.mir')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message='no assets found in metadatas.mir')
         if topk:
             if topk >= assets_count:
                 logging.warning(f"topk: {topk} >= assets count: {assets_count}, skip mining")
