@@ -9,8 +9,10 @@ export const TASKTYPES = Object.freeze({
 })
 
 export const TASKSTATES = Object.freeze({
+  UNKOWN: 0,
   PENDING: 1,
   DOING: 2,
   FINISH: 3,
   FAILURE: 4,
+  TERMINATED: 100,
 })

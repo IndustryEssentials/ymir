@@ -21,6 +21,7 @@ import StateTag from "../../components/task/stateTag"
 import RenderProgress from "../../components/common/progress"
 import Actions from "../../components/table/actions"
 import Confirm from "../../components/common/dangerConfirm"
+import Terminate from "./components/terminate"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -41,6 +42,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   const [form] = useForm()
   const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
+  const terminateRef = useRef(null)
   let [init, setInit] = useState(Boolean(keyword))
   // const [showAdd, setSowAdd] = useState(false)
 
@@ -184,17 +186,12 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       okText: t('task.action.del'),
     })
   }
-  const stop = (id, name) => {
-    Confirm({
-      content: t("task.action.stop.confirm.content", { name }),
-      onOk: async () => {
-        const result = await stopTask(id)
-        if (result) {
-          getData()
-        }
-      },
-      okText: t('task.action.stop'),
-    })
+  const stop = (task) => {
+    terminateRef.current.confirm(task)
+  }
+
+  function terminateOk() {
+    getData()
   }
 
   const copy = (record) => {
@@ -273,8 +270,8 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       },
       {
         key: "stop",
-        label: t("task.action.stop"),
-        onclick: () => stop(record.id, record.name),
+        label: t("task.action.terminate"),
+        onclick: () => stop(record),
         hidden: () => {
           return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0 || TASKTYPES.LABEL === type
         },
@@ -440,6 +437,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
           <StateTag mode='text' state={current.state} />
         </Form.Item> : null}
       </EditBox>
+      <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }
