@@ -21,9 +21,12 @@ const getCrumbs = () => [
   { path: '/home/history/:type/:id', label: t('breadcrumbs.history'), pid: 1, id: 18 },
   { path: '/home/keyword', label: t('breadcrumbs.keyword'), pid: 1, id: 19 },
   { path: '/home/configure', label: t('breadcrumbs.configure'), pid: 1, id: 20 },
-  { path: '/home/configure/permission', label: t('breadcrumbs.configure.permission'), pid: 20, id: 21 },
+  { path: '/home/permission', label: t('breadcrumbs.configure.permission'), pid: 20, id: 21 },
   { path: '/home/dataset/add/:id?', label: t('breadcrumbs.dataset.add'), pid: 4, id: 22 },
   { path: '/home/user', label: t('breadcrumbs.user.info'), pid: 1, id: 23 },
+  { path: '/home/image', label: t('breadcrumbs.images'), pid: 1, id: 24 },
+  { path: '/home/image/detail/:id', label: t('breadcrumbs.image'), pid: 24, id: 25 },
+  { path: '/home/image/add/:id?', label: t('breadcrumbs.image.add'), pid: 24, id: 26 },
 ]
 
 function getCrumbItems(path, crumbs) {

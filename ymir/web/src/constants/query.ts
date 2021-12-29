@@ -1,5 +1,5 @@
 import { TASKSTATES, TASKTYPES } from "./task"
-import { CONFIGTYPES } from './mirror'
+import { TYPES } from './image'
 import t from "@/utils/t"
 
 export const getTaskTypes = () => [
@@ -42,8 +42,8 @@ export const getDatasetTypes = () => [
   { key: "public_import", value: TASKTYPES.PUBLIC, label: t("dataset.type.import"), hidden: true },
 ]
 
-export const getMirrorTypes = () => [
-  { key: "all", value: "", label: t("common.all") },
-  { key: "train", value: CONFIGTYPES.TRAINING, label: t("mirror.type.train") },
-  { key: "mining", value: CONFIGTYPES.MINING, label: t("mirror.type.mining") },
+export const getImageTypes = () => [
+  { key: "all", value: undefined, label: t("common.all") },
+  { key: "train", value: TYPES.TRAINING, label: t("image.type.train") },
+  { key: "mining", value: TYPES.MINING, label: t("image.type.mining") },
 ]

@@ -5,6 +5,7 @@ from app.api.api_v1.endpoints import (
     graphs,
     images,
     inferences,
+    info,
     keywords,
     login,
     models,
@@ -31,3 +32,4 @@ api_router.include_router(workspaces.router, prefix="/workspaces", tags=["worksp
 api_router.include_router(images.router, prefix="/images", tags=["docker_images"])
 api_router.include_router(inferences.router, prefix="/inferences", tags=["inference"])
 api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
+api_router.include_router(info.router, prefix="/sys_info", tags=["sys"])

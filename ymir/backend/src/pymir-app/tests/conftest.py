@@ -22,6 +22,8 @@ def db() -> Generator:
 def fake_controller_client() -> Generator:
     try:
         client = Mock()
+        client.send.return_value = {"csv_labels": ["tabby", "kitten"]}
+        client.get_gpu_info.return_value = {"gpu_count": 233}
         yield client
     finally:
         client.close()

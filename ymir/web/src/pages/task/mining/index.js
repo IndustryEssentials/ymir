@@ -13,13 +13,14 @@ import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
 import { TASKSTATES } from '@/constants/task'
-import { CONFIGTYPES } from '@/constants/mirror'
+import { TYPES } from '@/constants/image'
 import { useHistory, useParams, useLocation } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyStateDataset from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "../../../utils/number"
 import Tip from "@/components/form/tip"
+import ImageSelect from "../components/imageSelect"
 
 const { Option } = Select
 
@@ -41,7 +42,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
   const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
   const history = useHistory()
   const location = useLocation()
-  const { mid } = location.query
+  const { mid, image } = location.query
   const [datasets, setDatasets] = useState([])
   const [models, setModels] = useState([])
   const [selectedSets, setSelectedSets] = useState([])
@@ -51,6 +52,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
   const [trainSetCount, setTrainSetCount] = useState(1)
   const [hpVisible, setHpVisible] = useState(false)
   const [topk, setTopk] = useState(false)
+  const [imageUrl, setImageUrl] = useState(null)
   const [stateConfig, setStateConfig] = useState([])
   const hpMaxSize = 30
 
@@ -69,12 +71,6 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
     }
   }, [])
 
-  useEffect(async () => {
-    const result = await getRuntimes({ type: CONFIGTYPES.MINING })
-    if (result && !(location.state && location.state.record)) {
-      setConfig(result.config)
-    }
-  }, [])
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
@@ -149,6 +145,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
       ...values,
       name: values.name.trim(),
       topk: values.filter_strategy ? values.topk : 0,
+      docker_image: imageUrl,
       config,
     }
     const result = await createMiningTask(params)
@@ -173,6 +170,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
   const initialValues = {
     name: 'task_mining_' + randomNumber(),
     model: mid ? parseInt(mid) : undefined,
+    docker_image: image ? parseInt(image) : undefined,
     datasets: datasetIds,
     algorithm: getCheckedValue(Algorithm()),
     topk: 0,
@@ -195,7 +193,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             size='large'
             colon={false}
           >
-            
+            <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.name.label')}
               name='name'
@@ -206,10 +204,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
+            </Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
 
-       
+            <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
               required
@@ -232,8 +231,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                 ) : null)}
               </Select>
             </Form.Item>
-        
-
+            </Tip>
+            <Tip hidden={true}>
               <Form.Item name='strategy'
                 hidden={selectedSets.length < 2}
                 initialValue={2} label={t('task.train.form.repeatdata.label')}>
@@ -243,6 +242,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                   { value: 1, label: t('task.train.form.repeatdata.terminate') },
                 ]} />
               </Form.Item>
+            </Tip>
 
               <Tip content={t('tip.task.filter.excludeset')}>
                 <Form.Item
@@ -291,14 +291,22 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
               </Tip>
             </ConfigProvider>
 
-            {/* <Tip content={t('tip.task.filter.miningalgo')}> */}
+            <Tip content={t('tip.task.train.image')}>
+              <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
+                {required: true, message: t('task.train.form.image.required')}
+              ]}>
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} mining={true} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
+              </Form.Item>
+            </Tip>
+
+            <Tip hidden={true}>
               <Form.Item
                 label={t('task.mining.form.algo.label')}
                 name="algorithm"
               >
                 {renderRadio(Algorithm())}
               </Form.Item>
-            {/* </Tip> */}
+            </Tip>
 
             <Tip content={t('tip.task.filter.strategy')}>
               <Form.Item
@@ -346,7 +354,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
               </Form.Item>
             </Tip>
 
-            <Tip content={t('tip.task.filter.mhyperparams')}>
+            {seniorConfig.length ? <Tip content={t('tip.task.filter.mhyperparams')}>
               <Form.Item
                 label={t('task.train.form.hyperparam.label')}
                 rules={[{ validator: validHyperparam }]}
@@ -360,13 +368,13 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                   </Button>
                 </div>
 
-                {hpVisible ? <Form.List name='hyperparam'>
+                <Form.List name='hyperparam'>
                   {(fields, { add, remove }) => (
-                    <div className={styles.paramContainer}>
+                    <div className={styles.paramContainer} hidden={!hpVisible}>
                       <Row style={{ backgroundColor: '#fafafa', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                        <Col flex={'240px'}>Key</Col>
-                        <Col flex={1}>Value</Col>
-                        <Col span={2}>Action</Col>
+                        <Col flex={'240px'}>{t('common.key')}</Col>
+                        <Col flex={1}>{t('common.value')}</Col>
+                        <Col span={2}>{t('common.action')}</Col>
                       </Row>
                       {fields.map(field => (
                         <Row key={field.key} gutter={20}>
@@ -409,12 +417,12 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
 
                     </div>
                   )}
-                </Form.List> : null}
+                </Form.List>
 
               </Form.Item>
-            </Tip>
-
-            <Form.Item wrapperCol={{ offset: 4 }}>
+            </Tip> : null }
+            <Tip hidden={true}>
+            <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
@@ -428,6 +436,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
                 </Form.Item>
               </Space>
             </Form.Item>
+            </Tip>
           </Form>
         </div>
       </Card>
