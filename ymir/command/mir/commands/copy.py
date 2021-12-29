@@ -18,9 +18,10 @@ class CmdCopy(base.BaseCommand):
         logging.debug("command copy: %s", self.args)
         return CmdCopy.run_with_args(mir_root=self.args.mir_root,
                                      src_mir_root=self.args.src_mir_root,
-                                     src_revs=self.args.src_revs,
+                                     src_src_revs=self.args.src_src_revs,
                                      dst_rev=self.args.dst_rev,
                                      ignore_unknown_types=self.args.ignore_unknown_types,
+                                     src_revs='master',
                                      work_dir=self.args.work_dir)
 
     @staticmethod
@@ -28,17 +29,22 @@ class CmdCopy(base.BaseCommand):
     @phase_logger_in_out
     def run_with_args(mir_root: str,
                       src_mir_root: str,
-                      src_revs: str,
+                      src_src_revs: str,
                       dst_rev: str,
                       ignore_unknown_types: bool,
+                      src_revs: str = 'master',
                       work_dir: str = None) -> int:
+        # ! pay attention to param: `src_revs` and `src_src_revs`
+        # ! src_src_revs means the source branch in src_mir_root
+        # ! src_revs means the source branch we commit from, in this destination mir_root
+        # ! and src_revs also needed by decorator @commit_on_error
         # check args
-        if not mir_root or not src_mir_root or not src_revs or not dst_rev:
+        if not mir_root or not src_mir_root or not src_src_revs or not dst_rev:
             logging.error('invalid args: no mir_root, src_mir_root, src_revs or dst_rev')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
+        src_src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_src_revs)
+        if checker.check_src_revs(src_src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
 
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
@@ -61,8 +67,8 @@ class CmdCopy(base.BaseCommand):
 
         # read from src mir root
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=src_mir_root,
-                                                       mir_branch=src_typ_rev_tid.rev,
-                                                       mir_task_id=src_typ_rev_tid.tid,
+                                                       mir_branch=src_src_typ_rev_tid.rev,
+                                                       mir_task_id=src_src_typ_rev_tid.tid,
                                                        mir_storages=mir_storage.get_all_mir_storage())
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
@@ -111,7 +117,7 @@ class CmdCopy(base.BaseCommand):
 
         task = mirpb.Task()
         task.type = mirpb.TaskTypeCopyData
-        task.name = f"copy from {src_mir_root}, src: {src_revs}, dst: {dst_rev}"
+        task.name = f"copy from {src_mir_root}, src: {src_src_revs}, dst: {dst_rev}"
         task.task_id = dst_typ_rev_tid.tid
         task.timestamp = int(datetime.datetime.now().timestamp())
         if mir_tasks.tasks[orig_head_task_id].type == mirpb.TaskTypeTraining:
@@ -133,7 +139,7 @@ class CmdCopy(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,
-                                                      his_branch='master',
+                                                      his_branch=src_revs,
                                                       mir_datas=mir_datas,
                                                       commit_message=task.name)
 
@@ -195,7 +201,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                  required=True,
                                  help="source mir root you want to copy from")
     copy_arg_parser.add_argument("--src-revs",
-                                 dest="src_revs",
+                                 dest="src_src_revs",
                                  type=str,
                                  required=True,
                                  help="type:rev@bid, branch in source mir root")
