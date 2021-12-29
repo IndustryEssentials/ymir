@@ -26,6 +26,7 @@ class ExtraRequestType(enum.IntEnum):
     get_label = 401
     kill = 500
     pull_image = 600
+    get_gpu_info = 601
 
 
 MERGE_STRATEGY_MAPPING = {
@@ -274,6 +275,10 @@ class ControllerRequest:
         request.singleton_op = args["url"]
         return request
 
+    def prepare_get_gpu_info(self, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_GPU_INFO_GET
+        return request
+
 
 class ControllerClient:
     def __init__(self, channel: str) -> None:
@@ -328,3 +333,11 @@ class ControllerClient:
             args={"url": url},
         )
         return self.send(req)
+
+    def get_gpu_info(self, user_id: int) -> Dict[str, int]:
+        req = ControllerRequest(
+            ExtraRequestType.get_gpu_info,
+            user_id=user_id,
+        )
+        resp = self.send(req)
+        return {"gpu_count": resp["available_gpu_counts"]}
