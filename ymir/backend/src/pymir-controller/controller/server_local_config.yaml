@@ -1,5 +1,5 @@
 SERVICE:
-  port: "50051"
+  port: "50066"
 ASSETS:
   assetskvlocation: /tmp/ymir-controller-sandbox-root/ymir-assets/
   assetskvprotocol: file
