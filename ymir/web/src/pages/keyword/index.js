@@ -14,6 +14,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/keyword'
 import Actions from "../../components/table/actions"
 import Add from './add'
+import MultiAdd from "./multiAdd"
 import { AddIcon, AddtaskIcon, EditIcon, } from "../../components/common/icons"
 
 const { confirm } = Modal
@@ -33,6 +34,7 @@ function Keyword({ getKeywords }) {
   const [query, setQuery] = useState(initQuery)
   const [showAdd, setShowAdd] = useState(false)
   const [selected, setSelected] = useState([])
+  const multiAddRef = useRef(null)
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -126,6 +128,10 @@ function Keyword({ getKeywords }) {
     setShowAdd(true)
   }
 
+  const multiAdd = () => {
+    multiAddRef.current.show()
+  }
+
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
@@ -157,14 +163,20 @@ function Keyword({ getKeywords }) {
       <AddIcon /> {t("keyword.add.label")}
     </Button>
   )
+  const multiAddBtn = (
+    <Button type="primary" onClick={multiAdd}>
+      <AddIcon /> {t("keyword.multiadd.label")}
+    </Button>
+  )
 
   return (
     <div className={styles.model}>
       <Breadcrumbs />
 
-      <div className={styles.actions}>
+      <Space className={styles.actions}>
         {addBtn}
-      </div>
+        {multiAddBtn}
+      </Space>
       <div className={styles.list}>
         <div className={styles.search}>
           <Form
@@ -220,6 +232,7 @@ function Keyword({ getKeywords }) {
           </ConfigProvider>
         </div>
         <Add visible={showAdd} keys={selected} cancel={() => { setShowAdd(false); setSelected([]) }} ok={() => { resetQuery(); getData() }} />
+        <MultiAdd ref={multiAddRef} ok={() => getData()} />
 
       </div>
     </div>

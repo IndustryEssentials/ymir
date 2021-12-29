@@ -37,7 +37,7 @@ const renderRadio = (types) => {
   )
 }
 
-function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
+function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   const { ids } = useParams()
   const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
   const history = useHistory()
@@ -54,8 +54,12 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
   const [topk, setTopk] = useState(false)
   const [imageUrl, setImageUrl] = useState(null)
   const [stateConfig, setStateConfig] = useState([])
+  const [gpu_count, setGPU] = useState(0)
   const hpMaxSize = 30
 
+  useEffect(() => {
+    fetchSysInfo()
+  }, [])
 
   useEffect(async () => {
     let result = await getDatasets({ limit: 100000 })
@@ -123,6 +127,13 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
       return Promise.reject(t('task.validator.same.param'))
     } else {
       return Promise.resolve()
+    }
+  }
+
+  async function fetchSysInfo() {
+    const result = await getSysInfo()
+    if (result) {
+      setGPU(result.gpu_count)
     }
   }
 
@@ -345,12 +356,16 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             </Tip>
 
             <Tip content={t('tip.task.filter.mgpucount')}>
-              <Form.Item
+            <Form.Item
                 label={t('task.gpu.count')}
-                name="gpu_count"
-                rules={[{ type: 'number', min: 0, max: 1000 }]}
               >
-                <InputNumber min={0} max={1000} precision={0} />
+                <Form.Item
+                  noStyle
+                  name="gpu_count"
+                  rules={[{ type: 'number', min: 0, max: gpu_count }]}
+                >
+                  <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
+                  <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
 
@@ -425,7 +440,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit">
+                  <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
                     {t('task.filter.create')}
                   </Button>
                 </Form.Item>
@@ -446,6 +461,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getRuntimes }) {
 
 const dis = (dispatch) => {
   return {
+    getSysInfo() {
+      return dispatch({
+        type: "common/getSysInfo",
+      })
+    },
     getModels: (payload) => {
       return dispatch({
         type: 'model/getModels',
