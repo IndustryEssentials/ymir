@@ -16,12 +16,14 @@ import { TASKSTATES } from '@/constants/task'
 import { TYPES } from '@/constants/image'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import styles from "./index.less"
-import commonStyles from "../common.less"
+import EmptyStateModel from '@/components/empty/model'
 import { AddDelTwoIcon } from '@/components/common/icons'
 import { randomNumber } from "../../../utils/number"
 import Tip from "@/components/form/tip"
 import ImageSelect from "../components/imageSelect"
+import styles from "./index.less"
+import commonStyles from "../common.less"
+import modelSelect from "../components/modelSelect"
 
 const { Option } = Select
 
@@ -200,7 +202,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             size='large'
             colon={false}
           >
-            
+
             <Tip hidden={true}>
               <Form.Item
                 label={t('task.filter.form.name.label')}
@@ -215,30 +217,30 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             </Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.train.form.trainsets.label')}
-                required
-                name="train_sets"
-                rules={[
-                  { required: true, message: t('task.filter.form.datasets.required') },
-                ]}
-              >
-                <Select
-                  placeholder={t('task.filter.form.training.datasets.placeholder')}
-                  mode='multiple'
-                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                  onChange={trainSetChange}
-                  showArrow
+              <Tip hidden={true}>
+                <Form.Item
+                  label={t('task.train.form.trainsets.label')}
+                  required
+                  name="train_sets"
+                  rules={[
+                    { required: true, message: t('task.filter.form.datasets.required') },
+                  ]}
                 >
-                  {datasets.map(item => validationSets.indexOf(item.id) < 0 ? (
-                    <Option value={item.id} key={item.name}>
-                      {item.name}({item.asset_count})
-                    </Option>
-                  ) : null)}
-                </Select>
-              </Form.Item>
-            </Tip>
+                  <Select
+                    placeholder={t('task.filter.form.training.datasets.placeholder')}
+                    mode='multiple'
+                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    onChange={trainSetChange}
+                    showArrow
+                  >
+                    {datasets.map(item => validationSets.indexOf(item.id) < 0 ? (
+                      <Option value={item.id} key={item.name}>
+                        {item.name}({item.asset_count})
+                      </Option>
+                    ) : null)}
+                  </Select>
+                </Form.Item>
+              </Tip>
               <Tip content={t('tip.task.filter.testsets')}>
                 <Form.Item
                   label={t('task.train.form.testsets.label')}
@@ -275,7 +277,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 ]} />
               </Form.Item>
             </Tip>
-              
+
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 4, span: 12 }} hidden={![...trainSets, ...validationSets].length}>
                 <TripleRates
@@ -317,11 +319,25 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
               </Form.Item>
             </Tip>
 
+            <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
+              <Tip content={t('tip.task.filter.model')}>
+                <Form.Item
+                  label={t('task.mining.form.model.label')}
+                  name="model"
+                  rules={[
+                    { required: true, message: t('task.mining.form.model.required') },
+                  ]}
+                >
+                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} onChange={(value, model) => { console.log('select model: ', value, model) }} />
+                </Form.Item>
+              </Tip>
+            </ConfigProvider>
+
             <Tip content={t('tip.task.train.image')}>
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
-                {required: true, message: t('task.train.form.image.required')}
+                { required: true, message: t('task.train.form.image.required') }
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config) }} />
               </Form.Item>
             </Tip>
 
@@ -362,93 +378,93 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                   rules={[{ type: 'number', min: 1, max: gpu_count }]}
                 >
                   <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
-                  <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+                <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
 
             {seniorConfig.length ? <Tip content={t('tip.task.filter.hyperparams')}>
-            <Form.Item
-              label={t('task.train.form.hyperparam.label')}
-              rules={[{ validator: validHyperparam }]}
-            >
-              <div>
-                <Button type='link'
-                  onClick={() => setHpVisible(!hpVisible)}
-                  icon={hpVisible ? <UpSquareOutlined /> : <DownSquareOutlined />}
-                  style={{ paddingLeft: 0 }}
-                >{hpVisible ? t('task.train.fold') : t('task.train.unfold')}
-                </Button>
-              </div>
+              <Form.Item
+                label={t('task.train.form.hyperparam.label')}
+                rules={[{ validator: validHyperparam }]}
+              >
+                <div>
+                  <Button type='link'
+                    onClick={() => setHpVisible(!hpVisible)}
+                    icon={hpVisible ? <UpSquareOutlined /> : <DownSquareOutlined />}
+                    style={{ paddingLeft: 0 }}
+                  >{hpVisible ? t('task.train.fold') : t('task.train.unfold')}
+                  </Button>
+                </div>
 
-              <Form.List name='hyperparam'>
-                {(fields, { add, remove }) => (
-                  <>
-                    <div className={styles.paramContainer} hidden={!hpVisible}>
-                      <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                        <Col flex={'240px'}>{t('common.key')}</Col>
-                        <Col flex={1}>{t('common.value')}</Col>
-                        <Col span={2}>{t('common.action')}</Col>
-                      </Row>
-                      {fields.map(field => (
-                        <Row key={field.key} gutter={20}>
-                          <Col flex={'240px'}>
-                            <Form.Item
-                              {...field}
-                              // label="Key"
-                              name={[field.name, 'key']}
-                              fieldKey={[field.fieldKey, 'key']}
-                              rules={[
-                                // {required: true, message: 'Missing Key'},
-                                { validator: validHyperparam }
-                              ]}
-                            >
-                              <Input disabled={field.name < seniorConfig.length} allowClear maxLength={50} />
-                            </Form.Item>
-                          </Col>
-                          <Col flex={1}>
-                            <Form.Item
-                              {...field}
-                              // label="Value"
-                              name={[field.name, 'value']}
-                              fieldKey={[field.fieldKey, 'value']}
-                              rules={[
-                                // {required: true, message: 'Missing Value'},
-                              ]}
-                            >
-                              {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                                <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
-                            </Form.Item>
-                          </Col>
-                          <Col span={2}>
-                            <Space>
-                              {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                              {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
-                            </Space>
-                          </Col>
+                <Form.List name='hyperparam'>
+                  {(fields, { add, remove }) => (
+                    <>
+                      <div className={styles.paramContainer} hidden={!hpVisible}>
+                        <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
+                          <Col flex={'240px'}>{t('common.key')}</Col>
+                          <Col flex={1}>{t('common.value')}</Col>
+                          <Col span={2}>{t('common.action')}</Col>
                         </Row>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </Form.List>
+                        {fields.map(field => (
+                          <Row key={field.key} gutter={20}>
+                            <Col flex={'240px'}>
+                              <Form.Item
+                                {...field}
+                                // label="Key"
+                                name={[field.name, 'key']}
+                                fieldKey={[field.fieldKey, 'key']}
+                                rules={[
+                                  // {required: true, message: 'Missing Key'},
+                                  { validator: validHyperparam }
+                                ]}
+                              >
+                                <Input disabled={field.name < seniorConfig.length} allowClear maxLength={50} />
+                              </Form.Item>
+                            </Col>
+                            <Col flex={1}>
+                              <Form.Item
+                                {...field}
+                                // label="Value"
+                                name={[field.name, 'value']}
+                                fieldKey={[field.fieldKey, 'value']}
+                                rules={[
+                                  // {required: true, message: 'Missing Value'},
+                                ]}
+                              >
+                                {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
+                                  <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
+                              </Form.Item>
+                            </Col>
+                            <Col span={2}>
+                              <Space>
+                                {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
+                                {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
+                              </Space>
+                            </Col>
+                          </Row>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </Form.List>
 
-            </Form.Item>
-            </Tip> : null }
+              </Form.Item>
+            </Tip> : null}
             <Tip hidden={true}>
-            <Form.Item wrapperCol={{ offset: 8 }}>
-              <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
-                    {t('task.filter.create')}
-                  </Button>
-                </Form.Item>
-                <Form.Item name='backBtn' noStyle>
-                  <Button size="large" onClick={() => history.goBack()}>
-                    {t('task.btn.back')}
-                  </Button>
-                </Form.Item>
-              </Space>
-            </Form.Item>
+              <Form.Item wrapperCol={{ offset: 8 }}>
+                <Space size={20}>
+                  <Form.Item name='submitBtn' noStyle>
+                    <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
+                      {t('task.filter.create')}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item name='backBtn' noStyle>
+                    <Button size="large" onClick={() => history.goBack()}>
+                      {t('task.btn.back')}
+                    </Button>
+                  </Form.Item>
+                </Space>
+              </Form.Item>
             </Tip>
           </Form>
         </div>
