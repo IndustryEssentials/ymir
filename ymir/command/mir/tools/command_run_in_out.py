@@ -35,7 +35,7 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
         # not enough infos for us to generate a commit, because in ymir-command, dst-rev is always provided
         return
 
-    src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
+    src_typ_rev_tid = revs_parser.parse_arg_revs(src_revs)[0]
     dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
     if predefined_mir_tasks:
         mir_tasks = predefined_mir_tasks

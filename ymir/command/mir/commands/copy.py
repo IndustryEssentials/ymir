@@ -17,8 +17,8 @@ class CmdCopy(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command copy: %s", self.args)
         return CmdCopy.run_with_args(mir_root=self.args.mir_root,
-                                     src_mir_root=self.args.src_mir_root,
-                                     src_src_revs=self.args.src_src_revs,
+                                     data_mir_root=self.args.data_mir_root,
+                                     data_src_revs=self.args.data_src_revs,
                                      dst_rev=self.args.dst_rev,
                                      ignore_unknown_types=self.args.ignore_unknown_types,
                                      src_revs='master',
@@ -27,23 +27,23 @@ class CmdCopy(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str,
-                      src_mir_root: str,
-                      src_src_revs: str,
+                      data_mir_root: str,
+                      data_src_revs: str,
                       dst_rev: str,
                       ignore_unknown_types: bool,
                       src_revs: str = 'master',
                       work_dir: str = None) -> int:
-        # ! pay attention to param: `src_revs` and `src_src_revs`
-        # ! src_src_revs means the source branch in src_mir_root
+        # ! pay attention to param: `src_revs` and `data_src_revs`
+        # ! data_src_revs means the source branch in data_mir_root
         # ! src_revs means the source branch we commit from, in this destination mir_root
         # ! and src_revs also needed by decorator @command_run_in_out
         # check args
-        if not mir_root or not src_mir_root or not src_src_revs or not dst_rev:
-            logging.error('invalid args: no mir_root, src_mir_root, src_revs or dst_rev')
+        if not mir_root or not data_mir_root or not data_src_revs or not dst_rev:
+            logging.error('invalid args: no mir_root, data_mir_root, data_src_revs or dst_rev')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        src_src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_src_revs)
-        if checker.check_src_revs(src_src_typ_rev_tid) != MirCode.RC_OK:
+        data_src_typ_rev_tid = revs_parser.parse_single_arg_rev(data_src_revs)
+        if checker.check_src_revs(data_src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
 
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
@@ -60,14 +60,14 @@ class CmdCopy(base.BaseCommand):
             return check_code
 
         check_code = checker.check(
-            src_mir_root, prerequisites=[checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+            data_mir_root, prerequisites=[checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if check_code != MirCode.RC_OK:
             return check_code
 
         # read from src mir root
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=src_mir_root,
-                                                       mir_branch=src_src_typ_rev_tid.rev,
-                                                       mir_task_id=src_src_typ_rev_tid.tid,
+        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=data_mir_root,
+                                                       mir_branch=data_src_typ_rev_tid.rev,
+                                                       mir_task_id=data_src_typ_rev_tid.tid,
                                                        mir_storages=mir_storage.get_all_mir_storage())
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
@@ -87,7 +87,7 @@ class CmdCopy(base.BaseCommand):
         mir_keywords: mirpb.MirKeywords = mir_datas[mirpb.MIR_KEYWORDS]
         return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
                                                               mir_keywords=mir_keywords,
-                                                              src_mir_root=src_mir_root,
+                                                              data_mir_root=data_mir_root,
                                                               dst_mir_root=mir_root)
         if return_code != MirCode.RC_OK:
             logging.error(f"change annotation type ids failed: {return_code}")
@@ -116,7 +116,7 @@ class CmdCopy(base.BaseCommand):
 
         task = mirpb.Task()
         task.type = mirpb.TaskTypeCopyData
-        task.name = f"copy from {src_mir_root}, src: {src_src_revs}, dst: {dst_rev}"
+        task.name = f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}"
         task.task_id = dst_typ_rev_tid.tid
         task.timestamp = int(datetime.datetime.now().timestamp())
         if mir_tasks.tasks[orig_head_task_id].type == mirpb.TaskTypeTraining:
@@ -148,13 +148,13 @@ class CmdCopy(base.BaseCommand):
     def _change_type_ids(
         single_task_annotations: mirpb.SingleTaskAnnotations,
         mir_keywords: mirpb.MirKeywords,
-        src_mir_root: str,
+        data_mir_root: str,
         dst_mir_root: str,
     ) -> Tuple[int, Dict[str, int]]:
         src_to_dst_ids: Dict[int, int] = {}
         unknown_types_and_count: Dict[str, int] = defaultdict(int)
         dst_class_id_mgr = class_ids.ClassIdManager(mir_root=dst_mir_root)
-        src_class_id_mgr = class_ids.ClassIdManager(mir_root=src_mir_root)
+        src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
 
         for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
             dst_keyids_set: Set[int] = set()
@@ -162,8 +162,8 @@ class CmdCopy(base.BaseCommand):
             for annotation in single_image_annotations.annotations:
                 src_type_id = annotation.class_id
                 if not src_class_id_mgr.has_id(src_type_id):
-                    # if we can not find src type id in src_mir_root's labels.csv, this repo in invalid and can not copy
-                    logging.error(f"broken src_mir_root, unknown src id: {annotation.class_id}")
+                    # if we can not find src type id in data_mir_root's labels.csv, this repo in invalid and can not copy
+                    logging.error(f"broken data_mir_root, unknown src id: {annotation.class_id}")
                     return MirCode.RC_CMD_INVALID_MIR_REPO, unknown_types_and_count
 
                 if src_type_id in src_to_dst_ids:
@@ -195,12 +195,12 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                             description="use this command to copy datas from another repo",
                                             help="copy datas from another repo")
     copy_arg_parser.add_argument("--src-root",
-                                 dest="src_mir_root",
+                                 dest="data_mir_root",
                                  type=str,
                                  required=True,
                                  help="source mir root you want to copy from")
     copy_arg_parser.add_argument("--src-revs",
-                                 dest="src_src_revs",
+                                 dest="data_src_revs",
                                  type=str,
                                  required=True,
                                  help="type:rev@bid, branch in source mir root")

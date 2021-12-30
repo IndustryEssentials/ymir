@@ -6,6 +6,7 @@ import shutil
 import subprocess
 from subprocess import CalledProcessError
 import tarfile
+import traceback
 from typing import Any, List, Optional, Set, Tuple
 
 import yaml
@@ -24,7 +25,8 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                            task_context: dict) -> Tuple[str, float]:
     model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
     if not model_paths:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE, error_message='can not find models')
+        # if have no models
+        return '', model_mAP
 
     tar_path = os.path.join(out_root, "models.tar.gz")
     _pack_models_and_config(model_paths=model_paths,
@@ -53,10 +55,15 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
     model_names = []
     model_mAP = 0.0
 
-    with open(os.path.join(model_root, "result.yaml"), "r") as f:
-        yaml_obj = yaml.safe_load(f.read())
-        model_names = yaml_obj["model"]
-        model_mAP = float(yaml_obj["map"])
+    result_yaml_path = os.path.join(model_root, "result.yaml")
+    try:
+        with open(result_yaml_path, "r") as f:
+            yaml_obj = yaml.safe_load(f.read())
+            model_names = yaml_obj["model"]
+            model_mAP = float(yaml_obj["map"])
+    except FileNotFoundError as e:
+        logging.warning(traceback.format_exc())
+        return [], 0.0
 
     return ([os.path.join(model_root, name) for name in model_names], model_mAP)
 

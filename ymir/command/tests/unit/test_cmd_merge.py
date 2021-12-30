@@ -279,6 +279,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.ex_src_revs = ''
         fake_args.dst_rev = '_test_no_tvt_stop_00@merge-task-id'
         fake_args.strategy = 'stop'
+        fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
         ret = merge_instance.run()
 

@@ -10,6 +10,7 @@ from typing import Any, Mapping, Tuple
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
+from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -280,10 +281,13 @@ class CmdMerge(base.BaseCommand):
                                       src_revs=self.args.src_revs,
                                       ex_src_revs=self.args.ex_src_revs,
                                       dst_rev=self.args.dst_rev,
-                                      strategy=self.args.strategy)
+                                      strategy=self.args.strategy,
+                                      work_dir=self.args.work_dir)
 
     @staticmethod
-    def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str) -> int:
+    @command_run_in_out
+    def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str,
+                      work_dir: str) -> int:
         if not src_revs or not dst_rev:
             logging.error("empty --src-revs or --dst-rev")
             return MirCode.RC_CMD_INVALID_ARGS
@@ -386,4 +390,5 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   choices=["stop", "host", "guest"],
                                   help="conflict resolvation strategy, stop (default): stop when conflict detects; "
                                   "host: use host; guest: use guest")
+    merge_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
     merge_arg_parser.set_defaults(func=CmdMerge)

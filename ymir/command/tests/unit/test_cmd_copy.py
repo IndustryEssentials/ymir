@@ -134,8 +134,8 @@ class TestCmdCopy(unittest.TestCase):
         # run cmd
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
-        fake_args.src_mir_root = self._src_mir_root
-        fake_args.src_src_revs = 'a@t0'
+        fake_args.data_mir_root = self._src_mir_root
+        fake_args.data_src_revs = 'a@t0'
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
         fake_args.ignore_unknown_types = True
