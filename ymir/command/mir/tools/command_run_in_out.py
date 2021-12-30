@@ -32,8 +32,9 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
     if not src_revs:
         src_revs = 'master'
     if not dst_rev:
-        # not enough infos for us to generate a commit, because in ymir-command, dst-rev is always provided
-        return
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='empty dst_rev',
+                              needs_new_commit=False)
 
     src_typ_rev_tid = revs_parser.parse_arg_revs(src_revs)[0]
     dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
