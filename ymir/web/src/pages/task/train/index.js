@@ -23,7 +23,7 @@ import Tip from "@/components/form/tip"
 import ImageSelect from "../components/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
-import modelSelect from "../components/modelSelect"
+import ModelSelect from "../components/modelSelect"
 
 const { Option } = Select
 
@@ -324,11 +324,9 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 <Form.Item
                   label={t('task.mining.form.model.label')}
                   name="model"
-                  rules={[
-                    { required: true, message: t('task.mining.form.model.required') },
-                  ]}
                 >
-                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} onChange={(value, model) => { console.log('select model: ', value, model) }} />
+                  <ModelSelect placeholder={t('task.train.form.model.placeholder')}
+                    onChange={(value, model) => { console.log('select model: ', value, model) }} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
