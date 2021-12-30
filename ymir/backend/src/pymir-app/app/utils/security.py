@@ -1,5 +1,6 @@
 import hashlib
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 from jose import jwt
@@ -58,3 +59,7 @@ def generate_password_reset_token(email: str) -> str:
         algorithm="HS256",
     )
     return encoded_jwt
+
+
+def verify_api_key(api_key: str) -> bool:
+    return api_key == settings.API_KEY_SECRET

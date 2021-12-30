@@ -89,7 +89,7 @@ def fake_cache_client() -> Generator:
 app.dependency_overrides[deps.get_controller_client] = fake_controller_client
 app.dependency_overrides[deps.get_stats_client] = fake_stats_client
 app.dependency_overrides[deps.get_viz_client] = fake_viz_client
-app.dependency_overrides[deps.get_graph_client] = fake_graph_client
+app.dependency_overrides[deps.get_graph_client_of_user] = fake_graph_client
 app.dependency_overrides[deps.get_cache] = fake_cache_client
 
 

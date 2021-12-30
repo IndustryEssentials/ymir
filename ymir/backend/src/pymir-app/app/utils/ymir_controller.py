@@ -275,7 +275,9 @@ class ControllerRequest:
         request.singleton_op = args["url"]
         return request
 
-    def prepare_get_gpu_info(self, request: mirsvrpb.GeneralReq) -> mirsvrpb.GeneralReq:
+    def prepare_get_gpu_info(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_GPU_INFO_GET
         return request
 
@@ -318,13 +320,24 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def terminate_task(self, user_id: int, target_task: Task) -> Dict:
+    def get_task_result(self, user_id: int, task_hash: str) -> Dict:
+        req = ControllerRequest(
+            ExtraRequestType.get_task_info, user_id, args={"task_ids": [task_hash]}
+        )
+        resp = self.send(req)
+        logger.info("[controller] get_task_info req: %s, response: %s", req, resp)
+        result = list(resp["resp_get_task_info"]["task_infos"].values())[0]
+        return result
+
+    def terminate_task(self, user_id: int, task_hash: str) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.kill,
             user_id=user_id,
-            args={"target_container": target_task.hash},
+            args={"target_container": task_hash},
         )
-        return self.send(req)
+        resp = self.send(req)
+        logger.info("[controller] terminate_task response: %s", resp)
+        return resp
 
     def pull_docker_image(self, url: str, user_id: int) -> Dict:
         req = ControllerRequest(
