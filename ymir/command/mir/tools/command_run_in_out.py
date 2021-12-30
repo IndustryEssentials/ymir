@@ -30,7 +30,9 @@ def _generate_mir_task(code: int, error_msg: str, dst_typ_rev_tid: revs_parser.T
 def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str,
                   predefined_mir_tasks: Any) -> None:
     if not src_revs:
-        src_revs = 'master'
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='empty src_revs',
+                              needs_new_commit=False)
     if not dst_rev:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='empty dst_rev',

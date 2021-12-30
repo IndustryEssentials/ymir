@@ -26,7 +26,7 @@ class CmdImport(base.BaseCommand):
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
                                        dst_rev=self.args.dst_rev,
-                                       src_revs=self.args.src_revs,
+                                       src_revs=self.args.src_revs or 'master',
                                        work_dir=self.args.work_dir,
                                        ignore_unknown_types=self.args.ignore_unknown_types)
 
@@ -53,7 +53,8 @@ class CmdImport(base.BaseCommand):
         if not dataset_name:
             dataset_name = dst_typ_rev_tid.tid
         if not src_revs:
-            src_revs = 'master'
+            logging.error('empty --src-revs')
+            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='import',
