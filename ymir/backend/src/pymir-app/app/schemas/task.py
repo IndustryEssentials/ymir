@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, validator
 
-from app.models.task import TaskState, TaskType
+from app.constants.state import TaskState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -107,6 +107,7 @@ class Task(TaskInDBBase):
     parameters: Optional[str]
     result: Optional[TaskResult]
     config: Optional[str]
+    state: TaskState
 
     @validator("parameters")
     def loads_parameters(cls, v: str, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -120,11 +121,28 @@ class Task(TaskInDBBase):
             return {}
         return json.loads(v)
 
+    @validator("state")
+    def merge_state(cls, v: TaskState) -> TaskState:
+        """
+        Frontend doesn't differentiate premature and terminated
+        """
+        if v is TaskState.premature:
+            v = TaskState.terminate
+        return v
+
 
 class Tasks(BaseModel):
     total: int
     items: List[Task]
 
 
+class TaskTerminate(BaseModel):
+    fetch_result: Optional[bool] = True
+
+
 class TaskOut(Common):
-    result: Union[Task, Tasks]
+    result: Task
+
+
+class TasksOut(Common):
+    result: Tasks
