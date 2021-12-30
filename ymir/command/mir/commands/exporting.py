@@ -5,7 +5,8 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, data_exporter, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
+from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.phase_logger import PhaseLoggerCenter
 
 
 class CmdExport(base.BaseCommand):
@@ -17,13 +18,14 @@ class CmdExport(base.BaseCommand):
                                        annotation_dir=self.args.annotation_dir,
                                        media_location=self.args.media_location,
                                        src_revs=self.args.src_revs,
+                                       dst_rev='',
                                        work_dir=self.args.work_dir,
                                        format=self.args.format)
 
     @staticmethod
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, media_location: str, src_revs: str,
-                      format: str, work_dir: str) -> int:
+                      format: str, work_dir: str, dst_rev: str = '') -> int:
         # check args
         if not format:
             format = 'ark'

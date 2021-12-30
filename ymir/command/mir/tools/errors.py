@@ -6,7 +6,7 @@ class MirRuntimeError(Exception):
 
     error raised by ymir-command
 
-    if raised from a function surrounded by decorator `@commit_on_error`,
+    if raised from a function surrounded by decorator `@command_run_in_out`,
     new commit will made if `needs_new_commit` true
 
     """

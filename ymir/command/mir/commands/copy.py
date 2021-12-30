@@ -7,8 +7,8 @@ from typing import Dict, List, Set, Tuple
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage, mir_storage_ops
-from mir.tools.commit_on_error import commit_on_error
-from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
+from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.tools.code import MirCode
 
 
@@ -25,8 +25,7 @@ class CmdCopy(base.BaseCommand):
                                      work_dir=self.args.work_dir)
 
     @staticmethod
-    @commit_on_error
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(mir_root: str,
                       src_mir_root: str,
                       src_src_revs: str,
@@ -37,7 +36,7 @@ class CmdCopy(base.BaseCommand):
         # ! pay attention to param: `src_revs` and `src_src_revs`
         # ! src_src_revs means the source branch in src_mir_root
         # ! src_revs means the source branch we commit from, in this destination mir_root
-        # ! and src_revs also needed by decorator @commit_on_error
+        # ! and src_revs also needed by decorator @command_run_in_out
         # check args
         if not mir_root or not src_mir_root or not src_src_revs or not dst_rev:
             logging.error('invalid args: no mir_root, src_mir_root, src_revs or dst_rev')

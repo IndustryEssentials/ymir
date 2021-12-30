@@ -12,9 +12,8 @@ from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.commit_on_error import commit_on_error
+from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
-from mir.tools.phase_logger import phase_logger_in_out
 
 
 class CmdMining(base.BaseCommand):
@@ -46,8 +45,7 @@ class CmdMining(base.BaseCommand):
                                        executor_instance=self.args.executor_instance)
 
     @staticmethod
-    @commit_on_error
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(work_dir: str,
                       media_cache: Optional[str],
                       src_revs: str,

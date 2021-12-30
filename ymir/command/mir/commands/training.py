@@ -14,10 +14,9 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
-from mir.tools.commit_on_error import commit_on_error
+from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.phase_logger import phase_logger_in_out
 
 
 # private: post process
@@ -213,8 +212,7 @@ class CmdTrain(base.BaseCommand):
                                       config_file=self.args.config_file)
 
     @staticmethod
-    @commit_on_error
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(work_dir: str,
                       model_upload_location: str,
                       pretrained_model_hash: str,

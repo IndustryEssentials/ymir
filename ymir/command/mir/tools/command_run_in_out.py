@@ -1,14 +1,21 @@
 import datetime
 from functools import wraps
+from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable
 
-from mir.tools import mir_storage_ops, revs_parser
+from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, phase_logger
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
 
+# private: monitor.txt logger
+def _get_task_name(dst_rev: str) -> str:
+    return revs_parser.parse_single_arg_rev(dst_rev).tid if dst_rev else 'default_task'
+
+
+# private: commit on errors
 def _generate_mir_task(code: int, error_msg: str, dst_typ_rev_tid: revs_parser.TypRevTid) -> mirpb.Task:
     task = mirpb.Task()
     task.type = mirpb.TaskType.TaskTypeUnknown
@@ -58,14 +65,28 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                   commit_message='task failed')
 
 
-def commit_on_error(f: Callable) -> Callable:
+def command_run_in_out(f: Callable) -> Callable:
+    """
+    record monitor.txt and commit on errors
+    """
     @wraps(f)
-    def wrapper(mir_root: str, src_revs: str, dst_rev: str, *args: tuple, **kwargs: dict) -> Any:
-        try:
-            ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, *args, **kwargs)
+    def wrapper(mir_root: str, src_revs: str, dst_rev: str, work_dir: str, *args: tuple, **kwargs: dict) -> Any:
+        mir_logger = phase_logger.PhaseLogger(task_name=_get_task_name(dst_rev),
+                                              monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir))
+        mir_logger.update_percent_info(local_percent=0, task_state=phase_logger.PhaseStateEnum.PENDING)
 
-            if ret != MirCode.RC_OK:
-                trace_message = f"cmd return: {ret}"
+        try:
+            ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, work_dir=work_dir, *args, **kwargs)
+            trace_message = f"cmd return: {ret}"
+
+            if ret == MirCode.RC_OK:
+                mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
+            else:
+                mir_logger.update_percent_info(local_percent=1,
+                                               task_state=phase_logger.PhaseStateEnum.ERROR,
+                                               state_code=ret,
+                                               state_content=trace_message,
+                                               trace_message=trace_message)
                 _commit_error(code=ret,
                               error_msg=trace_message,
                               mir_root=mir_root,
@@ -76,6 +97,12 @@ def commit_on_error(f: Callable) -> Callable:
             return ret
         except MirRuntimeError as e:
             trace_message = f"cmd exception: {traceback.format_exc()}"
+
+            mir_logger.update_percent_info(local_percent=1,
+                                           task_state=phase_logger.PhaseStateEnum.ERROR,
+                                           state_code=e.error_code,
+                                           state_content=e.error_message,
+                                           trace_message=trace_message)
             if e.needs_new_commit:
                 _commit_error(code=e.error_code,
                               error_msg=trace_message,
@@ -83,7 +110,25 @@ def commit_on_error(f: Callable) -> Callable:
                               src_revs=src_revs,
                               dst_rev=dst_rev,
                               predefined_mir_tasks=e.mir_tasks)
+
             raise e
-        # other kind of errors: no commit, default behaviour
+        except CalledProcessError as e:
+            trace_message = f"cmd exception: {traceback.format_exc()}"
+
+            mir_logger.update_percent_info(local_percent=1,
+                                           task_state=phase_logger.PhaseStateEnum.ERROR,
+                                           state_code=MirCode.RC_RUNTIME_CONTAINER_ERROR,
+                                           state_content=str(e),
+                                           trace_message=trace_message)
+
+            raise e
+        except BaseException as e:
+            trace_message = f"cmd exception: {traceback.format_exc()}"
+            mir_logger.update_percent_info(local_percent=1,
+                                           task_state=phase_logger.PhaseStateEnum.ERROR,
+                                           state_code=MirCode.RC_RUNTIME_ERROR_UNKNOWN,
+                                           state_content=str(e),
+                                           trace_message=trace_message)
+            raise e
 
     return wrapper
