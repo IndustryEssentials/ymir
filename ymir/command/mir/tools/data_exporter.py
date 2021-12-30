@@ -5,8 +5,10 @@ exports the assets and annotations from mir format to ark-training-format
 from collections.abc import Collection
 from enum import Enum
 import logging
+import json
 import os
 from typing import Any, Callable, Dict, List, Optional, Set
+import uuid
 import xml.etree.ElementTree as ElementTree
 
 from mir.protos import mir_command_pb2 as mirpb
@@ -54,7 +56,7 @@ def format_file_output_func(anno_format: ExportFormat) -> Callable:
     _format_func_map = {
         ExportFormat.EXPORT_FORMAT_ARK: _single_image_annotations_to_ark,
         ExportFormat.EXPORT_FORMAT_VOC: _single_image_annotations_to_voc,
-        # ExportFormat.EXPORT_FORMAT_LS_JSON: None,
+        ExportFormat.EXPORT_FORMAT_LS_JSON: _single_image_annotations_to_ls_json,
     }
     return _format_func_map[anno_format]
 
@@ -346,3 +348,46 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: Any, annotations: Lis
         difficult_node.text = '0'
 
     return ElementTree.tostring(element=annotation_node, encoding='unicode')
+
+
+def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations: List[mirpb.Annotation],
+                                         class_type_mapping: Optional[Dict[int, int]],
+                                         cls_id_mgr: class_ids.ClassIdManager) -> str:
+    out_type = "predictions"  # out_type: annotation type - "annotations" or "predictions"
+    to_name = 'image'  # to_name: object name from Label Studio labeling config
+    from_name = 'label'  # control tag name from Label Studio labeling config
+    task: Dict = {
+        out_type: [{
+            "result": [],
+            "ground_truth": False,
+        }],
+        "data": {
+            "image": asset_id
+        }
+    }
+
+    for annotation in annotations:
+        bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
+        bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
+        img_width, img_height = attrs.width, attrs.height
+        item = {
+            "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
+            "type": "rectanglelabels",
+            "value": {
+                # Units of image annotations in label studio is percentage of image width/height.
+                # https://labelstud.io/guide/predictions.html#Units-of-image-annotations
+                "x": bbox_x / img_width * 100,
+                "y": bbox_y / img_height * 100,
+                "width": bbox_width / img_width * 100,
+                "height": bbox_height / img_height * 100,
+                "rotation": 0,
+                "rectanglelabels": cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown'
+            },
+            "to_name": to_name,
+            "from_name": from_name,
+            "image_rotation": 0,
+            "original_width": img_width,
+            "original_height": img_height
+        }
+        task[out_type][0]['result'].append(item)
+    return json.dumps(task)
