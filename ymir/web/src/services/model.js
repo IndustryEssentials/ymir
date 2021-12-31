@@ -69,11 +69,11 @@ export function updateModel(id, name) {
 
 /**
  * model verification
- * @param {number} id 
- * @param {string} url 
+ * @param {number} model_id model id
+ * @param {array} image_urls image urls
+ * @param {number} image docker image url
  * @returns 
  */
-export function verify(model_id, image_urls) {
-  console.log('verify: ', model_id, image_urls)
-  return request.post(`/inferences/`, { model_id, image_urls })
+export function verify(model_id, image_urls, image) {
+  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image })
 }
