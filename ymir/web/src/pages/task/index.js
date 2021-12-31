@@ -273,7 +273,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         label: t("task.action.terminate"),
         onclick: () => stop(record),
         hidden: () => {
-          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0 || TASKTYPES.LABEL === type
+          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0
         },
         icon: <StopIcon />,
       },
@@ -302,15 +302,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
           return TASKTYPES.LABEL !== type
         },
         icon: <FlagIcon />,
-      },
-      {
-        key: "labeldata",
-        label: t("task.action.labeldata"),
-        onclick: () => getLabels(id, name),
-        hidden: () => {
-          return TASKTYPES.LABEL !== type
-        },
-        icon: <SearchEyeIcon />,
       },
     ]
     return menus
