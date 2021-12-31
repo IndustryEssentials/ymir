@@ -44,6 +44,9 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         query = query.filter(self.model.type == int(DockerImageType.infer))
         return query.first()
 
+    def get_by_url(self, db: Session, url: str) -> Optional[DockerImage]:
+        return db.query(self.model).filter(self.model.url == url).first()  # type: ignore
+
     def update(
         self,
         db: Session,
