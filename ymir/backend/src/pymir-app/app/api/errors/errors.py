@@ -258,3 +258,8 @@ class FailedtoShareDockerImage(APIError):
 class DockerImageHavingRelationships(APIError):
     code = error_codes.DOCKER_IMAGE_HAVING_RELATIONSHIPS
     message = "Docker Image Has Reminding Relationships"
+
+
+class FailedtoGetSysInfo(ControllerError):
+    code = error_codes.FAILED_TO_GET_SYS_INFO
+    message = "Failed to Get Sys Info"

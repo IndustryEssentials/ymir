@@ -145,6 +145,10 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
     with open(index_file) as idx_f, open(sha_idx_file, 'w') as sha_f:
         lines = idx_f.readlines()
         total_count = len(lines)
+        asset_count_limit = 1000000
+        if total_count > asset_count_limit:  # large number of images may trigger redis timeout error.
+            logging.error(f'# of image {total_count} exceeds upper boundary {asset_count_limit}.')
+            return MirCode.RC_CMD_INVALID_ARGS
 
         idx = 0
         for line in lines:

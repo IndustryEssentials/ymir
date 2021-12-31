@@ -51,7 +51,7 @@ class CmdExport(base.BaseCommand):
         if not src_revs:
             logging.error('empty --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
-        if format and (format not in data_exporter.SUPPORTED_EXPORT_FORMATS):
+        if format and (not data_exporter.check_support_format(format)):
             logging.error(f"invalid --format: {format}")
             return MirCode.RC_CMD_INVALID_ARGS
 

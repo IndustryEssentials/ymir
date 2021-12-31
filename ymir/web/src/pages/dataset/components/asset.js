@@ -8,57 +8,78 @@ import { getDateFromTimestamp } from "@/utils/date"
 import t from "@/utils/t"
 import Hash from "@/components/common/hash"
 import AssetAnnotation from "@/components/dataset/asset_annotation"
+import { randomBetween } from "@/utils/number"
 import styles from "./asset.less"
-import { NavDatasetIcon } from '@/components/common/icons'
-import { EyeOffIcon, EyeOnIcon } from "@/components/common/icons"
+import { ArrowRightIcon, NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/icons'
+import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 
 const { CheckableTag } = Tag
 
-const KeywordColor = [
-  "green",
-  "red",
-  "cyan",
-  "blue",
-  "yellow",
-  "purple",
-  "magenta",
-  "orange",
-  "gold",
-]
+const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
 
-function Asset({ id, hash, getAsset }) {
+function Asset({ id, datasetKeywords = [], getAsset, getAssetsOfDataset, index = 0, total = 0 }) {
   const history = useHistory()
   const [asset, setAsset] = useState({})
-  const [current,  setCurrent] = useState('')
+  const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [colors] = useState(datasetKeywords.reduce((prev, curr, i) =>
+    ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {}))
 
   useEffect(() => {
-    hash && setCurrent(hash)
-  }, [hash])
+    setAsset({})
+    index > -1 && setCurrentIndex(index)
+  }, [index])
 
-  useEffect(async () => {
-    const result = await getAsset(id, current)
-    const compare = (a, b) => {
-      const aa = (a.keyword || a).toUpperCase()
-      const bb = (b.keyword || b).toUpperCase()
-      if (aa > bb) {
-        return -1
-      }
-      if (aa < bb) {
-        return 1
-      }
-      return 0
+  useEffect(() => {
+    fetchAssetHash()
+  }, [currentIndex])
+
+  useEffect(() => {
+    if (!current) {
+      return
     }
-    const keywords = result.keywords.sort(compare)
-    const annotations = result.annotations.sort(compare)
-    setAsset({ ...result, keywords, annotations })
-    setSelectedKeywords(keywords)
-  }, [id, current])
+    fetchAsset()
+  }, [current])
 
   useEffect(() => {
     setShowAnnotations((asset.annotations || []).filter(anno => selectedKeywords.indexOf(anno.keyword) >= 0))
   }, [selectedKeywords])
+
+  async function fetchAsset() {
+    const compare = (a, b) => {
+      const aa = (a.keyword || a).toUpperCase()
+      const bb = (b.keyword || b).toUpperCase()
+      return aa > bb ? -1 : (aa < bb ? 1 : 0)
+    }
+
+    const result = await getAsset(id, current)
+    const keywords = result.keywords.sort(compare)
+    const annotations = result.annotations.sort(compare).map(anno => ({ ...anno, color: colors[anno.keyword] }))
+    setAsset({ ...result, keywords, annotations })
+    setSelectedKeywords(keywords)
+  }
+
+  async function fetchAssetHash() {
+    const result = await getAssetsOfDataset({ id, offset: currentIndex, limit: 1 })
+    if (result?.items) {
+      const ass = result.items[0]
+      setCurrent(ass.hash)
+    }
+  }
+
+  function next() {
+    setCurrentIndex(currentIndex + 1)
+  }
+
+  function prev() {
+    setCurrentIndex(currentIndex - 1)
+  }
+
+  function random() {
+    setCurrentIndex(randomBetween(0, total - 1, currentIndex))
+  }
 
   function changeKeywords(tag, checked) {
     const selected = checked
@@ -71,18 +92,12 @@ function Asset({ id, hash, getAsset }) {
     setSelectedKeywords(selectedKeywords.length ? [] : asset.keywords)
   }
 
-  async function randomAsset() {
-    const result = await getAsset(id, "random")
-    if (result) {
-      setCurrent(result.hash)
-    }
-  }
-
   return asset.hash ? (
     <div className={styles.asset}>
       <div className={styles.info}>
-        <Row className={styles.infoRow} wrap={false}>
-          <Col span={18} className={styles.asset_img}>
+        <Row className={styles.infoRow} align="center" wrap={false}>
+          <Col flex={'20px'} style={{ alignSelf: 'center' }}><LeftOutlined hidden={currentIndex <= 0} className={styles.prev} onClick={prev} /></Col>
+          <Col flex={1} className={styles.asset_img}>
             {asset.annotations ? (
               <AssetAnnotation
                 url={asset.url}
@@ -129,34 +144,36 @@ function Asset({ id, hash, getAsset }) {
                 <Descriptions.Item label={t("dataset.asset.info.keyword")} span={2}>
                   <Row>
                     <Col flex={1}>
-                    {asset.keywords?.map((keyword, i) => (
-                      <CheckableTag
-                        checked={selectedKeywords.indexOf(keyword) > -1}
-                        onChange={(checked) => changeKeywords(keyword, checked)}
-                        className={'ant-tag-' + KeywordColor[i % (KeywordColor.length + 1)]}
-                        key={i}
-                      >
-                        {keyword}
-                      </CheckableTag>
-                    ))}
+                      {asset.keywords?.map((keyword, i) => (
+                        <CheckableTag
+                          checked={selectedKeywords.indexOf(keyword) > -1}
+                          onChange={(checked) => changeKeywords(keyword, checked)}
+                          className={'ant-tag-' + colors[keyword]}
+                          key={i}
+                        >
+                          {keyword}
+                        </CheckableTag>
+                      ))}
                     </Col>
                     <Col>
-                      {selectedKeywords.length ? 
-                        <EyeOnIcon onClick={toggleAnnotation} title={t("dataset.asset.annotation.hide")} /> : 
+                      {selectedKeywords.length ?
+                        <EyeOnIcon onClick={toggleAnnotation} title={t("dataset.asset.annotation.hide")} /> :
                         <EyeOffIcon onClick={toggleAnnotation} title={t("dataset.asset.annotation.show")} />}
                     </Col>
                   </Row>
                 </Descriptions.Item>
               </Descriptions>
-              <Button
-                type="primary"
-                style={{ marginTop: 20 }}
-                onClick={randomAsset}
-              >
-                {t("dataset.asset.random")}
-              </Button>
             </Card>
+            <Button
+              className={styles.random}
+              type="primary"
+              style={{ marginTop: 20 }}
+              onClick={random}
+            >
+              {t("dataset.asset.random")}
+            </Button>
           </Col>
+          <Col style={{ alignSelf: 'center' }} flex={'20px'}><RightOutlined hidden={currentIndex >= total - 1} className={styles.next} onClick={next} /></Col>
         </Row>
       </div>
     </div>
@@ -171,6 +188,12 @@ const actions = (dispatch) => {
       return dispatch({
         type: "dataset/getAsset",
         payload: { id, hash },
+      })
+    },
+    getAssetsOfDataset(payload) {
+      return dispatch({
+        type: "dataset/getAssetsOfDataset",
+        payload,
       })
     },
   }

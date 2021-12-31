@@ -14,6 +14,9 @@
     "test": "umi-test",
     "test:coverage": "umi-test --coverage"
   },
+  "pre-push": [
+    "test"
+  ],
   "prettier": {
     "semi": false,
     "tabWidth": 2

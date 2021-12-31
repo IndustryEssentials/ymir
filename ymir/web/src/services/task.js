@@ -61,10 +61,11 @@ export function deleteTask(id) {
 /**
  * stop task( and get label data for label task)
  * @param {number} id 
+ * @param {boolean} [fetch_result] fetch result or not
  * @returns 
  */
-export function stopTask(id) {
-  return request.post(`/tasks/${id}/terminate`)
+export function stopTask(id, fetch_result = false) {
+  return request.post(`/tasks/${id}/terminate`, { fetch_result })
 }
 
 /**
@@ -144,6 +145,7 @@ export function createTrainTask({
   keywords,
   train_type,
   strategy,
+  docker_image,
   // gpu_count,
 }) {
   return createTask({
@@ -159,6 +161,7 @@ export function createTrainTask({
       hyperparameter,
       network,
       train_type,
+      docker_image,
       // gpu_count,
     }
   })
@@ -174,6 +177,7 @@ export function createMiningTask({
   strategy,
   inference,
   name,
+  docker_image,
   // gpu_count,
 }) {
   return createTask({
@@ -188,6 +192,7 @@ export function createMiningTask({
       mining_algorithm: algorithm,
       top_k: topk,
       generate_annotations: inference,
+      docker_image,
       // gpu_count,
     }
   })

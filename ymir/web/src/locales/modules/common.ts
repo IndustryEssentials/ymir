@@ -11,8 +11,8 @@ const common = {
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
   'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
   'common.top.menu.resource': { cn: "资源配置", en: "Resource", },
-  'common.top.menu.mirror': { cn: "我的镜像", en: "Images", },
-  'common.top.menu.mirror.center': { cn: "公共资源", en: "Images Center", },
+  'common.top.menu.image': { cn: "镜像列表", en: "Images", },
+  'common.top.menu.image.center': { cn: "公共资源", en: "Images Center", },
   'common.top.search.item.dataset': { cn: '包含 {searchValue} 的数据集', en: 'Dataset Name include: {searchValue}', },
   'common.top.search.item.model': { cn: '包含 {searchValue} 的模型', en: 'Model Name include: {searchValue}', },
   'common.top.search.item.task': { cn: '包含 {searchValue} 的任务', en: 'Task Name include: {searchValue}', },
@@ -22,7 +22,7 @@ const common = {
   'common.history.task.training': { cn: '训练', en: 'Training', },
   'common.history.task.filter': { cn: '筛选', en: 'Filter', },
   'common.history.task.label': { cn: '标注', en: 'Label', },
-  'common.back': { cn: '返回>', en: 'Back>', },
+  'common.back': { cn: '返回', en: 'Back', },
   'common.fold': { cn: '收起', en: 'Fold', },
   'common.unfold': { cn: '展开', en: 'Unfold', },
   'common.editbox.action.edit': { cn: '编辑名称', en: 'Edit Name', }, 
@@ -63,6 +63,8 @@ const common = {
   'common.action': {cn: '操作', en: 'Action', },
   'common.state': {cn: '状态', en: 'State', },
   'common.del': {cn: '删除', en: 'Delete', },
+  'common.key': {cn: '键', en: 'Key', },
+  'common.value': {cn: '值', en: 'Value', },
 }
 
 export default common

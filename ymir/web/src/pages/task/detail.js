@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import { useParams, Link, useHistory } from "umi"
 import { Button, Card, Col, Descriptions, List, Progress, Row, Space, Tag } from "antd"
@@ -7,6 +7,7 @@ import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
+import Terminate from "./components/terminate"
 import { TASKSTATES, TASKTYPES } from '@/constants/task'
 import StateTag from '../../components/task/stateTag'
 import styles from "./detail.less"
@@ -22,6 +23,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   const { id } = useParams()
   const [task, setTask] = useState({ id })
   const [dataset, setDataset] = useState({})
+  const terminateRef = useRef(null)
   const [model, setModel] = useState({})
   const [error, setError] = useState({
     code: 0,
@@ -30,21 +32,14 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   const [showErrorMsg, setShowErrorMsg] = useState(false)
   const [taskModel, setTaskModel] = useState({})
 
-  useEffect(async () => {
-    const result = await getTask(id)
-
-    if (result) {
-      setTask(result)
-    }
+  useEffect(() => {
+    fetchTask()
   }, [id])
 
   useEffect(async () => {
-    if (isState(TASKSTATES.FINISH)) {
-      getResult()
-    } else if (isState(TASKSTATES.FAILURE)) {
-      getError()
-      goAnchor()
-    }
+    getResult()
+    getError()
+    goAnchor()
   }, [task.state])
 
   useEffect(() => {
@@ -52,6 +47,14 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
       fetchModel(task.parameters.model_id)
     }
   }, [task.parameters])
+
+  async function fetchTask() {
+    const result = await getTask(id)
+
+    if (result) {
+      setTask(result)
+    }
+  }
 
   function getResult() {
     if (isType(TASKTYPES.TRAINING)) {
@@ -100,6 +103,14 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     goAnchor()
   }
 
+  function terminate(task) {
+    terminateRef.current.confirm(task)
+  }
+
+  function terminateOk() {
+    fetchTask()
+  }
+
   function goAnchor() {
     const anchor = history.location.hash
     if (anchor) {
@@ -138,12 +149,6 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     </div>
   }
 
-  function stateLabel(state) {
-    const states = getTaskStates()
-    const target = states.find(s => s.value === state)
-    return state ? <Tag color={target.color}>{target.label}</Tag> : null
-  }
-
   const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-end' }
 
   function renderDatasetName(dts = []) {
@@ -160,7 +165,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   const renderTitle = (
     <Row>
       <Col flex={1}><strong>{t('task.detail.title')}</strong></Col>
-      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}</Button></Col>
+      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
     </Row>
   )
 
@@ -240,6 +245,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
             <Row>
               <Col><StateTag mode='icon' size='large' state={task.state} /></Col>
               <Col flex={1}>{task.state === TASKSTATES.DOING ? <Progress strokeColor={'#FAD337'} percent={task.progress} /> : null}</Col>
+              {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ? 
+                <Col><Button onClick={() => terminate(task)}>{t('task.action.terminate')}</Button></Col> : null }
             </Row>
           </Item>
         </Descriptions>
@@ -258,7 +265,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
                 <Col>
                   <Space>
                     <Button icon={<ScreenIcon />} type='primary' hidden={!dataset.keyword_count}
-                    onClick={() => history.push(`/home/task/filter/${dataset.id}`)}>{t('dataset.detail.action.filter')}</Button>
+                      onClick={() => history.push(`/home/task/filter/${dataset.id}`)}>{t('dataset.detail.action.filter')}</Button>
                     <Button icon={<TrainIcon />} type='primary' onClick={() => history.push(`/home/task/train/${dataset.id}`)}>{t('dataset.detail.action.train')}</Button>
                     <Button icon={<TaggingIcon />} type='primary' onClick={() => history.push(`/home/task/label/${dataset.id}`)}>{t('dataset.detail.action.label')}</Button>
                   </Space>
@@ -300,7 +307,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
           </>
             : null}
         </Descriptions>
-        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link to='/lsf/'>{t('task.detail.label.go.platform')}</Link></div> : null}
+        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link target="_blank" to='/lsf/'>{t('task.detail.label.go.platform')}</Link></div> : null}
+        <Terminate ref={terminateRef} ok={terminateOk} />
       </Card>
     </div>
   )

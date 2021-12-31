@@ -12,6 +12,7 @@ import Breadcrumbs from "../../../components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import { randomNumber } from "../../../utils/number"
 import Tip from "@/components/form/tip"
+import { TASKSTATES } from "../../../constants/task"
 
 const { Option } = Select
 
@@ -31,7 +32,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
 
 
   useEffect(async () => {
-    let result = await getDatasets({ state: 3, limit: 100000 })
+    let result = await getDatasets({ state: TASKSTATES.FINISH, limit: 100000 })
     if (result) {
       setDatasets(result.items)
     }
@@ -114,6 +115,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             size='large'
             colon={false}
           >
+            <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.name.label')}
               name='name'
@@ -124,9 +126,10 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
+            </Tip>
             
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
-              {/* <Tip content={t('tip.task.filter.datasets')}> */}
+              <Tip hidden={true}>
                 <Form.Item
                   label={t('task.filter.form.datasets.label')}
                   name="datasets"
@@ -145,7 +148,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                     ))}
                   </Select>
                 </Form.Item>
-              {/* </Tip> */}
+              </Tip>
             </ConfigProvider>
 
             <Tip content={t('tip.task.filter.labelmember')}>
@@ -166,7 +169,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                       <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
                     </Form.Item>
                   </Col>
-                  <Col>
+                  <Col style={{ lineHeight: '40px'}}>
                     <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
                   </Col>
                 </Row>
@@ -218,10 +221,13 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
               </Form.Item>
             </Tip>
 
+            <Tip hidden={true}>
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
               <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc" max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
             </Form.Item>
-            <Form.Item wrapperCol={{ offset: 4 }}>
+            </Tip>
+            <Tip hidden={true}>
+            <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
@@ -236,6 +242,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
               </Space>
               <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/lsf/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
             </Form.Item>
+            </Tip>
           </Form>
         </div>
       </Card>

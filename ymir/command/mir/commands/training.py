@@ -214,6 +214,7 @@ class CmdTrain(base.BaseCommand):
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
                                       media_location=self.args.media_location,
+                                      tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
                                       executor_instance=self.args.executor_instance,
                                       config_file=self.args.config_file)
@@ -228,6 +229,7 @@ class CmdTrain(base.BaseCommand):
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
+                      tensorboard_dir: str,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
 
@@ -275,6 +277,8 @@ class CmdTrain(base.BaseCommand):
         task_id = dst_typ_rev_tid.tid
         if not executor_instance:
             executor_instance = f"default-training-{task_id}"
+        if not tensorboard_dir:
+            tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
@@ -321,6 +325,7 @@ class CmdTrain(base.BaseCommand):
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
+        os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
@@ -400,6 +405,7 @@ class CmdTrain(base.BaseCommand):
         path_binds = []
         path_binds.append(f"-v {work_dir_in}:/in")
         path_binds.append(f"-v {work_dir_out}:/out")
+        path_binds.append(f"-v {tensorboard_dir}:/out/tensorboard")
         joint_path_binds = " ".join(path_binds)
         shm_size = _get_shm_size(config_file)
         cmd = (f"nvidia-docker run --rm --shm-size={shm_size} {joint_path_binds} --user {os.getuid()}:{os.getgid()} "
@@ -508,4 +514,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   type=str,
                                   required=True,
                                   help="path to executor config file")
+    train_arg_parser.add_argument("--tensorboard",
+                                  dest="tensorboard_dir",
+                                  type=str,
+                                  required=False,
+                                  help="tensorboard log directory")
     train_arg_parser.set_defaults(func=CmdTrain)

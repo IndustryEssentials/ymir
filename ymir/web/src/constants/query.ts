@@ -1,5 +1,5 @@
 import { TASKSTATES, TASKTYPES } from "./task"
-import { CONFIGTYPES } from './mirror'
+import { TYPES } from './image'
 import t from "@/utils/t"
 
 export const getTaskTypes = () => [
@@ -16,6 +16,7 @@ export const getTaskStates = () => [
   { key: "doing", value: TASKSTATES.DOING, label: t("task.state.doing"), color: 'rgb(250, 211, 55)' },
   { key: "finish", value: TASKSTATES.FINISH, label: t("task.state.finish"), color: 'rgb(53, 202, 203)' },
   { key: "failure", value: TASKSTATES.FAILURE, label: t("task.state.failure"), color: 'rgb(242, 99, 123)' },
+  { key: "terminated", value: TASKSTATES.TERMINATED, label: t("task.state.terminated"), color: 'rgb(242, 99, 123)' },
 ]
 
 export const getTimes = () => [
@@ -42,8 +43,8 @@ export const getDatasetTypes = () => [
   { key: "public_import", value: TASKTYPES.PUBLIC, label: t("dataset.type.import"), hidden: true },
 ]
 
-export const getMirrorTypes = () => [
-  { key: "all", value: "", label: t("common.all") },
-  { key: "train", value: CONFIGTYPES.TRAINING, label: t("mirror.type.train") },
-  { key: "mining", value: CONFIGTYPES.MINING, label: t("mirror.type.mining") },
+export const getImageTypes = () => [
+  { key: "all", value: undefined, label: t("common.all") },
+  { key: "train", value: TYPES.TRAINING, label: t("image.type.train") },
+  { key: "mining", value: TYPES.MINING, label: t("image.type.mining") },
 ]
