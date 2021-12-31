@@ -28,7 +28,7 @@ const ModelSelect = ({ value, onChange = () => {}, getModels, ...resProps }) => 
       const models = result.items
       const opts = models.map(model => {
         return {
-          label: <Row gutter={10}><Col flex={1}>{model.name}</Col><Col>mAP: <strong>{model.map}</strong></Col><Col>{t('训练目标')}: {model.keywords.join(',')}</Col></Row>,
+          label: <Row gutter={10}><Col flex={1}>{model.name}</Col><Col>mAP: <strong>{model.map}</strong></Col><Col>{t('model.column.target')}: {model.keywords.join(',')}</Col></Row>,
           model,
           value: model.id,
         }
@@ -42,7 +42,7 @@ const ModelSelect = ({ value, onChange = () => {}, getModels, ...resProps }) => 
   }
 
   return (
-    <Select value={value} {...resProps} onChange={(value, { model }) => onChange(value, model)} options={options}></Select>
+    <Select value={value} {...resProps} onChange={(value, option) => onChange(value, option?.model)} options={options} allowClear></Select>
   )
 }
 

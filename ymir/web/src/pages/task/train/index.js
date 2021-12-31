@@ -41,6 +41,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const [trainSets, setTrainSets] = useState([])
   const [validationSets, setValidationSets] = useState([])
   const [keywords, setKeywords] = useState([])
+  const [selectedKeywords, setSelectedKeywords] = useState([])
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
@@ -118,6 +119,17 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     }
   }, [location.state])
 
+  useEffect(() => {
+    form.setFieldsValue({ keywords: selectedKeywords })
+    const modelId = form.getFieldValue('model')
+    if (modelId && selectedKeywords.length) {
+      const filterDs = datasets.filter(ds => selectedKeywords.some(kw => { 
+        console.log(`ds: ${ds.id}; ${ds.keywords.join(',')}; target kw: ${kw}`, ds.keywords.indexOf(kw) >= 0); 
+        return ds.keywords.indexOf(kw) >= 0 }))
+      setDatasets(filterDs)
+    }
+  }, [selectedKeywords])
+
   function validHyperparam(rule, value) {
 
     const params = form.getFieldValue('hyperparam').map(({ key }) => key)
@@ -144,6 +156,16 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   function validationSetChange(value) {
     setValidationSets(value)
     form.setFieldsValue({ keywords: [] })
+  }
+
+  function modelChange(value, model) {
+    if (model) {
+      setSelectedKeywords(model.keywords)
+    }
+  }
+
+  function disabledKeywords() {
+    return form.getFieldValue('model')
   }
 
   function setConfig(config) {
@@ -297,11 +319,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 // >
                 //   <Form.Item
                 name="keywords"
+                dependencies={['model']}
                 rules={[
                   { required: true, message: t('task.train.form.keywords.required') }
                 ]}
               >
-                <Select mode="multiple" showArrow placeholder={t('task.train.keywords.placeholder')}>
+                <Select mode="multiple" disabled={disabledKeywords()} showArrow placeholder={t('task.train.keywords.placeholder')} onChange={(value) => setSelectedKeywords(value)}>
                   {keywords.map(keyword => (
                     <Option key={keyword} value={keyword}>
                       {keyword}
@@ -326,7 +349,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                   name="model"
                 >
                   <ModelSelect placeholder={t('task.train.form.model.placeholder')}
-                    onChange={(value, model) => { console.log('select model: ', value, model) }} />
+                    onChange={modelChange} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
