@@ -1,9 +1,9 @@
 [run]
 omit = 
-    src/pymir-app/app/backend_pre_start.py
-    src/pymir-app/app/initial_data.py
-    src/pymir-app/app/gunicorn_conf.py
-    src/pymir-app/app/db/*
+    src/ymir-app/app/backend_pre_start.py
+    src/ymir-app/app/initial_data.py
+    src/ymir-app/app/gunicorn_conf.py
+    src/ymir-app/app/db/*
 
 [report]
 # Regexes for lines to exclude from consideration
