@@ -303,15 +303,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         },
         icon: <FlagIcon />,
       },
-      {
-        key: "labeldata",
-        label: t("task.action.labeldata"),
-        onclick: () => getLabels(id, name),
-        hidden: () => {
-          return TASKTYPES.LABEL !== type
-        },
-        icon: <SearchEyeIcon />,
-      },
     ]
     return menus
   }
