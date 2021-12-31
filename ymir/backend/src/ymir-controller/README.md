@@ -1,6 +1,6 @@
-# pyimr-controller
+# YMIR-CONTROLLER
 
-> https://github.com/scalable-ai/ymir-controller
+> https://github.com/IndustryEssentials/ymir
 
 ## Features
 

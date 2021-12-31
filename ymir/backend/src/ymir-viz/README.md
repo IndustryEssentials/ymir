@@ -1,6 +1,6 @@
-# pyimr-viz
+# YMIR-VIZ
 
-> https://github.com/scalable-ai/ymir-viz
+> https://github.com/IndustryEssentials/ymir
 
 ## Features
 
