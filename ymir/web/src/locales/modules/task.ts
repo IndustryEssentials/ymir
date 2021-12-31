@@ -161,6 +161,12 @@ const task = {
   'task.detail.label.go.platform': { cn: '跳转到标注平台>>', en: 'Go to Label Platform >>' },
   "task.terminate.label.nodata": { cn: '不获取数据终止', en: 'Terminate', },
   "task.terminate.label.withdata": { cn: '获取结果终止', en: 'Terminate & Fetch Result', },
+  "tip.task.train.model": { cn: '此次训练将会基于选择的模型的基础上继续训练，迭代次数将会累加，目前训练目标需要和模型保持一致', en: 'This training task will base on the model selected, and training target will be ', },
+  "task.train.form.model.label": { cn: '选择模型', en: 'Select Model', },
+  "task.train.form.model.placeholder": { cn: '获取结果终止', en: 'Terminate & Fetch Result', },
+
+
+
 }
 
 export default task

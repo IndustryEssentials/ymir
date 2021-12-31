@@ -1,6 +1,8 @@
-import { Select } from 'antd'
+import { Col, Row, Select } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
+
+import t from '@/utils/t'
 
 
 const ModelSelect = ({ value, onChange = () => {}, getModels, ...resProps }) => {
@@ -26,7 +28,7 @@ const ModelSelect = ({ value, onChange = () => {}, getModels, ...resProps }) => 
       const models = result.items
       const opts = models.map(model => {
         return {
-          label: model.name,
+          label: <Row gutter={10}><Col flex={1}>{model.name}</Col><Col>mAP: <strong>{model.map}</strong></Col><Col>{t('训练目标')}: {model.keywords.join(',')}</Col></Row>,
           model,
           value: model.id,
         }

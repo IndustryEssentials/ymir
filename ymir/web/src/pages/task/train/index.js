@@ -320,7 +320,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             </Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
-              <Tip content={t('tip.task.filter.model')}>
+              <Tip content={t('tip.task.train.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
                   name="model"
