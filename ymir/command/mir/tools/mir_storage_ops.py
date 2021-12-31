@@ -30,9 +30,9 @@ class MirStorageOps():
         if mirpb.MirStorage.MIR_METADATAS not in mir_datas:
             mir_datas[mirpb.MirStorage.MIR_METADATAS] = mirpb.MirMetadatas()
         if mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
-            mir_annotations = mirpb.MirAnnotations()
-            mir_annotations.task_annotations[mir_tasks.head_task_id]  # empty task_annotation
-            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mir_annotations
+            empty_mir_annotations = mirpb.MirAnnotations()
+            empty_mir_annotations.task_annotations[mir_tasks.head_task_id]  # empty task_annotation
+            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = empty_mir_annotations
 
         # gen mir_keywords
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
