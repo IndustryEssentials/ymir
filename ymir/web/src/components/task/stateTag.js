@@ -14,7 +14,7 @@ export default function StateTag({ state, size='normal', mode='all', iconStyle =
     [TASKSTATES.FAILURE]: { icon: <FailIcon className={s.stateIcon} style={iconStyle} />, color: 'error' },
   }
   const target = states.find(s => s.value === state)
-  return (
+  return target ? (
     <Tag
       className={`${s.state} ${s[mode]} ${s[size]}`}
       {...resProps}
@@ -24,5 +24,5 @@ export default function StateTag({ state, size='normal', mode='all', iconStyle =
       {maps[target.value].icon}
       {mode !== 'icon' ? target.label : ''}
     </Tag>
-  )
+  ) : null
 }
