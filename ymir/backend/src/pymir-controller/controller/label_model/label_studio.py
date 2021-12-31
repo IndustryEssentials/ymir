@@ -53,7 +53,7 @@ class LabelStudio(LabelBase):
         </View>
         """
         top = ElementTree.Element("View")
-        image_leyer = ElementTree.Element("Image", name="image", value="$image")
+        image_leyer = ElementTree.Element("Image", name="image", value="$image", crosshair="true", maxwidth="100%")
         rectangle_labels_layer = ElementTree.Element("RectangleLabels", name="label", toName="image")
         children_label_content = [
             ElementTree.Element("Label", value=keyword, background="green") for keyword in keywords
@@ -75,7 +75,7 @@ class LabelStudio(LabelBase):
             title=project_name,
             collaborators=collaborators,
             label_config=label_config,
-            expert_instruction=expert_instruction,
+            expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
         )
         resp = self.requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp)["id"]
