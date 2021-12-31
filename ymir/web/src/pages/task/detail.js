@@ -39,12 +39,9 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   }, [id])
 
   useEffect(async () => {
-    if (isState(TASKSTATES.FINISH)) {
-      getResult()
-    } else if (isState(TASKSTATES.FAILURE)) {
-      getError()
-      goAnchor()
-    }
+    getResult()
+    getError()
+    goAnchor()
   }, [task.state])
 
   useEffect(() => {

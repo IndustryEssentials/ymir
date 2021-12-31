@@ -32,7 +32,7 @@
     text-align: center;
     margin-bottom: 20px;
     .step {
-      width: 20%;
+      width: calc(100% / 6);
       .stepBox {
         border: 1px solid rgba(0, 0, 0, 0.06);
         // width: 20%;
@@ -57,12 +57,17 @@
             border-color: rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.15) transparent transparent;
             position: absolute;
             top: 4px;
+            z-index: 1;
           }
           &:before {
             left: -14px;
           }
           &:after {
             right: -14px;            
+          }
+          .stepTitle {
+            position: relative;
+            z-index: 10;
           }
         }
         &:global(.ant-card-hoverable:hover) {
