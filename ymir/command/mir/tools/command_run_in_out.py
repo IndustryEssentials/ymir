@@ -52,19 +52,11 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
         task = _generate_mir_task(code=code, error_msg=error_msg, dst_typ_rev_tid=dst_typ_rev_tid)
         mir_storage_ops.add_mir_task(mir_tasks, task)
 
-    mir_annotations = mirpb.MirAnnotations()
-    mir_annotations.task_annotations[dst_typ_rev_tid.tid]  # an empty task annotations for hid
-    mir_datas = {
-        mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-        mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-        mirpb.MirStorage.MIR_TASKS: mir_tasks,
-    }
-
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,
                                                   task_id=dst_typ_rev_tid.tid,
                                                   his_branch=src_typ_rev_tid.rev,
-                                                  mir_datas=mir_datas,
+                                                  mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
                                                   commit_message='task failed')
 
 

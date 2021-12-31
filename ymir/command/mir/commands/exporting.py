@@ -115,20 +115,11 @@ class CmdExport(base.BaseCommand):
         mir_tasks.head_task_id = dst_rev_tid.tid
         mir_tasks.tasks[dst_rev_tid.tid].CopyFrom(task)
 
-        mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.head_task_id = mir_tasks.head_task_id
-        mir_annotations.task_annotations[mir_tasks.head_task_id]
-
-        mir_datas = {
-            mirpb.MIR_METADATAS: mirpb.MirMetadatas(),
-            mirpb.MIR_ANNOTATIONS: mir_annotations,
-            mirpb.MIR_TASKS: mir_tasks
-        }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
                                                       task_id=dst_rev_tid.tid,
                                                       his_branch=src_rev_tid.rev,
-                                                      mir_datas=mir_datas,
+                                                      mir_datas={mirpb.MIR_TASKS: mir_tasks},
                                                       commit_message=task.name)
 
 

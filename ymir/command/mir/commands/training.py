@@ -61,7 +61,7 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
             yaml_obj = yaml.safe_load(f.read())
             model_names = yaml_obj["model"]
             model_mAP = float(yaml_obj["map"])
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logging.warning(traceback.format_exc())
         return [], 0.0
 
@@ -447,19 +447,11 @@ class CmdTrain(base.BaseCommand):
                                   needs_new_commit=True,
                                   mir_tasks=mir_tasks)
 
-        mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.head_task_id = mir_tasks.head_task_id
-        mir_annotations.task_annotations[mir_annotations.head_task_id]
-        mir_datas = {
-            mirpb.MIR_METADATAS: mirpb.MirMetadatas(),
-            mirpb.MIR_ANNOTATIONS: mir_annotations,
-            mirpb.MIR_TASKS: mir_tasks
-        }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_typ_rev_tid.rev,
-                                                      mir_datas=mir_datas,
+                                                      mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
                                                       commit_message=dst_typ_rev_tid.tid)
 
         logging.info("training done")

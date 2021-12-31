@@ -22,47 +22,29 @@ class MirStorageDatas:
 
 
 class MirStorageOps():
-    # protected: presave actions
-    @classmethod
-    def _laze_pre_save(cls, mir_data: Any) -> None:
-        pass
-
-    @classmethod
-    def _annotations_pre_save(cls, mir_data: Any) -> None:
-        build_annotations_head_task_id(mir_data)
-
-    @classmethod
-    def _keywords_pre_save(cls, mir_data: Any) -> None:
-        build_keywords_index(mir_data)
-
-    @classmethod
-    def mir_pre_save(cls, ms: 'mirpb.MirStorage.V') -> Any:
-        MIR_PRE_SAVE = {
-            mirpb.MirStorage.MIR_METADATAS: cls._laze_pre_save,
-            mirpb.MirStorage.MIR_ANNOTATIONS: cls._annotations_pre_save,
-            mirpb.MirStorage.MIR_KEYWORDS: cls._keywords_pre_save,
-            mirpb.MirStorage.MIR_TASKS: cls._laze_pre_save,
-        }
-        return MIR_PRE_SAVE[ms]
-
     # private: save and load
     @classmethod
     def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any]) -> None:
-        have_annotations = mirpb.MirStorage.MIR_ANNOTATIONS in mir_datas
+        # add default members
+        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
+        if mirpb.MirStorage.MIR_METADATAS not in mir_datas:
+            mir_datas[mirpb.MirStorage.MIR_METADATAS] = mirpb.MirMetadatas()
+        if mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
+            mir_annotations = mirpb.MirAnnotations()
+            mir_annotations.task_annotations[mir_tasks.head_task_id]  # empty task_annotation
+            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mir_annotations
 
-        if have_annotations:
-            # also have keywords
-            mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
-            mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
-            build_annotations_head_task_id(mir_annotations=mir_annotations)
-            generate_keywords_cis(
-                single_task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id],
-                mir_keywords=mir_keywords)
-            mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
+        # gen mir_keywords
+        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+        mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
+        build_annotations_head_task_id(mir_annotations=mir_annotations)
+        generate_keywords_cis(
+            single_task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id],
+            mir_keywords=mir_keywords)
+        build_keywords_index(mir_keywords=mir_keywords)
+        mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
         for ms, mir_data in mir_datas.items():
-            cls.mir_pre_save(ms)(mir_data)  # calc before save.
-
             mir_file_path = os.path.join(mir_root, mir_storage.mir_path(ms))
             with open(mir_file_path, "wb") as m_f:
                 m_f.write(mir_data.SerializeToString())
@@ -85,11 +67,13 @@ class MirStorageOps():
             mir_branch (str): branch you wish to save to, if not exists, create new one
             task_id (str): task id for this commit
             his_branch (Optional[str]): if `mir_branch` not exists, this is the branch where you wish to start with
-            mir_datas (Dict[mirpb.MirStorage.V, pb_message.Message]): datas you wish to save, need no mir_keywords
+            mir_datas (Dict[mirpb.MirStorage.V, pb_message.Message]): datas you wish to save, need no mir_keywords,
+                mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
+                 datasets
             commit_message (str): commit messages
 
         Raises:
-            ValueError: if `commit_message` not provided, or `mir_branch` not provided
+            MirRuntimeError
 
         Returns:
             int: result code
@@ -104,10 +88,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
-        if set(mir_datas.keys()) != {
-                mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_TASKS
-        }:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid mir_datas')
+        if mirpb.MirStorage.MIR_TASKS not in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid mir_tasks')
 
         branch_exists = mir_repo_utils.mir_check_branch_exists(mir_root=mir_root, branch=mir_branch)
         if not branch_exists and not his_branch:

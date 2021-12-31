@@ -162,7 +162,7 @@ class CmdCopy(base.BaseCommand):
             for annotation in single_image_annotations.annotations:
                 src_type_id = annotation.class_id
                 if not src_class_id_mgr.has_id(src_type_id):
-                    # if we can not find src type id in data_mir_root's labels.csv, this repo in invalid and can not copy
+                    # if we can not find src type id in data_mir_root's labels.csv, this repo in invalid and cannot copy
                     logging.error(f"broken data_mir_root, unknown src id: {annotation.class_id}")
                     return MirCode.RC_CMD_INVALID_MIR_REPO, unknown_types_and_count
 
