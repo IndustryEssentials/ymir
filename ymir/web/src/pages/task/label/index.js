@@ -12,6 +12,7 @@ import Breadcrumbs from "../../../components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import { randomNumber } from "../../../utils/number"
 import Tip from "@/components/form/tip"
+import { TASKSTATES } from "../../../constants/task"
 
 const { Option } = Select
 
@@ -31,7 +32,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
 
 
   useEffect(async () => {
-    let result = await getDatasets({ state: 3, limit: 100000 })
+    let result = await getDatasets({ state: TASKSTATES.FINISH, limit: 100000 })
     if (result) {
       setDatasets(result.items)
     }
