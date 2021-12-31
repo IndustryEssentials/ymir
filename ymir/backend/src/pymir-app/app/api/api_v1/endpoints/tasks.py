@@ -583,9 +583,7 @@ class TaskResultProxy:
             #  the final state from Controller is done or error,
             #  we have to convert back to terminate for frontend
             new_state = TaskState.terminate
-        task_obj = crud.task.update_state(
-            self.db, task=task_obj, new_state=TaskState(task_state)
-        )
+        task_obj = crud.task.update_state(self.db, task=task_obj, new_state=new_state)
         return task_obj
 
     def get_parent_nodes(self, parameters: Dict) -> List:
