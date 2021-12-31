@@ -1,6 +1,8 @@
 import os
 
 from mir.scm.cmd import CmdScm
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 def Scm(root_dir: str, scm_executable: str = None) -> CmdScm:
@@ -14,9 +16,11 @@ def Scm(root_dir: str, scm_executable: str = None) -> CmdScm:
         """
 
     if scm_executable not in ["dvc", "git"]:
-        raise ValueError("Args error: expect dvc or git, not %s" % scm_executable)
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"args error: expected dvc or git, not {scm_executable}")
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
     if not os.path.isdir(root_dir):
-        raise ValueError("Cannot create dir: %s" % root_dir)
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"can not create dir: {root_dir}")
     return CmdScm(root_dir, scm_executable)
