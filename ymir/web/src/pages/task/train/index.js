@@ -159,9 +159,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function modelChange(value, model) {
-    if (model) {
-      setSelectedKeywords(model.keywords)
-    }
+    console.log('model change: ', value, model)
+    setSelectedKeywords(model ? model.keywords : [])
   }
 
   function disabledKeywords() {
@@ -301,7 +300,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             </Tip>
 
             <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 4, span: 12 }} hidden={![...trainSets, ...validationSets].length}>
+              <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={![...trainSets, ...validationSets].length}>
                 <TripleRates
                   data={datasets}
                   parts={[
