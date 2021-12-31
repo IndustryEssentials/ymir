@@ -279,6 +279,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.ex_src_revs = ''
         fake_args.dst_rev = '_test_no_tvt_stop_00@merge-task-id'
         fake_args.strategy = 'stop'
+        fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
         ret = merge_instance.run()
 
@@ -355,6 +356,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.ex_src_revs = ''
         fake_args.dst_rev = "_test_tvt_stop_01@merge-task-id"
         fake_args.strategy = 'stop'
+        fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
         ret = merge_instance.run()
 
@@ -370,6 +372,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.ex_src_revs = ''
         fake_args.dst_rev = '_test_tvt_host_00@merge-task-id'
         fake_args.strategy = 'host'
+        fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
         ret = merge_instance.run()
 
@@ -444,6 +447,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.ex_src_revs = ''
         fake_args.dst_rev = '_test_tvt_guest_00@merge-task-id'
         fake_args.strategy = 'guest'
+        fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
         ret = merge_instance.run()
 
@@ -518,6 +522,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.ex_src_revs = 'd'
         fake_args.dst_rev = '_test_exclude_no_tvt_stop_00@merge-task-id'
         fake_args.strategy = 'host'
+        fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
         ret = merge_instance.run()
 
