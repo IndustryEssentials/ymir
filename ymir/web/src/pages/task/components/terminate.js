@@ -5,25 +5,22 @@ import { connect } from 'dva'
 import t from '@/utils/t'
 import { TASKTYPES } from "@/constants/task"
 import Confirm from "@/components/common/dangerConfirm"
-import { TASKSTATES } from "../../../constants/task"
 
 const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
   const [visible, setVisible] = useState(false)
   const [id, setId] = useState(null)
   const [name, setName] = useState('')
   const [type, setType] = useState(null)
-  const [state, setState] = useState(null)
 
   useEffect(() => {
     id && terminate()
   }, [id])
 
   useImperativeHandle(ref, () => ({
-    confirm: ({ id, name, type, state }) => {
+    confirm: ({ id, name, type }) => {
       setId(id)
       setName(name)
       setType(type)
-      setState(state)
     }
   }), [])
 
@@ -64,7 +61,7 @@ const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
   }
 
   function saveResult() {
-    return state !== TASKSTATES.PENDING && [TASKTYPES.TRAINING, TASKTYPES.LABEL].indexOf(type) > -1
+    return [TASKTYPES.TRAINING, TASKTYPES.LABEL].indexOf(type) > -1
   }
 
   return (
