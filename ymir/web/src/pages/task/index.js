@@ -273,7 +273,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         label: t("task.action.terminate"),
         onclick: () => stop(record),
         hidden: () => {
-          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0 || TASKTYPES.LABEL === type
+          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0
         },
         icon: <StopIcon />,
       },
