@@ -12,6 +12,7 @@ const task = {
   "task.state.doing": { cn: "进行中", en: "In-Progress", },
   "task.state.finish": { cn: "完成", en: "Finish", },
   "task.state.failure": { cn: "失败", en: "Failure", },
+  "task.state.terminated": { cn: '终止', en: 'Terminated', },
   "task.column.name": { cn: "任务名称", en: "Task Name", },
   "task.column.type": { cn: "任务类型", en: "Type", },
   "task.column.state": { cn: "任务进度", en: "Progress", },
@@ -28,7 +29,7 @@ const task = {
   "task.action.label": { cn: "标注", en: "Label", },
   "task.action.edit": { cn: "编辑", en: "Rename", },
   "task.action.del": { cn: "删除", en: "Remove", },
-  "task.action.stop": { cn: "终止", en: "Terminate", },
+  "task.action.terminate": { cn: "终止", en: "Terminate", },
   "task.action.copy": { cn: "复制", en: "Copy", },
   "task.action.labelplatform": { cn: "标注平台", en: "Label Platform", },
   "task.action.labeldata": { cn: "获取标注数据", en: "Label Data", },
@@ -49,7 +50,7 @@ const task = {
   "task.action.multi.mine": { cn: "批量挖掘", en: "Mining With", },
   "task.cancel.select": { cn: "取消选择", en: "Cancel Select", },
   "task.action.del.confirm.content": { cn: "确认要删除任务：{name}？", en: "Are you sure to remove this task: {name}?", },
-  "task.action.stop.confirm.content": { cn: "确认要终止任务：{name}？", en: "Are you sure to terminate the task: {name}?", },
+  "task.action.terminate.confirm.content": { cn: "确认要终止任务：{name}？", en: "Are you sure to terminate the task: {name}?", },
   "task.action.getlabels.confirm.content": { cn: "确认要获取当前标注数据并终止任务：{name}？", en: "Are you sure to get current labelled data and terminate this task:{name}?", },
   "task.query.name.placeholder": { cn: "任务名称", en: "Task Name", },
   "task.selected.label": { cn: "已选择 {len} 项, ", en: "{len} tasks selected, ", },
@@ -155,8 +156,11 @@ const task = {
   "task.label.bottomtip.link.label": { cn: '注册标注平台账号>>', en: 'sign up Label Platform Account >>', },
   "task.btn.back": { cn: '返回', en: 'BACK', },
   "task.gpu.count": { cn: 'GPU个数', en: 'GPU Count', },
+  "task.gpu.tip": { cn: '当前可用GPU个数为 {count}', en: 'Valid GPU count: {count}', },
   "task.detail.model.deleted": { cn: '已删除', en: 'Deleted', },
   'task.detail.label.go.platform': { cn: '跳转到标注平台>>', en: 'Go to Label Platform >>' },
+  "task.terminate.label.nodata": { cn: '不获取数据终止', en: 'Terminate', },
+  "task.terminate.label.withdata": { cn: '获取结果终止', en: 'Terminate & Fetch Result', },
 }
 
 export default task
