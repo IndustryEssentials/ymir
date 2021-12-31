@@ -127,10 +127,7 @@ class ClassIdManager(object):
         Returns:
             List[int]: corresponding type ids
         """
-        type_ids = []
-        for name in names:
-            type_ids.append(self.id_and_main_name_for_name(name=name)[0])
-        return type_ids
+        return [self.id_and_main_name_for_name(name=name)[0] for name in names]
 
     def all_main_names(self) -> List[str]:
         """

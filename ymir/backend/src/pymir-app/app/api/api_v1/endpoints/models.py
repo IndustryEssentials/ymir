@@ -1,9 +1,9 @@
+import enum
 import random
 import secrets
 from typing import Any, Optional
-import enum
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
@@ -12,15 +12,16 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateModelError,
+    InvalidConfiguration,
     ModelNotFound,
     NoModelPermission,
-    InvalidConfiguration,
 )
-from app.models.task import TaskType, Task
+from app.config import settings
+from app.constants.state import TaskType
+from app.models.task import Task
+from app.utils.files import save_file
 from app.utils.stats import RedisStats
 from app.utils.ymir_controller import ControllerRequest
-from app.utils.files import save_file
-from app.config import settings
 
 router = APIRouter()
 
@@ -78,7 +79,8 @@ def list_models(
 
 
 @router.post(
-    "/", response_model=schemas.ModelOut,
+    "/",
+    response_model=schemas.ModelOut,
 )
 def import_model(
     *,

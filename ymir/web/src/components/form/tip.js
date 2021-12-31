@@ -4,7 +4,7 @@ import { TipsIcon } from '@/components/common/icons'
 import s from './tip.less'
 
 const Tip = ({ title = null, content = '', placement = 'right', span=6, hidden = false, children }) => {
-  const tip = <Popover title={title} content={content} placement={placement}>
+  const tip = <Popover title={title} content={<div style={{ maxWidth: '20vw' }}>{content}</div>} placement={placement}>
     <TipsIcon className={s.icon} />
   </Popover>
   return (

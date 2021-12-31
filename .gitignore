@@ -76,4 +76,8 @@ output/
 
 .venv
 
-.vscode
+# tmp files on running
+.vscode/
+mysql/
+redis/
+ymir-data/

@@ -124,6 +124,7 @@ function Filter({
           size='large'
           colon={false}
         >
+          <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.name.label')}
               name='name'
@@ -134,8 +135,10 @@ function Filter({
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
+          </Tip>
 
           <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+          <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
               required
@@ -158,8 +161,10 @@ function Filter({
                 ))}
               </Select>
             </Form.Item>
+            </Tip>
           </ConfigProvider>
     
+          <Tip hidden={true}>
           <Form.Item name='strategy'
             hidden={form.getFieldValue('datasets')?.length < 2}
             initialValue={2} label={t('task.train.form.repeatdata.label')}>
@@ -169,11 +174,14 @@ function Filter({
               { value: 1, label: t('task.train.form.repeatdata.terminate') },
             ]} />
           </Form.Item>
+          </Tip>
 
+          <Tip hidden={true}>
           <Form.Item label={t('dataset.column.keyword')} required>
+              <p>{t('task.filter.form.include.label')}</p>
             <Tip content={t('tip.task.filter.includelable')}>
                 <Form.Item
-                  label={t('task.filter.form.include.label')}
+                  // label={t('task.filter.form.include.label')}
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='inc'
                   // hidden={!keywords.length}
@@ -192,9 +200,10 @@ function Filter({
                   </Select>
                 </Form.Item>
               </Tip>
+              <p>{t('task.filter.form.exclude.label')}</p>
               <Tip content={t('tip.task.filter.excludelable')}>
                 <Form.Item
-                  label={t('task.filter.form.exclude.label')}
+                  // label={t('task.filter.form.exclude.label')}
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='exc'
                   // hidden={!keywords.length}
@@ -215,8 +224,9 @@ function Filter({
               </Form.Item>
             </Tip>
           </Form.Item>
-
-          <Form.Item className={styles.submit} wrapperCol={{ offset: 4 }}>
+          </Tip>
+          <Tip hidden={true}>
+          <Form.Item className={styles.submit} wrapperCol={{ offset: 8 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>
                 <Button type="primary" size="large" htmlType="submit">
@@ -230,6 +240,7 @@ function Filter({
               </Form.Item>
             </Space>
           </Form.Item>
+          </Tip>
         </Form>
       </Card>
     </div>

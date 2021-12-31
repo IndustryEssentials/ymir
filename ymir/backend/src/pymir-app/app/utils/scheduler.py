@@ -12,8 +12,7 @@ env = os.environ.get
 CHECK_INTERVAL_IN_SECONDS = int(env("CHECK_INTERVAL_IN_SECONDS", 30))
 API_HOST = env("API_HOST", "backend")
 REDIS_URI = env("CTR_REDIS_URI", "redis://redis:6379")
-FIRST_ADMIN = env("FIRST_ADMIN")
-FIRST_ADMIN_PASSWORD = env("FIRST_ADMIN_PASSWORD")
+API_KEY_SECRET = env("API_KEY_SECRET")
 
 
 async def update_task_status(ctx: Dict) -> int:
@@ -22,15 +21,9 @@ async def update_task_status(ctx: Dict) -> int:
     to check all the unfinished tasks
     """
     session = ClientSession()
-    data = {"username": FIRST_ADMIN, "password": FIRST_ADMIN_PASSWORD}
-    token_url = f"http://{API_HOST}/api/v1/auth/token"
-    async with session.post(token_url, data=data) as response:
-        content = await response.json()
-        api_token = content["access_token"]
-        logging.info("created access token")
 
     api_url = f"http://{API_HOST}/api/v1/tasks/update_status"
-    headers = {"Authorization": f"Bearer {api_token}"}
+    headers = {"api_key": API_KEY_SECRET}
     logging.info("updating tasks status... %s" % api_url)
     async with session.post(api_url, headers=headers) as response:
         content = await response.json()

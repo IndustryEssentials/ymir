@@ -67,9 +67,9 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         if name:
             query = query.filter(Dataset.name.like(f"%{name}%"))
         if type_:
-            query = query.filter(Dataset.type == type_)
+            query = query.filter(Dataset.type == type_.value)
         if state:
-            query = query.filter(Task.state == state)
+            query = query.filter(Task.state == state.value)
         query = query.order_by(desc(self.model.id))
         if limit:
             return query.offset(offset).limit(limit).all(), query.count()
