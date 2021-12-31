@@ -5,14 +5,15 @@ from PIL import Image, ImageFile, UnidentifiedImageError
 from typing import Tuple
 
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter, PhaseStateEnum
 from mir.protos import mir_command_pb2 as mirpb
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-def _generate_metadata_mir_pb(mir_metadatas: mirpb.MirMetadatas, dataset_name: str, sha1s: list,
-                              hashed_asset_root: str, phase: str) -> int:
+def _generate_metadata_mir_pb(mir_metadatas: mirpb.MirMetadatas, dataset_name: str, sha1s: list, hashed_asset_root: str,
+                              phase: str) -> int:
     """
     generate mirpb.MirMetadatas from sha1s
     """
@@ -63,7 +64,8 @@ _ASSET_TYPE_STR_TO_ENUM_MAPPING = {
 
 def _type_shape_for_asset(asset_path: str) -> Tuple['mirpb.AssetType.V', int, int, int]:
     if not asset_path:
-        raise ValueError('_type_shape_for_asset: empty asset_path')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='_type_shape_for_asset: empty asset_path')
 
     try:
         asset_image = Image.open(asset_path)
@@ -79,7 +81,10 @@ def _type_shape_for_asset(asset_path: str) -> Tuple['mirpb.AssetType.V', int, in
         return (mirpb.AssetTypeUnknown, 0, 0, 0)
 
 
-def import_metadatas(mir_metadatas: mirpb.MirMetadatas, dataset_name: str, in_sha1_path: str, hashed_asset_root: str,
+def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
+                     dataset_name: str,
+                     in_sha1_path: str,
+                     hashed_asset_root: str,
                      phase: str = '') -> int:
     # if not enough args, abort
     if (not in_sha1_path or not dataset_name or not hashed_asset_root):
