@@ -1,6 +1,6 @@
-# pyimr-controller
+# YMIR-CONTROLLER
 
-> https://github.com/scalable-ai/pymir-controller
+> https://github.com/IndustryEssentials/ymir
 
 ## Features
 
@@ -14,7 +14,7 @@ pip3 install -r requirements.txt&&pip3 install -r requirements-dev.txt
 
 To run server locally:
 - set your server_prd_config.yaml, some path for persistence files
-- start pymir-controller server you can use the following command
+- start ymir-controller server you can use the following command
 ```
 supervisord -nc supervisor/supervisord.conf
 ```
