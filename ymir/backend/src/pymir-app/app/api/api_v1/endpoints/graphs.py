@@ -32,12 +32,11 @@ class NodeType(str, Enum):
 @router.get(
     "/",
     response_model=schemas.GraphOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={404: {"description": "Node Not Found"}},
 )
 def get_graph(
     db: Session = Depends(deps.get_db),
-    graph_db: GraphClient = Depends(deps.get_graph_client),
+    graph_db: GraphClient = Depends(deps.get_graph_client_of_user),
     type_: NodeType = Query(
         ..., alias="type", description="type of Node, including model and dataset"
     ),

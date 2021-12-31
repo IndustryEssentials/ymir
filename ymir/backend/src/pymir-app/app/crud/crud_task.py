@@ -13,18 +13,23 @@ from app.schemas.task import TaskCreate, TaskUpdate
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
     def create_task(
-        self, db: Session, *, obj_in: TaskCreate, task_hash: str, user_id: int,
+        self,
+        db: Session,
+        *,
+        obj_in: TaskCreate,
+        task_hash: str,
+        user_id: int,
     ) -> Task:
         config = obj_in.config
         if isinstance(config, dict):
             config = json.dumps(config)
         db_obj = Task(
             name=obj_in.name,
-            type=obj_in.type.name,
+            type=obj_in.type.value,
             config=config,
             hash=task_hash,
             user_id=user_id,
-            state=TaskState.pending.name,
+            state=TaskState.pending.value,
             progress=0,
             parameters=obj_in.parameters.json() if obj_in.parameters else None,
         )
@@ -39,19 +44,23 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         query = db.query(self.model)
         if not including_deleted:
             query = query.filter(not_(self.model.is_deleted))
-        return query.filter(self.model.state.in_(states)).all()
+        return query.filter(
+            self.model.state.in_([state.value for state in states])
+        ).all()
 
-    def update_task_state(
-        self, db: Session, *, task_id: int, new_state: TaskState
-    ) -> Optional[Task]:
-        db_obj = self.get(db, id=task_id)
-        if not db_obj:
-            return None
-        db_obj.state = new_state.name
-        db.add(db_obj)
+    def update_state(self, db: Session, *, task: Task, new_state: TaskState) -> Task:
+        task.state = new_state.value
+        db.add(task)
         db.commit()
-        db.refresh(db_obj)
-        return db_obj
+        db.refresh(task)
+        return task
+
+    def update_progress(self, db: Session, *, task: Task, progress: int) -> Task:
+        task.progress = progress
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        return task
 
     def get_multi_tasks(
         self,
@@ -71,9 +80,16 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         if name:
             query = query.filter(self.model.name.like(f"%{name}%"))
         if type_:
-            query = query.filter(self.model.type == type_)
+            query = query.filter(self.model.type == type_.value)
         if state:
-            query = query.filter(self.model.state == state)
+            if state == TaskState.terminate:
+                query = query.filter(
+                    self.model.state.in_(
+                        [TaskState.terminate.value, TaskState.premature.value]
+                    )
+                )
+            else:
+                query = query.filter(self.model.state == state.value)
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
             _end_time = datetime.utcfromtimestamp(end_time)

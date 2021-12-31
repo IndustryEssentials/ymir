@@ -42,3 +42,7 @@ export function getStats({ q, limit = 8, type='day' }) {
 export function getRuntimes ({ name, hash, type }) {
   return request.get('/runtimes/', { params: { name, hash, type }})
 }
+
+export function getSysInfo() {
+  return request.get('/sys_info/')
+}
