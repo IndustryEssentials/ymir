@@ -32,7 +32,16 @@ from .msg import Msg
 from .role import Role, RoleCreate, RoleOut
 from .stats import Stats, StatsOut
 from .sys_info import SysInfo, SysInfoOut
-from .task import Task, TaskCreate, TaskOut, TaskParameter, Tasks, TaskUpdate
+from .task import (
+    Task,
+    TaskCreate,
+    TaskOut,
+    TaskParameter,
+    Tasks,
+    TasksOut,
+    TaskTerminate,
+    TaskUpdate,
+)
 from .token import Token, TokenOut, TokenPayload
 from .user import (
     User,

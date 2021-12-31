@@ -3,6 +3,7 @@ from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
+from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -15,8 +16,9 @@ from app.api.errors.errors import (
     TaskNotFound,
 )
 from app.config import settings
+from app.constants.state import TaskState, TaskType
 from app.models import Dataset, Model
-from app.models.task import Task, TaskState, TaskType
+from app.models.task import Task
 from app.schemas.task import MergeStrategy
 from app.utils.class_ids import (
     get_keyword_id_to_name_mapping,
@@ -39,7 +41,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    response_model=schemas.TaskOut,
+    response_model=schemas.TasksOut,
 )
 def list_tasks(
     db: Session = Depends(deps.get_db),
@@ -252,25 +254,20 @@ def get_task(
     task = crud.task.get_by_user_and_id(db, user_id=current_user.id, id=task_id)
     if not task:
         raise TaskNotFound()
-    result = {}
+    task_info = jsonable_encoder(task)
+    result = {}  # type: Dict[str, Any]
     model = crud.model.get_by_task_id(db, task_id=task_id)
     dataset = crud.dataset.get_by_task_id(db, task_id=task_id)
     if model:
         result["model_id"] = model.id
     if dataset:
         result["dataset_id"] = dataset.id
-    if task.state is models.task.TaskState.error:
-        req = ControllerRequest(
-            ExtraRequestType.get_task_info, task.user_id, args={"task_ids": [task.hash]}
-        )
-        logger.debug("controller request for get_task_info: %s", req)
-        resp = controller_client.send(req)
-        info = TaskResultProxy.parse_resp(resp)
-        logger.debug("controller response for get_task_info: %s", resp)
-        # fixme, update error code when possible
-        result["error"] = {"code": -1, "message": info.get("last_error")}
-    task.result = result  # type: ignore
-    return {"result": task}
+    if TaskState(task_info["state"]) is TaskState.error:
+        result = controller_client.get_task_result(current_user.id, task_info["hash"])
+        result["error"] = {"code": -1, "message": result.get("last_error")}
+
+    task_info["result"] = result
+    return {"result": task_info}
 
 
 @router.patch(
@@ -306,28 +303,35 @@ def update_task_name(
     response_model=schemas.TaskOut,
 )
 def terminate_task(
+    *,
     db: Session = Depends(deps.get_db),
-    task_id: int = Path(..., example="12"),
+    task_id: int = Path(...),
+    terminate_info: schemas.TaskTerminate,
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
+    """
+    Terminate a task:
+
+    if fetch_result, try to get task result and create related dataset or model
+    otherwise, just set task state to terminated
+    """
     task = crud.task.get(db, id=task_id)
-    if not task:
+    if not (task and task.hash):
         raise TaskNotFound()
-    killable_task_types = [TaskType.training, TaskType.mining, TaskType.label]
-    if task.type in killable_task_types:
-        controller_client.terminate_task(user_id=current_user.id, target_task=task)
-    if task.type is not TaskType.label:
-        task = crud.task.update_task_state(
-            db, task_id=task.id, new_state=TaskState.error
-        )
+    controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash)
+
+    new_state = (
+        TaskState.premature if terminate_info.fetch_result else TaskState.terminate
+    )
+    task = crud.task.update_state(db, task=task, new_state=new_state)
     return {"result": task}
 
 
 @router.post(
     "/update_status",
-    response_model=schemas.TaskOut,
-    dependencies=[Depends(deps.get_current_active_user)],
+    response_model=schemas.TasksOut,
+    dependencies=[Depends(deps.api_key_security)],
 )
 def update_task_status(
     *,
@@ -342,7 +346,7 @@ def update_task_status(
     """
     tasks = crud.task.get_tasks_by_states(
         db,
-        states=[TaskState.pending, TaskState.running],
+        states=[TaskState.pending, TaskState.running, TaskState.premature],
         including_deleted=True,
     )
     task_result_proxy = TaskResultProxy(
@@ -378,14 +382,8 @@ class TaskResultProxy:
         self.viz = viz
 
     def get(self, task: schemas.Task) -> Dict:
-        req = ControllerRequest(
-            ExtraRequestType.get_task_info, task.user_id, args={"task_ids": [task.hash]}
-        )
-        logger.info("controller request for get_task_info: %s", req)
-        resp = self.controller.send(req)
-        logger.info("controller response for get_task_info: %s", resp)
-        task_info = self.parse_resp(resp)
-        return task_info
+        result = self.controller.get_task_result(task.user_id, task.hash)
+        return result
 
     @catch_error_and_report
     def save(self, task: schemas.Task, task_result: Dict) -> None:
@@ -400,23 +398,16 @@ class TaskResultProxy:
             task.type is TaskType.import_data
             and task_result["state"] == TaskState.error
         ):
-            # fixme:
-            #  parse error msg of failed to import_task
-            #  to get ignored_keywords
             self.handle_failed_import_task(task, task_result)
 
-        logger.debug("task progress used to be %s", task)
-        updated_task = self.update_task_progress(task, task_result)
-        logger.debug("task progress updated to %s", updated_task)
+        updated_task = self.update_task_progress(
+            task, task_result["state"], task_result.get("percent", 0)
+        )
+        logger.debug("task progress updated from %s to %s", task, updated_task)
 
         if task_result["state"] in (TaskState.error, TaskState.done):
             logger.debug("Sending notification for task: %s", task)
             self.send_notification(task, task_result)
-
-    @staticmethod
-    def parse_resp(result: Dict) -> Dict:
-        info = list(result["resp_get_task_info"]["task_infos"].values())[0]
-        return info
 
     @catch_error_and_report
     def send_notification(self, task: schemas.Task, task_info: Dict) -> None:
@@ -573,21 +564,29 @@ class TaskResultProxy:
         return result
 
     def update_task_progress(
-        self, task: schemas.Task, task_info: Dict
+        self, task: schemas.Task, task_state: int, task_progress: float
     ) -> Optional[Task]:
         task_obj = crud.task.get(self.db, id=task.id)
         if not task_obj:
             return task_obj
-        progress_update = {
-            "state": TaskState(task_info["state"]),
-            "progress": int(task_info["percent"] * 100)
-            if "percent" in task_info
-            else 0,
-        }
-        updated_task = crud.task.update(
-            self.db, db_obj=task_obj, obj_in=progress_update
+        task_progress = int(task_progress * 100)
+        task_obj = crud.task.update_progress(
+            self.db, task=task_obj, progress=task_progress
         )
-        return updated_task
+        new_state = TaskState(task_state)
+        if task_obj.state == TaskState.premature.value and new_state in [
+            TaskState.done,
+            TaskState.error,
+        ]:
+            # ad hoc
+            #  for task in premature state,
+            #  the final state from Controller is done or error,
+            #  we have to convert back to terminate for frontend
+            new_state = TaskState.terminate
+        task_obj = crud.task.update_state(
+            self.db, task=task_obj, new_state=TaskState(task_state)
+        )
+        return task_obj
 
     def get_parent_nodes(self, parameters: Dict) -> List:
         """

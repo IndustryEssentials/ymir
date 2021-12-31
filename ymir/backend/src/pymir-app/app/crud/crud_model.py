@@ -5,9 +5,9 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
+from app.constants.state import TaskType
 from app.crud.base import CRUDBase
 from app.models import Model, Task
-from app.models.task import TaskType
 from app.schemas.model import ModelCreate, ModelUpdate
 
 
@@ -66,7 +66,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             # basic fuzzy search
             query = query.filter(Model.name.like(f"%{name}%"))
         if task_type:
-            query = query.filter(Task.type == task_type)
+            query = query.filter(Task.type == task_type.value)
         if order_by:
             query = query.order_by(desc(getattr(self.model, order_by)))
         else:
