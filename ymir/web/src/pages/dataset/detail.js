@@ -8,6 +8,7 @@ import t from "@/utils/t"
 import Breadcrumbs from "../../components/common/breadcrumb"
 import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "../../components/common/icons"
 import Asset from "./components/asset"
+import { randomBetween } from '@/utils/number'
 
 const { Option } = Select
 
@@ -39,7 +40,10 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const [keywords, setKeywords] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [assetVisible, setAssetVisible] = useState(false)
-  const [currentAsset, setCurrentAsset] = useState(null)
+  const [currentAsset, setCurrentAsset] = useState({
+    hash: null,
+    index: 0,
+  })
 
   useEffect(async () => {
     const data = await getDataset(id)
@@ -73,16 +77,15 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setAssets(items)
     setKeywords(Object.keys(keywords).map((key) => ({ key, count: keywords[key] })))
   }
-  const goAsset = (hash) => {
-    // history.push(`/home/dataset/asset/${id}/${hash}`)
-    setCurrentAsset(hash)
+  const goAsset = (hash, index) => {
+    setCurrentAsset({ hash, index: (currentPage - 1) * filterParams.limit + index})
     setAssetVisible(true)
   }
 
   const randomPage = () => {
     const { limit, offset } = filterParams
     setCurrentPage(offset / limit + 1)
-    const page = rand(Math.ceil(total / limit), 1, currentPage)
+    const page = randomBetween(Math.ceil(total / limit), 1, currentPage)
     filterPage(page, limit)
   }
 
@@ -101,11 +104,11 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
 
     return result.map((rows, index) => (
       <Row gutter={10} wrap={false} key={index} className={styles.dataset_container}>
-        {rows.map(asset => (
+        {rows.map((asset, rowIndex) => (
           <Col flex={100 / row + '%'} key={asset.hash} className={styles.dataset_item}>
             <div
               className={styles.dataset_img}
-              onClick={() => goAsset(asset.hash)}
+              onClick={() => goAsset(asset.hash, index * row + rowIndex)}
             >
               <img
                 src={asset.url}
@@ -161,7 +164,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const assetDetail = <Modal className={styles.assetDetail} 
     title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
     width={null} footer={null}>
-    <Asset id={id} hash={currentAsset} />
+    <Asset id={id} datasetKeywords={dataset.keywords} index={currentAsset.index} total={total} />
   </Modal>
 
   return (

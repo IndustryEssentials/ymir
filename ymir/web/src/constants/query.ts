@@ -16,6 +16,7 @@ export const getTaskStates = () => [
   { key: "doing", value: TASKSTATES.DOING, label: t("task.state.doing"), color: 'rgb(250, 211, 55)' },
   { key: "finish", value: TASKSTATES.FINISH, label: t("task.state.finish"), color: 'rgb(53, 202, 203)' },
   { key: "failure", value: TASKSTATES.FAILURE, label: t("task.state.failure"), color: 'rgb(242, 99, 123)' },
+  { key: "terminated", value: TASKSTATES.TERMINATED, label: t("task.state.terminated"), color: 'rgb(242, 99, 123)' },
 ]
 
 export const getTimes = () => [

@@ -61,10 +61,11 @@ export function deleteTask(id) {
 /**
  * stop task( and get label data for label task)
  * @param {number} id 
+ * @param {boolean} [fetch_result] fetch result or not
  * @returns 
  */
-export function stopTask(id) {
-  return request.post(`/tasks/${id}/terminate`)
+export function stopTask(id, fetch_result = false) {
+  return request.post(`/tasks/${id}/terminate`, { fetch_result })
 }
 
 /**

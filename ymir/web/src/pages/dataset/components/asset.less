@@ -2,13 +2,19 @@
   display: flex;
   flex-direction: column;
   height: calc(100vh - 180px);
-  padding: 20px;
   background: #fff;
   .infoRow {
     height: 100%
   }
   :global(.ant-tag-checkable-checked) {
     filter: drop-shadow(1px 1px 1px black);
+  }
+  .asset_info {
+    position: relative;
+    .random {
+      position: absolute;
+      bottom: 0;
+    }
   }
 }
 .title {
