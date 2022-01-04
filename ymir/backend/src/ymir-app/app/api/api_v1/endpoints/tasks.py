@@ -317,9 +317,11 @@ def terminate_task(
     otherwise, just set task state to terminated
     """
     task = crud.task.get(db, id=task_id)
-    if not (task and task.hash):
+    if not (task and task.hash and task.type):
         raise TaskNotFound()
-    controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash)
+    controller_client.terminate_task(
+        user_id=current_user.id, task_hash=task.hash, task_type=task.type
+    )
 
     new_state = (
         TaskState.premature if terminate_info.fetch_result else TaskState.terminate
