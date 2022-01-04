@@ -6,6 +6,7 @@ from app.schemas.common import Common
 
 
 class InferenceBase(BaseModel):
+    docker_image: str
     model_id: int
     image_urls: List[str]
 

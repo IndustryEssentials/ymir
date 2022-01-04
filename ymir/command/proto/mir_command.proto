@@ -194,8 +194,13 @@ message Task {
     string base_task_id = 4;
     /// execution time of this task
     int64 timestamp = 5;
+    /// (special for training task): result model for cmd train
     ModelMeta model = 6;
+    /// (special for import task): unknown types for cmd import
     map<string, int32> unknown_types = 7;
+    /// return code of task
+    int32 return_code = 8;
+    string return_msg = 9;
     /// serialization result of arguments of this task, in yaml format
     string args = 100;
     string ancestor_task_id = 101;
