@@ -1,6 +1,6 @@
 """ emtry point for pymir-ed (pymir events dispatcher) service """
 
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -10,7 +10,7 @@ from pydantic import BaseModel
 class TaskStateExtra(BaseModel):
     user_id: str
     monitor_type: int
-    log_path: str
+    log_path: List[str]
     description: Optional[str]
 
 
@@ -27,10 +27,6 @@ class TaskStatePercent(BaseModel):
 class TaskState(BaseModel):
     task_extra_info: TaskStateExtra
     percent_result: TaskStatePercent
-
-
-class TaskStatesEvent(BaseModel):
-    task_states: Dict[str, TaskState]
 
 
 # data models: resp
