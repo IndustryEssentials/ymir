@@ -1,5 +1,7 @@
 import json
+import time
 from datetime import datetime
+from enum import IntEnum
 from typing import List, Optional, Tuple, Union
 
 from sqlalchemy import and_, desc, not_
@@ -53,6 +55,18 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db.add(task)
         db.commit()
         db.refresh(task)
+
+        # for task reached finale, update `duration` correspondingly
+        if task.state in [TaskState.terminate, TaskState.done, TaskState.error]:
+            self.update_duration(db, task=task)
+
+        return task
+
+    def update_duration(self, db: Session, *, task: Task) -> Task:
+        task.duration = int(time.time() - datetime.timestamp(task.create_datetime))
+        db.add(task)
+        db.commit()
+        db.refresh(task)
         return task
 
     def update_progress(self, db: Session, *, task: Task, progress: int) -> Task:
@@ -65,6 +79,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
     def get_multi_tasks(
         self,
         db: Session,
+        *,
         user_id: Optional[int] = None,
         name: Optional[str] = None,
         type_: Optional[TaskType] = None,
@@ -73,6 +88,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         end_time: Optional[int] = None,
         offset: int = 0,
         limit: int = settings.DEFAULT_LIMIT,
+        order_by: IntEnum,
+        is_desc: bool = True,
     ) -> Tuple[List[Task], int]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         if user_id:
@@ -100,7 +117,11 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
                 )
             )
 
-        query = query.order_by(desc(self.model.id))
+        order_by_column = getattr(self.model, order_by.name)
+        if desc:
+            order_by_column = desc(self.model.id)
+        query = query.order_by(order_by_column)
+
         return query.offset(offset).limit(limit).all(), query.count()
 
 
