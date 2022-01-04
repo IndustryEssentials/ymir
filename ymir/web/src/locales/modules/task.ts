@@ -99,7 +99,7 @@ const task = {
   "task.train.form.testsets.label": { cn: "测试集", en: "Test Sets", },
   "task.train.form.keywords.label": { cn: "训练目标", en: "Train Classes", },
 
-  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Training target context: Please select target keyword to be used for model training, multi-selection support", },
+  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Please select target keyword, multiple supported", },
 
   "task.train.form.keywords.required": { cn: "请选择训练目标", en: "Please select your train classes", },
   "task.train.form.traintype.label": { cn: "训练类型", en: "Train Type", },
@@ -163,7 +163,7 @@ const task = {
   "task.terminate.label.withdata": { cn: '获取数据终止', en: 'Terminate & Fetch Result', },
   "tip.task.train.model": { cn: '此次训练将会基于选择的模型的基础上继续训练，迭代次数将会累加，目前训练目标需要和模型保持一致', en: 'This training task will base on the model selected, and training target will be ', },
   "task.train.form.model.label": { cn: '选择模型', en: 'Select Model', },
-  "task.train.form.model.placeholder": { cn: '请选择模型，不需要模型可不选', en: 'Please select model, unselect if you don\'t need', },
+  "task.train.form.model.placeholder": { cn: '请选择模型', en: 'Please select a model', },
 }
 
 export default task

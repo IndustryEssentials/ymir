@@ -37,6 +37,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const history = useHistory()
   const location = useLocation()
   const { mid, image } = location.query
+  const [allDs, setAllDs] = useState([])
   const [datasets, setDatasets] = useState([])
   const [trainSets, setTrainSets] = useState([])
   const [validationSets, setValidationSets] = useState([])
@@ -67,8 +68,10 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
   useEffect(async () => {
     let result = await getDatasets({ limit: 100000 })
-    if (result) {
-      setDatasets(result.items.filter(dataset => TASKSTATES.FINISH === dataset.state))
+    if (result?.items) {
+      const ds = result.items.filter(dataset => TASKSTATES.FINISH === dataset.state)
+      setAllDs(ds)
+      setDatasets(ds)
     }
   }, [])
 
@@ -83,7 +86,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     const vkw = getKw(validationSets)
     // console.log('keywords: ', tkw, vkw)
     const kws = tkw.filter(v => vkw.includes(v))
-    setKeywords(kws)
+    console.log('model value: ', !form.getFieldValue('model'))
+    if (!form.getFieldValue('model')) {
+      setKeywords(kws)
+      form.setFieldsValue({ keywords: [] })
+      setSelectedKeywords([])
+    }
   }, [trainSets, validationSets, datasets])
 
   useEffect(() => {
@@ -120,15 +128,39 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }, [location.state])
 
   useEffect(() => {
+    console.log('selected kws: ', selectedKeywords)
     form.setFieldsValue({ keywords: selectedKeywords })
-    const modelId = form.getFieldValue('model')
-    if (modelId && selectedKeywords.length) {
-      const filterDs = datasets.filter(ds => selectedKeywords.some(kw => { 
-        console.log(`ds: ${ds.id}; ${ds.keywords.join(',')}; target kw: ${kw}`, ds.keywords.indexOf(kw) >= 0); 
-        return ds.keywords.indexOf(kw) >= 0 }))
-      setDatasets(filterDs)
-    }
+    // const modelId = form.getFieldValue('model')
+    // if (modelId && selectedKeywords.length) {
+    //   const filterDs = datasets.filter(ds => selectedKeywords.some(kw => {
+    //     return ds.keywords.indexOf(kw) >= 0
+    //   }))
+    //   setDatasets(filterDs)
+    // } else {
+    //   setDatasets(allDs)
+    // }
   }, [selectedKeywords])
+
+  function validTrainTarget(_, value) {
+    const kws = form.getFieldValue('keywords')
+    if (!(inArray(kws, getKwsFromDatasets(trainSets)) && inArray(kws, getKwsFromDatasets(validationSets)))) {
+      return Promise.reject(t('task.train.target.invalid.inter'))
+    }
+    // if (kws.toString() !== modelKeywords.toString()) {
+    //   return Promise.reject(t('task.train.target.invalid.model'))
+    // }
+    
+    return Promise.resolve()
+  }
+
+  function getKwsFromDatasets(dss = []) {
+    console.log('dss: ', dss)
+    return dss.reduce((prev, curr) => [...datasets.find(ds => ds.id === curr).keywords, ...prev], [])
+  }
+
+  function inArray (items, arr) {
+    return items.every(item => arr.indexOf(item) > -1)
+  }
 
   function validHyperparam(rule, value) {
 
@@ -151,11 +183,9 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   function trainSetChange(value) {
     // console.log('change: ', value)
     setTrainSets(value)
-    form.setFieldsValue({ keywords: [] })
   }
   function validationSetChange(value) {
     setValidationSets(value)
-    form.setFieldsValue({ keywords: [] })
   }
 
   function modelChange(value, model) {
@@ -318,12 +348,14 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 // >
                 //   <Form.Item
                 name="keywords"
-                dependencies={['model']}
+                dependencies={['model', 'train_sets', 'validation_sets']}
                 rules={[
+                  { validator: validTrainTarget },
                   { required: true, message: t('task.train.form.keywords.required') }
                 ]}
               >
-                <Select mode="multiple" disabled={disabledKeywords()} showArrow placeholder={t('task.train.keywords.placeholder')} onChange={(value) => setSelectedKeywords(value)}>
+                <Select mode="multiple" readOnly={disabledKeywords()} showArrow
+                  placeholder={t('task.train.keywords.placeholder')} onChange={(value) => setSelectedKeywords(value)}>
                   {keywords.map(keyword => (
                     <Option key={keyword} value={keyword}>
                       {keyword}
@@ -347,7 +379,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                   label={t('task.mining.form.model.label')}
                   name="model"
                 >
-                  <ModelSelect placeholder={t('task.train.form.model.placeholder')}
+                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} keywords={selectedKeywords}
                     onChange={modelChange} />
                 </Form.Item>
               </Tip>
