@@ -28,6 +28,12 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                        name_strategy_ignore=False)
 
 
+def _remove_json_file(des_annotation_path: str) -> None:
+    for one_file in os.listdir(des_annotation_path):
+        if one_file.endswith(".json"):
+            os.remove(one_file)
+
+
 def _gen_index_file(des_annotation_path: str) -> str:
     media_files = []
     for one_file in os.listdir(des_annotation_path):
@@ -59,6 +65,9 @@ def lable_task_monitor() -> None:
         state = task_state_code_to_str(TaskState.TaskStateDone) if percent == 1 else task_state_code_to_str(
             TaskState.TaskStateRunning)
         if state == task_state_code_to_str(TaskState.TaskStateDone):
+            # For remove some special tasks.Delete the task after labeling will save file
+            _remove_json_file(project_info["des_annotation_path"])
+            label_instance.sync_export_storage(project_info['storage_id'])
             try:
                 label_instance.convert_annotation_to_voc(project_info['project_id'],
                                                          project_info["des_annotation_path"])
