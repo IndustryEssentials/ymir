@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons"
 import moment from "moment"
 
-import { format, getUnixTimeStamp, calTimeLeft } from "@/utils/date"
+import { format, getUnixTimeStamp, calDuration } from "@/utils/date"
 import t from "@/utils/t"
 import Empty from '@/components/empty/default'
 import { TASKSTATES, TASKTYPES } from "../../constants/task"
@@ -82,6 +82,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       title: showTitle("task.column.type"),
       dataIndex: "type",
       width: 160,
+      align: 'center',
       render: (type) => (types.find((t) => t.value === type))?.label,
     },
     {
@@ -94,7 +95,16 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       title: showTitle("task.column.create_time"),
       dataIndex: "create_datetime",
       width: 200,
+      sorter: true,
       render: (datetime) => format(datetime),
+    },
+    {
+      title: showTitle("task.column.duration"),
+      dataIndex: "duration",
+      width: 200,
+      sorter: true,
+      align: 'center',
+      render: (seconds) => calDuration(seconds, getLocale()),
     },
     {
       title: showTitle("task.column.action"),
@@ -135,10 +145,17 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   ]
 
 
-  const pageChange = ({ current, pageSize }) => {
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
+    console.log('tabel chagne: ', sorters, calDuration(365000, getLocale()))
+    const orders = {
+      'duration': 2,
+      'create_datetime': 3,
+    }
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    const is_desc = sorters.order === 'ascend' ? false : true
+    const order_by = sorters.order ? (orders[sorters.field] || 1) : undefined
+    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
   function showTitle(str) {
@@ -148,6 +165,8 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
     let params = {
       offset: query.offset,
       limit: query.limit,
+      is_desc: query.is_desc,
+      order_by: query.order_by,
     }
     if (query.type !== "") {
       params.type = query.type
@@ -398,9 +417,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         <ConfigProvider renderEmpty={() => <Empty />}>
           <Table
             dataSource={tasks}
-            onChange={({ current, pageSize }) =>
-              pageChange({ current, pageSize })
-            }
+            onChange={tableChange}
             rowKey={(record) => record.id}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             pagination={{

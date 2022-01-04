@@ -155,6 +155,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
       key: "create_datetime",
       dataIndex: "create_datetime",
       render: (datetime) => format(datetime),
+      sorter: true,
       width: 180,
     },
     {
@@ -224,10 +225,15 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     return actions
   }
 
-  const pageChange = ({ current, pageSize }) => {
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
+    const orders = {
+      'create_datetime': 3,
+    }
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    const is_desc = sorters.order === 'ascend' ? false : true
+    const order_by = sorters.order ? (orders[sorters.field] || 1) : undefined
+    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
   function showTitle(str) {
@@ -238,6 +244,8 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     let params = {
       offset: query.offset,
       limit: query.limit,
+      is_desc: query.is_desc,
+      order_by: query.order_by,
     }
     if (query.type !== "") {
       params.type = query.type
@@ -444,9 +452,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
           <ConfigProvider renderEmpty={() => <EmptyState add={add} />}>
             <Table
               dataSource={datasets}
-              onChange={({ current, pageSize }) =>
-                pageChange({ current, pageSize })
-              }
+              onChange={tableChange}
               rowKey={(record) => record.id}
               rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
               pagination={{
