@@ -2,16 +2,10 @@
 
 import datetime
 from enum import Enum
-from functools import wraps
 import json
 import math
 import os
-from subprocess import CalledProcessError
-import traceback
-from typing import Any, Callable, Dict, List, Optional
-
-from mir.tools.code import MirCode, MirRuntimeError
-from mir.tools import revs_parser, mir_repo_utils
+from typing import Any, Dict, List, Optional
 
 
 class PhaseStateEnum(str, Enum):
@@ -181,69 +175,3 @@ class PhaseLoggerCenter:
                                                                             state_code=state_code,
                                                                             state_content=state_content,
                                                                             trace_message=trace_message)
-
-
-def phase_logger_in_out(f: Callable) -> Callable:
-    """
-    decorator for command run_with_args functions for those cmd who wants a PENDING record before f start
-        and a DONE / ERROR record after f end
-
-    Args:
-        f (Callable): cmd run_with_args functions, should have work_dir and dst_rev in arg list
-    """
-
-    def _get_task_name(**kwargs: dict) -> str:
-        if 'dst_rev' in kwargs:
-            return revs_parser.parse_single_arg_rev(str(kwargs['dst_rev'])).tid
-        return 'default-task'
-
-    @wraps(f)
-    def wrapper(work_dir: str, *args: tuple, **kwargs: dict) -> Any:
-        mir_logger = PhaseLogger(task_name=_get_task_name(**kwargs),
-                                 monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir))
-        mir_logger.update_percent_info(local_percent=0, task_state=PhaseStateEnum.PENDING)
-
-        try:
-            ret = f(work_dir=work_dir, *args, **kwargs)
-            trace_message = f"cmd return: {ret}"
-
-            if ret == MirCode.RC_OK:
-                mir_logger.update_percent_info(local_percent=1, task_state=PhaseStateEnum.DONE)
-            else:
-                mir_logger.update_percent_info(local_percent=1,
-                                               task_state=PhaseStateEnum.ERROR,
-                                               state_code=ret,
-                                               state_content=trace_message,
-                                               trace_message=trace_message)
-
-            return ret
-        except MirRuntimeError as e:
-            trace_message = f"cmd exception: {traceback.format_exc()}"
-
-            mir_logger.update_percent_info(local_percent=1,
-                                           task_state=PhaseStateEnum.ERROR,
-                                           state_code=e.error_code,
-                                           state_content=e.error_message,
-                                           trace_message=trace_message)
-
-            raise e
-        except CalledProcessError as e:
-            trace_message = f"cmd exception: {traceback.format_exc()}"
-
-            mir_logger.update_percent_info(local_percent=1,
-                                           task_state=PhaseStateEnum.ERROR,
-                                           state_code=MirCode.RC_RUNTIME_CONTAINER_ERROR,
-                                           state_content=str(e),
-                                           trace_message=trace_message)
-
-            raise e
-        except BaseException as e:
-            trace_message = f"cmd exception: {traceback.format_exc()}"
-            mir_logger.update_percent_info(local_percent=1,
-                                           task_state=PhaseStateEnum.ERROR,
-                                           state_code=MirCode.RC_RUNTIME_ERROR_UNKNOWN,
-                                           state_content=str(e),
-                                           trace_message=trace_message)
-            raise e
-
-    return wrapper

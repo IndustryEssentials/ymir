@@ -123,9 +123,11 @@ class TestControllerRequest:
         kill_other_task = m.ControllerRequest(
             task_type,
             user_id,
-            args={"target_container": task.hash},
+            args={"target_container": task.hash, "task_type": task.type},
         )
         assert kill_other_task.req.req_type == m.mirsvrpb.CMD_TERMINATE
+        assert kill_other_task.req.terminated_task_type == task.type
+        assert kill_other_task.req.executor_instance == task.hash
 
 
 class TestControllerClient:
