@@ -5,10 +5,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
+from app.api.api_v1.endpoints import models as m
 from app.config import settings
 from app.models.task import TaskType
 from tests.utils.utils import random_lower_string
-from app.api.api_v1.endpoints import models as m
+
 
 def insert_model(db: Session, client: TestClient, token) -> models.Model:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=token)
@@ -45,27 +46,27 @@ class TestListModels:
         total = r.json()["result"]["total"]
         assert len(datasets) == total != 0
 
+
+class TestBatchGetModels:
     def test_list_models_not_found(self, client: TestClient, normal_user_token_headers):
         r = client.get(
-            f"{settings.API_V1_STR}/models/",
+            f"{settings.API_V1_STR}/models/batch",
             headers=normal_user_token_headers,
             params={"ids": "100,200,300"},
         )
         assert r.status_code == 200
-        assert len(r.json()["result"]["items"]) == 0
+        assert len(r.json()["result"]) == 0
 
     def test_list_models_given_ids(
         self, db: Session, client: TestClient, normal_user_token_headers, mocker
     ):
         model = insert_model(db, client, normal_user_token_headers)
         r = client.get(
-            f"{settings.API_V1_STR}/models/",
+            f"{settings.API_V1_STR}/models/batch",
             headers=normal_user_token_headers,
             params={"ids": f"{model.id},200,300"},
         )
-        datasets = r.json()["result"]["items"]
-        total = r.json()["result"]["total"]
-        assert total == 1
+        assert len(r.json()["result"]) == 1
 
 
 class TestChangeModelName:
@@ -165,4 +166,4 @@ class TestCreatePlaceholderTask:
         user_id = random.randint(1000, 2000)
         t = m.create_task_as_placeholder(db, user_id=user_id)
         assert t.user_id == user_id
-        assert t.is_deleted == True
+        assert t.is_deleted

@@ -97,4 +97,12 @@ class Models(BaseModel):
 
 
 class ModelOut(Common):
-    result: Union[Model, Models, List[Model]]
+    result: Model
+
+
+class ModelsOut(Common):
+    result: List[Model]
+
+
+class ModelPaginationOut(Common):
+    result: Models

@@ -1,7 +1,6 @@
 import json
 import time
 from datetime import datetime
-from enum import IntEnum
 from typing import List, Optional, Tuple, Union
 
 from sqlalchemy import and_, desc, not_
@@ -88,7 +87,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         end_time: Optional[int] = None,
         offset: int = 0,
         limit: int = settings.DEFAULT_LIMIT,
-        order_by: IntEnum,
+        order_by: str,
         is_desc: bool = True,
     ) -> Tuple[List[Task], int]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
@@ -117,9 +116,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
                 )
             )
 
-        order_by_column = getattr(self.model, order_by.name)
-        if desc:
-            order_by_column = desc(self.model.id)
+        order_by_column = getattr(self.model, order_by)
+        if is_desc:
+            order_by_column = desc(order_by_column)
         query = query.order_by(order_by_column)
 
         return query.offset(offset).limit(limit).all(), query.count()

@@ -40,10 +40,10 @@ from app.utils.ymir_viz import VizClient
 router = APIRouter()
 
 
-class SortMethod(enum.IntEnum):
-    id = 1
-    duration = 2
-    create_datetime = 3
+class SortField(enum.Enum):
+    id = "id"
+    create_datetime = "create_datetime"
+    duration = "duration"
 
 
 @router.get(
@@ -57,7 +57,7 @@ def list_tasks(
     state: TaskState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
-    order_by: SortMethod = Query(SortMethod.id),
+    order_by: SortField = Query(SortField.id),
     is_desc: bool = Query(True),
     start_time: int = Query(None, description="from this timestamp"),
     end_time: int = Query(None, description="to this timestamp"),
@@ -66,11 +66,6 @@ def list_tasks(
     """
     Get list of tasks,
     pagination is supported by means of offset and limit
-
-    order_by options:
-    - id = 1
-    - duration = 2
-    - create_datetime = 3
     """
     tasks, total = crud.task.get_multi_tasks(
         db,
@@ -80,7 +75,7 @@ def list_tasks(
         state=state,
         offset=offset,
         limit=limit,
-        order_by=order_by,
+        order_by=order_by.name,
         is_desc=is_desc,
         start_time=start_time,
         end_time=end_time,
