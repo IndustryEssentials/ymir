@@ -10,7 +10,9 @@ from typing import Any, Mapping, Tuple
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
+from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 def _match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
@@ -31,7 +33,8 @@ def _match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
 def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas: mirpb.MirMetadatas,
                      id_guest_only: set, id_joint: set, suggested_tvt_type: 'mirpb.TvtType.V', strategy: str) -> None:
     if not host_mir_metadatas or not guest_mir_metadatas:
-        raise ValueError("input host/guest mir_metadatas is invalid")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message="input host/guest mir_metadatas is invalid")
 
     # for all ids only in `guest_mir_metadatas`, add them to `host_mir_metadatas`
     for asset_id in id_guest_only:
@@ -48,9 +51,10 @@ def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas
         pass
     elif strategy == "stop":
         if len(id_joint) > 0:
-            raise RuntimeError("joint ids detected, stop")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_CONFLICTS_OCCURED,
+                                  error_message='found conflicts in strategy stop')
     else:
-        raise ValueError("invalid strategy")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid strategy: {strategy}")
 
 
 # WARNING: annotations are filtered in task level, NOT in image level.
@@ -69,9 +73,11 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
         ValueError: if conflicts occured in strategy stop
     """
     if not host_mir_annotations or not guest_mir_annotations:
-        raise ValueError("input host/guest mir_annotations is invalid")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message="input host/guest mir_annotations is invalid")
     if not host_mir_annotations.head_task_id:
-        raise ValueError("no head_task_id found in host_mir_annotations")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message="no head_task_id found in host_mir_annotations")
     if len(guest_mir_annotations.task_annotations) == 0:
         logging.warning('empty guest_mir_annotations')
         return
@@ -84,7 +90,8 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
                                                                 set(guest_image_annotations.keys()))
 
     if strategy == "stop" and joint_ids:
-        raise ValueError("found conflicts; abort")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_CONFLICTS_OCCURED,
+                              error_message='found conflicts in strategy stop')
 
     for asset_id in host_only_ids:
         host_mir_annotations.task_annotations[task_id].image_annotations[asset_id].CopyFrom(
@@ -117,14 +124,15 @@ def _get_union_keywords(host_keywords: Any, guest_keywords: Any, strategy: str) 
     elif strategy == "guest":
         merged_keywords_set = guest_keywords_set
     else:
-        raise Exception("unknown strategy type: " + strategy)
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"unknown strategy type: {strategy}")
     return merged_keywords_set
 
 
 def _merge_keywords(host_mir_keywords: Mapping, guest_mir_keywords: Mapping, id_guest_only: set, id_joint: set,
                     strategy: str) -> None:
     if host_mir_keywords is None or guest_mir_keywords is None:
-        raise RuntimeError('Invalid keywords message map.')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE, error_message='Invalid keywords message map.')
 
     for asset_id in id_guest_only:
         if asset_id not in guest_mir_keywords:
@@ -151,7 +159,8 @@ def _merge_keywords(host_mir_keywords: Mapping, guest_mir_keywords: Mapping, id_
 
 def _merge_tasks(host_mir_tasks: mirpb.MirTasks, guest_mir_tasks: mirpb.MirTasks) -> None:
     if not host_mir_tasks or not guest_mir_tasks:
-        raise ValueError("input host/guest mir_tasks is invalid")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message='input host/guest mir_tasks is invalid')
 
     for guest_task_id, guest_task in guest_mir_tasks.tasks.items():
         if guest_task_id not in host_mir_tasks.tasks:
@@ -168,7 +177,7 @@ def _tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
     elif not typ:
         return mirpb.TvtTypeUnknown
     else:
-        raise ValueError(f"invalid typ: {typ}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid typ: {typ}")
 
 
 def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
@@ -196,7 +205,8 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
 
     guest_mir_metadatas: mirpb.MirMetadatas = mir_data.get(mirpb.MirStorage.MIR_METADATAS, None)
     if not guest_mir_metadatas:
-        raise RuntimeError(f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
 
     id_host_only, id_guest_only, id_joint = _match_asset_ids(set(host_mir_metadatas.attributes.keys()),
                                                              set(guest_mir_metadatas.attributes.keys()))
@@ -232,7 +242,8 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
 
     guest_mir_tasks = mir_data.get(mirpb.MirStorage.MIR_TASKS, None)
     if not guest_mir_tasks:
-        raise RuntimeError(f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no tasks.")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no tasks.")
     _merge_tasks(host_mir_tasks, guest_mir_tasks)
 
     return MirCode.RC_OK
@@ -241,14 +252,15 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
 def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
                       host_mir_keywords: mirpb.MirKeywords, mir_root: str, branch_id: str, task_id: str) -> int:
     if not branch_id:
-        raise RuntimeError('empty exclude id')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty branch id')
     if not host_mir_metadatas:
-        raise RuntimeError('invalid host_mir_metadatas')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid host_mir_metadatas')
 
     guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(
         mir_root=mir_root, mir_branch=branch_id, mir_task_id=task_id, ms=mirpb.MirStorage.MIR_METADATAS)
     if not guest_mir_metadatas:
-        raise RuntimeError("guest repo {}:{} has no metadata.".format(mir_root, branch_id))
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message=f"guest repo {mir_root}:{branch_id} has no metadata.")
 
     _, _, id_joint = _match_asset_ids(set(host_mir_metadatas.attributes.keys()),
                                       set(guest_mir_metadatas.attributes.keys()))
@@ -269,10 +281,13 @@ class CmdMerge(base.BaseCommand):
                                       src_revs=self.args.src_revs,
                                       ex_src_revs=self.args.ex_src_revs,
                                       dst_rev=self.args.dst_rev,
-                                      strategy=self.args.strategy)
+                                      strategy=self.args.strategy,
+                                      work_dir=self.args.work_dir)
 
     @staticmethod
-    def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str) -> int:
+    @command_run_in_out
+    def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str,
+                      work_dir: str) -> int:
         if not src_revs or not dst_rev:
             logging.error("empty --src-revs or --dst-rev")
             return MirCode.RC_CMD_INVALID_ARGS
@@ -375,4 +390,5 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   choices=["stop", "host", "guest"],
                                   help="conflict resolvation strategy, stop (default): stop when conflict detects; "
                                   "host: use host; guest: use guest")
+    merge_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
     merge_arg_parser.set_defaults(func=CmdMerge)
