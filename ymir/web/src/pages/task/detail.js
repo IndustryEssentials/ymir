@@ -209,7 +209,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               <Item label={t('task.detail.label.framework')}>{task.parameters?.network} </Item>
               <Item label={t('task.detail.label.create_time')}>{format(task.create_datetime)} </Item>
               <Item label={t('task.detail.label.backbone')}>{task.parameters?.backbone}</Item>
-              <Item label={t('task.detail.label.hyperparams')}>{renderConfig(task.config)}</Item>
+              <Item label={t('task.detail.label.hyperparams')} span={2}>{renderConfig(task.config)}</Item>
+              <Item label={'TensorBoard'} span={2}><Link target="_blank" to={getTensorboardLink(task.hash)}>{t('task.detail.tensorboard.link.label')}</Link></Item>
             </>
           ) : null}
 
@@ -225,7 +226,6 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               <Item label={t('task.mining.form.label.label')}>{task.parameters.generate_annotations ? t('common.yes') : t('common.no')}</Item>
               <Item label={t('task.mining.form.topk.label')}>{task.parameters.top_k}</Item>
               <Item label={t('task.detail.label.hyperparams')}>{renderConfig(task.config)}</Item>
-              <Item label={'TensorBoard'}><Link to={getTensorboardLink(task.hash)}>{t('task.detail.tensorboard.link.label')}</Link></Item>
             </>
           ) : null}
 
