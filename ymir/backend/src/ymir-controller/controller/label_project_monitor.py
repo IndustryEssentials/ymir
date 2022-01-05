@@ -67,13 +67,13 @@ def lable_task_monitor() -> None:
         if state == task_state_code_to_str(TaskState.TaskStateDone):
             # For remove some special tasks.Delete the task after labeling will save file
             remove_json_file(project_info["des_annotation_path"])
-            label_instance.sync_export_storage(project_info['storage_id'])
             try:
+                label_instance.sync_export_storage(project_info['storage_id'])
                 label_instance.convert_annotation_to_voc(project_info['project_id'],
                                                          project_info["des_annotation_path"])
             except requests.HTTPError as e:
                 sentry_sdk.capture_exception(e)
-                logger.error(f'get label task {task_id} voc error: {e}, set task_id:{task_id} error')
+                logger.error(f'get label task {task_id} error: {e}, set task_id:{task_id} error')
                 state = task_state_code_to_str(TaskState.TaskStateError)
             index_file = _gen_index_file(project_info["des_annotation_path"])
             trigger_mir_import(
