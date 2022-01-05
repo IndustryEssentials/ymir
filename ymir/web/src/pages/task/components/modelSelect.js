@@ -24,13 +24,19 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
   }, [models])
 
   useEffect(() => {
-    setModels(models.map(model => ({ ...model, hidden: keywords.length ? model.keywords.toString() !== keywords.toString() : false })))
+    const same = models.filter(model => model.keywords.toString() === keywords.toString()) || []
+    const inter = models.filter(model => {
+      const kws = model.keywords
+      return kws.toString() !== keywords.toString() && kws.some(kw => keywords.includes(kw))
+    })
+    const diff = models.filter(model => model.keywords.every(kw => !keywords.includes(kw))) || []
+    setModels([...same, ...inter, ...diff])
   }, [keywords])
 
   useEffect(() => {
-    const opt = options.find(opt => opt.value === value) || {}
-    onChange(opt.value, opt.model)
-  }, [value])
+    const opt = options.find(opt => opt.value === value)
+    onChange(value, opt?.model)
+  }, [value, options])
 
   async function fetchModels() {
     const params = {
@@ -44,7 +50,7 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
   }
 
   function generateOptions() {
-    const opts = models.filter(model => !model.hidden).map(model => {
+    const opts = models.map(model => {
       return {
         label: <Row gutter={10} wrap={false}>
           <Col flex={1}>{model.name}</Col>

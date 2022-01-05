@@ -17,7 +17,7 @@ import { getTimes, getModelImportTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/model'
 import EditBox from "../../components/form/editBox"
-import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon } from "../../components/common/icons"
+import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "../../components/common/icons"
 import Actions from "../../components/table/actions"
 import TypeTag from "../../components/task/typeTag"
 
@@ -62,22 +62,6 @@ function Keyword({ getModels, delModel, updateModel }) {
   const types = getModelImportTypes()
 
   const times = getTimes()
-
-  const renderSource = (type, record) => {
-    const target = types.find((t) => t.value === type)
-    if (!target) {
-      return type
-    }
-
-    if (target.value === 1) {
-      // train
-      return (
-        <Link to={`/home/task/detail/${record.task_id}`}>{t('model.type.train')}: {record.task_name}</Link>
-      )
-    } else {
-      return target.label
-    }
-  }
 
   const columns = [
     {
@@ -127,7 +111,7 @@ function Keyword({ getModels, delModel, updateModel }) {
       title: showTitle("model.column.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} />,
+      render: (text, record) => <Actions menus={actionMenus(record)} showCount={4} />,
       className: styles.tab_actions,
       align: "center",
       width: "280px",
@@ -190,6 +174,12 @@ function Keyword({ getModels, delModel, updateModel }) {
         label: t("dataset.action.mining"),
         onclick: () => history.push(`/home/task/mining?mid=${id}`),
         icon: <VectorIcon />,
+      },
+      {
+        key: "train",
+        label: t("dataset.action.train"),
+        onclick: () => history.push(`/home/task/train?mid=${id}`),
+        icon: <TrainIcon />,
       },
       {
         key: "history",

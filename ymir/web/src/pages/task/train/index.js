@@ -85,14 +85,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     }
     const tkw = getKw(trainSets)
     const vkw = getKw(validationSets)
-    // console.log('keywords: ', tkw, vkw)
     const kws = tkw.filter(v => vkw.includes(v))
-    console.log('model value: ', !form.getFieldValue('model'))
-    if (!form.getFieldValue('model')) {
-      setKeywords(kws)
-      form.setFieldsValue({ keywords: [] })
-      setSelectedKeywords([])
-    }
+    // if (!form.getFieldValue('model')) {
+    setKeywords(kws)
+      // form.setFieldsValue({ keywords: [] })
+      // setSelectedKeywords([])
+    // }
   }, [trainSets, validationSets, datasets])
 
   useEffect(() => {
@@ -171,7 +169,6 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function trainSetChange(value) {
-    // console.log('change: ', value)
     setTrainSets(value)
   }
   function validationSetChange(value) {
@@ -179,13 +176,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function modelChange(value, model) {
-    console.log('model change: ', value, model)
-    setSelectedKeywords(model ? model.keywords : [])
+    model && setSelectedKeywords(model.keywords)
     setSelectedModel(model)
-  }
-
-  function disabledKeywords() {
-    return form.getFieldValue('model')
   }
 
   function setConfig(config) {
@@ -207,6 +199,10 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
       docker_image: imageUrl,
       config,
     }
+    if (selectedModel) {
+      params.keywords = selectedModel.keywords
+    }
+
     const result = await createTrainTask(params)
     if (result) {
       history.replace("/home/task")
@@ -222,6 +218,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     name: 'task_train_' + randomNumber(),
     train_sets: datasetIds,
     docker_image: image ? parseInt(image) : undefined,
+    model: mid ? parseInt(mid) : undefined,
     train_type: getCheckedValue(TrainType()),
     network: getCheckedValue(FrameworkType()),
     backbone: getCheckedValue(Backbone()),
@@ -345,7 +342,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                   { validator: validTrainTarget },
                 ]}
               >
-                <Select mode="multiple" readOnly={disabledKeywords()} showArrow
+                <Select mode="multiple" showArrow
                   placeholder={t('task.train.keywords.placeholder')} onChange={(value) => setSelectedKeywords(value)}>
                   {keywords.map(keyword => (
                     <Option key={keyword} value={keyword}>

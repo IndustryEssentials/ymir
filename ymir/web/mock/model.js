@@ -9,7 +9,7 @@ Random.extend({
 })
 
 const models = mockjs.mock({
-  'items|4-30': [{ 'id|+1': 10001, name: '@title(2, 5)', 'map|0-0.2': 0.00, 'keywords': '@keywords'  }],
+  'items|4-30': [{ 'id|+1': 10001, name: '@title(2, 5)', 'map|0-0.2': 0.00, 'keywords': '@keywords', type: 1, source: 1, task_name: '@title(1,2)' }],
 })
 export default {
   'GET /api/v1/models/': { code: 0, result: {
