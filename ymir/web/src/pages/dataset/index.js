@@ -229,7 +229,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
-    const order_by = sorters.order
+    const order_by = sorters.order ? sorters.field : undefined
     setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
