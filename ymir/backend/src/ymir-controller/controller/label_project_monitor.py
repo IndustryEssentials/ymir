@@ -28,6 +28,12 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                        name_strategy_ignore=False)
 
 
+def remove_json_file(des_annotation_path: str) -> None:
+    for one_file in os.listdir(des_annotation_path):
+        if one_file.endswith(".json"):
+            os.remove(one_file)
+
+
 def _gen_index_file(des_annotation_path: str) -> str:
     media_files = []
     for one_file in os.listdir(des_annotation_path):
@@ -59,12 +65,15 @@ def lable_task_monitor() -> None:
         state = task_state_code_to_str(TaskState.TaskStateDone) if percent == 1 else task_state_code_to_str(
             TaskState.TaskStateRunning)
         if state == task_state_code_to_str(TaskState.TaskStateDone):
+            # For remove some special tasks.Delete the task after labeling will save file
+            remove_json_file(project_info["des_annotation_path"])
             try:
+                label_instance.sync_export_storage(project_info['storage_id'])
                 label_instance.convert_annotation_to_voc(project_info['project_id'],
                                                          project_info["des_annotation_path"])
             except requests.HTTPError as e:
                 sentry_sdk.capture_exception(e)
-                logger.error(f'get label task {task_id} voc error: {e}, set task_id:{task_id} error')
+                logger.error(f'get label task {task_id} error: {e}, set task_id:{task_id} error')
                 state = task_state_code_to_str(TaskState.TaskStateError)
             index_file = _gen_index_file(project_info["des_annotation_path"])
             trigger_mir_import(
@@ -84,6 +93,7 @@ def lable_task_monitor() -> None:
 
 
 if __name__ == "__main__":
+    sentry_sdk.init(os.environ.get("LABEL_MONITOR_SENTRY_DSN", None))
     scheduler = BlockingScheduler()
     scheduler.add_job(lable_task_monitor, "interval", seconds=label_task_config.LABEL_TASK_LOOP_SECONDS, jitter=120)
     logger.info("monitor_label_project is running...")

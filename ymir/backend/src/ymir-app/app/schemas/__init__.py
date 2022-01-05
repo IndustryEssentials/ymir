@@ -41,6 +41,7 @@ from .task import (
     TasksOut,
     TaskTerminate,
     TaskUpdate,
+    TaskUpdateStatus,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (
