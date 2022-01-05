@@ -266,6 +266,7 @@ class ControllerRequest:
     ) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_TERMINATE
         request.executor_instance = args["target_container"]
+        request.terminated_task_type = args["task_type"]
         return request
 
     def prepare_pull_image(
@@ -329,11 +330,14 @@ class ControllerClient:
         result = list(resp["resp_get_task_info"]["task_infos"].values())[0]
         return result
 
-    def terminate_task(self, user_id: int, task_hash: str) -> Dict:
+    def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.kill,
             user_id=user_id,
-            args={"target_container": task_hash},
+            args={
+                "target_container": task_hash,
+                "terminated_task_type": task_type,
+            },
         )
         resp = self.send(req)
         logger.info("[controller] terminate_task response: %s", resp)

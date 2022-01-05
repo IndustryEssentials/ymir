@@ -17,7 +17,7 @@ const { CheckableTag } = Tag
 
 const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
 
-function Asset({ id, datasetKeywords = [], getAsset, getAssetsOfDataset, index = 0, total = 0 }) {
+function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfDataset, index = 0, total = 0 }) {
   const history = useHistory()
   const [asset, setAsset] = useState({})
   const [current, setCurrent] = useState('')
@@ -62,7 +62,7 @@ function Asset({ id, datasetKeywords = [], getAsset, getAssetsOfDataset, index =
   }
 
   async function fetchAssetHash() {
-    const result = await getAssetsOfDataset({ id, offset: currentIndex, limit: 1 })
+    const result = await getAssetsOfDataset({ id, keyword: filterKeyword, offset: currentIndex, limit: 1 })
     if (result?.items) {
       const ass = result.items[0]
       setCurrent(ass.hash)
