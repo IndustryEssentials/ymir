@@ -43,6 +43,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const [validationSets, setValidationSets] = useState([])
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
+  const [selectedModel, setSelectedModel] = useState(null)
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
@@ -146,15 +147,14 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     if (!(inArray(kws, getKwsFromDatasets(trainSets)) && inArray(kws, getKwsFromDatasets(validationSets)))) {
       return Promise.reject(t('task.train.target.invalid.inter'))
     }
-    // if (kws.toString() !== modelKeywords.toString()) {
-    //   return Promise.reject(t('task.train.target.invalid.model'))
-    // }
+    if (selectedModel?.keywords && kws.toString() !== selectedModel?.keywords.toString()) {
+      return Promise.reject(t('task.train.target.invalid.model'))
+    }
     
     return Promise.resolve()
   }
 
   function getKwsFromDatasets(dss = []) {
-    console.log('dss: ', dss)
     return dss.reduce((prev, curr) => [...datasets.find(ds => ds.id === curr).keywords, ...prev], [])
   }
 
@@ -191,6 +191,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   function modelChange(value, model) {
     console.log('model change: ', value, model)
     setSelectedKeywords(model ? model.keywords : [])
+    setSelectedModel(model)
   }
 
   function disabledKeywords() {
@@ -350,8 +351,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 name="keywords"
                 dependencies={['model', 'train_sets', 'validation_sets']}
                 rules={[
+                  { required: true, message: t('task.train.form.keywords.required') },
                   { validator: validTrainTarget },
-                  { required: true, message: t('task.train.form.keywords.required') }
                 ]}
               >
                 <Select mode="multiple" readOnly={disabledKeywords()} showArrow
