@@ -31,7 +31,7 @@ export default {
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
-        return result.items
+        return result
       }
     },
     *getModel({ payload }, { call, put }) {

@@ -12,7 +12,7 @@ export function getModel(id) {
 
 /**
  * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, sort_by: 1|2 }
+ * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by: 1|2 }
  * @returns
  */
 export function getModels(params) {
@@ -25,7 +25,7 @@ export function getModels(params) {
  * @returns 
  */
 export function batchModels(ids) {
-  return request.get('models/', { params: { ids: ids.toString() }})
+  return request.get('models/batch', { params: { ids: ids.toString() }})
 }
 
 /**
