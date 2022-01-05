@@ -23,6 +23,8 @@ export function getTasks({
   end_time,
   offset = 0,
   limit = 20,
+  is_desc,
+  order_by,
 }) {
   return request.get("/tasks/", {
     params: {
@@ -33,6 +35,8 @@ export function getTasks({
       end_time,
       offset,
       limit,
+      is_desc,
+      order_by,
     },
   })
 }

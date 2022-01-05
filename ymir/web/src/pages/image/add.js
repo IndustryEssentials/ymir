@@ -60,11 +60,11 @@ const Add = ({ getImage, createImage, updateImage }) => {
     }
   }
 
-  async function create ({ name, url, description }) {
+  async function create ({ url, name, description }) {
     var params = {
-      name: name.trim(),
       url: url.trim(),
-      description: description.trim(),
+      name: name.trim(),
+      description: (description || '').trim(),
     }
     const result = await createImage(params)
     if (result) {
@@ -77,7 +77,7 @@ const Add = ({ getImage, createImage, updateImage }) => {
     var params = {
       id,
       name: name.trim(),
-      description: description.trim(),
+      description: (description || '').trim(),
     }
     const result = await updateImage(params)
     if (result) {

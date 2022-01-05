@@ -120,6 +120,7 @@ function Keyword({ getModels, delModel, updateModel }) {
       key: "create_datetime",
       dataIndex: "create_datetime",
       render: (datetime) => format(datetime),
+      sorter: true,
       width: 200,
       align: 'center',
     },
@@ -134,10 +135,12 @@ function Keyword({ getModels, delModel, updateModel }) {
     },
   ]
 
-  const pageChange = ({ current, pageSize }) => {
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    const is_desc = sorters.order === 'ascend' ? false : true
+    const order_by = sorters.order ? sorters.field : undefined
+    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
   function showTitle(str) {
@@ -148,6 +151,8 @@ function Keyword({ getModels, delModel, updateModel }) {
     let params = {
       offset: query.offset,
       limit: query.limit,
+      is_desc: query.is_desc,
+      order_by: query.order_by,
     }
     if (query.source !== "") {
       params.source = query.source
@@ -353,9 +358,7 @@ function Keyword({ getModels, delModel, updateModel }) {
           <ConfigProvider renderEmpty={() => <EmptyState />}>
             <Table
               dataSource={models}
-              onChange={({ current, pageSize }) =>
-                pageChange({ current, pageSize })
-              }
+              onChange={tableChange}
               rowKey={(record) => record.id}
               pagination={{
                 showQuickJumper: true,
