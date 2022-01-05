@@ -129,17 +129,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }, [location.state])
 
   useEffect(() => {
-    console.log('selected kws: ', selectedKeywords)
     form.setFieldsValue({ keywords: selectedKeywords })
-    // const modelId = form.getFieldValue('model')
-    // if (modelId && selectedKeywords.length) {
-    //   const filterDs = datasets.filter(ds => selectedKeywords.some(kw => {
-    //     return ds.keywords.indexOf(kw) >= 0
-    //   }))
-    //   setDatasets(filterDs)
-    // } else {
-    //   setDatasets(allDs)
-    // }
   }, [selectedKeywords])
 
   function validTrainTarget(_, value) {
