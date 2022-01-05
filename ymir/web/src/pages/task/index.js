@@ -297,7 +297,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         label: t("task.action.del"),
         onclick: () => del(id, name),
         hidden: () => {
-          return [TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(state) < 0
+          return [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) < 0
         },
         icon: <DeleteIcon />,
       },

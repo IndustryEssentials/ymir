@@ -96,7 +96,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_datasets, exclude_datasets, strategy, top_k, model_id } = parameters
+      const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations } = parameters
       const sets = include_datasets || []
       const xsets = exclude_datasets || []
       setTopk(!!top_k)
@@ -105,6 +105,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
         datasets: sets,
         exclude_sets: xsets,
         filter_strategy: !!top_k,
+        inference: generate_annotations,
         model: model_id,
         topk: top_k,
         gpu_count: config.gpu_count,
