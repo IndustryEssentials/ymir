@@ -5,6 +5,7 @@ import { Button, Card, Col, Descriptions, List, Progress, Row, Space, Tag } from
 
 import t from "@/utils/t"
 import { format } from '@/utils/date'
+import { getTensorboardLink } from '@/services/common'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
 import Terminate from "./components/terminate"
@@ -224,6 +225,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               <Item label={t('task.mining.form.label.label')}>{task.parameters.generate_annotations ? t('common.yes') : t('common.no')}</Item>
               <Item label={t('task.mining.form.topk.label')}>{task.parameters.top_k}</Item>
               <Item label={t('task.detail.label.hyperparams')}>{renderConfig(task.config)}</Item>
+              <Item label={'TensorBoard'}><Link to={getTensorboardLink(task.hash)}>{t('task.detail.tensorboard.link.label')}</Link></Item>
             </>
           ) : null}
 

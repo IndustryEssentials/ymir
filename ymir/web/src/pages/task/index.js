@@ -22,6 +22,7 @@ import RenderProgress from "../../components/common/progress"
 import Actions from "../../components/table/actions"
 import Confirm from "../../components/common/dangerConfirm"
 import Terminate from "./components/terminate"
+import { getTensorboardLink } from "../../services/common"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -275,7 +276,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, state, type } = record
+    const { id, name, state, type, hash } = record
     const menus = [
       {
         key: "copy",
@@ -287,18 +288,14 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => {
-          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0
-        },
+        hidden: () => [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0,
         icon: <StopIcon />,
       },
       {
         key: "del",
         label: t("task.action.del"),
         onclick: () => del(id, name),
-        hidden: () => {
-          return [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) < 0
-        },
+        hidden: () => [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) < 0,
         icon: <DeleteIcon />,
       },
       {
@@ -306,6 +303,14 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         label: t("task.action.edit"),
         onclick: () => edit(record),
         icon: <EditIcon />,
+      },
+      {
+        key: "training",
+        label: 'TensorBoard',
+        link: getTensorboardLink(hash),
+        target: '_blank',
+        hidden: () => TASKTYPES.TRAINING !== type,
+        icon: <FlagIcon />,
       },
       {
         key: "labelplatform",
