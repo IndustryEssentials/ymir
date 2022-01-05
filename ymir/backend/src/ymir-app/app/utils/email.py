@@ -1,4 +1,5 @@
 import logging
+from enum import IntEnum
 from pathlib import Path
 from typing import Any, Dict
 
@@ -46,13 +47,10 @@ def send_test_email(email_to: str) -> None:
 
 
 def send_task_result_email(
-    email_to: str, task_id: int, task_name: str, task_type: str, is_finished: bool
+    email_to: str, task_id: int, task_name: str, task_type: str, task_state: IntEnum
 ) -> None:
     project_name = settings.PROJECT_NAME
-    if is_finished:
-        subject = f"{project_name} - task finished"
-    else:
-        subject = f"{project_name} - task error"
+    subject = f"{project_name} - task {task_state.name}"
 
     template_file = Path(settings.EMAIL_TEMPLATES_DIR) / "task_result_email.html"
     with open(template_file) as f:
@@ -63,7 +61,7 @@ def send_task_result_email(
         subject_template=subject,
         html_template=template_str,
         environment={
-            "project_name": settings.PROJECT_NAME,
+            "project_name": project_name,
             "email": email_to,
             "title": subject,
             "task_id": task_id,

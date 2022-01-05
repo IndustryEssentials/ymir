@@ -140,6 +140,12 @@ class TaskTerminate(BaseModel):
     fetch_result: Optional[bool] = True
 
 
+class TaskUpdateStatus(BaseModel):
+    state: TaskState
+    progress: Optional[float] = 0
+    state_message: str
+
+
 class TaskOut(Common):
     result: Task
 
