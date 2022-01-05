@@ -42,7 +42,7 @@ export default {
     *batchDatasets({ payload }, { call, put }) {
       const { code, result } = yield call(batchDatasets, payload)
       if (code === 0) {
-        return result.items
+        return result
       }
     },
     *getDataset({ payload }, { call, put }) {

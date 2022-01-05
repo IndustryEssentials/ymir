@@ -12,7 +12,7 @@ export function getDataset(id) {
 
 /**
  * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10 }
+ * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by = 1 }
  * @returns
  */
 export function getDatasets(params) {
@@ -20,7 +20,7 @@ export function getDatasets(params) {
 }
 
 export function batchDatasets(ids) {
-  return request.get('datasets/', { params: { ids: ids.toString() }})
+  return request.get('datasets/batch', { params: { ids: ids.toString() }})
 }
 
 /**

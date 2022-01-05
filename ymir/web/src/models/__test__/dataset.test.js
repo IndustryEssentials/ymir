@@ -105,9 +105,9 @@ describe("models: dataset", () => {
     const saga = dataset.effects.batchDatasets
     const creator = {
       type: "batchDatasets",
-      payload: { ids: '1,2,3' },
+      payload: { ids: '1,2,3,4' },
     }
-    const expected = { items: [1, 2, , 3, 4], total: 4 }
+    const expected = [1, 2, 3, 4]
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -116,7 +116,7 @@ describe("models: dataset", () => {
       result: expected,
     })
 
-    equalObject(expected.items, end.value)
+    equalObject(expected, end.value)
     expect(end.done).toBe(true)
   })
   it("effects: getAssetsOfDataset", () => {

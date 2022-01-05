@@ -63,7 +63,7 @@ describe("models: model", () => {
     const start = generator.next()
     const end = generator.next({
       code: 0,
-      result: { items: expected, total: expected.length },
+      result: expected,
     })
 
     expect(end.value.join('')).toBe(expected.join(''))
