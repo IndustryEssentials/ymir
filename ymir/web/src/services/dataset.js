@@ -20,7 +20,7 @@ export function getDatasets(params) {
 }
 
 export function batchDatasets(ids) {
-  return request.get('datasets/', { params: { ids: ids.toString() }})
+  return request.get('datasets/batch', { params: { ids: ids.toString() }})
 }
 
 /**

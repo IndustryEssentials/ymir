@@ -147,14 +147,10 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
     console.log('tabel chagne: ', sorters, calDuration(365000, getLocale()))
-    const orders = {
-      'duration': 2,
-      'create_datetime': 3,
-    }
     const limit = pageSize
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
-    const order_by = sorters.order ? (orders[sorters.field] || 1) : undefined
+    const order_by = sorters.order
     setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 

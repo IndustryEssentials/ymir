@@ -136,13 +136,10 @@ function Keyword({ getModels, delModel, updateModel }) {
   ]
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
-    const orders = {
-      'create_datetime': 3,
-    }
     const limit = pageSize
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
-    const order_by = sorters.order ? (orders[sorters.field] || 1) : undefined
+    const order_by = sorters.order
     setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 

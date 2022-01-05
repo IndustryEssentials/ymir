@@ -25,7 +25,7 @@ export function getModels(params) {
  * @returns 
  */
 export function batchModels(ids) {
-  return request.get('models/', { params: { ids: ids.toString() }})
+  return request.get('models/batch', { params: { ids: ids.toString() }})
 }
 
 /**
