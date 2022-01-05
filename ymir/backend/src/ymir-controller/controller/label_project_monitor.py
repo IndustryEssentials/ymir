@@ -93,6 +93,7 @@ def lable_task_monitor() -> None:
 
 
 if __name__ == "__main__":
+    sentry_sdk.init(os.environ.get("LABEL_MONITOR_SENTRY_DSN", None))
     scheduler = BlockingScheduler()
     scheduler.add_job(lable_task_monitor, "interval", seconds=label_task_config.LABEL_TASK_LOOP_SECONDS, jitter=120)
     logger.info("monitor_label_project is running...")
