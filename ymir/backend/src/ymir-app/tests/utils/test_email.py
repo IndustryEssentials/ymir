@@ -35,5 +35,5 @@ class TestSendEmail:
         mock_send_email = mocker.Mock()
         m.send_email = mock_send_email = mocker.Mock()
 
-        m.send_task_result_email(email_to, task_id, task_name, task_type, True)
+        m.send_task_result_email(email_to, task_id, task_name, task_type, mocker.Mock())
         mock_send_email.assert_called()
