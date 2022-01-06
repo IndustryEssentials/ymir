@@ -1,5 +1,5 @@
 from datetime import datetime
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
@@ -47,6 +47,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         end_time: Optional[int] = None,
         offset: Optional[int] = 0,
         limit: Optional[int] = None,
+        order_by: str = "id",
+        is_desc: bool = True,
     ) -> Tuple[List[Dataset], int]:
         # each dataset is associate with one task
         # we need related task info as well
@@ -70,11 +72,15 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(Dataset.type == type_.value)
         if state:
             query = query.filter(Task.state == state.value)
-        query = query.order_by(desc(self.model.id))
+
+        order_by_column = getattr(self.model, order_by)
+        if is_desc:
+            order_by_column = desc(order_by_column)
+        query = query.order_by(order_by_column)
+
         if limit:
             return query.offset(offset).limit(limit).all(), query.count()
-        else:
-            return query.all(), query.count()
+        return query.all(), query.count()
 
     def get_datasets_of_user(
         self, db: Session, *, user_id: int

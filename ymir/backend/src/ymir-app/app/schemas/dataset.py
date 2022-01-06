@@ -1,6 +1,6 @@
+import enum
 import json
 from datetime import datetime
-import enum
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyHttpUrl, BaseModel, Field, root_validator, validator
@@ -107,3 +107,7 @@ class Datasets(BaseModel):
 
 class DatasetOut(Common):
     result: Union[Dataset, Datasets, List[Dataset]]
+
+
+class DatasetsOut(Common):
+    result: List[Dataset]
