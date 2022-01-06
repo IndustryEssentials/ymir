@@ -24,7 +24,8 @@ def make_cmd_request(user_id: str = None,
                      merge_strategy: int = None,
                      req_create_task: backend_pb2.ReqCreateTask = None,
                      task_info_req: backend_pb2.ReqGetTaskInfo = None,
-                     docker_image_config: str = None) -> backend_pb2.GeneralReq:
+                     docker_image_config: str = None,
+                     terminated_task_type: str = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -70,6 +71,8 @@ def make_cmd_request(user_id: str = None,
         request.merge_strategy = merge_strategy
     if docker_image_config is not None:
         request.docker_image_config = docker_image_config
+    if terminated_task_type is not None:
+        request.terminated_task_type = terminated_task_type
     return request
 
 
@@ -95,7 +98,8 @@ def make_invoker_cmd_call(invoker: Any,
                           async_mode: bool = False,
                           merge_strategy: int = None,
                           model_hash: str = None,
-                          docker_image_config: str = None) -> backend_pb2.GeneralReq:
+                          docker_image_config: str = None,
+                          terminated_task_type: str = None) -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,
@@ -114,6 +118,7 @@ def make_invoker_cmd_call(invoker: Any,
                                executor_instance=executor_instance,
                                merge_strategy=merge_strategy,
                                model_hash=model_hash,
-                               docker_image_config=docker_image_config)
+                               docker_image_config=docker_image_config,
+                               terminated_task_type=terminated_task_type)
     invoker = invoker(sandbox_root=sandbox_root, request=request, assets_config=assets_config, async_mode=async_mode)
     return invoker.server_invoke()

@@ -100,6 +100,7 @@ function ModelDetail({ getModel }) {
           <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button>
           <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/mining?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
+          <Button type='primary' onClick={() => history.push(`/home/task/train?mid=${model.id}`)}>{t('dataset.action.train')}</Button>
         </Space></Item>
       </Descriptions>
       </Card>

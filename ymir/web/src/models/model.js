@@ -76,9 +76,8 @@ export default {
       }
     },
     *verify({ payload }, { call }) {
-      const { id, urls } = payload
-      console.log('model of models: ', id, urls)
-      const { code, result } = yield call(verify, id, urls)
+      const { id, urls, image } = payload
+      const { code, result } = yield call(verify, id, urls, image)
       if (code === 0) {
         return result
       }

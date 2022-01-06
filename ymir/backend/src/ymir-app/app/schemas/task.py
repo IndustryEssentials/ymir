@@ -84,6 +84,7 @@ class TaskUpdate(BaseModel):
 class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBase):
     hash: str
     state: Optional[TaskState] = TaskState.pending
+    duration: Optional[int] = Field(0, description="task process time in seconds")
     progress: Optional[float] = Field(0, description="from 0 to 100")
     parameters: Optional[str] = Field(
         description="json dumped input parameters when creating task"
