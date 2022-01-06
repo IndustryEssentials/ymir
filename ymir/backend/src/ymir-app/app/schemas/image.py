@@ -51,6 +51,7 @@ class DockerImageInDBBase(
     hash: Optional[str]
     config: Optional[str]
     state: DockerImageState = DockerImageState.pending
+    is_shared: Optional[bool]
 
     class Config:
         orm_mode = True
