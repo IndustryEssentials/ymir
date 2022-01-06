@@ -2,14 +2,32 @@
   margin: 0 0 20px;
   padding: 20px 10px;
   background: #fff;
-  // border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 2px;
+  .addBoxRow {
+    justify-content: center;
+  }
+  .addBox {
+    position: relative;
+    &::after {
+      content: ' ';
+      display: block;
+      position: absolute;
+      right: 0;
+      top: 64px;
+      width: 1px;
+      height: 48px;
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+    &:last-child::after {
+      display: none;
+    }
+  }
   .addBoxBtn {
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
-    border: 2px dashed rgba(0, 0, 0, 0.15);
+    // border: 2px dashed rgba(0, 0, 0, 0.15);
     height: 160px;
     text-align: center;
     color: rgba(0, 0, 0, 0.45);

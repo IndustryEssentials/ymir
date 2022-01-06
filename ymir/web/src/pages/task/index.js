@@ -332,10 +332,10 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
 
   const addBoxes = (
     <div className={styles.addBoxes}>
-      <Row gutter={20}>
-        {addMore.map(action => <Col span={6} key={action.key}>
+      <Row gutter={20} className={styles.addBoxRow}>
+        {addMore.map(action => <Col className={styles.addBox} span={3} key={action.key}>
           <Link className={styles.addBoxBtn} to={action.link}>
-            <div className={styles.addBtnIcon}>{action.icon}</div><div>{t('task.add.label')}{action.label}</div>
+            <div className={styles.addBtnIcon}>{action.icon}</div><div>{action.label}</div>
           </Link>
         </Col>)}
       </Row>
@@ -407,7 +407,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
             onClick={() => getData()}
           ></Button>
         </div>
-        <ConfigProvider renderEmpty={() => {addBoxes}}>
+        <ConfigProvider renderEmpty={() => addBoxes}>
           <Table
             dataSource={tasks}
             onChange={tableChange}
