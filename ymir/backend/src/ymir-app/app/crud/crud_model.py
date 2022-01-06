@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import IntEnum
 from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
@@ -36,21 +35,18 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db: Session,
         *,
         user_id: int,
-        ids: Optional[List[int]],
         name: Optional[str],
         task_type: Optional[TaskType],
         start_time: Optional[int],
         end_time: Optional[int],
         offset: Optional[int],
         limit: Optional[int],
-        order_by: Optional[str],
+        order_by: str,
+        is_desc: bool = True,
     ) -> Tuple[List[Model], int]:
         query = db.query(*self.interested_fields)
         query = query.join(Task, self.model.task_id == Task.id)
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
-        if ids:
-            query = query.filter(self.model.id.in_(ids))  # type: ignore
-            return query.all(), query.count()
 
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
@@ -65,12 +61,15 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if name:
             # basic fuzzy search
             query = query.filter(Model.name.like(f"%{name}%"))
+
         if task_type:
             query = query.filter(Task.type == task_type.value)
-        if order_by:
-            query = query.order_by(desc(getattr(self.model, order_by)))
-        else:
-            query = query.order_by(desc(self.model.id))
+
+        order_by_column = getattr(self.model, order_by)
+        if is_desc:
+            order_by_column = desc(order_by_column)
+        query = query.order_by(order_by_column)
+
         return query.offset(offset).limit(limit).all(), query.count()
 
 

@@ -17,7 +17,9 @@ def patch_prepare_dataset(mocker, tmp_path):
     images_dir = tmp_path / "img"
     images_dir.mkdir()
     mocker.patch.object(
-        m, "prepare_dataset", return_value={"annotations": str(annotations_dir), "images": str(images_dir)}
+        m,
+        "prepare_dataset",
+        return_value={"annotations": str(annotations_dir), "images": str(images_dir)},
     )
 
 
@@ -71,11 +73,13 @@ class TestListDatasets:
         assert "progress" in datasets[0]
         assert len(datasets) == total != 0
 
+
+class TestBatchGetDatasets:
     def test_list_datasets_not_found(
         self, client: TestClient, normal_user_token_headers
     ):
         r = client.get(
-            f"{settings.API_V1_STR}/datasets/",
+            f"{settings.API_V1_STR}/datasets/batch",
             headers=normal_user_token_headers,
             params={"ids": "100,200,300"},
         )
@@ -86,13 +90,12 @@ class TestListDatasets:
     ):
         r = create_dataset(client, normal_user_token_headers)
         r = client.get(
-            f"{settings.API_V1_STR}/datasets/",
+            f"{settings.API_V1_STR}/datasets/batch",
             headers=normal_user_token_headers,
             params={"ids": "1,200,300"},
         )
-        datasets = r.json()["result"]["items"]
-        total = r.json()["result"]["total"]
-        assert total == 1
+        datasets = r.json()["result"]
+        assert len(datasets) == 1
 
 
 class TestCreateDataset:

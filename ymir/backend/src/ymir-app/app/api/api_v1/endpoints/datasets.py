@@ -1,3 +1,4 @@
+import enum
 import pathlib
 import random
 import tempfile
@@ -33,17 +34,38 @@ router = APIRouter()
 
 
 @router.get(
+    "/batch",
+    response_model=schemas.DatasetsOut,
+)
+def batch_get_datasets(
+    db: Session = Depends(deps.get_db),
+    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
+) -> Any:
+    ids = [int(i) for i in dataset_ids.split(",")]
+    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    if not datasets:
+        raise DatasetNotFound()
+    return {"result": datasets}
+
+
+class SortField(enum.Enum):
+    id = "id"
+    create_datetime = "create_datetime"
+
+
+@router.get(
     "/",
     response_model=schemas.DatasetOut,
 )
 def list_dataset(
     db: Session = Depends(deps.get_db),
-    dataset_ids: str = Query(None, example="12,13,14", alias="ids"),
     name: str = Query(None, description="search by dataset's name"),
     type_: TaskType = Query(None, alias="type", description="type of related task"),
     state: TaskState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
+    order_by: SortField = Query(SortField.id),
+    is_desc: bool = Query(True),
     start_time: int = Query(None, description="from this timestamp"),
     end_time: int = Query(None, description="to this timestamp"),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -52,24 +74,19 @@ def list_dataset(
     Get list of datasets,
     pagination is supported by means of offset and limit
     """
-    if dataset_ids:
-        ids = [int(i) for i in dataset_ids.split(",")]
-        datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
-        if not datasets:
-            raise DatasetNotFound()
-        total = len(datasets)
-    else:
-        datasets, total = crud.dataset.get_multi_datasets(
-            db,
-            user_id=current_user.id,
-            name=name,
-            type_=type_,
-            state=state,
-            offset=offset,
-            limit=limit,
-            start_time=start_time,
-            end_time=end_time,
-        )
+    datasets, total = crud.dataset.get_multi_datasets(
+        db,
+        user_id=current_user.id,
+        name=name,
+        type_=type_,
+        state=state,
+        offset=offset,
+        limit=limit,
+        order_by=order_by.name,
+        is_desc=is_desc,
+        start_time=start_time,
+        end_time=end_time,
+    )
     return {"result": {"total": total, "items": datasets}}
 
 

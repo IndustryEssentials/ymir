@@ -1,3 +1,4 @@
+import enum
 import json
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -39,6 +40,12 @@ from app.utils.ymir_viz import VizClient
 router = APIRouter()
 
 
+class SortField(enum.Enum):
+    id = "id"
+    create_datetime = "create_datetime"
+    duration = "duration"
+
+
 @router.get(
     "/",
     response_model=schemas.TasksOut,
@@ -46,10 +53,12 @@ router = APIRouter()
 def list_tasks(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by task name"),
-    type_: models.task.TaskType = Query(None, alias="type"),
-    state: models.task.TaskState = Query(None),
+    type_: TaskType = Query(None, alias="type"),
+    state: TaskState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
+    order_by: SortField = Query(SortField.id),
+    is_desc: bool = Query(True),
     start_time: int = Query(None, description="from this timestamp"),
     end_time: int = Query(None, description="to this timestamp"),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -66,6 +75,8 @@ def list_tasks(
         state=state,
         offset=offset,
         limit=limit,
+        order_by=order_by.name,
+        is_desc=is_desc,
         start_time=start_time,
         end_time=end_time,
     )

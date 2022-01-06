@@ -336,7 +336,7 @@ class ControllerClient:
             user_id=user_id,
             args={
                 "target_container": task_hash,
-                "terminated_task_type": task_type,
+                "task_type": task_type,
             },
         )
         resp = self.send(req)
