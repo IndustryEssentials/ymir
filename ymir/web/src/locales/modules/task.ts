@@ -3,11 +3,11 @@ const task = {
   "task.list.actions.detail": { cn: "详情", en: "Detail", },
   "task.detail.title": { cn: "任务详情", en: "Task Detail", },
   "task.asset.title": { cn: "数据详情", en: "Task Assets", },
-  "task.type.train": { cn: "训练模型", en: "Train", },
-  "task.type.mine": { cn: "挖掘数据", en: "Mining", },
-  "task.type.label": { cn: "数据标注", en: "Label", },
-  "task.type.filter": { cn: "筛选标签", en: "Filter", },
-  "task.type.import": { cn: "导入任务", en: "Import", },
+  "task.type.train": { cn: "训练", en: "Train", },
+  "task.type.mine": { cn: "挖掘", en: "Mining", },
+  "task.type.label": { cn: "标注", en: "Label", },
+  "task.type.filter": { cn: "筛选", en: "Filter", },
+  "task.type.import": { cn: "导入", en: "Import", },
   "task.state.pending": { cn: "排队中", en: "Queuing", },
   "task.state.doing": { cn: "进行中", en: "In-Progress", },
   "task.state.finish": { cn: "完成", en: "Finish", },
@@ -17,6 +17,7 @@ const task = {
   "task.column.type": { cn: "任务类型", en: "Type", },
   "task.column.state": { cn: "任务进度", en: "Progress", },
   "task.column.state.timeleft.label": { cn: "剩余时间：", en: "Time Left: ", },
+  "task.column.duration": { cn: "时长", en: "Duration", },
   "task.column.create_time": { cn: "创建时间", en: "Create Time", },
   "task.column.action": { cn: "操作", en: "Actions", },
   "task.add.option.filter": { cn: "筛选标签", en: "Filter", },
@@ -99,7 +100,7 @@ const task = {
   "task.train.form.testsets.label": { cn: "测试集", en: "Test Sets", },
   "task.train.form.keywords.label": { cn: "训练目标", en: "Train Classes", },
 
-  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Training target context: Please select target keyword to be used for model training, multi-selection support", },
+  "task.train.keywords.placeholder": { cn: "请选择模型训练的目标标签，可多选", en: "Please select target keyword, multiple supported", },
 
   "task.train.form.keywords.required": { cn: "请选择训练目标", en: "Please select your train classes", },
   "task.train.form.traintype.label": { cn: "训练类型", en: "Train Type", },
@@ -161,6 +162,12 @@ const task = {
   'task.detail.label.go.platform': { cn: '跳转到标注平台>>', en: 'Go to Label Platform >>' },
   "task.terminate.label.nodata": { cn: '不获取数据终止', en: 'Terminate', },
   "task.terminate.label.withdata": { cn: '获取结果终止', en: 'Terminate & Fetch Result', },
+  "task.detail.tensorboard.link.label": { cn: '到TensorBoard查看训练详情', en: 'View in Tensorboard', },
+  "tip.task.train.model": { cn: '此次训练将会基于选择的模型的基础上继续训练，迭代次数将会累加，目前训练目标需要和模型保持一致', en: 'This training task will base on the model selected, and training target will be ', },
+  "task.train.form.model.label": { cn: '选择模型', en: 'Select Model', },
+  "task.train.form.model.placeholder": { cn: '请选择模型', en: 'Please select a model', },
+  "task.train.target.invalid.inter": { cn: '训练目标必须是训练集和测试集的标签的交集', en: 'Training target classes must be intersection of training sets and test sets', },
+  "task.train.target.invalid.model": { cn: '训练目标必须和模型训练目标一致', en: 'Training target classes must be as same as model\'s', },
 }
 
 export default task

@@ -41,8 +41,8 @@ const Add = ({ getImage, createImage, updateImage }) => {
   }
 
   const checkImageUrl = (_, value) => {
-    const reg = /^([a-zA-Z0-9]{4,30}\/)?([a-z0-9]+(?:[._-][a-z0-9]+)*){2, 255}(:[a-zA-Z0-9.-_]+)?$/
-    if (!value || reg.test(value)) {
+    const reg = /^([a-zA-Z0-9]{4,30}\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(:[a-zA-Z0-9.-_]+)?$/
+    if (!value || reg.test(value.trim())) {
       return Promise.resolve()
     }
     return Promise.reject(t('image.add.form.url.invalid'))
@@ -60,9 +60,11 @@ const Add = ({ getImage, createImage, updateImage }) => {
     }
   }
 
-  async function create (values) {
+  async function create ({ url, name, description }) {
     var params = {
-      ...values,
+      url: url.trim(),
+      name: name.trim(),
+      description: (description || '').trim(),
     }
     const result = await createImage(params)
     if (result) {
@@ -74,8 +76,8 @@ const Add = ({ getImage, createImage, updateImage }) => {
   async function update({ name, description }) {
     var params = {
       id,
-      name,
-      description,
+      name: name.trim(),
+      description: (description || '').trim(),
     }
     const result = await updateImage(params)
     if (result) {

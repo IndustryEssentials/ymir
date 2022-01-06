@@ -192,7 +192,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                     </Form.Item>
                   </Col>
                   <Col>
-                    <a target='_blank' href={'/lsf/'}>{t('task.label.form.plat.go')}</a>
+                    <a target='_blank' href={'/label_tool/'}>{t('task.label.form.plat.go')}</a>
                   </Col>
                 </Row>
               </Form.Item>
@@ -240,7 +240,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                   </Button>
                 </Form.Item>
               </Space>
-              <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/lsf/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
+              <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/label_tool/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
             </Form.Item>
             </Tip>
           </Form>

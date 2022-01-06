@@ -13,6 +13,10 @@ export const STATES = Object.freeze({
   ERROR: 4,
 })
 
+export function imageIsPedding (state: number) {
+  return state === STATES.PENDING
+}
+
 export const getImageTypeLabel = (type: number | null) => {
   if (!type) {
     return ''

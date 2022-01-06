@@ -60,11 +60,11 @@ class CmdShow(base.BaseCommand):
             un_tr_va_te_counts[asset_attr.tvt_type] += 1
 
         # if use logging.info here, will cause error output when use mir show in linux pipe
-        print(f"metadatas.mir: {len(mir_metadatas.attributes)} assets,"
-              f" tr: {un_tr_va_te_counts[mirpb.TvtTypeTraining]},"
-              f" va: {un_tr_va_te_counts[mirpb.TvtTypeValidation]},"
-              f" te: {un_tr_va_te_counts[mirpb.TvtTypeTest]},"
-              f" unknown: {un_tr_va_te_counts[mirpb.TvtTypeUnknown]}")
+        print(f"metadatas.mir: {len(mir_metadatas.attributes)} assets"
+              f" (training: {un_tr_va_te_counts[mirpb.TvtTypeTraining]},"
+              f" validation: {un_tr_va_te_counts[mirpb.TvtTypeValidation]},"
+              f" test: {un_tr_va_te_counts[mirpb.TvtTypeTest]},"
+              f" others: {un_tr_va_te_counts[mirpb.TvtTypeUnknown]})")
 
     @classmethod
     def _show_general_annotations(cls, mir_annotations: mirpb.MirAnnotations) -> None:
@@ -74,7 +74,9 @@ class CmdShow(base.BaseCommand):
     @classmethod
     def _show_general_tasks(cls, mir_tasks: mirpb.MirTasks) -> None:
         hid = mir_tasks.head_task_id
-        print(f"tasks.mir: hid: {hid}")
+        task = mir_tasks.tasks[hid]
+        print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
+              f"    model hash: {task.model.model_hash}, map: {task.model.mean_average_precision}")
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:

@@ -5,6 +5,7 @@ import { Button, Card, Col, Descriptions, List, Progress, Row, Space, Tag } from
 
 import t from "@/utils/t"
 import { format } from '@/utils/date'
+import { getTensorboardLink } from '@/services/common'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
 import Terminate from "./components/terminate"
@@ -208,7 +209,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               <Item label={t('task.detail.label.framework')}>{task.parameters?.network} </Item>
               <Item label={t('task.detail.label.create_time')}>{format(task.create_datetime)} </Item>
               <Item label={t('task.detail.label.backbone')}>{task.parameters?.backbone}</Item>
-              <Item label={t('task.detail.label.hyperparams')}>{renderConfig(task.config)}</Item>
+              <Item label={t('task.detail.label.hyperparams')} span={2}>{renderConfig(task.config)}</Item>
+              <Item label={'TensorBoard'} span={2}><Link target="_blank" to={getTensorboardLink(task.hash)}>{t('task.detail.tensorboard.link.label')}</Link></Item>
             </>
           ) : null}
 
@@ -307,7 +309,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
           </>
             : null}
         </Descriptions>
-        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link to='/lsf/'>{t('task.detail.label.go.platform')}</Link></div> : null}
+        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link target="_blank" to='/label_tool/'>{t('task.detail.label.go.platform')}</Link></div> : null}
         <Terminate ref={terminateRef} ok={terminateOk} />
       </Card>
     </div>

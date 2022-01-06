@@ -31,7 +31,7 @@ export default {
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
-        return result.items
+        return result
       }
     },
     *getModel({ payload }, { call, put }) {
@@ -76,9 +76,8 @@ export default {
       }
     },
     *verify({ payload }, { call }) {
-      const { id, urls } = payload
-      console.log('model of models: ', id, urls)
-      const { code, result } = yield call(verify, id, urls)
+      const { id, urls, image } = payload
+      const { code, result } = yield call(verify, id, urls, image)
       if (code === 0) {
         return result
       }

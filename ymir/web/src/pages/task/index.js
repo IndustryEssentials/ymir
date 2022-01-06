@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons"
 import moment from "moment"
 
-import { format, getUnixTimeStamp, calTimeLeft } from "@/utils/date"
+import { format, getUnixTimeStamp, calDuration } from "@/utils/date"
 import t from "@/utils/t"
 import Empty from '@/components/empty/default'
 import { TASKSTATES, TASKTYPES } from "../../constants/task"
@@ -22,6 +22,7 @@ import RenderProgress from "../../components/common/progress"
 import Actions from "../../components/table/actions"
 import Confirm from "../../components/common/dangerConfirm"
 import Terminate from "./components/terminate"
+import { getTensorboardLink } from "../../services/common"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -82,6 +83,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       title: showTitle("task.column.type"),
       dataIndex: "type",
       width: 160,
+      align: 'center',
       render: (type) => (types.find((t) => t.value === type))?.label,
     },
     {
@@ -94,7 +96,16 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       title: showTitle("task.column.create_time"),
       dataIndex: "create_datetime",
       width: 200,
+      sorter: true,
       render: (datetime) => format(datetime),
+    },
+    {
+      title: showTitle("task.column.duration"),
+      dataIndex: "duration",
+      width: 200,
+      sorter: true,
+      align: 'center',
+      render: (seconds) => calDuration(seconds, getLocale()),
     },
     {
       title: showTitle("task.column.action"),
@@ -135,10 +146,13 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   ]
 
 
-  const pageChange = ({ current, pageSize }) => {
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
+    console.log('tabel chagne: ', sorters, calDuration(365000, getLocale()))
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    const is_desc = sorters.order === 'ascend' ? false : true
+    const order_by = sorters.order ? sorters.field : undefined
+    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
   function showTitle(str) {
@@ -148,6 +162,8 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
     let params = {
       offset: query.offset,
       limit: query.limit,
+      is_desc: query.is_desc,
+      order_by: query.order_by,
     }
     if (query.type !== "") {
       params.type = query.type
@@ -260,7 +276,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, state, type } = record
+    const { id, name, state, type, hash } = record
     const menus = [
       {
         key: "copy",
@@ -272,18 +288,14 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => {
-          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0 || TASKTYPES.LABEL === type
-        },
+        hidden: () => [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0,
         icon: <StopIcon />,
       },
       {
         key: "del",
         label: t("task.action.del"),
         onclick: () => del(id, name),
-        hidden: () => {
-          return [TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(state) < 0
-        },
+        hidden: () => [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) < 0,
         icon: <DeleteIcon />,
       },
       {
@@ -293,24 +305,22 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         icon: <EditIcon />,
       },
       {
+        key: "training",
+        label: 'TensorBoard',
+        link: getTensorboardLink(hash),
+        target: '_blank',
+        hidden: () => TASKTYPES.TRAINING !== type,
+        icon: <FlagIcon />,
+      },
+      {
         key: "labelplatform",
         label: t("task.action.labelplatform"),
-        link: '/lsf/',
+        link: '/label_tool/',
         target: '_blank',
-        // onclick: () => history.push(`/lsf/`),
         hidden: () => {
           return TASKTYPES.LABEL !== type
         },
         icon: <FlagIcon />,
-      },
-      {
-        key: "labeldata",
-        label: t("task.action.labeldata"),
-        onclick: () => getLabels(id, name),
-        hidden: () => {
-          return TASKTYPES.LABEL !== type
-        },
-        icon: <SearchEyeIcon />,
       },
     ]
     return menus
@@ -407,9 +417,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         <ConfigProvider renderEmpty={() => <Empty />}>
           <Table
             dataSource={tasks}
-            onChange={({ current, pageSize }) =>
-              pageChange({ current, pageSize })
-            }
+            onChange={tableChange}
             rowKey={(record) => record.id}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             pagination={{

@@ -6,6 +6,7 @@ import shutil
 import subprocess
 from subprocess import CalledProcessError
 import tarfile
+import traceback
 from typing import Any, List, Optional, Set, Tuple
 
 import yaml
@@ -14,8 +15,9 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
+from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
-from mir.tools.phase_logger import phase_logger_in_out
+from mir.tools.errors import MirRuntimeError
 
 
 # private: post process
@@ -23,7 +25,8 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                            task_context: dict) -> Tuple[str, float]:
     model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
     if not model_paths:
-        raise ValueError("can not find models")
+        # if have no models
+        return '', model_mAP
 
     tar_path = os.path.join(out_root, "models.tar.gz")
     _pack_models_and_config(model_paths=model_paths,
@@ -52,17 +55,23 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
     model_names = []
     model_mAP = 0.0
 
-    with open(os.path.join(model_root, "result.yaml"), "r") as f:
-        yaml_obj = yaml.safe_load(f.read())
-        model_names = yaml_obj["model"]
-        model_mAP = float(yaml_obj["map"])
+    result_yaml_path = os.path.join(model_root, "result.yaml")
+    try:
+        with open(result_yaml_path, "r") as f:
+            yaml_obj = yaml.safe_load(f.read())
+            model_names = yaml_obj["model"]
+            model_mAP = float(yaml_obj["map"])
+    except FileNotFoundError:
+        logging.warning(traceback.format_exc())
+        return [], 0.0
 
     return ([os.path.join(model_root, name) for name in model_names], model_mAP)
 
 
 def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
     if not model_paths or not dest_path:
-        raise ValueError("invalid model_paths or dest_path")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message='invalid model_paths or dest_path')
 
     logging.info(f"packing models to {dest_path}")
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
@@ -86,17 +95,20 @@ def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_
 
 def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
     if not model_pack_path or not dest_path:
-        raise ValueError("invalid model_pack_path or dest_path")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message='invalid model_pack_path or dest_path')
 
     shutil.copyfile(model_pack_path, dest_path)
     return True
 
 
 def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
-                      model_sha1: str, mAP: float) -> None:
+                      model_sha1: str, mAP: float, task_ret_code: int, task_err_msg: str) -> mirpb.MirTasks:
     """
     add a new mir single task into mir_tasks from branch base_branch, and save it to a new branch: dst_branch
     """
+    logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
+
     task = mirpb.Task()
     task.type = mirpb.TaskTypeTraining
     task.name = "training done"
@@ -104,20 +116,15 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
     task.timestamp = int(datetime.datetime.now().timestamp())
     task.model.model_hash = model_sha1
     task.model.mean_average_precision = mAP
+    task.return_code = task_ret_code
+    task.return_msg = task_err_msg
 
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                           mir_branch=src_rev_tid.rev,
                                                                           mir_task_id=src_rev_tid.tid,
                                                                           ms=mirpb.MirStorage.MIR_TASKS)
     mir_storage_ops.add_mir_task(mir_tasks, task)
-    mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                  mir_branch=dst_rev_tid.rev,
-                                                  task_id=dst_rev_tid.tid,
-                                                  his_branch=src_rev_tid.rev,
-                                                  mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
-                                                  commit_message=dst_rev_tid.tid)
-
-    logging.info("task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
+    return mir_tasks
 
 
 # private: process
@@ -189,7 +196,9 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
 
     # check class names
     if model_storage.class_names != class_names:
-        raise ValueError(f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
+        raise MirRuntimeError(
+            error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            error_message=f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
 
     return model_storage.models
 
@@ -211,7 +220,7 @@ class CmdTrain(base.BaseCommand):
                                       config_file=self.args.config_file)
 
     @staticmethod
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(work_dir: str,
                       model_upload_location: str,
                       pretrained_model_hash: str,
@@ -402,11 +411,15 @@ class CmdTrain(base.BaseCommand):
         cmd = (f"nvidia-docker run --rm --shm-size={shm_size} {joint_path_binds} --user {os.getuid()}:{os.getgid()} "
                f"--name {executor_instance} {executor}")
 
+        task_code = MirCode.RC_OK
+        task_error_msg = ''
         try:
             _run_train_cmd(cmd)
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
+            task_code = MirCode.RC_CMD_ERROR_UNKNOWN
+            task_error_msg = str(e)
 
         # save model
         logging.info("saving models")
@@ -418,13 +431,28 @@ class CmdTrain(base.BaseCommand):
                                                            'dst_rev': dst_rev,
                                                            'executor': executor
                                                        })
+
         # update metadatas and task with finish state and model hash
-        logging.info("creating task")
-        _update_mir_tasks(mir_root=mir_root,
-                          src_rev_tid=src_typ_rev_tid,
-                          dst_rev_tid=dst_typ_rev_tid,
-                          model_sha1=model_sha1,
-                          mAP=model_mAP)
+        mir_tasks = _update_mir_tasks(mir_root=mir_root,
+                                      src_rev_tid=src_typ_rev_tid,
+                                      dst_rev_tid=dst_typ_rev_tid,
+                                      model_sha1=model_sha1,
+                                      mAP=model_mAP,
+                                      task_ret_code=task_code,
+                                      task_err_msg=task_error_msg)
+
+        if task_code != MirCode.RC_OK:
+            raise MirRuntimeError(error_code=task_code,
+                                  error_message=task_error_msg,
+                                  needs_new_commit=True,
+                                  mir_tasks=mir_tasks)
+
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                                      mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=dst_typ_rev_tid.tid,
+                                                      his_branch=src_typ_rev_tid.rev,
+                                                      mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
+                                                      commit_message=dst_typ_rev_tid.tid)
 
         logging.info("training done")
 

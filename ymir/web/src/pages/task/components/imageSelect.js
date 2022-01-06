@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { TYPES } from '@/constants/image'
 
-const ImageSelect = ({ value, mining = false, onChange = () => {}, getImages, ...resProps }) => {
+const ImageSelect = ({ value, type = TYPES.TRAINING, onChange = () => {}, getImages, ...resProps }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const ImageSelect = ({ value, mining = false, onChange = () => {}, getImages, ..
 
   async function fetchImages() {
     const params = {
-      type: mining ? TYPES.MINING : TYPES.TRAINING,
+      type,
       offset: 0,
       limit: 100000,
     }
@@ -42,7 +42,7 @@ const ImageSelect = ({ value, mining = false, onChange = () => {}, getImages, ..
   }
 
   return (
-    <Select value={value} {...resProps} onChange={(value, { image }) => onChange(value, image)} options={options}></Select>
+    <Select value={value} {...resProps} onChange={(value, { image }) => onChange(value, image)} options={options} allowClear></Select>
   )
 }
 
