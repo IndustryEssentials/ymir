@@ -45,7 +45,7 @@ const common = {
   'common.guide.step5.title': { cn: '模型再训练', en: 'Train Again', },
   'common.guide.step5.content': { cn: '将标注后的结果和原数据集合并再训练，实现模型的优化。', en: 'Optimize model by training merging dataset of labelled and origin data.', },
   'common.guide.step6.title': { cn: '数据标注', en: 'Label', },
-  'common.guide.step6.content': { cn: '针对原始数据集，进行标注，生成带标注的训练数据集。', en: 'Label original dataset, and generate for training.', },
+  'common.guide.step6.content': { cn: '针对原始数据集，进行标注，生成带标注的训练数据集。', en: 'Label original dataset, and generate annotations for training.', },
   'common.guide.nevershow': { cn: '下次不再显示', en: 'Never show again', },
   'common.guide.action.label': {cn: '操作指引', en: 'Guide', },
   'common.qa.action.import': {cn: '导入{br}数据集', en: 'Import Dataset', },
