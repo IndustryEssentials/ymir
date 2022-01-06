@@ -307,7 +307,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
           </>
             : null}
         </Descriptions>
-        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link target="_blank" to='/lsf/'>{t('task.detail.label.go.platform')}</Link></div> : null}
+        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link target="_blank" to='/label_tool/'>{t('task.detail.label.go.platform')}</Link></div> : null}
         <Terminate ref={terminateRef} ok={terminateOk} />
       </Card>
     </div>

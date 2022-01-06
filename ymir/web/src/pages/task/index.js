@@ -310,9 +310,8 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       {
         key: "labelplatform",
         label: t("task.action.labelplatform"),
-        link: '/lsf/',
+        link: '/label_tool/',
         target: '_blank',
-        // onclick: () => history.push(`/lsf/`),
         hidden: () => {
           return TASKTYPES.LABEL !== type
         },
