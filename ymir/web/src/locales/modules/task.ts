@@ -165,8 +165,8 @@ const task = {
   "tip.task.train.model": { cn: '此次训练将会基于选择的模型的基础上继续训练，迭代次数将会累加，目前训练目标需要和模型保持一致', en: 'This training task will base on the model selected, and training target will be ', },
   "task.train.form.model.label": { cn: '选择模型', en: 'Select Model', },
   "task.train.form.model.placeholder": { cn: '请选择模型', en: 'Please select a model', },
-  "task.train.target.invalid.inter": { cn: '训练目标必须是训练集和测试集的标签的交集', en: 'Training target must be intersection of training sets and test sets', },
-  "task.train.target.invalid.model": { cn: '训练目标必须和模型训练目标一致', en: 'Training target must be as same as model\'s', },
+  "task.train.target.invalid.inter": { cn: '训练目标必须是训练集和测试集的标签的交集', en: 'Training target classes must be intersection of training sets and test sets', },
+  "task.train.target.invalid.model": { cn: '训练目标必须和模型训练目标一致', en: 'Training target classes must be as same as model\'s', },
 }
 
 export default task
