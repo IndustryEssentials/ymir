@@ -307,7 +307,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} mining={true} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} type={TYPES.MINING} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
               </Form.Item>
             </Tip>
 
@@ -441,7 +441,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
+                  <Button type="primary" size="large" htmlType="submit">
                     {t('task.filter.create')}
                   </Button>
                 </Form.Item>
