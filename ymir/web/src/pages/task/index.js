@@ -393,12 +393,9 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   return (
     <div className={styles.task}>
       <Breadcrumbs />
-      {tasks.length ? (
-        <Space className={styles.actions}>
-          {addBtn}
-        </Space>
-      ) : addBoxes
-      }
+      <Space className={styles.actions}>
+        {addBtn}
+      </Space>
 
       <div className={styles.list}>
         {renderQuery}
@@ -410,7 +407,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
             onClick={() => getData()}
           ></Button>
         </div>
-        <ConfigProvider renderEmpty={() => <Empty />}>
+        <ConfigProvider renderEmpty={() => {addBoxes}}>
           <Table
             dataSource={tasks}
             onChange={tableChange}
