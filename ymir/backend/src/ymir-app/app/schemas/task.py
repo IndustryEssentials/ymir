@@ -43,6 +43,7 @@ class TaskParameter(BaseModel):
     # label
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
+    keep_annotations: Optional[bool]
 
     # training
     network: Optional[str]
