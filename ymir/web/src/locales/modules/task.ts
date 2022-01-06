@@ -162,7 +162,7 @@ const task = {
   'task.detail.label.go.platform': { cn: '跳转到标注平台>>', en: 'Go to Label Platform >>' },
   "task.terminate.label.nodata": { cn: '不获取数据终止', en: 'Terminate', },
   "task.terminate.label.withdata": { cn: '获取结果终止', en: 'Terminate & Fetch Result', },
-  "task.detail.tensorboard.link.label": { cn: '到TensorBoard查看训练详情', en: 'View TensorBoard', },
+  "task.detail.tensorboard.link.label": { cn: '到TensorBoard查看训练详情', en: 'View in Tensorboard', },
 }
 
 export default task
