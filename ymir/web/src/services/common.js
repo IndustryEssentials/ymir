@@ -15,6 +15,10 @@ export function getHistory({ type, id, max_hops }) {
   return request.get('/graphs/', { params: { type, id, max_hops } })
 }
 
+export function getTensorboardLink(hash) {
+  return `/tensorboard/#scalars&regexInput=${hash}`
+}
+
 /**
  * get stats of dataset, model and task
  * @param {
