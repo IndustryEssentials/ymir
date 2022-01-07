@@ -202,6 +202,7 @@ class ControllerRequest:
         label_request.dataset_id = args["include_datasets"][0]
         label_request.labeler_accounts[:] = args["labellers"]
         label_request.in_class_ids[:] = args["include_classes"]
+        label_request.export_annotation = args["keep_annotations"]
         if args.get("extra_url"):
             label_request.expert_instruction_url = args["extra_url"]
 
