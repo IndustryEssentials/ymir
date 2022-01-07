@@ -48,6 +48,7 @@ server {
 
     location /label_tool/ {
         proxy_pass http://${LABEL_STUDIO_OPEN_HOST}:${LABEL_STUDIO_OPEN_PORT}/;
+        rewrite ^/(.*) /label_tool/$1 break;
         add_header 'Access-Control-Allow-Origin' '*';
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
