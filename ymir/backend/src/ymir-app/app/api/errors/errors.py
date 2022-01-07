@@ -263,3 +263,8 @@ class DockerImageHavingRelationships(APIError):
 class FailedtoGetSysInfo(ControllerError):
     code = error_codes.FAILED_TO_GET_SYS_INFO
     message = "Failed to Get Sys Info"
+
+
+class ObsoleteTaskStatus(APIError):
+    code = error_codes.TASK_STATUS_OBSOLETE
+    message = "Obsolete Task Status"

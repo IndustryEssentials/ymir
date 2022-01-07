@@ -1,5 +1,6 @@
 import enum
 import json
+from datetime import datetime
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -14,6 +15,7 @@ from app.api.errors.errors import (
     DuplicateTaskError,
     FailedtoCreateTask,
     NoTaskPermission,
+    ObsoleteTaskStatus,
     TaskNotFound,
 )
 from app.config import settings
@@ -342,13 +344,13 @@ def terminate_task(
 
 
 @router.post(
-    "/{task_id}/status",
+    "/status",
     response_model=schemas.TaskOut,
+    dependencies=[Depends(deps.api_key_security)],
 )
-def update_status(
+def update_task_status(
     *,
     db: Session = Depends(deps.get_db),
-    task_id: int = Path(...),
     task_result: schemas.TaskUpdateStatus,
     graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
@@ -358,9 +360,14 @@ def update_status(
     """
     Update status of a task
     """
-    task = crud.task.get(db, id=task_id)
-    if not (task and task.hash and task.type):
+    task = crud.task.get_by_hash(db, hash_=task_result.hash)
+    if not (task and task.hash):
         raise TaskNotFound()
+
+    if is_obsolete_message(
+        datetime.timestamp(task.update_datetime), task_result.timestamp
+    ):
+        raise ObsoleteTaskStatus()
 
     task_info = schemas.Task.from_orm(task)
     task_result_proxy = TaskResultProxy(
@@ -370,9 +377,15 @@ def update_status(
         viz=viz_client,
         stats_client=stats_client,
     )
-    updated_task = task_result_proxy.save(task_info, task_result)
+    updated_task = task_result_proxy.save(task_info, task_result.dict())
     result = updated_task or task
     return {"result": result}
+
+
+def is_obsolete_message(
+    last_update_time: Union[float, int], msg_time: Union[float, int]
+) -> bool:
+    return last_update_time > msg_time
 
 
 @router.post(
@@ -380,7 +393,7 @@ def update_status(
     response_model=schemas.TasksOut,
     dependencies=[Depends(deps.api_key_security)],
 )
-def update_task_status(
+def batch_update_task_status(
     *,
     db: Session = Depends(deps.get_db),
     graph_db: GraphClient = Depends(deps.get_graph_client),
