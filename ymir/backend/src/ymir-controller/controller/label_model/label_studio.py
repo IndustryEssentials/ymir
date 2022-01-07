@@ -160,17 +160,18 @@ class LabelStudio(LabelBase):
         unlabeled_task_ids = self.get_unlabeled_task(project_info["task_number"], project_id)
 
         # label studio strange behavior, post [] will delete all tasks.
-        if unlabeled_task_ids:
-            url_path = "/api/dm/actions"
-            params = {"id": "delete_tasks", "project": project_id}
-            json_data = {
-                "ordering": [],
-                "selectedItems": {"all": False, "included": unlabeled_task_ids},
-                "filters": {"conjunction": "and", "items": []},
-                "project": str(project_id),
-            }
+        if not unlabeled_task_ids:
+            return None
+        url_path = "/api/dm/actions"
+        params = {"id": "delete_tasks", "project": project_id}
+        json_data = {
+            "ordering": [],
+            "selectedItems": {"all": False, "included": unlabeled_task_ids},
+            "filters": {"conjunction": "and", "items": []},
+            "project": str(project_id),
+        }
 
-            self.requests.post(url_path=url_path, params=params, json_data=json_data)
+        self.requests.post(url_path=url_path, params=params, json_data=json_data)
 
     @classmethod
     def _move_label_studio_voc_files(cls, des_path: str) -> None:
