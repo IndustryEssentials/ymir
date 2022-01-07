@@ -159,6 +159,7 @@ class LabelStudio(LabelBase):
         project_info = self.get_project_info(project_id)
         unlabeled_task_ids = self.get_unlabeled_task(project_info["task_number"], project_id)
 
+        # label studio strange behavior, post [] will delete all tasks.
         if unlabeled_task_ids:
             url_path = "/api/dm/actions"
             params = {"id": "delete_tasks", "project": project_id}
