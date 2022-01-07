@@ -35,9 +35,3 @@ every time you push:
 bumpversion patch
 git push origin master --tags
 ```
-
-
-## dependency
-
-[pmir-proto](https://github.com/scalable-ai/pymir-proto)
-
