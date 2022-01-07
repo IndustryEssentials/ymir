@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List, Union
+from typing import Any, List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 from app.schemas.common import (
     Common,
@@ -12,9 +12,21 @@ from app.schemas.common import (
 
 
 class WorkspaceBase(BaseModel):
-    hash: str
-    name: str
     user_id: int
+    hash: Optional[str] = None
+    name: Optional[str] = None
+
+    @root_validator
+    def default_hash(cls, values: Any) -> Any:
+        """
+        For now, for each user there is only one workspace
+        simply using `user_id` to generate default `hash` and `name`
+        """
+        user_id = values["user_id"]
+        hash_ = f"{user_id:0>6}"
+        values["hash"] = values["hash"] or hash_
+        values["name"] = values["name"] or hash_
+        return values
 
 
 class WorkspaceCreate(WorkspaceBase):
@@ -36,10 +48,5 @@ class Workspace(WorkspaceInDB):
     pass
 
 
-class Workspaces(BaseModel):
-    total: int
-    items: List[Workspace]
-
-
 class WorkspaceOut(Common):
-    result: Union[Workspace, Workspaces]
+    result: Workspace
