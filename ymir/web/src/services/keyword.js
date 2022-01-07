@@ -39,3 +39,15 @@ export function updateKeyword({ name, aliases = [] }) {
     }
   })
 }
+
+/**
+ * get recommand keywords of dataset or global
+ * @param {object} param0 
+ * {
+ *   {number} type
+ * }
+ * @returns {Promise}
+ */
+export function getRecommandKeywords({ type }) {
+  return request.get(`/keywords/recommand/`, { type })
+}
