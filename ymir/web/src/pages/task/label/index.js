@@ -53,6 +53,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
         name: `${name}_${randomNumber()}`,
         datasets: include_datasets[0],
         label_members: labellers[0],
+        keep_annotations: 1, // todo replace with copy params
         checker: labellers.length > 1 ? labellers[1] : '',
         keywords: include_classes,
       }
@@ -95,6 +96,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_label_' + randomNumber(),
+    keep_annotations: 1,
     datasets: datasetId,
     labelType: getCheckedValue(LabelTypes()),
   }
@@ -218,6 +220,17 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                     </Option>
                   ))}
                 </Select>
+              </Form.Item>
+            </Tip>
+            
+            <Tip hidden={true}>
+              <Form.Item name='keep_annotations'
+                required
+                label={t('task.label.form.keep_anno.label')}>
+                <Radio.Group options={[
+                  { value: 1, label: t('common.yes') },
+                  { value: 0, label: t('common.no') },
+                ]} />
               </Form.Item>
             </Tip>
 
