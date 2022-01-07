@@ -8,7 +8,7 @@ EXECUTOR_MINING='industryessentials/executor-det-yolov4-mining'
 DOCKER_BACKEND='industryessentials/ymir-backend'
 DOCKER_WEB='industryessentials/ymir-web'
 
-DEV_SOURCE_BACKEND_PIP='https://mirrors.aliyun.com/pypi/simple'
+DEV_SOURCE_BACKEND_PIP='https://pypi.mirrors.ustc.edu.cn/simple'
 DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
 
 FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
