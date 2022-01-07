@@ -5,6 +5,12 @@ set -e
 EXECUTOR_TRAINING='industryessentials/executor-det-yolov4-training'
 EXECUTOR_MINING='industryessentials/executor-det-yolov4-mining'
 
+DOCKER_BACKEND='industryessentials/ymir-backend'
+DOCKER_WEB='industryessentials/ymir-web'
+
+DEV_SOURCE_BACKEND_PIP='https://mirrors.aliyun.com/pypi/simple'
+DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
+
 FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
 FIELD_UUID='ANONYMOUS_UUID'
 ENV_FILE='.env'
@@ -51,18 +57,18 @@ check_permission
 pre_start
 
 if [[ $1 -eq 'dev' ]]; then
-    echo '\nin dev mode, building images.\n'
+    printf '\nin dev mode, building images.\n'
     docker build \
-        -t industryessentials/ymir-backend \
-        --build-arg PIP_SOURCE='https://mirrors.aliyun.com/pypi/simple' \
+        -t ${DOCKER_BACKEND} \
+        --build-arg PIP_SOURCE=${DEV_SOURCE_BACKEND_PIP} \
         --build-arg SERVER_MODE='dev' \
         git@github.com:IndustryEssentials/ymir.git#dev:/ymir/backend
     docker build \
-        -t industryessentials/ymir-web \
-        --build-arg NPM_REGISTRY='https://registry.npmmirror.com' \
+        -t ${DOCKER_WEB} \
+        --build-arg NPM_REGISTRY=${DEV_SOURCE_WEB_NPM} \
         git@github.com:IndustryEssentials/ymir.git#dev:/ymir/web
 else
-    echo '\nin prod mode, pulling images.\n'
+    printf '\nin prod mode, pulling images.\n'
     docker-compose pull
 fi
 docker-compose up -d
