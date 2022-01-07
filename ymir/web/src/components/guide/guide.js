@@ -55,7 +55,7 @@ const Guide = ({ visible, neverShow, setGuideVisible, setNeverShow }) => {
         </Col>
         <Col className={s.step}>
           <Card className={s.stepBox} hoverable onClick = {() => go('/home/task/train')}>
-            <h2><span className={s.stepTitle}>{t('common.guide..step2.title')}</span></h2>
+            <h2><span className={s.stepTitle}>{t('common.guide.step2.title')}</span></h2>
             <p><TrainIcon className={s.stepIcon} /></p>
             <p className={s.stepTip}>{t('common.guide.step2.content')}</p>
             <p><Button className={s.stepButton}>{t('common.guide.step2.btn')}</Button></p>
@@ -63,7 +63,7 @@ const Guide = ({ visible, neverShow, setGuideVisible, setNeverShow }) => {
         </Col>
         <Col className={s.step}>
           <Card className={s.stepBox} hoverable onClick = {() => go('/home/task/mining')}>
-            <h2><span className={s.stepTitle}>{t('common.guide..step3.title')}</span></h2>
+            <h2><span className={s.stepTitle}>{t('common.guide.step3.title')}</span></h2>
             <p><ExcavateIcon className={s.stepIcon} /></p>
             <p className={s.stepTip}>{t('common.guide.step3.content')}</p>
             <p><Button className={s.stepButton}>{t('common.guide.step3.btn')}</Button></p>
