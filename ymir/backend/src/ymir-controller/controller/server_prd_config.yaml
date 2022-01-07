@@ -19,5 +19,5 @@ TASK_MONITOR:
 METRICS:
   allow_feedback: ${ALLOW_ANONYMOUS_FEEDBACK}
   anonymous_uuid: ${ANONYMOUS_UUID}
-  server_host: ymir.ai
-  server_port: "9125"
+  server_host: ${STATSD_HOST}
+  server_port: ${STATSD_PORT}
