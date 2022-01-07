@@ -1,8 +1,11 @@
 FROM node:16-alpine as builder
 WORKDIR /app
+
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
 COPY package.json .
 COPY package-lock.json .
-RUN npm install
+RUN npm --registry ${NPM_REGISTRY} install
 COPY . .
 RUN npm run build:dev
 
