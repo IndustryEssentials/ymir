@@ -59,7 +59,7 @@ if [[ $1 -eq 'dev' ]]; then
         git@github.com:IndustryEssentials/ymir.git#dev:/ymir/backend
     docker build \
         -t industryessentials/ymir-web \
-        --build-arg NPM_REGISTRY='https://registry.npm.taobao.org' \
+        --build-arg NPM_REGISTRY='https://registry.npmmirror.com' \
         git@github.com:IndustryEssentials/ymir.git#dev:/ymir/web
 else
     echo '\nin prod mode, pulling images.\n'
