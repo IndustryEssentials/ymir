@@ -148,7 +148,7 @@ const task = {
   "task.label.form.plat.checker": { cn: "到标注平台查看", en: "View In Label Platform", },
   "task.label.form.plat.label": { cn: "标注平台账号", en: "Label Platform Account", },
   "task.label.form.plat.go": { cn: "到标注平台注册账号", en: "Label Platform", },
-  "task.label.form.label.label": { cn: "是否带原标注", en: "With Original Annotations", },
+  "task.label.form.keep_anno.label": { cn: "保留原标注", en: "Keep Annotations", },
   "task.filter.tip.keyword.required": { cn: "筛选标签和排除标签至少需要选择1个", en: "There should be more than 1 selected on filter keywords and exclude filter keywords", },
   "task.train.fold": { cn: '收起参数配置', en: 'Fold', },
   "task.train.unfold": { cn: '展开参数配置', en: 'Unfold', },
