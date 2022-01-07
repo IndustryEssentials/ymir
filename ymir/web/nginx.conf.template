@@ -3,6 +3,9 @@ access_log /var/log/nginx/access.log combined;
 upstream backend_api {
     server backend:80;
 }
+upstream tensorboard_web {
+    server tensorboard:6006;
+}
 
 server {
     # use 'listen 80 deferred;' for Linux
@@ -56,7 +59,7 @@ server {
     }
 
     location /tersorboard/ {
-        proxy_pass http://127.0.0.1:${TENSORBOARD_OPEN_PORT}/;
+        proxy_pass http://tensorboard_web/;
         proxy_redirect off;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
