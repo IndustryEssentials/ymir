@@ -87,12 +87,9 @@ def create_user(
             hash=workspace_id, name=workspace_id, user_id=user.id
         ),
     )
-    req = ControllerRequest(ExtraRequestType.create_workspace, user.id, workspace_id)
     try:
-        resp = controller_client.send(req)
-        logger.info("controller response: %s", resp)
+        controller_client.create_workspace(user_id=user.id)
     except ValueError:
-        # todo parse error message
         raise FailedtoCreateWorkspace()
 
     return {"result": user}

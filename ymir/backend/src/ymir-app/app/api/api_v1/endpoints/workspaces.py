@@ -18,7 +18,6 @@ router = APIRouter()
 @router.post(
     "/",
     response_model=schemas.WorkspaceOut,
-    responses={400: {"description": "Username Already Exists"}},
 )
 def create_workspace(
     *,
@@ -31,8 +30,6 @@ def create_workspace(
     """
     Create a workspace
     """
-    # todo use dedicated func to generate all the hashes,
-    #  including workspace_hash, task_hash, etc
     hash_ = hash_ or f"{current_user.id:0>6}"
     name = name or hash_
     workspace = crud.workspace.get_by_name(db, name=name)
@@ -42,14 +39,11 @@ def create_workspace(
     workspace_in = schemas.WorkspaceCreate(
         hash=hash_, name=name, user_id=current_user.id
     )
-
     workspace = crud.workspace.create(db, obj_in=workspace_in)
 
-    req = ControllerRequest(ExtraRequestType.create_workspace, current_user.id, hash_)
     try:
-        resp = controller_client.send(req)
+        controller_client.create_workspace(workspace.user_id, workspace.hash)
     except ValueError:
-        # todo parse error message
         raise FailedtoCreateWorkspace()
 
     return {"result": workspace}

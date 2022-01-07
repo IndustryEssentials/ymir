@@ -11,7 +11,7 @@ class Workspace(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     hash = Column(String(settings.HASH_LEN_LIMIT), index=True, unique=True)
     name = Column(String(settings.NAME_LEN_LIMIT), index=True, unique=True)
-    user_id = Column(Integer, index=True)
+    user_id = Column(Integer, index=True, nullable=False)
     is_deleted = Column(Boolean, default=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
