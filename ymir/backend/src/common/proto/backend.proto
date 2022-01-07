@@ -224,7 +224,7 @@ message TaskReqLabeling {
     repeated int32 in_class_ids = 3;
     string expert_instruction_url = 4;
     string project_name = 5;
-    LabelFormat pre_annotation_format = 6;
+    bool export_annotation = 6;
 }
 
 message ReqGetTaskInfo {
