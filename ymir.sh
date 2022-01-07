@@ -16,7 +16,6 @@ docker-compose down
 pre_start() {
 docker pull ${EXECUTOR_TRAINING}
 docker pull ${EXECUTOR_MINING}
-docker-compose pull
 stop
 }
 
@@ -48,9 +47,25 @@ done
 }
 
 start() {
-check_permission
-pre_start
-docker-compose up -d
+#check_permission
+#pre_start
+
+if [[ $1 -eq 'dev' ]]; then
+    echo '\nin dev mode, building images.\n'
+    docker build \
+        -t industryessentials/ymir-backend \
+        --build-arg PIP_SOURCE='https://mirrors.aliyun.com/pypi/simple' \
+        --build-arg SERVER_MODE='dev' \
+        git@github.com:IndustryEssentials/ymir.git#dev:/ymir/backend
+    docker build \
+        -t industryessentials/ymir-web \
+        --build-arg NPM_REGISTRY='https://registry.npm.taobao.org' \
+        git@github.com:IndustryEssentials/ymir.git#dev:/ymir/web
+else
+    echo '\nin prod mode, pulling images.\n'
+    docker-compose pull
+fi
+#docker-compose up -d
 }
 
 print_help() {
@@ -62,7 +77,7 @@ main() {
     if [[ $# -eq 0 ]]; then
         print_help
     else
-        $1
+        "$@"
     fi
 }
 
