@@ -24,8 +24,8 @@ COPY requirements.txt ./
 RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
 
 RUN if [ "$SERVER_MODE" = "dev" ]; then \
-    pip3 uninstall -y ymir-cmd \
-    pip3 install --force-reinstall -U "git+https://github.com/IndustryEssentials/ymir.git/@dev#egg=ymir-cmd&subdirectory=ymir/command" \
+    pip3 uninstall -y ymir-cmd && \
+    pip3 install --force-reinstall -U "git+https://github.com/IndustryEssentials/ymir.git/@dev#egg=ymir-cmd&subdirectory=ymir/command"; \
   fi
 
 COPY ./src /app

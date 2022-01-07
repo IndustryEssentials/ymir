@@ -47,8 +47,8 @@ done
 }
 
 start() {
-#check_permission
-#pre_start
+check_permission
+pre_start
 
 if [[ $1 -eq 'dev' ]]; then
     echo '\nin dev mode, building images.\n'
@@ -65,7 +65,7 @@ else
     echo '\nin prod mode, pulling images.\n'
     docker-compose pull
 fi
-#docker-compose up -d
+docker-compose up -d
 }
 
 print_help() {
