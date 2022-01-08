@@ -11,7 +11,7 @@ import redis
 # public: class EventDispatcher
 class EventDispatcher:
     def __init__(self, event_name: str) -> None:
-        self._event_handlers = []
+        self._event_handler: Callable = None
         self._event_name = event_name
         self._group_name = f"group:{event_name}"
         self._redis_connect = None
@@ -31,7 +31,10 @@ class EventDispatcher:
         p.start()
 
     def register_handler(self, handler: Callable) -> None:
-        self._event_handlers.append(handler)
+        if self._event_handler:
+            print('event handler already registered')
+            return
+        self._event_handler = handler
 
     # public: producer
     def add_event(self, event_topic: str, event_body: str) -> None:
@@ -87,10 +90,14 @@ class EventDispatcher:
                                              consumername='default',
                                              streams={self._event_name: '0'})
         for _, stream_msgs in kvs:
-            for msg_id, msg_body in stream_msgs:
-                # TODO: HANDLE DEADLETTER
-                self._handler_wrapper(msg_id=msg_id, msg_topic=msg_body['topic'], msg_body=msg_body['body'])
-                self._redis_connect.xack(self._event_name, self._group_name, msg_id)
+            if not stream_msgs:
+                continue
+
+            # TODO: HANDLE DEADLETTER
+            msg_ids, *_ = zip(*stream_msgs)
+            self._handler_wrapper(stream_msgs)
+            self._redis_connect.xack(self._event_name, self._group_name, *msg_ids)
+            self._redis_connect.xdel(self._event_name, *msg_ids)
 
     def _read_redis_stream_new_msgs(self) -> Any:
         while True:
@@ -99,16 +106,22 @@ class EventDispatcher:
                                                  streams={self._event_name: '>'},
                                                  block=0)
             for _, stream_msgs in kvs:
-                for msg_id, msg_body in stream_msgs:
-                    # TODO: HANDLE DEADLETTER
-                    self._handler_wrapper(msg_id=msg_id, msg_topic=msg_body['topic'], msg_body=msg_body['body'])
-                    self._redis_connect.xack(self._event_name, self._group_name, msg_id)
+                if not stream_msgs:
+                    continue
+
+                # TODO: HANDLE DEADLETTER
+                msg_ids, *_ = zip(*stream_msgs)
+                self._handler_wrapper(stream_msgs)
+                self._redis_connect.xack(self._event_name, self._group_name, *msg_ids)
+                self._redis_connect.xdel(self._event_name, *msg_ids)
 
     # private: _handler_wrapper
-    def _handler_wrapper(self, msg_id: str, msg_topic: str, msg_body: str) -> None:
-        for handler in self._event_handlers:
-            try:
-                handler(self, msg_id, msg_topic, msg_body)
-            except BaseException as e:
-                print(f"error occured in handler: {handler.__name__}: {e}")
-                traceback.print_exc()
+    def _handler_wrapper(self, mid_and_msgs: list) -> None:
+        if not self._event_handler:
+            return
+
+        try:
+            self._event_handler(ed=self, mid_and_msgs=mid_and_msgs)
+        except BaseException as e:
+            print(f"error occured in handler: {self._event_handler.__name__}: {e}")
+            traceback.print_exc()
