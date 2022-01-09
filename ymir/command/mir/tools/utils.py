@@ -2,7 +2,6 @@ from dataclasses import asdict, dataclass, field
 import logging
 import os
 import pathlib
-from google.protobuf import message
 import requests
 import shutil
 import tarfile
@@ -104,7 +103,7 @@ def store_assets_to_dir(asset_ids: List[str],
         if need_suffix:
             try:
                 asset_image = Image.open(assets_location[asset_id])
-                file_format = asset_image.format.lower()
+                file_format = asset_image.format.lower()  # type: ignore
             except UnidentifiedImageError:
                 file_format = 'unknown'
                 unknown_format_count += 1
