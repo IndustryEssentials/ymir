@@ -35,6 +35,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             keywords=keywords,
             collaborators=labeler_accounts,
             expert_instruction=labeling_request.expert_instruction_url,
+            export_annotation=labeling_request.export_annotation,
         )
 
         return utils.make_general_response(code.ResCode.CTR_OK, "")
