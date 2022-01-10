@@ -43,6 +43,7 @@ class TaskParameter(BaseModel):
     # label
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
+    keep_annotations: Optional[bool]
 
     # training
     network: Optional[str]
@@ -142,9 +143,11 @@ class TaskTerminate(BaseModel):
 
 
 class TaskUpdateStatus(BaseModel):
+    hash: str
+    timestamp: int
     state: TaskState
-    progress: Optional[float] = 0
-    state_message: str
+    percent: Optional[float] = 0
+    state_message: Optional[str]
 
 
 class TaskOut(Common):

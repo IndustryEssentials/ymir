@@ -202,6 +202,7 @@ class ControllerRequest:
         label_request.dataset_id = args["include_datasets"][0]
         label_request.labeler_accounts[:] = args["labellers"]
         label_request.in_class_ids[:] = args["include_classes"]
+        label_request.export_annotation = args["keep_annotations"]
         if args.get("extra_url"):
             label_request.expert_instruction_url = args["extra_url"]
 
@@ -292,9 +293,11 @@ class ControllerClient:
         self.channel.close()
 
     def send(self, req: mirsvrpb.GeneralReq) -> Dict:
+        logger.info("[controller] request: %s", req.req)
         resp = self.stub.data_manage_request(req.req)
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
+        logger.info("[controller] response: %s", resp)
         return json_format.MessageToDict(
             resp,
             preserving_proto_field_name=True,
@@ -305,7 +308,6 @@ class ControllerClient:
     def get_labels_of_user(self, user_id: int) -> List[str]:
         req = ControllerRequest(ExtraRequestType.get_label, user_id)
         resp = self.send(req)
-        logger.info("[controller] get labels response: %s", resp)
         return list(resp["csv_labels"])
 
     def create_task(
@@ -326,7 +328,6 @@ class ControllerClient:
             ExtraRequestType.get_task_info, user_id, args={"task_ids": [task_hash]}
         )
         resp = self.send(req)
-        logger.info("[controller] get_task_info req: %s, response: %s", req, resp)
         result = list(resp["resp_get_task_info"]["task_infos"].values())[0]
         return result
 
@@ -340,7 +341,6 @@ class ControllerClient:
             },
         )
         resp = self.send(req)
-        logger.info("[controller] terminate_task response: %s", resp)
         return resp
 
     def pull_docker_image(self, url: str, user_id: int) -> Dict:
@@ -358,3 +358,11 @@ class ControllerClient:
         )
         resp = self.send(req)
         return {"gpu_count": resp["available_gpu_counts"]}
+
+    def create_workspace(
+        self, user_id: int, workspace_id: Optional[str] = None
+    ) -> Dict:
+        req = ControllerRequest(
+            ExtraRequestType.create_workspace, user_id=user_id, repo_id=workspace_id
+        )
+        return self.send(req)
