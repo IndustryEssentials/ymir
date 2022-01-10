@@ -40,6 +40,7 @@ ed = EventDispatcher(event_name='/events/taskstates')
 
 # main service and api implememtations
 app = FastAPI()
+socket_manager = SocketManager(app=app)  # binded to /ws by default
 
 
 # fastapi handlers
@@ -51,10 +52,3 @@ async def post_task_states(tid_to_taskstates: Dict[str, entities.TaskState]) -> 
     except BaseException:
         logging.exception(msg='handle post_task_states error')
     return entities.EventResp(return_code=0, return_msg=f"done, received: {len(tid_to_taskstates)} tasks")
-
-
-# sio handlers
-# sio = socketio.AsyncServer(async_mode='asgi')
-# sio_app = socketio.ASGIApp(sio)
-# app.mount(path='/ws', app=sio_app)
-socket_manager = SocketManager(app=app)
