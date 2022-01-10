@@ -122,6 +122,7 @@ export function createLabelTask({
   label_members,
   keywords,
   with_labels,
+  keep_annotations,
   doc,
 }) {
   return createTask({
@@ -133,6 +134,7 @@ export function createLabelTask({
       labellers: label_members,
       include_classes: keywords,
       extra_url: doc,
+      keep_annotations,
       with_labels,
     },
   })

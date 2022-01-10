@@ -1,4 +1,6 @@
 import random
+import time
+from datetime import datetime
 from typing import Dict
 
 import pytest
@@ -282,3 +284,57 @@ class TestTerminateTask:
         )
         # Note that we map premature back to terminate for frontend
         assert r.json()["result"]["state"] == m.TaskState.terminate.value
+
+
+class TestUpdateTaskStatus:
+    def test_update_task_status_to_done(
+        self,
+        client: TestClient,
+        normal_user_token_headers,
+        api_key_headers,
+        mocker,
+        mock_controller,
+    ):
+        r = create_task(client, normal_user_token_headers)
+        task_hash = r.json()["result"]["hash"]
+        last_update_time = r.json()["result"]["update_datetime"]
+        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%dT%H:%M:%S.%f")
+        data = {
+            "hash": task_hash,
+            "state": m.TaskState.running,
+            "percent": 0.5,
+            "timestamp": datetime.timestamp(last_update_time) + 1,
+        }
+        r = client.post(
+            f"{settings.API_V1_STR}/tasks/status",
+            headers=api_key_headers,
+            json=data,
+        )
+        assert r.json()["result"]["state"] == m.TaskState.running.value
+        assert r.json()["result"]["progress"] == 50
+
+    def test_update_task_status_skip_obsolete_msg(
+        self,
+        client: TestClient,
+        normal_user_token_headers,
+        api_key_headers,
+        mocker,
+        mock_controller,
+    ):
+        r = create_task(client, normal_user_token_headers)
+        task_hash = r.json()["result"]["hash"]
+        last_update_time = r.json()["result"]["update_datetime"]
+        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%dT%H:%M:%S.%f")
+
+        data = {
+            "hash": task_hash,
+            "state": m.TaskState.running,
+            "percent": 0.5,
+            "timestamp": datetime.timestamp(last_update_time) - 1,
+        }
+        r = client.post(
+            f"{settings.API_V1_STR}/tasks/status",
+            headers=api_key_headers,
+            json=data,
+        )
+        assert r.json()["code"] == m.ObsoleteTaskStatus.code
