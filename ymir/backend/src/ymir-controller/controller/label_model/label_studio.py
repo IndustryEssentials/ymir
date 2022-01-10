@@ -99,7 +99,7 @@ class LabelStudio(LabelBase):
 
         return storage_id
 
-    def set_export_storage(self, project_id: int, export_path: str) -> None:
+    def set_export_storage(self, project_id: int, export_path: str) -> int:
         # Create a new local file export storage connection to store annotations
         url_path = "/api/storages/export/localfiles"
         data = dict(
@@ -111,7 +111,10 @@ class LabelStudio(LabelBase):
             description="description",
         )
 
-        self.requests.post(url_path=url_path, json_data=data)
+        resp = self.requests.post(url_path=url_path, json_data=data)
+        exported_storage_id = json.loads(resp)["id"]
+
+        return exported_storage_id
 
     def sync_import_storage(self, storage_id: int) -> None:
         # Sync tasks from a local file import storage connection
@@ -202,7 +205,7 @@ class LabelStudio(LabelBase):
         logger.info("start LabelStudio run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
-        self.set_export_storage(project_id, export_path)
+        exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
         self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root,
-                                      media_location, import_work_dir, storage_id)
+                                      media_location, import_work_dir, exported_storage_id)
