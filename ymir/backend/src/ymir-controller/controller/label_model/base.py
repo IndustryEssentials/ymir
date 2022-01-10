@@ -39,7 +39,7 @@ class LabelBase(ABC):
         pass
 
     @abstractmethod
-    def set_export_storage(self, project_id: int, export_path: str) -> None:
+    def set_export_storage(self, project_id: int, export_path: str) -> int:
         # Create export storage to label tool
         pass
 
