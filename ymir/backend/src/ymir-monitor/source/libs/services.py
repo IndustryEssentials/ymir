@@ -1,10 +1,10 @@
 from aioredis import Redis
 from typing import List
-from source.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo, StorageStructure
+from source.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
 
 from source.config import settings
 from source.libs.errors import DuplicateTaskIDError, LogFileError
-from source.libs.app_logger import logger
+from source.utils.app_logger import logger
 
 class TaskService:
     def __init__(self, redis: Redis) -> None:

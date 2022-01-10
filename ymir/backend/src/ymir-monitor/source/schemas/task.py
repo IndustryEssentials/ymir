@@ -1,10 +1,7 @@
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel
-from source.config import settings
-
-from enum import Enum
 
 
 class MonitorType(IntEnum):

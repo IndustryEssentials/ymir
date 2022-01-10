@@ -1,10 +1,9 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 from source.libs import redis_handler
 from source.config import settings
-from source.schemas.task import TaskStateEnum, TaskStorageStructure, StorageStructure
+from source.schemas.task import TaskStateEnum, StorageStructure
 from source.libs.services import TaskService
-from source.libs.app_logger import logger
-import requests
+from source.utils.app_logger import logger
 
 
 def send_updated_task(updated_info):
