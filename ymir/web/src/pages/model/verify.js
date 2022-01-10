@@ -222,10 +222,10 @@ const actions = (dispatch) => ({
       payload,
     })
   },
-  verify(id, urls) {
+  verify(id, urls, image) {
     return dispatch({
       type: 'model/verify',
-      payload: { id, urls },
+      payload: { id, urls, image },
     })
   },
 })
