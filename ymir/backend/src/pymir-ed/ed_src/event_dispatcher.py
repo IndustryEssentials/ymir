@@ -1,8 +1,8 @@
 """ event dispatcher """
 
+import logging
 import multiprocessing
 import os
-import traceback
 from typing import Any, Callable, Set
 
 import redis
@@ -15,42 +15,43 @@ class EventDispatcher:
         self._event_name = event_name
         self._group_name = f"group:{event_name}"
         self._redis_connect = None
-        self._redis_producer_connect = None
+        self._process = None
 
     # public: lifecycle
     def start(self) -> None:
-        if self._redis_producer_connect:
-            print('event dispatcher already started')
-            return
+        # start redis listeners in another process
+        self._process = multiprocessing.Process(target=EventDispatcher._start, args=(self, ))
+        self._process.start()
 
+    def wait(self) -> None:
+        self._process.join()
+
+    def get_redis_connect(self) -> redis.Redis:
         redis_uri = os.environ.get("ED_REDIS_URI", "redis://")
-        self._redis_producer_connect = redis.StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
-
-        # start redis listeners in another thread
-        p = multiprocessing.Process(target=EventDispatcher._start, args=(self, ))
-        p.start()
+        return redis.StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
 
     def register_handler(self, handler: Callable) -> None:
         if self._event_handler:
-            print('event handler already registered')
+            logging.warning('event handler already registered')
             return
         self._event_handler = handler
 
     # public: producer
     def add_event(self, event_topic: str, event_body: str) -> None:
-        self._redis_producer_connect.xadd(name=self._event_name,
-                                          fields={
-                                              'topic': event_topic,
-                                              'body': event_body
-                                          },
-                                          maxlen=17280000,
-                                          approximate=True)
+        result = self.get_redis_connect().xadd(name=self._event_name,
+                                               fields={
+                                                   'topic': event_topic,
+                                                   'body': event_body
+                                               },
+                                               maxlen=17280000,
+                                               approximate=True)
+        logging.info(f"xadd: {result}")
 
     # private: start
     def _start(self) -> None:
-        redis_uri = os.environ.get("ED_REDIS_URI", "redis://")
+        logging.debug('ed _start')
         # connect to redis
-        self._redis_connect = redis.StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
+        self._redis_connect = self.get_redis_connect()
         # create stream
         self._create_stream_if_necessary()
         # create group
@@ -64,16 +65,24 @@ class EventDispatcher:
         if not self._event_name:
             raise ValueError('empty event name')
 
-        stream_info = self._redis_connect.xinfo_stream(self._event_name)
-        return stream_info is not None
+        try:
+            stream_info = self._redis_connect.xinfo_stream(self._event_name)
+            return stream_info is not None
+        except redis.exceptions.ResponseError as e:
+            logging.error(e)
+            return False
 
     def _consumer_group_exists(self) -> bool:
         if not self._event_name or not self._group_name:
             raise ValueError('empty event name or group name')
 
-        groups_info = self._redis_connect.xinfo_groups(self._event_name)
-        group_names: Set[str] = {group['name'] for group in groups_info}
-        return self._group_name in group_names
+        try:
+            groups_info = self._redis_connect.xinfo_groups(self._event_name)
+            group_names: Set[str] = {group['name'] for group in groups_info}
+            return self._group_name in group_names
+        except redis.exceptions.ResponseError as e:
+            logging.error(e)
+            return False
 
     def _create_stream_if_necessary(self) -> None:
         if not self._stream_exists():
@@ -86,6 +95,7 @@ class EventDispatcher:
             self._redis_connect.xgroup_create(name=self._event_name, groupname=self._group_name, id='$')
 
     def _read_redis_stream_pending_msgs(self) -> None:
+        logging.debug('_read_redis_stream_pending_msgs started')
         kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
                                              consumername='default',
                                              streams={self._event_name: '0'})
@@ -100,7 +110,9 @@ class EventDispatcher:
             self._redis_connect.xdel(self._event_name, *msg_ids)
 
     def _read_redis_stream_new_msgs(self) -> Any:
+        logging.debug('_read_redis_stream_new_msgs started')
         while True:
+            logging.debug('_read_redis_stream_new_msgs entered loop')
             kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
                                                  consumername='default',
                                                  streams={self._event_name: '>'},
@@ -117,11 +129,12 @@ class EventDispatcher:
 
     # private: _handler_wrapper
     def _handler_wrapper(self, mid_and_msgs: list) -> None:
+        logging.debug(f"_handler_wrapper: {mid_and_msgs}")
         if not self._event_handler:
+            logging.warning('_handler_wrapper: empty event handler')
             return
 
         try:
             self._event_handler(ed=self, mid_and_msgs=mid_and_msgs)
-        except BaseException as e:
-            print(f"error occured in handler: {self._event_handler.__name__}: {e}")
-            traceback.print_exc()
+        except BaseException:
+            logging.exception(msg='error occured in handler: {self._event_handler.__name__}')

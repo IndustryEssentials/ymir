@@ -1,7 +1,8 @@
 version: "3.3"
 services:
   backend:
-    image: industryessentials/ymir-backend
+    # image: industryessentials/ymir-backend
+    image: zzw-backend:test
     env_file:
       - .env
     runtime: nvidia
@@ -29,6 +30,7 @@ services:
       - API_HOST=127.0.0.1:80
       # ed (event dispatcher)
       - ED_REDIS_URI=redis://redis:6379/0
+      - API_KEY_SECRET=36fbc9d3c0ce04dae75389d5b48e3fa8424c
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
       - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
@@ -53,6 +55,10 @@ services:
       - tensorboard
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
+    ports:
+      # for test
+      - 8090:8090
+      - 8100:8100
     networks:
       - ymirnetwork
 
@@ -119,5 +125,5 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.168.254.0/24
-        gateway: 172.168.254.1
+      - subnet: 172.168.244.0/24
+        gateway: 172.168.244.1
