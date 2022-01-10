@@ -15,17 +15,13 @@ class TaskService:
     def parse_percent_log(log_file):
         with open(log_file, "r") as f:
             monitor_file_lines = f.readlines()
-
         content_row_one = monitor_file_lines[0].strip().split("\t")
-
         if not monitor_file_lines or len(content_row_one) < 4:
             logger.error(f"invalid monitor file: {log_file}")
             raise LogFileError
 
         task_id, timestamp, percent, state, *_ = content_row_one
-
         percent_result = PercentResult(task_id=task_id, timestamp=int(timestamp), percent=percent, state=state)
-
         if len(content_row_one) > 4:
             percent_result.state_code = int(content_row_one[4])
         if len(content_row_one) > 5:

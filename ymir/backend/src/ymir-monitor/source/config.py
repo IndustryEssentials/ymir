@@ -16,4 +16,4 @@ class Settings(BaseSettings):
     MONITOR_REDIS_URI: str = "redis://localhost"
 
 
-settings = Settings(_env_file=".env", _env_file_encoding="utf-8")  # type: ignore
+settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
