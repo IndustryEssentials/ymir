@@ -1,21 +1,10 @@
-from typing import AsyncIterator
-
-# from aioredis import create_redis_pool, Redis
 
 from redis import StrictRedis, Redis
 import json
 
 
 def init_redis_pool(host: str, password: str):
-    # pool = await create_redis_pool(f"redis://{host}", password=password)
-    # return await create_redis_pool(f"redis://localhost")
-
     return StrictRedis.from_url(f"redis://localhost", encoding="utf8", decode_responses=True)
-
-    # return pool
-    # yield pool
-    # pool.close()
-    # await pool.wait_closed()
 
 
 class RedisHandler:

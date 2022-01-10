@@ -6,6 +6,7 @@ from source.config import settings
 from source.libs.errors import DuplicateTaskIDError, LogFileError
 from source.utils.app_logger import logger
 
+
 class TaskService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
@@ -15,11 +16,12 @@ class TaskService:
         with open(log_file, "r") as f:
             monitor_file_lines = f.readlines()
 
-        if not monitor_file_lines or len(monitor_file_lines[0]) < 4:
+        content_row_one = monitor_file_lines[0].strip().split("\t")
+
+        if not monitor_file_lines or len(content_row_one) < 4:
             logger.error(f"invalid monitor file: {log_file}")
             raise LogFileError
 
-        content_row_one = monitor_file_lines[0].strip().split("\t")
         task_id, timestamp, percent, state, *_ = content_row_one
 
         percent_result = PercentResult(task_id=task_id, timestamp=int(timestamp), percent=percent, state=state)
@@ -39,7 +41,6 @@ class TaskService:
     def get_raw_log_contents(self, log_path: List[str]):
         result = dict()
         for one_log_file in log_path:
-            # result[one_log_file] = self.parse_percent_log(one_log_file).dict()
             result[one_log_file] = self.parse_percent_log(one_log_file)
 
         return result
@@ -47,18 +48,17 @@ class TaskService:
     @staticmethod
     def merge_percent_contents(raw_log_contents):
         percent = 0
-
-        class MockTemp:
-            timestamp = 0
-
-        max_timestamp_tmp = MockTemp()
-
+        max_timestamp_content = None
         for raw_log_content in raw_log_contents.values():
+            # any raw log error, means total task is error
             if raw_log_content.state == "error":
                 return raw_log_content
+
             percent += raw_log_content.percent
-            max_timestamp_tmp = max(max_timestamp_tmp, raw_log_content, key=lambda x: int(x.timestamp))
-        result = max_timestamp_tmp.copy()
+            if not max_timestamp_content:
+                max_timestamp_content = raw_log_content
+            max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: int(x.timestamp))
+        result = max_timestamp_content.copy()
         result.percent = percent / len(raw_log_contents)
 
         return result
@@ -83,7 +83,6 @@ class TaskService:
 
         raw_log_contents = self.get_raw_log_contents(reg_parameters.log_path)
         percent_result = self.merge_percent_contents(raw_log_contents)
-
         task_extra_info = TaskExtraInfo.parse_obj(reg_parameters.dict())
         percent_result = PercentResult.parse_obj(percent_result.dict())
 
@@ -93,3 +92,4 @@ class TaskService:
 
         self._redis.hset(settings.MONITOR_RUNNING_KEY, reg_parameters.task_id, task_info.dict())
 
+        logger.info(f"register task successful: {task_info.dict()} ")

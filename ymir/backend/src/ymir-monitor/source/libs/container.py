@@ -13,14 +13,4 @@ class Container(containers.DeclarativeContainer):
         # password=config.redis_password,
     )
 
-    # redis_pool = providers.Resource(
-    #     redis.init_redis_pool,
-    #     host=config.redis_host,
-    #     password=config.redis_password,
-    # )
-
-
-    service = providers.Singleton(
-        services.TaskService,
-        redis=redis_pool,
-    )
+    service = providers.Singleton(services.TaskService, redis=redis_pool)
