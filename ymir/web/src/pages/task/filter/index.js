@@ -195,7 +195,7 @@ function Filter({
                   // rules={[
                   //   { validator: requireOne },
                   // ]}
-                  help={<RecommandKeywords onSelected={selectRecommandKeywords} />}
+                  help={<RecommandKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommandKeywords} />}
                 >
                   <Select
                     mode='multiple'

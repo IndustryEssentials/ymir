@@ -129,9 +129,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
   useEffect(() => {
     form.setFieldsValue({ keywords: selectedKeywords })
+    if (selectedModel) {
+      form.validateFields(['keywords'])
+    }
   }, [selectedKeywords])
 
-  function validTrainTarget(_, value) {
+  const validTrainTarget = async (_, value) => {
     const kws = form.getFieldValue('keywords')
     if (!(inArray(kws, getKwsFromDatasets(trainSets)) && inArray(kws, getKwsFromDatasets(validationSets)))) {
       return Promise.reject(t('task.train.target.invalid.inter'))
@@ -151,7 +154,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     return items.every(item => arr.indexOf(item) > -1)
   }
 
-  function validHyperparam(rule, value) {
+  async function validHyperparam(rule, value) {
 
     const params = form.getFieldValue('hyperparam').map(({ key }) => key)
       .filter(item => item && item.trim() && item === value)
@@ -179,7 +182,6 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   function selectRecommandKeywords(keyword) {
     const kws = [...new Set([...selectedKeywords, keyword])]
     setSelectedKeywords(kws)
-    form.setFieldsValue({ keywords: kws })
   }
 
   function modelChange(value, model) {
@@ -339,8 +341,6 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item
                 label={t('task.train.form.keywords.label')}
-                >
-                  <Form.Item
                 name="keywords"
                 dependencies={['model', 'train_sets', 'validation_sets']}
                 rules={[
@@ -356,10 +356,9 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                     </Option>
                   ))}
                 </Select>
-                </Form.Item>
-                <RecommandKeywords sets={trainSets} onSelect={selectRecommandKeywords} />
               </Form.Item>
             </Tip>
+            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommandKeywords sets={trainSets} onSelect={selectRecommandKeywords} /></Form.Item></Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
               <Tip content={t('tip.task.train.model')}>
