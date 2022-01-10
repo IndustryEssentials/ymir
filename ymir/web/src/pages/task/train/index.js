@@ -24,6 +24,7 @@ import ImageSelect from "../components/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import ModelSelect from "../components/modelSelect"
+import RecommandKeywords from "../../../components/common/recommandKeywords"
 
 const { Option } = Select
 
@@ -173,6 +174,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
   function validationSetChange(value) {
     setValidationSets(value)
+  }
+
+  function selectRecommandKeywords(keyword) {
+    const kws = [...new Set([...selectedKeywords, keyword])]
+    setSelectedKeywords(kws)
+    form.setFieldsValue({ keywords: kws })
   }
 
   function modelChange(value, model) {
@@ -332,9 +339,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item
                 label={t('task.train.form.keywords.label')}
-                // next version
-                // >
-                //   <Form.Item
+                >
+                  <Form.Item
                 name="keywords"
                 dependencies={['model', 'train_sets', 'validation_sets']}
                 rules={[
@@ -350,14 +356,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                     </Option>
                   ))}
                 </Select>
-                {/* next version */}
-                {/* </Form.Item>
-                <div className={styles.formItemLowLevel}><span className={styles.label}>{t('常用标签: ')}</span><Form.Item name='label_strategy' colon={true} initialValue={0} noStyle>
-                  <Tag>cat</Tag>
-                  <Tag>dog</Tag>
-                  <Tag>person</Tag>
-                  <Tag>pig</Tag>
-                </Form.Item></div> */}
+                </Form.Item>
+                <RecommandKeywords sets={trainSets} onSelect={selectRecommandKeywords} />
               </Form.Item>
             </Tip>
 

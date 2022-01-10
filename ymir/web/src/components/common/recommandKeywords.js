@@ -2,9 +2,10 @@ import { Space, Tag } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
+import t from "@/utils/t"
 import s from './common.less'
 
-const RecommandKeywords = ({type = '', onSelected = () => {}, getRecommandKeywords}) => {
+const RecommandKeywords = ({sets = [], type = '', onSelected = () => {}, getRecommandKeywords}) => {
   const [keywords, setKeywords] = useState([])
 
   useEffect(() => {
@@ -19,9 +20,9 @@ const RecommandKeywords = ({type = '', onSelected = () => {}, getRecommandKeywor
   }
 
   return (
-    <Space>
-      <span className={s.recommandKwTitle}>{t('common.recommand.keyword.label')}</span>
-      {keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
+    <Space className={s.recommandKeywords}>
+      <span className={s.label}>{t('common.recommand.keyword.label')}</span>
+      {keywords.map(keyword => <Tag className={s.tag} key={keyword} onClick={() => onSelected(keyword)}>{keyword}</Tag>)}
     </Space>
   )
 }

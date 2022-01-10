@@ -65,6 +65,7 @@ const common = {
   'common.del': {cn: '删除', en: 'Delete', },
   'common.key': {cn: '键', en: 'Key', },
   'common.value': {cn: '值', en: 'Value', },
+  'common.recommand.keyword.label': {cn: '常用标签', en: 'Recommand Keywords', },
 }
 
 export default common
