@@ -50,10 +50,6 @@ server {
         return 307 ${LABEL_STUDIO_OPEN_HOST}:${LABEL_STUDIO_OPEN_PORT};
     }
 
-    location /lsf {
-        return 307 ${LABEL_STUDIO_OPEN_HOST}:${LABEL_STUDIO_OPEN_PORT};
-    }
-
     location /tensorboard/ {
         proxy_pass http://tensorboard_web/;
         proxy_redirect off;
