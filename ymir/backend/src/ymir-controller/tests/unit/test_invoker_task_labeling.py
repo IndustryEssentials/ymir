@@ -33,6 +33,7 @@ class TestTaskLabelingInvoker:
         label_req.project_name = "fake_project_name"
         label_req.dataset_id = "id"
         label_req.expert_instruction_url = "url"
+        label_req.export_annotation = False
 
         create_req = Req()
         create_req.labeling = label_req

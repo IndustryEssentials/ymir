@@ -152,7 +152,8 @@ def export(mir_root: str,
                                        annotations_dict=assets_to_det_annotations_dict,
                                        class_type_mapping=class_type_ids,
                                        dest_path=annotation_dir,
-                                       mir_root=mir_root)
+                                       mir_root=mir_root,
+                                       assert_id_filename_map=asset_result)
 
     return True
 
@@ -226,8 +227,8 @@ def _annotations_by_assets(mir_annotations: mirpb.MirAnnotations, class_type_ids
 def _export_detect_annotations_to_path(asset_ids: List[str], format_type: ExportFormat,
                                        mir_metadatas: mirpb.MirMetadatas,
                                        annotations_dict: Dict[str, List[mirpb.Annotation]],
-                                       class_type_mapping: Optional[Dict[int,
-                                                                         int]], dest_path: str, mir_root: str) -> None:
+                                       class_type_mapping: Optional[Dict[int, int]], dest_path: str, mir_root: str,
+                                       assert_id_filename_map: Dict[str, str]) -> None:
     if not asset_ids:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty asset_ids')
     if not mir_metadatas:
@@ -257,7 +258,8 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
                                attrs=attrs,
                                annotations=annotations,
                                class_type_mapping=class_type_mapping,
-                               cls_id_mgr=cls_id_mgr)
+                               cls_id_mgr=cls_id_mgr,
+                               asset_filename=assert_id_filename_map[asset_id])
         with open(os.path.join(dest_path, f"{asset_id}{format_file_ext(format_type)}"), 'w') as f:
             f.write(anno_str)
 
@@ -266,8 +268,8 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
 
 
 def _single_image_annotations_to_ark(asset_id: str, attrs: Any, annotations: List[mirpb.Annotation],
-                                     class_type_mapping: Optional[Dict[int, int]],
-                                     cls_id_mgr: class_ids.ClassIdManager) -> str:
+                                     class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
+                                     asset_filename: str) -> str:
     output_str = ""
     for annotation in annotations:
         mapped_id = class_type_mapping[annotation.class_id] if class_type_mapping else annotation.class_id
@@ -277,8 +279,8 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: Any, annotations: Lis
 
 
 def _single_image_annotations_to_voc(asset_id: str, attrs: Any, annotations: List[mirpb.Annotation],
-                                     class_type_mapping: Optional[Dict[int, int]],
-                                     cls_id_mgr: class_ids.ClassIdManager) -> str:
+                                     class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
+                                     asset_filename: str) -> str:
     # annotation
     annotation_node = ElementTree.Element('annotation')
 
@@ -288,7 +290,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: Any, annotations: Lis
 
     # annotation: filename
     filename_node = ElementTree.SubElement(annotation_node, 'filename')
-    filename_node.text = asset_id
+    filename_node.text = asset_filename
 
     # annotation: source
     source_node = ElementTree.SubElement(annotation_node, 'source')
@@ -362,7 +364,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: Any, annotations: Lis
 
 def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations: List[mirpb.Annotation],
                                          class_type_mapping: Optional[Dict[int, int]],
-                                         cls_id_mgr: class_ids.ClassIdManager) -> str:
+                                         cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
     out_type = "predictions"  # out_type: annotation type - "annotations" or "predictions"
     to_name = 'image'  # to_name: object name from Label Studio labeling config
     from_name = 'label'  # control tag name from Label Studio labeling config
@@ -372,7 +374,7 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations:
             "ground_truth": False,
         }],
         "data": {
-            "image": asset_id
+            "image": asset_filename
         }
     }
 
