@@ -59,5 +59,10 @@ def sub_task_id(task_id: str, offset: int) -> str:
 
 
 def annotation_format_str(format: backend_pb2.LabelFormat) -> str:
-    format_enum_dict = {backend_pb2.NO_ANNOTATION: 'none', backend_pb2.PASCAL_VOC: 'voc', backend_pb2.IF_ARK: 'ark'}
+    format_enum_dict = {
+        backend_pb2.LabelFormat.NO_ANNOTATION: 'none',
+        backend_pb2.LabelFormat.PASCAL_VOC: 'voc',
+        backend_pb2.LabelFormat.IF_ARK: 'ark',
+        backend_pb2.LabelFormat.LABEL_STUDIO_JSON: 'ls_json',
+    }
     return format_enum_dict[format]

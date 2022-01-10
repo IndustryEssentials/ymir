@@ -23,7 +23,7 @@ async def update_task_status(ctx: Dict) -> int:
     session = ClientSession()
 
     api_url = f"http://{API_HOST}/api/v1/tasks/update_status"
-    headers = {"api_key": API_KEY_SECRET}
+    headers = {"api-key": API_KEY_SECRET}
     logging.info("updating tasks status... %s" % api_url)
     async with session.post(api_url, headers=headers) as response:
         content = await response.json()

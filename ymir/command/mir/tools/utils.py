@@ -2,7 +2,6 @@ from dataclasses import asdict, dataclass, field
 import logging
 import os
 import pathlib
-from google.protobuf import message
 import requests
 import shutil
 import tarfile
@@ -99,12 +98,12 @@ def store_assets_to_dir(asset_ids: List[str],
             sub_sub_folder_rel = os.path.join(sub_folder, suffix)
         else:
             sub_sub_folder_abs = sub_dir_abs
-            sub_sub_folder_rel = sub_folder
+            sub_sub_folder_rel = sub_folder.strip("./")
 
         if need_suffix:
             try:
                 asset_image = Image.open(assets_location[asset_id])
-                file_format = asset_image.format.lower()
+                file_format = asset_image.format.lower()  # type: ignore
             except UnidentifiedImageError:
                 file_format = 'unknown'
                 unknown_format_count += 1
@@ -224,7 +223,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message=f"dest_root is not a directory: {dest_root}")
     if not os.path.isfile(tar_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"tar_file is not a file: {tar_file}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"tar_file is not a file: {tar_file}")
 
     # params_file, json_file, weights_file, config_file = '', '', '', ''
     logging.info(f"extracting models from {tar_file}")
