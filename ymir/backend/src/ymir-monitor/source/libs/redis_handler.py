@@ -1,15 +1,14 @@
-
 from redis import StrictRedis, Redis
 import json
+from source.config import settings
 
 
-def init_redis_pool(host: str, password: str):
-    return StrictRedis.from_url(f"redis://localhost", encoding="utf8", decode_responses=True)
+def init_redis_pool(redis_uri: str = settings.MONITOR_REDIS_URI):
+    return StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
 
 
 class RedisHandler:
-    def __init__(self, redis: Redis = init_redis_pool("a", "")) -> None:
-        # self._redis = await redis
+    def __init__(self, redis: Redis = init_redis_pool()) -> None:
         self._redis = redis
 
     def set(self, name, key):
