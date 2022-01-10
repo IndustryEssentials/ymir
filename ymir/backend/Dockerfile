@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG PIP_SOURCE=http://pypi.python.org/pypi
+ARG PIP_SOURCE=https://pypi.org/simple
 
 ARG SERVER_MODE=prod
 

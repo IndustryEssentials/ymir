@@ -6,7 +6,7 @@ from typing import Tuple
 
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.phase_logger import PhaseLoggerCenter, PhaseStateEnum
+from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -69,8 +69,9 @@ def _type_shape_for_asset(asset_path: str) -> Tuple['mirpb.AssetType.V', int, in
 
     try:
         asset_image = Image.open(asset_path)
-        asset_type_str: str = asset_image.format.lower()
+        asset_type_str: str = asset_image.format.lower()  # type: ignore
     except UnidentifiedImageError as e:
+        logging.info(f"{type(e).__name__}: {e} asset_path: {asset_path}")
         asset_type_str = ''  # didn't set it to 'unknown' as what i did in utils.py, because this is easy to compare
 
     if asset_type_str in _ASSET_TYPE_STR_TO_ENUM_MAPPING:
