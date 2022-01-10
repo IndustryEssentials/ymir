@@ -51,7 +51,3 @@ class StorageStructure(BaseModel):
 
     def dict(self):
         return super().dict()["__root__"]
-
-
-class Test(BaseModel):
-    __root__: Optional[Dict[str, str]]

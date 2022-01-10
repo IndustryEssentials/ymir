@@ -1,3 +1,4 @@
+import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -9,15 +10,13 @@ from source.utils.app_logger import logger
 
 
 def send_updated_task(updated_info):
-    # if True:
-    #     requests.post(
-    #         url=settings.DESTINATION_URL,
-    #         json=updated_info
-    #     )
+    requests.post(url=settings.DESTINATION_URL, json=updated_info)
+
     logger.info(f"send_updated_task: {updated_info}")
 
 
 def deal_updated_task(redis_client, task_updated, task_finished):
+    # sentry will catch Exception
     send_updated_task(task_updated)
     redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_updated)
     if task_finished:
@@ -32,7 +31,6 @@ def deal_updated_task(redis_client, task_updated, task_finished):
 def monitor_percent_log():
     redis_client = redis_handler.RedisHandler()
     contents = redis_client.hgetall(settings.MONITOR_RUNNING_KEY)
-    # logger.info(f"{contents}")
 
     task_updated = dict()
     task_finished = []

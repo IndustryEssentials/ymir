@@ -1,12 +1,8 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
-from fastapi.exceptions import RequestValidationError
-from pydantic import ValidationError
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
-
 
 
 class APIError(HTTPException):

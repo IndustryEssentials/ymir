@@ -6,9 +6,6 @@ from pydantic import AnyHttpUrl, BaseSettings, EmailStr, validator
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "ymir monitor"
-    FRONTEND_ENTRYPOINT: str = "localhost:8089"
-    NGINX_PREFIX: str = ""
-    API_V1_STR: str = "/api/v1"
     INTERVAL_SECONDS: int = 60
     MONITOR_SENTRY_DSN: str = None
 

@@ -11,3 +11,5 @@ IMAGE_CONFIG_PATH = {
     backend_pb2.TaskType.TaskTypeMining: "/img-man/mining-template.yaml",
     backend_pb2.TaskType.TaskTypeInfer: "/img-man/infer-template.yaml",
 }
+
+MONITOR_URI = os.environ.get("MONITOR_URI", "")

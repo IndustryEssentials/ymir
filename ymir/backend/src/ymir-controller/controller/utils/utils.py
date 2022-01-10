@@ -1,9 +1,13 @@
 import logging
 import re
 import subprocess
+from typing import List
 
-from id_definition import task_id as task_id_proto
+import requests
+
+from controller.config import common_task as common_task_config
 from controller.utils.code import ResCode
+from id_definition import task_id as task_id_proto
 from proto import backend_pb2
 
 
@@ -66,3 +70,10 @@ def annotation_format_str(format: backend_pb2.LabelFormat) -> str:
         backend_pb2.LabelFormat.LABEL_STUDIO_JSON: 'ls_json',
     }
     return format_enum_dict[format]
+
+
+def register_monitor_log(task_id: str, user_id: str, log_path: List[str], description: str = None) -> None:
+    requests.post(
+        url=common_task_config.MONITOR_URI,
+        json=dict(task_id=task_id, user_id=user_id, log_path=log_path, description=description),
+    )
