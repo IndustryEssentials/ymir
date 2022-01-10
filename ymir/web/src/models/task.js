@@ -1,3 +1,4 @@
+import { io } from 'socket.io-client'
 import {
   getTasks,
   getTask,
@@ -130,9 +131,22 @@ export default {
       if (code === 0) {
         return result
       }
-    },
+    }
   },
   reducers: {
+    updateTasks(state, { payload }) {
+      const tasks = state.tasks.items
+      const progressObj = {}
+      payload.forEach(item => {
+        progressObj[item.id] = item.progress
+      });
+      const result = tasks.map(task => progressObj[task.id] && (task.progress = progressObj[task.id]))
+      console.log('update tasks: ', result, progressObj, payload)
+      return {
+        ...state,
+        tasks: result,
+      }
+    },
     UPDATE_TASKS(state, { payload }) {
       return {
         ...state,
@@ -146,4 +160,29 @@ export default {
       }
     },
   },
+  subscriptions: {
+    setup({ dispatch, history }) {
+        let socket = null
+      return history.listen(location => {
+        console.log('get location: ', location)
+        if (location.pathname === '/home/task') {
+          socket = io('ws://localhost:8080/')
+          // listen
+          socket.on('connect', () => {
+            console.log('socket connect.')
+          })
+          socket.on('updateTaskList', (data) => {
+            console.log('updateTaskList data: ', data)
+            dispatch({
+              type: 'updateTasks',
+              payload: data,
+            })
+          })
+        } else {
+          // other page close socket
+          socket && socket.close()
+        }
+      })
+    },
+  }
 }
