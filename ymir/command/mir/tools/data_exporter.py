@@ -249,7 +249,8 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
         if asset_id not in annotations_dict:
             missing_counter += 1
             annotations = []
-        annotations = annotations_dict[asset_id]
+        else:
+            annotations = annotations_dict[asset_id]
         if len(annotations) == 0:
             empty_counter += 1
 
