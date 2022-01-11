@@ -249,7 +249,8 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
         if asset_id not in annotations_dict:
             missing_counter += 1
             annotations = []
-        annotations = annotations_dict[asset_id]
+        else:
+            annotations = annotations_dict[asset_id]
         if len(annotations) == 0:
             empty_counter += 1
 
@@ -393,7 +394,7 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations:
                 "width": bbox_width / img_width * 100,
                 "height": bbox_height / img_height * 100,
                 "rotation": 0,
-                "rectanglelabels": cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown'
+                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown']
             },
             "to_name": to_name,
             "from_name": from_name,

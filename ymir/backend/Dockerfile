@@ -8,12 +8,13 @@ ARG SERVER_MODE=prod
 
 RUN apt-get update \
   && apt-get install -y git \
+  && apt-get install -y vim \
   && apt-get install -y --no-install-recommends python3-pip python3-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && cd /usr/local/bin \
   && ln -s /usr/bin/python3 python \
-  && pip3 install --upgrade pip
+  && pip3 install -i ${PIP_SOURCE} --upgrade pip
 
 RUN pip install --no-cache-dir "uvicorn[standard]" gunicorn -i ${PIP_SOURCE}
 

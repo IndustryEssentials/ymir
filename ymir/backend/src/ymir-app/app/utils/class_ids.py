@@ -1,6 +1,6 @@
 import csv
 import io
-from typing import Dict, Iterator, List, Optional, Callable
+from typing import Callable, Dict, Iterator, List, Optional
 
 from app.schemas import Keyword
 from app.utils.ymir_controller import (
@@ -48,7 +48,7 @@ def extract_names_from_labels(labels: List[str]) -> Iterator[str]:
 
 def find_duplication_in_labels(labels: List[str], new_labels: List[str]) -> List[str]:
     names = set(extract_names_from_labels(labels))
-    new_names = set(new_labels)
+    new_names = set(flatten_labels(new_labels))
     return list(names & new_names)
 
 
