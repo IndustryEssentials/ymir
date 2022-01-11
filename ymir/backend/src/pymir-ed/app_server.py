@@ -7,6 +7,7 @@ from typing import Dict
 
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
+from starlette.middleware.cors import CORSMiddleware
 import socketio
 from fastapi_socketio import SocketManager
 
@@ -31,7 +32,16 @@ async def _sort_by_user_id(
 async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, entities.TaskState]) -> None:
     uid_to_taskstates = await _sort_by_user_id(tid_to_taskstates)
     for uid, tid_to_taskstates in uid_to_taskstates.items():
-        data = jsonable_encoder(tid_to_taskstates)
+        data = {}
+        for tid, taskstate in tid_to_taskstates.items():
+            data[tid] = {}
+            data[tid]['state'] = entities.task_state_str_to_enum(taskstate.percent_result.state)
+            data[tid]['percent'] = taskstate.percent_result.percent
+            data[tid]['timestamp'] = taskstate.percent_result.timestamp
+            data[tid]['state_code'] = taskstate.percent_result.state_code
+            data[tid]['state_message'] = taskstate.percent_result.state_message
+            data[tid]['stack_error_info'] = taskstate.percent_result.stack_error_info
+        print(f"sio sent: {data}, uid: {uid}")
         await sio.emit(event='update_taskstate', data=data, namespace=f"/{uid}")
 
 
@@ -39,8 +49,23 @@ async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, e
 ed = EventDispatcher(event_name='/events/taskstates')
 
 # main service and api implememtations
-app = FastAPI()
-socket_manager = SocketManager(app=app)  # binded to /ws by default
+app = FastAPI(title='event dispatcher')
+backend_cors_origions = [
+    "http://192.168.34.88:8000", "http://192.168.13.252:8089", "http://192.168.13.107:8089",
+    "http://192.168.13.108:8089", "http://192.168.34.193:8000", "http://192.168.57.41:8000"
+]  # for test
+if backend_cors_origions:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=backend_cors_origions,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    print('cors set')
+# binded to /ws by default
+# cors_allowed_origins set to []: https://github.com/pyropy/fastapi-socketio/issues/28
+socket_manager = SocketManager(app=app, cors_allowed_origins=[])
 
 
 # fastapi handlers
