@@ -53,6 +53,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
         name: `${name}_${randomNumber()}`,
         datasets: include_datasets[0],
         label_members: labellers[0],
+        keep_annotations: 1, // todo replace with copy params
         checker: labellers.length > 1 ? labellers[1] : '',
         keywords: include_classes,
       }
@@ -95,6 +96,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_label_' + randomNumber(),
+    keep_annotations: 1,
     datasets: datasetId,
     labelType: getCheckedValue(LabelTypes()),
   }
@@ -192,7 +194,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                     </Form.Item>
                   </Col>
                   <Col>
-                    <a target='_blank' href={'/lsf/'}>{t('task.label.form.plat.go')}</a>
+                    <a target='_blank' href={'/label_tool/'}>{t('task.label.form.plat.go')}</a>
                   </Col>
                 </Row>
               </Form.Item>
@@ -220,6 +222,17 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 </Select>
               </Form.Item>
             </Tip>
+            
+            <Tip hidden={true}>
+              <Form.Item name='keep_annotations'
+                required
+                label={t('task.label.form.keep_anno.label')}>
+                <Radio.Group options={[
+                  { value: 1, label: t('common.yes') },
+                  { value: 0, label: t('common.no') },
+                ]} />
+              </Form.Item>
+            </Tip>
 
             <Tip hidden={true}>
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
@@ -240,7 +253,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                   </Button>
                 </Form.Item>
               </Space>
-              <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/lsf/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
+              <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/label_tool/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
             </Form.Item>
             </Tip>
           </Form>

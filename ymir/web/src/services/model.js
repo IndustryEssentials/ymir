@@ -12,7 +12,7 @@ export function getModel(id) {
 
 /**
  * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, sort_by: 1|2 }
+ * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by: 1|2 }
  * @returns
  */
 export function getModels(params) {
@@ -25,7 +25,7 @@ export function getModels(params) {
  * @returns 
  */
 export function batchModels(ids) {
-  return request.get('models/', { params: { ids: ids.toString() }})
+  return request.get('models/batch', { params: { ids: ids.toString() }})
 }
 
 /**
@@ -69,11 +69,11 @@ export function updateModel(id, name) {
 
 /**
  * model verification
- * @param {number} id 
- * @param {string} url 
+ * @param {number} model_id model id
+ * @param {array} image_urls image urls
+ * @param {number} image docker image url
  * @returns 
  */
-export function verify(model_id, image_urls) {
-  console.log('verify: ', model_id, image_urls)
-  return request.post(`/inferences/`, { model_id, image_urls })
+export function verify(model_id, image_urls, image) {
+  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image })
 }

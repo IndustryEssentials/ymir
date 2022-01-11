@@ -96,7 +96,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_datasets, exclude_datasets, strategy, top_k, model_id } = parameters
+      const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations } = parameters
       const sets = include_datasets || []
       const xsets = exclude_datasets || []
       setTopk(!!top_k)
@@ -105,6 +105,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
         datasets: sets,
         exclude_sets: xsets,
         filter_strategy: !!top_k,
+        inference: generate_annotations,
         model: model_id,
         topk: top_k,
         gpu_count: config.gpu_count,
@@ -306,7 +307,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} mining={true} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} type={TYPES.MINING} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
               </Form.Item>
             </Tip>
 
@@ -440,7 +441,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
+                  <Button type="primary" size="large" htmlType="submit">
                     {t('task.filter.create')}
                   </Button>
                 </Form.Item>

@@ -24,13 +24,3 @@ class MirCode(IntEnum):
     RC_RUNTIME_ERROR_UNKNOWN = mirpb.RCode.RC_RUNTIME_ERROR_UNKNOWN
     RC_RUNTIME_UNKNOWN_TYPES = mirpb.RCode.RC_RUNTIME_UNKNOWN_TYPES
     RC_RUNTIME_CONTAINER_ERROR = mirpb.RCode.RC_RUNTIME_CONTAINER_ERROR
-
-
-class MirRuntimeError(Exception):
-    def __init__(self, error_code: int, error_message: str):
-        super().__init__(self)
-        self.error_code = error_code
-        self.error_message = error_message
-
-    def __str__(self) -> str:
-        return f"code: {self.error_code} content: {self.error_message}"

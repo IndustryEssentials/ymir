@@ -17,7 +17,7 @@ import { getTimes, getModelImportTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/model'
 import EditBox from "../../components/form/editBox"
-import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon } from "../../components/common/icons"
+import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "../../components/common/icons"
 import Actions from "../../components/table/actions"
 import TypeTag from "../../components/task/typeTag"
 
@@ -63,22 +63,6 @@ function Keyword({ getModels, delModel, updateModel }) {
 
   const times = getTimes()
 
-  const renderSource = (type, record) => {
-    const target = types.find((t) => t.value === type)
-    if (!target) {
-      return type
-    }
-
-    if (target.value === 1) {
-      // train
-      return (
-        <Link to={`/home/task/detail/${record.task_id}`}>{t('model.type.train')}: {record.task_name}</Link>
-      )
-    } else {
-      return target.label
-    }
-  }
-
   const columns = [
     {
       title: showTitle("model.column.name"),
@@ -120,6 +104,7 @@ function Keyword({ getModels, delModel, updateModel }) {
       key: "create_datetime",
       dataIndex: "create_datetime",
       render: (datetime) => format(datetime),
+      sorter: true,
       width: 200,
       align: 'center',
     },
@@ -127,17 +112,19 @@ function Keyword({ getModels, delModel, updateModel }) {
       title: showTitle("model.column.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} />,
+      render: (text, record) => <Actions menus={actionMenus(record)} showCount={4} />,
       className: styles.tab_actions,
       align: "center",
       width: "280px",
     },
   ]
 
-  const pageChange = ({ current, pageSize }) => {
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    const is_desc = sorters.order === 'ascend' ? false : true
+    const order_by = sorters.order ? sorters.field : undefined
+    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
   function showTitle(str) {
@@ -148,6 +135,8 @@ function Keyword({ getModels, delModel, updateModel }) {
     let params = {
       offset: query.offset,
       limit: query.limit,
+      is_desc: query.is_desc,
+      order_by: query.order_by,
     }
     if (query.source !== "") {
       params.source = query.source
@@ -190,6 +179,12 @@ function Keyword({ getModels, delModel, updateModel }) {
         label: t("dataset.action.mining"),
         onclick: () => history.push(`/home/task/mining?mid=${id}`),
         icon: <VectorIcon />,
+      },
+      {
+        key: "train",
+        label: t("dataset.action.train"),
+        onclick: () => history.push(`/home/task/train?mid=${id}`),
+        icon: <TrainIcon />,
       },
       {
         key: "history",
@@ -353,9 +348,7 @@ function Keyword({ getModels, delModel, updateModel }) {
           <ConfigProvider renderEmpty={() => <EmptyState />}>
             <Table
               dataSource={models}
-              onChange={({ current, pageSize }) =>
-                pageChange({ current, pageSize })
-              }
+              onChange={tableChange}
               rowKey={(record) => record.id}
               pagination={{
                 showQuickJumper: true,

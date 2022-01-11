@@ -3,6 +3,9 @@ access_log /var/log/nginx/access.log combined;
 upstream backend_api {
     server backend:80;
 }
+upstream tensorboard_web {
+    server tensorboard:6006;
+}
 
 server {
     # use 'listen 80 deferred;' for Linux
@@ -43,8 +46,16 @@ server {
         proxy_set_header   X-Forwarded-Host $server_name;
     }
 
-    location /lsf {
+    location /label_tool/ {
         return 307 ${LABEL_STUDIO_OPEN_HOST}:${LABEL_STUDIO_OPEN_PORT};
+    }
+
+    location /tensorboard/ {
+        proxy_pass http://tensorboard_web/;
+        proxy_redirect off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     # frontend entrypoint

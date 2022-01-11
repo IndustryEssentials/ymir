@@ -201,6 +201,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.annotation_dir = self._dest_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
+        fake_args.dst_rev = 'b@b'
         fake_args.format = 'voc'
         fake_args.work_dir = ''
         runner = exporting.CmdExport(fake_args)

@@ -5,7 +5,7 @@ services:
     image: zzw-backend:test
     env_file:
       - .env
-    runtime: nvidia
+    runtime: ${SERVER_RUNTIME}
     environment:
       # controller
       - CTR_REDIS_URI=redis://redis:6379/0

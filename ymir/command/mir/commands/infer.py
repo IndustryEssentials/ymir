@@ -11,6 +11,7 @@ import yaml
 from mir.commands import base
 from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 class CmdInfer(base.BaseCommand):
@@ -122,7 +123,8 @@ class CmdInfer(base.BaseCommand):
         model_names = model_storage.models
         class_names = model_storage.class_names
         if not class_names:
-            raise ValueError(f"empty class names in model: {model_hash}")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message=f"empty class names in model: {model_hash}")
         prepare_config_file(config_file=config_file,
                             dst_config_file=work_config_file,
                             class_names=class_names,
@@ -199,24 +201,31 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
 
             # check rel path
             if not src_asset_file.startswith('/'):
-                raise ValueError(f"rel path not allowed: {src_asset_file}")
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message=f"rel path not allowed: {src_asset_file}",
+                                      needs_new_commit=False)
 
             # check repeat
             media_key = os.path.relpath(path=src_asset_file, start=media_path)
             if media_key in media_keys_set:
-                raise RuntimeError(f"dumplicate image name: {media_key}, abort")
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message=f"dumplicate image name: {media_key}, abort",
+                                      needs_new_commit=False)
             media_keys_set.add(media_key)
 
             # write in-container index file
             f.write(f"/in/candidate/{media_key}\n")
 
     if not media_keys_set:
-        raise ValueError('no assets to infer, abort')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='no assets to infer, abort',
+                              needs_new_commit=False)
 
 
 def _process_infer_results(infer_result_file: str, max_boxes: int) -> None:
     if not os.path.isfile(infer_result_file):
-        raise FileNotFoundError(f"can not find result file: {infer_result_file}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message=f"can not find result file: {infer_result_file}")
 
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
@@ -238,7 +247,7 @@ def _get_max_boxes(config_file: str) -> int:
 
     max_boxes = config.get('max_boxes', 50)
     if not isinstance(max_boxes, int) or max_boxes <= 0:
-        raise ValueError(f"invalid max_boxes: {max_boxes}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid max_boxes: {max_boxes}")
 
     return max_boxes
 

@@ -11,6 +11,8 @@ from PIL import Image, UnidentifiedImageError
 import yaml
 
 from mir import scm
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 # project
@@ -28,7 +30,7 @@ def mir_repo_head_name(git: Union[str, scm.CmdScm]) -> Optional[str]:
     elif isinstance(git, scm.CmdScm):
         git_scm = git
     else:
-        raise ValueError("invalid git: needs str or CmdScm")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid git: needs str or CmdScm")
 
     git_result = git_scm.rev_parse(["--abbrev-ref", "HEAD"])
     if isinstance(git_result, str):
@@ -46,7 +48,7 @@ def mir_repo_commit_id(git: Union[str, scm.CmdScm], branch: str = "HEAD") -> str
     elif isinstance(git, scm.CmdScm):
         git_scm = git
     else:
-        raise ValueError("invalid git: needs str or CmdScm")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid git: needs str or CmdScm")
 
     git_result = git_scm.rev_parse(branch)
     if isinstance(git_result, str):
@@ -78,7 +80,7 @@ def store_assets_to_dir(asset_ids: List[str],
     """
     # if out_root exists, but not a folder, raise error
     if os.path.exists(out_root) and not os.path.isdir(out_root):
-        raise ValueError("invalid out_root")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid out_root")
     os.makedirs(out_root, exist_ok=True)
     sub_dir_abs = os.path.join(out_root, sub_folder)
     os.makedirs(sub_dir_abs, exist_ok=True)
@@ -96,12 +98,12 @@ def store_assets_to_dir(asset_ids: List[str],
             sub_sub_folder_rel = os.path.join(sub_folder, suffix)
         else:
             sub_sub_folder_abs = sub_dir_abs
-            sub_sub_folder_rel = sub_folder
+            sub_sub_folder_rel = sub_folder.strip("./")
 
         if need_suffix:
             try:
                 asset_image = Image.open(assets_location[asset_id])
-                file_format = asset_image.format.lower()
+                file_format = asset_image.format.lower()  # type: ignore
             except UnidentifiedImageError:
                 file_format = 'unknown'
                 unknown_format_count += 1
@@ -135,7 +137,8 @@ def _store_asset_to_location(src: str, dst: str, overwrite: bool = False) -> Non
     elif src.startswith('/'):  # from filesystem, require abs path.
         shutil.copyfile(src, dst)
     else:
-        raise ValueError(f"Invalid src, not a abs path: {src}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"Invalid src, not a abs path: {src}")
 
 
 def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str, str]:
@@ -153,7 +156,7 @@ def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str,
     # asset_location is a required field.
     # CMD layer should NOT aware where the asset is stored.
     if not asset_location:
-        raise ValueError("asset_location is not set.")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="asset_location is not set.")
 
     return {id: os.path.join(asset_location, id) for id in asset_ids}
 
@@ -169,7 +172,8 @@ class ModelStorage:
         self.class_names = self.executor_config.get('class_names', [])
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
-            raise ValueError('ModelStorage invalid: not enough infomations')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message='ModelStorage invalid: not enough infomations')
 
     def as_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -208,17 +212,19 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
         dest_root (str): destination save directory
 
     Raises:
-        ValueError: if dest_root is not a directory
-        ValueError: if tar_file is not a file
-        ValueError: if model package is invalid (lacks params, json or config file)
+        MirRuntimeError: if dest_root is not a directory
+        MirRuntimeError: if tar_file is not a file
+        MirRuntimeError: if model package is invalid (lacks params, json or config file)
 
     Returns:
         ModelStorage: model names (start from dest_root), executor config and task context
     """
     if not os.path.isdir(dest_root):
-        raise ValueError(f"dest_root is not a directory: {dest_root}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"dest_root is not a directory: {dest_root}")
     if not os.path.isfile(tar_file):
-        raise ValueError(f"tar_file is not a file: {tar_file}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"tar_file is not a file: {tar_file}")
 
     # params_file, json_file, weights_file, config_file = '', '', '', ''
     logging.info(f"extracting models from {tar_file}")

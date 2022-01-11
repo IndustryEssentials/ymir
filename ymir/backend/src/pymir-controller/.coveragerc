@@ -1,5 +1,0 @@
-[run]
-omit =
-    src/pymir-controller/controller/server.py
-    src/pymir-controller/controller/server_impl.py
-    src/pymir-controller/controller/utils/sandbox_database.py

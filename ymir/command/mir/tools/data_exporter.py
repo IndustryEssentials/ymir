@@ -14,6 +14,8 @@ import xml.etree.ElementTree as ElementTree
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, mir_storage_ops
 from mir.tools import utils as mir_utils
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 class ExportError(Exception):
@@ -94,16 +96,20 @@ def export(mir_root: str,
         index_prefix (str | None): prefix added to each line in index path
 
     Raises:
-        ValueError: if mir repo not provided
+        MirRuntimeError
 
     Returns:
         bool: returns True if success
     """
     if not mir_root:
-        raise ValueError("invalid mir_repo")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message="invalid mir_repo",
+                              needs_new_commit=False)
 
     if not check_support_format(format_type):
-        raise ValueError(f"invalid --format: {format_type}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"invalid --format: {format_type}",
+                              needs_new_commit=False)
 
     # export assets
     os.makedirs(asset_dir, exist_ok=True)
@@ -146,7 +152,8 @@ def export(mir_root: str,
                                        annotations_dict=assets_to_det_annotations_dict,
                                        class_type_mapping=class_type_ids,
                                        dest_path=annotation_dir,
-                                       mir_root=mir_root)
+                                       mir_root=mir_root,
+                                       assert_id_filename_map=asset_result)
 
     return True
 
@@ -169,12 +176,14 @@ def _generate_asset_index_file(asset_rel_paths: Collection,
         FileExistsError: if index file already exists, and override set to False
     """
     if not asset_rel_paths or not index_file_path:
-        raise ValueError('empty asset_rel_paths or index_file_path')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='empty asset_rel_paths or index_file_path')
     if os.path.exists(index_file_path):
         if overwrite:
             logging.warning(f"index file already exists, overwriting: {index_file_path}")
         else:
-            raise FileExistsError(f"index file already exists: {index_file_path}")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"index file already exists: {index_file_path}")
 
     with open(index_file_path, 'w') as f:
         for item in asset_rel_paths:
@@ -201,7 +210,8 @@ def _annotations_by_assets(mir_annotations: mirpb.MirAnnotations, class_type_ids
     assets_to_det_annotations_dict = {}  # type: Dict[str, List[mirpb.Annotation]]
 
     if base_task_id not in mir_annotations.task_annotations:
-        raise ValueError(f"base task id: {base_task_id} not in mir_annotations")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message=f"base task id: {base_task_id} not in mir_annotations")
 
     task_annotations = mir_annotations.task_annotations[base_task_id]
     for asset_id, image_annotations in task_annotations.image_annotations.items():
@@ -217,12 +227,12 @@ def _annotations_by_assets(mir_annotations: mirpb.MirAnnotations, class_type_ids
 def _export_detect_annotations_to_path(asset_ids: List[str], format_type: ExportFormat,
                                        mir_metadatas: mirpb.MirMetadatas,
                                        annotations_dict: Dict[str, List[mirpb.Annotation]],
-                                       class_type_mapping: Optional[Dict[int,
-                                                                         int]], dest_path: str, mir_root: str) -> None:
+                                       class_type_mapping: Optional[Dict[int, int]], dest_path: str, mir_root: str,
+                                       assert_id_filename_map: Dict[str, str]) -> None:
     if not asset_ids:
-        raise ValueError('empty asset_ids')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty asset_ids')
     if not mir_metadatas:
-        raise ValueError('invalid mir_metadatas')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid mir_metadatas')
 
     os.makedirs(dest_path, exist_ok=True)
 
@@ -232,13 +242,15 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
     empty_counter = 0
     for asset_id in asset_ids:
         if asset_id not in mir_metadatas.attributes:
-            raise ValueError(f"can not find asset id: {asset_id} in mir_metadatas")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message=f"can not find asset id: {asset_id} in mir_metadatas")
         attrs = mir_metadatas.attributes[asset_id]
 
         if asset_id not in annotations_dict:
             missing_counter += 1
             annotations = []
-        annotations = annotations_dict[asset_id]
+        else:
+            annotations = annotations_dict[asset_id]
         if len(annotations) == 0:
             empty_counter += 1
 
@@ -247,7 +259,8 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
                                attrs=attrs,
                                annotations=annotations,
                                class_type_mapping=class_type_mapping,
-                               cls_id_mgr=cls_id_mgr)
+                               cls_id_mgr=cls_id_mgr,
+                               asset_filename=assert_id_filename_map[asset_id])
         with open(os.path.join(dest_path, f"{asset_id}{format_file_ext(format_type)}"), 'w') as f:
             f.write(anno_str)
 
@@ -256,8 +269,8 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
 
 
 def _single_image_annotations_to_ark(asset_id: str, attrs: Any, annotations: List[mirpb.Annotation],
-                                     class_type_mapping: Optional[Dict[int, int]],
-                                     cls_id_mgr: class_ids.ClassIdManager) -> str:
+                                     class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
+                                     asset_filename: str) -> str:
     output_str = ""
     for annotation in annotations:
         mapped_id = class_type_mapping[annotation.class_id] if class_type_mapping else annotation.class_id
@@ -267,8 +280,8 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: Any, annotations: Lis
 
 
 def _single_image_annotations_to_voc(asset_id: str, attrs: Any, annotations: List[mirpb.Annotation],
-                                     class_type_mapping: Optional[Dict[int, int]],
-                                     cls_id_mgr: class_ids.ClassIdManager) -> str:
+                                     class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
+                                     asset_filename: str) -> str:
     # annotation
     annotation_node = ElementTree.Element('annotation')
 
@@ -278,7 +291,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: Any, annotations: Lis
 
     # annotation: filename
     filename_node = ElementTree.SubElement(annotation_node, 'filename')
-    filename_node.text = asset_id
+    filename_node.text = asset_filename
 
     # annotation: source
     source_node = ElementTree.SubElement(annotation_node, 'source')
@@ -352,7 +365,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: Any, annotations: Lis
 
 def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations: List[mirpb.Annotation],
                                          class_type_mapping: Optional[Dict[int, int]],
-                                         cls_id_mgr: class_ids.ClassIdManager) -> str:
+                                         cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
     out_type = "predictions"  # out_type: annotation type - "annotations" or "predictions"
     to_name = 'image'  # to_name: object name from Label Studio labeling config
     from_name = 'label'  # control tag name from Label Studio labeling config
@@ -362,7 +375,7 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations:
             "ground_truth": False,
         }],
         "data": {
-            "image": asset_id
+            "image": asset_filename
         }
     }
 
@@ -381,7 +394,7 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations:
                 "width": bbox_width / img_width * 100,
                 "height": bbox_height / img_height * 100,
                 "rotation": 0,
-                "rectanglelabels": cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown'
+                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown']
             },
             "to_name": to_name,
             "from_name": from_name,
