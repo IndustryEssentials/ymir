@@ -57,19 +57,14 @@ def call_inference(
         logger.error("Failed to download user content: %s", inference_in.image_urls)
         raise FailedtoDownloadError()
 
-    req = ControllerRequest(
-        ExtraRequestType.inference,
-        current_user.id,
-        current_workspace.hash,
-        args={
-            "model_hash": model.hash,
-            "asset_dir": asset_dir,
-            "config": docker_image.config,
-        },
-    )
     try:
-        resp = controller_client.send(req)
-        logger.info("Received inference controller response: %s", resp)
+        resp = controller_client.call_inference(
+            current_user.id,
+            model.hash,
+            asset_dir,
+            docker_image.url,
+            docker_image.config,
+        )
     except ValueError as e:
         logger.exception("Failed to call inference via Controller: %s", e)
         raise FailedToCallInference()
