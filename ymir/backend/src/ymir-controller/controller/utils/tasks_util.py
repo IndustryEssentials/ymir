@@ -2,7 +2,11 @@ from datetime import datetime
 
 from controller.utils import code
 from proto import backend_pb2
+from typing import List
 
+import requests
+from controller.utils.app_logger import logger
+from controller.config import common_task as common_task_config
 
 def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
     _task_state_to_enum = {
@@ -37,3 +41,16 @@ def write_task_progress(monitor_file: str,
         if msg:
             f.write('\n{}'.format(msg))
     return code.ResCode.CTR_OK
+
+
+def register_monitor_log(task_id: str, user_id: str, log_path: List[str], description: str = None) -> None:
+    # compatible with old modes
+    try:
+
+        requests.post(
+            url=f"{common_task_config.MONITOR_URI}/api/v1/tasks",
+            json=dict(task_id=task_id, user_id=user_id, log_path=log_path, description=description),
+            timeout=5,
+        )
+    except Exception as e:
+        logger.warning(f"register_monitor_log error: {e}")

@@ -60,6 +60,10 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                        percent=0.0,
                                        state=backend_pb2.TaskStateRunning)
 
+        tasks_util.register_monitor_log(task_id=request.task_id,
+                                        user_id=request.user_id,
+                                        log_path=[task_monitor_file])
+
         response = cls.task_invoke(sandbox_root=sandbox_root,
                                    repo_root=repo_root,
                                    assets_config=assets_config,

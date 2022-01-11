@@ -36,4 +36,4 @@ COPY ./deploy/git.config /root/.gitconfig
 
 COPY ./deploy/supervisor /app/supervisor
 
-ENV PYTHONPATH=/app/ymir-app:/app/ymir-controller:/app/ymir-viz:/app/common
+ENV PYTHONPATH=/app/ymir-app:/app/ymir-controller:/app/ymir-viz:/app/common:/app/ymir-monitor

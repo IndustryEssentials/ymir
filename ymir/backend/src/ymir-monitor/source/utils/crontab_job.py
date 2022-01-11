@@ -10,7 +10,7 @@ from source.utils.app_logger import logger
 
 
 def send_updated_task(updated_info):
-    requests.post(url=settings.DESTINATION_URL, json=updated_info)
+    requests.post(url=f"{settings.ED_URL}/events/taskstates", json=updated_info)
 
     logger.info(f"send_updated_task: {updated_info}")
 
