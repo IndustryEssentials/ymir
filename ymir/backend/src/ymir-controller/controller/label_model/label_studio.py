@@ -94,7 +94,7 @@ class LabelStudio(LabelBase):
             use_blob_urls=True,
             title="input_dir",
             project=project_id,
-            regex_filter=".*json",
+            regex_filter=".*(jpe?g|png|bmp)",
             description="description",
         )
 
@@ -229,7 +229,7 @@ class LabelStudio(LabelBase):
             asset_url = f'{label_task_config.LABEL_STUDIO_HOST}/data/local-files/?d={str(relative_asset_path)}'
             json_content["data"]["image"] = asset_url
             if not use_pre_annotation:
-                json_content["predictions"]["result"] = []
+                json_content["predictions"][0]["result"] = []
             with open(json_file_abs, 'w') as f:
                 json.dump(json_content, f)
 
