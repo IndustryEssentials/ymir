@@ -25,12 +25,12 @@ COPY ./backend/requirements.txt ./
 RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
 
 COPY ./backend/src /app
-COPY ./command /app/command
+COPY ./command /command
 WORKDIR /app
 
 RUN if [ "$SERVER_MODE" = "dev" ]; then \
     pip3 uninstall -y ymir-cmd && \
-    pip3 install -U /app/command; \
+    pip3 install -U /command; \
   fi
 
 COPY ./backend/deploy/git.config /root/.gitconfig
