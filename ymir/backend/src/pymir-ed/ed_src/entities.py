@@ -1,11 +1,21 @@
+from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from proto import backend_pb2 as mirsvrpb
 
 
 # data models: req
+class TaskStateStrEnum(str, Enum):
+    unknown = 'unknown'
+    pending = 'pending'
+    running = 'running'
+    done = 'done'
+    error = 'error'
+    miss = 'miss'
+
+
 class TaskStateExtra(BaseModel):
     user_id: str
     monitor_type: int
@@ -15,9 +25,9 @@ class TaskStateExtra(BaseModel):
 
 class TaskStatePercent(BaseModel):
     task_id: str
-    timestamp: int
-    percent: float
-    state: str
+    timestamp: int = Field(gt=0)
+    percent: float = Field(ge=0, le=1)
+    state: TaskStateStrEnum
     state_code: int
     state_message: Optional[str]
     stack_error_info: Optional[str]

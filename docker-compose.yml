@@ -31,6 +31,7 @@ services:
       # ed (event dispatcher)
       - ED_REDIS_URI=redis://redis:6379/0
       - API_KEY_SECRET=36fbc9d3c0ce04dae75389d5b48e3fa8424c
+      - ED_OPEN_PORT=${ED_OPEN_PORT}
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
       - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
@@ -57,8 +58,7 @@ services:
     restart: on-failure:10
     ports:
       # for test
-      - 8090:8090
-      - 8100:8100
+      - ${ED_OPEN_PORT}:${ED_OPEN_PORT}
     networks:
       - ymirnetwork
 

@@ -6,13 +6,14 @@ from typing import List, Set, Dict, Tuple
 
 import aiohttp
 import asyncio
+from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
 
 from ed_src import entities, event_dispatcher
 
-
 # event dispatcher
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
+_RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
 
 
 def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs) -> None:
@@ -27,22 +28,21 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     # update db, if error occured, write back
     try:
         failed_tids = asyncio.run(_update_db(tid_to_tasks=tid_to_taskstates_latest))
-        # write back failed
-        if failed_tids:
-            _write_failed(ed=ed, failed_tids=failed_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
+        logging.debug(f"failed_tids: {failed_tids}")
+        _save_failed(failed_tids=failed_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
     except BaseException:
         logging.exception(msg='error occured when async run _update_db')
         # write back all
-        _write_failed(ed=ed,
-                      failed_tids=tid_to_taskstates_latest.keys(),
-                      tid_to_taskstates_latest=tid_to_taskstates_latest)
+        _save_failed(failed_tids=tid_to_taskstates_latest.keys(), tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _select_latest(msgs: List[Dict[str, str]]) -> Dict[str, entities.TaskState]:
     """
     for all redis stream msgs, deserialize them to entities, select the latest for each tid
     """
-    tid_to_taskstates_latest: Dict[str, entities.TaskState] = {}
+    logging.debug('_select_latest begins')
+    tid_to_taskstates_latest: Dict[str, entities.TaskState] = _load_failed()
+    logging.debug(f"_select_latest: previous failed: {list(tid_to_taskstates_latest.keys())}")
     for msg in msgs:
         msg_topic = msg['topic']
         if msg_topic != 'raw' and msg_topic != 'selected':
@@ -56,11 +56,37 @@ def _select_latest(msgs: List[Dict[str, str]]) -> Dict[str, entities.TaskState]:
     return tid_to_taskstates_latest
 
 
-def _write_failed(ed: event_dispatcher.EventDispatcher, failed_tids: Set[str],
-                  tid_to_taskstates_latest: Dict[str, entities.TaskState]):
-    failed_tid_to_tasks = {tid: tid_to_taskstates_latest[tid].dict() for tid in failed_tids}
-    logging.debug(f"failed json: {json.dumps(failed_tid_to_tasks)}")
-    # ed.add_event(event_topic='selected', event_body=json.dumps(failed_tid_to_tasks))
+def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: Dict[str, entities.TaskState]):
+    """
+    save failed taskstates to redis cache
+
+    Args:
+        failed_tids (Set[str])
+        tid_to_taskstates_latest (Dict[str, entities.TaskState])
+    """
+    # pass
+    failed_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in failed_tids}
+    logging.debug(f"_save_failed 0: {failed_tid_to_tasks}")
+    json_str = json.dumps(jsonable_encoder(failed_tid_to_tasks))
+    logging.debug(f"_save_failed: {json_str}")
+    result = redis_connect.set(name=_RETRY_CACHE_KEY, value=json_str)
+    logging.debug(f"_save_failed result: {result}")
+
+
+def _load_failed() -> Dict[str, entities.TaskState]:
+    """
+    load failed taskstates from redis cache
+
+    Returns:
+        Dict[str, entities.TaskState]: [description]
+    """
+    # pass
+    json_str = redis_connect.get(name=_RETRY_CACHE_KEY)
+    logging.debug(f"_load_failed: {json_str}")
+    if not json_str:
+        return {}
+    failed_tid_to_taskstates = parse_raw_as(Dict[str, entities.TaskState], json_str)
+    return failed_tid_to_taskstates or {}
 
 
 async def _update_db(tid_to_tasks: Dict[str, entities.TaskState]) -> Set[str]:
@@ -109,9 +135,9 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str, task:
             'state_message': task.percent_result.state_message
         }
         async with session.post(url=url, json=task_data) as response:
-            logging.debug(f"request: {task_data}")
+            logging.debug(f"_update_db_single_task: request: {task_data}")
             response_text = await response.text()
-            logging.debug(f"response: {response_text}")
+            logging.debug(f"_update_db_single_task: response: {response_text}")
             response_obj = json.loads(response_text)
 
             return_code = int(response_obj['code'])
