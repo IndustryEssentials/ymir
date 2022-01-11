@@ -26,20 +26,34 @@ from app.utils.ymir_controller import ControllerRequest
 router = APIRouter()
 
 
-class ModelSortMethod(enum.IntEnum):
-    map = 1
-    ref_count = 2
+@router.get(
+    "/batch",
+    response_model=schemas.ModelsOut,
+)
+def batch_get_models(
+    db: Session = Depends(deps.get_db),
+    model_ids: str = Query(None, alias="ids"),
+) -> Any:
+    ids = [int(i) for i in model_ids.split(",")]
+    models = crud.model.get_multi_by_ids(db, ids=ids)
+    return {"result": models}
 
 
-@router.get("/", response_model=schemas.ModelOut)
+class SortField(enum.Enum):
+    id = "id"
+    create_datetime = "create_datetime"
+    map = "map"
+
+
+@router.get("/", response_model=schemas.ModelPaginationOut)
 def list_models(
     db: Session = Depends(deps.get_db),
-    model_ids: str = Query(None, example="12,13,14", alias="ids"),
     name: str = Query(None, description="search by model's name"),
     source: TaskType = Query(None, description="the type of related task", example=1),
     offset: int = Query(None),
     limit: int = Query(None),
-    order_by: Optional[ModelSortMethod] = Query(None),
+    order_by: SortField = Query(SortField.id),
+    is_desc: bool = Query(True),
     start_time: int = Query(None, description="from this timestamp"),
     end_time: int = Query(None, description="to this timestamp"),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -48,29 +62,16 @@ def list_models(
     """
     Get list of models,
     pagination is supported by means of offset and limit
-
-    order is supported by `order_by`:
-
-    - 1: order_by map
-    - 2: order_by ref_count
     """
-    if order_by is ModelSortMethod.ref_count:
-        ids = [
-            model[0]
-            for model in stats_client.get_top_models(current_user.id, limit=limit)
-        ]
-    else:
-        ids = [int(i) for i in model_ids.split(",")] if model_ids else []
-
     models, total = crud.model.get_multi_models(
         db,
         user_id=current_user.id,
-        ids=ids,
         name=name,
         task_type=source,
         offset=offset,
         limit=limit,
-        order_by="map" if order_by is ModelSortMethod.map else None,
+        order_by=order_by.name,
+        is_desc=is_desc,
         start_time=start_time,
         end_time=end_time,
     )

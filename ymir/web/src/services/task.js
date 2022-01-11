@@ -23,6 +23,8 @@ export function getTasks({
   end_time,
   offset = 0,
   limit = 20,
+  is_desc,
+  order_by,
 }) {
   return request.get("/tasks/", {
     params: {
@@ -33,6 +35,8 @@ export function getTasks({
       end_time,
       offset,
       limit,
+      is_desc,
+      order_by,
     },
   })
 }
@@ -118,6 +122,7 @@ export function createLabelTask({
   label_members,
   keywords,
   with_labels,
+  keep_annotations,
   doc,
 }) {
   return createTask({
@@ -129,6 +134,7 @@ export function createLabelTask({
       labellers: label_members,
       include_classes: keywords,
       extra_url: doc,
+      keep_annotations,
       with_labels,
     },
   })
@@ -145,8 +151,8 @@ export function createTrainTask({
   keywords,
   train_type,
   strategy,
+  model,
   docker_image,
-  // gpu_count,
 }) {
   return createTask({
     name,
@@ -161,8 +167,8 @@ export function createTrainTask({
       hyperparameter,
       network,
       train_type,
+      model_id: model,
       docker_image,
-      // gpu_count,
     }
   })
 }
@@ -178,7 +184,6 @@ export function createMiningTask({
   inference,
   name,
   docker_image,
-  // gpu_count,
 }) {
   return createTask({
     type: TASKTYPES.MINING,
@@ -193,7 +198,6 @@ export function createMiningTask({
       top_k: topk,
       generate_annotations: inference,
       docker_image,
-      // gpu_count,
     }
   })
 }

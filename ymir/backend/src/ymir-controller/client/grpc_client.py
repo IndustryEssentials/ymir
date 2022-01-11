@@ -124,6 +124,8 @@ def _build_task_labeling_req(args: Dict) -> backend_pb2.GeneralReq:
     labeling_request.in_class_ids[:] = args['in_class_ids']
     labeling_request.expert_instruction_url = args['expert_instruction_url']
     labeling_request.project_name = args['project_name']
+    if args['keep_annotation']:
+        labeling_request.export_annotation = True
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeLabel
@@ -216,6 +218,7 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--project_name", type=str)
     parser_create_task.add_argument("--executor_config", type=str, default='')
     parser_create_task.add_argument("--executor_name", type=str, default='')
+    parser_create_task.add_argument("--keep_annotation", action="store_true")
     parser_create_task.set_defaults(func=call_create_task)
 
     # GET TASK INFO

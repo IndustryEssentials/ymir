@@ -4,12 +4,12 @@
 
 ## Features
 
-- Receive the request from pymir-backend,do some logic then call pymir-command 
+- Receive the request from ymir-backend,do some logic then call ymir-command
 
 ## Development
 To install dev dependencies you can use the following command:
 ```shell script
-pip3 install -r requirements.txt&&pip3 install -r requirements-dev.txt 
+pip3 install -r requirements.txt&&pip3 install -r requirements-dev.txt
 ```
 
 To run server locally:

@@ -14,6 +14,7 @@ class TestListImages:
         assert r.ok
         result = r.json()["result"]
         assert result["total"] == len(result["items"])
+        assert "is_shared" in result["items"][0]
 
 
 class TestUpdateImage:
@@ -38,6 +39,17 @@ class TestUpdateImage:
             json={"name": new_name},
         )
         assert r.json()["code"] == error_codes.INVALID_SCOPE
+
+
+class TestGetImage:
+    def test_get_a_single_image_success(self, client: TestClient, admin_token_headers):
+        r = client.get(
+            f"{settings.API_V1_STR}/images/1",
+            headers=admin_token_headers,
+        )
+        assert r.ok
+        result = r.json()["result"]
+        assert not result["is_shared"]
 
 
 class TestCreateRelationship:

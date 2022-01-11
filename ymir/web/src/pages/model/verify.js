@@ -8,9 +8,11 @@ import { format } from '@/utils/date'
 import Breadcrumb from '@/components/common/breadcrumb'
 import Uploader from "../../components/form/uploader"
 import AssetAnnotation from "@/components/dataset/asset_annotation"
+import { TYPES } from '@/constants/image'
 import styles from './verify.less'
 import { NavDatasetIcon, EqualizerIcon } from '@/components/common/icons'
 import ImgDef from '@/assets/img_def.png'
+import ImageSelect from "../task/components/imageSelect"
 
 const { CheckableTag } = Tag
 
@@ -27,6 +29,8 @@ function Verify({ getModel, verify }) {
   const [annotations, setAnnotations] = useState([])
   const [showAnnotations, setShowAnnos] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
+  const [form] = Form.useForm()
+  const [image, setImage] = useState(null)
   const IMGSIZELIMIT = 10
 
   useEffect(async () => {
@@ -38,18 +42,9 @@ function Verify({ getModel, verify }) {
 
   useEffect(async () => {
     if (url) {
-      // reinit annotations
-      setAnnotations([])
-      const result = await verify(id, [url])
-      // console.log('result: ', result)
-      if (result) {
-        const all = result.annotations[0]?.detection || []
-
-        setAnnotations(all)
-        if (all.length) {
-          setSelectedKeywords([...new Set(all.map(anno => anno.keyword))])
-        }
-      }
+      form.validateFields().then(() => {
+        verifyImg()
+      })
     }
   }, [url])
 
@@ -59,9 +54,22 @@ function Verify({ getModel, verify }) {
     ) : [])
   }, [confidence, annotations, selectedKeywords])
 
+  function imageChange(value, option) {
+    if (option) {
+      setImage(option.url)
+    }
+  }
+
   const renderTitle = (
     <Row>
-      <Col flex={1}>{model.name}</Col>
+      <Col>{model.name}</Col>
+      <Col flex={1}>
+        <Form form={form}>
+          <Form.Item name='image' label={t('task.train.form.image.label')} rules={[{ required: true }]}>
+            <ImageSelect style={{ width: 200 }} type={TYPES.INFERENCE} placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
+          </Form.Item>
+        </Form>
+      </Col>
       <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
     </Row>
   )
@@ -114,6 +122,21 @@ function Verify({ getModel, verify }) {
     const cfc = Number(value) || 0
     // console.log('number: ', cfc, value)
     setConfidence(cfc)
+  }
+
+  async function verifyImg() {
+    // reinit annotations
+    setAnnotations([])
+    const result = await verify(id, [url], image)
+    // console.log('result: ', result)
+    if (result) {
+      const all = result.annotations[0]?.detection || []
+
+      setAnnotations(all)
+      if (all.length) {
+        setSelectedKeywords([...new Set(all.map(anno => anno.keyword))])
+      }
+    }
   }
 
   return (
@@ -199,10 +222,10 @@ const actions = (dispatch) => ({
       payload,
     })
   },
-  verify(id, urls) {
+  verify(id, urls, image) {
     return dispatch({
       type: 'model/verify',
-      payload: { id, urls },
+      payload: { id, urls, image },
     })
   },
 })

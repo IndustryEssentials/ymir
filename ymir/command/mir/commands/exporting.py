@@ -158,7 +158,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                       dest='format',
                                       type=str,
                                       default="none",
-                                      choices=["ark", "voc", "none"],
+                                      choices=data_exporter.support_format_type(),
                                       help='annotation format: ark / voc / none')
     exporting_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
     exporting_arg_parser.set_defaults(func=CmdExport)

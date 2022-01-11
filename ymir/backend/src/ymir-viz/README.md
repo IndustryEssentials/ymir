@@ -4,7 +4,7 @@
 
 ## Features
 
-- Load pymir-cmd's persistence files,provide RESTful API for query based on Redis
+- Load ymir-cmd's persistence files,provide RESTful API for query based on Redis
 
 ## Externale dependency
 - ymir-command's persistenc file path，called sanbox path

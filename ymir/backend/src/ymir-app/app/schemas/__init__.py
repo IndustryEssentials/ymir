@@ -5,6 +5,7 @@ from .dataset import (
     DatasetImport,
     DatasetOut,
     Datasets,
+    DatasetsOut,
     DatasetUpdate,
     ImportStrategy,
 )
@@ -27,7 +28,16 @@ from .keyword import (
     KeywordsPaginationOut,
     KeywordUpdate,
 )
-from .model import Model, ModelCreate, ModelImport, ModelOut, Models, ModelUpdate
+from .model import (
+    Model,
+    ModelCreate,
+    ModelImport,
+    ModelOut,
+    ModelPaginationOut,
+    Models,
+    ModelsOut,
+    ModelUpdate,
+)
 from .msg import Msg
 from .role import Role, RoleCreate, RoleOut
 from .stats import Stats, StatsOut
@@ -41,6 +51,7 @@ from .task import (
     TasksOut,
     TaskTerminate,
     TaskUpdate,
+    TaskUpdateStatus,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (

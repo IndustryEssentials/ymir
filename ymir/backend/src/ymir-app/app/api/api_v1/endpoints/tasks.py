@@ -1,4 +1,6 @@
+import enum
 import json
+from datetime import datetime
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -13,6 +15,7 @@ from app.api.errors.errors import (
     DuplicateTaskError,
     FailedtoCreateTask,
     NoTaskPermission,
+    ObsoleteTaskStatus,
     TaskNotFound,
 )
 from app.config import settings
@@ -39,6 +42,12 @@ from app.utils.ymir_viz import VizClient
 router = APIRouter()
 
 
+class SortField(enum.Enum):
+    id = "id"
+    create_datetime = "create_datetime"
+    duration = "duration"
+
+
 @router.get(
     "/",
     response_model=schemas.TasksOut,
@@ -46,10 +55,12 @@ router = APIRouter()
 def list_tasks(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by task name"),
-    type_: models.task.TaskType = Query(None, alias="type"),
-    state: models.task.TaskState = Query(None),
+    type_: TaskType = Query(None, alias="type"),
+    state: TaskState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
+    order_by: SortField = Query(SortField.id),
+    is_desc: bool = Query(True),
     start_time: int = Query(None, description="from this timestamp"),
     end_time: int = Query(None, description="to this timestamp"),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -66,6 +77,8 @@ def list_tasks(
         state=state,
         offset=offset,
         limit=limit,
+        order_by=order_by.name,
+        is_desc=is_desc,
         start_time=start_time,
         end_time=end_time,
     )
@@ -331,11 +344,56 @@ def terminate_task(
 
 
 @router.post(
+    "/status",
+    response_model=schemas.TaskOut,
+    dependencies=[Depends(deps.api_key_security)],
+)
+def update_task_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    task_result: schemas.TaskUpdateStatus,
+    graph_db: GraphClient = Depends(deps.get_graph_client),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    stats_client: RedisStats = Depends(deps.get_stats_client),
+) -> Any:
+    """
+    Update status of a task
+    """
+    task = crud.task.get_by_hash(db, hash_=task_result.hash)
+    if not (task and task.hash):
+        raise TaskNotFound()
+
+    if is_obsolete_message(
+        datetime.timestamp(task.update_datetime), task_result.timestamp
+    ):
+        raise ObsoleteTaskStatus()
+
+    task_info = schemas.Task.from_orm(task)
+    task_result_proxy = TaskResultProxy(
+        db=db,
+        graph_db=graph_db,
+        controller=controller_client,
+        viz=viz_client,
+        stats_client=stats_client,
+    )
+    updated_task = task_result_proxy.save(task_info, task_result.dict())
+    result = updated_task or task
+    return {"result": result}
+
+
+def is_obsolete_message(
+    last_update_time: Union[float, int], msg_time: Union[float, int]
+) -> bool:
+    return last_update_time > msg_time
+
+
+@router.post(
     "/update_status",
     response_model=schemas.TasksOut,
     dependencies=[Depends(deps.api_key_security)],
 )
-def update_task_status(
+def batch_update_task_status(
     *,
     db: Session = Depends(deps.get_db),
     graph_db: GraphClient = Depends(deps.get_graph_client),
@@ -388,10 +446,17 @@ class TaskResultProxy:
         return result
 
     @catch_error_and_report
-    def save(self, task: schemas.Task, task_result: Dict) -> None:
+    def save(self, task: schemas.Task, task_result: Dict) -> Optional[Task]:
+        """
+        task: Pydantic Task Model
+        task_result: Dict
+            - state
+            - percent
+            - state_message  # to parse ignored keywords
+        """
         if not task_result or task_result["state"] == TaskState.unknown:
             logger.info("skip invalid task_result: %s", task_result)
-            return
+            return None
 
         if task_result["state"] == TaskState.done:
             self.handle_finished_task(task)
@@ -400,7 +465,7 @@ class TaskResultProxy:
             task.type is TaskType.import_data
             and task_result["state"] == TaskState.error
         ):
-            self.handle_failed_import_task(task, task_result)
+            self.handle_failed_import_task(task, task_result.get("state_message"))
 
         updated_task = self.update_task_progress(
             task, task_result["state"], task_result.get("percent", 0)
@@ -409,10 +474,11 @@ class TaskResultProxy:
 
         if task_result["state"] in (TaskState.error, TaskState.done):
             logger.debug("Sending notification for task: %s", task)
-            self.send_notification(task, task_result)
+            self.send_notification(task, task_result["state"])
+        return updated_task
 
     @catch_error_and_report
-    def send_notification(self, task: schemas.Task, task_info: Dict) -> None:
+    def send_notification(self, task: schemas.Task, task_state: TaskState) -> None:
         creator = crud.user.get(self.db, id=task.user_id)
         if not (settings.EMAILS_ENABLED and creator and creator.email):
             return
@@ -422,7 +488,7 @@ class TaskResultProxy:
             task.id,
             task.name,
             task.type.name,
-            task_info["state"] == TaskState.done,
+            task_state,
         )
 
     def handle_finished_task(self, task: schemas.Task) -> None:
@@ -461,13 +527,13 @@ class TaskResultProxy:
             task,
         )
 
-    def handle_failed_import_task(self, task: schemas.Task, task_result: Dict) -> None:
+    def handle_failed_import_task(
+        self, task: schemas.Task, state_message: Optional[str]
+    ) -> None:
         # makeup data for failed dataset
         dataset_info = {
             "keywords": [],
-            "ignored_keywords": self._parse_ignored_keywords(
-                task_result.get("state_message")
-            ),
+            "ignored_keywords": self._parse_ignored_keywords(state_message),
             "items": 0,
             "total": 0,
         }

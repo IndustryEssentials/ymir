@@ -43,6 +43,7 @@ class TaskParameter(BaseModel):
     # label
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
+    keep_annotations: Optional[bool]
 
     # training
     network: Optional[str]
@@ -84,6 +85,7 @@ class TaskUpdate(BaseModel):
 class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBase):
     hash: str
     state: Optional[TaskState] = TaskState.pending
+    duration: Optional[int] = Field(0, description="task process time in seconds")
     progress: Optional[float] = Field(0, description="from 0 to 100")
     parameters: Optional[str] = Field(
         description="json dumped input parameters when creating task"
@@ -138,6 +140,14 @@ class Tasks(BaseModel):
 
 class TaskTerminate(BaseModel):
     fetch_result: Optional[bool] = True
+
+
+class TaskUpdateStatus(BaseModel):
+    hash: str
+    timestamp: int
+    state: TaskState
+    percent: Optional[float] = 0
+    state_message: Optional[str]
 
 
 class TaskOut(Common):
