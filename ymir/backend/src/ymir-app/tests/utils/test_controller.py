@@ -162,3 +162,21 @@ class TestControllerClient:
         mocker.patch.object(m, "json_format")
         cc.send(req)
         mock_stub.data_manage_request.assert_called()
+
+    def test_inference(self, mocker):
+        user_id = random.randint(1000, 9000)
+        model_hash = random_lower_string()
+        asset_dir = random_lower_string()
+        channel_str = random_lower_string()
+        docker_image = random_lower_string()
+        docker_config = random_lower_string()
+        cc = m.ControllerClient(channel_str)
+        cc.send = mock_send = mocker.Mock()
+        cc.call_inference(user_id, model_hash, asset_dir, docker_image, docker_config)
+        mock_send.assert_called()
+        generated_req = mock_send.call_args[0][0].req
+        assert generated_req.user_id == str(user_id)
+        assert generated_req.model_hash == model_hash
+        assert generated_req.asset_dir == asset_dir
+        assert generated_req.singleton_op == docker_image
+        assert generated_req.docker_image_config == docker_config
