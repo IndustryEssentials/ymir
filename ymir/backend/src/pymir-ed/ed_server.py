@@ -1,9 +1,6 @@
 import logging
 import sys
 
-# import eventlet
-# import socketio
-
 from ed_src import event_handlers
 from ed_src.event_dispatcher import EventDispatcher
 

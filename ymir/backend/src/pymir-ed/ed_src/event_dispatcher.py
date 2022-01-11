@@ -26,7 +26,8 @@ class EventDispatcher:
     def wait(self) -> None:
         self._process.join()
 
-    def get_redis_connect(self) -> redis.Redis:
+    @classmethod
+    def get_redis_connect(cls) -> redis.Redis:
         redis_uri = os.environ.get("ED_REDIS_URI", "redis://")
         return redis.StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
 
@@ -49,7 +50,6 @@ class EventDispatcher:
 
     # private: start
     def _start(self) -> None:
-        logging.debug('ed _start')
         # connect to redis
         self._redis_connect = self.get_redis_connect()
         # create stream
@@ -95,7 +95,6 @@ class EventDispatcher:
             self._redis_connect.xgroup_create(name=self._event_name, groupname=self._group_name, id='$')
 
     def _read_redis_stream_pending_msgs(self) -> None:
-        logging.debug('_read_redis_stream_pending_msgs started')
         kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
                                              consumername='default',
                                              streams={self._event_name: '0'})
@@ -103,16 +102,13 @@ class EventDispatcher:
             if not stream_msgs:
                 continue
 
-            # TODO: HANDLE DEADLETTER
             msg_ids, *_ = zip(*stream_msgs)
             self._handler_wrapper(stream_msgs)
             self._redis_connect.xack(self._event_name, self._group_name, *msg_ids)
             self._redis_connect.xdel(self._event_name, *msg_ids)
 
     def _read_redis_stream_new_msgs(self) -> Any:
-        logging.debug('_read_redis_stream_new_msgs started')
         while True:
-            logging.debug('_read_redis_stream_new_msgs entered loop')
             kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
                                                  consumername='default',
                                                  streams={self._event_name: '>'},
@@ -121,7 +117,6 @@ class EventDispatcher:
                 if not stream_msgs:
                     continue
 
-                # TODO: HANDLE DEADLETTER
                 msg_ids, *_ = zip(*stream_msgs)
                 self._handler_wrapper(stream_msgs)
                 self._redis_connect.xack(self._event_name, self._group_name, *msg_ids)
@@ -129,7 +124,6 @@ class EventDispatcher:
 
     # private: _handler_wrapper
     def _handler_wrapper(self, mid_and_msgs: list) -> None:
-        logging.debug(f"_handler_wrapper: {mid_and_msgs}")
         if not self._event_handler:
             logging.warning('_handler_wrapper: empty event handler')
             return
