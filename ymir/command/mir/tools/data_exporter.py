@@ -394,7 +394,7 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: Any, annotations:
                 "width": bbox_width / img_width * 100,
                 "height": bbox_height / img_height * 100,
                 "rotation": 0,
-                "rectanglelabels": cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown'
+                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown']
             },
             "to_name": to_name,
             "from_name": from_name,
