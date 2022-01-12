@@ -113,7 +113,7 @@ function ImageDetail({ role, getImage }) {
         </Descriptions>
       </Card>
       <LinkModal ref={linkModalRef} ok={() => fetchImage()} />
-      <ShareModal ref={shareModalRef} />
+      <ShareModal ref={shareModalRef} ok={() => fetchImage()} />
       <Del ref={delRef} ok={delOk} />
     </div>
   )
