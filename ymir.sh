@@ -62,7 +62,7 @@ if [[ $1 -eq 'dev' ]]; then
         -t ${DOCKER_BACKEND} \
         --build-arg PIP_SOURCE=${DEV_SOURCE_BACKEND_PIP} \
         --build-arg SERVER_MODE='dev' \
-        git@github.com:IndustryEssentials/ymir.git#dev:/ymir/backend
+        git@github.com:IndustryEssentials/ymir.git#dev:/ymir/Dockerfile.backend
     docker build \
         -t ${DOCKER_WEB} \
         --build-arg NPM_REGISTRY=${DEV_SOURCE_WEB_NPM} \

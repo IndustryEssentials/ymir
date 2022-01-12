@@ -366,3 +366,25 @@ class ControllerClient:
             ExtraRequestType.create_workspace, user_id=user_id, repo_id=workspace_id
         )
         return self.send(req)
+
+    def call_inference(
+        self,
+        user_id: int,
+        model_hash: Optional[str],
+        asset_dir: str,
+        docker_image: Optional[str],
+        docker_config: Optional[str],
+    ) -> Dict:
+        if None in (model_hash, docker_image, docker_config):
+            raise ValueError("Missing model or docker image")
+        req = ControllerRequest(
+            ExtraRequestType.inference,
+            user_id=user_id,
+            args={
+                "model_hash": model_hash,
+                "asset_dir": asset_dir,
+                "docker_image": docker_image,
+                "docker_config": docker_config,
+            },
+        )
+        return self.send(req)

@@ -44,7 +44,9 @@ def call_inference(
         logger.error("Failed to find model id: %s", inference_in.model_id)
         raise ModelNotFound()
 
-    docker_image = crud.docker_image.get_by_url(db, url=inference_in.docker_image)
+    docker_image = crud.docker_image.get_inference_docker_image(
+        db, url=inference_in.docker_image
+    )
     if not docker_image:
         logger.error("Failed to find inference model")
         raise InvalidInferenceConfig()
@@ -57,19 +59,14 @@ def call_inference(
         logger.error("Failed to download user content: %s", inference_in.image_urls)
         raise FailedtoDownloadError()
 
-    req = ControllerRequest(
-        ExtraRequestType.inference,
-        current_user.id,
-        current_workspace.hash,
-        args={
-            "model_hash": model.hash,
-            "asset_dir": asset_dir,
-            "config": docker_image.config,
-        },
-    )
     try:
-        resp = controller_client.send(req)
-        logger.info("Received inference controller response: %s", resp)
+        resp = controller_client.call_inference(
+            current_user.id,
+            model.hash,
+            asset_dir,
+            docker_image.url,
+            docker_image.config,
+        )
     except ValueError as e:
         logger.exception("Failed to call inference via Controller: %s", e)
         raise FailedToCallInference()
