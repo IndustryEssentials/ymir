@@ -1,4 +1,5 @@
 import json
+import traceback
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import wraps
@@ -19,7 +20,7 @@ def catch_label_task_error(f: Callable) -> Callable:
             cur_time = int(datetime.now().timestamp())
             state_str = task_state_code_to_str(TaskState.TaskStateError)
             status = f'{kwargs["task_id"]}\t{cur_time}\t0\t{state_str}'
-            LabelBase.write_project_status(kwargs["monitor_file_path"], f"{status}\n{e}")
+            LabelBase.write_project_status(kwargs["monitor_file_path"], f"{status}\n{e}\n{traceback.format_exc()}")
             _ret = None
         return _ret
 
@@ -39,7 +40,7 @@ class LabelBase(ABC):
         pass
 
     @abstractmethod
-    def set_export_storage(self, project_id: int, export_path: str) -> None:
+    def set_export_storage(self, project_id: int, export_path: str) -> int:
         # Create export storage to label tool
         pass
 

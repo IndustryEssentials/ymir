@@ -5,6 +5,7 @@ import os
 import shutil
 import zipfile
 from io import BytesIO
+from pathlib import Path
 from typing import Dict, List
 from xml.etree import ElementTree
 
@@ -30,7 +31,11 @@ class RequestHandler:
         return resp.content
 
     def post(self, url_path: str, params: Dict = {}, json_data: Dict = {}) -> bytes:
-        resp = requests.post(url=f"{self.host}{url_path}", headers=self.headers, params=params, json=json_data, timeout=600)
+        resp = requests.post(url=f"{self.host}{url_path}",
+                             headers=self.headers,
+                             params=params,
+                             json=json_data,
+                             timeout=600)
         resp.raise_for_status()
         return resp.content
 
@@ -65,9 +70,8 @@ class LabelStudio(LabelBase):
 
         return label_config
 
-    def create_label_project(
-        self, project_name: str, keywords: List, collaborators: List, expert_instruction: str, **kwargs: Dict
-    ) -> int:
+    def create_label_project(self, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
+                             **kwargs: Dict) -> int:
         # Create a project and set up the labeling interface in Label Studio
         url_path = "/api/projects"
         label_config = self.gen_detection_label_config(keywords)
@@ -99,7 +103,7 @@ class LabelStudio(LabelBase):
 
         return storage_id
 
-    def set_export_storage(self, project_id: int, export_path: str) -> None:
+    def set_export_storage(self, project_id: int, export_path: str) -> int:
         # Create a new local file export storage connection to store annotations
         url_path = "/api/storages/export/localfiles"
         data = dict(
@@ -111,7 +115,10 @@ class LabelStudio(LabelBase):
             description="description",
         )
 
-        self.requests.post(url_path=url_path, json_data=data)
+        resp = self.requests.post(url_path=url_path, json_data=data)
+        exported_storage_id = json.loads(resp)["id"]
+
+        return exported_storage_id
 
     def sync_import_storage(self, storage_id: int) -> None:
         # Sync tasks from a local file import storage connection
@@ -166,8 +173,14 @@ class LabelStudio(LabelBase):
         params = {"id": "delete_tasks", "project": project_id}
         json_data = {
             "ordering": [],
-            "selectedItems": {"all": False, "included": unlabeled_task_ids},
-            "filters": {"conjunction": "and", "items": []},
+            "selectedItems": {
+                "all": False,
+                "included": unlabeled_task_ids
+            },
+            "filters": {
+                "conjunction": "and",
+                "items": []
+            },
             "project": str(project_id),
         }
 
@@ -195,14 +208,40 @@ class LabelStudio(LabelBase):
 
         logger.info(f"success convert_annotation_to_ymir: {des_path}")
 
+    @classmethod
+    def update_json_content(cls, input_asset_dir: str, use_pre_annotation: bool) -> None:
+        document_root = Path(os.path.abspath(os.sep))
+        for json_file_relative in os.listdir(input_asset_dir):
+            if not json_file_relative.endswith(".json"):
+                continue
+            json_file_abs = os.path.join(input_asset_dir, json_file_relative)
+            if not os.path.isfile(json_file_abs):
+                continue
+            with open(json_file_abs) as f:
+                json_content = json.load(f)
+
+            # replace path to asset by label studio url.
+            # {settings.HOSTNAME}/data/local-files?d=<path/to/local/dir>
+            # for more details, check:
+            # https://github.com/heartexlabs/label-studio/blob/master/label_studio/io_storages/localfiles/models.py
+            asset_path = Path(os.path.join(input_asset_dir, json_content["data"]["image"]))
+            relative_asset_path = asset_path.relative_to(document_root)
+            asset_url = f'{label_task_config.LABEL_STUDIO_HOST}/data/local-files/?d={str(relative_asset_path)}'
+            json_content["data"]["image"] = asset_url
+            if not use_pre_annotation:
+                json_content["predictions"][0]["result"] = []
+            with open(json_file_abs, 'w') as f:
+                json.dump(json_content, f)
+
     @catch_label_task_error
     def run(self, task_id: str, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-            input_asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str,
-            media_location: str, import_work_dir: str) -> None:
+            input_asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str, media_location: str,
+            import_work_dir: str, use_pre_annotation: bool) -> None:
         logger.info("start LabelStudio run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
-        self.set_export_storage(project_id, export_path)
+        self.update_json_content(input_asset_dir, use_pre_annotation)
+        exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
-        self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root,
-                                      media_location, import_work_dir, storage_id)
+        self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root, media_location,
+                                      import_work_dir, exported_storage_id)

@@ -31,7 +31,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
 def remove_json_file(des_annotation_path: str) -> None:
     for one_file in os.listdir(des_annotation_path):
         if one_file.endswith(".json"):
-            os.remove(one_file)
+            os.remove(os.path.join(des_annotation_path, one_file))
 
 
 def _gen_index_file(des_annotation_path: str) -> str:
