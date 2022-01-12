@@ -16,7 +16,7 @@ const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => {} }, ref) 
 
   useEffect(() => {
     linkForm.setFieldsValue({ relations: links.map(image => image.id) })
-  }, [links])
+  }, [links, visible])
 
   useEffect(() => {
     fetchMiningImages()
@@ -24,7 +24,6 @@ const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => {} }, ref) 
 
   useImperativeHandle(ref, () => ({
     show: ({ id, name, related }) => {
-      console.log('image name: ', id, name, related)
       setVisible(true)
       setId(id)
       setImageName(name)
