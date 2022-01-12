@@ -11,8 +11,8 @@ from starlette.middleware.cors import CORSMiddleware
 import socketio
 from fastapi_socketio import SocketManager
 
-from ed_src import entities
-from ed_src.event_dispatcher import EventDispatcher
+from events_src import entities
+from events_src.event_dispatcher import EventDispatcher
 
 
 # private: socketio
@@ -61,9 +61,12 @@ if backend_cors_origions:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-# binded to /ws by default
-# cors_allowed_origins set to []: https://github.com/pyropy/fastapi-socketio/issues/28
-socket_manager = SocketManager(app=app, cors_allowed_origins=[])
+    # binded to /ws by default
+    # if use with fastapi and cors settings
+    #   cors_allowed_origins set to []: https://github.com/pyropy/fastapi-socketio/issues/28
+    socket_manager = SocketManager(app=app, cors_allowed_origins=[])
+else:
+    socket_manager = SocketManager(app=app)
 
 
 # fastapi handlers
