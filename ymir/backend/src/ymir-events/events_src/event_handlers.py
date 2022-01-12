@@ -2,21 +2,21 @@ import json
 import logging
 import os
 import traceback
-from typing import List, Set, Dict, Tuple
+from typing import Any, List, Set, Dict, Tuple
 
 import aiohttp
 import asyncio
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
 
-from events_src import entities, event_dispatcher
+from events_src import entities, event_dispatcher  # type: ignore
 
 # event dispatcher
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 _RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
 
 
-def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs) -> None:
+def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs: Any) -> None:
     """
     Returns:
         message ids to be deleted from this stream
@@ -33,7 +33,8 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     except BaseException:
         logging.exception(msg='error occured when async run _update_db')
         # write back all
-        _save_failed(failed_tids=tid_to_taskstates_latest.keys(), tid_to_taskstates_latest=tid_to_taskstates_latest)
+        _save_failed(failed_tids=set(tid_to_taskstates_latest.keys()),
+                     tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _select_latest(msgs: List[Dict[str, str]]) -> Dict[str, entities.TaskState]:
@@ -56,7 +57,7 @@ def _select_latest(msgs: List[Dict[str, str]]) -> Dict[str, entities.TaskState]:
     return tid_to_taskstates_latest
 
 
-def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: Dict[str, entities.TaskState]):
+def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: Dict[str, entities.TaskState]) -> None:
     """
     save failed taskstates to redis cache
 

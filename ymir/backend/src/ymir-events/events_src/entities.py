@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from proto import backend_pb2 as mirsvrpb
+from proto import backend_pb2 as mirsvrpb  # type: ignore
 
 
 # data models: req

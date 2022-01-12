@@ -1,5 +1,6 @@
 """ for test """
 
+import sys
 import socketio
 
 
@@ -12,5 +13,7 @@ def update_taskstate(data):
 
 
 # change your own url, path and namespace
-sio.connect('http://192.168.13.107:8090', namespaces=['/000003'], socketio_path='/ws/socket.io')
+namespace = sys.argv[1]
+print(f"namespace: /{namespace}")
+sio.connect('http://192.168.13.107:8090', namespaces=[f'/{namespace}'], socketio_path='/ws/socket.io')
 sio.wait()

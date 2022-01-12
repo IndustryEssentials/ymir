@@ -2,8 +2,9 @@
 
 import logging
 import multiprocessing
+from multiprocessing.context import Process
 import os
-from typing import Any, Callable, Set
+from typing import Any, Callable, Optional, Set
 
 import redis
 
@@ -11,11 +12,11 @@ import redis
 # public: class EventDispatcher
 class EventDispatcher:
     def __init__(self, event_name: str) -> None:
-        self._event_handler: Callable = None
+        self._event_handler: Optional[Callable] = None
         self._event_name = event_name
         self._group_name = f"group:{event_name}"
-        self._redis_connect = None
-        self._process = None
+        self._redis_connect: Any = None
+        self._process: Optional[Process] = None
 
     # public: lifecycle
     def start(self) -> None:
@@ -24,7 +25,8 @@ class EventDispatcher:
         self._process.start()
 
     def wait(self) -> None:
-        self._process.join()
+        if self._process:
+            self._process.join()
 
     @classmethod
     def get_redis_connect(cls) -> redis.Redis:
@@ -64,6 +66,8 @@ class EventDispatcher:
     def _stream_exists(self) -> bool:
         if not self._event_name:
             raise ValueError('empty event name')
+        if not self._redis_connect:
+            raise ValueError('redis not connected')
 
         try:
             stream_info = self._redis_connect.xinfo_stream(self._event_name)
@@ -75,6 +79,8 @@ class EventDispatcher:
     def _consumer_group_exists(self) -> bool:
         if not self._event_name or not self._group_name:
             raise ValueError('empty event name or group name')
+        if not self._redis_connect:
+            raise ValueError('redis not connected')
 
         try:
             groups_info = self._redis_connect.xinfo_groups(self._event_name)

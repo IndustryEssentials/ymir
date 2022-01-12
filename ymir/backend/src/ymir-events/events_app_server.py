@@ -42,6 +42,7 @@ async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, e
             data[tid]['state_message'] = taskstate.percent_result.state_message
             data[tid]['stack_error_info'] = taskstate.percent_result.stack_error_info
         await sio.emit(event='update_taskstate', data=data, namespace=f"/{uid}")
+        print(f"sent update_taskstate: {data} -> /{uid}")
 
 
 # event dispatcher
