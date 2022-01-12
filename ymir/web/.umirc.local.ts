@@ -20,6 +20,13 @@ export default defineConfig({
         "^/ymir-assets": "/ymir-assets",
         "^/ymir-models": "/ymir-models",
        },
+    },
+    '/socket': {
+      target: 'http://192.168.13.107:9881/',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/socket': '/socket',
+      }
     }
   },
   mfsu: {},

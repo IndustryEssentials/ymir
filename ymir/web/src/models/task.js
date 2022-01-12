@@ -12,6 +12,7 @@ import {
   createTrainTask,
   createLabelTask,
 } from "@/services/task"
+import { getSocket } from '../services/socket'
 
 export default {
   namespace: "task",
@@ -131,22 +132,31 @@ export default {
       if (code === 0) {
         return result
       }
+    },
+    *updateTasks({ payload }, { put, select }) {
+      const tasks = yield select(state => state.task.tasks)
+      const updateList = payload || {}
+      const result = tasks.items.map(task => {
+        const updateItem = updateList[task.hash]
+        if (updateItem) {
+          task.state = updateItem.state
+          task.progress = updateItem.percent * 100
+        }
+        return task
+      })
+      yield put({
+        type: 'UPDATE_TASKS',
+        payload: { items: result, total: tasks.total },
+      })
+    },
+    *getUsername({ payload }, { select }) {
+      const username = yield select(({ user }) => user.username)
+      if (username) {
+        return username
+      }
     }
   },
   reducers: {
-    updateTasks(state, { payload }) {
-      const tasks = state.tasks.items
-      const progressObj = {}
-      payload.forEach(item => {
-        progressObj[item.id] = item.progress
-      });
-      const result = tasks.map(task => progressObj[task.id] && (task.progress = progressObj[task.id]))
-      console.log('update tasks: ', result, progressObj, payload)
-      return {
-        ...state,
-        tasks: result,
-      }
-    },
     UPDATE_TASKS(state, { payload }) {
       return {
         ...state,
@@ -163,16 +173,15 @@ export default {
   subscriptions: {
     setup({ dispatch, history }) {
         let socket = null
-      return history.listen(location => {
-        console.log('get location: ', location)
+      return history.listen(async location => {
         if (location.pathname === '/home/task') {
-          socket = io('ws://localhost:8080/')
-          // listen
-          socket.on('connect', () => {
-            console.log('socket connect.')
+          const { id } = await dispatch({
+            type: 'user/getUserInfo',
           })
-          socket.on('updateTaskList', (data) => {
-            console.log('updateTaskList data: ', data)
+          socket = getSocket(id)
+
+          socket.on('update_taskstate', (data) => {
+            console.log(data)
             dispatch({
               type: 'updateTasks',
               payload: data,
