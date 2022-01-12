@@ -67,6 +67,7 @@ if [[ $1 -eq 'dev' ]]; then
         -t ${DOCKER_WEB} \
         --build-arg NPM_REGISTRY=${DEV_SOURCE_WEB_NPM} \
         git@github.com:IndustryEssentials/ymir.git#dev:/ymir/web
+    sed -i.bk "s/^${FIELD_UUID}=$/${FIELD_UUID}=testdev/" .env && rm -f *.bk
 else
     printf '\nin prod mode, pulling images.\n'
     docker-compose pull
