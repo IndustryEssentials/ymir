@@ -3,7 +3,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "ymir monitor"
-    INTERVAL_SECONDS: int = 60
+    INTERVAL_SECONDS: int = 20
     MONITOR_SENTRY_DSN: str = ""
 
     MONITOR_RUNNING_KEY: str = "MONITOR_RUNNING_KEY:v1"
