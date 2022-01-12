@@ -149,12 +149,6 @@ export default {
         payload: { items: result, total: tasks.total },
       })
     },
-    *getUsername({ payload }, { select }) {
-      const username = yield select(({ user }) => user.username)
-      if (username) {
-        return username
-      }
-    }
   },
   reducers: {
     UPDATE_TASKS(state, { payload }) {
@@ -170,28 +164,4 @@ export default {
       }
     },
   },
-  subscriptions: {
-    setup({ dispatch, history }) {
-        let socket = null
-      return history.listen(async location => {
-        if (location.pathname === '/home/task') {
-          const { id } = await dispatch({
-            type: 'user/getUserInfo',
-          })
-          socket = getSocket(id)
-
-          socket.on('update_taskstate', (data) => {
-            console.log(data)
-            dispatch({
-              type: 'updateTasks',
-              payload: data,
-            })
-          })
-        } else {
-          // other page close socket
-          socket && socket.close()
-        }
-      })
-    },
-  }
 }
