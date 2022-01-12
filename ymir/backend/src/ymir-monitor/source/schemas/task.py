@@ -29,12 +29,12 @@ class PercentResult(BaseModel):
     percent: float
     state: TaskStateEnum
     state_code: int = 0
-    state_message: str = None
-    stack_error_info: str = None
+    state_message: Optional[str] = None
+    stack_error_info: Optional[str] = None
 
 
 class TaskExtraInfo(BaseModel):
-    user_id: str = None
+    user_id: Optional[str] = None
     monitor_type: MonitorType = MonitorType.PERCENT
     log_path: List[str]
     description: Optional[str]
@@ -49,5 +49,5 @@ class TaskStorageStructure(BaseModel):
 class StorageStructure(BaseModel):
     __root__: Dict[str, TaskStorageStructure]
 
-    def dict(self):
+    def dict(self) -> Dict:  # type: ignore
         return super().dict()["__root__"]

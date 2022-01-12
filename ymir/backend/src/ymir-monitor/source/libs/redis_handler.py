@@ -1,9 +1,12 @@
-from redis import StrictRedis, Redis
 import json
+from typing import Dict
+
+from redis import StrictRedis, Redis
+
 from source.config import settings
 
 
-def init_redis_pool(redis_uri: str = settings.MONITOR_REDIS_URI):
+def init_redis_pool(redis_uri: str = settings.MONITOR_REDIS_URI) -> Redis:
     return StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
 
 
@@ -11,23 +14,23 @@ class RedisHandler:
     def __init__(self, redis: Redis = init_redis_pool()) -> None:
         self._redis = redis
 
-    def set(self, name, key):
+    def set(self, name: str, key: str) -> None:
         self._redis.set(name, key)
 
-    def get(self, name):
-        return self._redis.get(name)
+    def get(self, name: str) -> str:
+        return self._redis.get(name)  # type: ignore
 
-    def hset(self, name, key, value):
+    def hset(self, name: str, key: str, value: Dict) -> None:
         self._redis.hset(name=name, key=key, value=json.dumps(value))
 
-    def hdel(self, name, *keys):
+    def hdel(self, name: str, *keys: str) -> None:
         self._redis.hdel(name, *keys)
 
-    def hexists(self, name, key) -> bool:
+    def hexists(self, name: str, key: str) -> bool:
         return self._redis.hexists(name, key)
 
-    def hmset(self, name, mapping):
+    def hmset(self, name: str, mapping: Dict) -> None:
         self._redis.hset(name=name, mapping={key: json.dumps(value) for key, value in mapping.items()})
 
-    def hgetall(self, name):
+    def hgetall(self, name: str) -> Dict:
         return {item: json.loads(value) for item, value in self._redis.hgetall(name=name).items()}

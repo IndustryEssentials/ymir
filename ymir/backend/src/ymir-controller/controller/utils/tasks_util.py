@@ -1,12 +1,13 @@
 from datetime import datetime
-
-from controller.utils import code
-from proto import backend_pb2
 from typing import List
 
 import requests
-from controller.utils.app_logger import logger
+
 from controller.config import common_task as common_task_config
+from controller.utils import code
+from controller.utils.app_logger import logger
+from proto import backend_pb2
+
 
 def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
     _task_state_to_enum = {
@@ -44,7 +45,7 @@ def write_task_progress(monitor_file: str,
 
 
 def register_monitor_log(task_id: str, user_id: str, log_path: List[str], description: str = None) -> None:
-    # compatible with old modes
+    # compatible with old modes, remove the try when ready
     try:
 
         requests.post(

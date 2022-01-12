@@ -1,3 +1,5 @@
+from typing import Dict
+
 import sentry_sdk
 from dependency_injector.wiring import inject, Provide
 from fastapi import FastAPI, Depends
@@ -6,9 +8,9 @@ from starlette.exceptions import HTTPException
 
 from source.config import settings
 from source.libs.container import Container
-from source.utils.errors import http_error_handler
 from source.libs.services import TaskService
 from source.schemas.task import TaskParameter
+from source.utils.errors import http_error_handler
 
 
 def create_app() -> FastAPI:
@@ -30,21 +32,21 @@ app = create_app()
 
 @app.post("/api/v1/tasks")
 @inject
-def register_task(parameters: TaskParameter, service: TaskService = Depends(Provide[Container.service])):
+def register_task(parameters: TaskParameter, service: TaskService = Depends(Provide[Container.service])) -> Dict:
     service.register_task(parameters)
     return {"result": "Success"}
 
 
 @app.get("/api/v1/running_tasks")
 @inject
-def get_running_task(service: TaskService = Depends(Provide[Container.service])):
+def get_running_task(service: TaskService = Depends(Provide[Container.service])) -> Dict:
     result = service.get_running_task()
     return {"result": result}
 
 
 @app.get("/api/v1/finished_tasks")
 @inject
-def get_finished_task(service: TaskService = Depends(Provide[Container.service])):
+def get_finished_task(service: TaskService = Depends(Provide[Container.service])) -> Dict:
     result = service.get_finished_task()
     return {"result": result}
 

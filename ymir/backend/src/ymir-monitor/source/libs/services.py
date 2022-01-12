@@ -1,18 +1,19 @@
-from aioredis import Redis
+from typing import Dict
 from typing import List
-from source.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
 
 from source.config import settings
-from source.utils.errors import DuplicateTaskIDError, LogFileError
+from source.libs.redis_handler import RedisHandler
+from source.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
 from source.utils.app_logger import logger
+from source.utils.errors import DuplicateTaskIDError, LogFileError
 
 
 class TaskService:
-    def __init__(self, redis: Redis) -> None:
+    def __init__(self, redis: RedisHandler) -> None:
         self._redis = redis
 
     @staticmethod
-    def parse_percent_log(log_file):
+    def parse_percent_log(log_file: str) -> PercentResult:
         with open(log_file, "r") as f:
             monitor_file_lines = f.readlines()
         content_row_one = monitor_file_lines[0].strip().split("\t")
@@ -31,10 +32,10 @@ class TaskService:
 
         return percent_result
 
-    def add_one_task(self, task_id, percent_result):
+    def add_one_task(self, task_id: str, percent_result: Dict) -> None:
         self._redis.hset(settings.MONITOR_RUNNING_KEY, task_id, percent_result)
 
-    def get_raw_log_contents(self, log_path: List[str]):
+    def get_raw_log_contents(self, log_path: List[str]) -> Dict[str, PercentResult]:
         result = dict()
         for one_log_file in log_path:
             result[one_log_file] = self.parse_percent_log(one_log_file)
@@ -42,8 +43,8 @@ class TaskService:
         return result
 
     @staticmethod
-    def merge_percent_contents(raw_log_contents):
-        percent = 0
+    def merge_percent_contents(raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
+        percent = 0.0
         max_timestamp_content = None
         for raw_log_content in raw_log_contents.values():
             # any raw log error, means total task is error
@@ -54,20 +55,20 @@ class TaskService:
             if not max_timestamp_content:
                 max_timestamp_content = raw_log_content
             max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: int(x.timestamp))
-        result = max_timestamp_content.copy()
+        result = max_timestamp_content.copy()  # type: ignore
         result.percent = percent / len(raw_log_contents)
 
         return result
 
-    def get_running_task(self):
+    def get_running_task(self) -> Dict[str, TaskStorageStructure]:
         contents = self._redis.hgetall(settings.MONITOR_RUNNING_KEY)
         return contents
 
-    def get_finished_task(self):
+    def get_finished_task(self) -> Dict[str, TaskStorageStructure]:
         contents = self._redis.hgetall(settings.MONITOR_FINISHED_KEY)
         return contents
 
-    def check_existence(self, task_id) -> bool:
+    def check_existence(self, task_id: str) -> bool:
         running_existence = self._redis.hexists(settings.MONITOR_RUNNING_KEY, task_id)
         finished_existence = self._redis.hexists(settings.MONITOR_RUNNING_KEY, task_id)
 
