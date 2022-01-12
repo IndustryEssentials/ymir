@@ -126,7 +126,7 @@ export default {
       const datasets = yield select(state => state.dataset.datasets)
       const updateList = payload || {}
       const result = datasets.items.map(dataset => {
-        const updateItem = updateList[task.hash]
+        const updateItem = updateList[dataset.hash]
         if (updateItem) {
           dataset.state = updateItem.state
           dataset.progress = updateItem.percent * 100

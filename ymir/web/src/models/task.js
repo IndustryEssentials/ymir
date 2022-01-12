@@ -12,7 +12,6 @@ import {
   createTrainTask,
   createLabelTask,
 } from "@/services/task"
-import { getSocket } from '../services/socket'
 
 export default {
   namespace: "task",
@@ -147,6 +146,19 @@ export default {
       yield put({
         type: 'UPDATE_TASKS',
         payload: { items: result, total: tasks.total },
+      })
+    },
+    *updateTaskState({ payload }, { put, select }) {
+      const task = yield select(state => state.task.task)
+      const updateList = payload || {}
+      const updateItem = updateList[task.hash]
+      if (updateItem) {
+        task.state = updateItem.state
+        task.progress = updateItem.percent * 100
+      }
+      yield put({
+        type: 'UPDATE_TASK',
+        payload: task,
       })
     },
   },

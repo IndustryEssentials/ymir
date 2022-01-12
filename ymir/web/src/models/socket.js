@@ -2,6 +2,7 @@ import { getSocket } from '../services/socket'
 
 const pageMaps = [
   { path: '/home/task', method: 'task/updateTasks' },
+  { path: '/home/task/detail/\\d+', method: 'task/updateTaskState' },
   { path: '/home/dataset', method: 'dataset/updateDatasets' },
 ]
 
@@ -12,13 +13,14 @@ export default {
     setup({ dispatch, history }) {
         let socket = null
       return history.listen(async location => {
-        if (pageMaps.some(page => page.path === location.pathname)) {
-          const { id } = await dispatch({
+        if (pageMaps.some(page => new RegExp(`^${page.path}$`).test(location.pathname))) {
+          const { hash } = await dispatch({
             type: 'user/getUserInfo',
           })
-          socket = getSocket(id)
+          socket = getSocket(hash)
 
           socket.on('update_taskstate', (data) => {
+            // console.log('socket -> update_taskstate data: ', data)
             pageMaps.forEach(page => dispatch({
               type: page.method,
               payload: data,
