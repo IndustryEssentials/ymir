@@ -1,3 +1,5 @@
+import json
+
 from sqlalchemy.orm import Session
 
 from app import crud
@@ -38,3 +40,25 @@ class TestListImages:
         )
         assert images == [image]
         assert count == 1
+
+
+class TestGetInferenceImages:
+    def test_get_inference_images(self, db: Session) -> None:
+        name = random_lower_string(10)
+        url = random_lower_string()
+        hash_ = random_lower_string(12)
+        description = random_lower_string()
+        obj_in = DockerImageCreate(
+            db=db,
+            name=name,
+            hash=hash_,
+            url=url,
+            description=description,
+            type=DockerImageType.infer,
+            state=DockerImageState.done,
+            config=json.dumps({}),
+        )
+        created_image = crud.docker_image.create(db=db, obj_in=obj_in)
+
+        fetched_image = crud.docker_image.get_inference_docker_image(db, url=url)
+        assert created_image.hash == fetched_image.hash
