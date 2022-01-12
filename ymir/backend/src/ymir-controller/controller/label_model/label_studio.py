@@ -254,9 +254,7 @@ class LabelStudio(LabelBase):
         valid_prediction_cnt = 0
         for task in tasks:
             asset_name = os.path.basename(task["data"]["image"])
-            if asset_name not in map_filename_prediction:
-                continue
-            predictions = map_filename_prediction[asset_name]
+            predictions = map_filename_prediction.get(asset_name, [])
             if not predictions:
                 continue
             task_id = task["id"]
