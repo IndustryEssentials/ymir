@@ -27,7 +27,8 @@ services:
       - NGINX_DATA_PATH=/ymir-storage
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
-      - API_HOST=127.0.0.1:80
+      # - API_HOST=127.0.0.1:80
+      - API_HOST=192.168.13.107:9999
       # ed (event dispatcher)
       - ED_REDIS_URI=redis://redis:6379/0
       - API_KEY_SECRET=36fbc9d3c0ce04dae75389d5b48e3fa8424c
@@ -125,5 +126,6 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.168.244.0/24
-        gateway: 172.168.244.1
+      # for test
+      - subnet: 172.168.243.0/24
+        gateway: 172.168.243.1

@@ -124,7 +124,8 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str, task:
     Returns:
         Tuple[str, str]: first: tid, second: error message or exception description (empty if success)
     """
-    url = 'http://192.168.13.107:9999/api/v1/tasks/status'  # TODO: INTO CONFIG
+    host = os.environ.get('API_HOST', 'backend')
+    url = f"http://{host}/api/v1/tasks/status"
     try:
         # task_data: see api: /api/v1/tasks/status
         task_data = {
