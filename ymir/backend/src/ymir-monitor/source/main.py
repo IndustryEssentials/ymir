@@ -32,21 +32,21 @@ app = create_app()
 
 @app.post("/api/v1/tasks")
 @inject
-def register_task(parameters: TaskParameter, service: TaskService = Depends(Provide[Container.service])) -> Dict:
+async def register_task(parameters: TaskParameter, service: TaskService = Depends(Provide[Container.service])) -> Dict:
     service.register_task(parameters)
     return {"result": "Success"}
 
 
 @app.get("/api/v1/running_tasks")
 @inject
-def get_running_task(service: TaskService = Depends(Provide[Container.service])) -> Dict:
+async def get_running_task(service: TaskService = Depends(Provide[Container.service])) -> Dict:
     result = service.get_running_task()
     return {"result": result}
 
 
 @app.get("/api/v1/finished_tasks")
 @inject
-def get_finished_task(service: TaskService = Depends(Provide[Container.service])) -> Dict:
+async def get_finished_task(service: TaskService = Depends(Provide[Container.service])) -> Dict:
     result = service.get_finished_task()
     return {"result": result}
 
