@@ -25,12 +25,15 @@ function ImageDetail({ role, getImage }) {
   const delRef = useRef(null)
 
   useEffect(async () => {
+    fetchImage()
+  }, [id])
+
+  async function fetchImage() {
     const result = await getImage(id)
     if (result) {
-      // console.log('image: ', result)
       setImage(result)
     }
-  }, [id])
+  }
 
   function relateImage() {
     const { name, related } = image
@@ -109,7 +112,7 @@ function ImageDetail({ role, getImage }) {
           </Space></Item>
         </Descriptions>
       </Card>
-      <LinkModal ref={linkModalRef} />
+      <LinkModal ref={linkModalRef} ok={() => fetchImage()} />
       <ShareModal ref={shareModalRef} />
       <Del ref={delRef} ok={delOk} />
     </div>
