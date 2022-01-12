@@ -22,7 +22,9 @@ class MetricsManager:
         logging.info(f'Metrics init: perm-{permission_pass} uuid-{uuid} host-{server_host} port-{server_port}')
 
         if self._permission_pass:
-            self._client = statsd.StatsClient(host=self._server_host, port=self._server_port, prefix=self._uuid)
+            self._client = statsd.StatsClient(host=self._server_host,
+                                              port=self._server_port,
+                                              prefix=f"ymir_metrics.{self._uuid}")
 
     def send_counter(self, content: str) -> None:
         if not self._permission_pass:
