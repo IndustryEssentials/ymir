@@ -43,8 +43,8 @@ export default {
         const excludeSets = ps.exclude_datasets || []
         const ids = [
           ...filterSets,
-          ...trainSets, 
-          ...testSets, 
+          ...trainSets,
+          ...testSets,
           ...excludeSets,
         ]
         if (ids.length) {
@@ -158,7 +158,7 @@ export default {
       }
       yield put({
         type: 'UPDATE_TASK',
-        payload: task,
+        payload: { ...task },
       })
     },
   },
