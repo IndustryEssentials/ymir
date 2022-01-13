@@ -348,11 +348,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item
                 label={t('task.mining.form.label.label')}
                 name='inference'
-                initialValue={0}
+                initialValue={false}
               >
                 <Radio.Group options={[
-                  { value: 1, label: t('common.yes') },
-                  { value: 0, label: t('common.no') },
+                  { value: true, label: t('common.yes') },
+                  { value: false, label: t('common.no') },
                 ]} />
               </Form.Item>
             </Tip>
