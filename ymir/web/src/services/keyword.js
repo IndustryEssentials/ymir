@@ -48,6 +48,6 @@ export function updateKeyword({ name, aliases = [] }) {
  * }
  * @returns {Promise}
  */
-export function getRecommandKeywords({ type }) {
-  return request.get(`/keywords/recommand/`, { type })
+export function getRecommandKeywords({ datasets_ids, limit }) {
+  return request.get(`/api/v1/stats/keywords/recommend`, { datasets_ids, limit })
 }

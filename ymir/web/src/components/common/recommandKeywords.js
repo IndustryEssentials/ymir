@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import t from "@/utils/t"
 import s from './common.less'
 
-const RecommandKeywords = ({sets = [], onSelect = () => {}, getRecommandKeywords}) => {
+const RecommandKeywords = ({ sets = [], limit = 5, onSelect = () => { }, getRecommandKeywords }) => {
   const [keywords, setKeywords] = useState([])
 
   useEffect(() => {
@@ -13,7 +13,7 @@ const RecommandKeywords = ({sets = [], onSelect = () => {}, getRecommandKeywords
   }, [sets])
 
   async function fetchKeywords() {
-    const result = await getRecommandKeywords({ sets })
+    const result = await getRecommandKeywords({ dataset_ids: sets, limit })
     if (result) {
       setKeywords(result)
     }
