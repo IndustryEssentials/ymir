@@ -112,8 +112,8 @@ services:
     env_file:
       - .env
     volumes:
-      - "${YMIR_PATH}/ymir-tensorboard-logs:/ymir-tensorboard-logs"
-    command: tensorboard --logdir /ymir-tensorboard-logs --port 6006 --bind_all
+      - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
+    command: tensorboard --logdir ${TENSORBOARD_ROOT} --port 6006 --bind_all
     restart: on-failure:10
     networks:
       - ymirnetwork
