@@ -16,6 +16,7 @@ from events_src import entities, event_dispatcher  # type: ignore
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 _RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
 _IGNORE_FAILED_SECONDS = 3600 * 24 * 2  # two days
+_APP_RC_TASK_NOT_FOUND = 7001
 
 
 def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs: Any) -> None:
@@ -113,13 +114,14 @@ async def _update_db(tid_to_tasks: Dict[str, entities.TaskState]) -> Set[str]:
         ret = await asyncio.gather(*[_update_db_single_task(session, tid, task) for tid, task in tid_to_tasks.items()],
                                    return_exceptions=True)
         # if all done, return failed tids
-        for tid, error_msg in ret:
-            if error_msg:
+        for tid, *_, need_retry in ret:
+            if need_retry:
                 failed_tids.add(tid)
         return failed_tids
 
 
-async def _update_db_single_task(session: aiohttp.ClientSession, tid: str, task: entities.TaskState) -> Tuple[str, str]:
+async def _update_db_single_task(session: aiohttp.ClientSession, tid: str,
+                                 task: entities.TaskState) -> Tuple[str, str, bool]:
     """
     update db for single task
 
@@ -129,7 +131,7 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str, task:
         task (entities.TaskState): task state
 
     Returns:
-        Tuple[str, str]: first: tid, second: error message or exception description (empty if success)
+        Tuple[str, str, bool]: tid, error_message, need_to_retry
     """
     host = os.environ.get('API_HOST', 'backend')
     url = f"http://{host}/api/v1/tasks/status"
@@ -149,8 +151,8 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str, task:
             response_obj = json.loads(response_text)
 
             return_code = int(response_obj['code'])
-            return_msg = '' if return_code == 0 else f"error: {return_code}: {response_obj.get('message', '')}"
-            return (tid, return_msg)
+            return_msg = response_obj.get('message', '')
+            return (tid, return_msg, return_code == _APP_RC_TASK_NOT_FOUND)
     except BaseException as e:
         logging.debug(traceback.format_exc())
-        return (tid, f"{type(e).__name__}: {e}")
+        return (tid, f"{type(e).__name__}: {e}", True)

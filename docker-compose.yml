@@ -1,8 +1,7 @@
 version: "3.3"
 services:
   backend:
-    # image: industryessentials/ymir-backend
-    image: zzw-backend:test
+    image: industryessentials/ymir-backend
     env_file:
       - .env
     runtime: ${SERVER_RUNTIME}
@@ -27,11 +26,10 @@ services:
       - NGINX_DATA_PATH=/ymir-storage
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
-      # - API_HOST=127.0.0.1:80
-      - API_HOST=192.168.13.107:9999
+      - API_HOST=127.0.0.1:80
       # ed (event dispatcher)
       - ED_REDIS_URI=redis://redis:6379/0
-      - API_KEY_SECRET=36fbc9d3c0ce04dae75389d5b48e3fa8424c
+      - API_KEY_SECRET=${API_KEY_SECRET}
       - ED_OPEN_PORT=${ED_OPEN_PORT}
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
@@ -57,9 +55,6 @@ services:
       - tensorboard
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
-    ports:
-      # for test
-      - ${ED_OPEN_PORT}:${ED_OPEN_PORT}
     networks:
       - ymirnetwork
 
@@ -125,5 +120,5 @@ networks:
       driver: default
       config:
       # for test
-      - subnet: 172.168.243.0/24
-        gateway: 172.168.243.1
+      - subnet: 172.168.254.0/24
+        gateway: 172.168.254.1
