@@ -62,7 +62,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
 
         tasks_util.register_monitor_log(task_id=request.task_id,
                                         user_id=request.user_id,
-                                        log_path=[task_monitor_file])
+                                        log_paths=[task_monitor_file])
 
         response = cls.task_invoke(sandbox_root=sandbox_root,
                                    repo_root=repo_root,

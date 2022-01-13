@@ -7,6 +7,7 @@ from controller.config import common_task as common_task_config
 from controller.utils import code
 from controller.utils.app_logger import logger
 from proto import backend_pb2
+from requests import HTTPError
 
 
 def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
@@ -44,14 +45,13 @@ def write_task_progress(monitor_file: str,
     return code.ResCode.CTR_OK
 
 
-def register_monitor_log(task_id: str, user_id: str, log_path: List[str], description: str = None) -> None:
+def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], description: str = None) -> None:
     # compatible with old modes, remove the try when ready
     try:
-
         requests.post(
             url=f"{common_task_config.MONITOR_URI}/api/v1/tasks",
-            json=dict(task_id=task_id, user_id=user_id, log_path=log_path, description=description),
+            json=dict(task_id=task_id, user_id=user_id, log_paths=log_paths, description=description),
             timeout=5,
         )
-    except Exception as e:
+    except HTTPError as e:
         logger.warning(f"register_monitor_log error: {e}")

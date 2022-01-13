@@ -35,15 +35,15 @@ class TaskService:
     def add_one_task(self, task_id: str, percent_result: Dict) -> None:
         self._redis.hset(settings.MONITOR_RUNNING_KEY, task_id, percent_result)
 
-    def get_raw_log_contents(self, log_path: List[str]) -> Dict[str, PercentResult]:
+    def get_raw_log_contents(self, log_paths: List[str]) -> Dict[str, PercentResult]:
         result = dict()
-        for one_log_file in log_path:
+        for one_log_file in log_paths:
             result[one_log_file] = self.parse_percent_log(one_log_file)
 
         return result
 
     @staticmethod
-    def merge_percent_contents(raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
+    def merge_task_progress_contents(raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
         percent = 0.0
         max_timestamp_content = None
         for raw_log_content in raw_log_contents.values():
@@ -78,8 +78,8 @@ class TaskService:
         if self.check_existence(reg_parameters.task_id):
             raise DuplicateTaskIDError
 
-        raw_log_contents = self.get_raw_log_contents(reg_parameters.log_path)
-        percent_result = self.merge_percent_contents(raw_log_contents)
+        raw_log_contents = self.get_raw_log_contents(reg_parameters.log_paths)
+        percent_result = self.merge_task_progress_contents(raw_log_contents)
         task_extra_info = TaskExtraInfo.parse_obj(reg_parameters.dict())
         percent_result = PercentResult.parse_obj(percent_result.dict())
 

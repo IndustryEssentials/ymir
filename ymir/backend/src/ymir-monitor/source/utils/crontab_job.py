@@ -43,9 +43,9 @@ def monitor_percent_log() -> None:
     task_updated = dict()
     task_finished = []
     for task_id, content in contents.items():
-        flag = False
+        flag_task_updated = False
         runtime_log_contents = dict()
-        for log_path, log_content in content["raw_log_contents"].items():
+        for log_path, previous_log_content in content["raw_log_contents"].items():
             try:
                 runtime_log_content = TaskService.parse_percent_log(log_path)
             except Exception as e:
@@ -53,11 +53,11 @@ def monitor_percent_log() -> None:
                 logger.warning(f"continue: warning monitor log,  \n {e}")
                 continue
             runtime_log_contents[log_path] = runtime_log_content
-            if runtime_log_content.timestamp != log_content["timestamp"]:
-                flag = True
+            if runtime_log_content.timestamp != previous_log_content["timestamp"]:
+                flag_task_updated = True
 
-        if flag:
-            content_merged = TaskService.merge_percent_contents(runtime_log_contents)
+        if flag_task_updated:
+            content_merged = TaskService.merge_task_progress_contents(runtime_log_contents)
             if content_merged.state in [TaskStateEnum.DONE, TaskStateEnum.ERROR]:
                 task_finished.append(task_id)
             task_updated[task_id] = dict(
