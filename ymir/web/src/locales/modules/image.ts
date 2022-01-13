@@ -33,7 +33,7 @@ const image = {
   'breadcrumbs.image.add': { en: "Create Image", cn: "创建镜像", },
   'breadcrumbs.image.update': { en: "Update Image", cn: "编辑镜像", },
   'image.add.form.url': { en: "Image", cn: "镜像", },
-  'image.add.form.url.required': { en: "Please input an docker image name from Docker Hub", cn: "请输入镜像URL(docker image 名称，可带tag)", },
+  'image.add.form.url.required': { en: "Please input Docker-Hub image name", cn: "请输入镜像URL(docker image 名称，可带tag)", },
   'image.add.form.url.placeholder': { en: "E.G. ubuntu:18:04, default latest tag if not given", 
     cn: "例：ubuntu:18.04 。Docker Hub上的镜像名称，可指定Tag，不指定则为latest", },
   'image.add.form.name': { en: "Image Name", cn: "镜像名称", },
