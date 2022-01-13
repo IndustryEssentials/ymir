@@ -148,7 +148,7 @@ const actions = (dispatch) => {
     getTaskStats(type) {
       return dispatch({
         type: 'common/getStats',
-        payload: { q: 'task', type, }
+        payload: { q: 'ts', type, }
       })
     }
   }

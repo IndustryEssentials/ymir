@@ -138,6 +138,27 @@ export default {
         payload: { items: result, total: datasets.total },
       })
     },
+    *getDatasetStats({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, payload)
+      const datasets = []
+      if (code === 0) {
+        const refs = {}
+        const ids = result.map(item => {
+          refs[item[0]] = item[1]
+          return item[0]
+        })
+        if (ids.length) {
+          const datasetsObj = yield put.resolve({ type: 'batchDatasets', payload: ids })
+          if (datasetsObj) {
+            datasets = datasetsObj.items.map(dataset => {
+              dataset.count = refs[dataset.id]
+              return dataset
+            })
+          }
+        }
+      }
+      return datasets
+    },
   },
   reducers: {
     UPDATE_DATASETS(state, { payload }) {
