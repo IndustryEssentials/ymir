@@ -9,7 +9,7 @@ const Tip = ({ title = null, content = '', placement = 'right', span=6, hidden =
   </Popover>
   return (
     <Row gutter={10}>
-      <Col flex={1}>{children}</Col>
+      <Col span={24 - span}>{children}</Col>
       <Col span={span}>{hidden ? null : tip}</Col>
     </Row>
   )
