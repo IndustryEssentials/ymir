@@ -21,7 +21,7 @@ server {
     client_max_body_size 4G;
 
     # set the correct host(s) for your site
-    server_name ymir.ai;
+    server_name localhost;
 
     keepalive_timeout 5;
 
