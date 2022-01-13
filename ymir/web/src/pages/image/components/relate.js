@@ -6,7 +6,7 @@ import t from '@/utils/t'
 import { TYPES, STATES } from '@/constants/image'
 
 const { useForm } = Form
-const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => {} }, ref) => {
+const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => { } }, ref) => {
   const [visible, setVisible] = useState(false)
   const [links, setLinks] = useState([])
   const [images, setImages] = useState([])
@@ -41,7 +41,7 @@ const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => {} }, ref) 
         message.success(t('image.link.success'))
         setVisible(false)
         ok()
-      } 
+      }
     })
   }
 
@@ -53,23 +53,24 @@ const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => {} }, ref) 
   }
 
   return <Modal visible={visible} onCancel={linkModalCancel} onOk={submitLink} destroyOnClose title={t('image.link.title')}>
-  <Form
-    form={linkForm}
-    name='linkForm'
-    labelAlign='left'
-    size='large'
-    preserve={false}
-  >
-    <Form.Item label={t('image.link.name')}>{imageName}</Form.Item>
-    <Form.Item
-      name="relations"
-      label={t('image.links.title')}
+    <Form
+      form={linkForm}
+      name='linkForm'
+      labelAlign='left'
+      size='large'
+      preserve={false}
     >
-      <Select allowClear placeholder={t('image.links.placeholder')} mode="multiple" options={images.map(image => ({ value: image.id, label: image.name }))}>
-      </Select>
-    </Form.Item>
-  </Form>
-</Modal>
+      <Form.Item label={t('image.link.name')}>{imageName}</Form.Item>
+      <Form.Item
+        name="relations"
+        label={t('image.links.title')}
+      >
+        <Select allowClear placeholder={t('image.links.placeholder')}
+          mode="multiple" optionFilterProp='label' options={images.map(image => ({ value: image.id, label: image.name }))}>
+        </Select>
+      </Form.Item>
+    </Form>
+  </Modal>
 })
 
 const props = (state) => {
