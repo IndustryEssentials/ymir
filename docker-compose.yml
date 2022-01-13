@@ -27,7 +27,7 @@ services:
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
       - API_HOST=127.0.0.1:80
-      # ed (event dispatcher)
+      # event dispatcher
       - ED_REDIS_URI=redis://redis:6379/0
       - API_KEY_SECRET=${API_KEY_SECRET}
       - ED_OPEN_PORT=${ED_OPEN_PORT}
@@ -119,6 +119,5 @@ networks:
     ipam:
       driver: default
       config:
-      # for test
       - subnet: 172.168.254.0/24
         gateway: 172.168.254.1
