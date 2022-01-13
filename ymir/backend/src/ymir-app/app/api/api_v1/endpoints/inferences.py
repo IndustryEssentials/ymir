@@ -44,7 +44,9 @@ def call_inference(
         logger.error("Failed to find model id: %s", inference_in.model_id)
         raise ModelNotFound()
 
-    docker_image = crud.docker_image.get_by_url(db, url=inference_in.docker_image)
+    docker_image = crud.docker_image.get_inference_docker_image(
+        db, url=inference_in.docker_image
+    )
     if not docker_image:
         logger.error("Failed to find inference model")
         raise InvalidInferenceConfig()
