@@ -1,3 +1,4 @@
+import { io } from 'socket.io-client'
 import {
   getTasks,
   getTask,
@@ -42,8 +43,8 @@ export default {
         const excludeSets = ps.exclude_datasets || []
         const ids = [
           ...filterSets,
-          ...trainSets, 
-          ...testSets, 
+          ...trainSets,
+          ...testSets,
           ...excludeSets,
         ]
         if (ids.length) {
@@ -134,6 +135,35 @@ export default {
       if (code === 0) {
         return result
       }
+    },
+    *updateTasks({ payload }, { put, select }) {
+      const tasks = yield select(state => state.task.tasks)
+      const updateList = payload || {}
+      const result = tasks.items.map(task => {
+        const updateItem = updateList[task.hash]
+        if (updateItem) {
+          task.state = updateItem.state
+          task.progress = updateItem.percent * 100
+        }
+        return task
+      })
+      yield put({
+        type: 'UPDATE_TASKS',
+        payload: { items: result, total: tasks.total },
+      })
+    },
+    *updateTaskState({ payload }, { put, select }) {
+      const task = yield select(state => state.task.task)
+      const updateList = payload || {}
+      const updateItem = updateList[task.hash]
+      if (updateItem) {
+        task.state = updateItem.state
+        task.progress = updateItem.percent * 100
+      }
+      yield put({
+        type: 'UPDATE_TASK',
+        payload: { ...task },
+      })
     },
   },
   reducers: {
