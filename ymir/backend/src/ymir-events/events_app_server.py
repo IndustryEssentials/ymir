@@ -50,10 +50,7 @@ ed = EventDispatcher(event_name='/events/taskstates')
 
 # main service and api implememtations
 app = FastAPI(title='event dispatcher')
-backend_cors_origions = [
-    "http://192.168.34.88:8000", "http://192.168.13.252:8089", "http://192.168.13.107:8089",
-    "http://192.168.13.108:8089", "http://192.168.34.193:8000", "http://192.168.57.41:8000"
-]  # for test
+backend_cors_origions = []
 if backend_cors_origions:
     app.add_middleware(
         CORSMiddleware,
