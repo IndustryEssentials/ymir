@@ -19,6 +19,8 @@ def main() -> int:
     ed = EventDispatcher(event_name='/events/taskstates')
     ed.register_handler(event_handlers.on_task_state)
     ed.start()
+    
+    return 0
 
 
 if __name__ == '__main__':
