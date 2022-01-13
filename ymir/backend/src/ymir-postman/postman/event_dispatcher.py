@@ -1,8 +1,6 @@
 """ event dispatcher """
 
 import logging
-import multiprocessing
-from multiprocessing.context import Process
 import os
 from typing import Any, Callable, Optional, Set
 
@@ -16,17 +14,10 @@ class EventDispatcher:
         self._event_name = event_name
         self._group_name = f"group:{event_name}"
         self._redis_connect: Any = None
-        self._process: Optional[Process] = None
 
     # public: lifecycle
     def start(self) -> None:
-        # start redis listeners in another process
-        self._process = multiprocessing.Process(target=EventDispatcher._start, args=(self, ))
-        self._process.start()
-
-    def wait(self) -> None:
-        if self._process:
-            self._process.join()
+        self._start()
 
     @classmethod
     def get_redis_connect(cls) -> redis.Redis:
@@ -58,6 +49,7 @@ class EventDispatcher:
         self._create_stream_if_necessary()
         # create group
         self._create_consumer_group_if_necessary()
+        logging.debug('start listening')
         # listen to stream
         self._read_redis_stream_pending_msgs()
         self._read_redis_stream_new_msgs()

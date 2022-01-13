@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import time
 import traceback
 from typing import Any, List, Set, Dict, Tuple
@@ -10,13 +9,11 @@ import asyncio
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
 
-from postman_src import entities, event_dispatcher  # type: ignore
+from postman import entities, event_dispatcher  # type: ignore
+from postman.settings import settings
 
-# event dispatcher
+
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
-_RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
-_IGNORE_FAILED_SECONDS = 3600 * 24 * 2  # two days
-_APP_RC_TASK_NOT_FOUND = 7001
 
 
 def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs: Any) -> None:
@@ -71,7 +68,7 @@ def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: Dict[str, enti
     # pass
     failed_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in failed_tids}
     json_str = json.dumps(jsonable_encoder(failed_tid_to_tasks))
-    redis_connect.set(name=_RETRY_CACHE_KEY, value=json_str)
+    redis_connect.set(name=settings._RETRY_CACHE_KEY, value=json_str)
     logging.debug(f"_save_failed tids: {failed_tids}")
 
 
@@ -83,11 +80,11 @@ def _load_failed() -> Dict[str, entities.TaskState]:
         Dict[str, entities.TaskState]: [description]
     """
     # pass
-    json_str = redis_connect.get(name=_RETRY_CACHE_KEY)
+    json_str = redis_connect.get(name=settings._RETRY_CACHE_KEY)
     logging.debug(f"_load_failed: {json_str}")
     if not json_str:
         return {}
-    earlest_timestamp = time.time() - _IGNORE_FAILED_SECONDS
+    earlest_timestamp = time.time() - settings._IGNORE_FAILED_SECONDS
     failed_tid_to_taskstates = parse_raw_as(Dict[str, entities.TaskState], json_str)
     failed_tid_to_taskstates = {
         tid: taskstate
@@ -108,7 +105,8 @@ async def _update_db(tid_to_tasks: Dict[str, entities.TaskState]) -> Set[str]:
         Set[str]: failed tids
     """
     failed_tids: Set[str] = set()
-    custom_headers = {'api-key': os.environ.get("API_KEY_SECRET", "fake-api-key")}  # TODO
+    custom_headers = {'api-key': settings.API_KEY_SECRET}
+    logging.debug(f"custom_headers: {custom_headers}")
     async with aiohttp.ClientSession(headers=custom_headers) as session:
         # post them all
         ret = await asyncio.gather(*[_update_db_single_task(session, tid, task) for tid, task in tid_to_tasks.items()],
@@ -133,8 +131,7 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str,
     Returns:
         Tuple[str, str, bool]: tid, error_message, need_to_retry
     """
-    host = os.environ.get('API_HOST', 'backend')
-    url = f"http://{host}/api/v1/tasks/status"
+    url = f"http://{settings.API_HOST}/api/v1/tasks/status"
     try:
         # task_data: see api: /api/v1/tasks/status
         task_data = {
@@ -152,7 +149,7 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str,
 
             return_code = int(response_obj['code'])
             return_msg = response_obj.get('message', '')
-            return (tid, return_msg, return_code == _APP_RC_TASK_NOT_FOUND)
+            return (tid, return_msg, return_code != settings._APP_RC_TASK_NOT_FOUND)
     except BaseException as e:
         logging.debug(traceback.format_exc())
         return (tid, f"{type(e).__name__}: {e}", True)

@@ -11,8 +11,9 @@ from starlette.middleware.cors import CORSMiddleware
 import socketio
 from fastapi_socketio import SocketManager
 
-from postman_src import entities
-from postman_src.event_dispatcher import EventDispatcher
+from postman import entities
+from postman.event_dispatcher import EventDispatcher
+from postman.settings import settings
 
 
 # private: socketio
@@ -49,12 +50,11 @@ async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, e
 ed = EventDispatcher(event_name='/events/taskstates')
 
 # main service and api implememtations
-app = FastAPI(title='event dispatcher')
-backend_cors_origions = []
-if backend_cors_origions:
+app = FastAPI(title=settings.PROJECT_NAME)
+if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=backend_cors_origions,
+        allow_origins=settings.BACKEND_CORS_ORIGINS,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
