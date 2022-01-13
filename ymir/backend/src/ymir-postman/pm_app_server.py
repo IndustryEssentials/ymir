@@ -46,9 +46,6 @@ async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, e
         print(f"sent update_taskstate: {data} -> /{uid}")
 
 
-# event dispatcher
-ed = EventDispatcher(event_name='/events/taskstates')
-
 # main service and api implememtations
 app = FastAPI(title=settings.PROJECT_NAME)
 if settings.BACKEND_CORS_ORIGINS:
@@ -71,7 +68,9 @@ else:
 @app.post('/events/taskstates', response_model=entities.EventResp)
 async def post_task_states(tid_to_taskstates: Dict[str, entities.TaskState]) -> entities.EventResp:
     try:
-        ed.add_event(event_topic='raw', event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
+        EventDispatcher.add_event(event_name='/events/taskstates',
+                                  event_topic='raw',
+                                  event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
         await _send_to_socketio(app.sio, tid_to_taskstates=tid_to_taskstates)
     except BaseException:
         logging.exception(msg='handle post_task_states error')
