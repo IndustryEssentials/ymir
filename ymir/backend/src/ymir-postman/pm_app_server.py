@@ -11,8 +11,8 @@ from starlette.middleware.cors import CORSMiddleware
 import socketio
 from fastapi_socketio import SocketManager
 
-from events_src import entities
-from events_src.event_dispatcher import EventDispatcher
+from postman_src import entities
+from postman_src.event_dispatcher import EventDispatcher
 
 
 # private: socketio
