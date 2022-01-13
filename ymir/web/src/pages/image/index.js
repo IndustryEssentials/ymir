@@ -89,8 +89,8 @@ function Image({ role, getImages, delImage, updateImage }) {
       >
         <Radio.Group options={types} optionType="button"></Radio.Group>
       </Form.Item>
-      <Form.Item name="name" label={t('model.query.name')}>
-        <Input placeholder={t("model.query.name.placeholder")} allowClear suffix={<SearchIcon />} />
+      <Form.Item name="name" label={t('image.query.name')}>
+        <Input placeholder={t("image.query.name.placeholder")} allowClear suffix={<SearchIcon />} />
       </Form.Item>
     </Form>
   )
