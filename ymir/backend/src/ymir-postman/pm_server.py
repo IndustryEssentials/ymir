@@ -7,8 +7,11 @@ from postman.settings import settings
 
 
 def main() -> int:
+    is_debug_mode = '-d' in sys.argv
+
     # for test: debug logs
-    logging.basicConfig(stream=sys.stdout, format='%(levelname)-8s: [%(asctime)s] %(message)s', level=logging.DEBUG)
+    log_level = logging.DEBUG if is_debug_mode else logging.INFO
+    logging.basicConfig(stream=sys.stdout, format='%(levelname)-8s: [%(asctime)s] %(message)s', level=log_level)
 
     logging.info(f"postman event dispatcher start with settings: {settings}")
 
