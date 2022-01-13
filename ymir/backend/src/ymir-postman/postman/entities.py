@@ -42,15 +42,3 @@ class TaskState(BaseModel):
 class EventResp(BaseModel):
     return_code: int
     return_msg: str
-
-
-def task_state_str_to_enum(state: str) -> int:
-    d = {
-        'unknown': mirsvrpb.TaskState.TaskStateUnknown,
-        'pending': mirsvrpb.TaskState.TaskStatePending,
-        'running': mirsvrpb.TaskState.TaskStateRunning,
-        'done': mirsvrpb.TaskState.TaskStateDone,
-        'error': mirsvrpb.TaskState.TaskStateError,
-        'miss': mirsvrpb.TaskState.TaskStateMiss,
-    }
-    return d[state]

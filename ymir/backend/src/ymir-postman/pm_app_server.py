@@ -11,6 +11,7 @@ from starlette.middleware.cors import CORSMiddleware
 import socketio
 from fastapi_socketio import SocketManager
 
+from controller.utils import tasks_util
 from postman import entities
 from postman.event_dispatcher import EventDispatcher
 from postman.settings import settings
@@ -36,7 +37,7 @@ async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, e
         data = {}
         for tid, taskstate in tid_to_taskstates.items():
             data[tid] = {}
-            data[tid]['state'] = entities.task_state_str_to_enum(taskstate.percent_result.state)
+            data[tid]['state'] = tasks_util.task_state_str_to_code(taskstate.percent_result.state)
             data[tid]['percent'] = taskstate.percent_result.percent
             data[tid]['timestamp'] = taskstate.percent_result.timestamp
             data[tid]['state_code'] = taskstate.percent_result.state_code

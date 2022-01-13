@@ -140,7 +140,7 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str,
         task_data = {
             'hash': tid,
             'timestamp': task.percent_result.timestamp,
-            'state': entities.task_state_str_to_enum(task.percent_result.state),
+            'state': tasks_util.task_state_str_to_code(task.percent_result.state), 
             'percent': task.percent_result.percent,
             'state_message': task.percent_result.state_message
         }
