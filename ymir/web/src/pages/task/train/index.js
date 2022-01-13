@@ -24,7 +24,7 @@ import ImageSelect from "../components/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import ModelSelect from "../components/modelSelect"
-import RecommandKeywords from "../../../components/common/recommandKeywords"
+import RecommendKeywords from "../../../components/common/recommendKeywords"
 
 const { Option } = Select
 
@@ -179,7 +179,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     setValidationSets(value)
   }
 
-  function selectRecommandKeywords(keyword) {
+  function selectRecommendKeywords(keyword) {
     const kws = [...new Set([...selectedKeywords, keyword])]
     setSelectedKeywords(kws)
   }
@@ -358,7 +358,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 </Select>
               </Form.Item>
             </Tip>
-            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommandKeywords sets={trainSets} onSelect={selectRecommandKeywords} /></Form.Item></Tip>
+            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommendKeywords sets={trainSets} onSelect={selectRecommendKeywords} /></Form.Item></Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
               <Tip content={t('tip.task.train.model')}>

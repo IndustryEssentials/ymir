@@ -2,7 +2,7 @@ import {
   getKeywords, 
   updateKeyword,
   updateKeywords,
-  getRecommandKeywords,
+  getRecommendKeywords,
 } from "@/services/keyword"
 
 export default {
@@ -37,8 +37,8 @@ export default {
         return result
       }
     },
-    *getRecommandKeywords({ payload }, { call, put }) {
-      const data = yield call(getRecommandKeywords, payload)
+    *getRecommendKeywords({ payload }, { call, put }) {
+      const data = yield call(getRecommendKeywords, payload)
       if (data.code === 0) {
         return data.result
       }

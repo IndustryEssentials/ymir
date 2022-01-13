@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import t from "@/utils/t"
 import s from './common.less'
 
-const RecommandKeywords = ({ sets = [], limit = 5, onSelect = () => { }, getRecommandKeywords }) => {
+const RecommendKeywords = ({ sets = [], limit = 5, onSelect = () => { }, getRecommendKeywords }) => {
   const [keywords, setKeywords] = useState([])
 
   useEffect(() => {
@@ -13,7 +13,7 @@ const RecommandKeywords = ({ sets = [], limit = 5, onSelect = () => { }, getReco
   }, [sets])
 
   async function fetchKeywords() {
-    const result = await getRecommandKeywords({ dataset_ids: sets, limit })
+    const result = await getRecommendKeywords({ dataset_ids: sets, limit })
     if (result) {
       setKeywords(result)
     }
@@ -35,9 +35,9 @@ const props = (state) => {
 
 const actions = (dispatch) => {
   return {
-    getRecommandKeywords(payload) {
+    getRecommendKeywords(payload) {
       return dispatch({
-        type: 'keyword/getRecommandKeywords',
+        type: 'keyword/getRecommendKeywords',
         payload,
       })
     }
@@ -45,4 +45,4 @@ const actions = (dispatch) => {
 }
 
 
-export default connect(props, actions)(RecommandKeywords)
+export default connect(props, actions)(RecommendKeywords)

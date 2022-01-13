@@ -41,13 +41,13 @@ export function updateKeyword({ name, aliases = [] }) {
 }
 
 /**
- * get recommand keywords of dataset or global
+ * get recommend keywords of dataset or global
  * @param {object} param0 
  * {
  *   {number} type
  * }
  * @returns {Promise}
  */
-export function getRecommandKeywords({ datasets_ids, limit }) {
+export function getRecommendKeywords({ datasets_ids, limit }) {
   return request.get(`/api/v1/stats/keywords/recommend`, { datasets_ids, limit })
 }

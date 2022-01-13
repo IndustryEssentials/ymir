@@ -12,7 +12,7 @@ Random.extend({
 export const random = Random
 
 export default baseApi({
-  url: 'keywords/recommand/',
+  url: 'keywords/recommend/',
   data: {
     result: Random.keywords(3, 8)
   }

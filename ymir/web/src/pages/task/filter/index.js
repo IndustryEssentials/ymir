@@ -13,7 +13,7 @@ import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
 import { TipsIcon } from '@/components/common/icons'
 import Tip from "@/components/form/tip"
-import RecommandKeywords from "../../../components/common/recommandKeywords"
+import RecommendKeywords from "../../../components/common/recommendKeywords"
 const { Option } = Select
 
 function Filter({
@@ -102,7 +102,7 @@ function Filter({
     form.setFieldsValue({ inc: [], exc: [] })
   }
 
-  function selectRecommandKeywords(keyword) {
+  function selectRecommendKeywords(keyword) {
     const kws = [...new Set([...selectedKeywords, keyword])]
     setSelectedKeywords(kws)
     form.setFieldsValue({ inc: kws })
@@ -195,7 +195,7 @@ function Filter({
                   // rules={[
                   //   { validator: requireOne },
                   // ]}
-                  help={<RecommandKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommandKeywords} />}
+                  help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
                 >
                   <Select
                     mode='multiple'
