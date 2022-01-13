@@ -70,7 +70,7 @@ class TaskService:
 
     def check_existence(self, task_id: str) -> bool:
         running_existence = self._redis.hexists(settings.MONITOR_RUNNING_KEY, task_id)
-        finished_existence = self._redis.hexists(settings.MONITOR_RUNNING_KEY, task_id)
+        finished_existence = self._redis.hexists(settings.MONITOR_FINISHED_KEY, task_id)
 
         return running_existence or finished_existence
 

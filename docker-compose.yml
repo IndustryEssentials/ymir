@@ -30,7 +30,7 @@ services:
       # monitor
       - MONITOR_REDIS_URI=redis://redis:6379/0
       # update it when ed server ready
-      - ED_URL=http://192.168.13.107:8090
+      - POSTMAN_URL=http://127.0.0.1:8090
       - MONITOR_URI=http://127.0.0.1:9098
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"

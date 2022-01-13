@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     MONITOR_RUNNING_KEY: str = "MONITOR_RUNNING_KEY:v1"
     MONITOR_FINISHED_KEY: str = "MONITOR_FINISHED_KEY:v1"
 
-    ED_URL: str = ""
+    POSTMAN_URL: str = ""
     MONITOR_REDIS_URI: str = "redis://localhost"
 
 

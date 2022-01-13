@@ -2,12 +2,12 @@ from datetime import datetime
 from typing import List
 
 import requests
+from requests import RequestException
 
 from controller.config import common_task as common_task_config
 from controller.utils import code
 from controller.utils.app_logger import logger
 from proto import backend_pb2
-from requests import HTTPError
 
 
 def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
@@ -53,5 +53,5 @@ def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], descr
             json=dict(task_id=task_id, user_id=user_id, log_paths=log_paths, description=description),
             timeout=5,
         )
-    except HTTPError as e:
+    except RequestException as e:
         logger.warning(f"register_monitor_log error: {e}")
