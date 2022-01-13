@@ -30,7 +30,7 @@ services:
       # event dispatcher
       - ED_REDIS_URI=redis://redis:6379/0
       - API_KEY_SECRET=${API_KEY_SECRET}
-      - ED_OPEN_PORT=${ED_OPEN_PORT}
+      - PM_OPEN_PORT=${PM_OPEN_PORT}
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
       - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
