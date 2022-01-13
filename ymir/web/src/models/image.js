@@ -90,14 +90,6 @@ export default {
         return result
       }
     },
-    *verify({ payload }, { call }) {
-      const { id, urls } = payload
-      console.log('image of images: ', id, urls)
-      const { code, result } = yield call(verify, id, urls)
-      if (code === 0) {
-        return result
-      }
-    },
   },
   reducers: {
     UPDATE_IMAGES(state, { payload }) {
