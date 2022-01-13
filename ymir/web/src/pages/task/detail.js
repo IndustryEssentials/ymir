@@ -19,7 +19,7 @@ import {
 
 const { Item } = Descriptions
 
-function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
+function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) {
   const history = useHistory()
   const { id } = useParams()
   const [task, setTask] = useState({ id })
@@ -33,6 +33,10 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   const [showErrorMsg, setShowErrorMsg] = useState(false)
 
   useEffect(() => {
+    setTask(taskItem)
+  }, [taskItem])
+
+  useEffect(() => {
     fetchTask()
   }, [id])
 
@@ -42,13 +46,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     goAnchor()
   }, [task.state])
 
-  async function fetchTask() {
-    const result = await getTask(id)
-
-    if (result) {
-      console.log('get task detail: ', result)
-      setTask(result)
-    }
+  function fetchTask() {
+    getTask(id)
   }
 
   function getResult() {
@@ -315,6 +314,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    taskItem: state.task.task,
   }
 }
 
