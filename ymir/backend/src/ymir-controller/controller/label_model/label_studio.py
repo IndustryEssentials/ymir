@@ -5,7 +5,6 @@ import os
 import shutil
 import zipfile
 from io import BytesIO
-from pathlib import Path
 from typing import Dict, List
 from xml.etree import ElementTree
 
@@ -120,6 +119,34 @@ class LabelStudio(LabelBase):
 
         return exported_storage_id
 
+    def get_project_tasks(self, project_id: int) -> Dict:
+        # Retrieve a paginated list of tasks for a specific project.
+        url_path = f"/api/projects/{project_id}/tasks"
+
+        resp = self.requests.get(url_path=url_path)
+        tasks = json.loads(resp)
+
+        logger.info(f"retrieved {len(tasks)} tasks in project {project_id}")
+        return tasks
+
+    def update_prediction(self, task_id: int, predictions: List) -> int:
+        # Create a prediction for a specific task.
+        url_path = "/api/predictions"
+        data = dict(
+            model_version='',
+            result=predictions,
+            score=0,
+            cluster=0,
+            neighbors={},
+            mislabeling=0,
+            task=task_id,
+        )
+
+        resp = self.requests.post(url_path=url_path, json_data=data)
+        prediction_id = json.loads(resp)["id"]
+
+        return prediction_id
+
     def sync_import_storage(self, storage_id: int) -> None:
         # Sync tasks from a local file import storage connection
         url_path = f"/api/storages/localfiles/{storage_id}/sync"
@@ -208,9 +235,8 @@ class LabelStudio(LabelBase):
 
         logger.info(f"success convert_annotation_to_ymir: {des_path}")
 
-    @classmethod
-    def update_json_content(cls, input_asset_dir: str, use_pre_annotation: bool) -> None:
-        document_root = Path(os.path.abspath(os.sep))
+    def update_project_prediction(self, input_asset_dir: str, project_id: int) -> None:
+        map_filename_prediction = {}
         for json_file_relative in os.listdir(input_asset_dir):
             if not json_file_relative.endswith(".json"):
                 continue
@@ -219,19 +245,23 @@ class LabelStudio(LabelBase):
                 continue
             with open(json_file_abs) as f:
                 json_content = json.load(f)
+            predictions = json_content["predictions"][0]["result"]
+            if not predictions:
+                continue
+            map_filename_prediction[os.path.basename(json_content["data"]["image"])] = predictions
 
-            # replace path to asset by label studio url.
-            # {settings.HOSTNAME}/data/local-files?d=<path/to/local/dir>
-            # for more details, check:
-            # https://github.com/heartexlabs/label-studio/blob/master/label_studio/io_storages/localfiles/models.py
-            asset_path = Path(os.path.join(input_asset_dir, json_content["data"]["image"]))
-            relative_asset_path = asset_path.relative_to(document_root)
-            asset_url = f'{label_task_config.LABEL_STUDIO_HOST}/data/local-files/?d={str(relative_asset_path)}'
-            json_content["data"]["image"] = asset_url
-            if not use_pre_annotation:
-                json_content["predictions"][0]["result"] = []
-            with open(json_file_abs, 'w') as f:
-                json.dump(json_content, f)
+        tasks = self.get_project_tasks(project_id)
+        valid_prediction_cnt = 0
+        for task in tasks:
+            asset_name = os.path.basename(task["data"]["image"])
+            predictions = map_filename_prediction.get(asset_name, [])
+            if not predictions:
+                continue
+            task_id = task["id"]
+            self.update_prediction(task_id, predictions)
+            valid_prediction_cnt += 1
+
+        logger.info(f"successful created {valid_prediction_cnt} predictions.")
 
     @catch_label_task_error
     def run(self, task_id: str, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
@@ -240,8 +270,9 @@ class LabelStudio(LabelBase):
         logger.info("start LabelStudio run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
-        self.update_json_content(input_asset_dir, use_pre_annotation)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
+        if use_pre_annotation:
+            self.update_project_prediction(input_asset_dir, project_id)
         self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root, media_location,
                                       import_work_dir, exported_storage_id)
