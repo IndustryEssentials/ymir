@@ -56,6 +56,10 @@ export default {
             result['testSets'] = findDs(testSets)
             result['excludeSets'] = findDs(excludeSets)
           }
+          if (ps.model_id) {
+            const model = yield put.resolve({ type: 'model/getModel', payload: ps.model_id })
+            result['model'] = model
+          }
           yield put({
             type: "UPDATE_TASK",
             payload: result,
