@@ -107,7 +107,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_classes, include_train_datasets, include_validation_datasets, strategy, } = parameters
+      const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image, model_id } = parameters
       const tSets = include_train_datasets || []
       const vSets = include_validation_datasets || []
       form.setFieldsValue({
@@ -116,6 +116,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
         validation_sets: vSets,
         gpu_count: config.gpu_count,
         keywords: include_classes,
+        model: model_id,
+        docker_image,
         strategy,
       })
       setConfig(config)
@@ -189,7 +191,13 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     setSelectedModel(model)
   }
 
-  function setConfig(config) {
+  function imageChange(_, image = {}) {
+    const { url, config } = image
+    setImageUrl(url)
+    setConfig(config)
+  }
+
+  function setConfig(config = {}) {
     const params = Object.keys(config).map(key => ({ key, value: config[key] }))
     setSeniorConfig(params)
   }
@@ -376,7 +384,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 { required: true, message: t('task.train.form.image.required') }
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config) }} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
               </Form.Item>
             </Tip>
 

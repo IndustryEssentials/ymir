@@ -48,13 +48,13 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
 
     if (state?.record) {
       const { parameters, name, } = state.record
-      const { include_classes, include_datasets, labellers, extra_url } = parameters
-      //do somethin
+      const { include_classes, include_datasets, labellers, extra_url, keep_annotations } = parameters
+
       const fvalue = {
         name: `${name}_${randomNumber()}`,
         datasets: include_datasets[0],
         label_members: labellers[0],
-        keep_annotations: 1, // todo replace with copy params
+        keep_annotations,
         checker: labellers.length > 1 ? labellers[1] : '',
         keywords: include_classes,
       }
@@ -106,7 +106,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_label_' + randomNumber(),
-    keep_annotations: 1,
+    keep_annotations: true,
     datasets: datasetId,
     labelType: getCheckedValue(LabelTypes()),
   }
@@ -239,8 +239,8 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 required
                 label={t('task.label.form.keep_anno.label')}>
                 <Radio.Group options={[
-                  { value: 1, label: t('common.yes') },
-                  { value: 0, label: t('common.no') },
+                  { value: true, label: t('common.yes') },
+                  { value: false, label: t('common.no') },
                 ]} />
               </Form.Item>
             </Tip>

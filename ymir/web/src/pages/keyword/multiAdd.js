@@ -5,7 +5,7 @@ import { connect } from 'dva'
 import t from '@/utils/t'
 
 const { useForm } = Form
-const MultiAdd = forwardRef(({ addKeywords, ok = () => {} }, ref) => {
+const MultiAdd = forwardRef(({ addKeywords, ok = () => { } }, ref) => {
   const [visible, setVisible] = useState(false)
   const [form] = useForm()
 
@@ -22,9 +22,17 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => {} }, ref) => {
       const keywords = transKeywords(form.getFieldValue('keywords'))
       const result = await addKeywords(keywords)
       if (result) {
-        message.success(t('keyword.multiadd.success'))
-        setVisible(false)
-        ok()
+        if (result.failed && !result.failed.length) {
+          message.success(t('keyword.multiadd.success'))
+          form.resetFields()
+          close()
+          ok()
+        } else {
+          message.error(t('keyword.name.repeat'))
+          setRepeats(result.failed || [])
+        }
+      } else {
+        message.error(t('keyword.add.failure'))
       }
     })
   }
@@ -33,42 +41,42 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => {} }, ref) => {
     let keywords = []
     try {
       keywords = text.split(/\s*\n\s*/).map(line => {
-        const pair = line.split(/\s*:\s*/)
+        const pair = line.trim().split(/\s*:\s*/)
         let aliases = []
         if (pair[1]) {
-          aliases = pair[1].split(/\s*,\s*/).filter(alias => !!alias)
+          aliases = pair[1].trim().split(/\s*,\s*/).filter(alias => !!alias)
         }
         return {
           name: pair[0],
           aliases,
         }
       })
-    } catch(e) {
+    } catch (e) {
       message.error(t('keyword.multiadd.invalid'))
     }
     return keywords
   }
 
   return <Modal visible={visible} onCancel={cancel} onOk={submit} destroyOnClose title={t('keyword.multiadd.title')}>
-  <Form
-    form={form}
-    name='multiAddForm'
-    labelAlign='left'
-    size='large'
-    preserve={false}
-  >
-    <Form.Item
-      name="keywords"
-      label={t('keyword.multiadd.kws.label')}
-      rules={[
-        { required: true }
-      ]}
+    <Form
+      form={form}
+      name='multiAddForm'
+      labelAlign='left'
+      size='large'
+      preserve={false}
     >
-      <Input.TextArea allowClear placeholder={t('keyword.multiadd.kws.placeholder')} autoSize={{ minRows: 6, maxRows: 10 }}>
-      </Input.TextArea>
-    </Form.Item>
-  </Form>
-</Modal>
+      <Form.Item
+        name="keywords"
+        label={t('keyword.multiadd.kws.label')}
+        rules={[
+          { required: true }
+        ]}
+      >
+        <Input.TextArea allowClear placeholder={t('keyword.multiadd.kws.placeholder')} autoSize={{ minRows: 6, maxRows: 10 }}>
+        </Input.TextArea>
+      </Form.Item>
+    </Form>
+  </Modal>
 })
 
 const props = (state) => {
