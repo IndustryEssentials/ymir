@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 import traceback
 from typing import Any, List, Set, Dict, Tuple
 
@@ -14,6 +15,7 @@ from events_src import entities, event_dispatcher  # type: ignore
 # event dispatcher
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 _RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
+_IGNORE_FAILED_SECONDS = 3600 * 24 * 2  # two days
 
 
 def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs: Any) -> None:
@@ -67,11 +69,9 @@ def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: Dict[str, enti
     """
     # pass
     failed_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in failed_tids}
-    logging.debug(f"_save_failed 0: {failed_tid_to_tasks}")
     json_str = json.dumps(jsonable_encoder(failed_tid_to_tasks))
-    logging.debug(f"_save_failed: {json_str}")
-    result = redis_connect.set(name=_RETRY_CACHE_KEY, value=json_str)
-    logging.debug(f"_save_failed result: {result}")
+    redis_connect.set(name=_RETRY_CACHE_KEY, value=json_str)
+    logging.debug(f"_save_failed tids: {failed_tids}")
 
 
 def _load_failed() -> Dict[str, entities.TaskState]:
@@ -86,7 +86,13 @@ def _load_failed() -> Dict[str, entities.TaskState]:
     logging.debug(f"_load_failed: {json_str}")
     if not json_str:
         return {}
+    earlest_timestamp = time.time() - _IGNORE_FAILED_SECONDS
     failed_tid_to_taskstates = parse_raw_as(Dict[str, entities.TaskState], json_str)
+    failed_tid_to_taskstates = {
+        tid: taskstate
+        for tid, taskstate in failed_tid_to_taskstates.items()
+        if taskstate.percent_result.timestamp >= earlest_timestamp
+    }
     return failed_tid_to_taskstates or {}
 
 
