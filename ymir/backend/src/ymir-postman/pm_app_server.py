@@ -3,6 +3,8 @@
 import asyncio
 from collections import defaultdict
 import json
+import logging
+import sys
 from typing import Dict
 
 from fastapi import FastAPI
@@ -15,6 +17,9 @@ from controller.utils import tasks_util
 from postman import entities
 from postman.event_dispatcher import EventDispatcher
 from postman.settings import settings
+
+
+uvicorn_logger = logging.getLogger("uvicorn")
 
 
 # private: socketio
@@ -44,7 +49,7 @@ def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, entitie
                 'stack_error_info': taskstate.percent_result.stack_error_info
             }
         asyncio.run(sio.emit(event='update_taskstate', data=data, namespace=f"/{uid}"))
-        print(f"sent update_taskstate: {data} -> /{uid}")
+        uvicorn_logger.info(f"sent update_taskstate: {data} -> /{uid}")
 
 
 # main service and api implememtations
