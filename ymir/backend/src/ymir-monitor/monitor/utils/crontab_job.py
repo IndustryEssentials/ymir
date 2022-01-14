@@ -49,9 +49,11 @@ def monitor_percent_log() -> None:
         for log_path, previous_log_content in content["raw_log_contents"].items():
             runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
             if isinstance(runtime_log_content, str):
+                # any sub task's log failed, pass this task
                 sentry_sdk.capture_message(runtime_log_content)
                 logging.warning(runtime_log_content)
-                continue
+                flag_task_updated = False
+                break
 
             runtime_log_contents[log_path] = runtime_log_content
             if runtime_log_content.timestamp != previous_log_content["timestamp"]:
