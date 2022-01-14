@@ -23,18 +23,18 @@ def send_updated_task(updated_info: Dict[str, TaskStorageStructure]) -> None:
 def deal_updated_task(
     redis_client: RedisHandler,
     task_updated: Dict[str, TaskStorageStructure],
-    task_finished: Dict[str, TaskStorageStructure],
+    task_id_finished: Dict[str, TaskStorageStructure],
 ) -> None:
     # sentry will catch Exception
     send_updated_task(task_updated)
     redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_updated)
-    if task_finished:
+    if task_id_finished:
         redis_client.hmset(
-            settings.MONITOR_FINISHED_KEY, mapping={task_id: task_updated[task_id] for task_id in task_finished}
+            settings.MONITOR_FINISHED_KEY, mapping={task_id: task_updated[task_id] for task_id in task_id_finished}
         )
-        redis_client.hdel(settings.MONITOR_RUNNING_KEY, *task_finished)
+        redis_client.hdel(settings.MONITOR_RUNNING_KEY, *task_id_finished)
 
-        logging.info(f"finished task ids {task_finished}")
+        logging.info(f"finished task ids {task_id_finished}")
 
 
 def monitor_percent_log() -> None:
@@ -42,7 +42,7 @@ def monitor_percent_log() -> None:
     contents = redis_client.hgetall(settings.MONITOR_RUNNING_KEY)
 
     task_updated = dict()
-    task_finished = []
+    task_id_finished = []
     for task_id, content in contents.items():
         flag_task_updated = False
         runtime_log_contents = dict()
@@ -60,7 +60,7 @@ def monitor_percent_log() -> None:
         if flag_task_updated:
             content_merged = TaskService.merge_task_progress_contents(runtime_log_contents)
             if content_merged.state in [TaskStateEnum.DONE, TaskStateEnum.ERROR]:
-                task_finished.append(task_id)
+                task_id_finished.append(task_id)
             task_updated[task_id] = dict(
                 raw_log_contents=runtime_log_contents,
                 task_extra_info=content["task_extra_info"],
@@ -70,7 +70,7 @@ def monitor_percent_log() -> None:
     task_updated = StorageStructure.parse_obj(task_updated).dict()
 
     if len(task_updated):
-        deal_updated_task(redis_client, task_updated, task_finished)  # type: ignore
+        deal_updated_task(redis_client, task_updated, task_id_finished)  # type: ignore
 
 
 if __name__ == "__main__":
