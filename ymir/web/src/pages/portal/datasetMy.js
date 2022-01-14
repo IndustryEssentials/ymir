@@ -13,7 +13,7 @@ import { cardHead, cardBody } from "./components/styles"
 import styles from './index.less'
 import { options, ORDER } from "./components/orderOptions"
 
-function Sets({ count = 3, getHotDataset, getDatasets }) {
+function Sets({ count = 3, getHotDatasets, getDatasets }) {
   const history = useHistory()
   const [sets, setSets] = useState([])
 
@@ -30,7 +30,7 @@ function Sets({ count = 3, getHotDataset, getDatasets }) {
   }
 
   async function fetchHotDataset() {
-    const result = await getHotDataset(count)
+    const result = await getHotDatasets(count)
     if (result) {
       setSets(sets.filter(s => s))
     }
