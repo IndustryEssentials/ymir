@@ -94,7 +94,7 @@ const TaskChart = ({ getTaskStats }) => {
       emphasis: {
         focus: 'series'
       },
-      data: result[type.value].reverse(),
+      data: result[type.value],
     }))
     return series
   }
@@ -112,16 +112,14 @@ const TaskChart = ({ getTaskStats }) => {
       // week
       return timestamps.map(stamp => {
         return e8(stamp).format('D/M')
-      }).reverse()
+      })
     } else {
       // year
       result = timestamps.map(stamp => {
         return e8(stamp).format('MM/YY')
       })
     }
-    // console.log('xaxis data: ', result)
-    // return timestamps.reverse()
-    return result.reverse()
+    return result
   }
 
   function timeChange ({ target }){ 
