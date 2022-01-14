@@ -9,7 +9,7 @@ class PercentResult(BaseModel):
     task_id: str
     timestamp: str
     percent: float
-    state: backend_pb2.TaskState
+    state: int
     state_code: int = 0
     state_message: Optional[str] = None
     stack_error_info: Optional[str] = None
