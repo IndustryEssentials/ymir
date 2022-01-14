@@ -2,11 +2,12 @@ import logging
 from typing import Dict
 from typing import List
 
-from common_utils.percent_log_util import PercentLogHandler, TaskStateEnum
+from common_utils.percent_log_util import PercentLogHandler
 from monitor.config import settings
 from monitor.libs.redis_handler import RedisHandler
 from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
 from monitor.utils.errors import DuplicateTaskIDError, LogFileError
+from proto.backend_pb2 import TaskState
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class TaskService:
         max_timestamp_content = None
         for raw_log_content in raw_log_contents.values():
             # any raw log error, means total task is error
-            if raw_log_content.state == TaskStateEnum.ERROR:
+            if raw_log_content.state == TaskState.TaskStateError:
                 raw_log_content.percent = 1.0
                 return raw_log_content
 

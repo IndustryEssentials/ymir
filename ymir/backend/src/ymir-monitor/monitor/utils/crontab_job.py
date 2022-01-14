@@ -6,13 +6,14 @@ import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from common_utils.percent_log_util import TaskStateEnum, PercentLogHandler
+from common_utils.percent_log_util import  PercentLogHandler
 from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
 from monitor.schemas.task import StorageStructure
 from monitor.schemas.task import TaskStorageStructure
+from proto.backend_pb2 import TaskState
 
 
 def send_updated_task(updated_info: Dict[str, TaskStorageStructure]) -> None:
@@ -61,7 +62,10 @@ def monitor_percent_log() -> None:
 
         if flag_task_updated:
             content_merged = TaskService.merge_task_progress_contents(runtime_log_contents)
-            if content_merged.state in [TaskStateEnum.DONE, TaskStateEnum.ERROR]:
+            if content_merged.state in [
+                TaskState.TaskStateDone,
+                TaskState.TaskStateError,
+            ]:
                 task_id_finished.append(task_id)
             task_updated[task_id] = dict(
                 raw_log_contents=runtime_log_contents,

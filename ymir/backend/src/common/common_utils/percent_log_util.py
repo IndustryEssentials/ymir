@@ -1,27 +1,32 @@
-from enum import Enum
 from typing import Optional, Union
 
 from pydantic import BaseModel
 
-
-class TaskStateEnum(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    DONE = "done"
-    ERROR = "error"
+from proto import backend_pb2
 
 
 class PercentResult(BaseModel):
     task_id: str
     timestamp: str
     percent: float
-    state: TaskStateEnum
+    state: backend_pb2.TaskState
     state_code: int = 0
     state_message: Optional[str] = None
     stack_error_info: Optional[str] = None
 
 
 class PercentLogHandler:
+    @staticmethod
+    def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
+        _task_state_to_enum = {
+            "pending": backend_pb2.TaskState.TaskStatePending,
+            "running": backend_pb2.TaskState.TaskStateRunning,
+            "runing": backend_pb2.TaskState.TaskStateRunning,
+            "done": backend_pb2.TaskState.TaskStateDone,
+            "error": backend_pb2.TaskState.TaskStateError,
+        }
+        return _task_state_to_enum[state]
+
     @staticmethod
     def parse_percent_log(log_file: str) -> Union[PercentResult, str]:
         with open(log_file, "r") as f:
@@ -30,7 +35,8 @@ class PercentLogHandler:
         if not monitor_file_lines or len(content_row_one) < 4:
             return f"invalid percent log file: {log_file}"
 
-        task_id, timestamp, percent, state, *_ = content_row_one
+        task_id, timestamp, percent, tmp_state, *_ = content_row_one
+        state = PercentLogHandler.task_state_str_to_code(tmp_state)
         percent_result = PercentResult(task_id=task_id, timestamp=int(timestamp), percent=percent, state=state)
         if len(content_row_one) > 4:
             percent_result.state_code = int(content_row_one[4])
