@@ -134,9 +134,9 @@ def _update_db_single_task(tid: str,
             'state_message': task.percent_result.state_message
         }
 
-        logging.debug(f"_update_db_single_task: request: {task_data}")
+        logging.info(f"_update_db_single_task: request: {task_data}")
         response = requests.post(url=url, headers=custom_headers, json=task_data)
-        logging.debug(f"_update_db_single_task: response: {response.text}")
+        logging.info(f"_update_db_single_task: response: {response.text}")
 
         response_obj = json.loads(response.text)
         return_code = int(response_obj['code'])

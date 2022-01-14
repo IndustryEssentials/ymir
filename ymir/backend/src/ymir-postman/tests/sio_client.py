@@ -4,11 +4,11 @@ import sys
 import socketio
 
 
-sio = socketio.Client()
+sio = socketio.Client(logger=True)
 
 
-def update_taskstate(data):
-    print(f"update_taskstate: {data}")
+def update_taskstate(*args, **kwargs):
+    print(f"update_taskstate: {args}, {kwargs}")
 
 
 def main() -> int:
@@ -18,7 +18,7 @@ def main() -> int:
     print(f"connecting to url: {url}, namespace: {namespace}")
 
     sio.connect(url, namespaces=[namespace], socketio_path='/ws/socket.io')
-    sio.on(update_taskstate, namespace=namespace)
+    sio.event(namespace=namespace)(update_taskstate)
     sio.wait()
 
     return 0
