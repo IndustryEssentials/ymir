@@ -36,13 +36,14 @@ def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, entitie
     for uid, tid_to_taskstates in uid_to_taskstates.items():
         data = {}
         for tid, taskstate in tid_to_taskstates.items():
-            data[tid] = {}
-            data[tid]['state'] = tasks_util.task_state_str_to_code(taskstate.percent_result.state)
-            data[tid]['percent'] = taskstate.percent_result.percent
-            data[tid]['timestamp'] = taskstate.percent_result.timestamp
-            data[tid]['state_code'] = taskstate.percent_result.state_code
-            data[tid]['state_message'] = taskstate.percent_result.state_message
-            data[tid]['stack_error_info'] = taskstate.percent_result.stack_error_info
+            data[tid] = {
+                'state': tasks_util.task_state_str_to_code(taskstate.percent_result.state),
+                'percent': taskstate.percent_result.percent,
+                'timestamp': taskstate.percent_result.timestamp,
+                'state_code': taskstate.percent_result.state_code,
+                'state_message': taskstate.percent_result.state_message,
+                'stack_error_info': taskstate.percent_result.stack_error_info
+            }
         asyncio.run(sio.emit(event='update_taskstate', data=data, namespace=f"/{uid}"))
         print(f"sent update_taskstate: {data} -> /{uid}")
 
