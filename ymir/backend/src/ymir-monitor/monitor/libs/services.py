@@ -22,8 +22,9 @@ class TaskService:
     def get_raw_log_contents(self, log_paths: List[str]) -> Dict[str, PercentResult]:
         result = dict()
         for one_log_file in log_paths:
-            percent_result = PercentLogHandler.parse_percent_log(one_log_file)
-            if isinstance(percent_result, str):
+            try:
+                percent_result = PercentLogHandler.parse_percent_log(one_log_file)
+            except ValueError as e:
                 raise LogFileError
             result[one_log_file] = percent_result
 

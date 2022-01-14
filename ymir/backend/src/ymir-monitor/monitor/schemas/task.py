@@ -1,9 +1,11 @@
 from enum import IntEnum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from common_utils.percent_log_util import PercentResult
+
+import os
 
 
 class MonitorType(IntEnum):
@@ -16,6 +18,13 @@ class TaskParameter(BaseModel):
     monitor_type: MonitorType = MonitorType.PERCENT
     log_paths: List[str]
     description: Optional[str]
+
+    @validator("log_paths", each_item=True)
+    def check_files(cls, log_path):
+        if not os.path.exists(log_path):
+            raise ValueError(f"log_path not exists {log_path}")
+
+        return log_path
 
 
 class TaskExtraInfo(BaseModel):

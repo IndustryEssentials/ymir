@@ -33,7 +33,7 @@ class PercentLogHandler:
             monitor_file_lines = f.readlines()
         content_row_one = monitor_file_lines[0].strip().split("\t")
         if not monitor_file_lines or len(content_row_one) < 4:
-            return f"invalid percent log file: {log_file}"
+            raise ValueError(f"invalid percent log file: {log_file}")
 
         task_id, timestamp, percent, tmp_state, *_ = content_row_one
         state = PercentLogHandler.task_state_str_to_code(tmp_state)

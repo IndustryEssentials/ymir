@@ -48,11 +48,12 @@ def monitor_percent_log() -> None:
         flag_task_updated = False
         runtime_log_contents = dict()
         for log_path, previous_log_content in content["raw_log_contents"].items():
-            runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
-            if isinstance(runtime_log_content, str):
+            try:
+                runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
+            except ValueError as e:
                 # any sub task's log failed, pass this task
-                sentry_sdk.capture_message(runtime_log_content)
-                logging.warning(runtime_log_content)
+                sentry_sdk.capture_exception(e)
+                logging.warning(e)
                 flag_task_updated = False
                 break
 
