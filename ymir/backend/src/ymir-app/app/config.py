@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     GRPC_CHANNEL: str = "controller:50066"
     DEFAULT_LIMIT: int = 20
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    APP_SECRET_KEY: str = secrets.token_urlsafe(32)
     HASH_LEN_LIMIT: int = 50
     NAME_LEN_LIMIT: int = 100
     PARA_LEN_LIMIT: int = 500
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     USE_200_EVERYWHERE: bool = True
 
     IS_TESTING: bool = False
-    API_KEY_SECRET: str = secrets.token_urlsafe(32)
+    APP_API_KEY: str = secrets.token_urlsafe(32)
 
     # paths to share data with Controller, etc
     SHARED_DATA_DIR: str = "./"
