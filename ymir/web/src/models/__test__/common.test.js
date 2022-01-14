@@ -92,27 +92,4 @@ describe("models: common", () => {
     equalObject(expected.result, end.value)
     expect(end.done).toBe(true)
   })
-
-  it("effects: getRuntimes", () => {
-    const saga = common.effects.getRuntimes
-    const creator = {
-      type: "getRuntimes",
-      payload: { type: 1 },
-    }
-    const expected = {
-      a: 1,
-      b: 2,
-      c: 3,
-    }
-
-    const generator = saga(creator, { put, call })
-    const start = generator.next()
-    const end = generator.next({
-      code: 0,
-      result: [expected],
-    })
-
-    expect(end.done).toBe(true)
-    expect(end.value).toBe(expected)
-  })
 })

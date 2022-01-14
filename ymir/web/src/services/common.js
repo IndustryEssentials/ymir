@@ -36,21 +36,7 @@ export function getStats({ q, limit = 8, type='day' }) {
     'ds': { path: 'datasets/hot', },
     'ts': { path: 'tasks/count', query: { precision: type } }
   }
-  return request.get(`/stats/${maps[q].path}`, { limit, ...(maps[q].query || {}) })
-}
-
-/**
- * get runtime config of backend
- * @param {object} param0 
- * {
- *   name {string}
- *   hash {string}
- *   type {number} 1(training)|2(mining) config type
- * }
- * @returns 
- */
-export function getRuntimes ({ name, hash, type }) {
-  return request.get('/runtimes/', { params: { name, hash, type }})
+  return request.get(`/stats/${maps[q].path}`, { params: { limit, ...(maps[q].query || {}) }})
 }
 
 export function getSysInfo() {

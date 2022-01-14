@@ -102,7 +102,7 @@ const TaskChart = ({ getTaskStats }) => {
   // labels
   function xTimes(type) {
     let result = []
-    const e8 = (stamp) => (stamp ? moment(Number(stamp) * 1000) : moment()).utcOffset(480)
+    const e8 = (stamp) => (stamp ? moment(stamp) : moment()).utcOffset(480)
     // day
     if (type === times[0].value) {
       result = timestamps.map(stamp => {

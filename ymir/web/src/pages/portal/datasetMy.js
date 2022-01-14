@@ -32,12 +32,12 @@ function Sets({ count = 3, getHotDatasets, getDatasets }) {
   async function fetchHotDataset() {
     const result = await getHotDatasets(count)
     if (result) {
-      setSets(sets.filter(s => s))
+      setSets(result)
     }
   }
 
   async function fetchLatestDataset() {
-    const result = await getDatasets()
+    const result = await getDatasets(count)
     if (result) {
       setSets(result.items)
     }
@@ -101,13 +101,13 @@ function Sets({ count = 3, getHotDatasets, getDatasets }) {
 
 const actions = (dispatch) => {
   return {
-    getHotDatasets(limit = 3) {
+    getHotDatasets(limit) {
       return dispatch({
         type: "dataset/getHotDatasets",
         payload: { limit },
       })
     },
-    getDatasets(limit = 3) {
+    getDatasets(limit) {
       return dispatch({
         type: "dataset/getDatasets",
         payload: { limit, state: 3 },
