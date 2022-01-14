@@ -58,11 +58,12 @@ class WufooAPI(OnlineSheetAPI):
         self._field_mapping = {
             "Field1": "docker_name",
             "Field2": "hash",
-            "Field3": "contributor",
-            "Field4": "phone",
-            "Field5": "email",
-            "Field6": "organization",
-            "Field7": "description",
+            "Field3": "functions",
+            "Field4": "contributor",
+            "Field5": "phone",
+            "Field6": "email",
+            "Field7": "organization",
+            "Field8": "description",
         }
         self._reversed_mapping = {v: k for k, v in self._field_mapping.items()}
 

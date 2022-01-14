@@ -194,6 +194,9 @@ def share_image(
     shared_info = {
         "docker_name": docker_image.url,
         "hash": docker_image.hash,
+        "functions": DockerImageType(docker_image.type).name
+        if docker_image.type
+        else "",
         "description": docker_image.description,
         "contributor": shared_image.contributor,
         "phone": shared_image.phone,
