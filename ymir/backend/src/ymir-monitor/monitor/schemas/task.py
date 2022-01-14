@@ -20,7 +20,7 @@ class TaskParameter(BaseModel):
     description: Optional[str]
 
     @validator("log_paths", each_item=True)
-    def check_files(cls, log_path):
+    def check_files(cls, log_path: str) -> str:
         if not os.path.exists(log_path):
             raise ValueError(f"log_path not exists {log_path}")
 
