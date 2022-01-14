@@ -18,14 +18,12 @@ class EventDispatcher:
         self._event_name = event_name
         self._group_name = f"group:{event_name}"
         self._redis_connect: redis.Redis = self.get_redis_connect()
-        self._config_stream_and_group()
 
     # public: general
     def start(self) -> None:
         # listen to stream
         logging.debug('start listening')
-        self._read_redis_stream_pending_msgs()
-        self._read_redis_stream_new_msgs()
+        self._read_redis_stream_msgs()
 
     @classmethod
     def get_redis_connect(cls) -> redis.Redis:
@@ -43,6 +41,14 @@ class EventDispatcher:
                                      },
                                      maxlen=settings.MAX_REDIS_STREAM_LENGTH,
                                      approximate=True)
+
+    def config_stream_and_group(self) -> None:
+        if not self._stream_exists():
+            # create redis stream by an empty message
+            # there's no "create stream" command in redis
+            self.add_event(event_name=self._event_name, event_topic='_inner_', event_body='')
+        if not self._consumer_group_exists():
+            self._redis_connect.xgroup_create(name=self._event_name, groupname=self._group_name, id='$')
 
     # private: redis stream and consumer group
     def _stream_exists(self) -> bool:
@@ -62,21 +68,12 @@ class EventDispatcher:
             logging.error(e)
             return False
 
-    def _config_stream_and_group(self) -> None:
-        if not self._stream_exists():
-            # create redis stream by an empty message
-            # there's no "create stream" command in redis
-            self.add_event(event_name=self._event_name, event_topic='_inner_', event_body='')
-        if not self._consumer_group_exists():
-            self._redis_connect.xgroup_create(name=self._event_name, groupname=self._group_name, id='$')
-
-    def _read_redis_stream_pending_msgs(self) -> None:
+    def _read_redis_stream_msgs(self) -> None:
         kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
                                              consumername='default',
                                              streams={self._event_name: '0'})
         self._handle_msgs_and_remove(kvs)
 
-    def _read_redis_stream_new_msgs(self) -> Any:
         while True:
             kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
                                                  consumername='default',
