@@ -1,5 +1,6 @@
 import logging
 
+import aioredis
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -9,6 +10,8 @@ from fastapi.openapi.docs import (
     get_swagger_ui_oauth2_redirect_html,
 )
 from fastapi.staticfiles import StaticFiles
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
@@ -53,6 +56,14 @@ async def custom_swagger_ui_html() -> HTMLResponse:
 @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)  # type: ignore
 async def swagger_ui_redirect() -> HTMLResponse:
     return get_swagger_ui_oauth2_redirect_html()
+
+
+@app.on_event("startup")
+async def startup() -> None:
+    redis = aioredis.from_url(
+        settings.REDIS_URI, encoding="utf8", decode_responses=True
+    )
+    FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     SHARING_TIMEOUT: int = 10
     WUFOO_URL: Optional[str]
     WUFOO_AUTHORIZATION: Optional[str]
+    SHARED_DOCKER_IMAGES_URL: Optional[str]
+    GITHUB_TIMEOUT: int = 30
+    APP_CACHE_EXPIRE_IN_SECONDS: int = 3600
 
 
 settings = Settings(_env_file=".env")  # type: ignore

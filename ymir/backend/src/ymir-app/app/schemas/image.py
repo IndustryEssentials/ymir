@@ -85,7 +85,24 @@ class DockerImageOut(Common):
 
 
 class DockerImageSharing(BaseModel):
-    submitter: Optional[str]
-    phone: Optional[str]
-    email: Optional[str]
+    docker_image_id: int
+    contributor: Optional[str]
     organization: Optional[str]
+    email: Optional[str]
+    phone: Optional[str]
+
+
+class SharedDockerImageOut(Common):
+    result: DockerImageSharing
+
+
+class DockerImageShared(BaseModel):
+    docker_name: Optional[str]
+    functions: Optional[str]
+    contributor: Optional[str]
+    organization: Optional[str]
+    description: Optional[str]
+
+
+class SharedDockerImagesOut(Common):
+    result: List[DockerImageShared]
