@@ -1,5 +1,6 @@
 """ emtry point for pymir-ed (pymir events dispatcher) service """
 
+import asyncio
 from collections import defaultdict
 import json
 import logging
@@ -18,8 +19,7 @@ from postman.settings import settings
 
 
 # private: socketio
-async def _sort_by_user_id(
-        tid_to_taskstates: Dict[str, entities.TaskState]) -> Dict[str, Dict[str, entities.TaskState]]:
+def _sort_by_user_id(tid_to_taskstates: Dict[str, entities.TaskState]) -> Dict[str, Dict[str, entities.TaskState]]:
     """
     returns: Dict[str, Dict[str, dict]]
                   (uid)     (tid) (TaskState)
@@ -31,8 +31,8 @@ async def _sort_by_user_id(
     return uid_to_tasks
 
 
-async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, entities.TaskState]) -> None:
-    uid_to_taskstates = await _sort_by_user_id(tid_to_taskstates)
+def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, entities.TaskState]) -> None:
+    uid_to_taskstates = _sort_by_user_id(tid_to_taskstates)
     for uid, tid_to_taskstates in uid_to_taskstates.items():
         data = {}
         for tid, taskstate in tid_to_taskstates.items():
@@ -43,7 +43,7 @@ async def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, e
             data[tid]['state_code'] = taskstate.percent_result.state_code
             data[tid]['state_message'] = taskstate.percent_result.state_message
             data[tid]['stack_error_info'] = taskstate.percent_result.stack_error_info
-        await sio.emit(event='update_taskstate', data=data, namespace=f"/{uid}")
+        asyncio.run(sio.emit(event='update_taskstate', data=data, namespace=f"/{uid}"))
         print(f"sent update_taskstate: {data} -> /{uid}")
 
 
@@ -67,12 +67,12 @@ else:
 
 # fastapi handlers
 @app.post('/events/taskstates', response_model=entities.EventResp)
-async def post_task_states(tid_to_taskstates: Dict[str, entities.TaskState]) -> entities.EventResp:
+def post_task_states(tid_to_taskstates: Dict[str, entities.TaskState]) -> entities.EventResp:
     try:
         EventDispatcher.add_event(event_name='/events/taskstates',
                                   event_topic='raw',
                                   event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
-        await _send_to_socketio(app.sio, tid_to_taskstates=tid_to_taskstates)
+        _send_to_socketio(app.sio, tid_to_taskstates=tid_to_taskstates)
     except BaseException:
         logging.exception(msg='handle post_task_states error')
     return entities.EventResp(return_code=0, return_msg=f"done, received: {len(tid_to_taskstates)} tasks")
