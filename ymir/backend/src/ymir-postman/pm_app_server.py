@@ -4,7 +4,6 @@ import asyncio
 from collections import defaultdict
 import json
 import logging
-import sys
 from typing import Dict
 
 from fastapi import FastAPI
