@@ -33,7 +33,7 @@ const ShareModal = forwardRef(({ username, email, phone, shareImage }, ref) => {
         username,
         id,
         ...other,
-        org: org.trim(),
+        org: (org || '').trim(),
       }
       const result = await shareImage(params)
       if (result) {
