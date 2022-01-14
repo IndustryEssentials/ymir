@@ -15,10 +15,6 @@ redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 
 
 def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs: Any) -> None:
-    """
-    Returns:
-        message ids to be deleted from this stream
-    """
     _, msgs = zip(*mid_and_msgs)
     tid_to_taskstates_latest = _aggregate_msgs(msgs)
 
