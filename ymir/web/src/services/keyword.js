@@ -48,6 +48,10 @@ export function updateKeyword({ name, aliases = [] }) {
  * }
  * @returns {Promise}
  */
-export function getRecommendKeywords({ datasets_ids, limit }) {
-  return request.get(`/api/v1/stats/keywords/recommend`, { datasets_ids, limit })
+export function getRecommendKeywords({ datasets_ids = [], limit }) {
+  if (datasets_ids.length) {
+    return request.get(`/stats/keywords/recommend`, { datasets_ids, limit })
+  } else {
+    return request.get('/stats/keywords/hot', { limit })
+  }
 }
