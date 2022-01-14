@@ -69,11 +69,9 @@ else:
 # fastapi handlers
 @app.post('/events/taskstates', response_model=entities.EventResp)
 def post_task_states(tid_to_taskstates: Dict[str, entities.TaskState]) -> entities.EventResp:
-    try:
-        EventDispatcher.add_event(event_name='/events/taskstates',
-                                  event_topic='raw',
-                                  event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
-        _send_to_socketio(app.sio, tid_to_taskstates=tid_to_taskstates)
-    except BaseException:
-        logging.exception(msg='handle post_task_states error')
+    EventDispatcher.add_event(event_name='/events/taskstates',
+                              event_topic='raw',
+                              event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
+    _send_to_socketio(app.sio, tid_to_taskstates=tid_to_taskstates)
+
     return entities.EventResp(return_code=0, return_msg=f"done, received: {len(tid_to_taskstates)} tasks")
