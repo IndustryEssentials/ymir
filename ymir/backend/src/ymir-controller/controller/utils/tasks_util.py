@@ -1,3 +1,4 @@
+import traceback
 from datetime import datetime
 from typing import List
 
@@ -54,4 +55,4 @@ def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], descr
             timeout=5,
         )
     except RequestException as e:
-        logger.warning(f"register_monitor_log error: {e}")
+        logger.warning(f"register_monitor_log error: {traceback.format_exc()}")

@@ -1,11 +1,13 @@
+import logging
 from typing import Dict
 from typing import List
 
 from source.config import settings
 from source.libs.redis_handler import RedisHandler
 from source.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
-from source.utils.app_logger import logger
 from source.utils.errors import DuplicateTaskIDError, LogFileError
+
+logger = logging.getLogger(__name__)
 
 
 class TaskService:
@@ -32,7 +34,7 @@ class TaskService:
 
         return percent_result
 
-    def add_one_task(self, task_id: str, percent_result: Dict) -> None:
+    def add_single_task(self, task_id: str, percent_result: Dict) -> None:
         self._redis.hset(settings.MONITOR_RUNNING_KEY, task_id, percent_result)
 
     def get_raw_log_contents(self, log_paths: List[str]) -> Dict[str, PercentResult]:
@@ -87,6 +89,6 @@ class TaskService:
             raw_log_contents=raw_log_contents, task_extra_info=task_extra_info, percent_result=percent_result,
         )
 
-        self._redis.hset(settings.MONITOR_RUNNING_KEY, reg_parameters.task_id, task_info.dict())
+        self.add_single_task(reg_parameters.task_id, task_info.dict())
 
         logger.info(f"register task successful: {task_info.dict()} ")

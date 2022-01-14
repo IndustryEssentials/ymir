@@ -1,3 +1,5 @@
+import logging
+import sys
 from typing import Dict
 
 import requests
@@ -10,13 +12,12 @@ from source.libs.redis_handler import RedisHandler
 from source.libs.services import TaskService
 from source.schemas.task import TaskStateEnum, StorageStructure
 from source.schemas.task import TaskStorageStructure
-from source.utils.app_logger import logger
 
 
 def send_updated_task(updated_info: Dict[str, TaskStorageStructure]) -> None:
     requests.post(url=f"{settings.POSTMAN_URL}/events/taskstates", json=updated_info)
 
-    logger.info(f"send_updated_task: {updated_info}")
+    logging.info(f"send_updated_task: {updated_info}")
 
 
 def deal_updated_task(
@@ -33,7 +34,7 @@ def deal_updated_task(
         )
         redis_client.hdel(settings.MONITOR_RUNNING_KEY, *task_finished)
 
-        logger.info(f"finished task ids {task_finished}")
+        logging.info(f"finished task ids {task_finished}")
 
 
 def monitor_percent_log() -> None:
@@ -50,7 +51,7 @@ def monitor_percent_log() -> None:
                 runtime_log_content = TaskService.parse_percent_log(log_path)
             except Exception as e:
                 sentry_sdk.capture_exception(e)
-                logger.warning(f"continue: warning monitor log,  \n {e}")
+                logging.warning(f"continue: warning monitor log,  \n {e}")
                 continue
             runtime_log_contents[log_path] = runtime_log_content
             if runtime_log_content.timestamp != previous_log_content["timestamp"]:
@@ -73,6 +74,7 @@ def monitor_percent_log() -> None:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(stream=sys.stdout, format="%(levelname)-8s: [%(asctime)s] %(message)s", level=logging.INFO)
     sentry_sdk.init(settings.MONITOR_SENTRY_DSN)
     sched = BlockingScheduler()
     sched.add_job(monitor_percent_log, "interval", seconds=settings.INTERVAL_SECONDS)

@@ -1,7 +1,9 @@
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel
+
+from common_utils.task_state_schema import TaskStateEnum
 
 
 class MonitorType(IntEnum):
@@ -14,13 +16,6 @@ class TaskParameter(BaseModel):
     monitor_type: MonitorType = MonitorType.PERCENT
     log_paths: List[str]
     description: Optional[str]
-
-
-class TaskStateEnum(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    DONE = "done"
-    ERROR = "error"
 
 
 class PercentResult(BaseModel):
