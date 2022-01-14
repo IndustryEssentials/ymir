@@ -1,7 +1,7 @@
 """ event dispatcher """
 
 import logging
-from typing import Any, Callable, Set
+from typing import Any, Callable
 
 import redis
 
@@ -45,29 +45,13 @@ class EventDispatcher:
 
     # private: redis stream and consumer group
     def _config_stream_and_group(self) -> None:
-        if not self._stream_exists():
-            # create redis stream by an empty message
-            # there's no "create stream" command in redis
-            self.add_event(event_name=self._event_name, event_topic='_inner_', event_body='')
-        if not self._consumer_group_exists():
+        # creates stream
+        self.add_event(event_name=self._event_name, event_topic='_inner_', event_body='')
+        # creates stream consumer group
+        try:
             self._redis_connect.xgroup_create(name=self._event_name, groupname=self._group_name, id='$')
-
-    def _stream_exists(self) -> bool:
-        try:
-            stream_info = self._redis_connect.xinfo_stream(self._event_name)
-            return stream_info is not None
-        except redis.exceptions.ResponseError as e:
-            logging.error(e)
-            return False
-
-    def _consumer_group_exists(self) -> bool:
-        try:
-            groups_info = self._redis_connect.xinfo_groups(self._event_name)
-            group_names: Set[str] = {group['name'] for group in groups_info}
-            return self._group_name in group_names
-        except redis.exceptions.ResponseError as e:
-            logging.error(e)
-            return False
+        except redis.ResponseError as e:
+            logging.debug(f"xgroup_create: {e}")
 
     def _read_redis_stream_msgs(self) -> None:
         kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
