@@ -138,8 +138,8 @@ export default {
         payload: { items: result, total: datasets.total },
       })
     },
-    *getDatasetStats({ payload }, { call, put }) {
-      const { code, result } = yield call(getStats, payload)
+    *getHotDatasets({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, { ...payload, q: 'ds' })
       const datasets = []
       if (code === 0) {
         const refs = {}

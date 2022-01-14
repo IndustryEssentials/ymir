@@ -38,8 +38,6 @@ function ModelHot({ getLatestModels, getHotModels }) {
     }
   }
 
-  // const cardBodyStyle = { padding: '10px 5px', height: '160px', overflow: 'hidden' }
-
   return (
     <Card className={`${styles.box} ${styles.hotModel}`} bordered={false}
       headStyle={cardHead} bodyStyle={cardBody}
@@ -79,8 +77,8 @@ const actions = (dispatch) => {
     },
     getHotModels(limit = 3) {
       return dispatch({
-        type: 'model/getModelStats',
-        payload: { limit, q: 'hms' }
+        type: 'model/getModelsByRef',
+        payload: { limit }
       })
     },
   }

@@ -101,10 +101,10 @@ function Sets({ count = 3, getHotDataset, getDatasets }) {
 
 const actions = (dispatch) => {
   return {
-    getHotDataset(limit = 3) {
+    getHotDatasets(limit = 3) {
       return dispatch({
-        type: "dataset/getDatasetStats",
-        payload: { q: 'dss', limit },
+        type: "dataset/getHotDatasets",
+        payload: { limit },
       })
     },
     getDatasets(limit = 3) {

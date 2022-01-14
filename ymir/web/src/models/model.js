@@ -83,8 +83,8 @@ export default {
         return result
       }
     },
-    *getModelStats({ payload }, { call, put }) {
-      const { code, result } = yield call(getStats, payload)
+    *getModelsByRef({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, { ...payload, q: 'hms' })
       const models = []
       if (code === 0) {
         const refs = {}
@@ -95,7 +95,7 @@ export default {
         if (ids.length) {
           const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
           if (modelsObj) {
-            models = modelsObj.items.map(model => {
+            models = modelsObj.map(model => {
               model.count = refs[model.id]
               return model
             })
@@ -103,6 +103,24 @@ export default {
         }
       }
       return models
+    },
+    *getModelsByMap({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, { ...payload, q: 'mms' })
+      let models = []
+      let kws = []
+      if (code === 0) {
+        kws = Object.keys(result).slice(0, 4)
+        const ids = [...new Set(kws.reduce((prev, current) => ([...prev, ...result[current]]), []))]
+        if (ids.length) {
+          const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
+          if (modelsObj) {
+            models = modelsObj
+          }
+        }
+      }
+      return {
+        models, keywords: kws,
+      }
     },
   },
   reducers: {
