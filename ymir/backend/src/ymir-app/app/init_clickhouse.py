@@ -55,7 +55,7 @@ ORDER BY created_time;"""
 clickhouse_tables = [task_table, model_table, keyword_table]
 
 
-def init():
+def init() -> None:
     client = Client(host=CLICKHOUSE_URI)
     existing_tables = client.execute("show tables")
     if not existing_tables:

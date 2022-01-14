@@ -189,8 +189,7 @@ FROM
         FROM toRelativeMonthNum(toDate(%(start_at)s))
         TO toRelativeMonthNum(toDate(%(end_at)s)) STEP {step}
 )
-ORDER BY time ASC
-LIMIT %(limit)s"""
+ORDER BY time ASC"""
         else:
             if precision == "week":
                 step = 7
@@ -206,8 +205,7 @@ GROUP BY
     time
 ORDER BY time ASC WITH FILL
     FROM toDate(%(start_at)s)
-    TO toDate(%(end_at)s) STEP {step}
-LIMIT %(limit)s"""
+    TO toDate(%(end_at)s) STEP {step}"""
 
         records = self.client.execute(
             sql,
@@ -218,22 +216,21 @@ LIMIT %(limit)s"""
                 "limit": limit,
             },
         )
-        return prepare_task_count(records)
+        return prepare_task_count(records, limit)
 
     def close(self) -> None:
         logger.debug("clickhouse client closed")
 
 
-def prepare_task_count(records: List) -> Dict:
+def prepare_task_count(records: List, limit: int) -> Dict:
     times = []
-    defaults = {type_.name: 0 for type_ in TaskType}
+    defaults = {type_.value: 0 for type_ in TaskType}
     stats = []
     for dt, tasks in groupby([TaskCount.from_clickhouse(r) for r in records], "time"):
         times.append(dt)
         task_count = dict(defaults)
-        task_count.update({task.type_: task.count for task in tasks})
-        # todo find a better way
-        #  "" key if filled by clickhouse as placeholder
-        task_count.pop("", None)
+        task_count.update(
+            {TaskType[task.type_].value: task.count for task in tasks if task.type_}
+        )
         stats.append(task_count)
-    return {"task": stats, "task_timestamps": times}
+    return {"task": stats[-limit:], "task_timestamps": times[-limit:]}
