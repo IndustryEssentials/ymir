@@ -38,7 +38,7 @@ const ImageList = ({ role, getShareImages }) => {
         icon: <CopyIcon />,
       },
     ]
-    return !isAdmin() ? menus : []
+    return isAdmin() ? menus : []
   }
 
   function copy (record) {
