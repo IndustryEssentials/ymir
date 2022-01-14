@@ -9,6 +9,7 @@ import asyncio
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
 
+from controller.utils import tasks_util
 from postman import entities, event_dispatcher  # type: ignore
 from postman.settings import settings
 
@@ -145,14 +146,14 @@ async def _update_db_single_task(session: aiohttp.ClientSession, tid: str,
             'state_message': task.percent_result.state_message
         }
         async with session.post(url=url, json=task_data) as response:
-            logging.debug(f"_update_db_single_task: request: {task_data}")
+            logging.info(f"_update_db_single_task: request: {task_data}")
             response_text = await response.text()
-            logging.debug(f"_update_db_single_task: response: {response_text}")
+            logging.info(f"_update_db_single_task: response: {response_text}")
             response_obj = json.loads(response_text)
 
             return_code = int(response_obj['code'])
             return_msg = response_obj.get('message', '')
             return (tid, return_msg, return_code != APP_RC_TASK_NOT_FOUND)
     except BaseException as e:
-        logging.debug(traceback.format_exc())
+        logging.exception(msg='_update_db_single_task error')
         return (tid, f"{type(e).__name__}: {e}", True)
