@@ -49,6 +49,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const [hpVisible, setHpVisible] = useState(false)
   const [imageUrl, setImageUrl] = useState(null)
   const [gpu_count, setGPU] = useState(0)
+  const initGpuHelp = <span>{t('task.gpu.tip', { count: gpu_count })}</span>
+  const [gpuHelp, setGpuHelp] = useState(initGpuHelp)
   const hpMaxSize = 30
 
   const renderRadio = (types) => {
@@ -109,6 +111,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
       const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image, model_id } = parameters
       const tSets = include_train_datasets || []
       const vSets = include_validation_datasets || []
+      console.log('copy keywords: ', include_classes)
       form.setFieldsValue({
         name: `${name}_${randomNumber()}`,
         train_sets: tSets,
@@ -145,7 +148,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function getKwsFromDatasets(dss = []) {
-    return dss.reduce((prev, curr) => [...datasets.find(ds => ds.id === curr).keywords, ...prev], [])
+    return dss.reduce((prev, curr) => [...((datasets.find(ds => ds.id === curr) || {}).keywords || []), ...prev], [])
   }
 
   function inArray (items, arr) {
@@ -221,13 +224,15 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     console.log("Failed:", errorInfo)
   }
 
-  function validateGPU() {
-    const count = Number(form.getFieldValue('gpu_count'))
+  function validateGPU(_, value) {
+    const count = Number(value)
     const min = 1
     const max = gpu_count
     if (count < min || count > max) {
-      return Promise.reject(t('task.train.gpu.invalid', { min, max }))
+      setGpuHelp(t('task.train.gpu.invalid', { min, max }))
+      return Promise.reject()
     }
+    setGpuHelp(initGpuHelp)
     return Promise.resolve()
   }
 
@@ -428,20 +433,15 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
             <Tip content={t('tip.task.filter.gpucount')}>
               <Form.Item
-                name='gpu'
+                className={styles.gpu}
                 label={t('task.gpu.count')}
                 rules={[
                   {validator: validateGPU}
                 ]}
-                dependencies={['gpu_count']}
+                help={gpuHelp}
+                name="gpu_count"
               >
-                <Form.Item
-                  noStyle
-                  name="gpu_count"
-                  rules={[{ type: 'number', min: 1, max: gpu_count }]}
-                >
-                  <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
-                <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+                  <InputNumber min={1} max={gpu_count} precision={0} />
               </Form.Item>
             </Tip>
 
