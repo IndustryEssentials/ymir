@@ -5,23 +5,25 @@ import { useEffect, useState } from 'react'
 import t from "@/utils/t"
 import s from './common.less'
 
-const RecommendKeywords = ({ sets = [], limit = 5, onSelect = () => { }, getRecommendKeywords }) => {
+const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => { }, getRecommendKeywords }) => {
   const [keywords, setKeywords] = useState([])
 
   useEffect(() => {
-    fetchKeywords()
+    if (global || sets?.length) {
+      fetchKeywords()
+    }
   }, [sets])
 
   async function fetchKeywords() {
-    const result = await getRecommendKeywords({ dataset_ids: sets, limit })
+    const result = await getRecommendKeywords({ global, dataset_ids: sets, limit })
     if (result) {
       setKeywords(result)
     }
   }
 
   return (
-    <Space className={s.recommandKeywords}>
-      <span className={s.label}>{t('common.recommand.keyword.label')}</span>
+    <Space className={s.recommendKeywords}>
+      <span className={s.label}>{t('common.recommend.keyword.label')}</span>
       {keywords.map(keyword => <Tag className={s.tag} key={keyword} onClick={() => onSelect(keyword)}>{keyword}</Tag>)}
     </Space>
   )

@@ -232,7 +232,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 </Select>
               </Form.Item>
             </Tip>
-            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommendKeywords sets={[form.getFieldValue('datasets')]} onSelect={selectRecommendKeywords} /></Form.Item></Tip>
+            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommendKeywords global={true} onSelect={selectRecommendKeywords} /></Form.Item></Tip>
             
             <Tip hidden={true}>
               <Form.Item name='keep_annotations'

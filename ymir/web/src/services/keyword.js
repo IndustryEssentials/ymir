@@ -44,14 +44,16 @@ export function updateKeyword({ name, aliases = [] }) {
  * get recommend keywords of dataset or global
  * @param {object} param0 
  * {
- *   {number} type
+ *   {array[number]} datasets_ids
+ *   {number} limit
+ *   {boolean} global default: false
  * }
  * @returns {Promise}
  */
-export function getRecommendKeywords({ datasets_ids = [], limit }) {
-  if (datasets_ids.length) {
-    return request.get(`/stats/keywords/recommend`, { datasets_ids, limit })
+export function getRecommendKeywords({ dataset_ids = [], limit, global = false }) {
+  if (!global) {
+    return request.get(`/stats/keywords/recommend`, { params: { dataset_ids: dataset_ids.toString(), limit }})
   } else {
-    return request.get('/stats/keywords/hot', { limit })
+    return request.get('/stats/keywords/hot', { params: { limit }})
   }
 }
