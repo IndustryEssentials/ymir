@@ -22,7 +22,7 @@ class EventDispatcher:
 
     # public: general
     def start(self) -> None:
-        # listen to stream
+        """ start to listen """
         logging.debug('start listening')
         self._read_redis_stream_msgs()
 

@@ -6,7 +6,7 @@ from postman.event_dispatcher import EventDispatcher
 from postman.settings import settings
 
 
-def main() -> int:
+def main() -> None:
     is_debug_mode = '-d' in sys.argv
 
     # for test: debug logs
@@ -19,8 +19,6 @@ def main() -> int:
     ed = EventDispatcher(event_name='/events/taskstates')
     ed.register_handler(event_handlers.on_task_state)
     ed.start()
-
-    return 0
 
 
 if __name__ == '__main__':
