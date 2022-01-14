@@ -122,6 +122,22 @@ export default {
       // }
       return result
     },
+    *updateDatasets({ payload }, { put, select }) {
+      const datasets = yield select(state => state.dataset.datasets)
+      const updateList = payload || {}
+      const result = datasets.items.map(dataset => {
+        const updateItem = updateList[dataset.hash]
+        if (updateItem) {
+          dataset.state = updateItem.state
+          dataset.progress = updateItem.percent * 100
+        }
+        return dataset
+      })
+      yield put({
+        type: 'UPDATE_DATASETS',
+        payload: { items: result, total: datasets.total },
+      })
+    },
   },
   reducers: {
     UPDATE_DATASETS(state, { payload }) {
