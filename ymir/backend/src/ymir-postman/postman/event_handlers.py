@@ -98,7 +98,7 @@ def _update_db(tid_to_tasks: Dict[str, entities.TaskState]) -> Set[str]:
         Set[str]: failed tids
     """
     failed_tids: Set[str] = set()
-    custom_headers = {'api-key': settings.API_KEY_SECRET}
+    custom_headers = {'api-key': settings.APP_API_KEY}
     for tid, task in tid_to_tasks.items():
         *_, need_retry = _update_db_single_task(tid, task, custom_headers)
         if need_retry:
@@ -118,7 +118,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     Returns:
         Tuple[str, str, bool]: tid, error_message, need_to_retry
     """
-    url = f"http://{settings.API_HOST}/api/v1/tasks/status"
+    url = f"http://{settings.APP_API_HOST}/api/v1/tasks/status"
     try:
         # task_data: see api: /api/v1/tasks/status
         task_data = {

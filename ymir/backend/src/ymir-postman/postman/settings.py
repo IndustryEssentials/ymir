@@ -6,8 +6,8 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "ymir postman"
-    API_HOST: str = os.environ['API_HOST']
-    API_KEY_SECRET: str = os.environ['API_KEY_SECRET']
+    APP_API_HOST: str = os.environ['APP_API_HOST']
+    APP_API_KEY: str = os.environ['APP_API_KEY']
     PM_REDIS_URI: str = os.environ['CTR_REDIS_URI']
 
     BACKEND_CORS_ORIGINS: List[str] = []
