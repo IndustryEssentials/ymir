@@ -143,6 +143,6 @@ def _update_db_single_task(tid: str,
         return_msg = response_obj.get('message', '')
 
         return (tid, return_msg, return_code != 0)
-    except BaseException as e:
+    except requests.exceptions.RequestException as e:
         logging.exception(msg='_update_db_single_task error')
         return (tid, f"{type(e).__name__}: {e}", True)
