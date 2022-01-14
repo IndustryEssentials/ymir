@@ -13,13 +13,13 @@ def main() -> int:
     log_level = logging.DEBUG if is_debug_mode else logging.INFO
     logging.basicConfig(stream=sys.stdout, format='%(levelname)-8s: [%(asctime)s] %(message)s', level=log_level)
 
-    logging.info(f"postman event dispatcher start with settings: {settings}")
+    logging.info(f"postman event dispatcher start with:\n    debug: {is_debug_mode} \n    settings: {settings}")
 
     # event dispatcher
     ed = EventDispatcher(event_name='/events/taskstates')
     ed.register_handler(event_handlers.on_task_state)
     ed.start()
-    
+
     return 0
 
 
