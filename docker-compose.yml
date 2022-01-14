@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   backend:
-    image: zzw-backend:test
+    image: industryessentials/ymir-backend
     env_file:
       - .env
     runtime: ${SERVER_RUNTIME}
@@ -26,7 +26,7 @@ services:
       - NGINX_DATA_PATH=/ymir-storage
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
-      - API_HOST=192.168.13.107:9999
+      - API_HOST=127.0.0.1:80
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
       - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
@@ -50,8 +50,6 @@ services:
       - viz-redis
       - tensorboard
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
-    ports:
-      - 8090:8090
     restart: on-failure:10
     networks:
       - ymirnetwork
