@@ -7,7 +7,7 @@ from typing import Any, List, Set, Dict, Tuple
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
 
-from controller.utils import tasks_util
+from common_utils import percent_log_util
 from postman import entities, event_dispatcher  # type: ignore
 from postman.settings import settings
 
@@ -117,7 +117,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     task_data = {
         'hash': tid,
         'timestamp': task.percent_result.timestamp,
-        'state': tasks_util.task_state_str_to_code(task.percent_result.state),
+        'state': percent_log_util.PercentLogHandler.task_state_str_to_code(task.percent_result.state),
         'percent': task.percent_result.percent,
         'state_message': task.percent_result.state_message
     }
