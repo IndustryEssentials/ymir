@@ -123,7 +123,7 @@ def _update_db_single_task(tid: str,
     Returns:
         Tuple[str, str, bool]: tid, error_message, need_to_retry
     """
-    url = f"http://{settings.API_HOST}/api/v1/tasks/statustest"
+    url = f"http://{settings.API_HOST}/api/v1/tasks/status"
     try:
         # task_data: see api: /api/v1/tasks/status
         task_data = {
