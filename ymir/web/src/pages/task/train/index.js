@@ -221,6 +221,16 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     console.log("Failed:", errorInfo)
   }
 
+  function validateGPU() {
+    const count = Number(form.getFieldValue('gpu_count'))
+    const min = 1
+    const max = gpu_count
+    if (count < min || count > max) {
+      return Promise.reject(t('task.train.gpu.invalid', { min, max }))
+    }
+    return Promise.resolve()
+  }
+
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
@@ -418,7 +428,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
             <Tip content={t('tip.task.filter.gpucount')}>
               <Form.Item
+                name='gpu'
                 label={t('task.gpu.count')}
+                rules={[
+                  {validator: validateGPU}
+                ]}
+                dependencies={['gpu_count']}
               >
                 <Form.Item
                   noStyle

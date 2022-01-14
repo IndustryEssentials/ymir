@@ -152,7 +152,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
-    config['gpu_count'] = form.getFieldValue('gpu_count')
+    config['gpu_count'] = form.getFieldValue('gpu_count') || 0
 
     const params = {
       ...values,
@@ -364,7 +364,6 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[{ type: 'number', min: 0, max: gpu_count }]}
                 >
                   <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                   <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
