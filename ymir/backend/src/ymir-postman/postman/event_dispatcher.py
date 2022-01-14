@@ -90,10 +90,7 @@ class EventDispatcher:
             if not stream_msgs:
                 continue
 
-            try:
-                self._event_handler(ed=self, mid_and_msgs=stream_msgs)
-            except BaseException:
-                logging.exception(msg='error occured in handler: {self._event_handler.__name__}')
+            self._event_handler(ed=self, mid_and_msgs=stream_msgs)
 
             msg_ids, *_ = zip(*stream_msgs)
             self._redis_connect.xack(self._event_name, self._group_name, *msg_ids)

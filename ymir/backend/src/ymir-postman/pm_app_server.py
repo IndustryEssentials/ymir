@@ -8,9 +8,9 @@ from typing import Dict
 
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
-from starlette.middleware.cors import CORSMiddleware
-import socketio
 from fastapi_socketio import SocketManager
+import socketio
+from starlette.middleware.cors import CORSMiddleware
 
 from controller.utils import tasks_util
 from postman import entities
