@@ -1,7 +1,6 @@
 import json
 import logging
 import time
-import traceback
 from typing import Any, List, Set, Dict, Tuple
 
 import aiohttp
