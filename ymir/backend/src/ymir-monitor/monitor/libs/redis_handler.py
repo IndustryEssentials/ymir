@@ -3,10 +3,10 @@ from typing import Dict
 
 from redis import StrictRedis, Redis
 
-from source.config import settings
+from monitor.config import settings
 
 
-def init_redis_pool(redis_uri: str = settings.MONITOR_REDIS_URI) -> Redis:
+def init_redis_pool(redis_uri: str = settings.BACKEND_REDIS_URI) -> Redis:
     return StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
 
 

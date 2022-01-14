@@ -6,8 +6,8 @@ services:
       - .env
     runtime: ${SERVER_RUNTIME}
     environment:
+      - BACKEND_REDIS_URI=redis://redis:6379/0
       # controller
-      - CTR_REDIS_URI=redis://redis:6379/0
       - NVIDIA_VISIBLE_DEVICES=all
       - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
       - MONTIOR=${YMIR_PATH}/ymir-data/monitor
@@ -28,8 +28,6 @@ services:
       - CHECK_INTERVAL_IN_SECONDS=30
       - API_HOST=127.0.0.1:80
       # monitor
-      - MONITOR_REDIS_URI=redis://redis:6379/0
-      # update it when ed server ready
       - POSTMAN_URL=http://127.0.0.1:8090
       - MONITOR_URI=http://127.0.0.1:9098
     volumes:

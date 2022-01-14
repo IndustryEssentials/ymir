@@ -1,6 +1,6 @@
 from dependency_injector import containers, providers
 
-from source.libs import redis_handler, services
+from monitor.libs import redis_handler, services
 
 
 class Container(containers.DeclarativeContainer):

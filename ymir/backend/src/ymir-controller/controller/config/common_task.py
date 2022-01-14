@@ -3,7 +3,7 @@ import os
 from proto import backend_pb2
 
 # redis service
-CTR_REDIS_URI = os.environ.get("CTR_REDIS_URI", "redis://:@127.0.0.1:6379")
+BACKEND_REDIS_URI = os.environ.get("BACKEND_REDIS_URI", "redis://:@127.0.0.1:6379")
 
 
 IMAGE_CONFIG_PATH = {

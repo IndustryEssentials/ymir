@@ -6,11 +6,11 @@ from fastapi import FastAPI, Depends
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.exceptions import HTTPException
 
-from source.config import settings
-from source.libs.container import Container
-from source.libs.services import TaskService
-from source.schemas.task import TaskParameter
-from source.utils.errors import http_error_handler
+from monitor.config import settings
+from monitor.libs.container import Container
+from monitor.libs.services import TaskService
+from monitor.schemas.task import TaskParameter
+from monitor.utils.errors import http_error_handler
 
 
 def create_app() -> FastAPI:

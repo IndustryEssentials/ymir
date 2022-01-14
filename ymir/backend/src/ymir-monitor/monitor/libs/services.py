@@ -2,10 +2,10 @@ import logging
 from typing import Dict
 from typing import List
 
-from source.config import settings
-from source.libs.redis_handler import RedisHandler
-from source.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
-from source.utils.errors import DuplicateTaskIDError, LogFileError
+from monitor.config import settings
+from monitor.libs.redis_handler import RedisHandler
+from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
+from monitor.utils.errors import DuplicateTaskIDError, LogFileError
 
 logger = logging.getLogger(__name__)
 

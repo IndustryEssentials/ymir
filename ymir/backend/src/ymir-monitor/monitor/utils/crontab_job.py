@@ -6,12 +6,12 @@ import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from source.config import settings
-from source.libs import redis_handler
-from source.libs.redis_handler import RedisHandler
-from source.libs.services import TaskService
-from source.schemas.task import TaskStateEnum, StorageStructure
-from source.schemas.task import TaskStorageStructure
+from monitor.config import settings
+from monitor.libs import redis_handler
+from monitor.libs.redis_handler import RedisHandler
+from monitor.libs.services import TaskService
+from monitor.schemas.task import TaskStateEnum, StorageStructure
+from monitor.schemas.task import TaskStorageStructure
 
 
 def send_updated_task(updated_info: Dict[str, TaskStorageStructure]) -> None:

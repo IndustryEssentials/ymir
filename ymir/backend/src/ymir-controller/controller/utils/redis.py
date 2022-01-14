@@ -39,7 +39,7 @@ class MiddlewareRedis:
 
 
 def get_redis_connect() -> redis.Redis:
-    return redis.StrictRedis.from_url(common_task_config.CTR_REDIS_URI, encoding="utf8", decode_responses=True)
+    return redis.StrictRedis.from_url(common_task_config.BACKEND_REDIS_URI, encoding="utf8", decode_responses=True)
 
 
 rds = MiddlewareRedis(get_redis_connect())
