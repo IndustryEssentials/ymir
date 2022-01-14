@@ -6,17 +6,17 @@ import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+from common_utils.percent_log_util import TaskStateEnum, PercentLogHandler
 from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
-from monitor.schemas.task import TaskStateEnum, StorageStructure
+from monitor.schemas.task import StorageStructure
 from monitor.schemas.task import TaskStorageStructure
 
 
 def send_updated_task(updated_info: Dict[str, TaskStorageStructure]) -> None:
     requests.post(url=f"{settings.POSTMAN_URL}/events/taskstates", json=updated_info)
-
     logging.info(f"send_updated_task: {updated_info}")
 
 
@@ -47,12 +47,12 @@ def monitor_percent_log() -> None:
         flag_task_updated = False
         runtime_log_contents = dict()
         for log_path, previous_log_content in content["raw_log_contents"].items():
-            try:
-                runtime_log_content = TaskService.parse_percent_log(log_path)
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
-                logging.warning(f"continue: warning monitor log,  \n {e}")
+            runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
+            if isinstance(runtime_log_content, str):
+                sentry_sdk.capture_message(runtime_log_content)
+                logging.warning(runtime_log_content)
                 continue
+
             runtime_log_contents[log_path] = runtime_log_content
             if runtime_log_content.timestamp != previous_log_content["timestamp"]:
                 flag_task_updated = True

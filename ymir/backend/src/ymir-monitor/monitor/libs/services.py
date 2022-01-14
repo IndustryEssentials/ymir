@@ -2,6 +2,7 @@ import logging
 from typing import Dict
 from typing import List
 
+from common_utils.percent_log_util import PercentLogHandler
 from monitor.config import settings
 from monitor.libs.redis_handler import RedisHandler
 from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
@@ -14,33 +15,16 @@ class TaskService:
     def __init__(self, redis: RedisHandler) -> None:
         self._redis = redis
 
-    @staticmethod
-    def parse_percent_log(log_file: str) -> PercentResult:
-        with open(log_file, "r") as f:
-            monitor_file_lines = f.readlines()
-        content_row_one = monitor_file_lines[0].strip().split("\t")
-        if not monitor_file_lines or len(content_row_one) < 4:
-            logger.error(f"invalid monitor file: {log_file}")
-            raise LogFileError
-
-        task_id, timestamp, percent, state, *_ = content_row_one
-        percent_result = PercentResult(task_id=task_id, timestamp=int(timestamp), percent=percent, state=state)
-        if len(content_row_one) > 4:
-            percent_result.state_code = int(content_row_one[4])
-        if len(content_row_one) > 5:
-            percent_result.state_message = content_row_one[5]
-        if len(monitor_file_lines) > 1:
-            percent_result.stack_error_info = "\n".join(monitor_file_lines[1:100])
-
-        return percent_result
-
     def add_single_task(self, task_id: str, percent_result: Dict) -> None:
         self._redis.hset(settings.MONITOR_RUNNING_KEY, task_id, percent_result)
 
     def get_raw_log_contents(self, log_paths: List[str]) -> Dict[str, PercentResult]:
         result = dict()
         for one_log_file in log_paths:
-            result[one_log_file] = self.parse_percent_log(one_log_file)
+            percent_result = PercentLogHandler.parse_percent_log(one_log_file)
+            if isinstance(percent_result, str):
+                raise LogFileError
+            result[one_log_file] = percent_result
 
         return result
 

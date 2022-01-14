@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
-from common_utils.task_state_schema import TaskStateEnum
+from common_utils.percent_log_util import PercentResult
 
 
 class MonitorType(IntEnum):
@@ -16,16 +16,6 @@ class TaskParameter(BaseModel):
     monitor_type: MonitorType = MonitorType.PERCENT
     log_paths: List[str]
     description: Optional[str]
-
-
-class PercentResult(BaseModel):
-    task_id: str
-    timestamp: str
-    percent: float
-    state: TaskStateEnum
-    state_code: int = 0
-    state_message: Optional[str] = None
-    stack_error_info: Optional[str] = None
 
 
 class TaskExtraInfo(BaseModel):
