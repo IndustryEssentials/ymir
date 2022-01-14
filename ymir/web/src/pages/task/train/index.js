@@ -88,11 +88,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     const tkw = getKw(trainSets)
     const vkw = getKw(validationSets)
     const kws = tkw.filter(v => vkw.includes(v))
-    // if (!form.getFieldValue('model')) {
     setKeywords(kws)
-      // form.setFieldsValue({ keywords: [] })
-      // setSelectedKeywords([])
-    // }
   }, [trainSets, validationSets, datasets])
 
   useEffect(() => {
@@ -111,13 +107,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
       const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image, model_id } = parameters
       const tSets = include_train_datasets || []
       const vSets = include_validation_datasets || []
-      console.log('copy keywords: ', include_classes)
       form.setFieldsValue({
         name: `${name}_${randomNumber()}`,
         train_sets: tSets,
         validation_sets: vSets,
         gpu_count: config.gpu_count,
-        keywords: include_classes,
+        // keywords: include_classes,
         model: model_id,
         docker_image,
         strategy,
@@ -126,6 +121,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
       setTrainSets(tSets)
       setValidationSets(vSets)
       setHpVisible(true)
+      setSelectedKeywords(include_classes)
 
       history.replace({ state: {} })
     }
