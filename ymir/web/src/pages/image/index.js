@@ -8,6 +8,7 @@ import { getImageTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import ImageList from './components/list'
 import { SearchIcon } from "@/components/common/icons"
+import ShareImageList from "./components/shareImageList"
 
 const { useForm } = Form
 
@@ -23,7 +24,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Image({ role, getImages, delImage, updateImage }) {
+function Image() {
   const { keyword } = useParams()
   const [form] = useForm()
   const [active, setActive] = useState(tabsTitle[0].key)
@@ -65,12 +66,9 @@ function Image({ role, getImages, delImage, updateImage }) {
     form.resetFields()
   }
 
-
-  const publicImage = ('')
-
   const contents = {
     my: <ImageList filter={query} />,
-    public: publicImage,
+    public: <ShareImageList />,
   }
 
   const searchPanel = (
@@ -98,7 +96,7 @@ function Image({ role, getImages, delImage, updateImage }) {
   return (
     <div className={styles.image}>
       <Breadcrumbs />
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} tabBarExtraContent={searchPanel}>
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} tabBarExtraContent={active === 'my' ? searchPanel : null}>
         {contents[active]}
       </Card>
     </div>

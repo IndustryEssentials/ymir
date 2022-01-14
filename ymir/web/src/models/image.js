@@ -6,6 +6,7 @@ import {
   updateImage,
   shareImage,
   relateImage,
+  getShareImages,
 } from "@/services/image"
 
 export default {
@@ -32,6 +33,12 @@ export default {
       const { code, result } = yield call(batchImages, payload)
       if (code === 0) {
         return result.items
+      }
+    },
+    *getShareImages({}, { call }) {
+      const { code, result } = yield call(getShareImages)
+      if (code === 0) {
+        return result
       }
     },
     *getImage({ payload }, { call, put }) {
