@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import styles from "./index.less"
-import { useParams } from "umi"
+import { useHistory, useLocation, useParams } from "umi"
 import { Form, Input, Radio, Card, } from "antd"
 
 import t from "@/utils/t"
@@ -26,6 +26,8 @@ const initQuery = {
 
 function Image() {
   const { keyword } = useParams()
+  const history = useHistory()
+  const location = useLocation()
   const [form] = useForm()
   const [active, setActive] = useState(tabsTitle[0].key)
   const [query, setQuery] = useState(initQuery)
@@ -38,6 +40,14 @@ function Image() {
       form.setFieldsValue({ name: keyword })
     }
   }, [keyword])
+
+  useEffect(() => {
+    console.log('location state: ', location.state)
+    const type = location?.state?.type
+    if (typeof type !== 'undefined') {
+      setActive(type)
+    }
+  }, [location.state])
 
 
   const search = (values) => {
@@ -96,7 +106,7 @@ function Image() {
   return (
     <div className={styles.image}>
       <Breadcrumbs />
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} tabBarExtraContent={active === 'my' ? searchPanel : null}>
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { console.log(key); history.replace({ state: { type: key }} )}} tabBarExtraContent={active === 'my' ? searchPanel : null}>
         {contents[active]}
       </Card>
     </div>

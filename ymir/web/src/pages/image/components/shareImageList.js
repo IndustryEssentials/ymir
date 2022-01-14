@@ -38,7 +38,11 @@ const ImageList = ({ role, getShareImages }) => {
         icon: <CopyIcon />,
       },
     ]
-    return isAdmin() ? menus : []
+    return !isAdmin() ? menus : []
+  }
+
+  function copy (record) {
+    history.push({pathname: '/home/image/add', state: { record }})
   }
 
   function isAdmin() {
@@ -69,13 +73,13 @@ const ImageList = ({ role, getShareImages }) => {
       <Col>{more(item)}</Col>
     </Row>
     const desc = <Row><Col className={s.desc} flex={1}>
-      <Space className={s.info}>
+      <Space className={s.info} >
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{item.functions}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
       </Space>
       <div className={s.related}>
         <span><NavHomeIcon title={t('image.list.item.org')} /> </span>{item.organization}
-        <UserSharedIcon title='Contributor' /> {item.contributor}
+        <UserSharedIcon title='Contributor' title={t('image.list.item.contributor')} /> {item.contributor}
       </div>
     </Col>
     </Row>
@@ -95,7 +99,7 @@ const ImageList = ({ role, getShareImages }) => {
         dataSource={images}
         renderItem={renderItem}
       />
-      <div className={s.pager}>Total: {images.total}</div>
+      <div className={s.pager}>Total: {images.length}</div>
     </div>
   )
 }
