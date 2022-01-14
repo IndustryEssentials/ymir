@@ -179,7 +179,7 @@ def parse_metrics(parameters: Dict) -> Dict:
         {
             dataset_id
             for field in dataset_fields
-            for dataset_id in parameters.get(field, [])
+            for dataset_id in parameters.get(field) or []
         }
     )
     model_id = parameters.get("model_id")
