@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = []
 
     RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
-    IGNORE_FAILED_SECONDS = 3600 * 24 * 2  # two days
     MAX_REDIS_STREAM_LENGTH = 10 * 3600 * 24 * 2  # two days, with 10 messages for each second
 
 
