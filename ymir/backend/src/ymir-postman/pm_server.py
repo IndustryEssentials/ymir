@@ -17,7 +17,6 @@ def main() -> int:
 
     # event dispatcher
     ed = EventDispatcher(event_name='/events/taskstates')
-    ed.config_stream_and_group()
     ed.register_handler(event_handlers.on_task_state)
     ed.start()
 

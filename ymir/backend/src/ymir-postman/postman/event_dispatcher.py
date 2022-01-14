@@ -18,6 +18,7 @@ class EventDispatcher:
         self._event_name = event_name
         self._group_name = f"group:{event_name}"
         self._redis_connect: redis.Redis = self.get_redis_connect()
+        self._config_stream_and_group()
 
     # public: general
     def start(self) -> None:
@@ -42,7 +43,8 @@ class EventDispatcher:
                                      maxlen=settings.MAX_REDIS_STREAM_LENGTH,
                                      approximate=True)
 
-    def config_stream_and_group(self) -> None:
+    # private: redis stream and consumer group
+    def _config_stream_and_group(self) -> None:
         if not self._stream_exists():
             # create redis stream by an empty message
             # there's no "create stream" command in redis
@@ -50,7 +52,6 @@ class EventDispatcher:
         if not self._consumer_group_exists():
             self._redis_connect.xgroup_create(name=self._event_name, groupname=self._group_name, id='$')
 
-    # private: redis stream and consumer group
     def _stream_exists(self) -> bool:
         try:
             stream_info = self._redis_connect.xinfo_stream(self._event_name)
