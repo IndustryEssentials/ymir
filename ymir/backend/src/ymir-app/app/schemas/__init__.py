@@ -18,6 +18,7 @@ from .image import (
     DockerImageState,
     DockerImageUpdate,
 )
+from .image_config import ImageConfigCreate, ImageConfigOut
 from .image_relationship import ImageRelationshipsCreate, ImageRelationshipsOut
 from .inference import InferenceCreate, InferenceOut
 from .keyword import (
