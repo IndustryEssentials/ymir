@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     MONITOR_FINISHED_KEY: str = "MONITOR_FINISHED_KEY:v1"
 
     POSTMAN_URL: str = ""
-    BACKEND_REDIS_URI: str = "redis://localhost"
+    BACKEND_REDIS_URL: str = "redis://localhost"
 
 
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")  # type: ignore
