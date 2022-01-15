@@ -21,7 +21,7 @@ from app.api.errors.errors import (
     TaskNotFound,
 )
 from app.config import settings
-from app.constants.state import TaskState, TaskType
+from app.constants.state import FinalStates, TaskState, TaskType
 from app.models import Dataset, Model
 from app.models.task import Task
 from app.schemas.task import MergeStrategy
@@ -435,6 +435,10 @@ def update_task_status(
         raise ObsoleteTaskStatus()
 
     task_info = schemas.Task.from_orm(task)
+    if task_info.state in FinalStates:
+        logger.warning("Attempt to update finished task, skip")
+        raise ObsoleteTaskStatus()
+
     task_result_proxy = TaskResultProxy(
         db=db,
         graph_db=graph_db,
