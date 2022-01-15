@@ -110,7 +110,7 @@ export default {
       let kws = []
       if (code === 0) {
         kws = Object.keys(result).slice(0, 4)
-        const ids = [...new Set(kws.reduce((prev, current) => ([...prev, ...result[current]]), []))]
+        const ids = [...new Set(kws.reduce((prev, current) => ([...prev, ...result[current].map(item => item[0])]), []))]
         if (ids.length) {
           const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
           if (modelsObj) {
