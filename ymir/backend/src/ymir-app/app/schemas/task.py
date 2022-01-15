@@ -58,6 +58,8 @@ class TaskParameter(BaseModel):
 
     # training & mining & infer
     docker_image: Optional[str]
+    # todo replace docker_image with docker_image_id
+    docker_image_id: Optional[int]
 
 
 class TaskCreate(TaskBase):
