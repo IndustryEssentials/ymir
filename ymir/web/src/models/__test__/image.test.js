@@ -48,7 +48,8 @@ describe("models: image", () => {
     const end = generator.next()
 
     // console.log('image model - getImages:', response, end, typeof end.value)
-    equalObject(expected, end.value)
+    expect(end.value.total).toBe(4)
+    expect(end.value.items.length).toBe(5)
     expect(end.done).toBe(true)
   })
   it("effects: getImage", () => {
