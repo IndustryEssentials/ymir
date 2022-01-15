@@ -24,7 +24,7 @@ def upgrade():
         sa.Column("image_id", sa.Integer(), nullable=False),
         sa.Column("config", sa.Text(length=2000), nullable=False),
         sa.Column("type", sa.Integer(), nullable=False),
-        sa.PrimaryKeyConstraint("image_id"),
+        sa.PrimaryKeyConstraint("image_id", "type"),
         sa.UniqueConstraint("image_id", "type", name="unique_image_type"),
     )
     op.create_index(
