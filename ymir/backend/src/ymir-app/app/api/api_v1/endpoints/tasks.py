@@ -556,7 +556,7 @@ class TaskResultProxy:
             task.id,
             task.name,
             task.type.name,
-            task_state,
+            task_state.name,
         )
 
     def handle_finished_task(self, task: schemas.Task) -> None:
@@ -720,15 +720,16 @@ class TaskResultProxy:
             self.db, task=task_obj, progress=task_progress
         )
         new_state = TaskState(task_state)
-        if task_obj.state == TaskState.premature.value and new_state in [
-            TaskState.done,
-            TaskState.error,
-        ]:
-            # ad hoc
-            #  for task in premature state,
-            #  the final state from Controller is done or error,
-            #  we have to convert back to terminate for frontend
-            new_state = TaskState.terminate
+        if task_obj.state == TaskState.premature.value:
+            if new_state in [TaskState.done, TaskState.error]:
+                # ad hoc
+                #  for task in premature state
+                #  if state from Controller is done or error,
+                #  we have to convert back to terminate for frontend
+                new_state = TaskState.terminate
+            else:
+                # otherwise just return so as to keep it's premature state
+                return task_obj
         task_obj = crud.task.update_state(self.db, task=task_obj, new_state=new_state)
         return task_obj
 
