@@ -44,7 +44,7 @@ def terminate_tasks() -> None:
             logger.info("Failed to terminate legacy task: %s", task.hash)
             continue
         else:
-            crud.task.update_state(db, task=task, new_state=TaskState.terminate)
+            crud.task.update_state(db, task=task, new_state=TaskState.error)
 
 
 def main() -> None:
