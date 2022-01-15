@@ -42,7 +42,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   })
 
   async function generateOptions(images) {
-    const relatedOptions = await getRelatedOptions()
+    let relatedOptions = relatedId ? await getRelatedOptions() : []
     const opts = images.filter(image => relatedOptions.every(img => img.value !== image.id)).map(generateOption)
     let result = opts
     if (relatedOptions.length) {
@@ -62,7 +62,6 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
 
   async function getRelatedOptions() {
     const trainImage = await getImage(relatedId)
-    console.log('train image : ', trainImage, relatedId)
     let relatedOptions = []
     if(trainImage?.related) {
       relatedOptions = trainImage.related.map(generateOption)
