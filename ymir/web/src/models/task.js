@@ -103,15 +103,6 @@ export default {
         return result
       }
     },
-    // *createTask({ payload }, { call, put }) {
-    //   let { code, result } = yield call(createTask, payload)
-    //   if (code === 0) {
-    //     return result
-    //   }
-    //   return {
-    //     code,
-    //   }
-    // },
     *createFilterTask({ payload }, { call, put }) {
       let { code, result } = yield call(createFilterTask, payload)
       if (code === 0) {

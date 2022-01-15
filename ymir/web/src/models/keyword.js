@@ -2,6 +2,7 @@ import {
   getKeywords, 
   updateKeyword,
   updateKeywords,
+  getRecommendKeywords,
 } from "@/services/keyword"
 
 export default {
@@ -36,6 +37,12 @@ export default {
         return result
       }
     },
+    *getRecommendKeywords({ payload }, { call, put }) {
+      const data = yield call(getRecommendKeywords, payload)
+      if (data.code === 0) {
+        return data.result.map(item => item[0])
+      }
+    }
   },
   reducers: {
     UPDATE_KEYWORDS(state, { payload }) {

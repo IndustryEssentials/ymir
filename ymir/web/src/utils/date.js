@@ -26,5 +26,5 @@ export function calTimeLeft(progress, utcTime, locale) {
 
 export function calDuration(seconds, locale) {
   const duration = moment.duration(seconds * 1000).locale(locale)
-  return duration.humanize({ s: 0 })
+  return seconds ? duration.humanize({ s: 0 }) : ''
 }
