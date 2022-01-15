@@ -6,12 +6,12 @@ import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from common_utils.percent_log_util import PercentLogHandler
+from common_utils.percent_log_util import PercentLogHandler, PercentResult
 from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
-from monitor.schemas.task import StorageStructure
+from monitor.schemas.task import TaskSetStorageStructure
 from monitor.schemas.task import TaskStorageStructure
 from proto.backend_pb2 import TaskState
 
@@ -51,11 +51,11 @@ def monitor_percent_log() -> None:
             try:
                 runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
             except ValueError as e:
-                # any sub task's log failed, pass this task
                 sentry_sdk.capture_exception(e)
                 logging.warning(e)
-                flag_task_updated = False
-                break
+                runtime_log_content = PercentResult(
+                    task_id=task_id, timestamp="123", percent=0.0, state=TaskState.TaskStateError
+                )
 
             runtime_log_contents[log_path] = runtime_log_content
             if runtime_log_content.timestamp != previous_log_content["timestamp"]:
@@ -74,7 +74,7 @@ def monitor_percent_log() -> None:
                 percent_result=content_merged,
             )
 
-    task_updated = StorageStructure.parse_obj(task_updated).dict()
+    task_updated = TaskSetStorageStructure.parse_obj(task_updated).dict()
 
     if len(task_updated):
         deal_updated_task(redis_client, task_updated, task_id_finished)  # type: ignore

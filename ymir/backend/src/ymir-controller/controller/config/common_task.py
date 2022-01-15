@@ -12,4 +12,4 @@ IMAGE_CONFIG_PATH = {
     backend_pb2.TaskType.TaskTypeInfer: "/img-man/infer-template.yaml",
 }
 
-MONITOR_URI = os.environ.get("MONITOR_URI", "http://127.0.0.1:9098")
+MONITOR_URL = os.environ.get("MONITOR_URL", "http://127.0.0.1:9098")

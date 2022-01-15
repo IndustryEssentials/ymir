@@ -16,8 +16,8 @@ class TaskService:
     def __init__(self, redis: RedisHandler) -> None:
         self._redis = redis
 
-    def add_single_task(self, task_id: str, percent_result: Dict) -> None:
-        self._redis.hset(settings.MONITOR_RUNNING_KEY, task_id, percent_result)
+    def add_single_task(self, task_id: str, task_info: Dict) -> None:
+        self._redis.hset(settings.MONITOR_RUNNING_KEY, task_id, task_info)
 
     def get_raw_log_contents(self, log_paths: List[str]) -> Dict[str, PercentResult]:
         result = dict()
@@ -32,20 +32,35 @@ class TaskService:
 
     @staticmethod
     def merge_task_progress_contents(raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
+        """
+        pending: if all log is pending
+        done: if all log is done
+        error: any log error
+        running: else
+        """
         percent = 0.0
+        log_files_state_set = set()
         max_timestamp_content = None
         for raw_log_content in raw_log_contents.values():
-            # any raw log error, means total task is error
-            if raw_log_content.state == TaskState.TaskStateError:
-                raw_log_content.percent = 1.0
-                return raw_log_content
-
+            log_files_state_set.add(raw_log_content.state)
             percent += raw_log_content.percent
             if not max_timestamp_content:
                 max_timestamp_content = raw_log_content
             max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: int(x.timestamp))
+
         result = max_timestamp_content.copy()  # type: ignore
-        result.percent = percent / len(raw_log_contents)
+        if TaskState.TaskStateError in log_files_state_set:
+            result.percent = 1.0
+            result.state = TaskState.TaskStateError
+        elif len(log_files_state_set) == 1 and TaskState.TaskStateDone in log_files_state_set:
+            result.percent = 1.0
+            result.state = TaskState.TaskStateDone
+        elif len(log_files_state_set) == 1 and TaskState.TaskStatePending in log_files_state_set:
+            result.percent = 0.0
+            result.state = TaskState.TaskStatePending
+        else:
+            result.percent = percent / len(raw_log_contents)
+            result.state = TaskState.TaskStateRunning
 
         return result
 

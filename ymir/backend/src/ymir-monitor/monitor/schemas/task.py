@@ -40,7 +40,7 @@ class TaskStorageStructure(BaseModel):
     percent_result: PercentResult
 
 
-class StorageStructure(BaseModel):
+class TaskSetStorageStructure(BaseModel):
     __root__: Dict[str, TaskStorageStructure]
 
     def dict(self) -> Dict:  # type: ignore

@@ -50,7 +50,7 @@ def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], descr
     # compatible with old modes, remove the try when ready
     try:
         requests.post(
-            url=f"{common_task_config.MONITOR_URI}/api/v1/tasks",
+            url=f"{common_task_config.MONITOR_URL}/api/v1/tasks",
             json=dict(task_id=task_id, user_id=user_id, log_paths=log_paths, description=description),
             timeout=5,
         )
