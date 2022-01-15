@@ -45,7 +45,7 @@ describe('service: common', () => {
     })
   })
   it('common:getStats', () => {
-    const params = { type: 'model' }
+    const params = { q: 'ds', limit: 7 }
     const expected = {
       model: {},
       dataset: {},
