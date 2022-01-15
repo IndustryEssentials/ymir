@@ -6,7 +6,7 @@ import { List, Skeleton, Space, Button, Pagination, Col, Row, } from "antd"
 
 import t from "@/utils/t"
 import { ROLES } from '@/constants/user'
-import { TYPES, STATES, getImageTypeLabel, imageIsPedding } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
 import ShareModal from "./share"
 import RelateModal from './relate'
 import Del from './del'
@@ -88,7 +88,7 @@ const ImageList = ({ role, filter, getImages }) => {
       {
         key: "del",
         label: t("image.action.del"),
-        hidden: () => imageIsPedding(state),
+        hidden: () => imageIsPending(state),
         onclick: () => del(id, name),
         icon: <DeleteIcon />,
       },

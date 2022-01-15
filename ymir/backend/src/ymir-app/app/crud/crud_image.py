@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.crud.base import CRUDBase
 from app.models.image import DockerImage
+from app.models.image_config import DockerImageConfig
 from app.schemas.image import (
     DockerImageCreate,
     DockerImageState,
@@ -31,7 +32,9 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         if filters.get("state"):
             query = query.filter(DockerImage.state == int(filters["state"]))
         if filters.get("type"):
-            query = query.filter(DockerImage.type == int(filters["type"]))
+            query = query.filter(
+                DockerImage.configs.any(DockerImageConfig.type == int(filters["type"]))
+            )
 
         query = query.order_by(desc(self.model.create_datetime))
         if limit:
@@ -43,7 +46,11 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         self, db: Session, url: str
     ) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
-        query = query.filter(self.model.type == int(DockerImageType.infer))
+        query = query.filter(
+            DockerImage.configs.any(
+                DockerImageConfig.type == int(DockerImageType.infer)
+            )
+        )
         return query.filter(self.model.url == url).first()  # type: ignore
 
     def get_by_url(self, db: Session, url: str) -> Optional[DockerImage]:
