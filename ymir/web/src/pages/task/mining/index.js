@@ -485,12 +485,6 @@ const dis = (dispatch) => {
         payload,
       })
     },
-    getRuntimes(payload) {
-      return dispatch({
-        type: "common/getRuntimes",
-        payload,
-      })
-    },
   }
 }
 

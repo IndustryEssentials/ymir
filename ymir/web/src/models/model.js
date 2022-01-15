@@ -7,6 +7,7 @@ import {
   updateModel,
   verify,
 } from "@/services/model"
+import { getStats } from "../services/common"
 
 export default {
   namespace: "model",
@@ -80,6 +81,45 @@ export default {
       const { code, result } = yield call(verify, id, urls, image)
       if (code === 0) {
         return result
+      }
+    },
+    *getModelsByRef({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, { ...payload, q: 'hms' })
+      const models = []
+      if (code === 0) {
+        const refs = {}
+        const ids = result.map(item => {
+          refs[item[0]] = item[1]
+          return item[0]
+        })
+        if (ids.length) {
+          const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
+          if (modelsObj) {
+            models = modelsObj.map(model => {
+              model.count = refs[model.id]
+              return model
+            })
+          }
+        }
+      }
+      return models
+    },
+    *getModelsByMap({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, { ...payload, q: 'mms' })
+      let models = []
+      let kws = []
+      if (code === 0) {
+        kws = Object.keys(result).slice(0, 4)
+        const ids = [...new Set(kws.reduce((prev, current) => ([...prev, ...result[current]]), []))]
+        if (ids.length) {
+          const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
+          if (modelsObj) {
+            models = modelsObj
+          }
+        }
+      }
+      return {
+        models, keywords: kws,
       }
     },
   },

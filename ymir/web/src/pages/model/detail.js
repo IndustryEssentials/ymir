@@ -123,12 +123,6 @@ const actions = (dispatch) => {
         payload,
       })
     },
-    batchDatasets(ids) {
-      return dispatch({
-        type: 'dataset/batchDatasets',
-        payload: ids,
-      })
-    },
   }
 }
 
