@@ -580,7 +580,7 @@ class TaskResultProxy:
             model_info = jsonable_encoder(model)
             if keywords:
                 self.clickhouse.save_model_result(
-                    model_info["create_datetime"],
+                    model.create_datetime,
                     model_info["user_id"],
                     model_info["id"],
                     model_info["name"],
