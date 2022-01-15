@@ -84,6 +84,8 @@ def create_docker_image(
     This endpint will create an image record immediately,
     but the pulling process will run in background
     """
+    if crud.docker_image.docker_name_exists(db, url=docker_image_in.url):
+        raise DuplicateDockerImageError()
     docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
     logger.info("[create image] docker image record created: %s", docker_image)
 
@@ -122,7 +124,7 @@ def import_docker_image(
         )
         crud.image_config.create(db, obj_in=image_config_in)
 
-    docker_image_update = {"hash": hash_, "state": DockerImageState.done}
+    docker_image_update = {"hash": hash_, "state": DockerImageState.done.value}
     crud.docker_image.update(db, db_obj=docker_image, obj_in=docker_image_update)
     logger.info(
         "[create image] docker image imported via controller: %s, added %d configs",
