@@ -64,11 +64,11 @@ class TaskService:
 
         return result
 
-    def get_running_task(self) -> Dict[str, TaskStorageStructure]:
+    def get_running_task(self) -> Dict[str, Dict]:
         contents = self._redis.hgetall(settings.MONITOR_RUNNING_KEY)
         return contents
 
-    def get_finished_task(self) -> Dict[str, TaskStorageStructure]:
+    def get_finished_task(self) -> Dict[str, Dict]:
         contents = self._redis.hgetall(settings.MONITOR_FINISHED_KEY)
         return contents
 

@@ -12,22 +12,20 @@ from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
 from monitor.schemas.task import TaskSetStorageStructure
-from monitor.schemas.task import TaskStorageStructure
 from proto.backend_pb2 import TaskState
 
 
-def send_updated_task(updated_info: Dict[str, TaskStorageStructure]) -> None:
-    requests.post(url=f"{settings.POSTMAN_URL}/events/taskstates", json=updated_info)
+def send_updated_task(updated_info: TaskSetStorageStructure) -> None:
+    requests.post(url=f"{settings.POSTMAN_URL}/events/taskstates", json=updated_info.dict())
     logging.info(f"send_updated_task: {updated_info}")
 
 
 def deal_updated_task(
-    redis_client: RedisHandler,
-    task_updated: Dict[str, TaskStorageStructure],
-    task_id_finished: List[str],
+    redis_client: RedisHandler, task_updated_model: TaskSetStorageStructure, task_id_finished: List[str],
 ) -> None:
     # sentry will catch Exception
-    send_updated_task(task_updated)
+    send_updated_task(task_updated_model)
+    task_updated = task_updated_model.dict()
     redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_updated)
     if task_id_finished:
         redis_client.hmset(
@@ -40,7 +38,8 @@ def deal_updated_task(
 
 def monitor_percent_log() -> None:
     redis_client = redis_handler.RedisHandler()
-    contents = redis_client.hgetall(settings.MONITOR_RUNNING_KEY)
+    task_service_ins = TaskService(redis_client)
+    contents = task_service_ins.get_running_task()
 
     task_updated = dict()
     task_id_finished = []
@@ -74,10 +73,9 @@ def monitor_percent_log() -> None:
                 percent_result=content_merged,
             )
 
-    task_updated = TaskSetStorageStructure.parse_obj(task_updated).dict()
-
     if len(task_updated):
-        deal_updated_task(redis_client, task_updated, task_id_finished)  # type: ignore
+        task_updated_model = TaskSetStorageStructure.parse_obj(task_updated)
+        deal_updated_task(redis_client, task_updated_model, task_id_finished)
 
 
 if __name__ == "__main__":
