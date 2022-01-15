@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Dict
+from typing import Dict, List
 
 import requests
 import sentry_sdk
@@ -24,7 +24,7 @@ def send_updated_task(updated_info: Dict[str, TaskStorageStructure]) -> None:
 def deal_updated_task(
     redis_client: RedisHandler,
     task_updated: Dict[str, TaskStorageStructure],
-    task_id_finished: Dict[str, TaskStorageStructure],
+    task_id_finished: List[str],
 ) -> None:
     # sentry will catch Exception
     send_updated_task(task_updated)
