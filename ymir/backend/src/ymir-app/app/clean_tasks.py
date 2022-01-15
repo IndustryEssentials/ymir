@@ -43,6 +43,8 @@ def terminate_tasks() -> None:
             # terminate legacy tasks shouldn't break start up process
             logger.info("Failed to terminate legacy task: %s", task.hash)
             continue
+        else:
+            crud.task.update_state(db, task=task, new_state=TaskState.terminate)
 
 
 def main() -> None:
