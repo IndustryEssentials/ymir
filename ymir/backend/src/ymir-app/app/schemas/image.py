@@ -37,11 +37,6 @@ class DockerImageUpdate(BaseModel):
     is_shared: Optional[bool]
 
 
-class DockerImageUpdateConfig(DockerImageUpdate):
-    hash: Optional[str]
-    state: Optional[int]
-
-
 class DockerImageInDBBase(
     IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DockerImageBase
 ):
