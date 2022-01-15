@@ -144,9 +144,10 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   }
 
   function imageChange(_, image = {}) {
-    const { url, config } = image
+    const { url, configs = [] } = image
+    const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
     setSelectedImage(image)
-    setConfig(config)
+    setConfig(configObj.config)
   }
 
   function setConfig(config) {
