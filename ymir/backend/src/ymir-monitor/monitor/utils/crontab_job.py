@@ -17,7 +17,7 @@ from proto.backend_pb2 import TaskState
 
 def send_updated_task(updated_info: TaskSetStorageStructure) -> None:
     requests.post(url=f"{settings.POSTMAN_URL}/events/taskstates", json=updated_info.dict())
-    logging.info(f"send_updated_task: {updated_info}")
+    logging.info(f"send_updated_task: {updated_info.dict()}")
 
 
 def deal_updated_task(
