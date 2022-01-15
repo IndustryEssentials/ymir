@@ -17,20 +17,14 @@ redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs: Any) -> None:
     _, msgs = zip(*mid_and_msgs)
     tid_to_taskstates_latest = _aggregate_msgs(msgs)
+    if not tid_to_taskstates_latest:
+        return
 
     # update db, if error occured, write back
-    failed_tids = None
-    try:
-        failed_tids = _update_db(tid_to_tasks=tid_to_taskstates_latest)
-        _save_failed(failed_tids=failed_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
-    except BaseException:
-        logging.exception(msg='error occured when async run _update_db')
-        # write back all
-        failed_tids = set(tid_to_taskstates_latest.keys())
-        _save_failed(failed_tids=failed_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
-
+    failed_tids = _update_db(tid_to_tasks=tid_to_taskstates_latest)
     if failed_tids:
         time.sleep(5)
+        _save_failed(failed_tids=failed_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
@@ -40,7 +34,7 @@ def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
     tid_to_taskstates_latest: entities.TaskStateDict = _load_failed()
     for msg in msgs:
         msg_topic = msg['topic']
-        if msg_topic != 'raw' and msg_topic != 'selected':
+        if msg_topic != settings.EVENT_TOPIC_RAW:
             continue
 
         tid_to_taskstates = parse_raw_as(entities.TaskStateDict, msg['body'])
