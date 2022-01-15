@@ -77,22 +77,10 @@ export default {
     },
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
-      // if (code === 0) {
-      //   yield put({
-      //     type: "UPDATE_DATASETS",
-      //     payload: result,
-      //   })
-      // }
       return result
     },
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
-      // if (code === 0) {
-      //   yield put({
-      //     type: "UPDATE_DATASETS",
-      //     payload: result,
-      //   })
-      // }
       return result
     },
     *updateDataset({ payload }, { call, put }) {
@@ -114,12 +102,6 @@ export default {
     },
     *importDataset({ payload }, { call, put }) {
       const { code, result } = yield call(importDataset, payload)
-      // if (code === 0) {
-      //   yield put({
-      //     type: "UPDATE_DATASETS",
-      //     payload: result,
-      //   })
-      // }
       return result
     },
     *updateDatasets({ payload }, { put, select }) {

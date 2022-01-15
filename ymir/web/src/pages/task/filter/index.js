@@ -188,13 +188,8 @@ function Filter({
               <p>{t('task.filter.form.include.label')}</p>
             <Tip content={t('tip.task.filter.includelable')}>
                 <Form.Item
-                  // label={t('task.filter.form.include.label')}
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='inc'
-                  // hidden={!keywords.length}
-                  // rules={[
-                  //   { validator: requireOne },
-                  // ]}
                   help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
                 >
                   <Select
@@ -211,7 +206,6 @@ function Filter({
               <p>{t('task.filter.form.exclude.label')}</p>
               <Tip content={t('tip.task.filter.excludelable')}>
                 <Form.Item
-                  // label={t('task.filter.form.exclude.label')}
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='exc'
                   dependencies={['inc']}

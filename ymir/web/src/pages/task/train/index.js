@@ -87,11 +87,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     const tkw = getKw(trainSets)
     const vkw = getKw(validationSets)
     const kws = tkw.filter(v => vkw.includes(v))
-    // if (!form.getFieldValue('model')) {
     setKeywords(kws)
-      // form.setFieldsValue({ keywords: [] })
-      // setSelectedKeywords([])
-    // }
   }, [trainSets, validationSets, datasets])
 
   useEffect(() => {
