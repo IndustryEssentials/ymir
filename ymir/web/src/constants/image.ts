@@ -17,7 +17,7 @@ export function imageIsPending (state: number) {
   return state === STATES.PENDING
 }
 
-export const getImageTypeLabel = (functions: number[] | null) => {
+export const getImageTypeLabel = (functions: number[] = []) => {
 
   const labels = {
     [TYPES.UNKOWN]: t('image.type.unkown'),
@@ -26,7 +26,7 @@ export const getImageTypeLabel = (functions: number[] | null) => {
     [TYPES.INFERENCE]: t('image.type.inference'),
   }
 
-  return functions?.map(func => labels[func])
+  return functions.map(func => labels[func])
 }
 
 /**
