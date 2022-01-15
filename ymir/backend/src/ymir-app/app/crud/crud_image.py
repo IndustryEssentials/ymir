@@ -86,5 +86,11 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         update_data = {"is_shared": is_shared}
         return self.update(db, db_obj=docker_image, obj_in=update_data)
 
+    def update_from_dict(
+        self, db: Session, *, docker_image_id: int, updates: Dict
+    ) -> DockerImage:
+        docker_image = self.get(db, id=docker_image_id)
+        return self.update(db, db_obj=docker_image, obj_in=updates)
+
 
 docker_image = CRUDDockerImage(DockerImage)
