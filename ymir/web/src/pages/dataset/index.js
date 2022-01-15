@@ -111,7 +111,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
     {
       title: showTitle("dataset.column.source"),
       dataIndex: "type",
-      render: (type, { id, task_name }) => <TypeTag type={type} id={id} name={task_name} />,
+      render: (type, { task_id, task_name }) => <TypeTag type={type} id={task_id} name={task_name} />,
       ellipsis: true,
     },
     {

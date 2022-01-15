@@ -59,8 +59,12 @@ function ImageDetail({ role, getImage }) {
     return type === TYPES.TRAINING
   }
 
-  function isDone(state) {
-    return state === STATES.DONE
+  function isDone() {
+    return image.state === STATES.DONE
+  }
+
+  function isError() {
+    return image.state === STATES.ERROR
   }
 
   function renderConfig(config = {}) {
@@ -97,7 +101,7 @@ function ImageDetail({ role, getImage }) {
           <Item label={t('image.detail.label.share')}>{image.is_shared ? t('common.yes') : t('common.no')}</Item>
           <Item label={t('image.detail.label.related')} span={2}>
             <Row><Col flex={1}><ImagesLink images={image.related} /></Col>
-              {isAdmin() && isDone(image.state) ? <Col><Button type="primary" onClick={() => relateImage()}>{t('image.detail.relate')}</Button></Col> : null}
+              {isAdmin() && isDone() ? <Col><Button type="primary" onClick={() => relateImage()}>{t('image.detail.relate')}</Button></Col> : null}
             </Row>
           </Item>
           <Item label={t('image.detail.label.config')} span={2}>
@@ -105,12 +109,9 @@ function ImageDetail({ role, getImage }) {
           </Item>
           <Item label={t('image.detail.label.state')} span={2}>{getImageStateLabel(image.state)}</Item>
           <Item label={''} span={2}><Space>
-            {isDone(image.state) ? <>
-              {renderTaskBtn()}
-              {isAdmin() ? <Button onClick={share}>{t('image.action.share')}</Button> : null}
-              <Button onClick={del}>{t('common.del')}</Button>
-            </> : null}
-
+            {isDone(image.state) ? renderTaskBtn() : null}
+            <Button hidden={!isAdmin() || !isDone()} onClick={share}>{t('image.action.share')}</Button>
+            <Button hidden={!isDone() && !isError()} onClick={del}>{t('common.del')}</Button>
           </Space></Item>
         </Descriptions>
       </Card>

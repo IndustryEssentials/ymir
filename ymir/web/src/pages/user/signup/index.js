@@ -23,7 +23,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
       return Promise.resolve()
     },
   })
-  const signup = async ({ email, username, phone, password }) => {
+  const signup = async ({ email, username, phone = '', password }) => {
     const params = {
       email,
       username: username.trim(),
