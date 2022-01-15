@@ -88,9 +88,11 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
 
     def update_from_dict(
         self, db: Session, *, docker_image_id: int, updates: Dict
-    ) -> DockerImage:
+    ) -> Optional[DockerImage]:
         docker_image = self.get(db, id=docker_image_id)
-        return self.update(db, db_obj=docker_image, obj_in=updates)
+        if docker_image:
+            return self.update(db, db_obj=docker_image, obj_in=updates)
+        return docker_image
 
 
 docker_image = CRUDDockerImage(DockerImage)

@@ -24,7 +24,7 @@ class DockerImageBase(BaseModel):
 
 
 class DockerImageCreate(DockerImageBase):
-    pass
+    url: str
 
 
 class DockerImageLinkCreate(BaseModel):
