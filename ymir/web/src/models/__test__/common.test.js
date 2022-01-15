@@ -115,4 +115,33 @@ describe("models: common", () => {
     expect(end.done).toBe(true)
     expect(end.value).toBe(expected)
   })
+  it("effects: getSysInfo", () => {
+    const saga = common.effects.getSysInfo
+    const creator = {
+      type: "getSysInfo",
+      payload: { },
+    }
+    const expected = {
+      gpu_count: 8,
+    }
+
+    const generator = saga(creator, { call })
+    const start = generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.done).toBe(true)
+    expect(end.value.gpu_count).toBe(expected.gpu_count)
+
+    const errGen = saga(creator, { call })
+    errGen.next()
+    const errEnd = errGen.next({
+      code: 1004,
+      result: expect,
+    })
+    expect(errEnd.done).toBe(true)
+    expect(errEnd.value).toBe(undefined)
+  })
 })
