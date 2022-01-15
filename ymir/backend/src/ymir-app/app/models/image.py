@@ -15,6 +15,7 @@ from sqlalchemy.orm import relationship
 
 from app.config import settings
 from app.db.base_class import Base
+from app.models.image_config import DockerImageConfig
 from app.models.image_relationship import DockerImageRelationship
 
 
@@ -24,15 +25,18 @@ class DockerImage(Base):
     name = Column(String(settings.NAME_LEN_LIMIT), index=True)
     url = Column(String(settings.PARA_LEN_LIMIT), index=True)
     hash = Column(String(settings.HASH_LEN_LIMIT), index=True)
-    config = Column(Text(settings.CONFIG_LEN_LIMIT))
     description = Column(Text(settings.CONFIG_LEN_LIMIT))
-    type = Column(Integer, index=True)
     state = Column(Integer, index=True)
     related = relationship(
         "DockerImage",
         secondary=DockerImageRelationship.__table__,
         primaryjoin=id == DockerImageRelationship.__table__.c.src_image_id,
         secondaryjoin=id == DockerImageRelationship.__table__.c.dest_image_id,
+        uselist=True,
+    )
+    configs = relationship(
+        "DockerImageConfig",
+        primaryjoin="foreign(DockerImageConfig.image_id)==DockerImage.id",
         uselist=True,
     )
     is_shared = Column(Boolean, default=False)

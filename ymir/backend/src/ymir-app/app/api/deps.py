@@ -23,6 +23,7 @@ from app.constants.state import TaskType
 from app.db.session import SessionLocal
 from app.utils import cache as ymir_cache
 from app.utils import class_ids, graph, security, stats, ymir_controller, ymir_viz
+from app.utils.clickhouse import YmirClickHouse
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -70,7 +71,7 @@ def get_current_user(
 ) -> models.User:
     try:
         payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+            token, settings.APP_SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         token_data = schemas.TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
@@ -200,3 +201,11 @@ def get_personal_labels(
     csv_labels = controller_client.get_labels_of_user(current_user.id)
     cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(csv_labels))
     return csv_labels
+
+
+def get_clickhouse_client() -> Generator:
+    try:
+        clickhouse_client = YmirClickHouse(settings.CLICKHOUSE_URI)
+        yield clickhouse_client
+    finally:
+        clickhouse_client.close()

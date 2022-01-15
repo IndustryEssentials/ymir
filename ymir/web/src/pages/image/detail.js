@@ -107,9 +107,8 @@ function ImageDetail({ role, getImage }) {
           <Item label={''} span={2}><Space>
             {isDone(image.state) ? <>
               {renderTaskBtn()}
-              {isAdmin() ? <>
-                <Button onClick={share}>{t('image.action.share')}</Button>
-                <Button onClick={del}>{t('common.del')}</Button> </> : null}
+              {isAdmin() ? <Button onClick={share}>{t('image.action.share')}</Button> : null}
+              <Button onClick={del}>{t('common.del')}</Button>
             </> : null}
 
           </Space></Item>

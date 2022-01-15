@@ -18,6 +18,7 @@ from .image import (
     DockerImageState,
     DockerImageUpdate,
 )
+from .image_config import ImageConfigCreate, ImageConfigOut
 from .image_relationship import ImageRelationshipsCreate, ImageRelationshipsOut
 from .inference import InferenceCreate, InferenceOut
 from .keyword import (
@@ -40,7 +41,16 @@ from .model import (
 )
 from .msg import Msg
 from .role import Role, RoleCreate, RoleOut
-from .stats import Stats, StatsOut
+from .stats import (
+    Stats,
+    StatsKeywordsRecommendOut,
+    StatsModelmAPsOut,
+    StatsOut,
+    StatsPopularDatasetsOut,
+    StatsPopularKeywordsOut,
+    StatsPopularModelsOut,
+    StatsTasksCountOut,
+)
 from .sys_info import SysInfo, SysInfoOut
 from .task import (
     Task,
