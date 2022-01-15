@@ -96,7 +96,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations } = parameters
+      const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations, docker_image } = parameters
       const sets = include_datasets || []
       const xsets = exclude_datasets || []
       setTopk(!!top_k)
@@ -107,6 +107,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
         filter_strategy: !!top_k,
         inference: generate_annotations,
         model: model_id,
+        docker_image,
         topk: top_k,
         gpu_count: config.gpu_count,
         strategy,
@@ -151,7 +152,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
-    config['gpu_count'] = form.getFieldValue('gpu_count')
+    config['gpu_count'] = form.getFieldValue('gpu_count') || 0
 
     const params = {
       ...values,
@@ -347,11 +348,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item
                 label={t('task.mining.form.label.label')}
                 name='inference'
-                initialValue={0}
+                initialValue={false}
               >
                 <Radio.Group options={[
-                  { value: 1, label: t('common.yes') },
-                  { value: 0, label: t('common.no') },
+                  { value: true, label: t('common.yes') },
+                  { value: false, label: t('common.no') },
                 ]} />
               </Form.Item>
             </Tip>
@@ -363,7 +364,6 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[{ type: 'number', min: 0, max: gpu_count }]}
                 >
                   <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                   <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>

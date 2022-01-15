@@ -18,7 +18,6 @@ const breadcrumbs = {
   'breadcrumbs.model.verify': { cn: '模型验证', en: 'Model Verification', },
   'breadcrumbs.history': { cn: '历史树', en: 'History Tree', },
   'breadcrumbs.keyword': { cn: '标签管理', en: 'Keyword List', },
-  'breadcrumbs.configure': { cn: '资源配置', en: 'Configure', },
   'breadcrumbs.configure.permission': { cn: '权限配置', en: 'Permission', },
   'breadcrumbs.user.info': { cn: '用户管理', en: 'User Information', },
   'breadcrumbs.images': { cn: '镜像列表', en: 'Images', },

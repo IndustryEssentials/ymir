@@ -3,7 +3,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from app.schemas.common import Common, IdModelMixin
-from app.schemas.image import DockerImage
 
 
 class ImageRelationshipBase(BaseModel):

@@ -42,7 +42,7 @@ const ImageSelect = ({ value, type = TYPES.TRAINING, onChange = () => {}, getIma
   }
 
   return (
-    <Select value={value} {...resProps} onChange={(value, { image }) => onChange(value, image)} options={options} allowClear></Select>
+    <Select value={value} {...resProps} onChange={(value, opt) => onChange(value, opt?.image)} options={options} allowClear></Select>
   )
 }
 

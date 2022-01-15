@@ -44,6 +44,11 @@ def mock_stats(mocker):
     return mocker.Mock()
 
 
+@pytest.fixture(scope="function")
+def mock_clickhouse(mocker):
+    return mocker.Mock()
+
+
 class TestTaskResult:
     def test_get_task_result(
         self,
@@ -60,6 +65,7 @@ class TestTaskResult:
             graph_db=mock_graph_db,
             viz=mock_viz,
             stats_client=mock_stats,
+            clickhouse=mock_clickhouse,
         )
         user_id = random.randint(1000, 2000)
         task_hash = random_lower_string(32)
@@ -79,6 +85,7 @@ class TestTaskResult:
             graph_db=mock_graph_db,
             viz=mock_viz,
             stats_client=mock_stats,
+            clickhouse=mock_clickhouse,
         )
         task_result_proxy.get = mocker.Mock()
         task_hash = random_lower_string(32)
@@ -115,6 +122,7 @@ class TestTaskResult:
             graph_db=mock_graph_db,
             viz=viz,
             stats_client=mock_stats,
+            clickhouse=mock_clickhouse,
         )
         user_id = random.randint(1000, 2000)
         task_hash = random_lower_string(32)
