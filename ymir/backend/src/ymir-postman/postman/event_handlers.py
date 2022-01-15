@@ -6,7 +6,6 @@ from typing import Any, List, Set, Dict, Tuple
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
-from pydantic.error_wrappers import ValidationError
 
 from postman import entities, event_dispatcher  # type: ignore
 from postman.settings import settings
@@ -70,12 +69,7 @@ def _load_failed() -> entities.TaskStateDict:
     if not json_str:
         return {}
 
-    try:
-        failed_tid_to_taskstates = parse_raw_as(entities.TaskStateDict, json_str)
-        return failed_tid_to_taskstates or {}
-    except ValidationError as e:
-        logging.error(f"parse error: {e}: {json_str}")
-        raise e
+    return parse_raw_as(entities.TaskStateDict, json_str) or {}
 
 
 def _update_db(tid_to_tasks: entities.TaskStateDict) -> Set[str]:
