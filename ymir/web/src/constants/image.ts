@@ -13,7 +13,7 @@ export const STATES = Object.freeze({
   ERROR: 4,
 })
 
-export function imageIsPedding (state: number) {
+export function imageIsPending (state: number) {
   return state === STATES.PENDING
 }
 
