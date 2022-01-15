@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 import redis
 
-from postman.settings import settings, constants
+from postman.settings import constants, settings
 
 
 # public: class EventDispatcher

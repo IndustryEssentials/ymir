@@ -14,7 +14,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from postman import entities
 from postman.event_dispatcher import EventDispatcher
-from postman.settings import settings, constants
+from postman.settings import constants, settings
 
 
 uvicorn_logger = logging.getLogger("uvicorn")

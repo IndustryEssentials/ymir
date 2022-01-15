@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
 
 from postman import entities, event_dispatcher  # type: ignore
-from postman.settings import settings, constants
+from postman.settings import constants, settings
 
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 
