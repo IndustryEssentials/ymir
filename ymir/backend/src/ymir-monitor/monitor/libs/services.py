@@ -83,6 +83,8 @@ class TaskService:
             raise DuplicateTaskIDError
 
         raw_log_contents = self.get_raw_log_contents(reg_parameters.log_paths)
+        if len(raw_log_contents) != len(reg_parameters.log_paths):
+            raise LogFileError
         percent_result = self.merge_task_progress_contents(raw_log_contents)
         task_extra_info = TaskExtraInfo.parse_obj(reg_parameters.dict())
         percent_result = PercentResult.parse_obj(percent_result.dict())
