@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.config import settings
-from app.constants.state import TaskState, TaskType
+from app.constants.state import RunningStates, TaskState
 from app.db.session import SessionLocal
 from app.models.task import Task
 from app.utils.err import catch_error_and_report
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def list_unfinished_tasks(db: Session) -> List[Task]:
     tasks = crud.task.get_tasks_by_states(
         db,
-        states=[TaskState.pending, TaskState.running, TaskState.premature],
+        states=RunningStates,
         including_deleted=True,
     )
     return tasks
