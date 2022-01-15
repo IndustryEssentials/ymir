@@ -6,6 +6,7 @@ import {
   updateImage,
   shareImage,
   relateImage,
+  getShareImages,
 } from "@/services/image"
 
 export default {
@@ -21,36 +22,26 @@ export default {
     *getImages({ payload }, { call, put }) {
       const { code, result } = yield call(getImages, payload)
       if (code === 0) {
+        const { items, total } = result
+        const images = items.map(image => ({ ...image, functions: (image.configs || []).map(config => config.type)}))
+        const imageList =  { items: images, total, }
         yield put({
           type: "UPDATE_IMAGES",
-          payload: result,
+          payload: imageList,
         })
+        return imageList
       }
       return result
     },
-    *batchImages({ payload }, { call, put }) {
-      const { code, result } = yield call(batchImages, payload)
+    *getShareImages({}, { call }) {
+      const { code, result } = yield call(getShareImages)
       if (code === 0) {
-        return result.items
+        return result
       }
     },
     *getImage({ payload }, { call, put }) {
       const { code, result } = yield call(getImage, payload)
       if (code === 0) {
-        const pa = result.parameters || {}
-        const trainSets = pa?.include_train_datasets || []
-        const testSets = pa?.include_validation_datasets || []
-        const ids = [
-          ...trainSets,
-          ...testSets,
-        ]
-        if (ids.length) {
-          const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: ids })
-          if (datasets && datasets.length) {
-            result['trainSets'] = trainSets.map(sid => datasets.find(ds => ds.id === sid))
-            result['testSets'] = testSets.map(sid => datasets.find(ds => ds.id === sid))
-          }
-        }
         yield put({
           type: "UPDATE_IMAGE",
           payload: result,
@@ -86,14 +77,6 @@ export default {
     *relateImage({ payload }, { call, put }) {
       const { id, relations } = payload
       const { code, result } = yield call(relateImage, id, relations)
-      if (code === 0) {
-        return result
-      }
-    },
-    *verify({ payload }, { call }) {
-      const { id, urls } = payload
-      console.log('image of images: ', id, urls)
-      const { code, result } = yield call(verify, id, urls)
       if (code === 0) {
         return result
       }

@@ -52,7 +52,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   const [trainSetCount, setTrainSetCount] = useState(1)
   const [hpVisible, setHpVisible] = useState(false)
   const [topk, setTopk] = useState(false)
-  const [imageUrl, setImageUrl] = useState(null)
+  const [selectedImage, setSelectedImage] = useState({})
   const [stateConfig, setStateConfig] = useState([])
   const [gpu_count, setGPU] = useState(0)
   const hpMaxSize = 30
@@ -96,7 +96,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations } = parameters
+      const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations, docker_image, docker_image_id } = parameters
       const sets = include_datasets || []
       const xsets = exclude_datasets || []
       setTopk(!!top_k)
@@ -107,6 +107,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
         filter_strategy: !!top_k,
         inference: generate_annotations,
         model: model_id,
+        docker_image: docker_image_id + ',' + docker_image,
         topk: top_k,
         gpu_count: config.gpu_count,
         strategy,
@@ -142,6 +143,13 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     setTopk(target.value)
   }
 
+  function imageChange(_, image = {}) {
+    const { url, configs = [] } = image
+    const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
+    setSelectedImage(image)
+    setConfig(configObj.config)
+  }
+
   function setConfig(config) {
     const params = Object.keys(config).map(key => ({ key, value: config[key] }))
     setSeniorConfig(params)
@@ -151,13 +159,16 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
-    config['gpu_count'] = form.getFieldValue('gpu_count')
-
+    config['gpu_count'] = form.getFieldValue('gpu_count') || 0
+    const img = (form.getFieldValue('docker_image') || '').split(',')
+    const docker_image_id = Number(img[0])
+    const docker_image = img[1]
     const params = {
       ...values,
       name: values.name.trim(),
       topk: values.filter_strategy ? values.topk : 0,
-      docker_image: imageUrl,
+      docker_image,
+      docker_image_id,
       config,
     }
     const result = await createMiningTask(params)
@@ -176,6 +187,12 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
 
   function excludeSetChange(value) {
     setExcludeSets(value)
+  }
+
+  function getImageIdOfSelectedModel() {
+    const selectedModelId = form.getFieldValue('model')
+    const selectedModel = models.find(model => model.id === selectedModelId)
+    return selectedModel?.parameters?.docker_image_id
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -307,7 +324,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} type={TYPES.MINING} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={getImageIdOfSelectedModel()} type={TYPES.MINING} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
@@ -347,11 +364,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item
                 label={t('task.mining.form.label.label')}
                 name='inference'
-                initialValue={0}
+                initialValue={false}
               >
                 <Radio.Group options={[
-                  { value: 1, label: t('common.yes') },
-                  { value: 0, label: t('common.no') },
+                  { value: true, label: t('common.yes') },
+                  { value: false, label: t('common.no') },
                 ]} />
               </Form.Item>
             </Tip>
@@ -363,7 +380,6 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[{ type: 'number', min: 0, max: gpu_count }]}
                 >
                   <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                   <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
@@ -482,12 +498,6 @@ const dis = (dispatch) => {
     createMiningTask(payload) {
       return dispatch({
         type: "task/createMiningTask",
-        payload,
-      })
-    },
-    getRuntimes(payload) {
-      return dispatch({
-        type: "common/getRuntimes",
         payload,
       })
     },

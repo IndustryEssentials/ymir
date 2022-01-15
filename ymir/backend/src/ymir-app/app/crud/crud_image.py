@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.crud.base import CRUDBase
 from app.models.image import DockerImage
+from app.models.image_config import DockerImageConfig
 from app.schemas.image import (
     DockerImageCreate,
     DockerImageState,
@@ -31,7 +32,9 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         if filters.get("state"):
             query = query.filter(DockerImage.state == int(filters["state"]))
         if filters.get("type"):
-            query = query.filter(DockerImage.type == int(filters["type"]))
+            query = query.filter(
+                DockerImage.configs.any(DockerImageConfig.type == int(filters["type"]))
+            )
 
         query = query.order_by(desc(self.model.create_datetime))
         if limit:
@@ -43,12 +46,20 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         self, db: Session, url: str
     ) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
-        query = query.filter(self.model.type == int(DockerImageType.infer))
+        query = query.filter(
+            DockerImage.configs.any(
+                DockerImageConfig.type == int(DockerImageType.infer)
+            )
+        )
         return query.filter(self.model.url == url).first()  # type: ignore
 
     def get_by_url(self, db: Session, url: str) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         return query.filter(self.model.url == url).first()  # type: ignore
+
+    def docker_name_exists(self, db: Session, url: str) -> bool:
+        query = db.query(self.model).filter(not_(self.model.is_deleted))
+        return query.filter(self.model.url == url).first() is not None
 
     def update(
         self,
@@ -74,6 +85,14 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
     ) -> DockerImage:
         update_data = {"is_shared": is_shared}
         return self.update(db, db_obj=docker_image, obj_in=update_data)
+
+    def update_from_dict(
+        self, db: Session, *, docker_image_id: int, updates: Dict
+    ) -> Optional[DockerImage]:
+        docker_image = self.get(db, id=docker_image_id)
+        if docker_image:
+            return self.update(db, db_obj=docker_image, obj_in=updates)
+        return docker_image
 
 
 docker_image = CRUDDockerImage(DockerImage)

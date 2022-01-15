@@ -33,11 +33,6 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
     setModels([...same, ...inter, ...diff])
   }, [keywords])
 
-  useEffect(() => {
-    const opt = options.find(opt => opt.value === value)
-    onChange(value, opt?.model)
-  }, [value, options])
-
   async function fetchModels() {
     const params = {
       offset: 0,

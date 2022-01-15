@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import styles from "./index.less"
-import { useParams } from "umi"
+import { useHistory, useLocation, useParams } from "umi"
 import { Form, Input, Radio, Card, } from "antd"
 
 import t from "@/utils/t"
@@ -8,6 +8,7 @@ import { getImageTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import ImageList from './components/list'
 import { SearchIcon } from "@/components/common/icons"
+import ShareImageList from "./components/shareImageList"
 
 const { useForm } = Form
 
@@ -23,8 +24,10 @@ const initQuery = {
   limit: 20,
 }
 
-function Image({ role, getImages, delImage, updateImage }) {
+function Image() {
   const { keyword } = useParams()
+  const history = useHistory()
+  const location = useLocation()
   const [form] = useForm()
   const [active, setActive] = useState(tabsTitle[0].key)
   const [query, setQuery] = useState(initQuery)
@@ -37,6 +40,14 @@ function Image({ role, getImages, delImage, updateImage }) {
       form.setFieldsValue({ name: keyword })
     }
   }, [keyword])
+
+  useEffect(() => {
+    console.log('location state: ', location.state)
+    const type = location?.state?.type
+    if (typeof type !== 'undefined') {
+      setActive(type)
+    }
+  }, [location.state])
 
 
   const search = (values) => {
@@ -65,12 +76,9 @@ function Image({ role, getImages, delImage, updateImage }) {
     form.resetFields()
   }
 
-
-  const publicImage = ('')
-
   const contents = {
     my: <ImageList filter={query} />,
-    public: publicImage,
+    public: <ShareImageList />,
   }
 
   const searchPanel = (
@@ -89,8 +97,8 @@ function Image({ role, getImages, delImage, updateImage }) {
       >
         <Radio.Group options={types} optionType="button"></Radio.Group>
       </Form.Item>
-      <Form.Item name="name" label={t('model.query.name')}>
-        <Input placeholder={t("model.query.name.placeholder")} allowClear suffix={<SearchIcon />} />
+      <Form.Item name="name" label={t('image.query.name')}>
+        <Input placeholder={t("image.query.name.placeholder")} allowClear suffix={<SearchIcon />} />
       </Form.Item>
     </Form>
   )
@@ -98,7 +106,7 @@ function Image({ role, getImages, delImage, updateImage }) {
   return (
     <div className={styles.image}>
       <Breadcrumbs />
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} tabBarExtraContent={searchPanel}>
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { console.log(key); history.replace({ state: { type: key }} )}} tabBarExtraContent={active === 'my' ? searchPanel : null}>
         {contents[active]}
       </Card>
     </div>

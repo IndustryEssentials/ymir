@@ -61,3 +61,10 @@ def init_db(db: Session) -> None:
             crud.docker_image.update_state(
                 db, docker_image=docker_image, state=schemas.DockerImageState.done
             )
+
+            image_config_in = schemas.ImageConfigCreate(
+                image_id=docker_image.id,
+                config=config["config"],
+                type=int(config["type"]),
+            )
+            crud.image_config.create(db, obj_in=image_config_in)

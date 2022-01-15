@@ -11,6 +11,7 @@ from fastapi import (
 )
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
+from fastapi_cache.decorator import cache
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 from sqlalchemy.orm import Session
 
@@ -22,8 +23,11 @@ from app.api.errors.errors import (
     DuplicateDockerImageError,
     DuplicateWorkspaceError,
     FailedtoCreateWorkspace,
+    FailedtoGetSharedDockerImages,
     FailedtoShareDockerImage,
+    InvalidSharedImageConfig,
 )
+from app.config import settings
 from app.models.image import DockerImage
 from app.schemas.image import (
     DockerImageCreate,
@@ -31,8 +35,10 @@ from app.schemas.image import (
     DockerImageState,
     DockerImageType,
     DockerImageUpdate,
-    DockerImageUpdateConfig,
+    SharedDockerImageOut,
+    SharedDockerImagesOut,
 )
+from app.utils.github import get_github_table
 from app.utils.sheet import WufooAPI
 from app.utils.ymir_controller import ControllerClient, ControllerRequest
 
@@ -78,6 +84,8 @@ def create_docker_image(
     This endpint will create an image record immediately,
     but the pulling process will run in background
     """
+    if crud.docker_image.docker_name_exists(db, url=docker_image_in.url):
+        raise DuplicateDockerImageError()
     docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
     logger.info("[create image] docker image record created: %s", docker_image)
 
@@ -101,46 +109,105 @@ def import_docker_image(
         resp = controller_client.pull_docker_image(docker_image.url, user_id)
     except ValueError:
         logger.exception("[create image] failed to import docker image via controller")
-        state = DockerImageState.error
-        crud.docker_image.update_state(db, docker_image=docker_image, state=state)
-        return
-
-    logger.info("[create image] docker image imported via controller: %s", resp)
-    docker_image_dict = jsonable_encoder(docker_image)
-
-    # note: we've created a placeholder record beforehand, update it first
-    image_configs = parse_docker_image_config(resp)
-    try:
-        first_image_config = next(image_configs)
-    except StopIteration:
-        logger.error("[create image] failed to parse docker image via controller")
         crud.docker_image.update_state(
             db, docker_image=docker_image, state=DockerImageState.error
         )
         return
 
-    docker_image_update = DockerImageUpdateConfig(
-        **{**docker_image_dict, **first_image_config}
-    )
-    crud.docker_image.update(db, db_obj=docker_image, obj_in=docker_image_update)
-
-    # if there are reminding configs, add new record
-    for image in image_configs:
-        docker_image_in = DockerImageCreate(**{**docker_image_dict, **image})
-        docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
-
-
-def parse_docker_image_config(resp: Dict) -> Iterator[Dict]:
-    configs = resp["docker_image_config"]
+    # add new config in docker_image_config tbl
     hash_ = resp["hash_id"]
+    image_configs = list(parse_docker_image_config(resp["docker_image_config"]))
+    for image_config in image_configs:
+        image_config_in = schemas.ImageConfigCreate(
+            image_id=docker_image.id,
+            **image_config,
+        )
+        crud.image_config.create(db, obj_in=image_config_in)
+
+    crud.docker_image.update_from_dict(
+        db,
+        docker_image_id=docker_image.id,
+        updates={"hash": hash_, "state": DockerImageState.done.value},
+    )
+    logger.info(
+        "[create image] docker image imported via controller: %s, added %d configs",
+        resp,
+        len(image_configs),
+    )
+
+
+def parse_docker_image_config(configs: Dict) -> Iterator[Dict]:
     for image_type, config in configs.items():
         if config:
             yield {
                 "type": int(DockerImageType(int(image_type))),
-                "state": int(DockerImageState.done),
-                "hash": hash_,
                 "config": config,
             }
+
+
+@router.get("/shared", response_model=SharedDockerImagesOut)
+async def get_shared_images(
+    *,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get shared images from Ymir Team's Gallery (hosted on GitHub)
+    """
+    if not settings.SHARED_DOCKER_IMAGES_URL:
+        raise InvalidSharedImageConfig()
+    try:
+        shared_images = await get_shared_images_from_github(
+            settings.SHARED_DOCKER_IMAGES_URL, timeout=settings.GITHUB_TIMEOUT
+        )
+    except (ConnectionError, HTTPError, Timeout):
+        logger.exception("[share image] failed get shared docker images")
+        raise FailedtoGetSharedDockerImages()
+    return {"result": shared_images}
+
+
+@cache(expire=settings.APP_CACHE_EXPIRE_IN_SECONDS)
+async def get_shared_images_from_github(url: str, timeout: int) -> List[Dict]:
+    logger.debug("[share image] getting shared docker images from GitHub...")
+    shared_images = get_github_table(url, timeout=timeout)
+    return shared_images
+
+
+@router.post("/shared", response_model=SharedDockerImageOut)
+def share_image(
+    *,
+    db: Session = Depends(deps.get_db),
+    shared_image: DockerImageSharing,
+    current_user: models.User = Depends(deps.get_current_active_admin),
+) -> Any:
+    """
+    Request to share docker image to Ymir Team's Gallery
+    """
+    docker_image = crud.docker_image.get(db, id=shared_image.docker_image_id)
+    if not docker_image:
+        raise DockerImageNotFound()
+
+    functions = [DockerImageType(config.type).name for config in docker_image.configs]
+    shared_info = {
+        "docker_name": docker_image.url,
+        "hash": docker_image.hash,
+        "functions": ", ".join(functions),
+        "description": docker_image.description,
+        "contributor": shared_image.contributor,
+        "phone": shared_image.phone,
+        "email": shared_image.email,
+        "organization": shared_image.organization,
+    }
+    try:
+        WufooAPI().create_row(shared_info)
+    except (ConnectionError, HTTPError, Timeout):
+        logger.exception("[share image] failed to share docker image")
+        raise FailedtoShareDockerImage()
+
+    # mark this image as shared
+    crud.docker_image.update_sharing_status(
+        db=db, docker_image=docker_image, is_shared=True
+    )
+    return {"result": shared_image}
 
 
 @router.get(
@@ -255,31 +322,3 @@ def get_related_images(
         db, src_image_id=docker_image_id
     )
     return {"result": relationships}
-
-
-@router.post("/{docker_image_id}/share", response_model=schemas.DockerImageOut)
-def share_image(
-    *,
-    db: Session = Depends(deps.get_db),
-    docker_image_id: int = Path(...),
-    shared_info: DockerImageSharing,
-    current_user: models.User = Depends(deps.get_current_active_admin),
-) -> Any:
-    """
-    Request to share docker image to Ymir Team's Gallery
-    """
-    docker_image = crud.docker_image.get(db, id=docker_image_id)
-    if not docker_image:
-        raise DockerImageNotFound()
-    payload = {"docker_name": docker_image.url, **shared_info.dict()}
-    try:
-        WufooAPI(payload).send()
-    except (ConnectionError, HTTPError, Timeout):
-        logger.exception("[share image] failed to share docker image")
-        raise FailedtoShareDockerImage()
-
-    # mark this image as shared
-    docker_image = crud.docker_image.update_sharing_status(
-        db=db, docker_image=docker_image, is_shared=True
-    )
-    return {"result": docker_image}

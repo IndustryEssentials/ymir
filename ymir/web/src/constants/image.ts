@@ -13,14 +13,12 @@ export const STATES = Object.freeze({
   ERROR: 4,
 })
 
-export function imageIsPedding (state: number) {
+export function imageIsPending (state: number) {
   return state === STATES.PENDING
 }
 
-export const getImageTypeLabel = (type: number | null) => {
-  if (!type) {
-    return ''
-  }
+export const getImageTypeLabel = (functions: number[] = []) => {
+
   const labels = {
     [TYPES.UNKOWN]: t('image.type.unkown'),
     [TYPES.TRAINING]: t('image.type.train'),
@@ -28,7 +26,7 @@ export const getImageTypeLabel = (type: number | null) => {
     [TYPES.INFERENCE]: t('image.type.inference'),
   }
 
-  return labels[type]
+  return functions.map(func => labels[func])
 }
 
 /**

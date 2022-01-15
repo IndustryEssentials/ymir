@@ -23,11 +23,11 @@ const Signup = ({ signupApi, loginApi, history }) => {
       return Promise.resolve()
     },
   })
-  const signup = async ({ email, username, phone, password }) => {
+  const signup = async ({ email, username, phone = '', password }) => {
     const params = {
       email,
-      username,
-      phone,
+      username: username.trim(),
+      phone: phone.trim(),
       password,
     }
     const res = await signupApi(params)
@@ -89,6 +89,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                 rules={[
                   {
                     required: true,
+                    whitespace: true,
                     message: t("signup.username.required.msg"),
                   },
                   {

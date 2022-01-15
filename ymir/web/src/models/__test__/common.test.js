@@ -93,26 +93,33 @@ describe("models: common", () => {
     expect(end.done).toBe(true)
   })
 
-  it("effects: getRuntimes", () => {
-    const saga = common.effects.getRuntimes
+  it("effects: getSysInfo", () => {
+    const saga = common.effects.getSysInfo
     const creator = {
-      type: "getRuntimes",
-      payload: { type: 1 },
+      type: "getSysInfo",
+      payload: { },
     }
     const expected = {
-      a: 1,
-      b: 2,
-      c: 3,
+      gpu_count: 8,
     }
 
-    const generator = saga(creator, { put, call })
+    const generator = saga(creator, { call })
     const start = generator.next()
     const end = generator.next({
       code: 0,
-      result: [expected],
+      result: expected,
     })
 
     expect(end.done).toBe(true)
-    expect(end.value).toBe(expected)
+    expect(end.value.gpu_count).toBe(expected.gpu_count)
+
+    const errGen = saga(creator, { call })
+    errGen.next()
+    const errEnd = errGen.next({
+      code: 1004,
+      result: expect,
+    })
+    expect(errEnd.done).toBe(true)
+    expect(errEnd.value).toBe(undefined)
   })
 })

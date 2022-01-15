@@ -6,7 +6,7 @@ import t from '@/utils/t'
 import { phoneValidate } from "@/components/form/validators"
 
 const { useForm } = Form
-const ShareModal = forwardRef(({ username, email, phone, shareImage }, ref) => {
+const ShareModal = forwardRef(({ username, email, phone, ok = () => {}, shareImage }, ref) => {
   const [shareForm] = useForm()
   const [visible, setVisible] = useState(false)
   const [id, setId] = useState(null)
@@ -28,16 +28,18 @@ const ShareModal = forwardRef(({ username, email, phone, shareImage }, ref) => {
   const shareModalCancel = () => setVisible(false)
 
   const submitShare = () => {
-    shareForm.validateFields().then(async (values) => {
+    shareForm.validateFields().then(async ({ org, ...other }) => {
       const params = {
         username,
         id,
-        ...shareForm.getFieldsValue(),
+        ...other,
+        org: (org || '').trim(),
       }
       const result = await shareImage(params)
       if (result) {
         message.success(t('image.share.success'))
         setVisible(false)
+        ok()
       }
     })
   }

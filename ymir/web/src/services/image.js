@@ -60,9 +60,9 @@ export function updateImage(id, { name, description }) {
 }
 
 export function shareImage(id, { username, email, phone, org }) {
-  console.log('share image: ', id, username, phone, org)
-  return request.post(`/images/${id}/share`, {
-    submitter: username,
+  return request.post(`/images/shared`, {
+    docker_image_id: id,
+    contributor: username,
     email,
     phone,
     organization: org,
@@ -77,4 +77,8 @@ export function relateImage(id, relations) {
       dest_image_ids: relations,
     }
   })
+}
+
+export function getShareImages() {
+  return request.get('/images/shared')
 }

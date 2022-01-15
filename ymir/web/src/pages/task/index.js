@@ -35,7 +35,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
+function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [tasks, setTasks] = useState([])
@@ -55,6 +55,11 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
     }
     getData()
   }, [query])
+
+  useEffect(() => {
+    setTasks(taskList.items)
+    setTotal(taskList.total)
+  }, [taskList])
 
   useEffect(() => {
     if (keyword) {
@@ -181,11 +186,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
     if (query.name) {
       params.name = query.name
     }
-    const { items, total } = await getTasks(params)
-    if (items) {
-      setTasks(() => items)
-      setTotal(total)
-    }
+    await getTasks(params)
   }
 
   const del = (id, name) => {
@@ -450,6 +451,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    taskList: state.task.tasks,
   }
 }
 

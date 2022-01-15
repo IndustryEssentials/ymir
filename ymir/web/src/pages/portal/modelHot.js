@@ -12,7 +12,7 @@ import { cardBody, cardHead } from "./components/styles"
 import { MymodelIcon, TrainIcon, } from '@/components/common/icons'
 import { options, ORDER } from "./components/orderOptions"
 
-function ModelHot({ getModels }) {
+function ModelHot({ getLatestModels, getHotModels }) {
   const history = useHistory()
   const [models, setModels] = useState([])
 
@@ -26,13 +26,17 @@ function ModelHot({ getModels }) {
   }
 
   async function fetchModels(order) {
-    const result = await getModels(order)
+    let result = null
+    if (order === ORDER.hot) {
+      result = await getHotModels()
+    } else {
+      const modelsObj = await getLatestModels()
+      result = modelsObj.items
+    }
     if (result) {
-      setModels(result.items)
+      setModels(result)
     }
   }
-
-  // const cardBodyStyle = { padding: '10px 5px', height: '160px', overflow: 'hidden' }
 
   return (
     <Card className={`${styles.box} ${styles.hotModel}`} bordered={false}
@@ -65,10 +69,16 @@ function ModelHot({ getModels }) {
 
 const actions = (dispatch) => {
   return {
-    getModels(order_by) {
+    getLatestModels(limit = 3) {
       return dispatch({
         type: 'model/getModels',
-        payload: { offset: 0, limit: 3, order_by, },
+        payload: { offset: 0, limit, },
+      })
+    },
+    getHotModels(limit = 3) {
+      return dispatch({
+        type: 'model/getModelsByRef',
+        payload: { limit }
       })
     },
   }

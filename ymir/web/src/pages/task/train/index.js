@@ -24,6 +24,7 @@ import ImageSelect from "../components/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import ModelSelect from "../components/modelSelect"
+import RecommendKeywords from "../../../components/common/recommendKeywords"
 
 const { Option } = Select
 
@@ -47,7 +48,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
-  const [imageUrl, setImageUrl] = useState(null)
+  const [selectedImage, setSelectedImage] = useState({})
   const [gpu_count, setGPU] = useState(0)
   const hpMaxSize = 30
 
@@ -86,11 +87,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     const tkw = getKw(trainSets)
     const vkw = getKw(validationSets)
     const kws = tkw.filter(v => vkw.includes(v))
-    // if (!form.getFieldValue('model')) {
     setKeywords(kws)
-      // form.setFieldsValue({ keywords: [] })
-      // setSelectedKeywords([])
-    // }
   }, [trainSets, validationSets, datasets])
 
   useEffect(() => {
@@ -106,7 +103,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_classes, include_train_datasets, include_validation_datasets, strategy, } = parameters
+      const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image_id, docker_image, model_id } = parameters
       const tSets = include_train_datasets || []
       const vSets = include_validation_datasets || []
       form.setFieldsValue({
@@ -114,13 +111,16 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
         train_sets: tSets,
         validation_sets: vSets,
         gpu_count: config.gpu_count,
-        keywords: include_classes,
+        // keywords: include_classes,
+        model: model_id,
+        docker_image: docker_image_id + ',' + docker_image,
         strategy,
       })
       setConfig(config)
       setTrainSets(tSets)
       setValidationSets(vSets)
       setHpVisible(true)
+      setSelectedKeywords(include_classes)
 
       history.replace({ state: {} })
     }
@@ -128,9 +128,12 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
   useEffect(() => {
     form.setFieldsValue({ keywords: selectedKeywords })
+    if (selectedModel) {
+      form.validateFields(['keywords'])
+    }
   }, [selectedKeywords])
 
-  function validTrainTarget(_, value) {
+  const validTrainTarget = async (_, value) => {
     const kws = form.getFieldValue('keywords')
     if (!(inArray(kws, getKwsFromDatasets(trainSets)) && inArray(kws, getKwsFromDatasets(validationSets)))) {
       return Promise.reject(t('task.train.target.invalid.inter'))
@@ -143,14 +146,14 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function getKwsFromDatasets(dss = []) {
-    return dss.reduce((prev, curr) => [...datasets.find(ds => ds.id === curr).keywords, ...prev], [])
+    return dss.reduce((prev, curr) => [...((datasets.find(ds => ds.id === curr) || {}).keywords || []), ...prev], [])
   }
 
   function inArray (items, arr) {
     return items.every(item => arr.indexOf(item) > -1)
   }
 
-  function validHyperparam(rule, value) {
+  async function validHyperparam(rule, value) {
 
     const params = form.getFieldValue('hyperparam').map(({ key }) => key)
       .filter(item => item && item.trim() && item === value)
@@ -175,12 +178,25 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     setValidationSets(value)
   }
 
+  function selectRecommendKeywords(keyword) {
+    const kws = [...new Set([...selectedKeywords, keyword])]
+    setSelectedKeywords(kws)
+  }
+
   function modelChange(value, model) {
     model && setSelectedKeywords(model.keywords)
     setSelectedModel(model)
   }
 
-  function setConfig(config) {
+  function imageChange(_, image = {}) {
+    console.log('image change: ', _, image)
+    const { configs } = image
+    const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
+    setSelectedImage(image)
+    setConfig(configObj.config)
+  }
+
+  function setConfig(config = {}) {
     const params = Object.keys(config).map(key => ({ key, value: config[key] }))
     setSeniorConfig(params)
   }
@@ -193,16 +209,19 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     if (gpuCount) {
       config['gpu_count'] = gpuCount
     }
+    const img = (form.getFieldValue('docker_image') || '').split(',')
+    const docker_image_id = Number(img[0])
+    const docker_image = img[1]
     const params = {
       ...values,
       name: values.name.trim(),
-      docker_image: imageUrl,
+      docker_image,
+      docker_image_id,
       config,
     }
     if (selectedModel) {
       params.keywords = selectedModel.keywords
     }
-
     const result = await createTrainTask(params)
     if (result) {
       history.replace("/home/task")
@@ -211,6 +230,16 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
   function onFinishFailed(errorInfo) {
     console.log("Failed:", errorInfo)
+  }
+
+  function validateGPU(_, value) {
+    const count = Number(value)
+    const min = 1
+    const max = gpu_count
+    if (count < min || count > max) {
+      return Promise.reject(t('task.train.gpu.invalid', { min, max }))
+    }
+    return Promise.resolve()
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -332,9 +361,6 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item
                 label={t('task.train.form.keywords.label')}
-                // next version
-                // >
-                //   <Form.Item
                 name="keywords"
                 dependencies={['model', 'train_sets', 'validation_sets']}
                 rules={[
@@ -350,16 +376,9 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                     </Option>
                   ))}
                 </Select>
-                {/* next version */}
-                {/* </Form.Item>
-                <div className={styles.formItemLowLevel}><span className={styles.label}>{t('常用标签: ')}</span><Form.Item name='label_strategy' colon={true} initialValue={0} noStyle>
-                  <Tag>cat</Tag>
-                  <Tag>dog</Tag>
-                  <Tag>person</Tag>
-                  <Tag>pig</Tag>
-                </Form.Item></div> */}
               </Form.Item>
             </Tip>
+            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommendKeywords sets={trainSets} onSelect={selectRecommendKeywords} /></Form.Item></Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
               <Tip content={t('tip.task.train.model')}>
@@ -377,7 +396,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 { required: true, message: t('task.train.form.image.required') }
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config) }} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
@@ -415,7 +434,9 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[{ type: 'number', min: 1, max: gpu_count }]}
+                  rules={[
+                    {validator: validateGPU}
+                  ]}
                 >
                   <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>

@@ -27,6 +27,7 @@ from app.utils.class_ids import (
     get_keyword_id_to_name_mapping,
     get_keyword_name_to_id_mapping,
 )
+from app.utils.clickhouse import YmirClickHouse
 from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
@@ -97,6 +98,7 @@ def create_task(
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     stats_client: RedisStats = Depends(deps.get_stats_client),
+    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
@@ -142,10 +144,59 @@ def create_task(
         db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
     )
 
+    task_info = jsonable_encoder(task)
+    metrics = parse_metrics(task_in.parameters.dict() if task_in.parameters else {})
+    clickhouse.save_task_parameter(
+        dt=task.create_datetime,
+        user_id=current_user.id,
+        name=task_info["name"],
+        hash_=task_info["hash"],
+        type_=TaskType(task_info["type"]).name,
+        **metrics,
+    )
+    if parameters:
+        for dataset_keywords in parameters.get("grouped_keywords", []):
+            clickhouse.save_dataset_keyword(
+                dt=task.create_datetime, user_id=current_user.id, **dataset_keywords
+            )
+
     update_stats_for_ref_count(current_user.id, stats_client, task_in)
     logger.info("[create task] created task name: %s" % task_in.name)
 
     return {"result": task}
+
+
+def parse_metrics(parameters: Dict) -> Dict:
+    if not parameters:
+        return {"dataset_ids": [], "model_ids": [], "keywords": []}
+    dataset_fields = [
+        "include_datasets",
+        "include_validation_datasets",
+        "include_train_datasets",
+        "include_test_datasets",
+    ]
+    dataset_ids = list(
+        {
+            dataset_id
+            for field in dataset_fields
+            for dataset_id in parameters.get(field) or []
+        }
+    )
+    model_id = parameters.get("model_id")
+    model_ids = [model_id] if model_id else []
+    keywords = parameters.get("include_classes") or []
+    return {"dataset_ids": dataset_ids, "model_ids": model_ids, "keywords": keywords}
+
+
+def group_keywords_by_dataset(datasets: List[Dict], keywords: List[str]) -> List[Dict]:
+    keywords_set = set(keywords)
+    return [
+        {
+            "dataset_id": dataset["id"],
+            "keywords": set(dataset["keywords"]) & keywords_set,
+        }
+        for dataset in datasets
+    ]
 
 
 def normalize_parameters(
@@ -164,11 +215,15 @@ def normalize_parameters(
     p = dict(parameters)
     normalized = {}  # type: Dict[str, Any]
     normalized["name"] = name
+    unified_datasets = []
     for k, v in p.items():
         if v is None:
             continue
         if k.endswith("datasets"):
             datasets = crud.dataset.get_multi_by_ids(db, ids=v)
+            unified_datasets.extend(
+                [schemas.Dataset.from_orm(d).dict() for d in datasets]
+            )
             order_datasets_by_strategy(datasets, parameters.strategy)
             normalized[k] = [dataset.hash for dataset in datasets]
         elif k.endswith("classes"):
@@ -179,6 +234,13 @@ def normalize_parameters(
                 normalized["model_hash"] = model.hash
         else:
             normalized[k] = v
+
+    if unified_datasets and p.get("include_classes"):
+        # if keywords is provided, we have to figure out
+        # source dataset of each keyword
+        normalized["grouped_keywords"] = group_keywords_by_dataset(
+            unified_datasets, p["include_classes"]
+        )
     return normalized
 
 
@@ -356,6 +418,7 @@ def update_task_status(
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
     stats_client: RedisStats = Depends(deps.get_stats_client),
+    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
     Update status of a task
@@ -376,6 +439,7 @@ def update_task_status(
         controller=controller_client,
         viz=viz_client,
         stats_client=stats_client,
+        clickhouse=clickhouse,
     )
     updated_task = task_result_proxy.save(task_info, task_result.dict())
     result = updated_task or task
@@ -400,6 +464,7 @@ def batch_update_task_status(
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
     stats_client: RedisStats = Depends(deps.get_stats_client),
+    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
     Batch update given tasks status
@@ -415,6 +480,7 @@ def batch_update_task_status(
         controller=controller_client,
         viz=viz_client,
         stats_client=stats_client,
+        clickhouse=clickhouse,
     )
     for _, tasks_ in groupby(tasks, "user_id"):
         for task_ in tasks_:
@@ -434,16 +500,31 @@ class TaskResultProxy:
         controller: ControllerClient,
         stats_client: RedisStats,
         viz: VizClient,
+        clickhouse: YmirClickHouse,
     ):
         self.db = db
         self.graph_db = graph_db
         self.controller = controller
         self.stats_client = stats_client
+        self.clickhouse = clickhouse
         self.viz = viz
 
     def get(self, task: schemas.Task) -> Dict:
         result = self.controller.get_task_result(task.user_id, task.hash)
         return result
+
+    @staticmethod
+    def should_fetch_task_result(previous_state: TaskState, state: TaskState) -> bool:
+        if state is TaskState.done:
+            return True
+        # todo optimize
+        #  task in premature state and reached finale, should fetch task result as well
+        if previous_state is TaskState.premature and state in [
+            TaskState.done,
+            TaskState.error,
+        ]:
+            return True
+        return False
 
     @catch_error_and_report
     def save(self, task: schemas.Task, task_result: Dict) -> Optional[Task]:
@@ -458,7 +539,7 @@ class TaskResultProxy:
             logger.info("skip invalid task_result: %s", task_result)
             return None
 
-        if task_result["state"] == TaskState.done:
+        if self.should_fetch_task_result(task.state, task_result["state"]):
             self.handle_finished_task(task)
 
         if (
@@ -488,7 +569,7 @@ class TaskResultProxy:
             task.id,
             task.name,
             task.type.name,
-            task_state,
+            task_state.name,
         )
 
     def handle_finished_task(self, task: schemas.Task) -> None:
@@ -496,11 +577,21 @@ class TaskResultProxy:
             model = self.add_new_model_if_not_exist(task)
             self.stats_client.update_model_rank(task.user_id, model.id)
             keywords = schemas.model.extract_keywords(task.parameters)
-            if model.map and keywords:
-                self.stats_client.update_keyword_wise_model_rank(
-                    task.user_id, model.id, float(model.map), keywords
+            model_info = jsonable_encoder(model)
+            if keywords:
+                self.clickhouse.save_model_result(
+                    model.create_datetime,
+                    model_info["user_id"],
+                    model_info["id"],
+                    model_info["name"],
+                    model_info["hash"],
+                    model_info["map"],
+                    keywords,
                 )
-            logger.debug("task result(new model): %s", model)
+                self.stats_client.update_keyword_wise_model_rank(
+                    task.user_id, model_info["id"], model_info["map"], keywords
+                )
+            logger.debug("task result(new model): %s", model_info)
             node = schemas.Model.from_orm(model)  # type: ignore
         elif task.type in [TaskType.mining, TaskType.label, TaskType.filter]:
             dataset = self.add_new_dataset_if_not_exist(task)
@@ -642,15 +733,16 @@ class TaskResultProxy:
             self.db, task=task_obj, progress=task_progress
         )
         new_state = TaskState(task_state)
-        if task_obj.state == TaskState.premature.value and new_state in [
-            TaskState.done,
-            TaskState.error,
-        ]:
-            # ad hoc
-            #  for task in premature state,
-            #  the final state from Controller is done or error,
-            #  we have to convert back to terminate for frontend
-            new_state = TaskState.terminate
+        if task_obj.state == TaskState.premature.value:
+            if new_state in [TaskState.done, TaskState.error]:
+                # ad hoc
+                #  for task in premature state
+                #  if state from Controller is done or error,
+                #  we have to convert back to terminate for frontend
+                new_state = TaskState.terminate
+            else:
+                # otherwise just return so as to keep it's premature state
+                return task_obj
         task_obj = crud.task.update_state(self.db, task=task_obj, new_state=new_state)
         return task_obj
 

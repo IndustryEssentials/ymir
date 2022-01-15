@@ -3,8 +3,9 @@ import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import { TYPES } from '@/constants/image'
+import t from '@/utils/t'
 
-const ImageSelect = ({ value, type = TYPES.TRAINING, onChange = () => {}, getImages, ...resProps }) => {
+const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => {}, getImages, getImage, ...resProps }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -26,23 +27,46 @@ const ImageSelect = ({ value, type = TYPES.TRAINING, onChange = () => {}, getIma
     const result = await getImages(params)
     if (result) {
       const images = result.items
-      const opts = images.map(image => {
-        return {
-          label: image.name,
-          image,
-          value: image.id,
-        }
-      })
-      setOptions(opts)
-      if (value) {
-        const opt = opts.find(opt => opt.value === value)
-        onChange(opt.value, opt.image)
-      }
+      generateOptions(images)
     }
   }
 
+  const generateOption = image => ({
+    label: image.name,
+    image,
+    value: image.id + ',' + image.url,
+  })
+
+  async function generateOptions(images) {
+    let relatedOptions = relatedId ? await getRelatedOptions() : []
+    const opts = images.filter(image => relatedOptions.every(img => img.value !== image.id)).map(generateOption)
+    let result = opts
+    if (relatedOptions.length) {
+      result = [
+        {
+          label: t('image.select.opt.related'),
+          options: relatedOptions,
+        },
+        {
+          label: t('image.select.opt.normal'),
+          options: opts,
+        }
+      ]
+    }
+    setOptions(result)
+  }
+
+  async function getRelatedOptions() {
+    const trainImage = await getImage(relatedId)
+    let relatedOptions = []
+    if(trainImage?.related) {
+      relatedOptions = trainImage.related.map(generateOption)
+    }
+    return relatedOptions
+  }
+
   return (
-    <Select value={value} {...resProps} onChange={(value, { image }) => onChange(value, image)} options={options} allowClear></Select>
+    <Select value={value} {...resProps} onChange={(value, opt) => onChange(value, opt?.image)} options={options} optionFilterProp="label" allowClear></Select>
   )
 }
 
@@ -53,7 +77,13 @@ const actions = (dispatch) => {
         type: 'image/getImages',
         payload,
       })
-    }
+    },
+    getImage(payload) {
+      return dispatch({
+        type: 'image/getImage',
+        payload,
+      })
+    },
   }
 }
 export default connect(null, actions)(ImageSelect)

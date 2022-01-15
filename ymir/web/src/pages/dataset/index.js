@@ -40,7 +40,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Dataset({ getDatasets, delDataset, updateDataset }) {
+function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
   const { keyword } = useParams()
   const location = useLocation()
   const history = useHistory()
@@ -59,6 +59,10 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
   const states = getSetStates()
 
   /** use effect must put on the top */
+  useEffect(() => {
+    setDatasets(datasetList.items)
+    setTotal(datasetList.total)
+  }, [datasetList])
   useEffect(() => {
     if (keyword) {
       setQuery(old => ({ ...old, name: keyword }))
@@ -107,7 +111,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     {
       title: showTitle("dataset.column.source"),
       dataIndex: "type",
-      render: (type, { id, task_name }) => <TypeTag type={type} id={id} name={task_name} />,
+      render: (type, { task_id, task_name }) => <TypeTag type={type} id={task_id} name={task_name} />,
       ellipsis: true,
     },
     {
@@ -259,8 +263,6 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     }
     const { items, total } = await getDatasets(params)
     if (items) {
-      setDatasets(() => items)
-      setTotal(total)
       setSelectedIds([])
     }
   }
@@ -494,6 +496,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    datasetList: state.dataset.datasets,
   }
 }
 
