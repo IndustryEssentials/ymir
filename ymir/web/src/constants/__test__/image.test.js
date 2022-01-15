@@ -31,19 +31,17 @@ describe("constants: image", () => {
     expect(imageIsPending('1')).toBe(false) // type
   })
   it('getImageTypeLabel: get label by match type', () => {
-    const unkownLabel = getImageTypeLabel(TYPES.UNKOWN)
-    const trainLabel = getImageTypeLabel(TYPES.TRAINING)
-    const miningLabel = getImageTypeLabel(TYPES.MINING)
-    const inferenceLabel = getImageTypeLabel(TYPES.INFERENCE)
+    const trainLabel = getImageTypeLabel([TYPES.TRAINING])
+    const miningLabel = getImageTypeLabel([TYPES.MINING])
+    const inferenceLabel = getImageTypeLabel([TYPES.TRAINING, TYPES.INFERENCE])
     const emptyLabel = getImageTypeLabel()
-    const unmatchLabel = getImageTypeLabel('34')
+    const unmatchLabel = getImageTypeLabel(['34'])
 
-    expect(unkownLabel).toBe('')
-    expect(trainLabel).toBe('image.type.train')
-    expect(miningLabel).toBe('image.type.mining')
-    expect(inferenceLabel).toBe('image.type.inference')
-    expect(emptyLabel).toBe('')
-    expect(unmatchLabel).toBe(undefined)
+    expect(trainLabel).toEqual(['image.type.train'])
+    expect(miningLabel).toEqual(['image.type.mining'])
+    expect(inferenceLabel).toEqual(['image.type.train','image.type.inference'])
+    expect(emptyLabel).toEqual([])
+    expect(unmatchLabel).toEqual([undefined])
 
   })
   it('getImageStateLabel: get label by match state', () => {

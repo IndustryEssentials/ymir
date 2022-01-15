@@ -47,7 +47,7 @@ const dataset = {
   "dataset.query.name.placeholder": { cn: "数据集名称", en: "Dataset Name", },
   "dataset.selected.label": { cn: "已选择 {len} 项，共计图片 {count} 张，", en: "{len} datasets selected，total {count} assets.", },
   "dataset.pager.total.label": { cn: "共 {total} 项", en: "Total {total} items", },
-  "dataset.detail.pager.total": { cn: "总共包含 {total} 图像", en: "Total {total} pictures", },
+  "dataset.detail.pager.total": { cn: "共 {total} 图像", en: "Total {total} Pictures", },
   "dataset.detail.keyword.label": { cn: "标签：", en: "Keywords: ", },
   "dataset.detail.randompage.label": { cn: "随机页", en: "Random Page", },
   "dataset.detail.assets.keywords.total": { cn: "共{total}个标签", en: "{total} keywords", },

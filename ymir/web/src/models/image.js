@@ -6,6 +6,7 @@ import {
   updateImage,
   shareImage,
   relateImage,
+  getShareImages,
 } from "@/services/image"
 
 export default {
@@ -21,12 +22,22 @@ export default {
     *getImages({ payload }, { call, put }) {
       const { code, result } = yield call(getImages, payload)
       if (code === 0) {
+        const { items, total } = result
+        const images = items.map(image => ({ ...image, functions: (image.configs || []).map(config => config.type)}))
+        const imageList =  { items: images, total, }
         yield put({
           type: "UPDATE_IMAGES",
-          payload: result,
+          payload: imageList,
         })
+        return imageList
       }
       return result
+    },
+    *getShareImages({}, { call }) {
+      const { code, result } = yield call(getShareImages)
+      if (code === 0) {
+        return result
+      }
     },
     *getImage({ payload }, { call, put }) {
       const { code, result } = yield call(getImage, payload)

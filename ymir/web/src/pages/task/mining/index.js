@@ -52,7 +52,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   const [trainSetCount, setTrainSetCount] = useState(1)
   const [hpVisible, setHpVisible] = useState(false)
   const [topk, setTopk] = useState(false)
-  const [imageUrl, setImageUrl] = useState(null)
+  const [selectedImage, setSelectedImage] = useState({})
   const [stateConfig, setStateConfig] = useState([])
   const [gpu_count, setGPU] = useState(0)
   const hpMaxSize = 30
@@ -143,6 +143,13 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     setTopk(target.value)
   }
 
+  function imageChange(_, image = {}) {
+    const { url, configs = [] } = image
+    const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
+    setSelectedImage(image)
+    setConfig(configObj.config)
+  }
+
   function setConfig(config) {
     const params = Object.keys(config).map(key => ({ key, value: config[key] }))
     setSeniorConfig(params)
@@ -158,7 +165,8 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
       ...values,
       name: values.name.trim(),
       topk: values.filter_strategy ? values.topk : 0,
-      docker_image: imageUrl,
+      docker_image: selectedImage.url,
+      docker_image_id: selectedImage.id,
       config,
     }
     const result = await createMiningTask(params)
@@ -177,6 +185,12 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
 
   function excludeSetChange(value) {
     setExcludeSets(value)
+  }
+
+  function getImageIdOfSelectedModel() {
+    const selectedModelId = form.getFieldValue('model')
+    const selectedModel = models.find(model => model.id === selectedModelId)
+    return selectedModel?.parameters?.docker_image_id
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -308,7 +322,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} type={TYPES.MINING} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config)}} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={getImageIdOfSelectedModel()} type={TYPES.MINING} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
@@ -482,12 +496,6 @@ const dis = (dispatch) => {
     createMiningTask(payload) {
       return dispatch({
         type: "task/createMiningTask",
-        payload,
-      })
-    },
-    getRuntimes(payload) {
-      return dispatch({
-        type: "common/getRuntimes",
         payload,
       })
     },

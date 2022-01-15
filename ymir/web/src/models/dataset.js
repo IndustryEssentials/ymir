@@ -10,6 +10,7 @@ import {
   getInternalDataset,
   importDataset,
 } from "@/services/dataset"
+import { getStats } from "../services/common"
 
 export default {
   namespace: "dataset",
@@ -119,6 +120,28 @@ export default {
         type: 'UPDATE_DATASETS',
         payload: { items: result, total: datasets.total },
       })
+    },
+    *getHotDatasets({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, { ...payload, q: 'ds' })
+      let datasets = []
+      if (code === 0) {
+        const refs = {}
+        const ids = result.map(item => {
+          refs[item[0]] = item[1]
+          return item[0]
+        })
+        if (ids.length) {
+          const datasetsObj = yield put.resolve({ type: 'batchDatasets', payload: ids })
+          if (datasetsObj) {
+            datasets = datasetsObj.map(dataset => {
+              dataset.count = refs[dataset.id]
+              return dataset
+            })
+          }
+        }
+      }
+          console.log('get dataset result: ', datasets)
+      return datasets
     },
   },
   reducers: {

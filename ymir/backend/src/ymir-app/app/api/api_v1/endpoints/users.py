@@ -127,9 +127,9 @@ def update_myself(
         user_in.password = password
     if username:
         user_in.username = username
-    if phone:
+    if phone is not None:
         user_in.phone = phone
-    if avatar:
+    if avatar is not None:
         user_in.avatar = avatar
     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
     return {"result": user}
@@ -182,8 +182,8 @@ def update_user_state(
     if not user:
         raise UserNotFound()
 
-    if state:
+    if state is not None:
         user = crud.user.update_state(db, user=user, state=state)
-    if role:
+    if role is not None:
         user = crud.user.update_role(db, user=user, role=role)
     return {"result": user}
