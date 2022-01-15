@@ -161,7 +161,7 @@ const task = {
   "task.label.bottomtip.link.label": { cn: '注册标注平台账号>>', en: 'sign up Label Platform Account >>', },
   "task.btn.back": { cn: '返回', en: 'BACK', },
   "task.gpu.count": { cn: 'GPU个数', en: 'GPU Count', },
-  "task.train.gpu.invalid": { cn: 'GPU个数必须在{min}-{max}之间', en: 'GPU Count must be {min} - {max}', },
+  "task.train.gpu.invalid": { cn: 'GPU个数必须在{min}-{max}之间', en: 'GPU Count must between {min} - {max}', },
   "task.gpu.tip": { cn: '当前可用GPU个数为 {count}', en: 'Valid GPU count: {count}', },
   "task.detail.model.deleted": { cn: '已删除', en: 'Deleted', },
   'task.detail.label.go.platform': { cn: '跳转到标注平台>>', en: 'Go to Label Platform >>' },
