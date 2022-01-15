@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Modal, Select, Space, Radio } from 'antd'
 import { connect } from 'dva'
-import { useParams, useHistory } from "umi"
+import { useParams, useHistory, useLocation } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
-import { getImageTypeLabel } from '@/constants/image'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Tip from '@/components/form/tip'
 
@@ -14,12 +13,11 @@ const { useForm } = Form
 const Add = ({ getImage, createImage, updateImage }) => {
   const { id } = useParams()
   const history = useHistory()
+  const location = useLocation()
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [userInput, setUserInput] = useState(false)
   const [image, setImage] = useState({ id })
-
-  const types = Object.keys(getImageTypeLabel()).map(value => ({ value, label: getImageTypeLabel(value) }))
 
   useEffect(() => {
     setEdit(!!id)
@@ -28,13 +26,32 @@ const Add = ({ getImage, createImage, updateImage }) => {
   }, [id])
 
   useEffect(() => {
-    const { name, url , description } = image
+    console.log(location.state)
+    const record = location.state.record
+    if (!record?.docker_name) {
+      return
+    }
+    const { docker_name, description, organization, contributor } = record
+    const image = {
+      name: docker_name,
+      url: docker_name,
+      description: `${description}\n---------\nOrg.: ${organization}\nContributor: ${contributor}`,
+    }
+    setImage(image)
+  }, [location.state])
+
+  useEffect(() => {
+    initForm(image)
+  }, [image])
+
+  function initForm(image = {}) {
+    const { name, url, description } = image
     if (name) {
       form.setFieldsValue({
         name, url, description,
       })
     }
-  }, [image])
+  }
 
   const submit = (values) => {
     isEdit ? update(values) : create(values)
@@ -60,7 +77,7 @@ const Add = ({ getImage, createImage, updateImage }) => {
     }
   }
 
-  async function create ({ url, name, description }) {
+  async function create({ url, name, description }) {
     var params = {
       url: url.trim(),
       name: name.trim(),
@@ -93,53 +110,55 @@ const Add = ({ getImage, createImage, updateImage }) => {
         <div className={s.formContainer}>
           <Form form={form} labelCol={{ span: 4 }} onFinish={submit}>
             <Tip content={t('tip.image.add.name')}>
-            <Form.Item
-              label={t('image.add.form.url')}
-              name='url'
-              rules={[
-                { required: true, message: t('image.add.form.url.required') },
-                { validator: checkImageUrl },
-              ]}
-            >
-              <Input placeholder={t('image.add.form.url.placeholder')} disabled={isEdit} autoComplete='off' allowClear onChange={urlChange} />
-            </Form.Item>
+              <Form.Item
+                label={t('image.add.form.url')}
+                name='url'
+                rules={[
+                  { required: true, message: t('image.add.form.url.required') },
+                  { validator: checkImageUrl },
+                ]}
+              >
+                <Input placeholder={t('image.add.form.url.placeholder')} disabled={image.url} autoComplete='off' allowClear onChange={urlChange} />
+              </Form.Item>
             </Tip>
             <Tip content={t('tip.image.add.url')}>
-            <Form.Item
-              label={t('image.add.form.name')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('image.add.form.name.placeholder') },
-                { max: 50 },
-              ]}
-            >
-              <Input placeholder={t('image.add.form.name.placeholder')} maxLength={50}
-                autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
-            </Form.Item>
+              <Form.Item
+                label={t('image.add.form.name')}
+                name='name'
+                rules={[
+                  { required: true, whitespace: true, message: t('image.add.form.name.placeholder') },
+                  { max: 50 },
+                ]}
+              >
+                <Input placeholder={t('image.add.form.name.placeholder')} maxLength={50}
+                  autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
+              </Form.Item>
             </Tip>
             <Tip content={t('tip.image.add.desc')}>
-            <Form.Item label={t('image.add.form.desc')} name='description'
-              rules={[
-                { max: 500 },
-              ]}
-            >
-              <Input.TextArea />
-            </Form.Item>
+              <Form.Item label={t('image.add.form.desc')} name='description'
+                rules={[
+                  { max: 500 },
+                ]}
+              >
+                <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
+              </Form.Item>
             </Tip>
-            <Form.Item wrapperCol={{ offset: 4 }}>
-              <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit">
-                    {isEdit ? t('image.update.submit') : t('image.add.submit')}
-                  </Button>
-                </Form.Item>
-                <Form.Item name='backBtn' noStyle>
-                  <Button size="large" onClick={() => history.goBack()}>
-                    {t('common.back')}
-                  </Button>
-                </Form.Item>
-              </Space>
-            </Form.Item>
+            <Tip hidden={true}>
+              <Form.Item wrapperCol={{ offset: 4 }}>
+                <Space size={20}>
+                  <Form.Item name='submitBtn' noStyle>
+                    <Button type="primary" size="large" htmlType="submit">
+                      {isEdit ? t('image.update.submit') : t('image.add.submit')}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item name='backBtn' noStyle>
+                    <Button size="large" onClick={() => history.goBack()}>
+                      {t('common.back')}
+                    </Button>
+                  </Form.Item>
+                </Space>
+              </Form.Item>
+            </Tip>
           </Form>
         </div>
       </Card>

@@ -78,3 +78,7 @@ export function relateImage(id, relations) {
     }
   })
 }
+
+export function getShareImages() {
+  return request.get('/images/shared')
+}

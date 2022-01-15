@@ -6,6 +6,7 @@ import {
   updateImage,
   shareImage,
   relateImage,
+  getShareImages,
 } from "@/services/image"
 
 export default {
@@ -27,6 +28,12 @@ export default {
         })
       }
       return result
+    },
+    *getShareImages({}, { call }) {
+      const { code, result } = yield call(getShareImages)
+      if (code === 0) {
+        return result
+      }
     },
     *getImage({ payload }, { call, put }) {
       const { code, result } = yield call(getImage, payload)
