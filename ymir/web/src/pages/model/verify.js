@@ -46,7 +46,7 @@ function Verify({ getModel, verify }) {
         verifyImg()
       })
     }
-  }, [url])
+  }, [url, image])
 
   useEffect(() => {
     setShowAnnos(annotations.length ? annotations.filter(anno => 
@@ -58,6 +58,11 @@ function Verify({ getModel, verify }) {
     if (option) {
       setImage(option.url)
     }
+  }
+
+  function urlChange(files, url) {
+    setUrl('')
+    setUrl(files.length ? url : '')
   }
 
   const renderTitle = (
@@ -92,7 +97,7 @@ function Verify({ getModel, verify }) {
         key={'uploader'}
         type='primary'
         className={styles.verify_uploader}
-        onChange={(files, result) => { setUrl(files.length ? result : '') }}
+        onChange={urlChange}
         format='img'
         label={label}
         showUploadList={false}

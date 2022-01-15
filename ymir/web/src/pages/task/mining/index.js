@@ -158,7 +158,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
-    config['gpu_count'] = form.getFieldValue('gpu_count')
+    config['gpu_count'] = form.getFieldValue('gpu_count') || 0
 
     const params = {
       ...values,
@@ -361,11 +361,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               <Form.Item
                 label={t('task.mining.form.label.label')}
                 name='inference'
-                initialValue={0}
+                initialValue={false}
               >
                 <Radio.Group options={[
-                  { value: 1, label: t('common.yes') },
-                  { value: 0, label: t('common.no') },
+                  { value: true, label: t('common.yes') },
+                  { value: false, label: t('common.no') },
                 ]} />
               </Form.Item>
             </Tip>
@@ -377,7 +377,6 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[{ type: 'number', min: 0, max: gpu_count }]}
                 >
                   <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                   <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>

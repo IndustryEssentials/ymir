@@ -6,14 +6,14 @@ import { List, Skeleton, Space, Button, Pagination, Col, Row, } from "antd"
 
 import t from "@/utils/t"
 import { ROLES } from '@/constants/user'
-import { TYPES, STATES, getImageTypeLabel, imageIsPedding } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
 import ShareModal from "./share"
 import RelateModal from './relate'
 import Del from './del'
 import s from "./list.less"
 import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/icons"
 import ImagesLink from "./imagesLink"
-import { SuccessIcon } from "../../../components/common/icons"
+import { FailIcon, SuccessIcon } from "../../../components/common/icons"
 import { LoadingOutlined } from '@ant-design/icons'
 
 const initQuery = {
@@ -88,7 +88,7 @@ const ImageList = ({ role, filter, getImages }) => {
       {
         key: "del",
         label: t("image.action.del"),
-        hidden: () => imageIsPedding(state),
+        hidden: () => imageIsPending(state),
         onclick: () => del(id, name),
         icon: <DeleteIcon />,
       },
@@ -149,7 +149,7 @@ const ImageList = ({ role, filter, getImages }) => {
     const states = {
       [STATES.PENDING]: <LoadingOutlined style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
       [STATES.DONE]: <SuccessIcon style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
-      [STATES.ERROR]: <SuccessIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} />,
+      [STATES.ERROR]: <FailIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} />,
     }
     return states[state]
   }
