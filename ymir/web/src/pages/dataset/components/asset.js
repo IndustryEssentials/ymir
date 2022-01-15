@@ -23,7 +23,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(null)
   const [colors] = useState(datasetKeywords.reduce((prev, curr, i) =>
     ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {}))
 
@@ -33,7 +33,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   }, [index])
 
   useEffect(() => {
-    fetchAssetHash()
+    currentIndex !== null && fetchAssetHash()
   }, [currentIndex])
 
   useEffect(() => {

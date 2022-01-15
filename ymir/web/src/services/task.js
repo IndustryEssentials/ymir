@@ -153,6 +153,7 @@ export function createTrainTask({
   strategy,
   model,
   docker_image,
+  docker_image_id,
 }) {
   return createTask({
     name,
@@ -169,6 +170,7 @@ export function createTrainTask({
       train_type,
       model_id: model,
       docker_image,
+      docker_image_id,
     }
   })
 }
@@ -184,6 +186,7 @@ export function createMiningTask({
   inference,
   name,
   docker_image,
+  docker_image_id,
 }) {
   return createTask({
     type: TASKTYPES.MINING,
@@ -198,6 +201,7 @@ export function createMiningTask({
       top_k: topk,
       generate_annotations: inference,
       docker_image,
+      docker_image_id,
     }
   })
 }
