@@ -2,7 +2,6 @@ aiofiles==0.7.0
 aiohttp==3.7.4.post0
 alembic==1.6.5
 apscheduler==3.7.0
-arq==0.22
 arrow==1.1.1
 bcrypt==3.2.0
 clickhouse-driver==0.2.2
@@ -12,6 +11,7 @@ cryptography==3.4.7
 dvc==2.5.0
 email-validator==1.1.2
 emails==0.6
+fastapi-cache2[redis]==0.1.8
 fastapi-login==1.6.0
 fastapi==0.65.1
 gevent==21.1.2
