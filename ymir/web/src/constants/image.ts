@@ -17,10 +17,8 @@ export function imageIsPedding (state: number) {
   return state === STATES.PENDING
 }
 
-export const getImageTypeLabel = (type: number | null) => {
-  if (!type) {
-    return ''
-  }
+export const getImageTypeLabel = (functions: number[] | null) => {
+
   const labels = {
     [TYPES.UNKOWN]: t('image.type.unkown'),
     [TYPES.TRAINING]: t('image.type.train'),
@@ -28,7 +26,7 @@ export const getImageTypeLabel = (type: number | null) => {
     [TYPES.INFERENCE]: t('image.type.inference'),
   }
 
-  return labels[type]
+  return functions?.map(func => labels[func])
 }
 
 /**

@@ -61,6 +61,8 @@ const image = {
   'image.detail.label.config': { en: "Senior Config", cn: "镜像高级参数", },
   'image.detail.label.state': { en: "Image State", cn: "镜像状态", },
   'image.detail.relate': { en: "Relate", cn: "去关联", },
+  'image.select.opt.related': { en: "Related Images", cn: "关联镜像（推荐）", },
+  'image.select.opt.normal': { en: "List", cn: "列表", },
 }
 
 export default image

@@ -19,8 +19,8 @@ const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => { } }, ref)
   }, [links, visible])
 
   useEffect(() => {
-    fetchMiningImages()
-  }, [])
+    visible && fetchMiningImages()
+  }, [visible])
 
   useImperativeHandle(ref, () => ({
     show: ({ id, name, related }) => {

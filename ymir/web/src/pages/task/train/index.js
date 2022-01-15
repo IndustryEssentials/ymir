@@ -47,7 +47,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
-  const [imageUrl, setImageUrl] = useState(null)
+  const [selectedImage, setSelectedImage] = useState({})
   const [gpu_count, setGPU] = useState(0)
   const hpMaxSize = 30
 
@@ -184,7 +184,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
   function imageChange(_, image = {}) {
     const { url, config } = image
-    setImageUrl(url)
+    setSelectedImage(image)
     setConfig(config)
   }
 
@@ -204,7 +204,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     const params = {
       ...values,
       name: values.name.trim(),
-      docker_image: imageUrl,
+      docker_image: selectedImage.url,
+      docker_image_id: selectedImage.id,
       config,
     }
     if (selectedModel) {

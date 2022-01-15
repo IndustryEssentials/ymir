@@ -5,7 +5,6 @@ import { useParams, useHistory } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
-import { getImageTypeLabel } from '@/constants/image'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Tip from '@/components/form/tip'
 
@@ -18,8 +17,6 @@ const Add = ({ getImage, createImage, updateImage }) => {
   const [isEdit, setEdit] = useState(false)
   const [userInput, setUserInput] = useState(false)
   const [image, setImage] = useState({ id })
-
-  const types = Object.keys(getImageTypeLabel()).map(value => ({ value, label: getImageTypeLabel(value) }))
 
   useEffect(() => {
     setEdit(!!id)

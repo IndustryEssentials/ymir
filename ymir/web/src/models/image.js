@@ -21,10 +21,14 @@ export default {
     *getImages({ payload }, { call, put }) {
       const { code, result } = yield call(getImages, payload)
       if (code === 0) {
+        const { items, total } = result
+        const images = items.map(image => ({ ...image, functions: (image.configs || []).map(config => config.type)}))
+        const imageList =  { items: images, total, }
         yield put({
           type: "UPDATE_IMAGES",
-          payload: result,
+          payload: imageList,
         })
+        return imageList
       }
       return result
     },
