@@ -19,8 +19,10 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     if not tid_to_taskstates_latest:
         return
 
-    # update db, if error occured, write back
+    # update db, save failed
+    logging.debug(f"about to update db: {tid_to_taskstates_latest}")
     failed_tids = _update_db(tid_to_tasks=tid_to_taskstates_latest)
+    logging.debug(f"failed tids: {failed_tids}")
     if failed_tids:
         time.sleep(5)
         _save_failed(failed_tids=failed_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
@@ -55,7 +57,6 @@ def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: entities.TaskS
     failed_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in failed_tids}
     json_str = json.dumps(jsonable_encoder(failed_tid_to_tasks))
     redis_connect.set(name=settings.RETRY_CACHE_KEY, value=json_str)
-    logging.debug(f"_save_failed: {failed_tids}")
 
 
 def _load_failed() -> entities.TaskStateDict:
