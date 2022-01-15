@@ -85,7 +85,7 @@ export default {
     },
     *getModelsByRef({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'hms' })
-      const models = []
+      let models = []
       if (code === 0) {
         const refs = {}
         const ids = result.map(item => {
