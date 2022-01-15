@@ -31,6 +31,8 @@ class EventDispatcher:
         return redis.StrictRedis.from_url(settings.PM_REDIS_URI, encoding="utf8", decode_responses=True)
 
     def register_handler(self, handler: Callable) -> None:
+        if self._event_handler:
+            raise RuntimeError('already have handler')
         self._event_handler = handler
 
     @classmethod
