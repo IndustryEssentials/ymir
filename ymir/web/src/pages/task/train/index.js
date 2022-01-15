@@ -103,7 +103,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image, model_id } = parameters
+      const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image_id, docker_image, model_id } = parameters
       const tSets = include_train_datasets || []
       const vSets = include_validation_datasets || []
       form.setFieldsValue({
@@ -113,7 +113,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
         gpu_count: config.gpu_count,
         // keywords: include_classes,
         model: model_id,
-        docker_image,
+        docker_image: docker_image_id + ',' + docker_image,
         strategy,
       })
       setConfig(config)
@@ -190,7 +190,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
   function imageChange(_, image = {}) {
     console.log('image change: ', _, image)
-    const { url, configs } = image
+    const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
     setSelectedImage(image)
     setConfig(configObj.config)
@@ -209,17 +209,19 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     if (gpuCount) {
       config['gpu_count'] = gpuCount
     }
+    const img = (form.getFieldValue('docker_image') || '').split(',')
+    const docker_image_id = Number(img[0])
+    const docker_image = img[1]
     const params = {
       ...values,
       name: values.name.trim(),
-      docker_image: selectedImage.url,
-      docker_image_id: selectedImage.id,
+      docker_image,
+      docker_image_id,
       config,
     }
     if (selectedModel) {
       params.keywords = selectedModel.keywords
     }
-
     const result = await createTrainTask(params)
     if (result) {
       history.replace("/home/task")

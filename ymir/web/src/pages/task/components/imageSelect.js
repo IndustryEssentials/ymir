@@ -28,17 +28,13 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
     if (result) {
       const images = result.items
       generateOptions(images)
-      if (value) {
-        const opt = opts.find(opt => opt.value === value)
-        onChange(opt.value, opt.image)
-      }
     }
   }
 
   const generateOption = image => ({
     label: image.name,
     image,
-    value: image.id,
+    value: image.id + ',' + image.url,
   })
 
   async function generateOptions(images) {
