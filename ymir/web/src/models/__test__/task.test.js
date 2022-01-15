@@ -113,6 +113,7 @@ describe("models: task", () => {
     const saga = task.effects.getTask
     const taskId = 620
     const datasetId = 818
+    const modelId = 717
     const creator = {
       type: "getTask",
       payload: taskId,
@@ -121,10 +122,12 @@ describe("models: task", () => {
     const expected = {
       id: taskId,
       parameters: {
-        include_datasets: [datasetId]
+        include_datasets: [datasetId],
+        model_id: modelId,
       }
     }
     const datasets = [product(datasetId)]
+    const mockModel = product(modelId)
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -133,11 +136,13 @@ describe("models: task", () => {
       result: expected,
     })
     generator.next(datasets)
+    generator.next(mockModel)
     const end = generator.next()
-    const { id, parameters, filterSets } = end.value
+    const { id, parameters, filterSets, model } = end.value
     expect(id).toBe(taskId)
     expect(parameters.include_datasets[0]).toBe(datasetId)
     expect(filterSets[0].id).toBe(datasetId)
+    expect(model.id).toBe(modelId)
     expect(end.done).toBe(true)
   })
   
