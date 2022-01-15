@@ -10,11 +10,12 @@ class Settings(BaseSettings):
     NGINX_PREFIX: str = ""
     API_V1_STR: str = "/api/v1"
     DATABASE_URI: str = "sqlite:///app.db"
+    CLICKHOUSE_URI: str = "clickhouse"
     TOKEN_URL: str = "/auth/token"
     GRPC_CHANNEL: str = "controller:50066"
     DEFAULT_LIMIT: int = 20
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    APP_SECRET_KEY: str = secrets.token_urlsafe(32)
     HASH_LEN_LIMIT: int = 50
     NAME_LEN_LIMIT: int = 100
     PARA_LEN_LIMIT: int = 500
@@ -34,7 +35,7 @@ class Settings(BaseSettings):
     USE_200_EVERYWHERE: bool = True
 
     IS_TESTING: bool = False
-    API_KEY_SECRET: str = secrets.token_urlsafe(32)
+    APP_API_KEY: str = secrets.token_urlsafe(32)
 
     # paths to share data with Controller, etc
     SHARED_DATA_DIR: str = "./"
@@ -71,6 +72,9 @@ class Settings(BaseSettings):
     SHARING_TIMEOUT: int = 10
     WUFOO_URL: Optional[str]
     WUFOO_AUTHORIZATION: Optional[str]
+    SHARED_DOCKER_IMAGES_URL: Optional[str]
+    GITHUB_TIMEOUT: int = 30
+    APP_CACHE_EXPIRE_IN_SECONDS: int = 3600
 
 
 settings = Settings(_env_file=".env")  # type: ignore

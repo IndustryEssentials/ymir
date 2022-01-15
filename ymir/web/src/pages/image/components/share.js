@@ -28,11 +28,12 @@ const ShareModal = forwardRef(({ username, email, phone, shareImage }, ref) => {
   const shareModalCancel = () => setVisible(false)
 
   const submitShare = () => {
-    shareForm.validateFields().then(async (values) => {
+    shareForm.validateFields().then(async ({ org, ...other }) => {
       const params = {
         username,
         id,
-        ...shareForm.getFieldsValue(),
+        ...other,
+        org: (org || '').trim(),
       }
       const result = await shareImage(params)
       if (result) {

@@ -23,6 +23,7 @@ const emptyUser = {
   email: "",
   phone: "",
   avatar: '',
+  hash: '',
   id: 0,
   role: ROLES.USER,
 }
@@ -38,11 +39,11 @@ const model = {
   effects: {
     *setGuideVisible({ payload }, { put }) {
       const visible = !!payload
-      yield put({ type: 'UPDATE_GUIDE_VISIBLE', payload: visible})
+      yield put({ type: 'UPDATE_GUIDE_VISIBLE', payload: visible })
     },
     *setNeverShow({ payload }, { put }) {
       const neverShow = !!payload
-      yield put({ type: 'UPDATE_NEVER_SHOW', payload: neverShow})
+      yield put({ type: 'UPDATE_NEVER_SHOW', payload: neverShow })
     },
     *signup({ payload }, { call, put, select }) {
       const { code, result } = yield call(signup, payload)
@@ -117,7 +118,7 @@ const model = {
     *loginout({ payload }, { call, put, select }) {
       storage.remove("access_token")
       yield put({ type: "UPDATE_LOGINED", payload: false })
-      yield put({ type: 'UPDATE_USERINFO', payload: emptyUser})
+      yield put({ type: 'UPDATE_USERINFO', payload: emptyUser })
       return true
     },
     *getActiveUsers({ payload }, { call }) {
@@ -154,14 +155,16 @@ const model = {
   },
   reducers: {
     UPDATE_USERINFO(state, { payload }) {
+      const { username, email, phone, avatar, role, id, hash } = payload
       return {
         ...state,
-        username: payload.username,
-        email: payload.email,
-        phone: payload.phone,
-        avatar: payload.avatar,
-        id: payload.id,
-        role: payload.role,
+        username,
+        email,
+        phone,
+        avatar,
+        id,
+        role,
+        hash,
       }
     },
     UPDATE_LOGINED(state, { payload }) {

@@ -12,7 +12,7 @@ env = os.environ.get
 CHECK_INTERVAL_IN_SECONDS = int(env("CHECK_INTERVAL_IN_SECONDS", 30))
 API_HOST = env("API_HOST", "backend")
 REDIS_URI = env("BACKEND_REDIS_URL", "redis://redis:6379")
-API_KEY_SECRET = env("API_KEY_SECRET")
+APP_API_KEY = env("APP_API_KEY")
 
 
 async def update_task_status(ctx: Dict) -> int:
@@ -23,7 +23,7 @@ async def update_task_status(ctx: Dict) -> int:
     session = ClientSession()
 
     api_url = f"http://{API_HOST}/api/v1/tasks/update_status"
-    headers = {"api-key": API_KEY_SECRET}
+    headers = {"api-key": APP_API_KEY}
     logging.info("updating tasks status... %s" % api_url)
     async with session.post(api_url, headers=headers) as response:
         content = await response.json()

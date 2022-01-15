@@ -1,9 +1,11 @@
+import { TYPES } from "../image"
 import { 
   getTaskTypes,
   getTaskStates,
   getTimes,
   getModelImportTypes,
   getDatasetTypes,
+  getImageTypes,
  } from "../query"
 import { TASKSTATES, TASKTYPES } from '../task'
 jest.mock('@/utils/t', () => {
@@ -52,5 +54,11 @@ describe("constants: query", () => {
     match(types, 'label', 3)
     match(types, 'filter', 4)
     match(types, 'import', 5)
+  })
+  it("have right image types", () => {
+    const types = getImageTypes()
+    match(types, 'all', undefined)
+    match(types, 'train', TYPES.TRAINING)
+    match(types, 'mining', TYPES.MINING)
   })
 })
