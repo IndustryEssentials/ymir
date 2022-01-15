@@ -11,7 +11,7 @@ env = os.environ.get
 
 CHECK_INTERVAL_IN_SECONDS = int(env("CHECK_INTERVAL_IN_SECONDS", 30))
 API_HOST = env("API_HOST", "backend")
-REDIS_URI = env("CTR_REDIS_URI", "redis://redis:6379")
+REDIS_URI = env("BACKEND_REDIS_URL", "redis://redis:6379")
 APP_API_KEY = env("APP_API_KEY")
 
 
