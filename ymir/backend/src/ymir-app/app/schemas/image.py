@@ -24,7 +24,7 @@ class DockerImageBase(BaseModel):
 
 
 class DockerImageCreate(DockerImageBase):
-    pass
+    url: str
 
 
 class DockerImageLinkCreate(BaseModel):
@@ -35,11 +35,6 @@ class DockerImageUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
     is_shared: Optional[bool]
-
-
-class DockerImageUpdateConfig(DockerImageUpdate):
-    hash: Optional[str]
-    state: Optional[int]
 
 
 class DockerImageInDBBase(
