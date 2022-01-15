@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     MODELS_PATH: Optional[str] = None
 
     # redis
-    REDIS_URI: str = "redis://redis:6379/0"
+    BACKEND_REDIS_URL: str = "redis://redis:6379/0"
 
     # graph
     MAX_HOPS: int = 5

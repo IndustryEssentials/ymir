@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "ymir postman"
     APP_API_HOST: str = os.environ['APP_API_HOST']
     APP_API_KEY: str = os.environ['APP_API_KEY']
-    PM_REDIS_URI: str = os.environ['CTR_REDIS_URI']
+    PM_REDIS_URI: str = os.environ['BACKEND_REDIS_URL']
 
     BACKEND_CORS_ORIGINS: List[str] = []
 
