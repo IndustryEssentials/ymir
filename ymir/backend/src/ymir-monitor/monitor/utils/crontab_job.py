@@ -38,8 +38,7 @@ def deal_updated_task(
 
 def monitor_percent_log() -> None:
     redis_client = redis_handler.RedisHandler()
-    task_service_ins = TaskService(redis_client)
-    contents = task_service_ins.get_running_task()
+    contents = redis_client.hgetall(settings.MONITOR_RUNNING_KEY)
 
     task_updated = dict()
     task_id_finished = []
