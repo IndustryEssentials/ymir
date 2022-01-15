@@ -23,7 +23,7 @@ class EventDispatcher:
     # public: general
     def start(self) -> None:
         """ start to listen """
-        logging.debug('start listening')
+        logging.debug(f"ed start. event: {self._event_name}, group: {self._group_name}")
         self._read_redis_stream_msgs()
 
     @classmethod

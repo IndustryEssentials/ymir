@@ -6,8 +6,8 @@ from typing import Any, List, Set, Dict, Tuple
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
+from pydantic.error_wrappers import ValidationError
 
-from common_utils import percent_log_util
 from postman import entities, event_dispatcher  # type: ignore
 from postman.settings import settings
 
@@ -33,17 +33,17 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
         time.sleep(5)
 
 
-def _aggregate_msgs(msgs: List[Dict[str, str]]) -> Dict[str, entities.TaskState]:
+def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
     """
     for all redis stream msgs, deserialize them to entities, select the latest for each tid
     """
-    tid_to_taskstates_latest: Dict[str, entities.TaskState] = _load_failed()
+    tid_to_taskstates_latest: entities.TaskStateDict = _load_failed()
     for msg in msgs:
         msg_topic = msg['topic']
         if msg_topic != 'raw' and msg_topic != 'selected':
             continue
 
-        tid_to_taskstates = parse_raw_as(Dict[str, entities.TaskState], msg['body'])
+        tid_to_taskstates = parse_raw_as(entities.TaskStateDict, msg['body'])
         for tid, taskstate in tid_to_taskstates.items():
             if (tid not in tid_to_taskstates_latest
                     or tid_to_taskstates_latest[tid].percent_result.timestamp < taskstate.percent_result.timestamp):
@@ -51,13 +51,13 @@ def _aggregate_msgs(msgs: List[Dict[str, str]]) -> Dict[str, entities.TaskState]
     return tid_to_taskstates_latest
 
 
-def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: Dict[str, entities.TaskState]) -> None:
+def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: entities.TaskStateDict) -> None:
     """
     save failed taskstates to redis cache
 
     Args:
         failed_tids (Set[str])
-        tid_to_taskstates_latest (Dict[str, entities.TaskState])
+        tid_to_taskstates_latest (entities.TaskStateDict)
     """
     failed_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in failed_tids}
     json_str = json.dumps(jsonable_encoder(failed_tid_to_tasks))
@@ -65,27 +65,31 @@ def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: Dict[str, enti
     logging.debug(f"_save_failed: {failed_tids}")
 
 
-def _load_failed() -> Dict[str, entities.TaskState]:
+def _load_failed() -> entities.TaskStateDict:
     """
     load failed taskstates from redis cache
 
     Returns:
-        Dict[str, entities.TaskState]: [description]
+        entities.TaskStateDict
     """
-    # pass
     json_str = redis_connect.get(name=settings.RETRY_CACHE_KEY)
     if not json_str:
         return {}
-    failed_tid_to_taskstates = parse_raw_as(Dict[str, entities.TaskState], json_str)
-    return failed_tid_to_taskstates or {}
+
+    try:
+        failed_tid_to_taskstates = parse_raw_as(entities.TaskStateDict, json_str)
+        return failed_tid_to_taskstates or {}
+    except ValidationError as e:
+        logging.error(f"parse error: {e}: {json_str}")
+        raise e
 
 
-def _update_db(tid_to_tasks: Dict[str, entities.TaskState]) -> Set[str]:
+def _update_db(tid_to_tasks: entities.TaskStateDict) -> Set[str]:
     """
     update db for all tasks in tid_to_tasks
 
     Args:
-        tid_to_tasks (Dict[str, entities.TaskState]): key: tid, value: TaskState
+        tid_to_tasks (entities.TaskStateDict): key: tid, value: TaskState
 
     Returns:
         Set[str]: failed tids
@@ -117,7 +121,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     task_data = {
         'hash': tid,
         'timestamp': task.percent_result.timestamp,
-        'state': percent_log_util.PercentLogHandler.task_state_str_to_code(task.percent_result.state),
+        'state': task.percent_result.state,
         'percent': task.percent_result.percent,
         'state_message': task.percent_result.state_message
     }

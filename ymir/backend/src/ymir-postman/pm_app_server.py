@@ -12,7 +12,6 @@ from fastapi_socketio import SocketManager
 import socketio
 from starlette.middleware.cors import CORSMiddleware
 
-from common_utils import percent_log_util
 from postman import entities
 from postman.event_dispatcher import EventDispatcher
 from postman.settings import settings
@@ -22,7 +21,7 @@ uvicorn_logger = logging.getLogger("uvicorn")
 
 
 # private: socketio
-def _sort_by_user_id(tid_to_taskstates: Dict[str, entities.TaskState]) -> Dict[str, Dict[str, entities.TaskState]]:
+def _sort_by_user_id(tid_to_taskstates: entities.TaskStateDict) -> Dict[str, entities.TaskStateDict]:
     """
     returns: Dict[str, Dict[str, dict]]
                   (uid)     (tid) (TaskState)
@@ -34,13 +33,13 @@ def _sort_by_user_id(tid_to_taskstates: Dict[str, entities.TaskState]) -> Dict[s
     return uid_to_tasks
 
 
-def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: Dict[str, entities.TaskState]) -> None:
+def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: entities.TaskStateDict) -> None:
     uid_to_taskstates = _sort_by_user_id(tid_to_taskstates)
     for uid, tid_to_taskstates in uid_to_taskstates.items():
         data = {}
         for tid, taskstate in tid_to_taskstates.items():
             data[tid] = {
-                'state': percent_log_util.PercentLogHandler.task_state_str_to_code(taskstate.percent_result.state),
+                'state': taskstate.percent_result.state,
                 'percent': taskstate.percent_result.percent,
                 'timestamp': taskstate.percent_result.timestamp,
                 'state_code': taskstate.percent_result.state_code,
@@ -71,7 +70,7 @@ else:
 
 # fastapi handlers
 @app.post('/events/taskstates', response_model=entities.EventResp)
-def post_task_states(tid_to_taskstates: Dict[str, entities.TaskState]) -> entities.EventResp:
+def post_task_states(tid_to_taskstates: entities.TaskStateDict) -> entities.EventResp:
     EventDispatcher.add_event(event_name='/events/taskstates',
                               event_topic='raw',
                               event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
