@@ -1,5 +1,4 @@
 import Graphin, { Utils, Behaviors, GraphinContext, registerFontFamily } from '@antv/graphin'
-// import iconLoader from '@antv/graphin-icons'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { Link, useParams, useHistory } from 'umi'
 import { connect } from 'dva'

@@ -54,9 +54,6 @@ function Keyword({ getKeywords }) {
       title: showTitle("keyword.column.name"),
       dataIndex: "name",
       className: styles[`column_name`],
-      // render: (name, { id }) => (
-      //   <span>{name}</span>
-      // ),
       ellipsis: true,
     },
     {

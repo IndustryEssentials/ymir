@@ -13,6 +13,7 @@ import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
 import { TipsIcon } from '@/components/common/icons'
 import Tip from "@/components/form/tip"
+import RecommendKeywords from "../../../components/common/recommendKeywords"
 const { Option } = Select
 
 function Filter({
@@ -101,6 +102,12 @@ function Filter({
     form.setFieldsValue({ inc: [], exc: [] })
   }
 
+  function selectRecommendKeywords(keyword) {
+    const kws = [...new Set([...selectedKeywords, keyword])]
+    setSelectedKeywords(kws)
+    form.setFieldsValue({ inc: kws })
+  }
+
   function requireOne(rule, value) {
     if ([...selectedKeywords, ...selectedExcludeKeywords].length) {
       return Promise.resolve()
@@ -181,13 +188,9 @@ function Filter({
               <p>{t('task.filter.form.include.label')}</p>
             <Tip content={t('tip.task.filter.includelable')}>
                 <Form.Item
-                  // label={t('task.filter.form.include.label')}
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='inc'
-                  // hidden={!keywords.length}
-                  rules={[
-                    { validator: requireOne },
-                  ]}
+                  help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
                 >
                   <Select
                     mode='multiple'
@@ -203,10 +206,9 @@ function Filter({
               <p>{t('task.filter.form.exclude.label')}</p>
               <Tip content={t('tip.task.filter.excludelable')}>
                 <Form.Item
-                  // label={t('task.filter.form.exclude.label')}
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='exc'
-                  // hidden={!keywords.length}
+                  dependencies={['inc']}
                   help={t('task.filter.tip.keyword.required')}
                   rules={[
                     { validator: requireOne },
