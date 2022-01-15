@@ -6,8 +6,8 @@ services:
       - .env
     runtime: ${SERVER_RUNTIME}
     environment:
+      - BACKEND_REDIS_URL=redis://redis:6379/0
       # controller
-      - CTR_REDIS_URI=redis://redis:6379/0
       - NVIDIA_VISIBLE_DEVICES=all
       - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
       - MONTIOR=${YMIR_PATH}/ymir-data/monitor
@@ -26,6 +26,9 @@ services:
       - NGINX_DATA_PATH=/ymir-storage
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
+      # monitor
+      - POSTMAN_URL=http://127.0.0.1:8090
+      - MONITOR_URL=http://127.0.0.1:9098
       - APP_API_HOST=127.0.0.1:80
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"

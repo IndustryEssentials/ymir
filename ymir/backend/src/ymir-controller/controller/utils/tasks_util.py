@@ -1,6 +1,13 @@
+import traceback
 from datetime import datetime
+from typing import List
 
+import requests
+from requests import RequestException
+
+from controller.config import common_task as common_task_config
 from controller.utils import code
+from controller.utils.app_logger import logger
 from proto import backend_pb2
 
 
@@ -37,3 +44,15 @@ def write_task_progress(monitor_file: str,
         if msg:
             f.write('\n{}'.format(msg))
     return code.ResCode.CTR_OK
+
+
+def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], description: str = None) -> None:
+    # compatible with old modes, remove the try when ready
+    try:
+        requests.post(
+            url=f"{common_task_config.MONITOR_URL}/api/v1/tasks",
+            json=dict(task_id=task_id, user_id=user_id, log_paths=log_paths, description=description),
+            timeout=5,
+        )
+    except RequestException as e:
+        logger.warning(f"register_monitor_log error: {traceback.format_exc()}")
