@@ -110,7 +110,7 @@ def client() -> Generator:
 
 @pytest.fixture(scope="module")
 def api_key_headers(client: TestClient, db: Session) -> Dict[str, str]:
-    return {"api-key": settings.API_KEY_SECRET}
+    return {"api-key": settings.APP_API_KEY}
 
 
 @pytest.fixture(scope="module")
