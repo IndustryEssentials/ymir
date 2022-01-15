@@ -12,15 +12,14 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
+from app.schemas.image_config import ImageConfig
 
 
 class DockerImageBase(BaseModel):
     name: str
-    type: Optional[DockerImageType] = DockerImageType.unknown
     state: Optional[DockerImageState] = DockerImageState.pending
     hash: Optional[str]
     url: Optional[str]
-    config: Optional[str]
     description: Optional[str]
 
 
@@ -34,14 +33,12 @@ class DockerImageLinkCreate(BaseModel):
 
 class DockerImageUpdate(BaseModel):
     name: Optional[str]
-    config: Optional[str]
     description: Optional[str]
     is_shared: Optional[bool]
 
 
 class DockerImageUpdateConfig(DockerImageUpdate):
     hash: Optional[str]
-    type: Optional[int]
     state: Optional[int]
 
 
@@ -49,7 +46,6 @@ class DockerImageInDBBase(
     IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DockerImageBase
 ):
     hash: Optional[str]
-    config: Optional[str]
     state: DockerImageState = DockerImageState.pending
     is_shared: Optional[bool]
 
@@ -58,17 +54,12 @@ class DockerImageInDBBase(
 
 
 class DockerImageInDB(DockerImageInDBBase):
-    config: Optional[str]
-
-    @validator("config")
-    def unravel_config(cls, v: str, values: Dict[str, Any]) -> Dict[str, Any]:
-        if not v:
-            return {}
-        return json.loads(v)
+    pass
 
 
 class DockerImage(DockerImageInDB):
     related: List[DockerImageInDB]
+    configs: List[ImageConfig]
 
 
 class DockerImages(BaseModel):
