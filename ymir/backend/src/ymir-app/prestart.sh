@@ -11,3 +11,6 @@ python app/init_clickhouse.py
 
 # Create initial data in DB
 python app/initial_data.py
+
+# Clean legacy tasks
+python app/clean_tasks.py
