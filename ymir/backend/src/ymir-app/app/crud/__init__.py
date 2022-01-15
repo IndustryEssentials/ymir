@@ -1,5 +1,6 @@
 from .crud_dataset import dataset
 from .crud_image import docker_image
+from .crud_image_config import image_config
 from .crud_image_relationship import image_relationship
 from .crud_model import model
 from .crud_role import role

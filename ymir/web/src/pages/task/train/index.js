@@ -49,6 +49,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const [hpVisible, setHpVisible] = useState(false)
   const [imageUrl, setImageUrl] = useState(null)
   const [gpu_count, setGPU] = useState(0)
+  const initGpuHelp = <span>{t('task.gpu.tip', { count: gpu_count })}</span>
+  const [gpuHelp, setGpuHelp] = useState(initGpuHelp)
   const hpMaxSize = 30
 
   const renderRadio = (types) => {
@@ -86,11 +88,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     const tkw = getKw(trainSets)
     const vkw = getKw(validationSets)
     const kws = tkw.filter(v => vkw.includes(v))
-    // if (!form.getFieldValue('model')) {
     setKeywords(kws)
-      // form.setFieldsValue({ keywords: [] })
-      // setSelectedKeywords([])
-    // }
   }, [trainSets, validationSets, datasets])
 
   useEffect(() => {
@@ -106,7 +104,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_classes, include_train_datasets, include_validation_datasets, strategy, } = parameters
+      const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image, model_id } = parameters
       const tSets = include_train_datasets || []
       const vSets = include_validation_datasets || []
       form.setFieldsValue({
@@ -114,13 +112,16 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
         train_sets: tSets,
         validation_sets: vSets,
         gpu_count: config.gpu_count,
-        keywords: include_classes,
+        // keywords: include_classes,
+        model: model_id,
+        docker_image,
         strategy,
       })
       setConfig(config)
       setTrainSets(tSets)
       setValidationSets(vSets)
       setHpVisible(true)
+      setSelectedKeywords(include_classes)
 
       history.replace({ state: {} })
     }
@@ -143,7 +144,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function getKwsFromDatasets(dss = []) {
-    return dss.reduce((prev, curr) => [...datasets.find(ds => ds.id === curr).keywords, ...prev], [])
+    return dss.reduce((prev, curr) => [...((datasets.find(ds => ds.id === curr) || {}).keywords || []), ...prev], [])
   }
 
   function inArray (items, arr) {
@@ -180,7 +181,13 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     setSelectedModel(model)
   }
 
-  function setConfig(config) {
+  function imageChange(_, image = {}) {
+    const { url, config } = image
+    setImageUrl(url)
+    setConfig(config)
+  }
+
+  function setConfig(config = {}) {
     const params = Object.keys(config).map(key => ({ key, value: config[key] }))
     setSeniorConfig(params)
   }
@@ -211,6 +218,18 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
   function onFinishFailed(errorInfo) {
     console.log("Failed:", errorInfo)
+  }
+
+  function validateGPU(_, value) {
+    const count = Number(value)
+    const min = 1
+    const max = gpu_count
+    if (count < min || count > max) {
+      setGpuHelp(t('task.train.gpu.invalid', { min, max }))
+      return Promise.reject()
+    }
+    setGpuHelp(initGpuHelp)
+    return Promise.resolve()
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -377,7 +396,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 { required: true, message: t('task.train.form.image.required') }
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={(value, { url, config }) => { setImageUrl(url); setConfig(config) }} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
@@ -410,15 +429,15 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
             <Tip content={t('tip.task.filter.gpucount')}>
               <Form.Item
+                className={styles.gpu}
                 label={t('task.gpu.count')}
+                rules={[
+                  {validator: validateGPU}
+                ]}
+                help={gpuHelp}
+                name="gpu_count"
               >
-                <Form.Item
-                  noStyle
-                  name="gpu_count"
-                  rules={[{ type: 'number', min: 1, max: gpu_count }]}
-                >
-                  <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
-                <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+                  <InputNumber min={1} max={gpu_count} precision={0} />
               </Form.Item>
             </Tip>
 

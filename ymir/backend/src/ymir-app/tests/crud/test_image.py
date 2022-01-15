@@ -2,7 +2,7 @@ import json
 
 from sqlalchemy.orm import Session
 
-from app import crud
+from app import crud, schemas
 from app.schemas.image import (
     DockerImageCreate,
     DockerImageState,
@@ -54,11 +54,17 @@ class TestGetInferenceImages:
             hash=hash_,
             url=url,
             description=description,
-            type=DockerImageType.infer,
             state=DockerImageState.done,
             config=json.dumps({}),
         )
         created_image = crud.docker_image.create(db=db, obj_in=obj_in)
+
+        image_config_in = schemas.ImageConfigCreate(
+            image_id=created_image.id,
+            config=json.dumps({}),
+            type=int(DockerImageType.infer),
+        )
+        crud.image_config.create(db, obj_in=image_config_in)
 
         fetched_image = crud.docker_image.get_inference_docker_image(db, url=url)
         assert created_image.hash == fetched_image.hash
