@@ -131,4 +131,3 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     return_msg = response_obj.get('message', '')
 
     return (tid, return_msg, return_code != 0)
-
