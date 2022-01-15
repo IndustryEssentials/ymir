@@ -184,7 +184,7 @@ def parse_metrics(parameters: Dict) -> Dict:
     )
     model_id = parameters.get("model_id")
     model_ids = [model_id] if model_id else []
-    keywords = parameters.get("include_classes", [])
+    keywords = parameters.get("include_classes") or []
     return {"dataset_ids": dataset_ids, "model_ids": model_ids, "keywords": keywords}
 
 
@@ -513,6 +513,19 @@ class TaskResultProxy:
         result = self.controller.get_task_result(task.user_id, task.hash)
         return result
 
+    @staticmethod
+    def should_fetch_task_result(previous_state: TaskState, state: TaskState) -> bool:
+        if state is TaskState.done:
+            return True
+        # todo optimize
+        #  task in premature state and reached finale, should fetch task result as well
+        if previous_state is TaskState.premature and state in [
+            TaskState.done,
+            TaskState.error,
+        ]:
+            return True
+        return False
+
     @catch_error_and_report
     def save(self, task: schemas.Task, task_result: Dict) -> Optional[Task]:
         """
@@ -526,7 +539,7 @@ class TaskResultProxy:
             logger.info("skip invalid task_result: %s", task_result)
             return None
 
-        if task_result["state"] == TaskState.done:
+        if self.should_fetch_task_result(task.state, task_result["state"]):
             self.handle_finished_task(task)
 
         if (
