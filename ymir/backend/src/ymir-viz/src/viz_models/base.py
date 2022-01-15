@@ -60,7 +60,7 @@ class BaseModel:
 
         with redis_cache.pipeline() as pipe:
             for class_id, assets_list in asset_content["class_ids_index"].items():
-                pipe.lpush(f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}", *assets_list["asset_ids"])
+                pipe.rpush(f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}", *assets_list["asset_ids"])
             pipe.execute()
 
         redis_cache.set(
