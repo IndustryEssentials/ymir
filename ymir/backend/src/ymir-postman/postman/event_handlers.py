@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
 
 from postman import entities, event_dispatcher  # type: ignore
-from postman.settings import settings
+from postman.settings import settings, constants
 
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 
@@ -35,7 +35,7 @@ def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
     tid_to_taskstates_latest: entities.TaskStateDict = _load_failed()
     for msg in msgs:
         msg_topic = msg['topic']
-        if msg_topic != settings.EVENT_TOPIC_RAW:
+        if msg_topic != constants.EVENT_TOPIC_RAW:
             continue
 
         tid_to_taskstates = parse_raw_as(entities.TaskStateDict, msg['body'])
@@ -125,4 +125,4 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     return_code = int(response_obj['code'])
     return_msg = response_obj.get('message', '')
 
-    return (tid, return_msg, return_code != 0)
+    return (tid, return_msg, return_code == constants.RC_FAILED_TO_UPDATE_TASK_STATUS)

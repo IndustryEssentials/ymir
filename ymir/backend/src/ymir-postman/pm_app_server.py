@@ -14,7 +14,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from postman import entities
 from postman.event_dispatcher import EventDispatcher
-from postman.settings import settings
+from postman.settings import settings, constants
 
 
 uvicorn_logger = logging.getLogger("uvicorn")
@@ -51,7 +51,7 @@ def _send_to_socketio(sio: socketio.Server, tid_to_taskstates: entities.TaskStat
 
 
 # main service and api implememtations
-app = FastAPI(title=settings.PROJECT_NAME)
+app = FastAPI(title=constants.PROJECT_NAME)
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
