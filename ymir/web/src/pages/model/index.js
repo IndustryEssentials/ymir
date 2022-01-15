@@ -291,12 +291,6 @@ function Keyword({ getModels, delModel, updateModel }) {
     )
   }
 
-  // const addBtn = (
-  //   <Button type="primary" onClick={add}>
-  //     <PlusOutlined /> {t("model.import.label")}
-  //   </Button>
-  // )
-
   return (
     <div className={styles.model}>
       <Breadcrumbs />
@@ -329,9 +323,6 @@ function Keyword({ getModels, delModel, updateModel }) {
           </Form>
         </div>
 
-        {/* <Space hidden={true} className={styles.actions}>
-        {addBtn}
-      </Space> */}
         <Row className={styles.refresh}>
           <Col flex={1}>
           </Col>

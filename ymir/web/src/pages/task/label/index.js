@@ -12,6 +12,7 @@ import Breadcrumbs from "../../../components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import { randomNumber } from "../../../utils/number"
 import Tip from "@/components/form/tip"
+import RecommendKeywords from "../../../components/common/recommendKeywords"
 import { TASKSTATES } from "../../../constants/task"
 
 const { Option } = Select
@@ -91,6 +92,15 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
 
   function onFinishFailed(errorInfo) {
     console.log("Failed:", errorInfo)
+  }
+
+  
+  function selectRecommendKeywords(keyword) {
+    const selectedKeywords = form.getFieldValue('keywords') || []
+    const kws = [...new Set([...selectedKeywords, keyword])]
+    form.setFieldsValue({
+      keywords: kws,
+    })
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -222,6 +232,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                 </Select>
               </Form.Item>
             </Tip>
+            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommendKeywords global={true} onSelect={selectRecommendKeywords} /></Form.Item></Tip>
             
             <Tip hidden={true}>
               <Form.Item name='keep_annotations'

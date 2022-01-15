@@ -122,6 +122,8 @@ const ImageList = ({ role, filter, getImages }) => {
     getData()
   }
 
+  const shareOk = () => getData()
+
   const share = (id, name) => {
     shareModalRef.current.show(id, name)
   }
@@ -214,7 +216,7 @@ const ImageList = ({ role, filter, getImages }) => {
         defaultCurrent={1} defaultPageSize={query.limit} total={total}
         showTotal={() => t('image.list.total', { total })}
         showQuickJumper showSizeChanger />
-      <ShareModal ref={shareModalRef} />
+      <ShareModal ref={shareModalRef} ok={shareOk} />
       <RelateModal ref={linkModalRef} ok={relateOk} />
       <Del ref={delRef} ok={delOk} />
     </div>
