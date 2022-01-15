@@ -35,7 +35,6 @@ from app.schemas.image import (
     DockerImageState,
     DockerImageType,
     DockerImageUpdate,
-    DockerImageUpdateConfig,
     SharedDockerImageOut,
     SharedDockerImagesOut,
 )
@@ -85,6 +84,8 @@ def create_docker_image(
     This endpint will create an image record immediately,
     but the pulling process will run in background
     """
+    if crud.docker_image.docker_name_exists(db, url=docker_image_in.url):
+        raise DuplicateDockerImageError()
     docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
     logger.info("[create image] docker image record created: %s", docker_image)
 
@@ -108,44 +109,38 @@ def import_docker_image(
         resp = controller_client.pull_docker_image(docker_image.url, user_id)
     except ValueError:
         logger.exception("[create image] failed to import docker image via controller")
-        state = DockerImageState.error
-        crud.docker_image.update_state(db, docker_image=docker_image, state=state)
-        return
-
-    logger.info("[create image] docker image imported via controller: %s", resp)
-    docker_image_dict = jsonable_encoder(docker_image)
-
-    # note: we've created a placeholder record beforehand, update it first
-    image_configs = parse_docker_image_config(resp)
-    try:
-        first_image_config = next(image_configs)
-    except StopIteration:
-        logger.error("[create image] failed to parse docker image via controller")
         crud.docker_image.update_state(
             db, docker_image=docker_image, state=DockerImageState.error
         )
         return
 
-    docker_image_update = DockerImageUpdateConfig(
-        **{**docker_image_dict, **first_image_config}
-    )
-    crud.docker_image.update(db, db_obj=docker_image, obj_in=docker_image_update)
-
-    # if there are reminding configs, add new record
-    for image in image_configs:
-        docker_image_in = DockerImageCreate(**{**docker_image_dict, **image})
-        docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
-
-
-def parse_docker_image_config(resp: Dict) -> Iterator[Dict]:
-    configs = resp["docker_image_config"]
+    # add new config in docker_image_config tbl
     hash_ = resp["hash_id"]
+    image_configs = list(parse_docker_image_config(resp["docker_image_config"]))
+    for image_config in image_configs:
+        image_config_in = schemas.ImageConfigCreate(
+            image_id=docker_image.id,
+            **image_config,
+        )
+        crud.image_config.create(db, obj_in=image_config_in)
+
+    crud.docker_image.update_from_dict(
+        db,
+        docker_image_id=docker_image.id,
+        updates={"hash": hash_, "state": DockerImageState.done.value},
+    )
+    logger.info(
+        "[create image] docker image imported via controller: %s, added %d configs, status: %s",
+        resp,
+        len(image_configs),
+    )
+
+
+def parse_docker_image_config(configs: Dict) -> Iterator[Dict]:
     for image_type, config in configs.items():
         if config:
             yield {
                 "type": int(DockerImageType(int(image_type))),
-                "state": int(DockerImageState.done),
-                "hash": hash_,
                 "config": config,
             }
 
@@ -191,12 +186,11 @@ def share_image(
     if not docker_image:
         raise DockerImageNotFound()
 
+    functions = [DockerImageType(config.type).name for config in docker_image.configs]
     shared_info = {
         "docker_name": docker_image.url,
         "hash": docker_image.hash,
-        "functions": DockerImageType(docker_image.type).name
-        if docker_image.type
-        else "",
+        "functions": ", ".join(functions),
         "description": docker_image.description,
         "contributor": shared_image.contributor,
         "phone": shared_image.phone,

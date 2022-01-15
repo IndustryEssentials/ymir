@@ -57,6 +57,10 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         return query.filter(self.model.url == url).first()  # type: ignore
 
+    def docker_name_exists(self, db: Session, url: str) -> bool:
+        query = db.query(self.model).filter(not_(self.model.is_deleted))
+        return query.filter(self.model.url == url).first() is not None
+
     def update(
         self,
         db: Session,
@@ -81,6 +85,14 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
     ) -> DockerImage:
         update_data = {"is_shared": is_shared}
         return self.update(db, db_obj=docker_image, obj_in=update_data)
+
+    def update_from_dict(
+        self, db: Session, *, docker_image_id: int, updates: Dict
+    ) -> Optional[DockerImage]:
+        docker_image = self.get(db, id=docker_image_id)
+        if docker_image:
+            return self.update(db, db_obj=docker_image, obj_in=updates)
+        return docker_image
 
 
 docker_image = CRUDDockerImage(DockerImage)
