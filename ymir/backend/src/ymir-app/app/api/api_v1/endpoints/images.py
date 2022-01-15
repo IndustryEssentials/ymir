@@ -11,6 +11,7 @@ from fastapi import (
 )
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
+from fastapi_cache.decorator import cache
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 from sqlalchemy.orm import Session
 
@@ -22,8 +23,11 @@ from app.api.errors.errors import (
     DuplicateDockerImageError,
     DuplicateWorkspaceError,
     FailedtoCreateWorkspace,
+    FailedtoGetSharedDockerImages,
     FailedtoShareDockerImage,
+    InvalidSharedImageConfig,
 )
+from app.config import settings
 from app.models.image import DockerImage
 from app.schemas.image import (
     DockerImageCreate,
@@ -32,7 +36,10 @@ from app.schemas.image import (
     DockerImageType,
     DockerImageUpdate,
     DockerImageUpdateConfig,
+    SharedDockerImageOut,
+    SharedDockerImagesOut,
 )
+from app.utils.github import get_github_table
 from app.utils.sheet import WufooAPI
 from app.utils.ymir_controller import ControllerClient, ControllerRequest
 
@@ -141,6 +148,72 @@ def parse_docker_image_config(resp: Dict) -> Iterator[Dict]:
                 "hash": hash_,
                 "config": config,
             }
+
+
+@router.get("/shared", response_model=SharedDockerImagesOut)
+async def get_shared_images(
+    *,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get shared images from Ymir Team's Gallery (hosted on GitHub)
+    """
+    if not settings.SHARED_DOCKER_IMAGES_URL:
+        raise InvalidSharedImageConfig()
+    try:
+        shared_images = await get_shared_images_from_github(
+            settings.SHARED_DOCKER_IMAGES_URL, timeout=settings.GITHUB_TIMEOUT
+        )
+    except (ConnectionError, HTTPError, Timeout):
+        logger.exception("[share image] failed get shared docker images")
+        raise FailedtoGetSharedDockerImages()
+    return {"result": shared_images}
+
+
+@cache(expire=settings.APP_CACHE_EXPIRE_IN_SECONDS)
+async def get_shared_images_from_github(url: str, timeout: int) -> List[Dict]:
+    logger.debug("[share image] getting shared docker images from GitHub...")
+    shared_images = get_github_table(url, timeout=timeout)
+    return shared_images
+
+
+@router.post("/shared", response_model=SharedDockerImageOut)
+def share_image(
+    *,
+    db: Session = Depends(deps.get_db),
+    shared_image: DockerImageSharing,
+    current_user: models.User = Depends(deps.get_current_active_admin),
+) -> Any:
+    """
+    Request to share docker image to Ymir Team's Gallery
+    """
+    docker_image = crud.docker_image.get(db, id=shared_image.docker_image_id)
+    if not docker_image:
+        raise DockerImageNotFound()
+
+    shared_info = {
+        "docker_name": docker_image.url,
+        "hash": docker_image.hash,
+        "functions": DockerImageType(docker_image.type).name
+        if docker_image.type
+        else "",
+        "description": docker_image.description,
+        "contributor": shared_image.contributor,
+        "phone": shared_image.phone,
+        "email": shared_image.email,
+        "organization": shared_image.organization,
+    }
+    try:
+        WufooAPI().create_row(shared_info)
+    except (ConnectionError, HTTPError, Timeout):
+        logger.exception("[share image] failed to share docker image")
+        raise FailedtoShareDockerImage()
+
+    # mark this image as shared
+    crud.docker_image.update_sharing_status(
+        db=db, docker_image=docker_image, is_shared=True
+    )
+    return {"result": shared_image}
 
 
 @router.get(
@@ -255,31 +328,3 @@ def get_related_images(
         db, src_image_id=docker_image_id
     )
     return {"result": relationships}
-
-
-@router.post("/{docker_image_id}/share", response_model=schemas.DockerImageOut)
-def share_image(
-    *,
-    db: Session = Depends(deps.get_db),
-    docker_image_id: int = Path(...),
-    shared_info: DockerImageSharing,
-    current_user: models.User = Depends(deps.get_current_active_admin),
-) -> Any:
-    """
-    Request to share docker image to Ymir Team's Gallery
-    """
-    docker_image = crud.docker_image.get(db, id=docker_image_id)
-    if not docker_image:
-        raise DockerImageNotFound()
-    payload = {"docker_name": docker_image.url, **shared_info.dict()}
-    try:
-        WufooAPI(payload).send()
-    except (ConnectionError, HTTPError, Timeout):
-        logger.exception("[share image] failed to share docker image")
-        raise FailedtoShareDockerImage()
-
-    # mark this image as shared
-    docker_image = crud.docker_image.update_sharing_status(
-        db=db, docker_image=docker_image, is_shared=True
-    )
-    return {"result": docker_image}
