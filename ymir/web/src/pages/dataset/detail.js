@@ -89,6 +89,10 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     filterPage(page, limit)
   }
 
+  const getRate = (count) => {
+    return Number(count * 100 / dataset.asset_count).toFixed(2) + '%'
+  }
+
   const randomPageButton = (
     <Button type="primary" onClick={randomPage}>
       {t("dataset.detail.randompage.label")}
@@ -137,7 +141,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     <Col flex={1}>
       <Space>
         <strong>{dataset.name}</strong>
-        <span>{t("dataset.detail.pager.total", { total })}</span>
+        <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.asset_count })}</span>
       </Space>
     </Col>
     <Col>
@@ -154,7 +158,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         </Option>
         {keywords.map((kw) => (
           <Option value={kw.key} key={kw.key} title={`${kw.key} (${kw.count})`}>
-            {kw.key} ({kw.count})
+            {kw.key} ({kw.count}, {getRate(kw.count)})
           </Option>
         ))}
       </Select>
