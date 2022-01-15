@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -14,6 +15,7 @@ from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
     FailedtoCreateTask,
+    FailedToUpdateTaskStatus,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
@@ -184,7 +186,7 @@ def parse_metrics(parameters: Dict) -> Dict:
     )
     model_id = parameters.get("model_id")
     model_ids = [model_id] if model_id else []
-    keywords = parameters.get("include_classes", [])
+    keywords = parameters.get("include_classes") or []
     return {"dataset_ids": dataset_ids, "model_ids": model_ids, "keywords": keywords}
 
 
@@ -441,7 +443,11 @@ def update_task_status(
         stats_client=stats_client,
         clickhouse=clickhouse,
     )
-    updated_task = task_result_proxy.save(task_info, task_result.dict())
+    try:
+        updated_task = task_result_proxy.save(task_info, task_result.dict())
+    except (ConnectionError, HTTPError, Timeout):
+        logger.error("Failed to update update task status")
+        raise FailedToUpdateTaskStatus()
     result = updated_task or task
     return {"result": result}
 
@@ -456,6 +462,7 @@ def is_obsolete_message(
     "/update_status",
     response_model=schemas.TasksOut,
     dependencies=[Depends(deps.api_key_security)],
+    deprecated=True,
 )
 def batch_update_task_status(
     *,
@@ -513,7 +520,19 @@ class TaskResultProxy:
         result = self.controller.get_task_result(task.user_id, task.hash)
         return result
 
-    @catch_error_and_report
+    @staticmethod
+    def should_fetch_task_result(previous_state: TaskState, state: TaskState) -> bool:
+        if state is TaskState.done:
+            return True
+        # todo optimize
+        #  task in premature state and reached finale, should fetch task result as well
+        if previous_state is TaskState.premature and state in [
+            TaskState.done,
+            TaskState.error,
+        ]:
+            return True
+        return False
+
     def save(self, task: schemas.Task, task_result: Dict) -> Optional[Task]:
         """
         task: Pydantic Task Model
@@ -526,7 +545,7 @@ class TaskResultProxy:
             logger.info("skip invalid task_result: %s", task_result)
             return None
 
-        if task_result["state"] == TaskState.done:
+        if self.should_fetch_task_result(task.state, task_result["state"]):
             self.handle_finished_task(task)
 
         if (
@@ -567,7 +586,7 @@ class TaskResultProxy:
             model_info = jsonable_encoder(model)
             if keywords:
                 self.clickhouse.save_model_result(
-                    model_info["create_datetime"],
+                    model.create_datetime,
                     model_info["user_id"],
                     model_info["id"],
                     model_info["name"],

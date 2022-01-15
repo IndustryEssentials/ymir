@@ -27,6 +27,9 @@ const Add = ({ getImage, createImage, updateImage }) => {
 
   useEffect(() => {
     console.log(location.state)
+    if (!location.state) {
+      return
+    }
     const record = location.state.record
     if (!record?.docker_name) {
       return

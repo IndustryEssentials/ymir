@@ -172,13 +172,14 @@ const ImageList = ({ role, filter, getImages }) => {
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.url')}</span>{item.url}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
       </Space>
-      { isTrain(item.functions) && item.related?.length ? <div className={s.related}><span>{t('image.list.item.related')}</span><ImagesLink images={item.related} /></div> : null }
+      {isTrain(item.functions) && item.related?.length ? <div className={s.related}><span>{t('image.list.item.related')}</span><ImagesLink images={item.related} /></div> : null}
     </Col>
-      <Col>
-        <Button key={type} onClick={() => history.push(`/home/task/${type}?image=${item.id}`)}>
-          {isTrain(item.functions) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
-        </Button>
-      </Col>
+      {isDone(item.state) ?
+        <Col>
+          <Button key={type} onClick={() => history.push(`/home/task/${type}?image=${item.id}`)}>
+            {isTrain(item.functions) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
+          </Button>
+        </Col> : null}
     </Row>
 
     return <List.Item className={item.state ? 'success' : 'failure'}>
