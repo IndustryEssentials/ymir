@@ -62,14 +62,14 @@ const ImageList = ({ role, filter, getImages }) => {
   }
 
   const moreList = (record) => {
-    const { id, name, state, type, url, related, is_shared } = record
+    const { id, name, state, functions, url, related, is_shared } = record
 
     const menus = [
       {
         key: "link",
         label: t("image.action.link"),
         onclick: () => link(id, name, related),
-        hidden: () => (!isTrain(type) || !isDone(state)),
+        hidden: () => (!isTrain(functions) || !isDone(state)),
         icon: <LinkIcon />,
       },
       {
@@ -103,11 +103,6 @@ const ImageList = ({ role, filter, getImages }) => {
     return isAdmin() ? [...menus, detail] : [detail]
   }
 
-  const edit = (record) => {
-    setCurrent({})
-    setTimeout(() => setCurrent(record), 0)
-  }
-
   const del = (id, name) => {
     delRef.current.del(id, name)
   }
@@ -118,31 +113,21 @@ const ImageList = ({ role, filter, getImages }) => {
     getData()
   }
 
-  const relateOk = () => {
-    getData()
-  }
+  const relateOk = () => getData()
 
   const shareOk = () => getData()
 
-  const share = (id, name) => {
-    shareModalRef.current.show(id, name)
-  }
+  const share = (id, name) => shareModalRef.current.show(id, name)
 
   const link = (id, name, related) => {
     linkModalRef.current.show({ id, name, related })
   }
 
-  function isAdmin() {
-    return role > ROLES.USER
-  }
+  const isAdmin = () => role > ROLES.USER
 
-  function isTrain(type) {
-    return type === TYPES.TRAINING
-  }
+  const isTrain = (functions = []) => functions.indexOf(TYPES.TRAINING) >= 0
 
-  function isDone(state) {
-    return state === STATES.DONE
-  }
+  const isDone = (state) => state === STATES.DONE
 
   const more = (item) => {
     return (
@@ -180,18 +165,18 @@ const ImageList = ({ role, filter, getImages }) => {
       <Col flex={1}>{item.name}<span className={s.stateIcon}>{imageState(item.state)}</span></Col>
       <Col>{more(item)}</Col>
     </Row>
-    const type = isTrain(item.type) ? 'train' : 'mining'
+    const type = isTrain(item.functions) ? 'train' : 'mining'
     const desc = <Row><Col className={s.desc} flex={1}>
       <Space className={s.info}>
-        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{getImageTypeLabel(item.type)}</span>
+        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{getImageTypeLabel(item.functions).join(', ')}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.url')}</span>{item.url}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
       </Space>
-      { isTrain(item.type) && item.related?.length ? <div className={s.related}><span>{t('image.list.item.related')}</span><ImagesLink images={item.related} /></div> : null }
+      { isTrain(item.functions) && item.related?.length ? <div className={s.related}><span>{t('image.list.item.related')}</span><ImagesLink images={item.related} /></div> : null }
     </Col>
       <Col>
         <Button key={type} onClick={() => history.push(`/home/task/${type}?image=${item.id}`)}>
-          {isTrain(item.type) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
+          {isTrain(item.functions) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
         </Button>
       </Col>
     </Row>

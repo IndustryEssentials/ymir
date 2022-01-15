@@ -48,7 +48,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
-  const [imageUrl, setImageUrl] = useState(null)
+  const [selectedImage, setSelectedImage] = useState({})
   const [gpu_count, setGPU] = useState(0)
   const initGpuHelp = <span>{t('task.gpu.tip', { count: gpu_count })}</span>
   const [gpuHelp, setGpuHelp] = useState(initGpuHelp)
@@ -191,9 +191,10 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function imageChange(_, image = {}) {
-    const { url, config } = image
-    setImageUrl(url)
-    setConfig(config)
+    const { url, configs } = image
+    const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
+    setSelectedImage(image)
+    setConfig(configObj.config)
   }
 
   function setConfig(config = {}) {
@@ -212,7 +213,8 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     const params = {
       ...values,
       name: values.name.trim(),
-      docker_image: imageUrl,
+      docker_image: selectedImage.url,
+      docker_image_id: selectedImage.id,
       config,
     }
     if (selectedModel) {
