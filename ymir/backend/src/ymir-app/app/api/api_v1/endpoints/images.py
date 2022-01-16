@@ -130,7 +130,7 @@ def import_docker_image(
         updates={"hash": hash_, "state": DockerImageState.done.value},
     )
     logger.info(
-        "[create image] docker image imported via controller: %s, added %d configs, status: %s",
+        "[create image] docker image imported via controller: %s, added %d configs",
         resp,
         len(image_configs),
     )

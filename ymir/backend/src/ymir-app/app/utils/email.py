@@ -47,10 +47,10 @@ def send_test_email(email_to: str) -> None:
 
 
 def send_task_result_email(
-    email_to: str, task_id: int, task_name: str, task_type: str, task_state: IntEnum
+    email_to: str, task_id: int, task_name: str, task_type: str, task_state: str
 ) -> None:
     project_name = settings.PROJECT_NAME
-    subject = f"{project_name} - task {task_state.name}"
+    subject = f"{project_name} - task {task_state}"
 
     template_file = Path(settings.EMAIL_TEMPLATES_DIR) / "task_result_email.html"
     with open(template_file) as f:
