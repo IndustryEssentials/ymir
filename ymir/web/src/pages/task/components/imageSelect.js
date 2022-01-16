@@ -28,21 +28,17 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
     if (result) {
       const images = result.items
       generateOptions(images)
-      if (value) {
-        const opt = opts.find(opt => opt.value === value)
-        onChange(opt.value, opt.image)
-      }
     }
   }
 
   const generateOption = image => ({
     label: image.name,
     image,
-    value: image.id,
+    value: image.id + ',' + image.url,
   })
 
   async function generateOptions(images) {
-    const relatedOptions = await getRelatedOptions()
+    let relatedOptions = relatedId ? await getRelatedOptions() : []
     const opts = images.filter(image => relatedOptions.every(img => img.value !== image.id)).map(generateOption)
     let result = opts
     if (relatedOptions.length) {
@@ -62,7 +58,6 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
 
   async function getRelatedOptions() {
     const trainImage = await getImage(relatedId)
-    console.log('train image : ', trainImage, relatedId)
     let relatedOptions = []
     if(trainImage?.related) {
       relatedOptions = trainImage.related.map(generateOption)

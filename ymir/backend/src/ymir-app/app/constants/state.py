@@ -37,3 +37,7 @@ class TaskState(IntEnum):
     error = mirsvrpb.TaskState.TaskStateError
     terminate = 100
     premature = 101  # terminate task while try to get result prematurely
+
+
+RunningStates = [TaskState.pending, TaskState.running, TaskState.premature]
+FinalStates = [TaskState.done, TaskState.error, TaskState.terminate]

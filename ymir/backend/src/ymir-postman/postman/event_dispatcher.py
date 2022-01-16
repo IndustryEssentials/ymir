@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 import redis
 
-from postman.settings import settings
+from postman.settings import constants, settings
 
 
 # public: class EventDispatcher
@@ -48,7 +48,7 @@ class EventDispatcher:
     # private: redis stream and consumer group
     def _config_stream_and_group(self) -> None:
         # creates stream
-        self.add_event(event_name=self._event_name, event_topic=settings.EVENT_TOPIC_INNER, event_body='')
+        self.add_event(event_name=self._event_name, event_topic=constants.EVENT_TOPIC_INNER, event_body='')
         # creates stream consumer group
         try:
             self._redis_connect.xgroup_create(name=self._event_name, groupname=self._group_name, id='$')
