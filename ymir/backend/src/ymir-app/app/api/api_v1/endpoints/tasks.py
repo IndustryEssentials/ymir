@@ -425,6 +425,11 @@ def update_task_status(
     """
     Update status of a task
     """
+    logger.info(
+        "[update status] task %s, result: %s",
+        task_result.hash,
+        jsonable_encoder(task_result),
+    )
     task = crud.task.get_by_hash(db, hash_=task_result.hash)
     if not (task and task.hash):
         raise TaskNotFound()
@@ -549,6 +554,9 @@ class TaskResultProxy:
             logger.info("skip invalid task_result: %s", task_result)
             return None
 
+        logger.debug(
+            "task %s state: %s to %s", task.hash, task.state, task_result["state"]
+        )
         if self.should_fetch_task_result(task.state, task_result["state"]):
             self.handle_finished_task(task)
 
@@ -561,9 +569,16 @@ class TaskResultProxy:
         updated_task = self.update_task_progress(
             task, task_result["state"], task_result.get("percent", 0)
         )
-        logger.debug("task progress updated from %s to %s", task, updated_task)
+        if not updated_task:
+            logger.warning("task %s not updated", task.hash)
+            return updated_task
+        logger.debug(
+            "task progress updated from %s to %s",
+            task,
+            schemas.Task.from_orm(updated_task),
+        )
 
-        if task_result["state"] in (TaskState.error, TaskState.done):
+        if task_result["state"] in FinalStates:
             logger.debug("Sending notification for task: %s", task)
             self.send_notification(task, task_result["state"])
         return updated_task
@@ -583,11 +598,13 @@ class TaskResultProxy:
         )
 
     def handle_finished_task(self, task: schemas.Task) -> None:
+        logger.debug("fetching %s task result from %s", task.type, task.hash)
         if task.type is TaskType.training:
             model = self.add_new_model_if_not_exist(task)
+            model_info = jsonable_encoder(model)
+            logger.debug("task result(new model): %s", model_info)
             self.stats_client.update_model_rank(task.user_id, model.id)
             keywords = schemas.model.extract_keywords(task.parameters)
-            model_info = jsonable_encoder(model)
             if keywords:
                 self.clickhouse.save_model_result(
                     model.create_datetime,
@@ -601,7 +618,6 @@ class TaskResultProxy:
                 self.stats_client.update_keyword_wise_model_rank(
                     task.user_id, model_info["id"], model_info["map"], keywords
                 )
-            logger.debug("task result(new model): %s", model_info)
             node = schemas.Model.from_orm(model)  # type: ignore
         elif task.type in [TaskType.mining, TaskType.label, TaskType.filter]:
             dataset = self.add_new_dataset_if_not_exist(task)
