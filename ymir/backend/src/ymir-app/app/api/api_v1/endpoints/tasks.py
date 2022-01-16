@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -14,12 +15,13 @@ from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
     FailedtoCreateTask,
+    FailedToUpdateTaskStatus,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
 )
 from app.config import settings
-from app.constants.state import TaskState, TaskType
+from app.constants.state import FinalStates, TaskState, TaskType
 from app.models import Dataset, Model
 from app.models.task import Task
 from app.schemas.task import MergeStrategy
@@ -433,6 +435,10 @@ def update_task_status(
         raise ObsoleteTaskStatus()
 
     task_info = schemas.Task.from_orm(task)
+    if task_info.state in FinalStates:
+        logger.warning("Attempt to update finished task, skip")
+        raise ObsoleteTaskStatus()
+
     task_result_proxy = TaskResultProxy(
         db=db,
         graph_db=graph_db,
@@ -441,7 +447,11 @@ def update_task_status(
         stats_client=stats_client,
         clickhouse=clickhouse,
     )
-    updated_task = task_result_proxy.save(task_info, task_result.dict())
+    try:
+        updated_task = task_result_proxy.save(task_info, task_result.dict())
+    except (ConnectionError, HTTPError, Timeout):
+        logger.error("Failed to update update task status")
+        raise FailedToUpdateTaskStatus()
     result = updated_task or task
     return {"result": result}
 
@@ -456,6 +466,7 @@ def is_obsolete_message(
     "/update_status",
     response_model=schemas.TasksOut,
     dependencies=[Depends(deps.api_key_security)],
+    deprecated=True,
 )
 def batch_update_task_status(
     *,
@@ -526,7 +537,6 @@ class TaskResultProxy:
             return True
         return False
 
-    @catch_error_and_report
     def save(self, task: schemas.Task, task_result: Dict) -> Optional[Task]:
         """
         task: Pydantic Task Model
