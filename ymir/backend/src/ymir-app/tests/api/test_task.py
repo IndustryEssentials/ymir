@@ -353,4 +353,4 @@ class TestUpdateTaskStatus:
             headers=api_key_headers,
             json=data,
         )
-        assert r.json()["code"] == m.ObsoleteTaskStatus.code
+        assert r.json()["code"] == 0 # treat as normal case.
