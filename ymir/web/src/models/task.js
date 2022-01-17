@@ -153,6 +153,9 @@ export default {
       if (updateItem) {
         task.state = updateItem.state
         task.progress = updateItem.percent * 100
+        if (isFinalState(updateItem.state)) {
+          task.forceUpdate = true
+        }
       }
       yield put({
         type: 'UPDATE_TASK',
