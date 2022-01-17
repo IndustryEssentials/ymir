@@ -127,7 +127,7 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
 * `task_id` 是任务id，在任务启动时，由 `config.yaml` 传入
 
-* `timestamp` 是写入监视信息的时间戳，单位为毫秒
+* `timestamp` 是写入监视信息的时间戳，单位为秒
 
 * `percent` 是一个0-1之间的数，标识了任务执行的百分比
 
@@ -145,13 +145,13 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
 例如：
 ```
-train_0 1622552974000 0.5 running
+train_0 1622552974 0.5 running
 ```
 
 或者：
 
 ```
-train_0 1622552974000 1 error
+train_0 1622552974 1 error
 no training data found
 ```
 
@@ -164,11 +164,11 @@ no training data found
 这个文件主要关注任务状态的切换，例如什么时候创建，什么时候开始运行，什么时候百分比是多少，例如：
 
 ```
-task_0    1622552964000    0    pending
-task_0    1622552965000    0    running
-task_0    1622552966000    0.1    running
+task_0    1622552964    0    pending
+task_0    1622552965    0    running
+task_0    1622552966    0.1    running
 ...
-task_0    1622552975000    1    done
+task_0    1622552975    1    done
 ```
 
 #### 4.2.2. 容器的启动方式
