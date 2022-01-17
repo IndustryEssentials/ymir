@@ -162,7 +162,7 @@ class LabelStudio(LabelBase):
         resp = self.requests.get(url_path=url_path)
         return json.loads(resp)
 
-    def get_project_tasks(self, project_id: int, filter_unlabelled: bool = False) -> List:
+    def get_project_tasks(self, project_id: int, unlabelled_only: bool = False) -> List:
         project_info = self.get_project_info(project_id)
         task_num = project_info["task_number"]
         url_path = f"/api/projects/{project_id}/tasks/"
@@ -175,16 +175,16 @@ class LabelStudio(LabelBase):
             }
             all_content = self.requests.get(url_path=url_path, params=params)
             for content in json.loads(all_content):
-                if filter_unlabelled and content["is_labeled"]:
+                if unlabelled_only and content["is_labeled"]:
                     continue
                 tasks.append(content)
 
-        logger.info(f"retrieved {len(tasks)} tasks in project {project_id}")
+        logger.info(f"retrieved {len(tasks)} tasks in project {project_id} unlabelled_only: {unlabelled_only}")
 
         return tasks
 
     def delete_unlabeled_task(self, project_id: int) -> None:
-        unlabeled_tasks = self.get_project_tasks(project_id=project_id, filter_unlabelled=True)
+        unlabeled_tasks = self.get_project_tasks(project_id=project_id, unlabelled_only=True)
 
         # label studio strange behavior, post [] will delete all tasks.
         if not unlabeled_tasks:

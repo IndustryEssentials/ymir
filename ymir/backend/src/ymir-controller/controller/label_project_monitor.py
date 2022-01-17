@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sys
 from datetime import datetime
 
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -94,6 +95,10 @@ def lable_task_monitor() -> None:
 
 if __name__ == "__main__":
     sentry_sdk.init(os.environ.get("LABEL_MONITOR_SENTRY_DSN", None))
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
+                        datefmt='%Y%m%d-%H:%M:%S',
+                        level=logging.DEBUG)
     scheduler = BlockingScheduler()
     scheduler.add_job(lable_task_monitor, "interval", seconds=label_task_config.LABEL_TASK_LOOP_SECONDS, jitter=120)
     logger.info("monitor_label_project is running...")
