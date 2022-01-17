@@ -60,7 +60,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
 
   /** use effect must put on the top */
   useEffect(() => {
-    const forceUpdate = datasetList.some(dataset => dataset.forceUpdate)
+    const forceUpdate = datasetList.items.some(dataset => dataset.forceUpdate)
     if (forceUpdate) {
       getData()
     } else {
