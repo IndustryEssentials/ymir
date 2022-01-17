@@ -113,6 +113,9 @@ export default {
         if (updateItem) {
           dataset.state = updateItem.state
           dataset.progress = updateItem.percent * 100
+          if (isFinalState(updateItem.state)) {
+            dataset.forceUpdate = true
+          }
         }
         return dataset
       })
