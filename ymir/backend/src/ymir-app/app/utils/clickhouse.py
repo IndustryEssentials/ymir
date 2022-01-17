@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from clickhouse_driver import Client
 from fastapi.logger import logger
 
+from app.api.errors.errors import FailedToConnectClickHouse
 from app.constants.state import TaskType
 from app.utils.data import groupby
 
@@ -37,6 +38,13 @@ class YmirClickHouse:
     def __init__(self, host: str):
         self.client = Client(host=host)
 
+    def execute(self, query: str, params: Optional[Any] = None) -> Any:
+        try:
+            records = self.client.execute(query, params)
+        except Exception:
+            raise FailedToConnectClickHouse()
+        return records
+
     def save_task_parameter(
         self,
         dt: datetime,
@@ -48,7 +56,7 @@ class YmirClickHouse:
         model_ids: List[int],
         keywords: List[str],
     ) -> Any:
-        return self.client.execute(
+        return self.execute(
             "INSERT INTO task_create VALUES",
             [[dt, user_id, name, hash_, type_, dataset_ids, model_ids, keywords]],
         )
@@ -63,7 +71,7 @@ class YmirClickHouse:
         map_: float,
         keywords: List[str],
     ) -> Any:
-        return self.client.execute(
+        return self.execute(
             "INSERT INTO model VALUES",
             [[dt, user_id, id_, name, hash_, map_, keywords]],
         )
@@ -71,7 +79,7 @@ class YmirClickHouse:
     def save_dataset_keyword(
         self, dt: datetime, user_id: int, dataset_id: int, keywords: List[str]
     ) -> Any:
-        return self.client.execute(
+        return self.execute(
             "INSERT INTO dataset_keywords VALUES", [[dt, user_id, dataset_id, keywords]]
         )
 
@@ -89,7 +97,7 @@ WHERE user_id = %(user_id)s
 GROUP BY {column}
 ORDER BY ref_count DESC
 LIMIT %(limit)s"""
-        return self.client.execute(sql, {"user_id": user_id, "limit": limit})
+        return self.execute(sql, {"user_id": user_id, "limit": limit})
 
     def get_models_order_by_map(
         self, user_id: int, keywords: Optional[List[str]] = None, limit: int = 10
@@ -116,7 +124,7 @@ FROM
     WHERE user_id = %(user_id)s
 )
 LIMIT %(limit)s"""
-        records = self.client.execute(sql, {"user_id": user_id, "limit": limit})
+        records = self.execute(sql, {"user_id": user_id, "limit": limit})
         models = [ModelwithmAP.from_clickhouse(record) for record in records]
         return {
             keyword: [[m.model_id, m.mAP] for m in models_]
@@ -145,7 +153,7 @@ ARRAY JOIN keyword_ids
 GROUP BY keyword_ids
 ORDER BY ref_count DESC
 LIMIT %(limit)s"""
-        return self.client.execute(
+        return self.execute(
             sql, {"user_id": user_id, "dataset_ids": dataset_ids, "limit": limit}
         )
 
@@ -207,7 +215,7 @@ ORDER BY time ASC WITH FILL
     FROM toDate(%(start_at)s)
     TO toDate(%(end_at)s) STEP {step}"""
 
-        records = self.client.execute(
+        records = self.execute(
             sql,
             {
                 "user_id": user_id,

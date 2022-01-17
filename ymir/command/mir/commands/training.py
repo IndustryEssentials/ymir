@@ -128,21 +128,25 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
 
 
 # private: process
-def _run_train_cmd(cmd: str) -> int:
+def _run_train_cmd(cmd: str, out_log_path: str) -> int:
     """
     invoke training command
 
     Args:
         cmd (str): command
+        out_log_path (str): path of log file
 
     Returns:
         int: MirCode.RC_OK if success
 
     Raises:
-        Exception: if anything goes wrong
+        Exception: if out_log_path can not open for append, or cmd returned non-zero code
     """
-    logging.info("training with cmd: {}".format(cmd))
-    subprocess.run(cmd.split(" "), check=True)  # run and wait, if non-zero value returned, raise
+    logging.info(f"training with cmd: {cmd}")
+    logging.info(f"out log path: {out_log_path}")
+    with open(out_log_path, 'a') as f:
+        # run and wait, if non-zero value returned, raise
+        subprocess.run(cmd.split(" "), check=True, stdout=f, stderr=f, text=True)
 
     return MirCode.RC_OK
 
@@ -414,7 +418,7 @@ class CmdTrain(base.BaseCommand):
         task_code = MirCode.RC_OK
         task_error_msg = ''
         try:
-            _run_train_cmd(cmd)
+            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, 'ymir-executor-out.log'))
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists

@@ -31,6 +31,7 @@ class Task(Base):
     user_id = Column(Integer, index=True)
     is_deleted = Column(Boolean, default=False)
     duration = Column(BigInteger)
+    last_message_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
         DateTime,
