@@ -1,4 +1,7 @@
 from typing import List
+from mir.tools.code import MirCode
+
+from mir.tools.errors import MirRuntimeError
 
 
 class TypRevTid:
@@ -20,6 +23,10 @@ class TypRevTid:
         else:
             return False
 
+    @property
+    def rev_tid(self) -> str:
+        return join_rev_tid(self.rev, self.tid)
+
 
 # public: parse methods
 def parse_arg_revs(src_revs: str) -> List[TypRevTid]:
@@ -38,9 +45,13 @@ def parse_arg_revs(src_revs: str) -> List[TypRevTid]:
 
 def parse_single_arg_rev(src_rev: str) -> TypRevTid:
     if ";" in src_rev:
-        raise ValueError(f"src_rev: {src_rev} is not single")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"src_rev: {src_rev} is not single")
 
     return __parse_single_arg_rev(src_rev)
+
+
+def join_rev_tid(rev: str, tid: str) -> str:
+    return f"{rev}@{tid}" if tid else rev
 
 
 # private: parse methods
@@ -53,7 +64,7 @@ def __parse_single_arg_rev(src_rev: str) -> TypRevTid:
     # parse typ and rev_and_tid
     contents = src_rev.split(':')
     if len(contents) > 2:
-        raise ValueError(f"invalid arg: {src_rev}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid arg: {src_rev}")
     rev_and_tid = ''
     if len(contents) == 1:
         # rev, rev@tid or @tid
@@ -66,7 +77,7 @@ def __parse_single_arg_rev(src_rev: str) -> TypRevTid:
     # parse rev and tid
     contents = rev_and_tid.split('@')
     if len(contents) > 2:
-        raise ValueError(f"invalid arg: {src_rev}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid arg: {src_rev}")
     if len(contents) == 1:
         # rev
         typ_rev_tid.rev = contents[0]
@@ -76,6 +87,6 @@ def __parse_single_arg_rev(src_rev: str) -> TypRevTid:
         typ_rev_tid.tid = contents[1]
 
     if typ_rev_tid.typ and typ_rev_tid.typ not in {"tr", "va", "te"}:
-        raise ValueError(f"invalid typ in typ:rev@tid: {src_rev}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid typ in typ:rev@tid: {src_rev}")
 
     return typ_rev_tid

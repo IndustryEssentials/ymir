@@ -23,6 +23,8 @@ export function getTasks({
   end_time,
   offset = 0,
   limit = 20,
+  is_desc,
+  order_by,
 }) {
   return request.get("/tasks/", {
     params: {
@@ -33,6 +35,8 @@ export function getTasks({
       end_time,
       offset,
       limit,
+      is_desc,
+      order_by,
     },
   })
 }
@@ -61,10 +65,11 @@ export function deleteTask(id) {
 /**
  * stop task( and get label data for label task)
  * @param {number} id 
+ * @param {boolean} [fetch_result] fetch result or not
  * @returns 
  */
-export function stopTask(id) {
-  return request.post(`/tasks/${id}/terminate`)
+export function stopTask(id, fetch_result = false) {
+  return request.post(`/tasks/${id}/terminate`, { fetch_result })
 }
 
 /**
@@ -117,6 +122,7 @@ export function createLabelTask({
   label_members,
   keywords,
   with_labels,
+  keep_annotations,
   doc,
 }) {
   return createTask({
@@ -128,6 +134,7 @@ export function createLabelTask({
       labellers: label_members,
       include_classes: keywords,
       extra_url: doc,
+      keep_annotations,
       with_labels,
     },
   })
@@ -144,7 +151,9 @@ export function createTrainTask({
   keywords,
   train_type,
   strategy,
-  // gpu_count,
+  model,
+  docker_image,
+  docker_image_id,
 }) {
   return createTask({
     name,
@@ -159,7 +168,9 @@ export function createTrainTask({
       hyperparameter,
       network,
       train_type,
-      // gpu_count,
+      model_id: model,
+      docker_image,
+      docker_image_id,
     }
   })
 }
@@ -174,7 +185,8 @@ export function createMiningTask({
   strategy,
   inference,
   name,
-  // gpu_count,
+  docker_image,
+  docker_image_id,
 }) {
   return createTask({
     type: TASKTYPES.MINING,
@@ -188,7 +200,8 @@ export function createMiningTask({
       mining_algorithm: algorithm,
       top_k: topk,
       generate_annotations: inference,
-      // gpu_count,
+      docker_image,
+      docker_image_id,
     }
   })
 }

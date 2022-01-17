@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import time
-from typing import Dict, List, Optional, Set
+from typing import Dict, Optional, Set
 
 from google.protobuf import json_format
 import yaml
@@ -12,7 +12,8 @@ from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.phase_logger import phase_logger_in_out
+from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.errors import MirRuntimeError
 
 
 class CmdMining(base.BaseCommand):
@@ -44,7 +45,7 @@ class CmdMining(base.BaseCommand):
                                        executor_instance=self.args.executor_instance)
 
     @staticmethod
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(work_dir: str,
                       media_cache: Optional[str],
                       src_revs: str,
@@ -116,10 +117,12 @@ class CmdMining(base.BaseCommand):
         # check `topk` and `add_annotations`
         mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                                       mir_branch=src_typ_rev_tid.rev,
+                                                                                      mir_task_id=src_typ_rev_tid.tid,
                                                                                       ms=mirpb.MirStorage.MIR_METADATAS)
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
-            raise ValueError('no assets found in metadatas.mir')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message='no assets found in metadatas.mir')
         if topk:
             if topk >= assets_count:
                 logging.warning(f"topk: {topk} >= assets count: {assets_count}, skip mining")
@@ -146,7 +149,7 @@ class CmdMining(base.BaseCommand):
 
         _prepare_assets(mir_metadatas=mir_metadatas,
                         mir_root=mir_root,
-                        base_branch=src_typ_rev_tid.rev,
+                        src_rev_tid=src_typ_rev_tid,
                         media_location=media_location,
                         path_prefix_in_index_file=work_asset_path,
                         work_asset_path=work_asset_path,
@@ -185,6 +188,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     #   read old
     mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
                                                    mir_branch=src_typ_rev_tid.rev,
+                                                   mir_task_id=src_typ_rev_tid.tid,
                                                    mir_storages=mir_storage.get_all_mir_storage())
     mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
     mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
@@ -242,6 +246,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   his_branch=src_typ_rev_tid.rev,
                                                   mir_branch=dst_typ_rev_tid.rev,
+                                                  task_id=dst_typ_rev_tid.tid,
                                                   mir_datas=mir_datas,
                                                   commit_message=dst_typ_rev_tid.tid)
 
@@ -250,7 +255,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
     if not os.path.isfile(file_path):
-        raise RuntimeError(f"Cannot find result file {file_path}")
+        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_FILE, f"Cannot find result file {file_path}")
 
     asset_ids_set: Set[str] = set()
     idx_cnt = 0
@@ -309,8 +314,9 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
     return MirCode.RC_OK
 
 
-def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, base_branch: str, media_location: str,
-                    path_prefix_in_index_file: str, work_asset_path: str, work_index_file: str) -> None:
+def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_tid: revs_parser.TypRevTid,
+                    media_location: str, path_prefix_in_index_file: str, work_asset_path: str,
+                    work_index_file: str) -> None:
     os.makedirs(work_asset_path, exist_ok=True)
     os.makedirs(os.path.dirname(work_index_file), exist_ok=True)
 
@@ -323,7 +329,8 @@ def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, base_branc
                          annotation_dir='',
                          need_ext=True,
                          need_id_sub_folder=True,
-                         base_branch=base_branch,
+                         base_branch=src_rev_tid.rev,
+                         base_task_id=src_rev_tid.tid,
                          format_type=data_exporter.ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
                          index_file_path=work_index_file,
                          index_prefix=path_prefix_in_index_file)

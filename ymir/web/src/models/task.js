@@ -11,6 +11,7 @@ import {
   createTrainTask,
   createLabelTask,
 } from "@/services/task"
+import { isFinalState } from '@/constants/task'
 
 export default {
   namespace: "task",
@@ -42,8 +43,8 @@ export default {
         const excludeSets = ps.exclude_datasets || []
         const ids = [
           ...filterSets,
-          ...trainSets, 
-          ...testSets, 
+          ...trainSets,
+          ...testSets,
           ...excludeSets,
         ]
         if (ids.length) {
@@ -54,6 +55,10 @@ export default {
             result['trainSets'] = findDs(trainSets)
             result['testSets'] = findDs(testSets)
             result['excludeSets'] = findDs(excludeSets)
+          }
+          if (ps.model_id) {
+            const model = yield put.resolve({ type: 'model/getModel', payload: ps.model_id })
+            result['model'] = model
           }
           yield put({
             type: "UPDATE_TASK",
@@ -74,7 +79,9 @@ export default {
       }
     },
     *stopTask({ payload }, { call, put }) {
-      let { code, result } = yield call(stopTask, payload)
+      console.log('task model stop task', payload)
+      const { id, with_data } = payload
+      let { code, result } = yield call(stopTask, id, with_data)
       if (code === 0) {
         return result
       }
@@ -96,15 +103,6 @@ export default {
         return result
       }
     },
-    // *createTask({ payload }, { call, put }) {
-    //   let { code, result } = yield call(createTask, payload)
-    //   if (code === 0) {
-    //     return result
-    //   }
-    //   return {
-    //     code,
-    //   }
-    // },
     *createFilterTask({ payload }, { call, put }) {
       let { code, result } = yield call(createFilterTask, payload)
       if (code === 0) {
@@ -128,6 +126,41 @@ export default {
       if (code === 0) {
         return result
       }
+    },
+    *updateTasks({ payload }, { put, select }) {
+      const tasks = yield select(state => state.task.tasks)
+      const updateList = payload || {}
+      const result = tasks.items.map(task => {
+        const updateItem = updateList[task.hash]
+        if (updateItem) {
+          task.state = updateItem.state
+          task.progress = updateItem.percent * 100
+          if (isFinalState(updateItem.state)) {
+            task.forceUpdate = true
+          }
+        }
+        return task
+      })
+      yield put({
+        type: 'UPDATE_TASKS',
+        payload: { items: result, total: tasks.total },
+      })
+    },
+    *updateTaskState({ payload }, { put, select }) {
+      const task = yield select(state => state.task.task)
+      const updateList = payload || {}
+      const updateItem = updateList[task.hash]
+      if (updateItem) {
+        task.state = updateItem.state
+        task.progress = updateItem.percent * 100
+        if (isFinalState(updateItem.state)) {
+          task.forceUpdate = true
+        }
+      }
+      yield put({
+        type: 'UPDATE_TASK',
+        payload: { ...task },
+      })
     },
   },
   reducers: {

@@ -1,0 +1,23 @@
+SERVICE:
+  port: "50066"
+ASSETS:
+  assetskvlocation: /tmp/ymir-controller-sandbox-root/ymir-assets/
+  assetskvprotocol: file
+  assetsuploadlocation: /tmp/ymir-controller-sandbox-root/ymir-assets/
+  assetsuploadprotocol: file
+  modelskvlocation: /tmp/ymir-controller-sandbox-root/ymir-models/
+  modelskvprotocol: file
+  modelsuploadlocation: /tmp/ymir-controller-sandbox-root/ymir-models/
+  modelsuploadprotocol: file
+  tensorboard_root: /tmp/ymir-controller-sandbox-root/ymir-tensorboard-logs
+SANDBOX:
+  sandboxowner: ymir-root
+  sandboxownergroup: ymir-root
+  sandboxroot: /tmp/ymir-controller-sandbox-root/sandbox
+TASK_MONITOR:
+  storageroot: /tmp/ymir-controller-sandbox-root/monitor
+METRICS:
+  allow_feedback: True
+  anonymous_uuid: localtest
+  server_host: localhost
+  server_port: "9125"

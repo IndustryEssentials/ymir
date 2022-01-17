@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons"
 import moment from "moment"
 
-import { format, getUnixTimeStamp, calTimeLeft } from "@/utils/date"
+import { format, getUnixTimeStamp, calDuration } from "@/utils/date"
 import t from "@/utils/t"
 import Empty from '@/components/empty/default'
 import { TASKSTATES, TASKTYPES } from "../../constants/task"
@@ -21,6 +21,8 @@ import StateTag from "../../components/task/stateTag"
 import RenderProgress from "../../components/common/progress"
 import Actions from "../../components/table/actions"
 import Confirm from "../../components/common/dangerConfirm"
+import Terminate from "./components/terminate"
+import { getTensorboardLink } from "../../services/common"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -33,7 +35,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
+function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [tasks, setTasks] = useState([])
@@ -41,6 +43,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   const [form] = useForm()
   const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
+  const terminateRef = useRef(null)
   let [init, setInit] = useState(Boolean(keyword))
   // const [showAdd, setSowAdd] = useState(false)
 
@@ -52,6 +55,16 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
     }
     getData()
   }, [query])
+
+  useEffect(() => {
+    const forceUpdate = taskList.items.some(task => task.forceUpdate)
+    if (forceUpdate) {
+      getData()
+    } else {
+      setTasks(taskList.items)
+      setTotal(taskList.total)
+    }
+  }, [taskList])
 
   useEffect(() => {
     if (keyword) {
@@ -80,6 +93,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       title: showTitle("task.column.type"),
       dataIndex: "type",
       width: 160,
+      align: 'center',
       render: (type) => (types.find((t) => t.value === type))?.label,
     },
     {
@@ -92,7 +106,16 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       title: showTitle("task.column.create_time"),
       dataIndex: "create_datetime",
       width: 200,
+      sorter: true,
       render: (datetime) => format(datetime),
+    },
+    {
+      title: showTitle("task.column.duration"),
+      dataIndex: "duration",
+      width: 200,
+      sorter: true,
+      align: 'center',
+      render: (seconds) => calDuration(seconds, getLocale()),
     },
     {
       title: showTitle("task.column.action"),
@@ -133,10 +156,13 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   ]
 
 
-  const pageChange = ({ current, pageSize }) => {
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
+    console.log('tabel chagne: ', sorters, calDuration(365000, getLocale()))
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    const is_desc = sorters.order === 'ascend' ? false : true
+    const order_by = sorters.order ? sorters.field : undefined
+    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
   function showTitle(str) {
@@ -146,6 +172,8 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
     let params = {
       offset: query.offset,
       limit: query.limit,
+      is_desc: query.is_desc,
+      order_by: query.order_by,
     }
     if (query.type !== "") {
       params.type = query.type
@@ -163,11 +191,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
     if (query.name) {
       params.name = query.name
     }
-    const { items, total } = await getTasks(params)
-    if (items) {
-      setTasks(() => items)
-      setTotal(total)
-    }
+    await getTasks(params)
   }
 
   const del = (id, name) => {
@@ -184,17 +208,12 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       okText: t('task.action.del'),
     })
   }
-  const stop = (id, name) => {
-    Confirm({
-      content: t("task.action.stop.confirm.content", { name }),
-      onOk: async () => {
-        const result = await stopTask(id)
-        if (result) {
-          getData()
-        }
-      },
-      okText: t('task.action.stop'),
-    })
+  const stop = (task) => {
+    terminateRef.current.confirm(task)
+  }
+
+  function terminateOk() {
+    getData()
   }
 
   const copy = (record) => {
@@ -263,7 +282,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, state, type } = record
+    const { id, name, state, type, hash } = record
     const menus = [
       {
         key: "copy",
@@ -273,20 +292,16 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
       },
       {
         key: "stop",
-        label: t("task.action.stop"),
-        onclick: () => stop(record.id, record.name),
-        hidden: () => {
-          return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0 || TASKTYPES.LABEL === type
-        },
+        label: t("task.action.terminate"),
+        onclick: () => stop(record),
+        hidden: () => [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) < 0,
         icon: <StopIcon />,
       },
       {
         key: "del",
         label: t("task.action.del"),
         onclick: () => del(id, name),
-        hidden: () => {
-          return [TASKSTATES.FINISH, TASKSTATES.FAILURE].indexOf(state) < 0
-        },
+        hidden: () => [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) < 0,
         icon: <DeleteIcon />,
       },
       {
@@ -296,24 +311,22 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
         icon: <EditIcon />,
       },
       {
+        key: "training",
+        label: 'TensorBoard',
+        link: getTensorboardLink(hash),
+        target: '_blank',
+        hidden: () => TASKTYPES.TRAINING !== type,
+        icon: <FlagIcon />,
+      },
+      {
         key: "labelplatform",
         label: t("task.action.labelplatform"),
-        link: '/lsf/',
+        link: '/label_tool/',
         target: '_blank',
-        // onclick: () => history.push(`/lsf/`),
         hidden: () => {
           return TASKTYPES.LABEL !== type
         },
         icon: <FlagIcon />,
-      },
-      {
-        key: "labeldata",
-        label: t("task.action.labeldata"),
-        onclick: () => getLabels(id, name),
-        hidden: () => {
-          return TASKTYPES.LABEL !== type
-        },
-        icon: <SearchEyeIcon />,
       },
     ]
     return menus
@@ -329,10 +342,10 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
 
   const addBoxes = (
     <div className={styles.addBoxes}>
-      <Row gutter={20}>
-        {addMore.map(action => <Col span={6} key={action.key}>
+      <Row gutter={20} className={styles.addBoxRow}>
+        {addMore.map(action => <Col className={styles.addBox} span={3} key={action.key}>
           <Link className={styles.addBoxBtn} to={action.link}>
-            <div className={styles.addBtnIcon}>{action.icon}</div><div>{t('task.add.label')}{action.label}</div>
+            <div className={styles.addBtnIcon}>{action.icon}</div><div>{action.label}</div>
           </Link>
         </Col>)}
       </Row>
@@ -390,12 +403,9 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
   return (
     <div className={styles.task}>
       <Breadcrumbs />
-      {tasks.length ? (
-        <Space className={styles.actions}>
-          {addBtn}
-        </Space>
-      ) : addBoxes
-      }
+      <Space className={styles.actions}>
+        {addBtn}
+      </Space>
 
       <div className={styles.list}>
         {renderQuery}
@@ -407,12 +417,10 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
             onClick={() => getData()}
           ></Button>
         </div>
-        <ConfigProvider renderEmpty={() => <Empty />}>
+        <ConfigProvider renderEmpty={() => addBoxes}>
           <Table
             dataSource={tasks}
-            onChange={({ current, pageSize }) =>
-              pageChange({ current, pageSize })
-            }
+            onChange={tableChange}
             rowKey={(record) => record.id}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             pagination={{
@@ -440,6 +448,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
           <StateTag mode='text' state={current.state} />
         </Form.Item> : null}
       </EditBox>
+      <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }
@@ -447,6 +456,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    taskList: state.task.tasks,
   }
 }
 

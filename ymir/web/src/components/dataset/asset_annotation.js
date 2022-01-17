@@ -21,18 +21,9 @@ function AssetAnnotation({
   }, [data])
 
   const transAnnotations = (items) => {
-    let annoColors = {}
-    keywords.forEach((key, i) => annoColors[key] = colors[i % colors.length])
-    // return console.log(annoColors)
     setAnnotations(() => {
       let index = 0
-      return items.map(({ keyword, box, score }) => {
-        let color = ""
-        if (annoColors[keyword]) {
-          color = annoColors[keyword]
-        } else {
-          color = annoColors[keyword] = colors[index++ % colors.length]
-        }
+      return items.map(({ keyword, box, score, color = '#000' }) => {
         return {
           keyword,
           score: score ? `${(score * 100).toFixed(2)}%` : null,

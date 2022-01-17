@@ -10,6 +10,8 @@ import {
   getInternalDataset,
   importDataset,
 } from "@/services/dataset"
+import { getStats } from "../services/common"
+import { isFinalState } from '@/constants/task'
 
 export default {
   namespace: "dataset",
@@ -42,7 +44,7 @@ export default {
     *batchDatasets({ payload }, { call, put }) {
       const { code, result } = yield call(batchDatasets, payload)
       if (code === 0) {
-        return result.items
+        return result
       }
     },
     *getDataset({ payload }, { call, put }) {
@@ -77,22 +79,10 @@ export default {
     },
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
-      // if (code === 0) {
-      //   yield put({
-      //     type: "UPDATE_DATASETS",
-      //     payload: result,
-      //   })
-      // }
       return result
     },
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
-      // if (code === 0) {
-      //   yield put({
-      //     type: "UPDATE_DATASETS",
-      //     payload: result,
-      //   })
-      // }
       return result
     },
     *updateDataset({ payload }, { call, put }) {
@@ -114,13 +104,47 @@ export default {
     },
     *importDataset({ payload }, { call, put }) {
       const { code, result } = yield call(importDataset, payload)
-      // if (code === 0) {
-      //   yield put({
-      //     type: "UPDATE_DATASETS",
-      //     payload: result,
-      //   })
-      // }
       return result
+    },
+    *updateDatasets({ payload }, { put, select }) {
+      const datasets = yield select(state => state.dataset.datasets)
+      const updateList = payload || {}
+      const result = datasets.items.map(dataset => {
+        const updateItem = updateList[dataset.hash]
+        if (updateItem) {
+          dataset.state = updateItem.state
+          dataset.progress = updateItem.percent * 100
+          if (isFinalState(updateItem.state)) {
+            dataset.forceUpdate = true
+          }
+        }
+        return dataset
+      })
+      yield put({
+        type: 'UPDATE_DATASETS',
+        payload: { items: result, total: datasets.total },
+      })
+    },
+    *getHotDatasets({ payload }, { call, put }) {
+      const { code, result } = yield call(getStats, { ...payload, q: 'ds' })
+      let datasets = []
+      if (code === 0) {
+        const refs = {}
+        const ids = result.map(item => {
+          refs[item[0]] = item[1]
+          return item[0]
+        })
+        if (ids.length) {
+          const datasetsObj = yield put.resolve({ type: 'batchDatasets', payload: ids })
+          if (datasetsObj) {
+            datasets = datasetsObj.map(dataset => {
+              dataset.count = refs[dataset.id]
+              return dataset
+            })
+          }
+        }
+      }
+      return datasets
     },
   },
   reducers: {

@@ -11,6 +11,9 @@ import EmptyState from '@/components/empty/dataset'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
+import { TipsIcon } from '@/components/common/icons'
+import Tip from "@/components/form/tip"
+import RecommendKeywords from "../../../components/common/recommendKeywords"
 const { Option } = Select
 
 function Filter({
@@ -99,6 +102,12 @@ function Filter({
     form.setFieldsValue({ inc: [], exc: [] })
   }
 
+  function selectRecommendKeywords(keyword) {
+    const kws = [...new Set([...selectedKeywords, keyword])]
+    setSelectedKeywords(kws)
+    form.setFieldsValue({ inc: kws })
+  }
+
   function requireOne(rule, value) {
     if ([...selectedKeywords, ...selectedExcludeKeywords].length) {
       return Promise.resolve()
@@ -122,95 +131,104 @@ function Filter({
           size='large'
           colon={false}
         >
-          <Form.Item
-            label={t('task.filter.form.name.label')}
-            name='name'
-            rules={[
-              { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
-              { type: 'string', min: 2, max: 20 },
-            ]}
-          >
-            <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
-          </Form.Item>
+          <Tip hidden={true}>
+            <Form.Item
+              label={t('task.filter.form.name.label')}
+              name='name'
+              rules={[
+                { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
+                { type: 'string', min: 2, max: 20 },
+              ]}
+            >
+              <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
+            </Form.Item>
+          </Tip>
+
           <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+          <Tip hidden={true}>
             <Form.Item
               label={t('task.filter.form.datasets.label')}
               required
+              name="datasets"
+              rules={[
+                { required: true, message: t('task.filter.form.datasets.required') },
+              ]}
             >
-              <Form.Item
-                noStyle
-                name="datasets"
-                rules={[
-                  { required: true, message: t('task.filter.form.datasets.required') },
-                ]}
+              <Select
+                placeholder={t('task.filter.form.filter.datasets.placeholder')}
+                mode='multiple'
+                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                onChange={datasetChange}
+                showArrow
               >
+                {datasets.map(item => (
+                  <Option value={item.id} key={item.name}>
+                    {item.name}({item.asset_count})
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            </Tip>
+          </ConfigProvider>
+    
+          <Tip hidden={true}>
+          <Form.Item name='strategy'
+            hidden={form.getFieldValue('datasets')?.length < 2}
+            initialValue={2} label={t('task.train.form.repeatdata.label')}>
+            <Radio.Group options={[
+              { value: 2, label: t('task.train.form.repeatdata.latest') },
+              { value: 3, label: t('task.train.form.repeatdata.original') },
+              { value: 1, label: t('task.train.form.repeatdata.terminate') },
+            ]} />
+          </Form.Item>
+          </Tip>
+
+          <Tip hidden={true}>
+          <Form.Item label={t('dataset.column.keyword')} required>
+              <p>{t('task.filter.form.include.label')}</p>
+            <Tip content={t('tip.task.filter.includelable')}>
+                <Form.Item
+                  labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
+                  name='inc'
+                  help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
+                >
+                  <Select
+                    mode='multiple'
+                    onChange={(value) => setSelectedKeywords(value)}
+                    showArrow
+                  >
+                    {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
+                      ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                      : null)}
+                  </Select>
+                </Form.Item>
+              </Tip>
+              <p>{t('task.filter.form.exclude.label')}</p>
+              <Tip content={t('tip.task.filter.excludelable')}>
+                <Form.Item
+                  labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
+                  name='exc'
+                  dependencies={['inc']}
+                  help={t('task.filter.tip.keyword.required')}
+                  rules={[
+                    { validator: requireOne },
+                  ]}
+                >
                 <Select
-                  placeholder={t('task.filter.form.datasets.placeholder')}
                   mode='multiple'
-                  filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                  onChange={datasetChange}
+                  onChange={(value) => setExclude(value)}
                   showArrow
                 >
-                  {datasets.map(item => (
-                    <Option value={item.id} key={item.name}>
-                      {item.name}({item.asset_count})
-                    </Option>
-                  ))}
+                  {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
+                    ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                    : null)}
                 </Select>
               </Form.Item>
-              <div className={commonStyles.formItemLowLevel}>
-                <span className={commonStyles.label}>{t('task.train.form.repeatdata.label')}</span>
-                <Form.Item name='strategy' colon={true} initialValue={2} noStyle>
-                  <Radio.Group options={[
-                    { value: 2, label: t('task.train.form.repeatdata.latest') },
-                    { value: 3, label: t('task.train.form.repeatdata.original') },
-                    { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                  ]} />
-                </Form.Item></div>
-            </Form.Item>
-          </ConfigProvider>
-          <Form.Item label={t('dataset.column.keyword')} required>
-            <Form.Item
-              label={t('task.filter.form.include.label')}
-              labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-              name='inc'
-              // hidden={!keywords.length}
-              rules={[
-                { validator: requireOne },
-              ]}
-            >
-              <Select
-                mode='multiple'
-                onChange={(value) => setSelectedKeywords(value)}
-                showArrow
-              >
-                {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
-                  ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                  : null)}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label={t('task.filter.form.exclude.label')}
-              labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-              name='exc'
-              // hidden={!keywords.length}
-              help={t('task.filter.tip.keyword.required')}
-              rules={[
-                { validator: requireOne },
-              ]}
-            >
-              <Select
-                mode='multiple'
-                onChange={(value) => setExclude(value)}
-                showArrow
-              >
-                {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
-                  ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                  : null)}
-              </Select>
-            </Form.Item>
+            </Tip>
           </Form.Item>
-          <Form.Item className={styles.submit} wrapperCol={{ offset: 4 }}>
+          </Tip>
+          <Tip hidden={true}>
+          <Form.Item className={styles.submit} wrapperCol={{ offset: 8 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>
                 <Button type="primary" size="large" htmlType="submit">
@@ -224,6 +242,7 @@ function Filter({
               </Form.Item>
             </Space>
           </Form.Item>
+          </Tip>
         </Form>
       </Card>
     </div>

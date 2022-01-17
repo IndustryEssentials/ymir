@@ -23,3 +23,8 @@ export function calTimeLeft(progress, utcTime, locale) {
   const temp = moment.duration(result).locale(locale)
   return temp.humanize({ s: 0 })
 }
+
+export function calDuration(seconds, locale) {
+  const duration = moment.duration(seconds * 1000).locale(locale)
+  return seconds ? duration.humanize({ s: 0 }) : ''
+}
