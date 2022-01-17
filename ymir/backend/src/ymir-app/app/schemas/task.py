@@ -116,7 +116,7 @@ class TaskResult(BaseModel):
     error: Optional[Dict]
 
 
-class Task(TaskInDBBase):
+class TaskInternal(TaskInDBBase):
     parameters: Optional[str]
     result: Optional[TaskResult]
     config: Optional[str]
@@ -134,6 +134,8 @@ class Task(TaskInDBBase):
             return {}
         return json.loads(v)
 
+
+class Task(TaskInternal):
     @validator("state")
     def merge_state(cls, v: TaskState) -> TaskState:
         """
