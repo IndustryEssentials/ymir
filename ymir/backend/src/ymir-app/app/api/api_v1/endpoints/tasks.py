@@ -1,6 +1,6 @@
 import enum
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -35,6 +35,7 @@ from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
 from app.utils.graph import GraphClient
 from app.utils.stats import RedisStats
+from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import (
     ControllerClient,
     ControllerRequest,
@@ -435,7 +436,7 @@ def update_task_status(
         raise TaskNotFound()
 
     if is_obsolete_message(
-        datetime.timestamp(task.update_datetime), task_result.timestamp
+        convert_datetime_to_timestamp(task.last_message_datetime), task_result.timestamp
     ):
         raise ObsoleteTaskStatus()
 
@@ -457,6 +458,10 @@ def update_task_status(
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
+    if updated_task:
+        updated_task = crud.task.update_last_message_datetime(
+            db, task=updated_task, dt=datetime.utcfromtimestamp(task_result.timestamp)
+        )
     result = updated_task or task
     return {"result": result}
 

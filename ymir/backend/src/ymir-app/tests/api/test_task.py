@@ -313,13 +313,15 @@ class TestUpdateTaskStatus:
     ):
         r = create_task(client, normal_user_token_headers)
         task_hash = r.json()["result"]["hash"]
-        last_update_time = r.json()["result"]["update_datetime"]
-        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%dT%H:%M:%S.%f")
+        last_message_datetime = r.json()["result"]["last_message_datetime"]
+        last_message_datetime = datetime.strptime(
+            last_message_datetime, "%Y-%m-%dT%H:%M:%S.%f"
+        )
         data = {
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": datetime.timestamp(last_update_time) + 1,
+            "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) + 1,
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",
@@ -339,14 +341,16 @@ class TestUpdateTaskStatus:
     ):
         r = create_task(client, normal_user_token_headers)
         task_hash = r.json()["result"]["hash"]
-        last_update_time = r.json()["result"]["update_datetime"]
-        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%dT%H:%M:%S.%f")
+        last_message_datetime = r.json()["result"]["last_message_datetime"]
+        last_message_datetime = datetime.strptime(
+            last_message_datetime, "%Y-%m-%dT%H:%M:%S.%f"
+        )
 
         data = {
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": datetime.timestamp(last_update_time) - 1,
+            "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) - 1,
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",
