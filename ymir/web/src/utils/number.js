@@ -1,9 +1,3 @@
-export function numFormat(num) {
-  if (typeof num !== "number") {
-    return num
-  }
-  return num
-}
 
 export function humanize(num) {
   if (!num) {
