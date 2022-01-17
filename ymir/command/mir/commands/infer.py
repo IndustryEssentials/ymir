@@ -284,8 +284,11 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.extend(['--name', executor_instance])
     cmd.append(executor)
 
+    out_log_path = os.path.join(out_path, 'ymir-executor-out.log')
     logging.info(f"starting {task_type} docker container with cmd: {' '.join(cmd)}")
-    subprocess.run(cmd, check=True)  # run and wait, if non-zero value returned, raise
+    with open(out_log_path, 'a') as f:
+        # run and wait, if non-zero value returned, raise
+        subprocess.run(cmd, check=True, stdout=f, stderr=f, text=True)
 
     return MirCode.RC_OK
 
