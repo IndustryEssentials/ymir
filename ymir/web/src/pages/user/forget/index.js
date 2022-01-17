@@ -68,7 +68,7 @@ const Forget = ({ forgetPwd }) => {
                   { email: true, message: t("forget.email.valid.msg") },
                 ]}
               >
-                <Input allowClear prefix={<EmailIcon />} placeholder={t('forget.email.placeholder')} />
+                <Input allowClear prefix={<EmailIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} placeholder={t('forget.email.placeholder')}  />
               </Form.Item>
               <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
                 <Button

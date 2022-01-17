@@ -41,8 +41,8 @@ function ModelHot({ getLatestModels, getHotModels }) {
   return (
     <Card className={`${styles.box} ${styles.hotModel}`} bordered={false}
       headStyle={cardHead} bodyStyle={cardBody}
-      title={<Title title={<><MymodelIcon className={styles.headIcon} />{t('portal.model.my.title')}</>} link='/home/model'>
-        <Radio.Group style={{ marginRight: 40 }} optionType='button' defaultValue={options[0].value} options={options} onChange={changeOrder} />
+      title={<Title title={<><MymodelIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.model.my.title')}</span></>} link='/home/model'>
+        <Radio.Group className={styles.tabLatestHot} optionType='button' defaultValue={options[0].value} options={options} onChange={changeOrder} />
       </Title>}
     >
       <Row gutter={10}>

@@ -21,12 +21,23 @@
       padding: 10px 0;
     }
   }
+  :global(.ant-card-hoverable) {
+    &:hover{
+      border-color:@primary-color;
+      box-shadow: 0 0 0 2px rgba(54, 203, 203, 0.35);
+    }
+    
+  }
+  
   .emptyBoxItem {
     flex: 0 0 25%;
     border-style: dashed;
     border-width: 2px;
     padding: 0;
     text-align: center;
+    &:hover {
+      border-color:@primary-color ;
+    }
   }
   .emptyBoxAction {
     display: inline-block;
@@ -40,12 +51,24 @@
   }
   .boxItemTitleCount {
     text-align: center;
+    font-weight: normal;
   }
   .headIcon {
     margin-right: 10px;
   }
+  // 新增卡片标题文字颜色
+  .headTitle{
+    line-height: 32px;
+    vertical-align: middle;
+  }
+//  最新最热选项样式提取
+  .tabLatestHot{
+    margin-right: 40px;
+    font-weight: normal;
+  }
   .moreIcon {
     color: rgba(0, 0, 0, 0.85);
+    margin-top: 5px;
   }
   .kwContainer {
     display: flex;
@@ -58,6 +81,7 @@
     }
   }
   .kwTag {
+    color: rgba(0, 0, 0, 0.45);
     display: inline-block;
     flex: 0 0 30%;
     margin: 0 0 5px;
@@ -65,6 +89,8 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    border-color: #fff;
+    background: #f4f4f4;
   }
   .oset {
     :global(.ant-descriptions-item) {
@@ -88,7 +114,7 @@
   }
   .myDataset, .hotModel {
     .boxItem {
-      height: 236px;
+      height: 246px;
     }
   }
   .hotModel {
@@ -109,9 +135,9 @@
     }
     .kwtag {
       cursor: pointer;
-      border: 1px solid @primary-color;
+      border: 1px solid #ebfafa;
       color: @primary-color;
-      background-color: #fff;
+      background-color:#ebfafa;
     }
     .current {
       background-color: @btn-primary-bg;
@@ -167,5 +193,13 @@
   }
   .dataset_panel, .model_panel, .task_panel {
     margin-bottom: 20px;
+  }
+}
+
+//首页复制公共数据集图标样式
+.copeIcon {
+  color: rgba(0, 0, 0, 0.45);
+  &:hover {
+    color: @primary-color;
   }
 }
