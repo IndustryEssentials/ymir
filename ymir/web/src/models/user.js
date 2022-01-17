@@ -10,19 +10,28 @@ import {
   forgetPwd,
   getMeInfo,
   updateUserInfo,
+  getUsers,
+  setUserState,
   signup,
 } from "@/services/user"
+import { ROLES } from '@/constants/user'
 
 const neverShow = storage.get("never_show")
+
+const emptyUser = {
+  username: "",
+  email: "",
+  phone: "",
+  avatar: '',
+  hash: '',
+  id: 0,
+  role: ROLES.USER,
+}
 
 const model = {
   namespace: "user",
   state: {
-    username: "",
-    email: "",
-    phone: "",
-    avatar: '',
-    id: 0,
+    ...emptyUser,
     logined: !!storage.get("access_token"),
     neverShow,
     guideVisible: false,
@@ -30,11 +39,11 @@ const model = {
   effects: {
     *setGuideVisible({ payload }, { put }) {
       const visible = !!payload
-      yield put({ type: 'UPDATE_GUIDE_VISIBLE', payload: visible})
+      yield put({ type: 'UPDATE_GUIDE_VISIBLE', payload: visible })
     },
     *setNeverShow({ payload }, { put }) {
       const neverShow = !!payload
-      yield put({ type: 'UPDATE_NEVER_SHOW', payload: neverShow})
+      yield put({ type: 'UPDATE_NEVER_SHOW', payload: neverShow })
     },
     *signup({ payload }, { call, put, select }) {
       const { code, result } = yield call(signup, payload)
@@ -109,24 +118,53 @@ const model = {
     *loginout({ payload }, { call, put, select }) {
       storage.remove("access_token")
       yield put({ type: "UPDATE_LOGINED", payload: false })
-      yield put({ type: 'UPDATE_USERINFO', payload: {
-        username: '',
-        email: '',
-        id: '',
-        phone: '',
-      }})
+      yield put({ type: 'UPDATE_USERINFO', payload: emptyUser })
       return true
+    },
+    *getActiveUsers({ payload }, { call }) {
+      const { result } = yield call(getUsers, { ...payload, state: 2 })
+      if (result) {
+        return result
+      }
+    },
+    *getUsers({ payload }, { call }) {
+      const { result } = yield call(getUsers, payload)
+      if (result) {
+        return result
+      }
+    },
+    *setUserRole({ payload }, { call }) {
+      const { id, role } = payload
+      const { result } = yield call(setUserState, { id, role })
+      if (result) {
+        return result
+      }
+    },
+    *setUserState({ payload }, { call }) {
+      const { result } = yield call(setUserState, payload)
+      if (result) {
+        return result
+      }
+    },
+    *off({ payload }, { call }) {
+      const { result } = yield call(setUserState, { id: payload, state: 4 })
+      if (result) {
+        return result
+      }
     },
   },
   reducers: {
     UPDATE_USERINFO(state, { payload }) {
+      const { username, email, phone, avatar, role, id, hash } = payload
       return {
         ...state,
-        username: payload.username,
-        email: payload.email,
-        phone: payload.phone,
-        avatar: payload.avatar,
-        id: payload.id,
+        username,
+        email,
+        phone,
+        avatar,
+        id,
+        role,
+        hash,
       }
     },
     UPDATE_LOGINED(state, { payload }) {

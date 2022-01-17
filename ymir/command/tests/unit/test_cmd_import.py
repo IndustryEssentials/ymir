@@ -48,7 +48,7 @@ class TestCmdImport(unittest.TestCase):
         args = type('', (), {})()
         args.mir_root = mir_root
         args.src_revs = ''
-        args.dst_rev = 'a@import-task-id'
+        args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
         args.ck_file = self._ck_file
         args.anno = self._data_xml_path
@@ -66,6 +66,7 @@ class TestCmdImport(unittest.TestCase):
 
         # ignore unknown types
         args.ignore_unknown_types = True
+        args.dst_rev = 'a@import-task-1'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         assert ret == MirCode.RC_OK
@@ -74,6 +75,7 @@ class TestCmdImport(unittest.TestCase):
         # have no annotations
         args.anno = None
         args.ignore_unknown_types = False
+        args.dst_rev = 'a@import-task-2'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         assert ret == MirCode.RC_OK
@@ -284,7 +286,9 @@ class TestCmdImport(unittest.TestCase):
         with open(os.path.join(repo_root, 'tasks.mir'), 'rb') as f:
             mir_tasks.ParseFromString(f.read())
         dict_tasks = MessageToDict(mir_tasks, preserving_proto_field_name=True)
-        assert 'import-task-id' in dict_tasks['tasks']
+        assert ('import-task-0' in dict_tasks['tasks']
+                or 'import-task-1' in dict_tasks['tasks']
+                or 'import-task-2' in dict_tasks['tasks'])
 
     # custom: env prepare
     def _prepare_dirs(self):

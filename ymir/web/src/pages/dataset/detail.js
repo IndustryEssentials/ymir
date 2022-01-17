@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react"
 import { useParams, useHistory } from "umi"
 import { connect } from "dva"
-import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag } from "antd"
+import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag, Modal } from "antd"
 
 import styles from "./detail.less"
 import t from "@/utils/t"
 import Breadcrumbs from "../../components/common/breadcrumb"
 import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "../../components/common/icons"
+import Asset from "./components/asset"
+import { randomBetween } from '@/utils/number'
 
 const { Option } = Select
 
@@ -37,6 +39,11 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const [total, setTotal] = useState(0)
   const [keywords, setKeywords] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [assetVisible, setAssetVisible] = useState(false)
+  const [currentAsset, setCurrentAsset] = useState({
+    hash: null,
+    index: 0,
+  })
 
   useEffect(async () => {
     const data = await getDataset(id)
@@ -70,15 +77,20 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setAssets(items)
     setKeywords(Object.keys(keywords).map((key) => ({ key, count: keywords[key] })))
   }
-  const goAsset = (hash) => {
-    history.push(`/home/dataset/asset/${id}/${hash}`)
+  const goAsset = (hash, index) => {
+    setCurrentAsset({ hash, index: (currentPage - 1) * filterParams.limit + index})
+    setAssetVisible(true)
   }
 
   const randomPage = () => {
     const { limit, offset } = filterParams
     setCurrentPage(offset / limit + 1)
-    const page = rand(Math.ceil(total / limit), 1, currentPage)
+    const page = randomBetween(Math.ceil(total / limit), 1, currentPage)
     filterPage(page, limit)
+  }
+
+  const getRate = (count) => {
+    return Number(count * 100 / dataset.asset_count).toFixed(2) + '%'
   }
 
   const randomPageButton = (
@@ -96,11 +108,11 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
 
     return result.map((rows, index) => (
       <Row gutter={10} wrap={false} key={index} className={styles.dataset_container}>
-        {rows.map(asset => (
+        {rows.map((asset, rowIndex) => (
           <Col flex={100 / row + '%'} key={asset.hash} className={styles.dataset_item}>
             <div
               className={styles.dataset_img}
-              onClick={() => goAsset(asset.hash)}
+              onClick={() => goAsset(asset.hash, index * row + rowIndex)}
             >
               <img
                 src={asset.url}
@@ -129,7 +141,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     <Col flex={1}>
       <Space>
         <strong>{dataset.name}</strong>
-        <span>{t("dataset.detail.pager.total", { total })}</span>
+        <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.asset_count })}</span>
       </Space>
     </Col>
     <Col>
@@ -142,20 +154,27 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
       >
         <Option value={0} key="all">
-          {t("dataset.all")}
+          {t("common.all")}
         </Option>
         {keywords.map((kw) => (
           <Option value={kw.key} key={kw.key} title={`${kw.key} (${kw.count})`}>
-            {kw.key} ({kw.count})
+            {kw.key} ({kw.count}, {getRate(kw.count)})
           </Option>
         ))}
       </Select>
     </Col>
   </Row>
 
+  const assetDetail = <Modal className={styles.assetDetail} 
+    title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
+    width={null} footer={null}>
+    <Asset id={id} datasetKeywords={dataset.keywords} filterKeyword={filterParams.keyword} index={currentAsset.index} total={total} />
+  </Modal>
+
   return (
     <div className={styles.datasetDetail}>
       <Breadcrumbs />
+      {assetDetail}
       <div className={styles.actions}>
         <Space>
           <Button

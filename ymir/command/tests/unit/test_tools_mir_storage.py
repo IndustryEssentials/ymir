@@ -96,20 +96,47 @@ class TestMirStorage(unittest.TestCase):
         }
         pb_format.ParseDict(dict_tasks, mir_tasks)
 
-        mir_data_expect = {
+        mir_datas_expect = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
             mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
+                                                      task_id='mining-task-id',
                                                       his_branch='master',
-                                                      mir_datas=mir_data_expect,
+                                                      mir_datas=mir_datas_expect,
                                                       commit_message='test_ops')
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
                                                        mir_branch='a',
-                                                       mir_storages=[x for x in mir_data_expect.keys()])
-        self.assertDictEqual(mir_datas, mir_data_expect)
+                                                       mir_task_id='mining-task-id',
+                                                       mir_storages=[x for x in mir_datas_expect.keys()])
+        self.assertDictEqual(mir_datas, mir_datas_expect)
+
+        # add another commit a@t2, which has empty dataset
+        mir_datas_expect_2 = {
+            mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+            mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
+            mirpb.MirStorage.MIR_TASKS: mirpb.MirTasks(),
+        }
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      task_id='t2',
+                                                      his_branch='a',
+                                                      mir_datas=mir_datas_expect_2,
+                                                      commit_message='t2')
+        # previous a@mining-task-id remains unchanged
+        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
+                                                       mir_branch='a',
+                                                       mir_task_id='mining-task-id',
+                                                       mir_storages=[x for x in mir_datas_expect.keys()])
+        self.assertDictEqual(mir_datas, mir_datas_expect)
+        # previous a@mining-task-id remains unchanged
+        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
+                                                       mir_branch='a',
+                                                       mir_task_id='t2',
+                                                       mir_storages=[x for x in mir_datas_expect.keys()])
+        self.assertDictEqual(mir_datas, mir_datas_expect_2)
 
     # protected: misc
     def _prepare_dir(self):

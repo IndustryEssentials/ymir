@@ -9,8 +9,10 @@ import shutil
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser
-from mir.tools.code import MirCode, MirRuntimeError
-from mir.tools.phase_logger import PhaseLoggerCenter, phase_logger_in_out
+from mir.tools.code import MirCode
+from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.errors import MirRuntimeError
+from mir.tools.phase_logger import PhaseLoggerCenter
 
 
 class CmdImport(base.BaseCommand):
@@ -24,12 +26,12 @@ class CmdImport(base.BaseCommand):
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
                                        dst_rev=self.args.dst_rev,
-                                       src_revs=self.args.src_revs,
+                                       src_revs=self.args.src_revs or 'master',
                                        work_dir=self.args.work_dir,
                                        ignore_unknown_types=self.args.ignore_unknown_types)
 
     @staticmethod
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, ck_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
                       dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
         # Step 1: check args and prepare environment.
@@ -51,7 +53,8 @@ class CmdImport(base.BaseCommand):
         if not dataset_name:
             dataset_name = dst_typ_rev_tid.tid
         if not src_revs:
-            src_revs = 'master'
+            logging.error('empty --src-revs')
+            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='import',
@@ -121,6 +124,7 @@ class CmdImport(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=dst_typ_rev_tid.tid,
                                                       mir_datas=mir_data,
                                                       commit_message=dst_typ_rev_tid.tid)
 
@@ -141,6 +145,10 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
     with open(index_file) as idx_f, open(sha_idx_file, 'w') as sha_f:
         lines = idx_f.readlines()
         total_count = len(lines)
+        asset_count_limit = 1000000
+        if total_count > asset_count_limit:  # large number of images may trigger redis timeout error.
+            logging.error(f'# of image {total_count} exceeds upper boundary {asset_count_limit}.')
+            return MirCode.RC_CMD_INVALID_ARGS
 
         idx = 0
         for line in lines:

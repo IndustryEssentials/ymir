@@ -67,7 +67,7 @@ function ModelDetail({ getModel }) {
     return (
       <Row>
         <Col flex={1}>{model.name}</Col>
-        <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}</Button></Col>
+        <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
       </Row>
     )
   }
@@ -100,6 +100,7 @@ function ModelDetail({ getModel }) {
           <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button>
           <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/mining?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
+          <Button type='primary' onClick={() => history.push(`/home/task/train?mid=${model.id}`)}>{t('dataset.action.train')}</Button>
         </Space></Item>
       </Descriptions>
       </Card>
@@ -120,12 +121,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'model/getModel',
         payload,
-      })
-    },
-    batchDatasets(ids) {
-      return dispatch({
-        type: 'dataset/batchDatasets',
-        payload: ids,
       })
     },
   }

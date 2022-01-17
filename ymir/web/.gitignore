@@ -20,3 +20,4 @@
 ymir
 coverage
 .gitlab-ci.yml
+.umirc.local.ts

@@ -2,6 +2,7 @@ import axios from "axios"
 import storage from "@/utils/storage"
 import t from "@/utils/t"
 import { history } from "umi"
+import { getDvaApp } from 'umi'
 import { message } from "antd"
 
 const getBaseURL = () => {
@@ -48,7 +49,7 @@ request.interceptors.response.use(
     if (authrized.includes(err.request.status)) {
       logout()
     } else if (err.request.status === 504) {
-      return message.error('Request Timeout')
+      message.error('Request Timeout')
     } else {
       const res = err.response
       if (res && res.data && res.data.code) {
@@ -65,8 +66,9 @@ request.interceptors.response.use(
 )
 
 function logout() {
-  storage.remove("access_token")
-  history.replace(`/login?redirect=${history.location.pathname}`)
+  getDvaApp()._store.dispatch({
+    type: 'user/loginout'
+  })
 }
 
 export default request

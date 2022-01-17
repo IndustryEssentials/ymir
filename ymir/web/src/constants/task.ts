@@ -9,8 +9,14 @@ export const TASKTYPES = Object.freeze({
 })
 
 export const TASKSTATES = Object.freeze({
+  UNKOWN: 0,
   PENDING: 1,
   DOING: 2,
   FINISH: 3,
   FAILURE: 4,
+  TERMINATED: 100,
 })
+
+export const isFinalState = (state: number) => {
+  return [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) >= 0
+}

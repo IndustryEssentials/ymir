@@ -12,6 +12,7 @@ import Breadcrumbs from '../../components/common/breadcrumb'
 import { TipsIcon } from '../../components/common/icons'
 import options from '@antv/graphin/lib/layout/utils/options'
 import { getKeywords } from '../../services/keyword'
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
 const { useForm } = Form
@@ -208,6 +209,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             size='large'
             colon={false}
           >
+            <Tip hidden={true}>
             <Form.Item
               label={t('dataset.add.form.name.label')}
               name='name'
@@ -219,15 +221,22 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             >
               <Input autoComplete={'off'} allowClear />
             </Form.Item>
-            <Form.Item label={t('dataset.add.form.type.label')}>
-              <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
-                {types.map(type => (
-                  <Option value={type.id} key={type.id}>{type.label}</Option>
-                ))}
-              </Select>
-            </Form.Item>
+            </Tip>
+
+            <Tip hidden={true}>
+              <Form.Item label={t('dataset.add.form.type.label')}>
+                <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
+                  {types.map(type => (
+                    <Option value={type.id} key={type.id}>{type.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Tip>
+
             {isType(TYPES.INTERNAL) ? (
               <>
+              
+              <Tip content={t('tip.task.filter.datasets')}>
                 <Form.Item
                   label={t('dataset.add.form.internal.label')}
                   name='input_dataset_id'
@@ -242,20 +251,29 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                     ))}
                   </Select>
                 </Form.Item>
+              </Tip>
+
                 {selectedDataset ?
+                <Tip hidden={true}>
                   <Form.Item label={t('dataset.import.public.include')}>
                     {renderSelectedKeywords()}
                   </Form.Item>
+                  </Tip>
                   : null}
               </>
             ) : null}
-            <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
-              <Radio.Group
-                options={labelOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 1 : true)}
-                onChange={onLabelChange}
-              />
-            </Form.Item>
+
+            <Tip hidden={true}>
+              <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
+                <Radio.Group
+                  options={labelOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 1 : true)}
+                  onChange={onLabelChange}
+                />
+              </Form.Item>
+            </Tip>
+
             {showLabelStrategy ?
+              <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.newkw.label')}>
                 <p className={s.newkwTip}><TipsIcon className={s.tipIcon} /> {t('dataset.add.form.newkw.tip')}</p>
                 <Row><Col flex={1}><Form.Item noStyle name='k_strategy' initialValue={0}>
@@ -265,7 +283,9 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 </Form.Item></Col>
                   <Col><Link to={'/home/keyword'} target='_blank'>{t('dataset.add.form.newkw.link')}</Link></Col>
                 </Row>
-              </Form.Item> : null}
+              </Form.Item>
+              </Tip> : null}
+              <Tip hidden={true}>
             <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 4, span: 13 }}>
               {newKeywords.length > 0 ?
                 <Form.List name='new_keywords'>
@@ -312,7 +332,9 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 </Form.List>
                 : t('dataset.add.newkeyword.empty')}
             </Form.Item>
+            </Tip>
             {isType(TYPES.SHARE) ? (
+              <Tip hidden={true}>
               <Form.Item
                 label={t('dataset.add.form.share.label')}
                 name='input_dataset_id'
@@ -322,8 +344,10 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               >
                 <Input placeholder={t('dataset.add.form.share.placeholder')} allowClear />
               </Form.Item>
+              </Tip>
             ) : null}
             {isType(TYPES.NET) ? (
+              <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.net.label')} required>
                 <Form.Item
                   name='input_url'
@@ -337,8 +361,10 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 </Form.Item>
                 <p>Sample: https://www.examples.com/pascal.zip</p>
               </Form.Item>
+              </Tip>
             ) : null}
             {isType(TYPES.PATH) ? (
+              <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.path.label')} required>
                 <Form.Item
                   name='input_path'
@@ -349,8 +375,10 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 </Form.Item>
                 <p>{t('dataset.add.form.path.tip')}</p>
               </Form.Item>
+              </Tip>
             ) : null}
             {isType(TYPES.LOCAL) ? (
+              <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.upload.btn')}>
                 <Uploader
                   onChange={(files, result) => { setFileToken(result) }}
@@ -359,8 +387,10 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                   info={t('dataset.add.form.upload.tip', { br: <br />, sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a> })}
                 ></Uploader>
               </Form.Item>
+              </Tip>
             ) : null}
-            <Form.Item wrapperCol={{ offset: 4 }}>
+            <Tip hidden={true}>
+            <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
@@ -374,6 +404,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 </Form.Item>
               </Space>
             </Form.Item>
+            </Tip>
           </Form>
         </div>
       </Card>

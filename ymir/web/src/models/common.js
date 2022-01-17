@@ -1,7 +1,7 @@
 import {
   getHistory,
-  getRuntimes,
   getStats,
+  getSysInfo,
 } from "@/services/common"
 
 export default {
@@ -21,10 +21,10 @@ export default {
         return result
       }
     },
-    *getRuntimes({payload}, { call }) {
-      const { code, result } = yield call(getRuntimes, payload)
+    *getSysInfo({}, { call }) {
+      const { code, result } = yield call(getSysInfo)
       if (code === 0) {
-        return result[0]
+        return result
       }
     },
   },

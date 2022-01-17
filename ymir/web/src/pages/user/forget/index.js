@@ -39,7 +39,7 @@ const Forget = ({ forgetPwd }) => {
               </Col>
               <Col>
                 <Button type="link" onClick={() => history.goBack()}>
-                  {t("common.back")}
+                  {t("common.back")}&gt;
                 </Button>
               </Col>
             </Row>

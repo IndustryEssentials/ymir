@@ -4,7 +4,9 @@ import logging
 import os
 import shutil
 import subprocess
+from subprocess import CalledProcessError
 import tarfile
+import traceback
 from typing import Any, List, Optional, Set, Tuple
 
 import yaml
@@ -12,21 +14,24 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import utils as mir_utils
+from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
-from mir.tools.phase_logger import phase_logger_in_out
+from mir.tools.errors import MirRuntimeError
 
 
-def _process_model_storage(out_root: str, config_file_path: str, model_upload_location: str,
-                           ymir_info: dict) -> Tuple[str, float]:
-    models = _find_models(os.path.join(out_root, "models"))
-    model_paths = models[0]
-    model_mAP = models[1]
+# private: post process
+def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
+                           task_context: dict) -> Tuple[str, float]:
+    model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
     if not model_paths:
-        raise ValueError("can not find models")
+        # if have no models
+        return '', model_mAP
+
     tar_path = os.path.join(out_root, "models.tar.gz")
     _pack_models_and_config(model_paths=model_paths,
-                            config_file_path=config_file_path,
-                            ymir_info=dict(**ymir_info, mAP=model_mAP),
+                            executor_config=executor_config,
+                            task_context=dict(**task_context, mAP=model_mAP, type='training'),
                             dest_path=tar_path)
     model_sha1 = hash_utils.sha1sum_for_file(tar_path)
 
@@ -50,31 +55,39 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
     model_names = []
     model_mAP = 0.0
 
-    with open(os.path.join(model_root, "result.yaml"), "r") as f:
-        yaml_obj = yaml.safe_load(f.read())
-        model_names = yaml_obj["model"]
-        model_mAP = float(yaml_obj["map"])
+    result_yaml_path = os.path.join(model_root, "result.yaml")
+    try:
+        with open(result_yaml_path, "r") as f:
+            yaml_obj = yaml.safe_load(f.read())
+            model_names = yaml_obj["model"]
+            model_mAP = float(yaml_obj["map"])
+    except FileNotFoundError:
+        logging.warning(traceback.format_exc())
+        return [], 0.0
 
     return ([os.path.join(model_root, name) for name in model_names], model_mAP)
 
 
-def _pack_models_and_config(model_paths: List[str], config_file_path: str, ymir_info: dict, dest_path: str) -> bool:
+def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
     if not model_paths or not dest_path:
-        raise ValueError("invalid model_paths or dest_path")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message='invalid model_paths or dest_path')
+
+    logging.info(f"packing models to {dest_path}")
+    model_storage = mir_utils.ModelStorage(executor_config=executor_config,
+                                           task_context=task_context,
+                                           models=[os.path.basename(model_path) for model_path in model_paths])
+    ymir_info_file_name = 'ymir-info.yaml'
+    ymir_info_file_path = os.path.join(os.path.dirname(dest_path), ymir_info_file_name)
+    with open(ymir_info_file_path, 'w') as f:
+        f.write(yaml.dump(model_storage.as_dict()))
 
     with tarfile.open(dest_path, "w:gz") as dest_tar_gz:
-        logging.info("packing models and configs")
         for model_path in model_paths:
             logging.info(f"    packing {model_path} -> {os.path.basename(model_path)}")
             dest_tar_gz.add(model_path, os.path.basename(model_path))
-        logging.info(f"    packing {config_file_path} -> config.yaml")
-        dest_tar_gz.add(config_file_path, 'config.yaml')
 
         # pack ymir-info.yaml
-        ymir_info_file_name = 'ymir-info.yaml'
-        ymir_info_file_path = os.path.join(os.path.dirname(config_file_path), ymir_info_file_name)
-        with open(ymir_info_file_path, 'w') as f:
-            f.write(yaml.dump(ymir_info if ymir_info else {}))
         logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
         dest_tar_gz.add(ymir_info_file_path, ymir_info_file_name)
     return True
@@ -82,53 +95,116 @@ def _pack_models_and_config(model_paths: List[str], config_file_path: str, ymir_
 
 def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
     if not model_pack_path or not dest_path:
-        raise ValueError("invalid model_pack_path or dest_path")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                              error_message='invalid model_pack_path or dest_path')
 
     shutil.copyfile(model_pack_path, dest_path)
     return True
 
 
-def _update_mir_tasks(mir_root: str, base_branch: str, dst_branch: str, task_id: str, model_sha1: str,
-                      mAP: float) -> None:
+def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
+                      model_sha1: str, mAP: float, task_ret_code: int, task_err_msg: str) -> mirpb.MirTasks:
     """
     add a new mir single task into mir_tasks from branch base_branch, and save it to a new branch: dst_branch
     """
+    logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
+
     task = mirpb.Task()
     task.type = mirpb.TaskTypeTraining
     task.name = "training done"
-    task.task_id = task_id
+    task.task_id = dst_rev_tid.tid
     task.timestamp = int(datetime.datetime.now().timestamp())
     task.model.model_hash = model_sha1
     task.model.mean_average_precision = mAP
+    task.return_code = task_ret_code
+    task.return_msg = task_err_msg
 
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                          mir_branch=base_branch,
+                                                                          mir_branch=src_rev_tid.rev,
+                                                                          mir_task_id=src_rev_tid.tid,
                                                                           ms=mirpb.MirStorage.MIR_TASKS)
     mir_storage_ops.add_mir_task(mir_tasks, task)
-    mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                  mir_branch=dst_branch,
-                                                  his_branch=base_branch,
-                                                  mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
-                                                  commit_message=task_id)
-
-    logging.info("task id: {}, model hash: {}, mAP: {}".format(task_id, model_sha1, mAP))
+    return mir_tasks
 
 
-# add this function for mock unit test.
-def _run_train_cmd(cmd: str) -> int:
-    logging.info("training with cmd: {}".format(cmd))
-    subprocess.run(cmd.split(" "), check=True)  # run and wait, if non-zero value returned, raise
+# private: process
+def _run_train_cmd(cmd: str, out_log_path: str) -> int:
+    """
+    invoke training command
+
+    Args:
+        cmd (str): command
+        out_log_path (str): path of log file
+
+    Returns:
+        int: MirCode.RC_OK if success
+
+    Raises:
+        Exception: if out_log_path can not open for append, or cmd returned non-zero code
+    """
+    logging.info(f"training with cmd: {cmd}")
+    logging.info(f"out log path: {out_log_path}")
+    with open(out_log_path, 'a') as f:
+        # run and wait, if non-zero value returned, raise
+        subprocess.run(cmd.split(" "), check=True, stdout=f, stderr=f, text=True)
 
     return MirCode.RC_OK
 
 
-def _generate_config(config: Any, out_config_path: str, task_id: str) -> None:
+# private: pre process
+def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained_model_params: List[str]) -> dict:
     config["task_id"] = task_id
+    if pretrained_model_params:
+        config['pretrained_model_params'] = pretrained_model_params
+    elif 'pretrained_model_params' in config:
+        del config['pretrained_model_params']
 
-    logging.debug("config: {}".format(config))
+    logging.info("config: {}".format(config))
 
     with open(out_config_path, "w") as f:
         yaml.dump(config, f)
+
+    return config
+
+
+def _get_shm_size(config_file_path: str) -> str:
+    with open(config_file_path, 'r') as f:
+        config = yaml.safe_load(f.read())
+    if 'shm_size' not in config:
+        return '16G'
+    return config['shm_size']
+
+
+def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str,
+                               class_names: List[str]) -> List[str]:
+    """
+    prepare pretrained models
+    * extract models to dst_model_dir
+    * compare class names
+    * returns model file names
+
+    Args:
+        model_location (str): model location
+        model_hash (str): model package hash
+        dst_model_dir (str): dir where you want to extract model files to
+        class_names (List[str]): class names for this training
+
+    Returns:
+        List[str]: model names
+    """
+    if not model_hash:
+        return []
+    model_storage = mir_utils.prepare_model(model_location=model_location,
+                                            model_hash=model_hash,
+                                            dst_model_path=dst_model_dir)
+
+    # check class names
+    if model_storage.class_names != class_names:
+        raise MirRuntimeError(
+            error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            error_message=f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
+
+    return model_storage.models
 
 
 class CmdTrain(base.BaseCommand):
@@ -137,23 +213,27 @@ class CmdTrain(base.BaseCommand):
 
         return CmdTrain.run_with_args(work_dir=self.args.work_dir,
                                       model_upload_location=self.args.model_path,
+                                      pretrained_model_hash=self.args.model_hash,
                                       src_revs=self.args.src_revs,
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
                                       media_location=self.args.media_location,
+                                      tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
                                       executor_instance=self.args.executor_instance,
                                       config_file=self.args.config_file)
 
     @staticmethod
-    @phase_logger_in_out
+    @command_run_in_out
     def run_with_args(work_dir: str,
                       model_upload_location: str,
+                      pretrained_model_hash: str,
                       executor: str,
                       executor_instance: str,
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
+                      tensorboard_dir: str,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
 
@@ -201,6 +281,14 @@ class CmdTrain(base.BaseCommand):
         task_id = dst_typ_rev_tid.tid
         if not executor_instance:
             executor_instance = f"default-training-{task_id}"
+        if not tensorboard_dir:
+            tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
+
+        # if have model_hash, export model
+        pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
+                                                            model_hash=pretrained_model_hash,
+                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'),
+                                                            class_names=class_names)
 
         # get train_ids, val_ids, test_ids
         train_ids = set()  # type: Set[str]
@@ -209,6 +297,7 @@ class CmdTrain(base.BaseCommand):
         unused_ids = set()  # type: Set[str]
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
                                                        mir_branch=src_typ_rev_tid.rev,
+                                                       mir_task_id=src_typ_rev_tid.tid,
                                                        mir_storages=[mirpb.MirStorage.MIR_METADATAS])
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         for asset_id, asset_attr in mir_metadatas.attributes.items():
@@ -240,6 +329,7 @@ class CmdTrain(base.BaseCommand):
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
+        os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
@@ -263,6 +353,7 @@ class CmdTrain(base.BaseCommand):
                              need_ext=True,
                              need_id_sub_folder=False,
                              base_branch=src_typ_rev_tid.rev,
+                             base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_train, 'index.tsv'),
                              index_prefix='/in/train')
@@ -280,6 +371,7 @@ class CmdTrain(base.BaseCommand):
                              need_ext=True,
                              need_id_sub_folder=False,
                              base_branch=src_typ_rev_tid.rev,
+                             base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_val, 'index.tsv'),
                              index_prefix='/in/val')
@@ -298,6 +390,7 @@ class CmdTrain(base.BaseCommand):
                                  need_ext=True,
                                  need_id_sub_folder=False,
                                  base_branch=src_typ_rev_tid.rev,
+                                 base_task_id=src_typ_rev_tid.tid,
                                  format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                                  index_file_path=os.path.join(work_dir_in_test, 'index.tsv'),
                                  index_prefix='/in/test')
@@ -306,51 +399,68 @@ class CmdTrain(base.BaseCommand):
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
-        _generate_config(config=config, out_config_path=out_config_path, task_id=task_id)
+        executor_config = _generate_config(
+            config=config,
+            out_config_path=out_config_path,
+            task_id=task_id,
+            pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
 
         # start train docker and wait
         path_binds = []
         path_binds.append(f"-v {work_dir_in}:/in")
         path_binds.append(f"-v {work_dir_out}:/out")
+        path_binds.append(f"-v {tensorboard_dir}:/out/tensorboard")
         joint_path_binds = " ".join(path_binds)
         shm_size = _get_shm_size(config_file)
         cmd = (f"nvidia-docker run --rm --shm-size={shm_size} {joint_path_binds} --user {os.getuid()}:{os.getgid()} "
                f"--name {executor_instance} {executor}")
 
-        ret = _run_train_cmd(cmd)
-        if ret != MirCode.RC_OK:
-            return ret
+        task_code = MirCode.RC_OK
+        task_error_msg = ''
+        try:
+            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, 'ymir-executor-out.log'))
+        except CalledProcessError as e:
+            logging.warning(f"training exception: {e}")
+            # don't exit, proceed if model exists
+            task_code = MirCode.RC_CMD_ERROR_UNKNOWN
+            task_error_msg = str(e)
 
         # save model
         logging.info("saving models")
         model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
-                                                       config_file_path=out_config_path,
                                                        model_upload_location=model_upload_location,
-                                                       ymir_info={
+                                                       executor_config=executor_config,
+                                                       task_context={
                                                            'src_revs': src_revs,
                                                            'dst_rev': dst_rev,
                                                            'executor': executor
                                                        })
+
         # update metadatas and task with finish state and model hash
-        logging.info("creating task")
-        _update_mir_tasks(mir_root=mir_root,
-                          base_branch=src_typ_rev_tid.rev,
-                          dst_branch=dst_typ_rev_tid.rev,
-                          task_id=task_id,
-                          model_sha1=model_sha1,
-                          mAP=model_mAP)
+        mir_tasks = _update_mir_tasks(mir_root=mir_root,
+                                      src_rev_tid=src_typ_rev_tid,
+                                      dst_rev_tid=dst_typ_rev_tid,
+                                      model_sha1=model_sha1,
+                                      mAP=model_mAP,
+                                      task_ret_code=task_code,
+                                      task_err_msg=task_error_msg)
+
+        if task_code != MirCode.RC_OK:
+            raise MirRuntimeError(error_code=task_code,
+                                  error_message=task_error_msg,
+                                  needs_new_commit=True,
+                                  mir_tasks=mir_tasks)
+
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                                      mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=dst_typ_rev_tid.tid,
+                                                      his_branch=src_typ_rev_tid.rev,
+                                                      mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
+                                                      commit_message=dst_typ_rev_tid.tid)
 
         logging.info("training done")
 
         return MirCode.RC_OK
-
-
-def _get_shm_size(config_file_path: str) -> str:
-    with open(config_file_path, 'r') as f:
-        config = yaml.safe_load(f.read())
-    if 'shm_size' not in config:
-        return '16G'
-    return config['shm_size']
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
@@ -369,6 +479,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   dest="media_location",
                                   type=str,
                                   help="media storage location for models")
+    train_arg_parser.add_argument('--model-hash',
+                                  dest='model_hash',
+                                  type=str,
+                                  required=False,
+                                  help='model hash to be used')
     train_arg_parser.add_argument("-w", required=True, dest="work_dir", type=str, help="work place for training")
     train_arg_parser.add_argument("--executor",
                                   required=True,
@@ -395,4 +510,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   type=str,
                                   required=True,
                                   help="path to executor config file")
+    train_arg_parser.add_argument("--tensorboard",
+                                  dest="tensorboard_dir",
+                                  type=str,
+                                  required=False,
+                                  help="tensorboard log directory")
     train_arg_parser.set_defaults(func=CmdTrain)

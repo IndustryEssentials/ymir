@@ -7,8 +7,6 @@ on:
     branches:
       - master
       - dev
-    paths:
-      - 'ymir/backend/**'
 
 env:
   PYTHONPATH: ./ymir/backend
@@ -30,5 +28,7 @@ jobs:
       working-directory: ymir/backend
     - name: Test with tox
       run: |
+        git config --global user.name 'CI-test'
+        git config --global user.email 'deployer@ymir-team'
         tox
       working-directory: ymir/backend

@@ -1,5 +1,4 @@
 import Graphin, { Utils, Behaviors, GraphinContext, registerFontFamily } from '@antv/graphin'
-// import iconLoader from '@antv/graphin-icons'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { Link, useParams, useHistory } from 'umi'
 import { connect } from 'dva'
@@ -239,7 +238,7 @@ function History({ getHistory, getDataset, getModel }) {
   const renderTitle = (
     <Row>
       <Col flex={1}>{t('breadcrumbs.history')}</Col>
-      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}</Button></Col>
+      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
     </Row>
   )
 

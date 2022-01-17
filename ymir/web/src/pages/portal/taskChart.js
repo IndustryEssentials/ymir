@@ -94,7 +94,7 @@ const TaskChart = ({ getTaskStats }) => {
       emphasis: {
         focus: 'series'
       },
-      data: result[type.value].reverse(),
+      data: result[type.value],
     }))
     return series
   }
@@ -102,7 +102,7 @@ const TaskChart = ({ getTaskStats }) => {
   // labels
   function xTimes(type) {
     let result = []
-    const e8 = (stamp) => (stamp ? moment(Number(stamp) * 1000) : moment()).utcOffset(480)
+    const e8 = (stamp) => (stamp ? moment(stamp) : moment()).utcOffset(480)
     // day
     if (type === times[0].value) {
       result = timestamps.map(stamp => {
@@ -112,16 +112,14 @@ const TaskChart = ({ getTaskStats }) => {
       // week
       return timestamps.map(stamp => {
         return e8(stamp).format('D/M')
-      }).reverse()
+      })
     } else {
       // year
       result = timestamps.map(stamp => {
         return e8(stamp).format('MM/YY')
       })
     }
-    // console.log('xaxis data: ', result)
-    // return timestamps.reverse()
-    return result.reverse()
+    return result
   }
 
   function timeChange ({ target }){ 
@@ -148,7 +146,7 @@ const actions = (dispatch) => {
     getTaskStats(type) {
       return dispatch({
         type: 'common/getStats',
-        payload: { q: 'task', type, }
+        payload: { q: 'ts', type, }
       })
     }
   }
