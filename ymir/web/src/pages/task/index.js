@@ -57,8 +57,13 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
   }, [query])
 
   useEffect(() => {
-    setTasks(taskList.items)
-    setTotal(taskList.total)
+    const forceUpdate = taskList.some(task => task.forceUpdate)
+    if (forceUpdate) {
+      getData()
+    } else {
+      setTasks(taskList.items)
+      setTotal(taskList.total)
+    }
   }, [taskList])
 
   useEffect(() => {
