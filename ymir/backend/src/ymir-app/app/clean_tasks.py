@@ -35,6 +35,9 @@ def terminate_tasks() -> None:
         if not (task.hash and task.type):
             # make mypy happy
             continue
+        if task.type in settings.TASK_TYPES_WHITELIST:
+            # do not terminate task having whitelist type
+            continue
         try:
             controller.terminate_task(
                 user_id=user.id, task_hash=task.hash, task_type=task.type
