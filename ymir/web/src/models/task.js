@@ -1,4 +1,3 @@
-import { io } from 'socket.io-client'
 import {
   getTasks,
   getTask,
@@ -12,6 +11,7 @@ import {
   createTrainTask,
   createLabelTask,
 } from "@/services/task"
+import { isFinalState } from '@/constants/task'
 
 export default {
   namespace: "task",
@@ -135,6 +135,9 @@ export default {
         if (updateItem) {
           task.state = updateItem.state
           task.progress = updateItem.percent * 100
+          if (isFinalState(updateItem.state)) {
+            task.forceUpdate = true
+          }
         }
         return task
       })
