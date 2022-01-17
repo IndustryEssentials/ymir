@@ -89,6 +89,7 @@ def fake_cache_client() -> Generator:
 def fake_clickhouse_client() -> Generator:
     try:
         client = Mock()
+        client.get_popular_items.return_value = [(1, 1), (2, 2)]
         yield client
     finally:
         client.close()

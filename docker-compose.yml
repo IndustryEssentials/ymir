@@ -120,6 +120,9 @@ services:
         hard: 262144
     volumes:
       - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
 
 networks:
   ymirnetwork:
