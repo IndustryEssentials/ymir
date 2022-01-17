@@ -120,7 +120,6 @@ def create_task(
     if task:
         raise DuplicateTaskError()
 
-    labels = []
     keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
 
     # todo: using pydantic to do the normalization
