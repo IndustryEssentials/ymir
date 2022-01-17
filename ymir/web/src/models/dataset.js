@@ -11,6 +11,7 @@ import {
   importDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
+import { isFinalState } from '@/constants/task'
 
 export default {
   namespace: "dataset",
@@ -143,7 +144,6 @@ export default {
           }
         }
       }
-          console.log('get dataset result: ', datasets)
       return datasets
     },
   },
