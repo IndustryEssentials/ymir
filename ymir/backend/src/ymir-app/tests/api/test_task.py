@@ -319,7 +319,7 @@ class TestUpdateTaskStatus:
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": datetime.timestamp(last_update_time) + 1,
+            "timestamp": time.time(),
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",
@@ -339,14 +339,25 @@ class TestUpdateTaskStatus:
     ):
         r = create_task(client, normal_user_token_headers)
         task_hash = r.json()["result"]["hash"]
-        last_update_time = r.json()["result"]["update_datetime"]
-        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%dT%H:%M:%S.%f")
 
         data = {
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": datetime.timestamp(last_update_time) - 1,
+            "timestamp": time.time(),
+        }
+        r = client.post(
+            f"{settings.API_V1_STR}/tasks/status",
+            headers=api_key_headers,
+            json=data,
+        )
+        assert r.json()["code"] == 0
+
+        data = {
+            "hash": task_hash,
+            "state": m.TaskState.running,
+            "percent": 0.1,
+            "timestamp": time.time(),
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",

@@ -148,7 +148,7 @@ class TaskUpdateStatus(BaseModel):
     hash: str
     timestamp: int
     state: TaskState
-    percent: Optional[float] = 0
+    percent: float
     state_message: Optional[str]
 
 

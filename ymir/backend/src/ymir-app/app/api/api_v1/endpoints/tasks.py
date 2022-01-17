@@ -434,9 +434,7 @@ def update_task_status(
     if not (task and task.hash):
         raise TaskNotFound()
 
-    if is_obsolete_message(
-        datetime.timestamp(task.update_datetime), task_result.timestamp
-    ):
+    if is_obsolete_message(task.progress, task_result.percent):
         raise ObsoleteTaskStatus()
 
     task_info = schemas.Task.from_orm(task)
@@ -461,10 +459,13 @@ def update_task_status(
     return {"result": result}
 
 
-def is_obsolete_message(
-    last_update_time: Union[float, int], msg_time: Union[float, int]
-) -> bool:
-    return last_update_time > msg_time
+def is_obsolete_message(last_progress: Optional[int], percent: float) -> bool:
+    """
+    last_progress: None, or 0 - 100
+    percent: 0 - 1
+    """
+    last_progress = last_progress or 0
+    return last_progress >= int(percent * 100)
 
 
 @router.post(
