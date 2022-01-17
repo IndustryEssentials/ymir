@@ -60,9 +60,15 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
 
   /** use effect must put on the top */
   useEffect(() => {
-    setDatasets(datasetList.items)
-    setTotal(datasetList.total)
+    const forceUpdate = datasetList.some(dataset => dataset.forceUpdate)
+    if (forceUpdate) {
+      getData()
+    } else {
+      setDatasets(datasetList.items)
+      setTotal(datasetList.total)
+    }
   }, [datasetList])
+
   useEffect(() => {
     if (keyword) {
       setQuery(old => ({ ...old, name: keyword }))
