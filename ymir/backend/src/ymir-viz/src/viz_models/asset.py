@@ -16,7 +16,7 @@ class Asset(BaseModel):
         {'class_ids_count': {3: 34}, 'elements': [{'asset_id':xxx, 'class_ids':[2,3]},],
         'limit': 3, offset: 1, total: 234}
         """
-        asset_ids = assets_content["class_ids_index"][class_id]["asset_ids"][offset : limit + offset]
+        asset_ids = assets_content["class_ids_index"][class_id]["asset_ids"][offset:limit + offset]
         elements = [
             dict(asset_id=asset_id, class_ids=assets_content["asset_ids_detail"][asset_id]["class_ids"])
             for asset_id in asset_ids
@@ -40,9 +40,8 @@ class Asset(BaseModel):
         {'class_ids_count': {3: 34}, 'elements': [{'asset_id':xxx, 'class_ids':[2,3]},],
         'limit': 3, offset: 1, total: 234}
         """
-        asset_ids = redis_cache.lrange(
-            f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}", offset, offset + limit - 1
-        )
+        asset_ids = redis_cache.lrange(f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}", offset,
+                                       offset + limit - 1)
         assets_detail = redis_cache.hmget(f"{cache_key}:{config.ASSET_ID_DETAIL}", asset_ids)
 
         elements = []
