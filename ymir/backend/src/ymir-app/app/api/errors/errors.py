@@ -278,3 +278,8 @@ class FailedtoGetSysInfo(ControllerError):
 class ObsoleteTaskStatus(APIError):
     code = error_codes.TASK_STATUS_OBSOLETE
     message = "Obsolete Task Status"
+
+
+class FailedToUpdateTaskStatus(APIError):
+    code = error_codes.FAILED_TO_UPDATE_TASK_STATUS
+    message = "Failed to Update Task Status"

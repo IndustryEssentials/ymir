@@ -6,8 +6,8 @@ services:
       - .env
     runtime: ${SERVER_RUNTIME}
     environment:
+      - BACKEND_REDIS_URL=redis://redis:6379/0
       # controller
-      - CTR_REDIS_URI=redis://redis:6379/0
       - NVIDIA_VISIBLE_DEVICES=all
       - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
       - MONTIOR=${YMIR_PATH}/ymir-data/monitor
@@ -26,7 +26,10 @@ services:
       - NGINX_DATA_PATH=/ymir-storage
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
-      - API_HOST=127.0.0.1:80
+      # monitor
+      - POSTMAN_URL=http://127.0.0.1:8090
+      - MONITOR_URL=http://127.0.0.1:9098
+      - APP_API_HOST=127.0.0.1:80
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
       - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
@@ -103,8 +106,8 @@ services:
     env_file:
       - .env
     volumes:
-      - "${YMIR_PATH}/ymir-tensorboard-logs:/ymir-tensorboard-logs"
-    command: tensorboard --logdir /ymir-tensorboard-logs --port 6006 --bind_all
+      - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
+    command: tensorboard --logdir ${TENSORBOARD_ROOT} --port 6006 --bind_all
     restart: on-failure:10
     networks:
       - ymirnetwork

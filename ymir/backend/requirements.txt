@@ -8,11 +8,13 @@ clickhouse-driver==0.2.2
 connexion==2.6.0
 connexion[swagger-ui] >= 2.6.0
 cryptography==3.4.7
+dependency-injector==4.37.0
 dvc==2.5.0
 email-validator==1.1.2
 emails==0.6
 fastapi-cache2[redis]==0.1.8
 fastapi-login==1.6.0
+fastapi-socketio==0.0.9
 fastapi==0.65.1
 gevent==21.1.2
 grpcio-tools==1.39.0
@@ -28,6 +30,7 @@ python-dotenv==0.17.1
 python-jose==3.2.0
 python-multipart==0.0.5
 python_dateutil==2.7.0
+python-socketio==5.0.4
 pyyaml>=5.4.1
 redis==3.5.3
 redisgraph==2.4.0

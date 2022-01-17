@@ -87,7 +87,15 @@ class TestTaskResult:
             stats_client=mock_stats,
             clickhouse=mock_clickhouse,
         )
-        task_result_proxy.get = mocker.Mock()
+        task_result_proxy.get = mocker.Mock(
+            return_value={
+                "name": random_lower_string(),
+                "hash": random_lower_string(),
+                "state": m.TaskState.done,
+            }
+        )
+        mock_handler = mocker.Mock()
+        task_result_proxy.handle_finished_task = mock_handler
         task_hash = random_lower_string(32)
         task_result_proxy.parse_resp = mocker.Mock(
             return_value={"state": m.TaskState.done, "task_id": task_hash}
@@ -96,14 +104,14 @@ class TestTaskResult:
         task_result_proxy.add_new_model_if_not_exist = mocker.Mock()
         task_result_proxy.add_new_dataset_if_not_exist = mocker.Mock()
 
-        task = mocker.Mock(type=m.TaskType.training)
-        task_result_proxy.update_task_progress = mocker.Mock(return_value=task)
+        task_result_proxy.update_task_progress = mocker.Mock(return_value=None)
 
         user_id = random.randint(1000, 2000)
         task_hash = random_lower_string(32)
         task = mocker.Mock(hash=task_hash)
         result = task_result_proxy.get(task)
         task_result_proxy.save(task, result)
+        mock_handler.assert_called()
 
     def test_get_dataset_info(self, mocker, mock_controller, mock_db, mock_graph_db):
         viz = mocker.Mock()

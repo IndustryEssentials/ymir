@@ -11,7 +11,7 @@ env = os.environ.get
 
 CHECK_INTERVAL_IN_SECONDS = int(env("CHECK_INTERVAL_IN_SECONDS", 30))
 API_HOST = env("API_HOST", "backend")
-REDIS_URI = env("CTR_REDIS_URI", "redis://redis:6379")
+BACKEND_REDIS_URL = env("BACKEND_REDIS_URL", "redis://redis:6379")
 APP_API_KEY = env("APP_API_KEY")
 
 
@@ -56,4 +56,4 @@ class WorkerSettings:
     cron_jobs = gen_cron_jobs(CHECK_INTERVAL_IN_SECONDS)
     on_startup = startup
     on_shutdown = shutdown
-    redis_settings = RedisSettings.from_dsn(REDIS_URI)
+    redis_settings = RedisSettings.from_dsn(BACKEND_REDIS_URL)
