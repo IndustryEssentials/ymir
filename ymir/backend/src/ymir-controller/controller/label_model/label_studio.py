@@ -1,5 +1,6 @@
 import glob
 import json
+import logging
 import math
 import os
 import shutil
@@ -119,17 +120,7 @@ class LabelStudio(LabelBase):
 
         return exported_storage_id
 
-    def get_project_tasks(self, project_id: int) -> Dict:
-        # Retrieve a paginated list of tasks for a specific project.
-        url_path = f"/api/projects/{project_id}/tasks"
-
-        resp = self.requests.get(url_path=url_path)
-        tasks = json.loads(resp)
-
-        logger.info(f"retrieved {len(tasks)} tasks in project {project_id}")
-        return tasks
-
-    def update_prediction(self, task_id: int, predictions: List) -> int:
+    def update_prediction(self, task_id: int, predictions: List) -> Dict:
         # Create a prediction for a specific task.
         url_path = "/api/predictions"
         data = dict(
@@ -143,9 +134,8 @@ class LabelStudio(LabelBase):
         )
 
         resp = self.requests.post(url_path=url_path, json_data=data)
-        prediction_id = json.loads(resp)["id"]
 
-        return prediction_id
+        return json.loads(resp)
 
     def sync_import_storage(self, storage_id: int) -> None:
         # Sync tasks from a local file import storage connection
@@ -173,10 +163,12 @@ class LabelStudio(LabelBase):
         resp = self.requests.get(url_path=url_path)
         return json.loads(resp)
 
-    def get_unlabeled_task(self, task_num: int, project_id: int) -> List:
-        unlabeled_task_ids = []
+    def get_project_tasks(self, project_id: int, filter_unlabelled: bool = False) -> List:
+        project_info = self.get_project_info(project_id)
+        task_num = project_info["task_number"]
         url_path = f"/api/projects/{project_id}/tasks/"
 
+        tasks = []
         for page in range(1, math.ceil(task_num / label_task_config.LABEL_PAGE_SIZE) + 1):
             params = {
                 "page_size": label_task_config.LABEL_PAGE_SIZE,
@@ -184,18 +176,21 @@ class LabelStudio(LabelBase):
             }
             all_content = self.requests.get(url_path=url_path, params=params)
             for content in json.loads(all_content):
-                if not content["is_labeled"]:
-                    unlabeled_task_ids.append(content["id"])
+                if filter_unlabelled and content["is_labeled"]:
+                    continue
+                tasks.append(content)
 
-        return unlabeled_task_ids
+        logger.info(f"retrieved {len(tasks)} tasks in project {project_id}")
+
+        return tasks
 
     def delete_unlabeled_task(self, project_id: int) -> None:
-        project_info = self.get_project_info(project_id)
-        unlabeled_task_ids = self.get_unlabeled_task(project_info["task_number"], project_id)
+        unlabeled_tasks = self.get_project_tasks(project_id=project_id, filter_unlabelled=True)
 
         # label studio strange behavior, post [] will delete all tasks.
-        if not unlabeled_task_ids:
+        if not unlabeled_tasks:
             return None
+        unlabeled_task_ids = [task["id"] for task in unlabeled_tasks]
         url_path = "/api/dm/actions"
         params = {"id": "delete_tasks", "project": project_id}
         json_data = {
