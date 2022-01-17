@@ -11,7 +11,7 @@ export default {
   namespace: "socket",
   subscriptions: {
     setup({ dispatch, history }) {
-        let socket = null
+      let socket = null
       return history.listen(async location => {
         if (pageMaps.some(page => new RegExp(`^${page.path}$`).test(location.pathname))) {
           const { hash } = await dispatch({
@@ -21,10 +21,10 @@ export default {
 
           socket.on('update_taskstate', (data) => {
             // console.log('socket -> update_taskstate data: ', data)
-            pageMaps.forEach(page => dispatch({
+            setTimeout(() => pageMaps.forEach(page => dispatch({
               type: page.method,
               payload: data,
-            }))
+            })), 2000)
           })
         } else {
           // other page close socket
