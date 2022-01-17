@@ -1,6 +1,5 @@
 import glob
 import json
-import logging
 import math
 import os
 import shutil
