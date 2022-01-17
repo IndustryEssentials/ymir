@@ -6,6 +6,7 @@ Create Date: 2022-01-17 11:16:36.273669
 
 """
 import sqlalchemy as sa
+from sqlalchemy import func
 
 from alembic import context, op
 
@@ -30,7 +31,13 @@ def upgrade():
         )
     else:
         op.add_column(
-            "task", sa.Column("last_message_datetime", sa.DateTime(), nullable=False)
+            "task",
+            sa.Column(
+                "last_message_datetime",
+                sa.DateTime(),
+                server_default=func.now(),
+                nullable=False,
+            ),
         )
     # ### end Alembic commands ###
 
