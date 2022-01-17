@@ -1,6 +1,6 @@
 import enum
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -14,6 +14,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
+    FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
     NoTaskPermission,
@@ -34,7 +35,7 @@ from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
 from app.utils.graph import GraphClient
-from app.utils.stats import RedisStats
+from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import (
     ControllerClient,
     ControllerRequest,
@@ -99,7 +100,6 @@ def create_task(
     current_user: models.User = Depends(deps.get_current_active_user),
     current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    stats_client: RedisStats = Depends(deps.get_stats_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
@@ -111,7 +111,9 @@ def create_task(
      - prefer_newest = 2
      - prefer_oldest = 3
     """
-    logger.debug("create task start: %s" % task_in.name)
+    logger.debug(
+        "[create task] create task with payload: %s", jsonable_encoder(task_in)
+    )
     task = crud.task.get_by_user_and_name(
         db, user_id=current_user.id, name=task_in.name
     )
@@ -146,25 +148,24 @@ def create_task(
         db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
     )
 
-    task_info = jsonable_encoder(task)
-    metrics = parse_metrics(task_in.parameters.dict() if task_in.parameters else {})
-    clickhouse.save_task_parameter(
-        dt=task.create_datetime,
-        user_id=current_user.id,
-        name=task_info["name"],
-        hash_=task_info["hash"],
-        type_=TaskType(task_info["type"]).name,
-        **metrics,
-    )
-    if parameters:
-        for dataset_keywords in parameters.get("grouped_keywords", []):
-            clickhouse.save_dataset_keyword(
-                dt=task.create_datetime, user_id=current_user.id, **dataset_keywords
-            )
+    try:
+        # write clickhouse metric shouldn't block create task process
+        metrics = parse_metrics(task_in.parameters.dict() if task_in.parameters else {})
+        grouped_keywords = parameters.get("grouped_keywords", []) if parameters else []
+        write_clickhouse_metrics(
+            clickhouse,
+            user_id=current_user.id,
+            task=task,
+            metrics=metrics,
+            grouped_keywords=grouped_keywords,
+        )
+    except FailedToConnectClickHouse:
+        logger.exception(
+            "[create task] failed to write task(%s) stats to clickhouse, continue anyway",
+            task.hash,
+        )
 
-    update_stats_for_ref_count(current_user.id, stats_client, task_in)
     logger.info("[create task] created task name: %s" % task_in.name)
-
     return {"result": task}
 
 
@@ -199,6 +200,29 @@ def group_keywords_by_dataset(datasets: List[Dict], keywords: List[str]) -> List
         }
         for dataset in datasets
     ]
+
+
+def write_clickhouse_metrics(
+    clickhouse: YmirClickHouse,
+    *,
+    user_id: int,
+    task: Task,
+    metrics: Dict,
+    grouped_keywords: List,
+) -> None:
+    task_info = jsonable_encoder(task)
+    clickhouse.save_task_parameter(
+        dt=task.create_datetime,
+        user_id=user_id,
+        name=task_info["name"],
+        hash_=task_info["hash"],
+        type_=TaskType(task_info["type"]).name,
+        **metrics,
+    )
+    for dataset_keywords in grouped_keywords:
+        clickhouse.save_dataset_keyword(
+            dt=task.create_datetime, user_id=user_id, **dataset_keywords
+        )
 
 
 def normalize_parameters(
@@ -260,29 +284,6 @@ def order_datasets_by_strategy(
         key=attrgetter("update_datetime"),
         reverse=strategy is MergeStrategy.prefer_newest,
     )
-
-
-def update_stats_for_ref_count(
-    user_id: int, stats_client: RedisStats, task_in: schemas.TaskCreate
-) -> None:
-    task_type = task_in.type.value
-    stats_client.update_task_stats(user_id, task_type)
-
-    if not task_in.parameters:
-        return
-    parameters = dict(task_in.parameters)
-    model_id = parameters.get("model_id")
-    if model_id:
-        stats_client.update_model_rank(user_id, model_id)
-        logger.debug("updated model rank: <model:%s>", model_id)
-
-    dataset_ids = []
-    for k, v in parameters.items():
-        if k.endswith("datasets") and v:
-            dataset_ids += v
-    for dataset_id in set(dataset_ids):
-        stats_client.update_dataset_rank(user_id, dataset_id)
-        logger.debug("updated dataset rank: <dataset:%s>", dataset_id)
 
 
 @router.delete(
@@ -419,7 +420,6 @@ def update_task_status(
     graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    stats_client: RedisStats = Depends(deps.get_stats_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
@@ -435,7 +435,7 @@ def update_task_status(
         raise TaskNotFound()
 
     if is_obsolete_message(
-        datetime.timestamp(task.update_datetime), task_result.timestamp
+        convert_datetime_to_timestamp(task.last_message_datetime), task_result.timestamp
     ):
         raise ObsoleteTaskStatus()
 
@@ -449,7 +449,6 @@ def update_task_status(
         graph_db=graph_db,
         controller=controller_client,
         viz=viz_client,
-        stats_client=stats_client,
         clickhouse=clickhouse,
     )
     try:
@@ -457,6 +456,10 @@ def update_task_status(
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
+    if updated_task:
+        updated_task = crud.task.update_last_message_datetime(
+            db, task=updated_task, dt=datetime.utcfromtimestamp(task_result.timestamp)
+        )
     result = updated_task or task
     return {"result": result}
 
@@ -479,7 +482,6 @@ def batch_update_task_status(
     graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    stats_client: RedisStats = Depends(deps.get_stats_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
@@ -495,7 +497,6 @@ def batch_update_task_status(
         graph_db=graph_db,
         controller=controller_client,
         viz=viz_client,
-        stats_client=stats_client,
         clickhouse=clickhouse,
     )
     for _, tasks_ in groupby(tasks, "user_id"):
@@ -514,14 +515,12 @@ class TaskResultProxy:
         db: Session,
         graph_db: GraphClient,
         controller: ControllerClient,
-        stats_client: RedisStats,
         viz: VizClient,
         clickhouse: YmirClickHouse,
     ):
         self.db = db
         self.graph_db = graph_db
         self.controller = controller
-        self.stats_client = stats_client
         self.clickhouse = clickhouse
         self.viz = viz
 
@@ -560,6 +559,9 @@ class TaskResultProxy:
         if self.should_fetch_task_result(task.state, task_result["state"]):
             self.handle_finished_task(task)
 
+        # todo optimize
+        # special logic for failed import dataset task
+        #  - add ignored keywords
         if (
             task.type is TaskType.import_data
             and task_result["state"] == TaskState.error
@@ -603,9 +605,8 @@ class TaskResultProxy:
             model = self.add_new_model_if_not_exist(task)
             model_info = jsonable_encoder(model)
             logger.debug("task result(new model): %s", model_info)
-            self.stats_client.update_model_rank(task.user_id, model.id)
             keywords = schemas.model.extract_keywords(task.parameters)
-            if keywords:
+            try:
                 self.clickhouse.save_model_result(
                     model.create_datetime,
                     model_info["user_id"],
@@ -615,21 +616,18 @@ class TaskResultProxy:
                     model_info["map"],
                     keywords,
                 )
-                self.stats_client.update_keyword_wise_model_rank(
-                    task.user_id, model_info["id"], model_info["map"], keywords
+            except FailedToConnectClickHouse:
+                logger.exception(
+                    "[create task] failed to write model stats to clickhouse, continue anyway"
                 )
             node = schemas.Model.from_orm(model)  # type: ignore
         elif task.type in [TaskType.mining, TaskType.label, TaskType.filter]:
             dataset = self.add_new_dataset_if_not_exist(task)
             logger.debug("task result(new dataset): %s", dataset)
-            self.stats_client.update_dataset_rank(task.user_id, dataset.id)
-            logger.info("task result(dataset %s) ref_count initialized", dataset.id)
             node = schemas.Dataset.from_orm(dataset)  # type: ignore
         elif task.type in [TaskType.import_data, TaskType.copy_data]:
             dataset = self.update_dataset(task)  # type: ignore
             logger.debug("task result(updated dataset): %s", dataset)
-            self.stats_client.update_dataset_rank(task.user_id, dataset.id)
-            logger.info("task result(dataset %s) ref_count initialized", dataset.id)
             node = schemas.Dataset.from_orm(dataset)  # type: ignore
         else:
             logger.info("nothing to do for task: %s" % task)
