@@ -133,7 +133,6 @@ class CmdInfer(base.BaseCommand):
                             run_infer=run_infer,
                             run_mining=run_mining)
 
-        gpu_ids = _get_gpu_ids(config_file)
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
                        model_path=work_model_path,
@@ -142,8 +141,7 @@ class CmdInfer(base.BaseCommand):
                        executor=executor,
                        executor_instance=executor_instance,
                        shm_size=shm_size,
-                       task_type=task_id,
-                       gpu_ids=gpu_ids)
+                       task_type=task_id)
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
@@ -254,12 +252,6 @@ def _get_max_boxes(config_file: str) -> int:
     return max_boxes
 
 
-def _get_gpu_ids(config_file: str) -> str:
-    with open(config_file, 'r') as f:
-        config = yaml.safe_load(f.read())
-    return config.get('gpu_id', '')
-
-
 # might used both by mining and infer
 # public: general
 def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -> None:
@@ -276,10 +268,9 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
-                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str, gpu_ids: str) -> int:
+                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str) -> int:
     """ runs infer or mining docker container """
-    docker_cmd_name = 'nvidia-docker' if gpu_ids else 'docker'
-    cmd = [docker_cmd_name, 'run', '--rm']
+    cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
     cmd.extend(['-v', f"{asset_path}:/in/candidate"])
     cmd.extend(['-v', f"{model_path}:/in/model"])
