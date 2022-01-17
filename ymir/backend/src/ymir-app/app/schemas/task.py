@@ -97,6 +97,15 @@ class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBa
     )
     user_id: int = Field(description="task owner's user_id")
 
+    last_message_datetime: datetime = None  # type: ignore
+
+    @validator("last_message_datetime", pre=True)
+    def default_datetime(
+        cls,
+        value: datetime,  # noqa: N805, WPS110
+    ) -> datetime:
+        return value or datetime.now()
+
     class Config:
         orm_mode = True
 
