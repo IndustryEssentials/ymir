@@ -432,20 +432,17 @@ def update_task_status(
     )
     task = crud.task.get_by_hash(db, hash_=task_result.hash)
     if not (task and task.hash):
-        return {"result": task}
+        raise TaskNotFound()
 
     if is_obsolete_message(
         datetime.timestamp(task.update_datetime), task_result.timestamp
     ):
-        return {"result": task}
+        raise ObsoleteTaskStatus()
 
     task_info = schemas.Task.from_orm(task)
-    # TODO: hot fix, should refactor this issue.
-    # schemas.Task.from_orm will change premature state.
-    task_info.state = TaskState(task.state)
     if task_info.state in FinalStates:
         logger.warning("Attempt to update finished task, skip")
-        return {"result": task}
+        raise ObsoleteTaskStatus()
 
     task_result_proxy = TaskResultProxy(
         db=db,
