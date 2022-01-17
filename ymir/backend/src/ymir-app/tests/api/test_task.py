@@ -40,11 +40,6 @@ def mock_viz(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_stats(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
 def mock_clickhouse(mocker):
     return mocker.Mock()
 
@@ -64,7 +59,6 @@ class TestTaskResult:
             db=mock_db,
             graph_db=mock_graph_db,
             viz=mock_viz,
-            stats_client=mock_stats,
             clickhouse=mock_clickhouse,
         )
         user_id = random.randint(1000, 2000)
@@ -84,7 +78,6 @@ class TestTaskResult:
             db=mock_db,
             graph_db=mock_graph_db,
             viz=mock_viz,
-            stats_client=mock_stats,
             clickhouse=mock_clickhouse,
         )
         task_result_proxy.get = mocker.Mock(
@@ -129,7 +122,6 @@ class TestTaskResult:
             db=mock_db,
             graph_db=mock_graph_db,
             viz=viz,
-            stats_client=mock_stats,
             clickhouse=mock_clickhouse,
         )
         user_id = random.randint(1000, 2000)
@@ -171,29 +163,6 @@ class TestNormalizeParameters:
             m.normalize_parameters(mocker.Mock(), random_lower_string(5), None, {})
             is None
         )
-
-
-class TestUpdateStats:
-    user_id = "0233"
-
-    def test_update_stats_only_update_task_stats(self, mocker):
-        stats = mocker.Mock()
-        task = mocker.Mock(parameters=None)
-        m.update_stats_for_ref_count(self.user_id, stats, task)
-        stats.update_task_stats.assert_called()
-        stats.update_model_rank.assert_not_called()
-
-    def test_update_stats_for_model(self, mocker):
-        stats = mocker.Mock()
-        task = mocker.Mock(parameters={"model_id": 1})
-        m.update_stats_for_ref_count(self.user_id, stats, task)
-        stats.update_model_rank.assert_called_with(self.user_id, 1)
-
-    def test_update_stats_for_dataset(self, mocker):
-        stats = mocker.Mock()
-        task = mocker.Mock(parameters={"datasets": [233]})
-        m.update_stats_for_ref_count(self.user_id, stats, task)
-        stats.update_dataset_rank.assert_called_with(self.user_id, 233)
 
 
 def create_task(client, headers):
