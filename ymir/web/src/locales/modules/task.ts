@@ -173,6 +173,7 @@ const task = {
   "task.train.form.model.placeholder": { cn: '请选择模型', en: 'Please select a model', },
   "task.train.target.invalid.inter": { cn: '训练目标必须是训练集和测试集的标签的交集', en: 'Training target classes must be intersection of training sets and test sets', },
   "task.train.target.invalid.model": { cn: '训练目标必须和模型训练目标一致', en: 'Training target classes must be as same as model\'s', },
+  "task.detail.result.empty": { cn: '暂无结果', en: 'No Result', },
 }
 
 export default task
