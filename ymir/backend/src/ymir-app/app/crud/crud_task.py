@@ -75,6 +75,15 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db.refresh(task)
         return task
 
+    def update_last_message_datetime(
+        self, db: Session, *, task: Task, dt: datetime
+    ) -> Task:
+        task.last_message_datetime = dt
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        return task
+
     def get_multi_tasks(
         self,
         db: Session,
