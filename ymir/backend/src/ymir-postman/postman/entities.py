@@ -25,6 +25,12 @@ class TaskState(BaseModel):
 TaskStateDict = Dict[str, TaskState]
 
 
+class EventPayload(BaseModel):
+    event: str
+    namespace: str
+    data: dict
+
+
 # data models: resp
 class EventResp(BaseModel):
     return_code: int

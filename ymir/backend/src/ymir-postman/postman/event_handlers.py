@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import logging
 import requests
@@ -43,9 +44,9 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
         return
 
     # update db, save failed
-    logging.info(f"update db: {tid_to_taskstates_latest}")
+    logging.debug(f"update db: {tid_to_taskstates_latest}")
     update_db_result = _update_db(tid_to_tasks=tid_to_taskstates_latest)
-    logging.info(f"update db result: {update_db_result}")
+    logging.debug(f"update db result: {update_db_result}")
     _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
     if update_db_result.retry_tids:
         time.sleep(5)
@@ -70,6 +71,7 @@ def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
     return tid_to_taskstates_latest
 
 
+# private: update db
 def _save_retry(retry_tids: Set[str], tid_to_taskstates_latest: entities.TaskStateDict) -> None:
     """
     save failed taskstates to redis cache
@@ -156,5 +158,46 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     return (tid, return_msg, _UpdateDbResult.code_from_return_code(return_code))
 
 
+# private: socketio
 def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> None:
-    pass
+    if not tids:
+        return
+
+    uid_to_taskstates = _sort_by_user_id({tid: tid_to_taskstates[tid] for tid in tids})
+    event_payloads = []
+    for uid, tid_to_taskstates in uid_to_taskstates.items():
+        data = {}
+        for tid, taskstate in tid_to_taskstates.items():
+            data[tid] = {
+                'state': taskstate.percent_result.state,
+                'percent': taskstate.percent_result.percent,
+                'timestamp': taskstate.percent_result.timestamp,
+                'state_code': taskstate.percent_result.state_code,
+                'state_message': taskstate.percent_result.state_message,
+                'stack_error_info': taskstate.percent_result.stack_error_info
+            }
+        event_payloads.append({
+            'event': 'update_taskstate',
+            'namespace': f"/{uid}",
+            'data': data,
+        })
+
+    url = 'http://127.0.0.1:8090/events/push'
+    try:
+        logging.info(f"_update_sio: tids: {data.keys()}, uid: {uid}")
+        response = requests.post(url=url, json=event_payloads)
+        logging.info(f"response: {response.text}")
+    except requests.exceptions.RequestException as e:
+        logging.warning(f"_update_sio failed: {e}, tids: {data.keys()}, uid: {uid}")
+
+
+def _sort_by_user_id(tid_to_taskstates: entities.TaskStateDict) -> Dict[str, entities.TaskStateDict]:
+    """
+    returns: Dict[str, Dict[str, dict]]
+                  (uid)     (tid) (TaskState)
+    """
+    uid_to_tasks = defaultdict(dict)
+    for tid, taskstate in tid_to_taskstates.items():
+        uid = taskstate.task_extra_info.user_id
+        uid_to_tasks[uid][tid] = taskstate
+    return uid_to_tasks
