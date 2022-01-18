@@ -11,6 +11,7 @@ import {
   importDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
+import { isFinalState } from '@/constants/task'
 
 export default {
   namespace: "dataset",
@@ -113,6 +114,9 @@ export default {
         if (updateItem) {
           dataset.state = updateItem.state
           dataset.progress = updateItem.percent * 100
+          if (isFinalState(updateItem.state)) {
+            dataset.forceUpdate = true
+          }
         }
         return dataset
       })
@@ -140,7 +144,6 @@ export default {
           }
         }
       }
-          console.log('get dataset result: ', datasets)
       return datasets
     },
   },

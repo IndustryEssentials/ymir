@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # assets viz
     VIZ_HOST: str = "viz:9099"
-    VIZ_TIMEOUT: int = 10
+    VIZ_TIMEOUT: int = 30
 
     FIRST_ADMIN: EmailStr = "admin@example.com"  # type: ignore
     FIRST_ADMIN_PASSWORD: str = "change_this"
@@ -75,6 +75,13 @@ class Settings(BaseSettings):
     SHARED_DOCKER_IMAGES_URL: Optional[str]
     GITHUB_TIMEOUT: int = 30
     APP_CACHE_EXPIRE_IN_SECONDS: int = 3600
+
+    # Task Type To Survive Upon Start up
+    #  default TaskTypeLabel = 3
+    TASK_TYPES_WHITELIST: List[int] = [3]
+
+    # Reverse keywords
+    REVERSE_KEYWORDS_OUTPUT: bool = True
 
 
 settings = Settings(_env_file=".env")  # type: ignore

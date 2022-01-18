@@ -16,3 +16,7 @@ export const TASKSTATES = Object.freeze({
   FAILURE: 4,
   TERMINATED: 100,
 })
+
+export const isFinalState = (state: number) => {
+  return [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) >= 0
+}
