@@ -151,7 +151,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   }
 
   function setConfig(config) {
-    const params = Object.keys(config).filter(key => key !== gpu_count).map(key => ({ key, value: config[key] }))
+    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({ key, value: config[key] }))
     setSeniorConfig(params)
   }
 
