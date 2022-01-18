@@ -10,6 +10,29 @@ from pydantic import parse_raw_as
 from postman import entities, event_dispatcher  # type: ignore
 from postman.settings import constants, settings
 
+
+class _UpdateDbResult:
+    SUCCESS = 0  # update success
+    RETRY = 1  # update failed, need retry
+    DROP = 2  # update failed, need drop
+
+    @classmethod
+    def code_from_return_code(cls, return_code: int) -> int:
+        if return_code == constants.RC_OK:
+            return cls.SUCCESS
+        elif return_code == constants.RC_FAILED_TO_UPDATE_TASK_STATUS:
+            return cls.RETRY
+        else:
+            return cls.DROP
+
+    success_tids: Set[str] = set()
+    retry_tids: Set[str] = set()
+    drop_tids: Set[str] = set()
+
+    def __repr__(self) -> str:
+        return f"success: {self.success_tids}, retry: {self.retry_tids}, drop: {self.drop_tids}"
+
+
 redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 
 
@@ -20,19 +43,20 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
         return
 
     # update db, save failed
-    logging.debug(f"about to update db: {tid_to_taskstates_latest}")
-    failed_tids = _update_db(tid_to_tasks=tid_to_taskstates_latest)
-    logging.debug(f"failed tids: {failed_tids}")
-    if failed_tids:
+    logging.info(f"update db: {tid_to_taskstates_latest}")
+    update_db_result = _update_db(tid_to_tasks=tid_to_taskstates_latest)
+    logging.info(f"update db result: {update_db_result}")
+    _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
+    if update_db_result.retry_tids:
         time.sleep(5)
-        _save_failed(failed_tids=failed_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
+        _save_retry(failed_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
     """
     for all redis stream msgs, deserialize them to entities, select the latest for each tid
     """
-    tid_to_taskstates_latest: entities.TaskStateDict = _load_failed()
+    tid_to_taskstates_latest: entities.TaskStateDict = _load_retry()
     for msg in msgs:
         msg_topic = msg['topic']
         if msg_topic != constants.EVENT_TOPIC_RAW:
@@ -46,20 +70,20 @@ def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
     return tid_to_taskstates_latest
 
 
-def _save_failed(failed_tids: Set[str], tid_to_taskstates_latest: entities.TaskStateDict) -> None:
+def _save_retry(retry_tids: Set[str], tid_to_taskstates_latest: entities.TaskStateDict) -> None:
     """
     save failed taskstates to redis cache
 
     Args:
-        failed_tids (Set[str])
+        retry_tids (Set[str])
         tid_to_taskstates_latest (entities.TaskStateDict)
     """
-    failed_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in failed_tids}
-    json_str = json.dumps(jsonable_encoder(failed_tid_to_tasks))
+    retry_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in retry_tids}
+    json_str = json.dumps(jsonable_encoder(retry_tid_to_tasks))
     redis_connect.set(name=settings.RETRY_CACHE_KEY, value=json_str)
 
 
-def _load_failed() -> entities.TaskStateDict:
+def _load_retry() -> entities.TaskStateDict:
     """
     load failed taskstates from redis cache
 
@@ -73,7 +97,7 @@ def _load_failed() -> entities.TaskStateDict:
     return parse_raw_as(entities.TaskStateDict, json_str) or {}
 
 
-def _update_db(tid_to_tasks: entities.TaskStateDict) -> Set[str]:
+def _update_db(tid_to_tasks: entities.TaskStateDict) -> _UpdateDbResult:
     """
     update db for all tasks in tid_to_tasks
 
@@ -81,18 +105,22 @@ def _update_db(tid_to_tasks: entities.TaskStateDict) -> Set[str]:
         tid_to_tasks (entities.TaskStateDict): key: tid, value: TaskState
 
     Returns:
-        Set[str]: failed tids
+        _UpdateDbResult: update db result (success, retry and drop tids)
     """
-    failed_tids: Set[str] = set()
+    update_db_result = _UpdateDbResult()
     custom_headers = {'api-key': settings.APP_API_KEY}
     for tid, task in tid_to_tasks.items():
-        *_, need_retry = _update_db_single_task(tid, task, custom_headers)
-        if need_retry:
-            failed_tids.add(tid)
-    return failed_tids
+        *_, code = _update_db_single_task(tid, task, custom_headers)
+        if code == _UpdateDbResult.SUCCESS:
+            update_db_result.success_tids.add(tid)
+        elif code == _UpdateDbResult.RETRY:
+            update_db_result.retry_tids.add(tid)
+        else:
+            update_db_result.drop_tids.add(tid)
+    return update_db_result
 
 
-def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Tuple[str, str, bool]:
+def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Tuple[str, str, int]:
     """
     update db for single task
 
@@ -102,7 +130,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         custom_headers (dict)
 
     Returns:
-        Tuple[str, str, bool]: tid, error_message, need_to_retry
+        Tuple[str, str, int]: tid, error_message, result code (success, retry or drop)
     """
     url = f"http://{settings.APP_API_HOST}/api/v1/tasks/status"
     # try:
@@ -119,10 +147,14 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         response = requests.post(url=url, headers=custom_headers, json=task_data)
     except requests.exceptions.RequestException as e:
         logging.exception(msg='_update_db_single_task error')
-        return (tid, f"{type(e).__name__}: {e}", True)
+        return (tid, f"{type(e).__name__}: {e}", _UpdateDbResult.RETRY)
 
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
     return_msg = response_obj.get('message', '')
 
-    return (tid, return_msg, return_code == constants.RC_FAILED_TO_UPDATE_TASK_STATUS)
+    return (tid, return_msg, _UpdateDbResult.code_from_return_code(return_code))
+
+
+def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> None:
+    pass

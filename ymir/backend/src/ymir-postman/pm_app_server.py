@@ -74,6 +74,5 @@ def post_task_states(tid_to_taskstates: entities.TaskStateDict) -> entities.Even
     EventDispatcher.add_event(event_name='/events/taskstates',
                               event_topic='raw',
                               event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
-    _send_to_socketio(app.sio, tid_to_taskstates=tid_to_taskstates)
 
     return entities.EventResp(return_code=0, return_msg=f"done, received: {len(tid_to_taskstates)} tasks")

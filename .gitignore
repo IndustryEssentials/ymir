@@ -82,3 +82,5 @@ mysql/
 redis/
 ymir-data/
 ymir-workplace
+*-dev
+*-dev.*
