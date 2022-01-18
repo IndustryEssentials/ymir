@@ -12,11 +12,14 @@ class RedisCache:
         self._client = rds_client
 
     def get(self, key: str) -> Dict:
+        raw_value = self._client.get(key)
+        if raw_value is None:
+            return dict()
         try:
-            content = json.loads(str(self._client.get(key)))
-        except Exception as e:
-            app_logger.logger.error(f"{e}")
-            content = None
+            content = json.loads(str(raw_value))
+        except ValueError as e:
+            app_logger.logger.warning(f"loads {raw_value} error: {e}")
+            content = dict()
 
         return content
 
