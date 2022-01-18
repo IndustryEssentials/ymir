@@ -85,6 +85,8 @@ services:
     ports:
       - ${NGINX_PORT}:80
     restart: on-failure:10
+    depends_on:
+      - backend
     networks:
       - ymirnetwork
 
