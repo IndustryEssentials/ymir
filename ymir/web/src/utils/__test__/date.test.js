@@ -22,10 +22,14 @@ describe("utils: date", () => {
     const locale = 'zh-CN'
     const expected = '6 个月'
     expect(calTimeLeft(51, time, locale)).toBe(expected)
+    expect(calTimeLeft(0, time, locale)).toBe('...')
+    expect(calTimeLeft(undefined, time, locale)).toBe('...')
   })
   it("function: calDuration. humanize duration for seconds", () => {
     const senconds = 23423242 // utc format
     const expected = '9 个月'
     expect(calDuration(senconds, 'zh-CN')).toBe(expected)
+    expect(calDuration(0, 'zh-CN')).toBe('')
+    expect(calDuration(null, 'zh-CN')).toBe('')
   })
 })

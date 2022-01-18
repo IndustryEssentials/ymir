@@ -29,7 +29,7 @@ jest.mock('@/utils/storage', () => {
 })
 
 jest.mock('@/utils/t', () => {
-  return jest.fn()
+  return jest.fn(msg => msg)
 })
 
 const err = "it is a test error message"
@@ -41,27 +41,53 @@ describe("utils: request", () => {
   beforeEach(() => {
     // process.env.APIURL = 'http://192.168.13.107:8088/api/v1/'
     process.env.APIURL = "https://www.baidu.com/"
+    process.env.NODE_ENV = ''
     consoleSpy = jest.spyOn(console, "error").mockImplementation(() => { })
-    msgSpy = jest.spyOn(message, "error").mockImplementation(() => { })
+    msgSpy = jest.spyOn(message, "error").mockImplementation(msg => msg)
   })
 
   it("set the right base url", () => {
-    const request = require("../request").default
+    jest.isolateModules(() => {
 
-    expect(request.defaults.baseURL).toBe(process.env.APIURL)
+      const request = require("../request").default
+
+      expect(request.defaults.baseURL).toBe(process.env.APIURL)
+    })
+  })
+  it('get dev base url', () => {
+    jest.isolateModules(() => {
+      const expected = 'devurl'
+      process.env.NODE_ENV = 'development'
+      process.env.APIURL = expected
+      const devReq = require('../request').default
+      expect(devReq.defaults.baseURL).toBe(expected)
+    })
+  })
+  it('get base url with window.baseConfig', () => {
+    jest.isolateModules(() => {
+      const expected = 'widnow.baseConfig.url'
+      window.baseConfig = {
+        APIURL: expected,
+      }
+      const devReq = require('../request').default
+      expect(devReq.defaults.baseURL).toBe(expected)
+    })
   })
   it("a request interceptor to the request", () => {
     const request = require("../request").default
-    // const sget = jest.spyOn(storage, "get")
-    // const token = test_data
-    // sget.mockReturnValue(token)
     const config = { headers: { "Content-Type": "text/plain" } }
-
+    const defaultConfig = { headers: {} }
     const reqHandler = request.interceptors.request.handlers[0]
+
+    const defConfig = reqHandler.fulfilled(defaultConfig)
 
     const iconfig = reqHandler.fulfilled(config)
 
     // request resolve
+    expect(defConfig.headers).toHaveProperty(
+      "Authorization",
+      expect.stringContaining(token)
+    )
     expect(iconfig.headers).toHaveProperty(
       "Authorization",
       expect.stringContaining(token)
@@ -74,58 +100,72 @@ describe("utils: request", () => {
 
   it("a response interceptor to the request", () => {
     const request = require("../request").default
+    const normal = (code = 0, result = null) => ({ status: 200, data: { code, result, } })
+    const error = (status, data = null) => ({ request: { status }, response: { data } })
 
-    let res = {
-      status: 200,
-      data: {
-        code: 0,
-        result: { access_token: token },
-      },
-    }
+    const res = normal(0, { access_token: token })
+    const res1004 = normal(1004)
+    const res10001 = normal(10001)
 
-    const err = "it is a test error message"
+    const error4001004 = error(400, { code: 1004 })
+    const error4001003 = error(400, { code: 1003 })
+    const error401 = error(401)
+    const error403 = error(403)
+    const error405 = error(405)
+    const error504 = error(504)
+
     const reqHandler = request.interceptors.response.handlers[0]
 
+    // 200 -> normal
     const { code, result } = reqHandler.fulfilled(res)
-
     expect(code).toBe(0)
     expect(result.access_token).toBe(token)
 
-    res = {
-      request: {
-        statusText: '',
-        status: 401,
-      },
-      response: {
-        data: {
-          code: 1004,
-          message: err,
-        }
-      }
-    }
-
-    expect(() => {
-      reqHandler.rejected(res)
-    }).toThrow()
+    // 200 -> 1004
+    const res1004Result = reqHandler.fulfilled(res1004)
+    expect(msgSpy).toHaveBeenCalled()
     expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
-    
-    res = {
-      request: {
-        statusText: '',
-        status: 405,
-      },
-      response: {
-        data: {
-          code: 2005,
-          message: err,
-        },
-      },
-    }
+    expect(res1004Result).toBeUndefined()
 
-    // expect(() => {
-    reqHandler.rejected(res)
-    // }).toThrow()
+    // 200 -> 10001
+    const res10001Result = reqHandler.fulfilled(res10001)
+    expect(msgSpy).toHaveBeenCalled()
+    expect(res10001Result.code).toBe(10001)
+
+    // 401
+
+    const error401Result = reqHandler.rejected(error401)
+    expect(getDvaApp).toHaveBeenCalled()
+    expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
+    expect(error401Result).toBeUndefined()
+
+    // 403
+    const error403Result = reqHandler.rejected(error403)
+    expect(getDvaApp).toHaveBeenCalled()
+    expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
+    expect(error403Result).toBeUndefined()
+
+    // 400 -> 1003
+    const error4001003Result = reqHandler.rejected(error4001003)
+    expect(msgSpy).toHaveBeenCalled()
+    expect(error4001003Result).toBe('error1003')
+
+    // 400 -> 1004
+    const error4001004Result = reqHandler.rejected(error4001004)
+    expect(getDvaApp).toHaveBeenCalled()
+    expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
+    expect(error4001004Result).toBeUndefined()
+
+    // 405
+    expect(() => {
+      reqHandler.rejected(error405)
+    }).toThrow()
+
+    // 504
+    expect(() => {
+      reqHandler.rejected(error504)
+    }).toThrow()
     expect(msgSpy).toHaveBeenCalled()
   })
 })
