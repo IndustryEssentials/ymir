@@ -80,5 +80,8 @@ class Settings(BaseSettings):
     #  default TaskTypeLabel = 3
     TASK_TYPES_WHITELIST: List[int] = [3]
 
+    # Reverse keywords
+    REVERSE_KEYWORDS_OUTPUT: bool = True
+
 
 settings = Settings(_env_file=".env")  # type: ignore
