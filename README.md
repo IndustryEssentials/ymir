@@ -152,6 +152,14 @@ sh ymir.sh start
 
 After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `sh ymir.sh stop`
 
+If there is no available graphics card and you need to install CPU mode, please change it to CPU boot mode by modifying the .env file to change the SERVER_RUNTIME parameter to runc: 
+
+`# nvidia for gpu, runc for cpu.`
+
+`SERVER_RUNTIME=nvidia`
+
+Restart YMIR after the modification.
+
 ## 2.3. Installation of label studio (optional)
 
 Label Studio is an external labeling system that works with YMIR. Install it if you plan to label data in the development process.
