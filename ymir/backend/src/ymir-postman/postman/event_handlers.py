@@ -44,9 +44,7 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
         return
 
     # update db, save failed
-    logging.debug(f"update db: {tid_to_taskstates_latest}")
     update_db_result = _update_db(tid_to_tasks=tid_to_taskstates_latest)
-    logging.debug(f"update db result: {update_db_result}")
     _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
     if update_db_result.retry_tids:
         time.sleep(5)
@@ -119,10 +117,11 @@ def _update_db(tid_to_tasks: entities.TaskStateDict) -> _UpdateDbResult:
             update_db_result.retry_tids.add(tid)
         else:
             update_db_result.drop_tids.add(tid)
+
     return update_db_result
 
 
-def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Tuple[str, str, int]:
+def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Tuple[str, int]:
     """
     update db for single task
 
@@ -132,7 +131,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         custom_headers (dict)
 
     Returns:
-        Tuple[str, str, int]: tid, error_message, result code (success, retry or drop)
+        Tuple[str, int]: error_message, result code (success, retry or drop)
     """
     url = f"http://{settings.APP_API_HOST}/api/v1/tasks/status"
     # try:
@@ -145,17 +144,20 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         'state_message': task.percent_result.state_message
     }
 
+    logging.debug(f"update db single task request: {task_data}")
     try:
         response = requests.post(url=url, headers=custom_headers, json=task_data)
     except requests.exceptions.RequestException as e:
-        logging.exception(msg='_update_db_single_task error')
-        return (tid, f"{type(e).__name__}: {e}", _UpdateDbResult.RETRY)
+        logging.exception(msg=f"update db single task error ignored: {tid}, {e}")
+        return (f"{type(e).__name__}: {e}", _UpdateDbResult.RETRY)
 
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
     return_msg = response_obj.get('message', '')
 
-    return (tid, return_msg, _UpdateDbResult.code_from_return_code(return_code))
+    logging.info(f"update db single task response: {tid}, {return_code}, {return_msg}")
+
+    return (return_msg, _UpdateDbResult.code_from_return_code(return_code))
 
 
 # private: socketio
@@ -163,41 +165,36 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
     if not tids:
         return
 
-    uid_to_taskstates = _sort_by_user_id({tid: tid_to_taskstates[tid] for tid in tids})
-    event_payloads = []
-    for uid, tid_to_taskstates in uid_to_taskstates.items():
-        data = {}
-        for tid, taskstate in tid_to_taskstates.items():
-            data[tid] = {
-                'state': taskstate.percent_result.state,
-                'percent': taskstate.percent_result.percent,
-                'timestamp': taskstate.percent_result.timestamp,
-                'state_code': taskstate.percent_result.state_code,
-                'state_message': taskstate.percent_result.state_message,
-                'stack_error_info': taskstate.percent_result.stack_error_info
-            }
-        event_payloads.append({
-            'event': 'update_taskstate',
-            'namespace': f"/{uid}",
-            'data': data,
-        })
+    event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids})
+    logging.debug(f"update sio request: {event_payloads}")
 
     url = 'http://127.0.0.1:8090/events/push'
     try:
-        logging.info(f"_update_sio: tids: {data.keys()}, uid: {uid}")
-        response = requests.post(url=url, json=event_payloads)
-        logging.info(f"response: {response.text}")
-    except requests.exceptions.RequestException as e:
-        logging.warning(f"_update_sio failed: {e}, tids: {data.keys()}, uid: {uid}")
+        requests.post(url=url, json=event_payloads)
+    except requests.exceptions.RequestException:
+        logging.exception('update sio error ignored')
 
 
-def _sort_by_user_id(tid_to_taskstates: entities.TaskStateDict) -> Dict[str, entities.TaskStateDict]:
-    """
-    returns: Dict[str, Dict[str, dict]]
-                  (uid)     (tid) (TaskState)
-    """
-    uid_to_tasks = defaultdict(dict)
+def _get_event_payloads(tid_to_taskstates: entities.TaskStateDict) -> list:
+    # sort by user
+    uid_to_taskdatas = defaultdict(dict)
     for tid, taskstate in tid_to_taskstates.items():
         uid = taskstate.task_extra_info.user_id
-        uid_to_tasks[uid][tid] = taskstate
-    return uid_to_tasks
+        uid_to_taskdatas[uid][tid] = {
+            'state': taskstate.percent_result.state,
+            'percent': taskstate.percent_result.percent,
+            'timestamp': taskstate.percent_result.timestamp,
+            'state_code': taskstate.percent_result.state_code,
+            'state_message': taskstate.percent_result.state_message,
+            'stack_error_info': taskstate.percent_result.stack_error_info
+        }
+
+    # get event payloads
+    event_payloads = []
+    for uid, tid_to_taskdatas in uid_to_taskdatas.items():
+        event_payloads.append({
+            'event': 'update_taskstate',
+            'namespace': f"/{uid}",
+            'data': tid_to_taskdatas
+        })
+    return event_payloads

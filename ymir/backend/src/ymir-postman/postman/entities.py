@@ -27,7 +27,7 @@ TaskStateDict = Dict[str, TaskState]
 
 class EventPayload(BaseModel):
     event: str
-    namespace: str
+    namespace: Optional[str] = None
     data: dict
 
 
