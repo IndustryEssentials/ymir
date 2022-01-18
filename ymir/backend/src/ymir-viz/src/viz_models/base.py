@@ -22,7 +22,7 @@ class BaseModel:
             f"{self.cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{config.ALL_INDEX_CLASSIDS}"
         )
         cache_status = redis_cache.get(f"{self.cache_key}:{config.CACHE_STATUS}")
-        if cache_status and cache_status["flag"]:
+        if cache_status.get("flag"):
             cache_flag = True
         else:
             cache_flag = False
