@@ -56,7 +56,7 @@ start() {
 check_permission
 pre_start
 
-if [[ $1 -eq 'dev' ]]; then
+if [[ $1 == 'dev' ]]; then
     printf '\nin dev mode, building images.\n'
     docker build \
         -t ${DOCKER_BACKEND} \
