@@ -76,5 +76,9 @@ class Settings(BaseSettings):
     GITHUB_TIMEOUT: int = 30
     APP_CACHE_EXPIRE_IN_SECONDS: int = 3600
 
+    # Task Type To Survive Upon Start up
+    #  default TaskTypeLabel = 3
+    TASK_TYPES_WHITELIST: List[int] = [3]
+
 
 settings = Settings(_env_file=".env")  # type: ignore

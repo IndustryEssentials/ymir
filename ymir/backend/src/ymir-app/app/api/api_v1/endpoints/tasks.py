@@ -439,7 +439,7 @@ def update_task_status(
     ):
         raise ObsoleteTaskStatus()
 
-    task_info = schemas.Task.from_orm(task)
+    task_info = schemas.TaskInternal.from_orm(task)
     if task_info.state in FinalStates:
         logger.warning("Attempt to update finished task, skip")
         raise ObsoleteTaskStatus()
@@ -541,7 +541,7 @@ class TaskResultProxy:
             return True
         return False
 
-    def save(self, task: schemas.Task, task_result: Dict) -> Optional[Task]:
+    def save(self, task: schemas.TaskInternal, task_result: Dict) -> Optional[Task]:
         """
         task: Pydantic Task Model
         task_result: Dict
@@ -599,7 +599,7 @@ class TaskResultProxy:
             task_state.name,
         )
 
-    def handle_finished_task(self, task: schemas.Task) -> None:
+    def handle_finished_task(self, task: schemas.TaskInternal) -> None:
         logger.debug("fetching %s task result from %s", task.type, task.hash)
         if task.type is TaskType.training:
             model = self.add_new_model_if_not_exist(task)
@@ -643,7 +643,7 @@ class TaskResultProxy:
         )
 
     def handle_failed_import_task(
-        self, task: schemas.Task, state_message: Optional[str]
+        self, task: schemas.TaskInternal, state_message: Optional[str]
     ) -> None:
         # makeup data for failed dataset
         dataset_info = {
@@ -665,7 +665,7 @@ class TaskResultProxy:
             ignored_keywords = []
         return ignored_keywords
 
-    def add_new_dataset_if_not_exist(self, task: schemas.Task) -> Dataset:
+    def add_new_dataset_if_not_exist(self, task: schemas.TaskInternal) -> Dataset:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if dataset:
             # dataset already added before
@@ -686,7 +686,7 @@ class TaskResultProxy:
         return dataset
 
     def update_dataset(
-        self, task: schemas.Task, dataset_info: Optional[Dict] = None
+        self, task: schemas.TaskInternal, dataset_info: Optional[Dict] = None
     ) -> Optional[Dataset]:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if not dataset:
@@ -709,7 +709,7 @@ class TaskResultProxy:
             }
         )
 
-    def add_new_model_if_not_exist(self, task: schemas.Task) -> Model:
+    def add_new_model_if_not_exist(self, task: schemas.TaskInternal) -> Model:
         self.viz.config(user_id=task.user_id, branch_id=task.hash)
         model_info = self.viz.get_model()
         if not model_info:
@@ -747,7 +747,7 @@ class TaskResultProxy:
         return result
 
     def update_task_progress(
-        self, task: schemas.Task, task_state: int, task_progress: float
+        self, task: schemas.TaskInternal, task_state: int, task_progress: float
     ) -> Optional[Task]:
         task_obj = crud.task.get(self.db, id=task.id)
         if not task_obj:
@@ -791,7 +791,7 @@ class TaskResultProxy:
 
     @staticmethod
     def convert_to_graph_node(
-        node: Union[schemas.Model, schemas.Dataset, schemas.Task]
+        node: Union[schemas.Model, schemas.Dataset, schemas.TaskInternal]
     ) -> Dict:
         required_fields = ["hash", "id", "name", "type"]
         graph_node = {k: v for k, v in node.dict().items() if k in required_fields}
@@ -805,7 +805,7 @@ class TaskResultProxy:
         *,
         parents: Optional[List] = None,
         node: Union[schemas.Dataset, schemas.Model],
-        task: Optional[schemas.Task] = None,
+        task: Optional[schemas.TaskInternal] = None,
     ) -> None:
         self.graph_db.user_id = task.user_id  # type: ignore
         graph_node = self.convert_to_graph_node(node)
