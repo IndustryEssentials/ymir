@@ -52,6 +52,7 @@ services:
       - redis
       - viz-redis
       - tensorboard
+      - clickhouse
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
     networks:
@@ -73,7 +74,7 @@ services:
     networks:
       - ymirnetwork
 
-  nginx:
+  web:
     image: industryessentials/ymir-web
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
