@@ -156,7 +156,7 @@ If there is no available graphics card and you need to install CPU mode, please 
 
 `# nvidia for gpu, runc for cpu.`
 
-`SERVER_RUNTIME=nvidia`
+`SERVER_RUNTIME=runc`
 
 Restart YMIR after the modification.
 
