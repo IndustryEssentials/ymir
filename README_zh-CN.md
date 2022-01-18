@@ -148,7 +148,7 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 
 `# nvidia for gpu, runc for cpu.`
 
-`SERVER_RUNTIME=nvidia`
+`SERVER_RUNTIME=runc`
 
 修改后重启服务即可。
 
