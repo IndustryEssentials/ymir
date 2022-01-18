@@ -5,6 +5,7 @@ import {
   getTensorboardLink,
   getHistory,
   getStats,
+  getSysInfo,
 } from '../common'
 
 jest.mock('@/utils/request', () => {
@@ -127,6 +128,21 @@ describe('service: common', () => {
     })
     getStats(params5).then(({ result }) => {
       expect(result).toEqual(taskExpected)
+    })
+  })
+  it('common:getSysInfo', () => {
+    const expected = {
+      gpu_count: 8,
+    }
+    request.get.mockImplementationOnce(() => {
+      return Promise.resolve({
+        code: 0,
+        result: expected,
+      })
+    })
+
+    getSysInfo().then(({ result }) => {
+      expect(result).toEqual(expected)
     })
   })
 })
