@@ -54,6 +54,12 @@ class ImageHandler(BaseMirControllerInvoker):
             if image_config:
                 response.docker_image_config[image_type] = image_config
 
+        if len(response.docker_image_config) == 0:
+            return utils.make_general_response(
+                backend_pb2.RCode.RC_SERVICE_DOCKER_IMAGE_ERROR,
+                f"image {self._request.singleton_op} does not match any configuration",
+            )
+
         return response
 
     def _repr(self) -> str:
