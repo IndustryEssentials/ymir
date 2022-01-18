@@ -4,10 +4,10 @@ services:
     image: industryessentials/ymir-backend
     env_file:
       - .env
-    runtime: nvidia
+    runtime: ${SERVER_RUNTIME}
     environment:
+      - BACKEND_REDIS_URL=redis://redis:6379/0
       # controller
-      - REDIS_URI=redis://redis:6379/0
       - NVIDIA_VISIBLE_DEVICES=all
       - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
       - MONTIOR=${YMIR_PATH}/ymir-data/monitor
@@ -26,7 +26,10 @@ services:
       - NGINX_DATA_PATH=/ymir-storage
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
-      - API_HOST=127.0.0.1:80
+      # monitor
+      - POSTMAN_URL=http://127.0.0.1:8090
+      - MONITOR_URL=http://127.0.0.1:9098
+      - APP_API_HOST=127.0.0.1:80
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
       - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
@@ -42,12 +45,17 @@ services:
       # app
       - ${YMIR_PATH}/ymir-storage:/ymir-storage
       - ${YMIR_PATH}/importing_pic:/data/sharing
+      # tensorboard
+      - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
     depends_on:
       - db
       - redis
       - viz-redis
+      - tensorboard
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
-    restart: on-failure
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
 
   redis:
     image: industryessentials/ymir-backend-redis
@@ -55,11 +63,15 @@ services:
     volumes:
       - ${YMIR_PATH}/redis:/var/log/redis
       - ${YMIR_PATH}/redis:/data
-    restart: on-failure
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
 
   viz-redis:
     image: industryessentials/ymir-viz-redis
-    restart: on-failure
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
 
   nginx:
     image: industryessentials/ymir-web
@@ -72,7 +84,9 @@ services:
       - LABEL_STUDIO_OPEN_PORT=${LABEL_STUDIO_OPEN_PORT}
     ports:
       - ${NGINX_PORT}:80
-    restart: on-failure
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
 
   db:
     image: 'mysql/mysql-server:8.0.25'
@@ -83,6 +97,38 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - ${YMIR_PATH}/mysql:/var/lib/mysql
-    restart: on-failure
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
 
+  tensorboard:
+    image: tensorflow/tensorflow:latest
+    env_file:
+      - .env
+    volumes:
+      - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
+    command: tensorboard --logdir ${TENSORBOARD_ROOT} --port 6006 --bind_all
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
 
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
+    restart: on-failure:10
+    networks:
+      - ymirnetwork
+
+networks:
+  ymirnetwork:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.168.254.0/24
+        gateway: 172.168.254.1

@@ -1,57 +1,56 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import { useParams, Link, useHistory } from "umi"
 import { Button, Card, Col, Descriptions, List, Progress, Row, Space, Tag } from "antd"
 
 import t from "@/utils/t"
 import { format } from '@/utils/date'
+import { getTensorboardLink } from '@/services/common'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
+import Terminate from "./components/terminate"
 import { TASKSTATES, TASKTYPES } from '@/constants/task'
 import StateTag from '../../components/task/stateTag'
 import styles from "./detail.less"
 import {
   ArrowDownIcon, ArrowUpIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon,
-  FileYesIcon, FileHistoryIcon, SearchEyeIcon
+  FileYesIcon, FileHistoryIcon, SearchEyeIcon, SearchIcon
 } from "../../components/common/icons"
 
 const { Item } = Descriptions
 
-function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
+const initError = {
+  code: 0,
+  message: ''
+}
+
+function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) {
   const history = useHistory()
   const { id } = useParams()
-  const [task, setTask] = useState({ id })
+  const [task, setTask] = useState({})
   const [dataset, setDataset] = useState({})
+  const terminateRef = useRef(null)
   const [model, setModel] = useState({})
-  const [error, setError] = useState({
-    code: 0,
-    message: ''
-  })
+  const [error, setError] = useState(initError)
   const [showErrorMsg, setShowErrorMsg] = useState(false)
-  const [taskModel, setTaskModel] = useState({})
 
-  useEffect(async () => {
-    const result = await getTask(id)
+  useEffect(() => {
+    setTask(taskItem)
+  }, [taskItem])
 
-    if (result) {
-      setTask(result)
-    }
+  useEffect(() => {
+    fetchTask()
   }, [id])
 
   useEffect(async () => {
-    if (isState(TASKSTATES.FINISH)) {
-      getResult()
-    } else if (isState(TASKSTATES.FAILURE)) {
-      getError()
-      goAnchor()
-    }
-  }, [task.state])
+    getResult()
+    getError()
+    goAnchor()
+  }, [task])
 
-  useEffect(() => {
-    if (task?.parameters?.model_id) {
-      fetchModel(task.parameters.model_id)
-    }
-  }, [task.parameters])
+  function fetchTask() {
+    getTask(id)
+  }
 
   function getResult() {
     if (isType(TASKTYPES.TRAINING)) {
@@ -62,20 +61,10 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     }
   }
 
-  async function fetchModel(id) {
-    if (!id) {
-      return
-    }
-    const result = await getModel(id)
-    if (result) {
-      setTaskModel(result)
-    }
-  }
-
   async function fetchResultDataset() {
     const id = task.result?.dataset_id
     if (!id) {
-      return
+      return setDataset({})
     }
     const result = await getDataset(id)
     if (result) {
@@ -89,7 +78,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   async function fetchResultModel() {
     const id = task.result?.model_id
     if (!id) {
-      return
+      return setDataset({})
     }
     const result = await getModel(id)
     if (result) {
@@ -98,6 +87,14 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
       setModel({ id })
     }
     goAnchor()
+  }
+
+  function terminate(task) {
+    terminateRef.current.confirm(task)
+  }
+
+  function terminateOk() {
+    fetchTask()
   }
 
   function goAnchor() {
@@ -111,6 +108,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     const error = task.result?.error
     if (error) {
       setError(error)
+    } else {
+      setError(initError)
     }
   }
 
@@ -138,12 +137,6 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
     </div>
   }
 
-  function stateLabel(state) {
-    const states = getTaskStates()
-    const target = states.find(s => s.value === state)
-    return state ? <Tag color={target.color}>{target.label}</Tag> : null
-  }
-
   const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-end' }
 
   function renderDatasetName(dts = []) {
@@ -151,21 +144,21 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
   }
 
   function renderConfig(config = {}) {
-    return Object.keys(config).map(key => <Row key={key}>
-      <Col style={{ width: 200, fontWeight: 'bold' }}>{key}:</Col>
-      <Col>{config[key]}</Col>
+    return Object.keys(config).map(key => <Row key={key} wrap={false}>
+      <Col flex={'200px'} style={{ fontWeight: 'bold' }}>{key}:</Col>
+      <Col flex={1}>{config[key]}</Col>
     </Row>)
   }
 
   const renderTitle = (
     <Row>
       <Col flex={1}><strong>{t('task.detail.title')}</strong></Col>
-      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}</Button></Col>
+      <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
     </Row>
   )
 
   function renderResultTitle(type) {
-    let title = ''
+    let title = t('task.detail.result.empty')
     if (model.id) {
       title = t('task.mining.form.model.label')
     } else if (dataset.id) {
@@ -203,7 +196,12 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               <Item label={t('task.detail.label.framework')}>{task.parameters?.network} </Item>
               <Item label={t('task.detail.label.create_time')}>{format(task.create_datetime)} </Item>
               <Item label={t('task.detail.label.backbone')}>{task.parameters?.backbone}</Item>
-              <Item label={t('task.detail.label.hyperparams')}>{renderConfig(task.config)}</Item>
+              <Item label={t('task.detail.label.training.image')}>{task.parameters.docker_image}</Item>
+              <Item label={t('task.mining.form.model.label')}>
+                {task.parameters.model_id ? <Link to={`/home/model/detail/${task.parameters.model_id}`}>{task?.model?.name || task.parameters.model_id}</Link> : ''}
+              </Item>
+              <Item label={t('task.detail.label.hyperparams')} span={2}>{renderConfig(task.config)}</Item>
+              <Item label={'TensorBoard'} span={2}><Link target="_blank" to={getTensorboardLink(task.hash)}>{t('task.detail.tensorboard.link.label')}</Link></Item>
             </>
           ) : null}
 
@@ -213,11 +211,12 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               <Item label={t('task.filter.form.datasets.label')}>{renderDatasetName(task.filterSets)}</Item>
               <Item label={t('task.mining.form.excludeset.label')}>{renderDatasetName(task.excludeSets)}</Item>
               <Item label={t('task.mining.form.model.label')}>
-                <Link to={`/home/model/detail/${task.parameters.model_id}`}>{taskModel.name || task.parameters.model_id}</Link>
+                <Link to={`/home/model/detail/${task.parameters.model_id}`}>{task?.model?.name || task.parameters.model_id}</Link>
               </Item>
               <Item label={t('task.mining.form.algo.label')}>{task.parameters.mining_algorithm}</Item>
               <Item label={t('task.mining.form.label.label')}>{task.parameters.generate_annotations ? t('common.yes') : t('common.no')}</Item>
               <Item label={t('task.mining.form.topk.label')}>{task.parameters.top_k}</Item>
+              <Item label={t('task.detail.label.mining.image')}>{task.parameters.docker_image}</Item>
               <Item label={t('task.detail.label.hyperparams')}>{renderConfig(task.config)}</Item>
             </>
           ) : null}
@@ -228,6 +227,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
               <Item label={t('task.filter.form.datasets.label')}>{renderDatasetName(task.filterSets)}</Item>
               <Item label={t('task.label.form.member')}>{task.parameters.labellers.map(m => <Tag key={m}>{m}</Tag>)}</Item>
               <Item label={t('task.label.form.target.label')}>{task.parameters.include_classes?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
+              <Item label={t('task.label.form.keep_anno.label')}>{task.parameters.keep_annotations ? t('common.yes') : t('common.no')}</Item>
               <Item label={t('task.label.form.desc.label')}>
                 {task.parameters.extra_url ? <a target='_blank' href={task.parameters.extra_url}>{t('task.detail.label.download.btn')}</a> : '-'}
               </Item>
@@ -240,6 +240,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
             <Row>
               <Col><StateTag mode='icon' size='large' state={task.state} /></Col>
               <Col flex={1}>{task.state === TASKSTATES.DOING ? <Progress strokeColor={'#FAD337'} percent={task.progress} /> : null}</Col>
+              {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ?
+                <Col><Button onClick={() => terminate(task)}>{t('task.action.terminate')}</Button></Col> : null}
             </Row>
           </Item>
         </Descriptions>
@@ -257,9 +259,13 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
                 <Col flex={1} style={{ lineHeight: '32px' }}><Link to={`/home/dataset/detail/${dataset.id}`}>{dataset.name}</Link></Col>
                 <Col>
                   <Space>
-                    <Button icon={<ScreenIcon />} type='primary' hidden={!dataset.keyword_count}
-                    onClick={() => history.push(`/home/task/filter/${dataset.id}`)}>{t('dataset.detail.action.filter')}</Button>
-                    <Button icon={<TrainIcon />} type='primary' onClick={() => history.push(`/home/task/train/${dataset.id}`)}>{t('dataset.detail.action.train')}</Button>
+                    {isType(TASKTYPES.MINING) ? <>
+                      <Button icon={<SearchIcon />} type='primary' onClick={() => history.push(`/home/dataset/detail/${dataset.id}`)}>{t('task.detail.action.detail')}</Button>
+                    </> : <>
+                      <Button icon={<ScreenIcon />} type='primary' hidden={!dataset.keyword_count}
+                        onClick={() => history.push(`/home/task/filter/${dataset.id}`)}>{t('dataset.detail.action.filter')}</Button>
+                      <Button icon={<TrainIcon />} type='primary' onClick={() => history.push(`/home/task/train/${dataset.id}`)}>{t('dataset.detail.action.train')}</Button>
+                    </>}
                     <Button icon={<TaggingIcon />} type='primary' onClick={() => history.push(`/home/task/label/${dataset.id}`)}>{t('dataset.detail.action.label')}</Button>
                   </Space>
                 </Col>
@@ -277,6 +283,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
                 <Col>
                   <Space>
                     <Button icon={<VectorIcon />} type='primary' onClick={() => history.push(`/home/task/mining?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
+                    <Button icon={<TrainIcon />} type='primary' onClick={() => history.push(`/home/task/train/?mid=${model.id}`)}>{t('task.detail.action.continuetrain')}</Button>
                   </Space>
                 </Col>
               </Row>
@@ -300,7 +307,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
           </>
             : null}
         </Descriptions>
-        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link to='/lsf/'>{t('task.detail.label.go.platform')}</Link></div> : null}
+        {task.type === TASKTYPES.LABEL ? <div style={{ textAlign: 'right' }}><Link target="_blank" to='/label_tool/'>{t('task.detail.label.go.platform')}</Link></div> : null}
+        <Terminate ref={terminateRef} ok={terminateOk} />
       </Card>
     </div>
   )
@@ -310,6 +318,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    taskItem: state.task.task,
   }
 }
 

@@ -3,8 +3,8 @@ export const tailLayout = {
 }
 
 export const formLayout = {
-  labelCol: { span: 2, offset: 2 },
-  wrapperCol: { span: 13 },
+  labelCol: { span: 6, offset: 2, },
+  wrapperCol: { span: 16 },
 }
 
 export const layout420 = {

@@ -7,6 +7,7 @@ import google.protobuf.json_format as pb_format
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import exodus
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 import tests.utils as test_utils
 
 
@@ -39,10 +40,10 @@ class TestExodus(unittest.TestCase):
         self._test_open_abnormal_cases("fake-file", "coco-2017-train", MirCode.RC_CMD_INVALID_MIR_FILE)
         # empty args
         self._test_open_abnormal_cases("fake-file", "", MirCode.RC_CMD_INVALID_ARGS)
-        self._test_open_abnormal_cases("", "fake-branch")
+        self._test_open_abnormal_cases("", "fake-branch", MirCode.RC_CMD_INVALID_ARGS)
         self._test_open_abnormal_cases("", "", MirCode.RC_CMD_INVALID_ARGS)
         self._test_open_abnormal_cases("fake-file", None, MirCode.RC_CMD_INVALID_ARGS)
-        self._test_open_abnormal_cases(None, "fake-branch")
+        self._test_open_abnormal_cases(None, "fake-branch", MirCode.RC_CMD_INVALID_ARGS)
         self._test_open_abnormal_cases(None, None, MirCode.RC_CMD_INVALID_ARGS)
 
     # protected: test cases
@@ -52,17 +53,17 @@ class TestExodus(unittest.TestCase):
             contents = f.read()
             self.assertNotEqual(len(contents), 0)
 
-    def _test_open_abnormal_cases(self, file_name: str, branch: str, expected_code=0):
+    def _test_open_abnormal_cases(self, file_name: str, branch: str, expected_code: int):
         actual_exception = None
         try:
             with exodus.open_mir(mir_root=self._mir_root, file_name=file_name, rev=branch, mode="rb"):
                 pass
         except (TypeError, ValueError) as e:
             actual_exception = e
-        except exodus.ExodusError as e:
+        except MirRuntimeError as e:
             actual_exception = e
-            self.assertIsInstance(actual_exception, exodus.ExodusError)
-            self.assertEqual(actual_exception.code, expected_code)
+            self.assertIsInstance(actual_exception, MirRuntimeError)
+            self.assertEqual(actual_exception.error_code, expected_code)
         except FileNotFoundError as e:
             actual_exception = e
             self.assertIsInstance(actual_exception, FileNotFoundError)
@@ -143,8 +144,10 @@ class TestExodus(unittest.TestCase):
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,
                                        mir_metadatas=mir_metadatas,
                                        mir_annotations=mir_annotations,
-                                       mir_keywords=mir_keywords,
                                        mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
                                        no_space_message="branch_a_for_test_exodus")
 
         test_utils.mir_repo_checkout(self._mir_root, "master")

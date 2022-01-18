@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./index.less"
 import { Link, useHistory, useLocation, useParams } from "umi"
-import { Form, Button, Input, Select, Table, Menu, Dropdown, Space, Modal, ConfigProvider, Row, Col, Radio, Tag, Tooltip, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Radio, Tag, Tooltip, } from "antd"
 import {
-  SearchOutlined,
   SyncOutlined,
 } from "@ant-design/icons"
 import moment from "moment"
@@ -14,18 +13,21 @@ import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
 import { TASKSTATES } from '@/constants/task'
-import { getDatasetTypes, getTimes } from '@/constants/query'
 import { getSetStates } from '@/constants/column'
-import Breadcrumbs from "../../components/common/breadcrumb"
+import { getDatasetTypes, getTimes } from '@/constants/query'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, TipsIcon, More1Icon, EditIcon, DeleteIcon, TreeIcon } from "../../components/common/icons"
-import StateTag from "../../components/task/stateTag"
-import EditBox from "../../components/form/editBox"
-import Rect from '@/components/guide/rect'
-import Guide from "../../components/guide/guide"
-import RenderProgress from "../../components/common/progress"
-import TypeTag from "../../components/task/typeTag"
-import Actions from "../../components/table/actions"
+import StateTag from "@/components/task/stateTag"
+import EditBox from "@/components/form/editBox"
+// import Rect from '@/components/guide/rect'
+// import Guide from "../../components/guide/guide"
+import RenderProgress from "@/components/common/progress"
+import TypeTag from "@/components/task/typeTag"
+import Actions from "@/components/table/actions"
+
+import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, SearchIcon,
+  TipsIcon, EditIcon, DeleteIcon, TreeIcon } from "@/components/common/icons"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -38,7 +40,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Dataset({ getDatasets, delDataset, updateDataset }) {
+function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
   const { keyword } = useParams()
   const location = useLocation()
   const history = useHistory()
@@ -57,6 +59,16 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
   const states = getSetStates()
 
   /** use effect must put on the top */
+  useEffect(() => {
+    const forceUpdate = datasetList.items.some(dataset => dataset.forceUpdate)
+    if (forceUpdate) {
+      getData()
+    } else {
+      setDatasets(datasetList.items)
+      setTotal(datasetList.total)
+    }
+  }, [datasetList])
+
   useEffect(() => {
     if (keyword) {
       setQuery(old => ({ ...old, name: keyword }))
@@ -105,7 +117,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     {
       title: showTitle("dataset.column.source"),
       dataIndex: "type",
-      render: (type, { id, task_name }) => <TypeTag type={type} id={id} name={task_name} />,
+      render: (type, { task_id, task_name }) => <TypeTag type={type} id={task_id} name={task_name} />,
       ellipsis: true,
     },
     {
@@ -153,6 +165,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
       key: "create_datetime",
       dataIndex: "create_datetime",
       render: (datetime) => format(datetime),
+      sorter: true,
       width: 180,
     },
     {
@@ -222,10 +235,12 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     return actions
   }
 
-  const pageChange = ({ current, pageSize }) => {
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    const is_desc = sorters.order === 'ascend' ? false : true
+    const order_by = sorters.order ? sorters.field : undefined
+    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
   }
 
   function showTitle(str) {
@@ -236,6 +251,8 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     let params = {
       offset: query.offset,
       limit: query.limit,
+      is_desc: query.is_desc,
+      order_by: query.order_by,
     }
     if (query.type !== "") {
       params.type = query.type
@@ -252,8 +269,6 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
     }
     const { items, total } = await getDatasets(params)
     if (items) {
-      setDatasets(() => items)
-      setTotal(total)
       setSelectedIds([])
     }
   }
@@ -390,7 +405,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
             <Row>
               <Col className={styles.queryColumn} span={12}>
                 <Form.Item name="name" label={t('dataset.query.name')}>
-                  <Input placeholder={t("dataset.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchOutlined />} />
+                  <Input placeholder={t("dataset.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
                 </Form.Item>
               </Col>
               <Col className={styles.queryColumn} span={12}>
@@ -442,9 +457,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
           <ConfigProvider renderEmpty={() => <EmptyState add={add} />}>
             <Table
               dataSource={datasets}
-              onChange={({ current, pageSize }) =>
-                pageChange({ current, pageSize })
-              }
+              onChange={tableChange}
               rowKey={(record) => record.id}
               rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
               pagination={{
@@ -489,6 +502,7 @@ function Dataset({ getDatasets, delDataset, updateDataset }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    datasetList: state.dataset.datasets,
   }
 }
 

@@ -51,7 +51,6 @@ class TestCmdFilter(unittest.TestCase):
 
     def __prepare_mir_repo(self, mir_root: str):
         test_utils.mir_repo_init(self._mir_root)
-        test_utils.mir_repo_create_branch(self._mir_root, "a")
 
         metadatas_dict = {
             "attributes": {
@@ -112,33 +111,6 @@ class TestCmdFilter(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
 
-        keywords_dict = {
-            "keywords": {
-                "a0000000000000000000000000000000000000000000000000": {
-                    "predifined_keyids": [0, 1, 2, 3, 4, 5],
-                    "customized_keywords": ["longgang", "cross road", "sunny"]
-                },
-                "a0000000000000000000000000000000000000000000000001": {
-                    "predifined_keyids": [4],
-                    "customized_keywords": ["nanshan", "beach", "rainy"]
-                },
-                "a0000000000000000000000000000000000000000000000002": {
-                    "predifined_keyids": [3],
-                    "customized_keywords": ["nanshan", "beach", "sunny"]
-                },
-                "a0000000000000000000000000000000000000000000000003": {
-                    "predifined_keyids": [2],
-                    "customized_keywords": ["nanshan", "cross road", "rainy"]
-                },
-                "a0000000000000000000000000000000000000000000000004": {
-                    "predifined_keyids": [0, 1],
-                    "customized_keywords": ["longgang", "cross road", "sunny"]
-                }
-            }
-        }
-        mir_keywords = mirpb.MirKeywords()
-        json_format.ParseDict(keywords_dict, mir_keywords)
-
         mir_tasks = mirpb.MirTasks()
         mir_tasks.tasks["t0"].name = "import"
         mir_tasks.head_task_id = 't0'
@@ -146,8 +118,10 @@ class TestCmdFilter(unittest.TestCase):
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,
                                        mir_metadatas=mir_metadatas,
                                        mir_annotations=mir_annotations,
-                                       mir_keywords=mir_keywords,
                                        mir_tasks=mir_tasks,
+                                       src_branch='master',
+                                       dst_branch='a',
+                                       task_id='t0',
                                        no_space_message="test_cmd_filter_branch_a")
 
     @staticmethod
@@ -170,8 +144,6 @@ class TestCmdFilter(unittest.TestCase):
     # public: test cases
     def test_all(self):
         self.__test_cmd_filter_normal_01()
-        self.__test_cmd_filter_normal_06()
-        self.__test_cmd_filter_normal_07()
 
         # test for write lock
         pipe0 = mp.Pipe()
@@ -198,29 +170,6 @@ class TestCmdFilter(unittest.TestCase):
                                             dst_branch='__test_cmd_filter_normal_01',
                                             expected_asset_ids=expected_asset_ids)
 
-    def __test_cmd_filter_normal_06(self):
-        expected_asset_ids = {
-            "a0000000000000000000000000000000000000000000000002",
-            "a0000000000000000000000000000000000000000000000003"
-        }
-        self.__test_cmd_filter_normal_cases(in_cis=None,
-                                            ex_cis=None,
-                                            in_cks="cross road; sunny",
-                                            ex_cks="longgang",
-                                            dst_branch='__test_cmd_filter_normal_06',
-                                            expected_asset_ids=expected_asset_ids)
-
-    def __test_cmd_filter_normal_07(self):
-        expected_asset_ids = {
-            "a0000000000000000000000000000000000000000000000000"
-        }
-        self.__test_cmd_filter_normal_cases(in_cis="cat",
-                                            ex_cis="",
-                                            in_cks="cross road; sunny",
-                                            ex_cks="",
-                                            dst_branch='__test_cmd_filter_normal_07',
-                                            expected_asset_ids=expected_asset_ids)
-
     def __test_cmd_filter_normal_cases(self, in_cis: str, ex_cis: str, in_cks: str, ex_cks: str, dst_branch: str,
                                        expected_asset_ids: Set[str]):
         fake_args = type('', (), {})()
@@ -231,6 +180,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cks = ex_cks
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
+        fake_args.work_dir = ''
         cmd = cmd_filter.CmdFilter(fake_args)
         cmd_run_result = cmd.run()
 
@@ -262,6 +212,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cks = None
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
+        fake_args.work_dir = ''
         cmd = cmd_filter.CmdFilter(fake_args)
         cmd_run_result = cmd.run()
         child_conn.send(cmd_run_result)

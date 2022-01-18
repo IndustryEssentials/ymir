@@ -72,3 +72,20 @@
   vertical-align: middle;
   display: inline-block;
 }
+.assetDetail {
+    top: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    padding: 20px;
+    font-size: 14px;
+    border-radius: 8px;
+    :global {
+      .ant-modal-content {
+        height: 100%;
+        border-radius: 0;
+      }
+    }
+}

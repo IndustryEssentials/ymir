@@ -14,8 +14,24 @@ const keyword = {
   'keyword.add.failure': {en: "Keywords added failure", cn: "标签添加失败", },
   'keyword.name.repeat': {en: "Repeated keyword or alias", cn: "重复的标签或别名", },
   'keyword.add.name.placeholder': {en: "Please input keyword name", cn: "请输入标签名称", },
-  'keyword.add.name.validchar': {en: "Name or Alias include ilegal char or comma", cn: "字符不合法或包含英文逗号", },
+  'keyword.add.name.validchar': {en: "Name or Alias exceeds 32 characters limit or included ilegal char or comma", cn: "字符超过32、字符不合法或包含英文逗号", },
   'keyword.add.name.required': {en: "Keyword name required", cn: "标签名称不能为空", },
+  'keyword.multiadd.success': {en: "Keywords added", cn: "批量添加标签成功", },
+  'keyword.multiadd.invalid': {en: "Invalid format of keywords", cn: "标签格式不合法", },
+  'keyword.multiadd.title': {en: "Add Multiple Keywords", cn: "批量添加标签", },
+  'keyword.multiadd.kws.label': {en: "Keywords", cn: "标签", },
+  'keyword.multiadd.label': {en: "Add Keywords", cn: "批量添加标签", },
+  'keyword.multiadd.kws.placeholder': {
+    en: 
+`Example: 
+cat:kitty
+cow:bull,cattle`, 
+  cn: 
+`可批量添加标签，多个标签使用换行分隔；
+如有别名，可在标签名称后面用冒号分隔。
+多个别名用英文逗号分隔。例：
+cat:kitty
+cow:bull,cattle`, },
 }
 
 export default keyword

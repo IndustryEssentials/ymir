@@ -1,4 +1,5 @@
 import user from "../user"
+import storage from "@/utils/storage"
 import { put, select, call } from "redux-saga/effects"
 
 jest.mock('@/utils/t', () => {
@@ -193,6 +194,100 @@ describe("models: user", () => {
     const end = generator.next()
 
     expect(end.value).toBe(true)
+    expect(end.done).toBe(true)
+  })
+
+  it("effects: setGuideVisible", () => {
+    const saga = user.effects.setGuideVisible
+    const creator = {
+      type: "setGuideVisible",
+      payload: true,
+    }
+
+    const generator = saga(creator, { put })
+    generator.next()
+    const end = generator.next()
+
+    expect(end.done).toBe(true)
+  })
+  
+  it("effects: setNeverShow", () => {
+    const saga = user.effects.setNeverShow
+    const creator = {
+      type: "setNeverShow",
+      payload: false,
+    }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next()
+
+    expect(end.done).toBe(true)
+  })
+  
+  it("effects: getToken", () => {
+    const saga = user.effects.getToken
+    const creator = {
+      type: "getToken",
+      payload: {username: 'username007@test.com', password: '12345689' },
+    }
+    const expected = 'access_token'
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: {
+        access_token: expected,
+      }
+    })
+
+    expect(end.value.access_token).toBe(expected)
+    expect(storage.get('access_token')).toBe(expected)
+    expect(end.done).toBe(true)
+  })
+  
+  it("effects: modifyPwd", () => {
+    const saga = user.effects.modifyPwd
+    const newUser = { id: 346, password: 'newpassw0rd' }
+    const creator = {
+      type: "modifyPwd",
+      payload: newUser.password,
+    }
+    const expected = { id: newUser.id }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    generator.next({
+      code: 0,
+      result: expected,
+    })
+    const end = generator.next()
+
+    expect(end.value.id).toBe(newUser.id)
+    expect(end.done).toBe(true)
+  })
+  
+  it("effects: updateUserInfo", () => {
+    const saga = user.effects.updateUserInfo
+    
+    const newUser = { id: 347, name: 'newusername' }
+    const creator = {
+      type: "updateUserInfo",
+      payload: { name: newUser.name },
+    }
+    const expected = { id: newUser.id, name: newUser.name }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    generator.next({
+      code: 0,
+      result: expected
+    })
+    const end = generator.next()
+
+    expect(end.value.id).toBe(newUser.id)
+    expect(end.value.name).toBe(newUser.name)
     expect(end.done).toBe(true)
   })
 })

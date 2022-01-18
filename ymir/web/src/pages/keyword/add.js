@@ -5,6 +5,7 @@ import { connect } from 'dva'
 import s from './add.less'
 import t from '@/utils/t'
 import { AddDelTwoIcon, AddIcon, AddTwoIcon } from '../../components/common/icons'
+import Tip from "@/components/form/singleTip"
 
 const { Option } = Select
 const { useForm } = Form
@@ -39,7 +40,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
     form.validateFields().then(async () => {
       const { keywords } = form.getFieldsValue()
       const kws = keywords.filter(k => k && k.name)
-        .map(k => ({ name: k?.name.trim(), aliases: k.aliases ? k.aliases.map(a => a.trim()) : []}))
+        .map(k => ({ name: k?.name.trim(), aliases: k.aliases ? k.aliases.map(a => a.trim()) : [] }))
       const result = keys.length ? await updateKeyword(kws[0]) : await updateKeywords({ keywords: kws })
       if (result) {
         if (result.failed && !result.failed.length) {
@@ -55,7 +56,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
         message.error(t('keyword.add.failure'))
       }
     }).catch(err => console.error('validate error: ', err))
-    
+
   }
   const onCancel = () => {
     close()
@@ -79,7 +80,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
 
   const validChar = (_, value) => {
     const reg = /^[^\s\t\n,]+([ ]+[^\s\t\n,]+)?$/
-    if (!value|| (Array.isArray(value) ?
+    if (!value || (Array.isArray(value) ?
       value.every(item => reg.test(item.trim()) && item.length <= 32)
       : reg.test(value.trim()))) {
       return Promise.resolve()
@@ -97,7 +98,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
       destroyOnClose
     >
       <Form name='keywordAddForm' form={form} layout='vertical' preserve={false}>
-        { repeats.length ? <div style={{ margin: '10px 0', color: '#f00' }}>{t('keyword.name.repeat')}: {repeats.join(',')}</div> : null }
+        {repeats.length ? <div style={{ margin: '10px 0', color: '#f00' }}>{t('keyword.name.repeat')}: {repeats.join(',')}</div> : null}
         <Form.List name='keywords' initialValue={[{ name: '' }]}>
           {(fields, { add, remove }) => (
             <div className={s.content}>
@@ -125,7 +126,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                     <Form.Item
                       {...field}
                       // label="Value"
-                      label={field.name === 0 ? t('keyword.add.alias.label') : null}
+                      label={field.name === 0 ? <>{t('keyword.add.alias.label')}<Tip content={t('tip.task.filter.alias')} style={{ fontSize: 16 }} /></> : null}
                       name={[field.name, 'aliases']}
                       fieldKey={[field.fieldKey, 'aliases']}
                       rules={[

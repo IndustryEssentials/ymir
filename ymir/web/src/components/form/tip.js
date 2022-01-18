@@ -1,14 +1,13 @@
-import { Popover } from "antd"
+import { Col, Row } from "antd"
 
-import { TipsIcon } from '@/components/common/icons'
-import s from './tip.less'
+import SingleTip from './singleTip'
 
-const Tip = ({ title = null, content = '', placement = 'right'}) => {
-
+const Tip = ({ title = null, content = '', placement = 'right', span=6, hidden = false, children }) => {
   return (
-    <Popover title={title} content={content} placement={placement}>
-      <TipsIcon className={s.icon} />
-    </Popover>
+    <Row gutter={10}>
+      <Col span={24 - span}>{children}</Col>
+      <Col span={span}>{hidden ? null : <SingleTip title={title} content={content} placement={placement} style={{ lineHeight: '40px' }} />}</Col>
+    </Row>
   )
 }
 

@@ -5,7 +5,10 @@ from typing import Any, Callable, List, Tuple, Optional, Set, Union
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
+from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.errors import MirRuntimeError
+from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.tools.code import MirCode
 
 # type for function `__include_match` and `__exclude_match`
@@ -59,8 +62,9 @@ class CmdFilter(base.BaseCommand):
 
     # public: run cmd
     @staticmethod
+    @command_run_in_out
     def run_with_args(mir_root: str, in_cis: Optional[str], ex_cis: Optional[str], in_cks: Optional[str],
-                      ex_cks: Optional[str], src_revs: str, dst_rev: str) -> int:  # type: ignore
+                      ex_cks: Optional[str], src_revs: str, dst_rev: str, work_dir: str) -> int:  # type: ignore
         # check args
         in_cis = in_cis.strip().lower() if in_cis else ''
         ex_cis = ex_cis.strip().lower() if ex_cis else ''
@@ -85,6 +89,10 @@ class CmdFilter(base.BaseCommand):
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
 
+        PhaseLoggerCenter.create_phase_loggers(top_phase='filter',
+                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
+                                               task_name=dst_typ_rev_tid.tid)
+
         return_code = checker.check(mir_root,
                                     [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if return_code != MirCode.RC_OK:
@@ -92,6 +100,7 @@ class CmdFilter(base.BaseCommand):
 
         mir_contents = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
                                                           mir_branch=src_typ_rev_tid.rev,
+                                                          mir_task_id=src_typ_rev_tid.tid,
                                                           mir_storages=mir_storage.get_all_mir_storage())
         mir_metadatas: mirpb.MirMetadatas = mir_contents[mirpb.MirStorage.MIR_METADATAS]
         mir_annotations: mirpb.MirAnnotations = mir_contents[mirpb.MirStorage.MIR_ANNOTATIONS]
@@ -100,11 +109,14 @@ class CmdFilter(base.BaseCommand):
         task_id = dst_typ_rev_tid.tid
         base_task_id = mir_annotations.head_task_id
 
+        PhaseLoggerCenter.update_phase(phase='filter.read')
+
         if task_id in mir_tasks.tasks:
-            logging.error(f"invalid args: task id already exists: {task_id}")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
+                                  error_message=f"invalid args: task id already exists: {task_id}")
         if not base_task_id:
-            raise ValueError("no base task id in tasks.mir")
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+                                  error_message='no base task id in tasks.mir')
 
         assert len(mir_annotations.task_annotations.keys()) == 1
         base_task_annotations = mir_annotations.task_annotations[base_task_id]  # type: mirpb.SingleTaskAnnotations
@@ -129,8 +141,9 @@ class CmdFilter(base.BaseCommand):
                 logging.info(f"assets count after {message}: {len(asset_ids_set)}")
 
         if not asset_ids_set:
-            logging.info("matched nothing with pred: {}, excludes: {}, please try another preds".format(in_cis, ex_cis))
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(
+                error_code=MirCode.RC_CMD_INVALID_ARGS,
+                error_message=f"matched nothing with pred: {in_cis}, excludes: {ex_cis}, please try another preds")
 
         matched_mir_metadatas = mirpb.MirMetadatas()
         matched_mir_annotations = mirpb.MirAnnotations()
@@ -164,6 +177,8 @@ class CmdFilter(base.BaseCommand):
 
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
+        PhaseLoggerCenter.update_phase(phase='filter.change')
+
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
@@ -172,6 +187,7 @@ class CmdFilter(base.BaseCommand):
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=task_id,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas=matched_mir_contents,
                                                       commit_message=task.name)
@@ -186,7 +202,8 @@ class CmdFilter(base.BaseCommand):
                                        in_cks=self.args.in_cks,
                                        ex_cks=self.args.ex_cks,
                                        src_revs=self.args.src_revs,
-                                       dst_rev=self.args.dst_rev)
+                                       dst_rev=self.args.dst_rev,
+                                       work_dir=self.args.work_dir)
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
@@ -201,4 +218,5 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
     filter_arg_parser.add_argument("-C", dest="ex_cks", type=str, help="excludsive customized keywords")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
+    filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
     filter_arg_parser.set_defaults(func=CmdFilter)
