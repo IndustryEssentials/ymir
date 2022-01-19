@@ -76,9 +76,11 @@ class Settings(BaseSettings):
     GITHUB_TIMEOUT: int = 30
     APP_CACHE_EXPIRE_IN_SECONDS: int = 3600
 
+    # Start up stuffs
     # Task Type To Survive Upon Start up
     #  default TaskTypeLabel = 3
     TASK_TYPES_WHITELIST: List[int] = [3]
+    INIT_SANDBOX_FOR_FIRST_USER: bool = True
 
     # Reverse keywords
     REVERSE_KEYWORDS_OUTPUT: bool = True
