@@ -14,8 +14,6 @@ SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
   sandboxroot: ${SANDBOX}
-TASK_MONITOR:
-  storageroot: ${MONTIOR}
 METRICS:
   allow_feedback: ${ALLOW_ANONYMOUS_FEEDBACK}
   anonymous_uuid: ${ANONYMOUS_UUID}

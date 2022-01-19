@@ -14,8 +14,6 @@ SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
   sandboxroot: /tmp/ymir-controller-sandbox-root/sandbox
-TASK_MONITOR:
-  storageroot: /tmp/ymir-controller-sandbox-root/monitor
 METRICS:
   allow_feedback: True
   anonymous_uuid: localtest
