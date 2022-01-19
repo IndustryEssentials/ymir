@@ -45,31 +45,6 @@ def mock_clickhouse(mocker):
 
 
 class TestTaskResult:
-    def test_get_task_result(
-        self,
-        mocker,
-        mock_controller,
-        mock_db,
-        mock_graph_db,
-        mock_viz,
-        mock_controller_request,
-    ):
-        task_result_proxy = m.TaskResultProxy(
-            controller=mock_controller,
-            db=mock_db,
-            graph_db=mock_graph_db,
-            viz=mock_viz,
-            clickhouse=mock_clickhouse,
-        )
-        user_id = random.randint(1000, 2000)
-        task_hash = random_lower_string(32)
-        task_result_proxy.parse_resp = mocker.Mock(
-            return_value={"state": m.TaskState.done, "task_id": task_hash}
-        )
-        task = mocker.Mock(hash=task_hash)
-        result = task_result_proxy.get(task)
-        mock_controller.get_task_result.assert_called()
-
     def test_save_task_result(
         self, mocker, mock_controller, mock_db, mock_graph_db, mock_controller_request
     ):
