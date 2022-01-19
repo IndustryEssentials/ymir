@@ -26,9 +26,10 @@ class _UpdateDbResult:
         else:
             return cls.DROP
 
-    success_tids: Set[str] = set()
-    retry_tids: Set[str] = set()
-    drop_tids: Set[str] = set()
+    def __init__(self) -> None:
+        self.success_tids: Set[str] = set()
+        self.retry_tids: Set[str] = set()
+        self.drop_tids: Set[str] = set()
 
     def __repr__(self) -> str:
         return f"success: {self.success_tids}, retry: {self.retry_tids}, drop: {self.drop_tids}"
@@ -48,7 +49,7 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
     if update_db_result.retry_tids:
         time.sleep(5)
-        _save_retry(failed_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
+        _save_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
@@ -165,6 +166,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
     if not tids:
         return
 
+    logging.debug(f"update sio request args: {tids}, {tid_to_taskstates}")
     event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
     logging.debug(f"update sio request: {event_payloads}")
 
