@@ -10,7 +10,6 @@ services:
       # controller
       - NVIDIA_VISIBLE_DEVICES=all
       - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
-      - MONTIOR=${YMIR_PATH}/ymir-data/monitor
       - MODELS_PATH=${YMIR_PATH}/ymir-models
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
@@ -32,7 +31,6 @@ services:
       - APP_API_HOST=127.0.0.1:80
     volumes:
       - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
-      - "${YMIR_PATH}/ymir-data/monitor:${YMIR_PATH}/ymir-data/monitor"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"
       - "${YMIR_PATH}/ymir-models:${YMIR_PATH}/ymir-models"
       - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
