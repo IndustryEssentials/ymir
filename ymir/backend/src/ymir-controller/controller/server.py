@@ -10,7 +10,6 @@ import grpc
 import sentry_sdk
 import yaml
 
-from controller import task_monitor
 from controller.utils import code, metrics, utils, invoker_mapping
 from proto import backend_pb2, backend_pb2_grpc
 
@@ -98,11 +97,6 @@ def main(main_args: Any) -> int:
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)
 
-    # start task monitor
-    monitor_storage_root = server_config['TASK_MONITOR']['storageroot']
-    os.makedirs(monitor_storage_root, exist_ok=True)
-    ctr_task_monitor = task_monitor.ControllerTaskMonitor(storage_root=monitor_storage_root)
-
     # start metrics manager
     metrics_config = server_config['METRICS']
     manager = metrics.MetricsManager(permission_pass=metrics_config['allow_feedback'],
@@ -123,8 +117,6 @@ def main(main_args: Any) -> int:
     logging.info("mir controller started, sandbox root: %s, port: %s", mc_service_impl.sandbox_root, port)
 
     server.wait_for_termination()  # message cycle started
-
-    ctr_task_monitor.stop_monitor()
 
     return 0
 
