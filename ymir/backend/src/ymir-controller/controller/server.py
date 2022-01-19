@@ -105,16 +105,17 @@ def main(main_args: Any) -> int:
 
     # start metrics manager
     metrics_config = server_config['METRICS']
-    manager = metrics.MetricsManager(permission_pass=metrics_config['allow_feedback'],
-                                     uuid=metrics_config['anonymous_uuid'],
+    metrics_permission_pass = metrics_config['allow_feedback'] or False
+    metrics_uuid = metrics_config['anonymous_uuid'] or 'anonymous_uuid'
+    manager = metrics.MetricsManager(permission_pass=metrics_permission_pass,
+                                     uuid=metrics_uuid,
                                      server_host=metrics_config['server_host'],
                                      server_port=metrics_config['server_port'])
     manager.send_counter('init.start')
 
     # start grpc server
     port = server_config['SERVICE']['port']
-    mc_service_impl = MirControllerService(sandbox_root=sandbox_root,
-                                           assets_config=server_config['ASSETS'])
+    mc_service_impl = MirControllerService(sandbox_root=sandbox_root, assets_config=server_config['ASSETS'])
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     backend_pb2_grpc.add_mir_controller_serviceServicer_to_server(mc_service_impl, server)
     server.add_insecure_port("[::]:{}".format(port))
