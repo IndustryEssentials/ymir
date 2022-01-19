@@ -11,20 +11,19 @@ from controller.utils import singleton
 @singleton.singleton
 class MetricsManager:
     def __init__(self, permission_pass: bool, uuid: str, server_host: str, server_port: str) -> None:
+        logging.info(f'Metrics init: perm-{permission_pass} uuid-{uuid} host-{server_host} port-{server_port}')
+        self._permission_pass = permission_pass
+        if not self._permission_pass:
+            return
         if not uuid or not server_host or not server_port:
             raise RuntimeError("MetricsManager not initialized.")
         # _permission_pass indicates whether the permession is granted to record task metrics.
-        self._permission_pass = permission_pass
         self._uuid = uuid
         self._server_host = server_host
         self._server_port = int(server_port)
-        self._client = None
-        logging.info(f'Metrics init: perm-{permission_pass} uuid-{uuid} host-{server_host} port-{server_port}')
-
-        if self._permission_pass:
-            self._client = statsd.StatsClient(host=self._server_host,
-                                              port=self._server_port,
-                                              prefix=f"ymir_metrics.{self._uuid}")
+        self._client = statsd.StatsClient(host=self._server_host,
+                                          port=self._server_port,
+                                          prefix=f"ymir_metrics.{self._uuid}")
 
     def send_counter(self, content: str) -> None:
         if not self._permission_pass:
