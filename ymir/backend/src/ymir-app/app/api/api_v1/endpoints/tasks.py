@@ -341,8 +341,7 @@ def get_task(
     if dataset:
         result["dataset_id"] = dataset.id
     if TaskState(task_info["state"]) is TaskState.error:
-        result = controller_client.get_task_result(current_user.id, task_info["hash"])
-        result["error"] = {"code": -1, "message": result.get("last_error")}
+        result["error"] = {"code": -1, "message": ""}
 
     task_info["result"] = result
     return {"result": task_info}
@@ -470,44 +469,6 @@ def is_obsolete_message(
     return last_update_time > msg_time
 
 
-@router.post(
-    "/update_status",
-    response_model=schemas.TasksOut,
-    dependencies=[Depends(deps.api_key_security)],
-    deprecated=True,
-)
-def batch_update_task_status(
-    *,
-    db: Session = Depends(deps.get_db),
-    graph_db: GraphClient = Depends(deps.get_graph_client),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-) -> Any:
-    """
-    Batch update given tasks status
-    """
-    tasks = crud.task.get_tasks_by_states(
-        db,
-        states=[TaskState.pending, TaskState.running, TaskState.premature],
-        including_deleted=True,
-    )
-    task_result_proxy = TaskResultProxy(
-        db=db,
-        graph_db=graph_db,
-        controller=controller_client,
-        viz=viz_client,
-        clickhouse=clickhouse,
-    )
-    for _, tasks_ in groupby(tasks, "user_id"):
-        for task_ in tasks_:
-            task = schemas.Task.from_orm(task_)
-            task_result = task_result_proxy.get(task)
-            task_result_proxy.save(task, task_result)
-
-    return {"result": {"total": len(tasks), "items": tasks}}
-
-
 class TaskResultProxy:
     def __init__(
         self,
@@ -523,10 +484,6 @@ class TaskResultProxy:
         self.controller = controller
         self.clickhouse = clickhouse
         self.viz = viz
-
-    def get(self, task: schemas.Task) -> Dict:
-        result = self.controller.get_task_result(task.user_id, task.hash)
-        return result
 
     @staticmethod
     def should_fetch_task_result(previous_state: TaskState, state: TaskState) -> bool:
