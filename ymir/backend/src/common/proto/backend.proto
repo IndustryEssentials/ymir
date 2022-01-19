@@ -102,7 +102,7 @@ enum RequestType {
 
     // Long task
     TASK_CREATE = 1001;
-    TASK_INFO = 1002;
+    TASK_INFO = 1002 [deprecated = true];
 }
 
 message GeneralReq {
@@ -135,7 +135,7 @@ message GeneralReq {
     MergeStrategy merge_strategy = 20;
     TaskType terminated_task_type = 21;
     ReqCreateTask req_create_task = 1001;
-    ReqGetTaskInfo req_get_task_info = 1002;
+    ReqGetTaskInfo req_get_task_info = 1002 [deprecated = true];
 }
 
 message GeneralResp {
@@ -147,7 +147,7 @@ message GeneralResp {
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
-    RespGetTaskInfo resp_get_task_info = 1000;
+    RespGetTaskInfo resp_get_task_info = 1000 [deprecated = true];
     RespCMDInference detection = 1001;
 }
 
@@ -228,15 +228,16 @@ message TaskReqLabeling {
 }
 
 message ReqGetTaskInfo {
-    repeated string task_ids = 1;
+    repeated string task_ids = 1 [deprecated = true];
 }
 
+// deprecated = true
 message RespGetTaskInfo {
     // key: task id, value: task info
     map<string, TaskInfoItem> task_infos = 1;
 }
 
-// sub for `TaskMonitorStorageItem_`
+// sub for `TaskMonitorStorageItem_`  deprecated = true
 message TaskInfoItem {
     string task_id = 1; // Copy of task id.
     string base_task_id = 2;
@@ -280,7 +281,7 @@ message Rect {
 };
 
 
-/// task monitor storage
+/// task monitor storage   deprecated = true
 message TaskMonitorStorage {
     map<string, TaskMonitorStorageItem> tasks = 1;
 };
