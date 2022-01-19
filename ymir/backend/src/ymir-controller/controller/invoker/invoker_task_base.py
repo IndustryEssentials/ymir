@@ -3,7 +3,6 @@ import threading
 from typing import Dict
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.task_monitor import ControllerTaskMonitor
 from controller.utils import code, checker, tasks_util, utils
 from proto import backend_pb2
 
@@ -23,13 +22,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             raise RuntimeError("Mismatched req_type")
 
         self._task_monitor_file = os.path.join(self._work_dir, 'out', 'monitor.txt')
-
-        if not self._request.req_create_task.no_task_monitor:
-            task_monitor = ControllerTaskMonitor(storage_root='')
-            task_monitor.register_task(task_id=self._request.task_id,
-                                       repo_root=self._repo_root,
-                                       task_monitor_file=self._task_monitor_file,
-                                       request=self._request)
 
         if self._async_mode:
             thread = threading.Thread(target=self._task_invoke,
