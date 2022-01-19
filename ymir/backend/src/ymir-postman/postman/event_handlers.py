@@ -78,7 +78,7 @@ def _save_retry(retry_tids: Set[str], tid_to_taskstates_latest: entities.TaskSta
         retry_tids (Set[str])
         tid_to_taskstates_latest (entities.TaskStateDict)
     """
-    retry_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in retry_tids}
+    retry_tid_to_tasks = {tid: tid_to_taskstates_latest[tid] for tid in retry_tids if tid in tid_to_taskstates_latest}
     json_str = json.dumps(jsonable_encoder(retry_tid_to_tasks))
     redis_connect.set(name=settings.RETRY_CACHE_KEY, value=json_str)
 
@@ -165,7 +165,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
     if not tids:
         return
 
-    event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids})
+    event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
     logging.debug(f"update sio request: {event_payloads}")
 
     url = 'http://127.0.0.1:8090/events/push'

@@ -1,4 +1,4 @@
-""" emtry point for pymir-ed (pymir events dispatcher) service """
+""" emtry point for ymir-postman service """
 
 import asyncio
 import json
