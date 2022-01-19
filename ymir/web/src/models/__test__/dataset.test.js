@@ -78,7 +78,6 @@ describe("models: dataset", () => {
     })
     const end = generator.next()
 
-    // console.log('dataset model - getDatasets:', response, end, typeof end.value)
     equalObject(expected, end.value)
     expect(end.done).toBe(true)
   })
@@ -239,24 +238,6 @@ describe("models: dataset", () => {
       result: expected,
     })
     const end = generator.next()
-
-    equalObject(expected, end.value)
-    expect(end.done).toBe(true)
-  })
-  it("effects: importDataset", () => {
-    const saga = dataset.effects.importDataset
-    const creator = {
-      type: "importDataset",
-      payload: {},
-    }
-    const expected = { id: 1001, name: 'import_dataset_name' }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result: expected,
-    })
 
     equalObject(expected, end.value)
     expect(end.done).toBe(true)

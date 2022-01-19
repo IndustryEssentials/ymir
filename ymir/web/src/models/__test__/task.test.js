@@ -47,7 +47,6 @@ describe("models: task", () => {
       result: expected,
     })
 
-    // console.log('model task - createFilterTask: ', start, end)
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
   })
@@ -199,7 +198,6 @@ describe("models: task", () => {
       result: expected,
     })
     const end = generator.next()
-
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
   })
@@ -224,12 +222,12 @@ describe("models: task", () => {
     expect(end.done).toBe(true)
   })
   
-  it("effects: getLabelData", () => {
-    const saga = task.effects.getLabelData
+  it("effects: stopTask -> success", () => {
+    const saga = task.effects.stopTask
     const id = 236
     const creator = {
-      type: "getLabelData",
-      payload: id,
+      type: "stopTask",
+      payload: { id },
     }
     const expected = { id }
 
@@ -241,6 +239,24 @@ describe("models: task", () => {
     })
 
     expect(end.value.id).toBe(id)
+    expect(end.done).toBe(true)
+  })
+  it("effects: stopTask - no result", () => {
+    const saga = task.effects.stopTask
+    const id = 236
+    const creator = {
+      type: "stopTask",
+      payload: { id, with_data: true },
+    }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 4002,
+      result: null,
+    })
+
+    expect(end.value).toBeUndefined()
     expect(end.done).toBe(true)
   })
 })

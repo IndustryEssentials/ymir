@@ -1,10 +1,11 @@
 import {
-  getModels, 
+  getModels,
   batchModels,
   getModel,
   delModel,
   createModel,
   updateModel,
+  verify,
 } from "../model"
 import request from '@/utils/request'
 
@@ -15,27 +16,20 @@ jest.mock('@/utils/request', () => {
   return req
 })
 
+const product = (id) => ({ id })
+const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
+const response = (result, code = 0) => ({ code, result })
+const getRequestResponseOnce = (result, method = '', code = 0) => 
+  (method ? request[method] : request).mockImplementationOnce(() => Promise.resolve(response(result, code)))
+
 describe("service: models", () => {
   it("getModels -> success", () => {
-    const params = {
-      name: 'testname',
-      type: 1,
-      start_time: 123942134,
-      end_time: 134123434,
-      offset: 0,
-      limit: 20,
-      sort_by_map: false,
-    }
-    const expected = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: {
-          items: expected,
-          total: expected.length,
-        },
-      })
-    })
+    const params = { name: 'testname', type: 1, start_time: 123942134, end_time: 134123434, offset: 0, limit: 20, sort_by_map: false, }
+    const expected = products(15)
+    getRequestResponseOnce({
+      items: expected,
+      total: expected.length,
+    }, 'get')
 
     getModels(params).then(({ code, result }) => {
       expect(code).toBe(0)
@@ -44,17 +38,12 @@ describe("service: models", () => {
     })
   })
   it("batchModels -> success", () => {
-    const params = [1,2,3]
+    const params = [1, 2, 3]
     const expected = [11, 21, 31]
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: {
-          items: expected,
-          total: expected.length,
-        },
-      })
-    })
+    getRequestResponseOnce({
+      items: expected,
+      total: expected.length,
+    }, 'get')
 
     batchModels(params).then(({ code, result }) => {
       expect(code).toBe(0)
@@ -68,12 +57,7 @@ describe("service: models", () => {
       id,
       name: '63modelname',
     }
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
+    getRequestResponseOnce(expected, 'get')
 
     getModel(id).then(({ code, result }) => {
       expect(code).toBe(0)
@@ -85,12 +69,7 @@ describe("service: models", () => {
   it("delModel -> success", () => {
     const id = 638
     const expected = "ok"
-    request.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
+    getRequestResponseOnce(expected)
 
     delModel(id).then(({ code, result }) => {
       expect(code).toBe(0)
@@ -101,12 +80,7 @@ describe("service: models", () => {
     const id = 637
     const name = 'newnameofmodel'
     const expected = { id, name }
-    request.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
+    getRequestResponseOnce(expected)
 
     updateModel(id, name).then(({ code, result }) => {
       expect(code).toBe(0)
@@ -119,14 +93,19 @@ describe("service: models", () => {
       name: 'newmodel',
     }
     const expected = "ok"
-    request.post.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
+    getRequestResponseOnce(expected, 'post')
 
     createModel(params).then(({ code, result }) => {
+      expect(code).toBe(0)
+      expect(result).toBe(expected)
+    })
+  })
+  it("veirfy -> success", () => {
+    const params = { model_id: 754, image_urls: ['/path/to/image'], image: 'dockerimage:latest' }
+    const expected = "ok"
+    getRequestResponseOnce(expected, 'post')
+
+    verify(params).then(({ code, result }) => {
       expect(code).toBe(0)
       expect(result).toBe(expected)
     })

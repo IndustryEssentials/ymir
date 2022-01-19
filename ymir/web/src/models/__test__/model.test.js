@@ -153,7 +153,6 @@ describe("models: model", () => {
       result: expected,
     })
 
-    // console.log('model model - createFilterTask: ', start, end)
     expect(end.value.id).toBe(expected.id)
     expect(end.done).toBe(true)
   })
@@ -179,7 +178,6 @@ describe("models: model", () => {
       result: expected,
     })
 
-    // console.log('model model - createFilterTask: ', start, end)
     expect(end.value.model_id).toBe(id)
     expect(end.done).toBe(true)
   })

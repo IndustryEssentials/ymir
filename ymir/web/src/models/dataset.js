@@ -8,7 +8,6 @@ import {
   createDataset,
   updateDataset,
   getInternalDataset,
-  importDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
@@ -100,10 +99,6 @@ export default {
           payload: result,
         })
       }
-      return result
-    },
-    *importDataset({ payload }, { call, put }) {
-      const { code, result } = yield call(importDataset, payload)
       return result
     },
     *updateDatasets({ payload }, { put, select }) {

@@ -8,43 +8,17 @@ import {
   createTrainTask,
   createMiningTask,
   createTask,
+  stopTask,
 } from "../task"
-import request from '@/utils/request'
+import { product, products, requestExample } from './common'
 
-jest.mock('@/utils/request', () => {
-  const req = jest.fn()
-  req.get = jest.fn()
-  req.post = jest.fn()
-  return req
-})
 
 describe("service: tasks", () => {
   it("getTasks -> success", () => {
-    const params = {
-      name: 'testname',
-      type: 1,
-      state: 1,
-      start_time: 123942134,
-      end_time: 134123434,
-      offset: 0,
-      limit: 20,
-    }
-    const expected = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: {
-          items: expected,
-          total: expected.length,
-        },
-      })
-    })
-
-    getTasks(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.items).toEqual(expected)
-      expect(result.total).toBe(expected.length)
-    })
+    const params = { name: 'testname', type: 1, state: 1, start_time: 123942134, end_time: 134123434 }
+    const len = 12
+    const expected = { items: product(len), total: len }
+    requestExample(getTasks, params, expected, 'get')
   })
   it("getTask -> success", () => {
     const id = 613
@@ -52,39 +26,26 @@ describe("service: tasks", () => {
       id,
       name: '60taskname',
     }
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    getTask(id).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.id).toBe(id)
-      expect(result.name).toBe(expected.name)
-    })
+    requestExample(getTask, id, expected, 'get')
   })
 
-  it("createFilterTask -> success", () => {
+  it("createFilterTask -> success, no include classes", () => {
+    const params = {
+      name: 'taskname',
+      datasets: [34, 56, 348],
+      exclude: ['k3']
+    }
+    const expected = { id: 612 }
+    requestExample(createFilterTask, params, expected, 'post')
+  })
+  it("createFilterTask -> success, no exclude classes", () => {
     const params = {
       name: 'taskname',
       datasets: [34, 56, 348],
       include: ['k1', 'k2'],
-      exclude: ['k3']
     }
     const expected = { id: 612 }
-    request.post.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    createFilterTask(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.id).toBe(expected.id)
-    })
+    requestExample(createFilterTask, params, expected, 'post')
   })
 
   it("createTrainTask -> success", () => {
@@ -99,17 +60,7 @@ describe("service: tasks", () => {
       train_type: 1,
     }
     const expected = { id: 611 }
-    request.post.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    createTrainTask(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.id).toBe(expected.id)
-    })
+    requestExample(createTrainTask, params, expected, 'post')
   })
   it("createMiningTask -> success", () => {
     const params = {
@@ -121,17 +72,7 @@ describe("service: tasks", () => {
       name: 'taskname',
     }
     const expected = { id: 610 }
-    request.post.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    createMiningTask(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.id).toBe(expected.id)
-    })
+    requestExample(createMiningTask, params, expected, 'post')
   })
   it("createLabelTask -> success", () => {
     const params = {
@@ -142,65 +83,35 @@ describe("service: tasks", () => {
       doc: 'http://test.com/test.pdf'
     }
     const expected = { id: 609 }
-    request.post.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    createLabelTask(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.id).toBe(expected.id)
-    })
+    requestExample(createLabelTask, params, expected, 'post')
   })
   it("deleteTask -> success", () => {
     const id = 608
     const expected = "ok"
-    request.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    deleteTask(id).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result).toBe(expected)
-    })
+    requestExample(deleteTask, id, expected)
+  })
+  it("stopTask -> success -> throw result", () => {
+    const id = 607
+    const expected = { id }
+    requestExample(deleteTask, id, expected, 'post')
+  })
+  it("stopTask -> success -> with result", () => {
+    const id = 607
+    const fetch_result = true
+    const expected = { id }
+    requestExample(deleteTask, [id, fetch_result], expected)
   })
   it("updateTask -> success", () => {
     const id = 607
     const name = 'newnameoftask'
     const expected = { id, name }
-    request.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    updateTask(id, name).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.id).toEqual(id)
-      expect(result.name).toEqual(name)
-    })
+    requestExample(deleteTask, [id, name], expected)
   })
   it("createTask -> success", () => {
     const params = {
       name: 'newtask',
     }
     const expected = "ok"
-    request.post.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    createTask(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result).toBe(expected)
-    })
+    requestExample(deleteTask, params, expected, 'post')
   })
 })
