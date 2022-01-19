@@ -179,7 +179,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
 
 def _get_event_payloads(tid_to_taskstates: entities.TaskStateDict) -> list:
     # sort by user
-    uid_to_taskdatas = defaultdict(dict)
+    uid_to_taskdatas: Dict[str, Dict[str, Any]] = defaultdict(dict)
     for tid, taskstate in tid_to_taskstates.items():
         uid = taskstate.task_extra_info.user_id
         uid_to_taskdatas[uid][tid] = {
