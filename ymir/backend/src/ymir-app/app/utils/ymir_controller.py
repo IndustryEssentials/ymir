@@ -323,14 +323,6 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def get_task_result(self, user_id: int, task_hash: str) -> Dict:
-        req = ControllerRequest(
-            ExtraRequestType.get_task_info, user_id, args={"task_ids": [task_hash]}
-        )
-        resp = self.send(req)
-        result = list(resp["resp_get_task_info"]["task_infos"].values())[0]
-        return result
-
     def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.kill,
