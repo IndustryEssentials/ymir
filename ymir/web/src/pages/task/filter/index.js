@@ -128,7 +128,7 @@ function Filter({
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           labelAlign={'left'}
-          size='large'
+          // size='middle'
           colon={false}
         >
           <Tip hidden={true}>

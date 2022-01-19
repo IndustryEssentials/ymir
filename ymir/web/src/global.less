@@ -8,12 +8,25 @@ body {
     background: #fff;
   }
   .ant-tag {
-    margin: 0 0 5px 0;
+    padding: 1px 6px;
+    background: #f4f4f4;
+    border: none;
+    margin-bottom: 5px ;
   }
-  .ant-btn .anticon {
-    vertical-align: middle;
+  .ant-btn {
+    padding: 4px 10px;
+    .anticon {
+      vertical-align: middle;
+    }
   }
-
+  .ant-table-thead,.ant-table-tbody {
+    tr > th,td {
+       border: none;
+     }
+   } 
+  .ant-table-tbody {
+    color: rgba(0, 0, 0, 0.65);
+  }
   .ant-table-row .edit {
       visibility: hidden;
       color: skyblue;
@@ -56,23 +69,24 @@ body {
   .ant-tag-error {
     color: @error-color;
     background: fade(@error-color, 10);
-    border-color: @error-color;
   }
   .ant-tag-success {
     color: @success-color;
     background: fade(@success-color, 10);
-    border-color: @success-color;
   }
   .ant-tag-warning {
     color: @warning-color;
     background: fade(@warning-color, 10);
-    border-color: @warning-color;
   }
   .ant-card-head-title {
     padding: 10px 0;
   }
+  //Task Details
   .ant-descriptions-item-label {
-    color: rgba(0, 0, 0, 0.45);
+    color: rgba(0, 0, 0, 0.85);
+  }
+  .ant-descriptions-item-content {
+    color: rgba(0, 0, 0, 0.65);
   }
 
   /** form **/
@@ -89,7 +103,15 @@ body {
       opacity: 0;
     }
   }
-  .ant-radio-button-wrapper, .ant-form-item-control-input-content {
-    color:rgba(0, 0, 0, 0.65);
+  .ant-radio-button-wrapper,.ant-form-item-control-input-content {
+      color:rgba(0, 0, 0, 0.45); 
+    }
+ 
+  //radio color styles
+  .ant-radio-checked .ant-radio-inner {
+   border: 1px solid @link-color;
+  }
+  .ant-radio-inner::after {
+    background-color: @link-color;
   }
 }

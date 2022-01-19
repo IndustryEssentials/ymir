@@ -17,6 +17,7 @@ import Add from './add'
 import MultiAdd from "./multiAdd"
 import { AddIcon, AddtaskIcon, EditIcon, } from "../../components/common/icons"
 
+
 const { confirm } = Modal
 const { useForm } = Form
 
@@ -182,7 +183,7 @@ function Keyword({ getKeywords }) {
             // layout="inline"
             labelCol={{ flex: '100px' }}
             onValuesChange={search}
-            size='large'
+            // size='large'
             colon={false}
           >
             <Row>
@@ -215,6 +216,7 @@ function Keyword({ getKeywords }) {
                 pageChange({ current, pageSize })
               }
               rowKey={(record) => record.name}
+              rowClassName={(record, index)=>index % 2 === 0 ? styles.normalRow : styles.oddRow}
               pagination={{
                 showQuickJumper: true,
                 showSizeChanger: true,
