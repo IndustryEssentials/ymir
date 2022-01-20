@@ -1,5 +1,3 @@
-import request from '@/utils/request'
-
 import {
   getUploadUrl,
   getTensorboardLink,
@@ -7,13 +5,7 @@ import {
   getStats,
   getSysInfo,
 } from '../common'
-
-jest.mock('@/utils/request', () => {
-  return {
-    get: jest.fn(),
-    post: jest.fn(),
-  }
-})
+import { requestExample } from './common'
 
 describe('service: common', () => {
   it('common:getUploadUrl', () => {
@@ -42,16 +34,7 @@ describe('service: common', () => {
       edges: [1,2,3,4],
       nodes: [5,6,7,8],
     }
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    getHistory(params).then(({ result }) => {
-      expect(result).toEqual(expected)
-    })
+    requestExample(getHistory, params, expected, 'get')
   })
   it('common:getStats', () => {
     const params1 = { q: 'ds', limit: 3 }
@@ -79,70 +62,16 @@ describe('service: common', () => {
       ]
     }
 
-
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: dsExpected,
-      })
-    })
-
-    getStats(params1).then(({ result }) => {
-      expect(result).toEqual(dsExpected)
-    })
-
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: msExpected,
-      })
-    })
-
-    getStats(params2).then(({ result }) => {
-      expect(result).toEqual(msExpected)
-    })
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: dsExpected,
-      })
-    })
-    getStats(params3).then(({ result }) => {
-      expect(result).toEqual(dsExpected)
-    })
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: taskExpected,
-      })
-    })
-    getStats(params4).then(({ result }) => {
-      expect(result).toEqual(taskExpected)
-    })
-
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: taskExpected,
-      })
-    })
-    getStats(params5).then(({ result }) => {
-      expect(result).toEqual(taskExpected)
-    })
+    requestExample(getStats, params1, msExpected, 'get')
+    requestExample(getStats, params2, dsExpected, 'get')
+    requestExample(getStats, params3, dsExpected, 'get')
+    requestExample(getStats, params4, taskExpected, 'get')
+    requestExample(getStats, params5, taskExpected, 'get')
   })
   it('common:getSysInfo', () => {
     const expected = {
       gpu_count: 8,
     }
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    getSysInfo().then(({ result }) => {
-      expect(result).toEqual(expected)
-    })
+    requestExample(getSysInfo, {}, expected, 'get')
   })
 })
