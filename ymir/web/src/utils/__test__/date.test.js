@@ -9,7 +9,7 @@ describe("utils: date", () => {
   })
   it("function: getDateFromTimestamp. get local format date from timestamp(utc)", () => {
     const timestamp = "1625449048"
-    const expected = '2021-07-05 09:37:28'
+    const expected = format(moment(Number(timestamp) * 1000))
     expect(getDateFromTimestamp(timestamp)).toBe(expected)
   })
   it("function: getUnixTimeStamp. get timestamp from utc time", () => {
