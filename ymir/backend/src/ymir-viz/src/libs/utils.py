@@ -1,15 +1,18 @@
 import time
 from functools import wraps
-from typing import Dict, Callable
+from typing import Callable, Dict
 
 from flask import request
-
 from src import config
 from src.libs import app_logger
 
 
 def suss_resp(error_code: int = 0, message: str = "operation successful") -> Dict:
-    resp = dict(error_code=error_code, message=message, request_id=request.headers.get("request_id"))
+    resp = dict(
+        error_code=error_code,
+        message=message,
+        request_id=request.headers.get("request_id"),
+    )
 
     return resp
 

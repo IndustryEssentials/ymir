@@ -1,8 +1,7 @@
 from typing import Optional, Union
 
-from pydantic import BaseModel
-
 from proto import backend_pb2
+from pydantic import BaseModel
 
 
 class PercentResult(BaseModel):
@@ -37,7 +36,9 @@ class PercentLogHandler:
 
         task_id, timestamp, percent, tmp_state, *_ = content_row_one
         state = PercentLogHandler.task_state_str_to_code(tmp_state)
-        percent_result = PercentResult(task_id=task_id, timestamp=int(timestamp), percent=percent, state=state)
+        percent_result = PercentResult(
+            task_id=task_id, timestamp=int(timestamp), percent=percent, state=state
+        )
         if len(content_row_one) > 4:
             percent_result.state_code = int(content_row_one[4])
         if len(content_row_one) > 5:

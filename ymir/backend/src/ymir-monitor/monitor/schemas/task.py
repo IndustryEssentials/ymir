@@ -1,11 +1,9 @@
+import os
 from enum import IntEnum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, validator
-
 from common_utils.percent_log_util import PercentResult
-
-import os
+from pydantic import BaseModel, validator
 
 
 class MonitorType(IntEnum):

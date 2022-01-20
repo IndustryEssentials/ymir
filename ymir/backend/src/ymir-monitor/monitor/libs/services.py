@@ -1,11 +1,15 @@
 import logging
-from typing import Dict
-from typing import List
+from typing import Dict, List
 
 from common_utils.percent_log_util import PercentLogHandler
 from monitor.config import settings
 from monitor.libs.redis_handler import RedisHandler
-from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
+from monitor.schemas.task import (
+    PercentResult,
+    TaskExtraInfo,
+    TaskParameter,
+    TaskStorageStructure,
+)
 from monitor.utils.errors import DuplicateTaskIDError, LogFileError
 from proto.backend_pb2 import TaskState
 
@@ -31,7 +35,9 @@ class TaskService:
         return result
 
     @staticmethod
-    def merge_task_progress_contents(raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
+    def merge_task_progress_contents(
+        raw_log_contents: Dict[str, PercentResult]
+    ) -> PercentResult:
         """
         pending: if all log is pending
         done: if all log is done
@@ -46,16 +52,24 @@ class TaskService:
             percent += raw_log_content.percent
             if not max_timestamp_content:
                 max_timestamp_content = raw_log_content
-            max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: int(x.timestamp))
+            max_timestamp_content = max(
+                max_timestamp_content, raw_log_content, key=lambda x: int(x.timestamp)
+            )
 
         result = max_timestamp_content.copy()  # type: ignore
         if TaskState.TaskStateError in log_files_state_set:
             result.percent = 1.0
             result.state = TaskState.TaskStateError
-        elif len(log_files_state_set) == 1 and TaskState.TaskStateDone in log_files_state_set:
+        elif (
+            len(log_files_state_set) == 1
+            and TaskState.TaskStateDone in log_files_state_set
+        ):
             result.percent = 1.0
             result.state = TaskState.TaskStateDone
-        elif len(log_files_state_set) == 1 and TaskState.TaskStatePending in log_files_state_set:
+        elif (
+            len(log_files_state_set) == 1
+            and TaskState.TaskStatePending in log_files_state_set
+        ):
             result.percent = 0.0
             result.state = TaskState.TaskStatePending
         else:
@@ -90,7 +104,9 @@ class TaskService:
         percent_result = PercentResult.parse_obj(percent_result.dict())
 
         task_info = TaskStorageStructure(
-            raw_log_contents=raw_log_contents, task_extra_info=task_extra_info, percent_result=percent_result,
+            raw_log_contents=raw_log_contents,
+            task_extra_info=task_extra_info,
+            percent_result=percent_result,
         )
 
         self.add_single_task(reg_parameters.task_id, task_info.dict())

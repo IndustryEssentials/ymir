@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
 from src import util
+from src.models.base_model_ import Model
 
 
 class ModelResultResult(Model):
@@ -14,7 +14,10 @@ class ModelResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, task_type: str=None, model_id: str=None, model_m_ap: int=None):  # noqa: E501
+
+    def __init__(
+        self, task_type: str = None, model_id: str = None, model_m_ap: int = None
+    ):  # noqa: E501
         """ModelResultResult - a model defined in Swagger
 
         :param task_type: The task_type of this ModelResultResult.  # noqa: E501
@@ -24,23 +27,19 @@ class ModelResultResult(Model):
         :param model_m_ap: The model_m_ap of this ModelResultResult.  # noqa: E501
         :type model_m_ap: int
         """
-        self.swagger_types = {
-            'task_type': str,
-            'model_id': str,
-            'model_m_ap': int
-        }
+        self.swagger_types = {"task_type": str, "model_id": str, "model_m_ap": int}
 
         self.attribute_map = {
-            'task_type': 'task_type',
-            'model_id': 'model_id',
-            'model_m_ap': 'model_mAP'
+            "task_type": "task_type",
+            "model_id": "model_id",
+            "model_m_ap": "model_mAP",
         }
         self._task_type = task_type
         self._model_id = model_id
         self._model_m_ap = model_m_ap
 
     @classmethod
-    def from_dict(cls, dikt) -> 'ModelResultResult':
+    def from_dict(cls, dikt) -> "ModelResultResult":
         """Returns the dict as a model
 
         :param dikt: A dict.

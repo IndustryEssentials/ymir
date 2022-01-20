@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
 from src import util
+from src.models.base_model_ import Model
 
 
 class ApiResponse(Model):
@@ -14,7 +14,10 @@ class ApiResponse(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, code: int=None, request_id: str=None, message: str=None):  # noqa: E501
+
+    def __init__(
+        self, code: int = None, request_id: str = None, message: str = None
+    ):  # noqa: E501
         """ApiResponse - a model defined in Swagger
 
         :param code: The code of this ApiResponse.  # noqa: E501
@@ -24,23 +27,19 @@ class ApiResponse(Model):
         :param message: The message of this ApiResponse.  # noqa: E501
         :type message: str
         """
-        self.swagger_types = {
-            'code': int,
-            'request_id': str,
-            'message': str
-        }
+        self.swagger_types = {"code": int, "request_id": str, "message": str}
 
         self.attribute_map = {
-            'code': 'code',
-            'request_id': 'request_id',
-            'message': 'message'
+            "code": "code",
+            "request_id": "request_id",
+            "message": "message",
         }
         self._code = code
         self._request_id = request_id
         self._message = message
 
     @classmethod
-    def from_dict(cls, dikt) -> 'ApiResponse':
+    def from_dict(cls, dikt) -> "ApiResponse":
         """Returns the dict as a model
 
         :param dikt: A dict.

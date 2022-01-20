@@ -1,13 +1,15 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
-from src.models.assets_meta_info_metadata_timestamp import AssetsMetaInfoMetadataTimestamp  # noqa: F401,E501
 from src import util
+from src.models.assets_meta_info_metadata_timestamp import (  # noqa: F401,E501
+    AssetsMetaInfoMetadataTimestamp,
+)
+from src.models.base_model_ import Model
 
 
 class AssetsMetaInfoMetadata(Model):
@@ -15,7 +17,15 @@ class AssetsMetaInfoMetadata(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, asset_type: str=None, width: int=None, height: int=None, image_channels: int=None, timestamp: AssetsMetaInfoMetadataTimestamp=None):  # noqa: E501
+
+    def __init__(
+        self,
+        asset_type: str = None,
+        width: int = None,
+        height: int = None,
+        image_channels: int = None,
+        timestamp: AssetsMetaInfoMetadataTimestamp = None,
+    ):  # noqa: E501
         """AssetsMetaInfoMetadata - a model defined in Swagger
 
         :param asset_type: The asset_type of this AssetsMetaInfoMetadata.  # noqa: E501
@@ -30,19 +40,19 @@ class AssetsMetaInfoMetadata(Model):
         :type timestamp: AssetsMetaInfoMetadataTimestamp
         """
         self.swagger_types = {
-            'asset_type': str,
-            'width': int,
-            'height': int,
-            'image_channels': int,
-            'timestamp': AssetsMetaInfoMetadataTimestamp
+            "asset_type": str,
+            "width": int,
+            "height": int,
+            "image_channels": int,
+            "timestamp": AssetsMetaInfoMetadataTimestamp,
         }
 
         self.attribute_map = {
-            'asset_type': 'asset_type',
-            'width': 'width',
-            'height': 'height',
-            'image_channels': 'image_channels',
-            'timestamp': 'timestamp'
+            "asset_type": "asset_type",
+            "width": "width",
+            "height": "height",
+            "image_channels": "image_channels",
+            "timestamp": "timestamp",
         }
         self._asset_type = asset_type
         self._width = width
@@ -51,7 +61,7 @@ class AssetsMetaInfoMetadata(Model):
         self._timestamp = timestamp
 
     @classmethod
-    def from_dict(cls, dikt) -> 'AssetsMetaInfoMetadata':
+    def from_dict(cls, dikt) -> "AssetsMetaInfoMetadata":
         """Returns the dict as a model
 
         :param dikt: A dict.

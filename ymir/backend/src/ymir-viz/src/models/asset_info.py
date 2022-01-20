@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
 from src import util
+from src.models.base_model_ import Model
 
 
 class AssetInfo(Model):
@@ -14,7 +14,8 @@ class AssetInfo(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, asset_id: str=None, class_ids: List[int]=None):  # noqa: E501
+
+    def __init__(self, asset_id: str = None, class_ids: List[int] = None):  # noqa: E501
         """AssetInfo - a model defined in Swagger
 
         :param asset_id: The asset_id of this AssetInfo.  # noqa: E501
@@ -22,20 +23,14 @@ class AssetInfo(Model):
         :param class_ids: The class_ids of this AssetInfo.  # noqa: E501
         :type class_ids: List[int]
         """
-        self.swagger_types = {
-            'asset_id': str,
-            'class_ids': List[int]
-        }
+        self.swagger_types = {"asset_id": str, "class_ids": List[int]}
 
-        self.attribute_map = {
-            'asset_id': 'asset_id',
-            'class_ids': 'class_ids'
-        }
+        self.attribute_map = {"asset_id": "asset_id", "class_ids": "class_ids"}
         self._asset_id = asset_id
         self._class_ids = class_ids
 
     @classmethod
-    def from_dict(cls, dikt) -> 'AssetInfo':
+    def from_dict(cls, dikt) -> "AssetInfo":
         """Returns the dict as a model
 
         :param dikt: A dict.

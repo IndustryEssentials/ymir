@@ -1,5 +1,4 @@
 from dependency_injector import containers, providers
-
 from monitor.libs import redis_handler, services
 
 

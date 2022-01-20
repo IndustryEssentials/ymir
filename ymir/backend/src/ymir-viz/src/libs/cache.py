@@ -1,10 +1,10 @@
 import json
-from typing import Dict, Any, List, Optional
-
-import redis
+from typing import Any, Dict, List, Optional
 
 from src import config
 from src.libs import app_logger
+
+import redis
 
 
 class RedisCache:
@@ -57,10 +57,13 @@ class RedisCache:
 
 
 def get_connect() -> redis.Redis:
-    return redis.StrictRedis.from_url(str(config.VIZ_REDIS_URI), encoding="utf8", decode_responses=True)
+    return redis.StrictRedis.from_url(
+        str(config.VIZ_REDIS_URI), encoding="utf8", decode_responses=True
+    )
 
 
 # redis_cache = RedisCache(get_connect())
 from werkzeug.local import LocalProxy
+
 proxy_rds_con = LocalProxy(get_connect)
-redis_cache = RedisCache(proxy_rds_con)     # type: ignore
+redis_cache = RedisCache(proxy_rds_con)  # type: ignore

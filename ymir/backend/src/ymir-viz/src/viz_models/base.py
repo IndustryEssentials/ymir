@@ -3,7 +3,7 @@ import threading
 from typing import Dict
 
 from src import config
-from src.libs import utils, app_logger
+from src.libs import app_logger, utils
 from src.libs.cache import redis_cache
 from src.viz_models import pb_reader
 
@@ -17,7 +17,9 @@ class BaseModel:
         self.cache_key = utils.gen_cache_key(user_id, repo_id, branch_id)
 
     def check_cache_existence(self) -> int:
-        detail_existence = redis_cache.exists(f"{self.cache_key}:{config.ASSET_ID_DETAIL}")
+        detail_existence = redis_cache.exists(
+            f"{self.cache_key}:{config.ASSET_ID_DETAIL}"
+        )
         index_existence = redis_cache.exists(
             f"{self.cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{config.ALL_INDEX_CLASSIDS}"
         )
@@ -48,24 +50,35 @@ class BaseModel:
         str  xxx:class_ids_count "{3:44, }"
         """
         if redis_cache.get(f"{cache_key}:{config.CACHE_STATUS}"):
-            app_logger.logger.info("Skip setting cache!!! The other thread is writing cache now")
+            app_logger.logger.info(
+                "Skip setting cache!!! The other thread is writing cache now"
+            )
             return
 
         app_logger.logger.info("start setting cache!!!")
         redis_cache.set(f"{cache_key}:{config.CACHE_STATUS}", {"flag": 0})
         with redis_cache.pipeline() as pipe:
             for asset_id, asset_id_detail in asset_content["asset_ids_detail"].items():
-                pipe.hset(name=f"{cache_key}:{config.ASSET_ID_DETAIL}", mapping={asset_id: json.dumps(asset_id_detail)})
+                pipe.hset(
+                    name=f"{cache_key}:{config.ASSET_ID_DETAIL}",
+                    mapping={asset_id: json.dumps(asset_id_detail)},
+                )
             pipe.execute()
 
         with redis_cache.pipeline() as pipe:
             for class_id, assets_list in asset_content["class_ids_index"].items():
-                pipe.rpush(f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}", *assets_list["asset_ids"])
+                pipe.rpush(
+                    f"{cache_key}:{config.ASSETS_CLASS_ID_INDEX}:{class_id}",
+                    *assets_list["asset_ids"],
+                )
             pipe.execute()
 
         redis_cache.set(
             f"{cache_key}:{config.ASSETS_ATTRIBUTES}",
-            {"class_ids_count": asset_content["class_ids_count"], "ignored_labels": asset_content["ignored_labels"]},
+            {
+                "class_ids_count": asset_content["class_ids_count"],
+                "ignored_labels": asset_content["ignored_labels"],
+            },
         )
         redis_cache.set(f"{cache_key}:{config.CACHE_STATUS}", {"flag": 1})
         app_logger.logger.info("finish setting cache!!!")
@@ -73,5 +86,11 @@ class BaseModel:
     @classmethod
     def trigger_cache_generator(cls, asset_content: Dict, cache_key: str) -> None:
         # async generate middle structure content cache
-        consumer_task = threading.Thread(target=cls.set_cache, args=(asset_content, cache_key,))
+        consumer_task = threading.Thread(
+            target=cls.set_cache,
+            args=(
+                asset_content,
+                cache_key,
+            ),
+        )
         consumer_task.start()

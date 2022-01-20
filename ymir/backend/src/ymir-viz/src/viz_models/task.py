@@ -20,7 +20,8 @@ class Task(BaseModel):
     @utils.time_it
     def get_model_info(self) -> Dict:
         # not need cache, it stored in app
-        raw_model_message = pb_reader.MirStorageLoader(config.SANDBOX_ROOT, self.user_id, self.repo_id,
-                                                       self.branch_id).get_tasks_content()
+        raw_model_message = pb_reader.MirStorageLoader(
+            config.SANDBOX_ROOT, self.user_id, self.repo_id, self.branch_id
+        ).get_tasks_content()
 
         return self.format_model_info(raw_model_message)

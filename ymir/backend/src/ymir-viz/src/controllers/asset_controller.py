@@ -4,7 +4,9 @@ from src.libs import app_logger, utils
 from src.viz_models import asset
 
 
-def get_assert_id_info(user_id: str, repo_id: str, branch_id: str, asset_id: str) -> Dict:
+def get_assert_id_info(
+    user_id: str, repo_id: str, branch_id: str, asset_id: str
+) -> Dict:
     result = asset.Asset(user_id, repo_id, branch_id).get_asset_id_info(asset_id)
 
     resp = utils.suss_resp()
@@ -25,7 +27,9 @@ def get_asserts_info(
     """
     API get assetst info
     """
-    result = asset.Asset(user_id, repo_id, branch_id).get_assets_info(offset, limit, class_id)
+    result = asset.Asset(user_id, repo_id, branch_id).get_assets_info(
+        offset, limit, class_id
+    )
 
     resp = utils.suss_resp()
     resp.update({"result": result})

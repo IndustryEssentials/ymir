@@ -1,14 +1,14 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
-from src.models.api_response import ApiResponse  # noqa: F401,E501
-from src.models.model_result_result import ModelResultResult  # noqa: F401,E501
 from src import util
+from src.models.api_response import ApiResponse  # noqa: F401,E501
+from src.models.base_model_ import Model
+from src.models.model_result_result import ModelResultResult  # noqa: F401,E501
 
 
 class ModelResult(Model):
@@ -16,7 +16,14 @@ class ModelResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, code: int=None, request_id: str=None, message: str=None, result: ModelResultResult=None):  # noqa: E501
+
+    def __init__(
+        self,
+        code: int = None,
+        request_id: str = None,
+        message: str = None,
+        result: ModelResultResult = None,
+    ):  # noqa: E501
         """ModelResult - a model defined in Swagger
 
         :param code: The code of this ModelResult.  # noqa: E501
@@ -29,17 +36,17 @@ class ModelResult(Model):
         :type result: ModelResultResult
         """
         self.swagger_types = {
-            'code': int,
-            'request_id': str,
-            'message': str,
-            'result': ModelResultResult
+            "code": int,
+            "request_id": str,
+            "message": str,
+            "result": ModelResultResult,
         }
 
         self.attribute_map = {
-            'code': 'code',
-            'request_id': 'request_id',
-            'message': 'message',
-            'result': 'result'
+            "code": "code",
+            "request_id": "request_id",
+            "message": "message",
+            "result": "result",
         }
         self._code = code
         self._request_id = request_id
@@ -47,7 +54,7 @@ class ModelResult(Model):
         self._result = result
 
     @classmethod
-    def from_dict(cls, dikt) -> 'ModelResult':
+    def from_dict(cls, dikt) -> "ModelResult":
         """Returns the dict as a model
 
         :param dikt: A dict.

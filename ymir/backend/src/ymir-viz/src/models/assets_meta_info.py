@@ -1,14 +1,16 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
-from src.models.annotations import Annotations  # noqa: F401,E501
-from src.models.assets_meta_info_metadata import AssetsMetaInfoMetadata  # noqa: F401,E501
 from src import util
+from src.models.annotations import Annotations  # noqa: F401,E501
+from src.models.assets_meta_info_metadata import (  # noqa: F401,E501
+    AssetsMetaInfoMetadata,
+)
+from src.models.base_model_ import Model
 
 
 class AssetsMetaInfo(Model):
@@ -16,7 +18,13 @@ class AssetsMetaInfo(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, annotations: Annotations=None, class_ids: List[int]=None, metadata: AssetsMetaInfoMetadata=None):  # noqa: E501
+
+    def __init__(
+        self,
+        annotations: Annotations = None,
+        class_ids: List[int] = None,
+        metadata: AssetsMetaInfoMetadata = None,
+    ):  # noqa: E501
         """AssetsMetaInfo - a model defined in Swagger
 
         :param annotations: The annotations of this AssetsMetaInfo.  # noqa: E501
@@ -27,22 +35,22 @@ class AssetsMetaInfo(Model):
         :type metadata: AssetsMetaInfoMetadata
         """
         self.swagger_types = {
-            'annotations': Annotations,
-            'class_ids': List[int],
-            'metadata': AssetsMetaInfoMetadata
+            "annotations": Annotations,
+            "class_ids": List[int],
+            "metadata": AssetsMetaInfoMetadata,
         }
 
         self.attribute_map = {
-            'annotations': 'annotations',
-            'class_ids': 'class_ids',
-            'metadata': 'metadata'
+            "annotations": "annotations",
+            "class_ids": "class_ids",
+            "metadata": "metadata",
         }
         self._annotations = annotations
         self._class_ids = class_ids
         self._metadata = metadata
 
     @classmethod
-    def from_dict(cls, dikt) -> 'AssetsMetaInfo':
+    def from_dict(cls, dikt) -> "AssetsMetaInfo":
         """Returns the dict as a model
 
         :param dikt: A dict.

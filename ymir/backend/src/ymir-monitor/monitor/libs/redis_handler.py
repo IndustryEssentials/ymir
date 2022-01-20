@@ -1,9 +1,9 @@
 import json
 from typing import Dict
 
-from redis import StrictRedis, Redis
-
 from monitor.config import settings
+
+from redis import Redis, StrictRedis
 
 
 def init_redis_pool(redis_uri: str = settings.BACKEND_REDIS_URL) -> Redis:
@@ -30,7 +30,13 @@ class RedisHandler:
         return self._redis.hexists(name, key)
 
     def hmset(self, name: str, mapping: Dict) -> None:
-        self._redis.hset(name=name, mapping={key: json.dumps(value) for key, value in mapping.items()})
+        self._redis.hset(
+            name=name,
+            mapping={key: json.dumps(value) for key, value in mapping.items()},
+        )
 
     def hgetall(self, name: str) -> Dict:
-        return {item: json.loads(value) for item, value in self._redis.hgetall(name=name).items()}
+        return {
+            item: json.loads(value)
+            for item, value in self._redis.hgetall(name=name).items()
+        }

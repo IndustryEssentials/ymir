@@ -2,9 +2,8 @@ from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional
 
 import requests
-from fastapi.logger import logger
-
 from app.config import settings
+from fastapi.logger import logger
 
 
 @dataclass
@@ -16,7 +15,9 @@ class Asset:
     metadata: Dict
 
     @classmethod
-    def from_viz_res(cls, asset_id: str, res: Dict, keyword_id_to_name: Dict[int, str]) -> "Asset":
+    def from_viz_res(
+        cls, asset_id: str, res: Dict, keyword_id_to_name: Dict[int, str]
+    ) -> "Asset":
         annotations = [
             {
                 "box": annotation["box"],
@@ -24,7 +25,9 @@ class Asset:
             }
             for annotation in res["annotations"]
         ]
-        keywords = [keyword_id_to_name.get(int(class_id)) for class_id in res["class_ids"]]
+        keywords = [
+            keyword_id_to_name.get(int(class_id)) for class_id in res["class_ids"]
+        ]
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -55,7 +58,8 @@ class Assets:
                 "url": get_asset_url(asset["asset_id"]),
                 "hash": asset["asset_id"],
                 "keywords": [
-                    keyword_id_to_name[int(class_id)] for class_id in asset["class_ids"]
+                    keyword_id_to_name[int(class_id)]
+                    for class_id in asset["class_ids"]
                     if int(class_id) in keyword_id_to_name
                 ],
             }
@@ -90,7 +94,14 @@ class VizClient:
         self._branch_id = None  # type: Optional[str]
         self._keyword_id_to_name = None  # type: Optional[Dict]
 
-    def config(self, *, user_id: int, repo_id: Optional[str] = None, branch_id: str, keyword_id_to_name: Optional[Dict] = None) -> None:
+    def config(
+        self,
+        *,
+        user_id: int,
+        repo_id: Optional[str] = None,
+        branch_id: str,
+        keyword_id_to_name: Optional[Dict] = None,
+    ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._repo_id = repo_id or f"{self._user_id:0>6}"
         self._branch_id = branch_id

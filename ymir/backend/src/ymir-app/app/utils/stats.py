@@ -1,10 +1,11 @@
 from collections import defaultdict
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 import arrow
-from redis import StrictRedis
-from arrow.arrow import Arrow
 from app.config import settings
+from arrow.arrow import Arrow
+
+from redis import StrictRedis
 
 PRECISION = ["day", "week", "month"]
 
@@ -19,7 +20,8 @@ class RedisStats:
     def _get_redis_con(self, redis_uri: str) -> StrictRedis:
         if settings.IS_TESTING:
             import redislite
-            redis_con = redislite.StrictRedis('/tmp/redis.db')
+
+            redis_con = redislite.StrictRedis("/tmp/redis.db")
         else:
             redis_con = StrictRedis.from_url(redis_uri)
         return redis_con
@@ -57,17 +59,23 @@ class RedisStats:
         key = f"{self.prefix}:{user_id}:model"
         self._update_rank(self.conn, key, str(model_id))
 
-    def update_keyword_wise_model_rank(self, user_id: int, model_id: int, model_mAP: float, keywords: List[str]) -> None:
+    def update_keyword_wise_model_rank(
+        self, user_id: int, model_id: int, model_mAP: float, keywords: List[str]
+    ) -> None:
         for keyword in keywords:
             key = f"{self.prefix}:{user_id}:model:{keyword}"
             self.conn.zadd(key, {str(model_id): model_mAP})
 
-    def delete_keyword_wise_model_rank(self, user_id: int, model_id: int, keywords: List[str]) -> None:
+    def delete_keyword_wise_model_rank(
+        self, user_id: int, model_id: int, keywords: List[str]
+    ) -> None:
         for keyword in keywords:
             key = f"{self.prefix}:{user_id}:model:{keyword}"
             self.conn.zrem(key, str(model_id))
 
-    def get_keyword_wise_best_models(self, user_id: int, limit: int = 5) -> Dict[str, List[Tuple[int, float]]]:
+    def get_keyword_wise_best_models(
+        self, user_id: int, limit: int = 5
+    ) -> Dict[str, List[Tuple[int, float]]]:
         """
         Get models of each keyword, sorted by mAP
         """
@@ -108,17 +116,13 @@ class RedisStats:
         self._delete_rank(self.conn, key, str(dataset_id))
 
     @staticmethod
-    def _update_rank(
-        conn: StrictRedis, key: str, name: str, count: int = 1
-    ) -> None:
+    def _update_rank(conn: StrictRedis, key: str, name: str, count: int = 1) -> None:
         # name, amount, value
         # "Increment the score of ``value`` in sorted set ``name`` by ``amount``"
         conn.zincrby(key, count, name)
 
     @staticmethod
-    def _get_rank(
-        conn: StrictRedis, key: str, start: int = 0, stop: int = -1
-    ) -> List:
+    def _get_rank(conn: StrictRedis, key: str, start: int = 0, stop: int = -1) -> List:
         return conn.zrange(key, start, stop, withscores=True, desc=True)
 
     @staticmethod
@@ -144,9 +148,7 @@ class RedisStats:
         pipe.execute()
 
     @staticmethod
-    def get_counter(
-        conn: StrictRedis, prefix: str, name: str, precision: str
-    ) -> List:
+    def get_counter(conn: StrictRedis, prefix: str, name: str, precision: str) -> List:
         assert precision in PRECISION
 
         hash = f"{precision}:{name}"
@@ -158,9 +160,7 @@ class RedisStats:
         return counter
 
     @staticmethod
-    def get_keys(
-        conn: StrictRedis, prefix: str
-    ) -> List:
+    def get_keys(conn: StrictRedis, prefix: str) -> List:
         """
         Caution, use this func when you're sure there are limited keys
         """

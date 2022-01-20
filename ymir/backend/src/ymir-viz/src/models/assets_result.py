@@ -1,14 +1,14 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
+from src import util
 from src.models.api_response import ApiResponse  # noqa: F401,E501
 from src.models.assets_result_result import AssetsResultResult  # noqa: F401,E501
-from src import util
+from src.models.base_model_ import Model
 
 
 class AssetsResult(Model):
@@ -16,7 +16,14 @@ class AssetsResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, code: int=None, request_id: str=None, message: str=None, result: AssetsResultResult=None):  # noqa: E501
+
+    def __init__(
+        self,
+        code: int = None,
+        request_id: str = None,
+        message: str = None,
+        result: AssetsResultResult = None,
+    ):  # noqa: E501
         """AssetsResult - a model defined in Swagger
 
         :param code: The code of this AssetsResult.  # noqa: E501
@@ -29,17 +36,17 @@ class AssetsResult(Model):
         :type result: AssetsResultResult
         """
         self.swagger_types = {
-            'code': int,
-            'request_id': str,
-            'message': str,
-            'result': AssetsResultResult
+            "code": int,
+            "request_id": str,
+            "message": str,
+            "result": AssetsResultResult,
         }
 
         self.attribute_map = {
-            'code': 'code',
-            'request_id': 'request_id',
-            'message': 'message',
-            'result': 'result'
+            "code": "code",
+            "request_id": "request_id",
+            "message": "message",
+            "result": "result",
         }
         self._code = code
         self._request_id = request_id
@@ -47,7 +54,7 @@ class AssetsResult(Model):
         self._result = result
 
     @classmethod
-    def from_dict(cls, dikt) -> 'AssetsResult':
+    def from_dict(cls, dikt) -> "AssetsResult":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -1,5 +1,4 @@
 import struct
-
 from dataclasses import dataclass
 from enum import Enum, IntEnum, unique
 from typing import Any
@@ -13,7 +12,12 @@ class IDProto(IntEnum):
     ID_LEN_REPO_ID = 6
     ID_LEN_HEX_TASK_ID = 16
     ID_LENGTH = (
-        ID_LEN_ID_TYPE + ID_LEN_SUBTASK_ID + ID_LEN_RESERVE + ID_LEN_USER_ID + ID_LEN_REPO_ID + ID_LEN_HEX_TASK_ID
+        ID_LEN_ID_TYPE
+        + ID_LEN_SUBTASK_ID
+        + ID_LEN_RESERVE
+        + ID_LEN_USER_ID
+        + ID_LEN_REPO_ID
+        + ID_LEN_HEX_TASK_ID
     )
 
 

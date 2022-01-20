@@ -2,7 +2,7 @@ import os
 
 env = os.environ.get
 
-SANDBOX_ROOT = env("SANDBOX_ROOT", '/data/mir_root')
+SANDBOX_ROOT = env("SANDBOX_ROOT", "/data/mir_root")
 
 VIZ_REDIS_URI = env("VIZ_REDIS_URI", "redis://")
 

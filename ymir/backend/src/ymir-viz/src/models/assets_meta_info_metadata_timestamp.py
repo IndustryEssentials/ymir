@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
 from src import util
+from src.models.base_model_ import Model
 
 
 class AssetsMetaInfoMetadataTimestamp(Model):
@@ -14,23 +14,20 @@ class AssetsMetaInfoMetadataTimestamp(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, start: int=None):  # noqa: E501
+
+    def __init__(self, start: int = None):  # noqa: E501
         """AssetsMetaInfoMetadataTimestamp - a model defined in Swagger
 
         :param start: The start of this AssetsMetaInfoMetadataTimestamp.  # noqa: E501
         :type start: int
         """
-        self.swagger_types = {
-            'start': int
-        }
+        self.swagger_types = {"start": int}
 
-        self.attribute_map = {
-            'start': 'start'
-        }
+        self.attribute_map = {"start": "start"}
         self._start = start
 
     @classmethod
-    def from_dict(cls, dikt) -> 'AssetsMetaInfoMetadataTimestamp':
+    def from_dict(cls, dikt) -> "AssetsMetaInfoMetadataTimestamp":
         """Returns the dict as a model
 
         :param dikt: A dict.

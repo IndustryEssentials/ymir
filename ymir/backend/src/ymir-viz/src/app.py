@@ -5,7 +5,6 @@ import connexion
 import sentry_sdk
 from flask import request
 from sentry_sdk.integrations.flask import FlaskIntegration
-
 from src.config import VIZ_SENTRY_DSN
 from src.encoder import JSONEncoder
 

@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
 from src import util
+from src.models.base_model_ import Model
 
 
 class AnnotationsInner(Model):
@@ -14,7 +14,10 @@ class AnnotationsInner(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, box: object=None, class_id: int=None, score: int=None):  # noqa: E501
+
+    def __init__(
+        self, box: object = None, class_id: int = None, score: int = None
+    ):  # noqa: E501
         """AnnotationsInner - a model defined in Swagger
 
         :param box: The box of this AnnotationsInner.  # noqa: E501
@@ -24,23 +27,15 @@ class AnnotationsInner(Model):
         :param score: The score of this AnnotationsInner.  # noqa: E501
         :type score: int
         """
-        self.swagger_types = {
-            'box': object,
-            'class_id': int,
-            'score': int
-        }
+        self.swagger_types = {"box": object, "class_id": int, "score": int}
 
-        self.attribute_map = {
-            'box': 'box',
-            'class_id': 'class_id',
-            'score': 'score'
-        }
+        self.attribute_map = {"box": "box", "class_id": "class_id", "score": "score"}
         self._box = box
         self._class_id = class_id
         self._score = score
 
     @classmethod
-    def from_dict(cls, dikt) -> 'AnnotationsInner':
+    def from_dict(cls, dikt) -> "AnnotationsInner":
         """Returns the dict as a model
 
         :param dikt: A dict.

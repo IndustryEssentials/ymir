@@ -1,13 +1,13 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from datetime import date, datetime  # noqa: F401
+from typing import Dict, List  # noqa: F401
 
-from typing import List, Dict  # noqa: F401
-
-from src.models.base_model_ import Model
-from src.models.asset_info import AssetInfo  # noqa: F401,E501
 from src import util
+from src.models.asset_info import AssetInfo  # noqa: F401,E501
+from src.models.base_model_ import Model
 
 
 class AssetsResultResult(Model):
@@ -15,7 +15,15 @@ class AssetsResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, class_ids_count: object=None, elements: List[AssetInfo]=None, offset: int=None, limit: int=None, tatal: int=None):  # noqa: E501
+
+    def __init__(
+        self,
+        class_ids_count: object = None,
+        elements: List[AssetInfo] = None,
+        offset: int = None,
+        limit: int = None,
+        tatal: int = None,
+    ):  # noqa: E501
         """AssetsResultResult - a model defined in Swagger
 
         :param class_ids_count: The class_ids_count of this AssetsResultResult.  # noqa: E501
@@ -30,19 +38,19 @@ class AssetsResultResult(Model):
         :type tatal: int
         """
         self.swagger_types = {
-            'class_ids_count': object,
-            'elements': List[AssetInfo],
-            'offset': int,
-            'limit': int,
-            'tatal': int
+            "class_ids_count": object,
+            "elements": List[AssetInfo],
+            "offset": int,
+            "limit": int,
+            "tatal": int,
         }
 
         self.attribute_map = {
-            'class_ids_count': 'class_ids_count',
-            'elements': 'elements',
-            'offset': 'offset',
-            'limit': 'limit',
-            'tatal': 'tatal'
+            "class_ids_count": "class_ids_count",
+            "elements": "elements",
+            "offset": "offset",
+            "limit": "limit",
+            "tatal": "tatal",
         }
         self._class_ids_count = class_ids_count
         self._elements = elements
@@ -51,7 +59,7 @@ class AssetsResultResult(Model):
         self._tatal = tatal
 
     @classmethod
-    def from_dict(cls, dikt) -> 'AssetsResultResult':
+    def from_dict(cls, dikt) -> "AssetsResultResult":
         """Returns the dict as a model
 
         :param dikt: A dict.
