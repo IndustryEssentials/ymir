@@ -4,7 +4,7 @@ import {
   updateKeyword,
   getRecommendKeywords,
 } from "../keyword"
-import { product, products, requestExample } from './common'
+import { product, products, requestExample } from './func'
 
 describe("service: keywords", () => {
   it("getKeywords -> success -> filter name", () => {
@@ -27,11 +27,16 @@ describe("service: keywords", () => {
     const expected = { failed: [] }
     requestExample(updateKeywords, { keywords, dry_run: true }, expected, 'post')
   })
+  it("updateKeywords -> success -> nothing updated", () => {
+    const expected = { failed: [] }
+    requestExample(updateKeywords, {}, expected, 'post')
+  })
   it("updateKeyword -> success", () => {
     const name = 'dog'
     const aliases = ['doggie', 'baby']
     const expected = { failed: [] }
     requestExample(updateKeyword, { name, aliases }, expected)
+    requestExample(updateKeyword, { name: 'cat' }, expected)
   })
   it("getRecommendKeywords -> success -> by dataset ids", () => {
     const params = { dataset_ids: [1,2,4], limit: 5 }

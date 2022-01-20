@@ -1,6 +1,6 @@
 import { login, loginout, getMeInfo, signup, resetPwd, modifyPwd, forgetPwd, getUsers, setUserState } from "../user"
 
-import { products, requestExample } from './common'
+import { products, requestExample } from './func'
 
 describe("service: user", () => {
   it("login -> success", () => {

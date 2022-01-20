@@ -9,7 +9,7 @@ import {
   updateDataset,
   getInternalDataset,
 } from "../dataset"
-import { product, products, requestExample } from './common'
+import { product, products, requestExample } from './func'
 
 describe("service: dataset", () => {
 

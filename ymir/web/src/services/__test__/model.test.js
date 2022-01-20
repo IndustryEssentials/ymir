@@ -7,7 +7,7 @@ import {
   updateModel,
   verify,
 } from "../model"
-import { product, products, requestExample } from './common'
+import { product, products, requestExample } from './func'
 
 describe("service: models", () => {
   it("getModels -> success", () => {

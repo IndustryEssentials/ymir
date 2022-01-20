@@ -35,6 +35,7 @@
       "!./src/pages/**",
       "!./src/layouts/**",
       "!./src/locales/**",
+      "!**/**/__test__/**",
       "!**/__mock__/**",
       "!**/node_modules/**",
       "!**/.umi/**",

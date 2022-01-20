@@ -10,7 +10,7 @@ import {
   createTask,
   stopTask,
 } from "../task"
-import { product, products, requestExample } from './common'
+import { product, products, requestExample } from './func'
 
 
 describe("service: tasks", () => {
@@ -93,25 +93,25 @@ describe("service: tasks", () => {
   it("stopTask -> success -> throw result", () => {
     const id = 607
     const expected = { id }
-    requestExample(deleteTask, id, expected, 'post')
+    requestExample(stopTask, id, expected, 'post')
   })
   it("stopTask -> success -> with result", () => {
     const id = 607
     const fetch_result = true
     const expected = { id }
-    requestExample(deleteTask, [id, fetch_result], expected)
+    requestExample(stopTask, [id, fetch_result], expected, 'post')
   })
   it("updateTask -> success", () => {
     const id = 607
     const name = 'newnameoftask'
     const expected = { id, name }
-    requestExample(deleteTask, [id, name], expected)
+    requestExample(updateTask, [id, name], expected)
   })
   it("createTask -> success", () => {
     const params = {
       name: 'newtask',
     }
     const expected = "ok"
-    requestExample(deleteTask, params, expected, 'post')
+    requestExample(createTask, params, expected, 'post')
   })
 })

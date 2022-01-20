@@ -5,7 +5,7 @@ import {
   getStats,
   getSysInfo,
 } from '../common'
-import { requestExample } from './common'
+import { requestExample } from './func'
 
 describe('service: common', () => {
   it('common:getUploadUrl', () => {

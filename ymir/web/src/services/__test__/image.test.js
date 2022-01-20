@@ -6,8 +6,9 @@ import {
   updateImage,
   shareImage,
   relateImage,
+  getShareImages,
 } from "../image"
-import { product, products, requestExample } from './common'
+import { product, products, requestExample } from './func'
 
 describe("service: images", () => {
   it("getImages -> success", () => {
@@ -53,5 +54,9 @@ describe("service: images", () => {
     const relations = [34, 53, 6]
     const expected = "ok"
     requestExample(relateImage, [id, relations], expected)
+  })
+  it("getShareImages -> success", () => {
+    const expected = [34, 53, 6]
+    requestExample(getShareImages, {}, expected, 'get')
   })
 })
