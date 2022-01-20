@@ -49,7 +49,7 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
     if update_db_result.retry_tids:
         time.sleep(5)
-        _save_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
+    _save_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
@@ -166,11 +166,10 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
     if not tids:
         return
 
-    logging.debug(f"update sio request args: {tids}, {tid_to_taskstates}")
     event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
     logging.debug(f"update sio request: {event_payloads}")
 
-    url = 'http://127.0.0.1:8090/events/push'
+    url = f"{settings.PM_URL}/events/push"
     try:
         requests.post(url=url, json=event_payloads)
     except requests.exceptions.RequestException:

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     APP_API_HOST: str = os.environ['APP_API_HOST']
     APP_API_KEY: str = os.environ['APP_API_KEY']
     PM_REDIS_URI: str = os.environ['BACKEND_REDIS_URL']
+    PM_URL: str = os.environ['POSTMAN_URL']
 
     BACKEND_CORS_ORIGINS: List[str] = []
 
