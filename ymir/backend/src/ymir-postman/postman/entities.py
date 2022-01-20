@@ -34,15 +34,6 @@ class EventPayload(BaseModel):
 EventPayloadList = List[EventPayload]
 
 
-class TaskStateEventPayloadData(BaseModel):
-    state: int
-    percent: float
-    timestamp: int
-    state_code: int
-    state_message: Optional[str]
-    stack_error_info: Optional[str]
-
-
 # data models: resp
 class EventResp(BaseModel):
     return_code: int
