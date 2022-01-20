@@ -39,8 +39,8 @@ class TaskStateEventPayloadData(BaseModel):
     percent: float
     timestamp: int
     state_code: int
-    state_message: str
-    stack_error_info: str
+    state_message: Optional[str]
+    stack_error_info: Optional[str]
 
 
 # data models: resp
