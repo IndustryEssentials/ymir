@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Dict, List
+from typing import List
 
 import requests
 import sentry_sdk
@@ -21,16 +21,18 @@ def send_updated_task(updated_info: TaskSetStorageStructure) -> None:
 
 
 def deal_updated_task(
-    redis_client: RedisHandler, task_updated_model: TaskSetStorageStructure, task_id_finished: List[str],
+    redis_client: RedisHandler,
+    task_updated_model: TaskSetStorageStructure,
+    task_id_finished: List[str],
 ) -> None:
     # sentry will catch Exception
     send_updated_task(task_updated_model)
     task_updated = task_updated_model.dict()
     redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_updated)
     if task_id_finished:
-        redis_client.hmset(
-            settings.MONITOR_FINISHED_KEY, mapping={task_id: task_updated[task_id] for task_id in task_id_finished}
-        )
+        redis_client.hmset(settings.MONITOR_FINISHED_KEY,
+                           mapping={task_id: task_updated[task_id]
+                                    for task_id in task_id_finished})
         redis_client.hdel(settings.MONITOR_RUNNING_KEY, *task_id_finished)
 
         logging.info(f"finished task ids {task_id_finished}")
@@ -51,9 +53,10 @@ def monitor_percent_log() -> None:
             except ValueError as e:
                 sentry_sdk.capture_exception(e)
                 logging.warning(e)
-                runtime_log_content = PercentResult(
-                    task_id=task_id, timestamp="123", percent=0.0, state=TaskState.TaskStateError
-                )
+                runtime_log_content = PercentResult(task_id=task_id,
+                                                    timestamp="123",
+                                                    percent=0.0,
+                                                    state=TaskState.TaskStateError)
 
             runtime_log_contents[log_path] = runtime_log_content
             if runtime_log_content.timestamp != previous_log_content["timestamp"]:
@@ -62,8 +65,8 @@ def monitor_percent_log() -> None:
         if flag_task_updated:
             content_merged = TaskService.merge_task_progress_contents(runtime_log_contents)
             if content_merged.state in [
-                TaskState.TaskStateDone,
-                TaskState.TaskStateError,
+                    TaskState.TaskStateDone,
+                    TaskState.TaskStateError,
             ]:
                 task_id_finished.append(task_id)
             task_updated[task_id] = dict(
