@@ -7,6 +7,7 @@ jest.mock('@/utils/request', () => {
   return req
 })
 
+console.error = jest.fn()
 export const product = (id) => ({ id })
 
 export const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
@@ -14,7 +15,8 @@ export const products = (n) => Array.from({ length: n }, (item, index) => produc
 const response = (result, code = 0) => ({ code, result })
 
 const getRequestResponseOnce = (result, method = '', code = 0) =>
-  (method ? request[method]: request).mockImplementationOnce(() => Promise.resolve(response(result, code)))
+  (method ? request[method]: request).mockImplementationOnce(() => Promise.resolve(response(result, code))).mockRejectedValue(new Error('rejected!'))
+
 
 export const requestExample = (func, params, expected, method = '', cd = 0) => {
   getRequestResponseOnce(expected, method, cd)
@@ -22,5 +24,5 @@ export const requestExample = (func, params, expected, method = '', cd = 0) => {
   promise.then(({ code, result }) => {
     expect(code).toBe(cd)
     expect(result).toEqual(expected)
-  })
+  }).catch(err => console.error(err))
 }

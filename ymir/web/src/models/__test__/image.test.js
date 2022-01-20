@@ -1,5 +1,6 @@
 import image from "../image"
 import { put, call, select } from "redux-saga/effects"
+import { errorCode } from './func'
 
 function equalObject(obj1, obj2) {
   expect(JSON.stringify(obj1)).toBe(JSON.stringify(obj2))
@@ -31,26 +32,56 @@ describe("models: image", () => {
     expect(result.image.id).toBe(expected.id)
   })
 
-  it("effects: getImages", () => {
+  
+  errorCode(image, 'getImages')
+  errorCode(image, 'getImage')
+  errorCode(image, 'delImage')
+  errorCode(image, 'createImage')
+  errorCode(image, 'updateImage')
+  errorCode(image, 'shareImage')
+  errorCode(image, 'relateImage')
+  errorCode(image, 'getShareImages')
+
+  it("effects: getImages -> success", () => {
     const saga = image.effects.getImages
     const creator = {
       type: "getImages",
       payload: {},
     }
-    const expected = { items: [1, 2, , 3, 4], total: 4 }
+    const images = products(9).map(image => ({ id: image, configs: [{ config: { anchor: '12,3,4'}, type: 1 }]}))
+    const result = { items: images, total: images.length }
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const response = generator.next({
+    generator.next({
       code: 0,
-      result: expected,
+      result,
     })
     const end = generator.next()
 
-    expect(end.value.total).toBe(4)
-    expect(end.value.items.length).toBe(5)
+    expect(end.value).toEqual({ items: images.map((image, index) => ({ ...image, functions: index === images.length ? [] : [1]})), total: images.length })
     expect(end.done).toBe(true)
   })
+  it("effects: getShareImages -> success", () => {
+    const saga = image.effects.getShareImages
+    const creator = {
+      type: "getShareImages",
+      payload: {},
+    }
+    const images = products(9).map(image => ({ id: image, configs: [{ config: { anchor: '12,3,4'}, type: 1 }]}))
+    const expected = { items: images, total: images.length }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+
   it("effects: getImage", () => {
     const saga = image.effects.getImage
     const id = 10012
