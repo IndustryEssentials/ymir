@@ -1,7 +1,8 @@
 import logging
 import os
+import socket
 
-from clickhouse_driver import Client
+from clickhouse_driver import Client, errors
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -56,17 +57,22 @@ clickhouse_tables = [task_table, model_table, keyword_table]
 
 
 def init() -> None:
-    client = Client(host=CLICKHOUSE_URI)
-    existing_tables = client.execute("show tables")
+    try:
+        logger.info("Creating ClickHouse tables")
+        client = Client(host=CLICKHOUSE_URI)
+        existing_tables = client.execute("show tables")
+        logger.info("ClickHouse tables created")
+    except (ConnectionRefusedError, errors.NetworkError):
+        logger.info("Fail to init clickhouse client.")
+        return
+
     if not existing_tables:
         for create_sql in clickhouse_tables:
             client.execute(create_sql)
 
 
 def main() -> None:
-    logger.info("Creating ClickHouse tables")
     init()
-    logger.info("ClickHouse tables created")
 
 
 if __name__ == "__main__":
