@@ -103,7 +103,7 @@ class VizClient:
         offset: int = 0,
         limit: int = 20,
     ) -> Assets:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/assets"
+        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/assets"  # noqa: E501
 
         payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
@@ -119,7 +119,7 @@ class VizClient:
         *,
         asset_id: str,
     ) -> Optional[Dict]:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/assets/{asset_id}"
+        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
 
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
@@ -129,7 +129,7 @@ class VizClient:
         return asdict(Asset.from_viz_res(asset_id, res, self._keyword_id_to_name))
 
     def get_model(self) -> Optional[Dict]:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/models"
+        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/models"  # noqa: E501
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
             return None
