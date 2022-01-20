@@ -321,4 +321,3 @@ components:
           type: integer
         score:
           type: integer
-
