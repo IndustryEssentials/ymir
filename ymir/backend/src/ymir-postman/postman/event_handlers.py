@@ -173,12 +173,12 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
 
     url = f"{settings.PM_URL}/events/push"
     try:
-        requests.post(url=url, json=event_payloads)
+        requests.post(url=url, json=jsonable_encoder(event_payloads))
     except requests.exceptions.RequestException:
         logging.exception('update sio error ignored')
 
 
-def _get_event_payloads(tid_to_taskstates: entities.TaskStateDict) -> list:
+def _get_event_payloads(tid_to_taskstates: entities.TaskStateDict) -> entities.EventPayloadList:
     # sort by user
     uid_to_taskdatas: Dict[str, Dict[str, Any]] = defaultdict(dict)
     for tid, taskstate in tid_to_taskstates.items():
@@ -195,9 +195,6 @@ def _get_event_payloads(tid_to_taskstates: entities.TaskStateDict) -> list:
     # get event payloads
     event_payloads = []
     for uid, tid_to_taskdatas in uid_to_taskdatas.items():
-        event_payloads.append({
-            'event': 'update_taskstate',
-            'namespace': f"/{uid}",
-            'data': tid_to_taskdatas
-        })
+        event_payloads.append(
+            entities.EventPayload(event='update_taskstate', namespace=f"/{uid}", data=tid_to_taskdatas))
     return event_payloads
