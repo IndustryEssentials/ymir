@@ -39,6 +39,7 @@ else:
 # fastapi handlers
 @app.post('/events/taskstates', response_model=entities.EventResp)
 def post_task_states(tid_to_taskstates: entities.TaskStateDict) -> entities.EventResp:
+    uvicorn_logger.info(f"/events/taskstates: {tid_to_taskstates}")
     EventDispatcher.add_event(event_name='/events/taskstates',
                               event_topic='raw',
                               event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
@@ -48,6 +49,8 @@ def post_task_states(tid_to_taskstates: entities.TaskStateDict) -> entities.Even
 
 @app.post('/events/push', response_model=entities.EventResp)
 def post_events_push(event_payloads: List[entities.EventPayload]) -> entities.EventResp:
+    uvicorn_logger.info(f"/events/push: {event_payloads}")
+
     for payload in event_payloads:
         asyncio.run(app.sio.emit(event=payload.event, data=payload.data, namespace=payload.namespace))
     return entities.EventResp(return_code=0, return_msg='done')

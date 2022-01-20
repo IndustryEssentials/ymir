@@ -135,7 +135,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         Tuple[str, int]: error_message, result code (success, retry or drop)
     """
     url = f"http://{settings.APP_API_HOST}/api/v1/tasks/status"
-    # try:
+
     # task_data: see api: /api/v1/tasks/status
     task_data = {
         'hash': tid,
@@ -167,7 +167,6 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
         return
 
     event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
-    logging.debug(f"update sio request: {event_payloads}")
 
     url = f"{settings.PM_URL}/events/push"
     try:
