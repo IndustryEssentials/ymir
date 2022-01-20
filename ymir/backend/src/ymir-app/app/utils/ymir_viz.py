@@ -17,13 +17,10 @@ class Asset:
 
     @classmethod
     def from_viz_res(cls, asset_id: str, res: Dict, keyword_id_to_name: Dict[int, str]) -> "Asset":
-        annotations = [
-            {
-                "box": annotation["box"],
-                "keyword": keyword_id_to_name.get(int(annotation["class_id"])),
-            }
-            for annotation in res["annotations"]
-        ]
+        annotations = [{
+            "box": annotation["box"],
+            "keyword": keyword_id_to_name.get(int(annotation["class_id"])),
+        } for annotation in res["annotations"]]
         keywords = [keyword_id_to_name.get(int(class_id)) for class_id in res["class_ids"]]
         keywords = list(filter(None, keywords))
         metadata = {
@@ -50,22 +47,20 @@ class Assets:
 
     @classmethod
     def from_viz_res(cls, res: Dict, keyword_id_to_name: Dict) -> "Assets":
-        assets = [
-            {
-                "url": get_asset_url(asset["asset_id"]),
-                "hash": asset["asset_id"],
-                "keywords": [
-                    keyword_id_to_name[int(class_id)] for class_id in asset["class_ids"]
-                    if int(class_id) in keyword_id_to_name
-                ],
-            }
-            for asset in res["elements"]
-        ]
+        assets = [{
+            "url":
+            get_asset_url(asset["asset_id"]),
+            "hash":
+            asset["asset_id"],
+            "keywords": [
+                keyword_id_to_name[int(class_id)] for class_id in asset["class_ids"]
+                if int(class_id) in keyword_id_to_name
+            ],
+        } for asset in res["elements"]]
 
         keywords = {
             keyword_id_to_name[int(class_id)]: count
-            for class_id, count in res["class_ids_count"].items()
-            if int(class_id) in keyword_id_to_name
+            for class_id, count in res["class_ids_count"].items() if int(class_id) in keyword_id_to_name
         }
         ignored_keywords = res["ignored_labels"]
         return cls(res["total"], assets, keywords, ignored_keywords)
@@ -90,7 +85,12 @@ class VizClient:
         self._branch_id = None  # type: Optional[str]
         self._keyword_id_to_name = None  # type: Optional[Dict]
 
-    def config(self, *, user_id: int, repo_id: Optional[str] = None, branch_id: str, keyword_id_to_name: Optional[Dict] = None) -> None:
+    def config(self,
+               *,
+               user_id: int,
+               repo_id: Optional[str] = None,
+               branch_id: str,
+               keyword_id_to_name: Optional[Dict] = None) -> None:
         self._user_id = f"{user_id:0>4}"
         self._repo_id = repo_id or f"{self._user_id:0>6}"
         self._branch_id = branch_id
