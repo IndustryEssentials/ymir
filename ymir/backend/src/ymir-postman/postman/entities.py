@@ -41,12 +41,6 @@ class TaskStateEventPayloadData(BaseModel):
     state_code: int
     state_message: str
     stack_error_info: str
-    # 'state': taskstate.percent_result.state,
-    # 'percent': taskstate.percent_result.percent,
-    # 'timestamp': taskstate.percent_result.timestamp,
-    # 'state_code': taskstate.percent_result.state_code,
-    # 'state_message': taskstate.percent_result.state_message,
-    # 'stack_error_info': taskstate.percent_result.stack_error_info
 
 
 # data models: resp

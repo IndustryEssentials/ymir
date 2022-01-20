@@ -49,10 +49,11 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
 
     # update db, save failed
     update_db_result = _update_db(tid_to_tasks=tid_to_taskstates_latest)
+    logging.info(f"update db result: {update_db_result}")
     _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
     if update_db_result.retry_tids:
         time.sleep(5)
-    _save_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
+    _update_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
@@ -74,7 +75,7 @@ def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
 
 
 # private: update db
-def _save_retry(retry_tids: Set[str], tid_to_taskstates_latest: entities.TaskStateDict) -> None:
+def _update_retry(retry_tids: Set[str], tid_to_taskstates_latest: entities.TaskStateDict) -> None:
     """
     save failed taskstates to redis cache
 
@@ -158,8 +159,6 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
     return_msg = response_obj.get('message', '')
-
-    logging.info(f"update db single task response: {tid}, {return_code}, {return_msg}")
 
     return (return_msg, _conclusion_from_return_code(return_code))
 
