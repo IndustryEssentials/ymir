@@ -1,4 +1,5 @@
 from collections import defaultdict
+from enum import IntEnum
 import json
 import logging
 import requests
@@ -12,20 +13,22 @@ from postman import entities, event_dispatcher  # type: ignore
 from postman.settings import constants, settings
 
 
-class _UpdateDbResult:
+class _UpdateDbConclusion(IntEnum):
     SUCCESS = 0  # update success
     RETRY = 1  # update failed, need retry
     DROP = 2  # update failed, need drop
 
-    @classmethod
-    def code_from_return_code(cls, return_code: int) -> int:
-        if return_code == constants.RC_OK:
-            return cls.SUCCESS
-        elif return_code == constants.RC_FAILED_TO_UPDATE_TASK_STATUS:
-            return cls.RETRY
-        else:
-            return cls.DROP
 
+def _conclusion_from_return_code(return_code: int) -> _UpdateDbConclusion:
+    if return_code == constants.RC_OK:
+        return _UpdateDbConclusion.SUCCESS
+    elif return_code == constants.RC_FAILED_TO_UPDATE_TASK_STATUS:
+        return _UpdateDbConclusion.RETRY
+    else:
+        return _UpdateDbConclusion.DROP
+
+
+class _UpdateDbResult:
     def __init__(self) -> None:
         self.success_tids: Set[str] = set()
         self.retry_tids: Set[str] = set()
@@ -112,9 +115,9 @@ def _update_db(tid_to_tasks: entities.TaskStateDict) -> _UpdateDbResult:
     custom_headers = {'api-key': settings.APP_API_KEY}
     for tid, task in tid_to_tasks.items():
         *_, code = _update_db_single_task(tid, task, custom_headers)
-        if code == _UpdateDbResult.SUCCESS:
+        if code == _UpdateDbConclusion.SUCCESS:
             update_db_result.success_tids.add(tid)
-        elif code == _UpdateDbResult.RETRY:
+        elif code == _UpdateDbConclusion.RETRY:
             update_db_result.retry_tids.add(tid)
         else:
             update_db_result.drop_tids.add(tid)
@@ -122,7 +125,7 @@ def _update_db(tid_to_tasks: entities.TaskStateDict) -> _UpdateDbResult:
     return update_db_result
 
 
-def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Tuple[str, int]:
+def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Tuple[str, _UpdateDbConclusion]:
     """
     update db for single task
 
@@ -132,7 +135,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         custom_headers (dict)
 
     Returns:
-        Tuple[str, int]: error_message, result code (success, retry or drop)
+        Tuple[str, _UpdateDbConclusion]: error_message, result conclusion (success, retry or drop)
     """
     url = f"http://{settings.APP_API_HOST}/api/v1/tasks/status"
 
@@ -150,7 +153,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         response = requests.post(url=url, headers=custom_headers, json=task_data)
     except requests.exceptions.RequestException as e:
         logging.exception(msg=f"update db single task error ignored: {tid}, {e}")
-        return (f"{type(e).__name__}: {e}", _UpdateDbResult.RETRY)
+        return (f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
 
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
@@ -158,7 +161,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
 
     logging.info(f"update db single task response: {tid}, {return_code}, {return_msg}")
 
-    return (return_msg, _UpdateDbResult.code_from_return_code(return_code))
+    return (return_msg, _conclusion_from_return_code(return_code))
 
 
 # private: socketio
