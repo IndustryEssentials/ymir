@@ -26,7 +26,6 @@ from app.constants.state import TaskState, TaskType
 from app.models.task import Task
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
-from app.utils.stats import RedisStats
 from app.utils.ymir_controller import ControllerClient, ControllerRequest
 from app.utils.ymir_viz import VizClient
 
@@ -287,7 +286,6 @@ def delete_dataset(
     db: Session = Depends(deps.get_db),
     dataset_id: int = Path(..., example="12"),
     current_user: models.User = Depends(deps.get_current_active_user),
-    stats_client: RedisStats = Depends(deps.get_stats_client),
 ) -> Any:
     """
     Delete dataset
@@ -299,7 +297,6 @@ def delete_dataset(
     if dataset.user_id != current_user.id:
         raise NoDatasetPermission()
     dataset = crud.dataset.soft_remove(db, id=dataset_id)
-    stats_client.delete_dataset_rank(current_user.id, dataset_id)
     return {"result": dataset}
 
 
