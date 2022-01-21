@@ -1,6 +1,5 @@
 import logging
 import os
-import socket
 
 from clickhouse_driver import Client, errors
 
