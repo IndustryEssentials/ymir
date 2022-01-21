@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -23,6 +23,15 @@ class TaskState(BaseModel):
 
 
 TaskStateDict = Dict[str, TaskState]
+
+
+class EventPayload(BaseModel):
+    event: str
+    namespace: Optional[str] = None
+    data: dict
+
+
+EventPayloadList = List[EventPayload]
 
 
 # data models: resp
