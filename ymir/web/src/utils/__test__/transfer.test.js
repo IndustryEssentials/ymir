@@ -9,7 +9,6 @@ describe("utils: transfer", () => {
     }
 
     const formData = createFd(data)
-    // console.log("form data: ", formData)
     expect(formData.get("id")).toBe("test")
     expect(formData.get("num")).toBe("0")
     expect(formData.get("arr")).toBe(data.arr.toString())

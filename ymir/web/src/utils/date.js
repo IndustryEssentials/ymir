@@ -5,8 +5,13 @@ export function format(utc_datetime) {
   return moment.utc(utc_datetime).local().format(DATE_FORMAT)
 }
 
+/**
+ * get local date from utc timestamp
+ * @param {number|string} timestamp 
+ * @returns {string}
+ */
 export function getDateFromTimestamp(timestamp) {
-  return moment(Number(timestamp) * 1000).format(DATE_FORMAT)
+  return format(moment(Number(timestamp) * 1000))
 }
 
 export function getUnixTimeStamp(date) {

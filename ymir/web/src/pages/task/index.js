@@ -35,7 +35,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList }) {
+function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [tasks, setTasks] = useState([])
@@ -477,12 +477,6 @@ const actions = (dispatch) => {
     stopTask: (id) => {
       return dispatch({
         type: 'task/stopTask',
-        payload: id,
-      })
-    },
-    getLabelData: (id) => {
-      return dispatch({
-        type: 'task/getLabelData',
         payload: id,
       })
     },

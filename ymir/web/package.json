@@ -1,11 +1,12 @@
 {
   "name": "ymir-web",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "local": "APP_ROOT=../pages/demo1 umi dev",
     "analyze": "cross-env UMI_ENV=dev ANALYZE=1 umi dev",
-    "start": "cross-env MOCK=none UMI_ENV=local umi dev",
+    "start": "cross-env MOCK=none UMI_ENV=dev umi dev",
+    "start:local": "cross-env MOCK=none UMI_ENV=local umi dev",
     "start:mock": "cross-env UMI_ENV=local umi dev",
     "build": "cross-env UMI_ENV=dev umi build",
     "build:dev": "cross-env UMI_ENV=dev umi build",
@@ -31,6 +32,7 @@
       "!./src/pages/**",
       "!./src/layouts/**",
       "!./src/locales/**",
+      "!**/**/__test__/**",
       "!**/__mock__/**",
       "!**/node_modules/**",
       "!**/.umi/**",
