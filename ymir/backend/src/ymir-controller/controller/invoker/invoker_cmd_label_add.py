@@ -19,7 +19,5 @@ class LabelAddInvoker(BaseMirControllerInvoker):
         return response
 
     def _repr(self) -> str:
-        return (
-            f"cmd_labels_add: user: {self._request.user_id}, task_id: {self._task_id} "
-            f"private_labels: {self._request.private_labels}"
-        )
+        return (f"cmd_labels_add: user: {self._request.user_id}, task_id: {self._task_id} "
+                f"private_labels: {self._request.private_labels}")
