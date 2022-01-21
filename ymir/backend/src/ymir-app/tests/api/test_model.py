@@ -8,25 +8,8 @@ from app import crud, models, schemas
 from app.api.api_v1.endpoints import models as m
 from app.config import settings
 from app.models.task import TaskType
+from tests.utils.models import create_model
 from tests.utils.utils import random_lower_string
-
-
-def insert_model(db: Session, client: TestClient, token) -> models.Model:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=token)
-    user_id = r.json()["result"]["id"]
-    task_in = schemas.TaskCreate(
-        name=random_lower_string(6),
-        type=TaskType.training,
-    )
-    task = crud.task.create(db, obj_in=task_in)
-    model_in = schemas.ModelCreate(
-        hash=random_lower_string(10),
-        name=random_lower_string(6),
-        user_id=user_id,
-        task_id=task.id,
-    )
-    model = crud.model.create(db, obj_in=model_in)
-    return model
 
 
 class TestListModels:
@@ -38,7 +21,7 @@ class TestListModels:
         mocker,
     ):
         for _ in range(3):
-            insert_model(db, client, normal_user_token_headers)
+            create_model(db, client, normal_user_token_headers)
         r = client.get(
             f"{settings.API_V1_STR}/models/", headers=normal_user_token_headers
         )
@@ -60,7 +43,7 @@ class TestBatchGetModels:
     def test_list_models_given_ids(
         self, db: Session, client: TestClient, normal_user_token_headers, mocker
     ):
-        model = insert_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, normal_user_token_headers)
         r = client.get(
             f"{settings.API_V1_STR}/models/batch",
             headers=normal_user_token_headers,
@@ -77,7 +60,7 @@ class TestChangeModelName:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = insert_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, normal_user_token_headers)
         old_name = model.name
         new_name = random_lower_string(6)
         r = client.patch(
@@ -111,7 +94,7 @@ class TestDeleteModel:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = insert_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, normal_user_token_headers)
         assert not model.is_deleted
         r = client.delete(
             f"{settings.API_V1_STR}/models/{model.id}",
@@ -140,7 +123,7 @@ class TestGetModel:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = insert_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, normal_user_token_headers)
         r = client.get(
             f"{settings.API_V1_STR}/models/{model.id}",
             headers=normal_user_token_headers,
