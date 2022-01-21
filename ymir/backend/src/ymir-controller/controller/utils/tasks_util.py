@@ -54,5 +54,5 @@ def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], descr
             json=dict(task_id=task_id, user_id=user_id, log_paths=log_paths, description=description),
             timeout=5,
         )
-    except RequestException as e:
+    except RequestException:
         logger.warning(f"register_monitor_log error: {traceback.format_exc()}")

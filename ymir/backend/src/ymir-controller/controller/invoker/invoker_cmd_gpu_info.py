@@ -5,7 +5,7 @@ from proto import backend_pb2
 
 class GPUInfoInvoker(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(request=self._request, prerequisites=[checker.Prerequisites.CHECK_USER_ID],)
+        return checker.check_request(request=self._request, prerequisites=[checker.Prerequisites.CHECK_USER_ID])
 
     def invoke(self) -> backend_pb2.GeneralResp:
         if self._request.req_type != backend_pb2.CMD_GPU_INFO_GET:
