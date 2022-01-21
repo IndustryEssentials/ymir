@@ -1,9 +1,3 @@
-export function numFormat(num) {
-  if (typeof num !== "number") {
-    return num
-  }
-  return num
-}
 
 export function humanize(num) {
   if (!num) {
@@ -27,7 +21,7 @@ export function randomNumber(count = 6) {
 }
 
 /**
- * get a random number between given range
+ * get a random number between range of [min, max)
  * @param {number} n  min of range 
  * @param {number} m  max of range
  * @param {number} exclude exclude number
@@ -38,9 +32,6 @@ export function randomBetween(n, m, exclude) {
 
   if (result === exclude) {
     return randomBetween(n, m, exclude)
-  }
-  if (result < 0) {
-    return 0
   }
   return result
 }

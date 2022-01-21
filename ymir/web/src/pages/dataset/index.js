@@ -8,7 +8,6 @@ import {
 } from "@ant-design/icons"
 import moment from "moment"
 
-import { numFormat } from "@/utils/number"
 import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
@@ -28,6 +27,7 @@ import Actions from "@/components/table/actions"
 
 import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, SearchIcon,
   TipsIcon, EditIcon, DeleteIcon, TreeIcon } from "@/components/common/icons"
+import { humanize } from "../../utils/number"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -123,7 +123,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
     {
       title: showTitle("dataset.column.asset_count"),
       dataIndex: "asset_count",
-      render: (num) => numFormat(num),
+      render: (num) => humanize(num),
       width: 120,
     },
     {

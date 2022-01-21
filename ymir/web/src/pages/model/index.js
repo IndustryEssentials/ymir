@@ -10,7 +10,6 @@ import {
 } from "@ant-design/icons"
 import moment from "moment"
 
-import { numFormat } from "@/utils/number"
 import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 import { getTimes, getModelImportTypes } from '@/constants/query'

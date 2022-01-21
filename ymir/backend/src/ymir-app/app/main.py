@@ -4,7 +4,6 @@ import aioredis
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi.logger import logger as fastapi_logger
 from fastapi.openapi.docs import (
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
@@ -60,9 +59,7 @@ async def swagger_ui_redirect() -> HTMLResponse:
 
 @app.on_event("startup")
 async def startup() -> None:
-    redis = aioredis.from_url(
-        settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True
-    )
+    redis = aioredis.from_url(settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
 
 
@@ -75,12 +72,8 @@ gunicorn_error_logger = logging.getLogger("gunicorn.error")
 gunicorn_logger = logging.getLogger("gunicorn")
 uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.handlers = gunicorn_error_logger.handlers
-fastapi_logger.handlers = gunicorn_error_logger.handlers
 
 if __name__ == "__main__":
     import uvicorn
 
-    fastapi_logger.setLevel(logging.DEBUG)
     uvicorn.run("main:app")
-else:
-    fastapi_logger.setLevel(gunicorn_logger.level)
