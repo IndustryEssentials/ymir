@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.utils.clickhouse import YmirClickHouse
-from app.utils.stats import RedisStats
 
 router = APIRouter()
 

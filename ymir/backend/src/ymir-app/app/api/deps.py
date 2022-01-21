@@ -22,7 +22,7 @@ from app.constants.role import Roles
 from app.constants.state import TaskType
 from app.db.session import SessionLocal
 from app.utils import cache as ymir_cache
-from app.utils import class_ids, graph, security, stats, ymir_controller, ymir_viz
+from app.utils import class_ids, graph, security, ymir_controller, ymir_viz
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import (
@@ -162,15 +162,6 @@ def get_graph_client_of_user(
     try:
         client = graph.GraphClient(redis_uri=settings.BACKEND_REDIS_URL)
         client.user_id = current_user.id
-        yield client
-    finally:
-        client.close()
-
-
-def get_stats_client() -> Generator:
-    task_types = [t.value for t in TaskType]
-    try:
-        client = stats.RedisStats(settings.BACKEND_REDIS_URL, task_types)
         yield client
     finally:
         client.close()
