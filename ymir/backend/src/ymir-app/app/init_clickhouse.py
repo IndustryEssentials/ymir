@@ -57,14 +57,8 @@ clickhouse_tables = [task_table, model_table, keyword_table]
 
 
 def init() -> None:
-    try:
-        logger.info("Creating ClickHouse tables")
-        client = Client(host=CLICKHOUSE_URI)
-        existing_tables = client.execute("show tables")
-        logger.info("ClickHouse tables created")
-    except (ConnectionRefusedError, errors.NetworkError):
-        logger.info("Fail to init clickhouse client.")
-        return
+    client = Client(host=CLICKHOUSE_URI)
+    existing_tables = client.execute("show tables")
 
     if not existing_tables:
         for create_sql in clickhouse_tables:
@@ -72,7 +66,13 @@ def init() -> None:
 
 
 def main() -> None:
-    init()
+    logger.info("Creating ClickHouse tables")
+    try:
+        init()
+    except (ConnectionRefusedError, errors.NetworkError) as e:
+        logger.info(f"Fail to init clickhouse client, error: {e}.")
+        return
+    logger.info("ClickHouse tables created")
 
 
 if __name__ == "__main__":
