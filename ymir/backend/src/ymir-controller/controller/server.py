@@ -1,4 +1,5 @@
 import argparse
+from distutils.util import strtobool
 import logging
 import os
 import re
@@ -99,7 +100,10 @@ def main(main_args: Any) -> int:
 
     # start metrics manager
     metrics_config = server_config['METRICS']
-    metrics_permission_pass = metrics_config['allow_feedback'] or False
+    try:
+        metrics_permission_pass = bool(strtobool(metrics_config['allow_feedback']))
+    except (ValueError, AttributeError):  # NoneType
+        metrics_permission_pass = False
     metrics_uuid = metrics_config['anonymous_uuid'] or 'anonymous_uuid'
     manager = metrics.MetricsManager(permission_pass=metrics_permission_pass,
                                      uuid=metrics_uuid,
