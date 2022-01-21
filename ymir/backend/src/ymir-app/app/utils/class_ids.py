@@ -1,13 +1,6 @@
-import csv
-import io
 from typing import Callable, Dict, Iterator, List, Optional
 
 from app.schemas import Keyword
-from app.utils.ymir_controller import (
-    ControllerClient,
-    ControllerRequest,
-    ExtraRequestType,
-)
 
 
 def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
@@ -21,16 +14,14 @@ def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
         yield ",".join(label)
 
 
-def labels_to_keywords(
-    labels: List[str], filter_f: Optional[Callable] = None, offset: int = 1
-) -> Iterator[Keyword]:
+def labels_to_keywords(labels: List[str], filter_f: Optional[Callable] = None, offset: int = 1) -> Iterator[Keyword]:
     """
     label: 0,dog,puppy,pup,canine
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     """
     for label in labels:
         partition = label.split(",")
-        keyword = {"name": partition[offset], "aliases": partition[offset + 1 :]}
+        keyword = {"name": partition[offset], "aliases": partition[offset + 1:]}
         if filter_f is None or filter_f(keyword):
             yield Keyword(**keyword)
 

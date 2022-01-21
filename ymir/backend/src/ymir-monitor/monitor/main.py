@@ -18,7 +18,10 @@ def create_app() -> FastAPI:
         title=settings.PROJECT_NAME,
         version="0.0.1",
         contact={"name": "ymir"},
-        license_info={"name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0.html"},
+        license_info={
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+        },
     )
     sentry_sdk.init(dsn=settings.MONITOR_SENTRY_DSN)
     application.add_middleware(SentryAsgiMiddleware)
@@ -53,7 +56,6 @@ async def get_finished_task(service: TaskService = Depends(Provide[Container.ser
 
 container = Container()
 container.wire(modules=[__name__])
-
 
 if __name__ == "__main__":
     import uvicorn

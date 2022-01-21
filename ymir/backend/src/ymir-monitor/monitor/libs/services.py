@@ -24,7 +24,7 @@ class TaskService:
         for one_log_file in log_paths:
             try:
                 percent_result = PercentLogHandler.parse_percent_log(one_log_file)
-            except ValueError as e:
+            except ValueError:
                 raise LogFileError
             result[one_log_file] = percent_result
 
@@ -90,7 +90,9 @@ class TaskService:
         percent_result = PercentResult.parse_obj(percent_result.dict())
 
         task_info = TaskStorageStructure(
-            raw_log_contents=raw_log_contents, task_extra_info=task_extra_info, percent_result=percent_result,
+            raw_log_contents=raw_log_contents,
+            task_extra_info=task_extra_info,
+            percent_result=percent_result,
         )
 
         self.add_single_task(reg_parameters.task_id, task_info.dict())
