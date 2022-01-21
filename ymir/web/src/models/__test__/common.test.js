@@ -42,6 +42,33 @@ describe("models: common", () => {
 
     equalObject(expected.result, end.value)
     expect(end.done).toBe(true)
+
+    const error = saga(creator, { put, call})
+    error.next()
+    const errorEnd = error.next({
+      code: 13001,
+      result: null,
+    })
+
+    expect(errorEnd.value).toBeUndefined()
+    expect(errorEnd.done).toBe(true)
+  })
+  it("effects: getHistory -> error", () => {
+    
+    const saga = common.effects.getHistory
+    const creator = {
+      type: "getLabels",
+      payload: {},
+    }
+    const generator = saga(creator, { put, call })
+    const start = generator.next()
+    const end = generator.next({
+      code: 8001,
+      result: null,
+    })
+
+    expect(end.value).toBeUndefined()
+    expect(end.done).toBe(true)
   })
   it("effects: getHistory", () => {
     const saga = common.effects.getHistory

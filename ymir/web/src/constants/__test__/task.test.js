@@ -1,4 +1,4 @@
-import { TASKSTATES, TASKTYPES } from '../task'
+import { TASKSTATES, TASKTYPES, isFinalState } from '../task'
 
 describe("constants: task", () => {
   it("have right task states, constantly and freeze.", () => {
@@ -20,5 +20,13 @@ describe("constants: task", () => {
 
     function tryExtendAttr () { TASKSTATES.newAttr = 'test' }
     expect(tryExtendAttr).toThrowError('object is not extensible')
+  })
+  it('isFinalState', () => {
+    expect(isFinalState(TASKSTATES.UNKOWN)).toBe(false)
+    expect(isFinalState(TASKSTATES.PENDING)).toBe(false)
+    expect(isFinalState(TASKSTATES.DOING)).toBe(false)
+    expect(isFinalState(TASKSTATES.FINISH)).toBe(true)
+    expect(isFinalState(TASKSTATES.FAILURE)).toBe(true)
+    expect(isFinalState(TASKSTATES.TERMINATED)).toBe(true)
   })
 })
