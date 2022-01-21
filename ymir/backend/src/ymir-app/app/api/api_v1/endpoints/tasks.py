@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
+    ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
@@ -455,6 +456,10 @@ def update_task_status(
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
+    except ModelNotReady:
+        logger.warning("Model Not Ready")
+        return {"result": task}
+
     if updated_task:
         updated_task = crud.task.update_last_message_datetime(
             db, task=updated_task, dt=datetime.utcfromtimestamp(task_result.timestamp)
@@ -670,7 +675,7 @@ class TaskResultProxy:
         self.viz.config(user_id=task.user_id, branch_id=task.hash)
         model_info = self.viz.get_model()
         if not model_info:
-            raise ValueError("model not ready yet")
+            raise ModelNotReady()
 
         model = crud.model.get_by_hash(self.db, hash_=model_info["hash"])
         if model:
