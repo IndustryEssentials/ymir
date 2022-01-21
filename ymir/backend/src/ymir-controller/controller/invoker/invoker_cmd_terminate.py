@@ -10,7 +10,10 @@ from proto import backend_pb2
 
 class CMDTerminateInvoker(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(request=self._request, prerequisites=[checker.Prerequisites.CHECK_USER_ID],)
+        return checker.check_request(
+            request=self._request,
+            prerequisites=[checker.Prerequisites.CHECK_USER_ID],
+        )
 
     def get_project_id_by_task_id(self, task_id: str) -> int:
         content = rds.hget(label_task_config.MONITOR_MAPPING_KEY, task_id)
@@ -23,8 +26,8 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
             raise RuntimeError(f"Mismatched req_type CMD_TERMINATE: {self._request.req_type}")
 
         if self._request.terminated_task_type in [
-            backend_pb2.TaskType.TaskTypeTraining,
-            backend_pb2.TaskType.TaskTypeMining,
+                backend_pb2.TaskType.TaskTypeTraining,
+                backend_pb2.TaskType.TaskTypeMining,
         ]:
             container_command = f"docker rm -f {self._request.executor_instance}"
             container_response = utils.run_command(container_command)
@@ -41,4 +44,5 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
         return utils.make_general_response(code.ResCode.CTR_OK, "successful terminate")
 
     def _repr(self) -> str:
-        return f"cmd_terminate: user: {self._request.user_id}, terminate executor_instance: {self._request.executor_instance}"
+        return f"cmd_terminate: user: {self._request.user_id}, terminate \
+            executor_instance: {self._request.executor_instance}"
