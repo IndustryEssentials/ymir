@@ -153,6 +153,11 @@ class ModelNotFound(NotFound):
     message = "Model Not Found"
 
 
+class ModelNotReady(APIError):
+    code = error_codes.MODEL_NOT_READY
+    message = "Model Not Ready"
+
+
 class GraphNotFound(NotFound):
     code = error_codes.GRAPH_NOT_FOUND
     message = "Graph Not Found"
