@@ -303,7 +303,7 @@ function Keyword({ getModels, delModel, updateModel }) {
             labelCol={{ flex: '100px' }}
             initialValues={{ source: "", time: 0, name: keyword || "" }}
             onValuesChange={search}
-            size='large'
+            // size='large'
             colon={false}
           >
             <Row>
