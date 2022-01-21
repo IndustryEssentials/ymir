@@ -1,9 +1,14 @@
 import keyword from "../keyword"
 import { put, call, select } from "redux-saga/effects"
+import { errorCode } from './func'
 
 describe("models: keyword", () => {
   const product = (id) => ({ id })
   const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
+  errorCode(keyword, 'getKeywords')
+  errorCode(keyword, 'updateKeywords')
+  errorCode(keyword, 'updateKeyword')
+  errorCode(keyword, 'getRecommendKeywords')
   it("effects: getKeywords", () => {
     const saga = keyword.effects.getKeywords
     const creator = {
@@ -52,6 +57,23 @@ describe("models: keyword", () => {
     const end = generator.next(response)
 
     expect(response.result).toEqual(end.value)
+    expect(end.done).toBe(true)
+  })
+  it("effects: getRecommendKeywords", () => {
+    const saga = keyword.effects.getRecommendKeywords
+    const kw = [['cat', 12], ['dog', 6], ['person', 3]]
+    const expected = kw.map(item => item[0])
+    const creator = {
+      type: "getRecommendKeywords",
+      payload: kw,
+    }
+    const response = { code: 0, result: kw }
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next(response)
+
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it('test reducers: UPDATE_KEYWORDS, UPDATE_KEYWORD', () => {
