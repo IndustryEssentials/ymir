@@ -38,12 +38,12 @@ router = APIRouter()
     response_model=KeywordsPaginationOut,
 )
 def get_keywords(
-    current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    labels: List = Depends(deps.get_personal_labels),
-    q: Optional[str] = Query(None, description="query keywords"),
-    offset: int = Query(0),
-    limit: Optional[int] = Query(None),
+        current_user: models.User = Depends(deps.get_current_active_user),
+        controller_client: ControllerClient = Depends(deps.get_controller_client),
+        labels: List = Depends(deps.get_personal_labels),
+        q: Optional[str] = Query(None, description="query keywords"),
+        offset: int = Query(0),
+        limit: Optional[int] = Query(None),
 ) -> Dict:
     """
     Get keywords and aliases
@@ -59,12 +59,12 @@ def get_keywords(
 
 @router.post("/", response_model=KeywordsCreateOut)
 def create_keywords(
-    *,
-    keywords_input: KeywordsCreate,
-    current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    cache: CacheClient = Depends(deps.get_cache),
-    labels: List = Depends(deps.get_personal_labels),
+        *,
+        keywords_input: KeywordsCreate,
+        current_user: models.User = Depends(deps.get_current_active_user),
+        controller_client: ControllerClient = Depends(deps.get_controller_client),
+        cache: CacheClient = Depends(deps.get_cache),
+        labels: List = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Batch create given keywords and aliases to keywords list
@@ -80,7 +80,10 @@ def create_keywords(
     req = ControllerRequest(
         ExtraRequestType.add_label,
         user_id,
-        args={"labels": new_labels, "dry_run": keywords_input.dry_run},
+        args={
+            "labels": new_labels,
+            "dry_run": keywords_input.dry_run
+        },
     )
     resp = controller_client.send(req)
     logger.info("[controller] response for add label: %s", resp)
@@ -94,20 +97,18 @@ def create_keywords(
     response_model=KeywordsCreateOut,
 )
 def update_keyword_aliases(
-    *,
-    keyword: str,
-    aliases_in: KeywordUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    cache: CacheClient = Depends(deps.get_cache),
+        *,
+        keyword: str,
+        aliases_in: KeywordUpdate,
+        current_user: models.User = Depends(deps.get_current_active_user),
+        controller_client: ControllerClient = Depends(deps.get_controller_client),
+        cache: CacheClient = Depends(deps.get_cache),
 ) -> Any:
     user_id = current_user.id
     updated_keyword = Keyword(name=keyword, aliases=aliases_in.aliases)
     logger.info("updated keyword: %s", updated_keyword)
     labels = list(keywords_to_labels([updated_keyword]))
-    req = ControllerRequest(
-        ExtraRequestType.add_label, user_id, args={"labels": labels, "dry_run": False}
-    )
+    req = ControllerRequest(ExtraRequestType.add_label, user_id, args={"labels": labels, "dry_run": False})
     resp = controller_client.send(req)
     logger.info("[controller] response for update label: %s", resp)
     failed = flatten_labels(resp["csv_labels"])
@@ -117,13 +118,11 @@ def update_keyword_aliases(
     return {"result": {"failed": failed}}
 
 
-def paginate(
-    items: List[Any], offset: int = 0, limit: Optional[int] = None
-) -> List[Any]:
+def paginate(items: List[Any], offset: int = 0, limit: Optional[int] = None) -> List[Any]:
     """
     Mimic the behavior of database query's offset-limit pagination
     """
-    return items[offset : (limit + offset if limit is not None else None)]
+    return items[offset:(limit + offset if limit is not None else None)]
 
 
 def filter_keyword(query: str, keyword: Dict) -> bool:

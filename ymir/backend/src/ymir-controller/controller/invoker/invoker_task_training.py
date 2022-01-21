@@ -76,9 +76,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op
-        config_file = cls.gen_training_config(
-            repo_root, request.docker_image_config, train_request.in_class_ids, working_dir
-        )
+        config_file = cls.gen_training_config(repo_root, request.docker_image_config, train_request.in_class_ids,
+                                              working_dir)
         if not config_file:
             msg = "Not enough GPU available"
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
@@ -124,13 +123,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard: str,
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
-        training_cmd = (
-            f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
-            f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
-            f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
-            f"--executor-instance {executor_instance} "
-            f"--tensorboard {tensorboard}"
-        )
+        training_cmd = (f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
+                        f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
+                        f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
+                        f"--executor-instance {executor_instance} "
+                        f"--tensorboard {tensorboard}")
         if model_hash:
             training_cmd += f" --model-hash {model_hash}"
 
@@ -143,9 +140,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             for dataset_type in train_request.in_dataset_types
         ]
 
-        repr = (
-            f"task_training: user: {self._request.user_id}, repo: {self._request.repo_id} task_id: {self._task_id} "
-            f"in_dataset_types: {in_dataset_ids} in_class_ids: {train_request.in_class_ids}"
-        )
+        repr = (f"task_training: user: {self._request.user_id}, repo: {self._request.repo_id} task_id: {self._task_id} "
+                f"in_dataset_types: {in_dataset_ids} in_class_ids: {train_request.in_class_ids}")
 
         return repr

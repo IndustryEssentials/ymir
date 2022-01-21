@@ -33,9 +33,7 @@ class RedisStats:
         assert task_type in self.stats_group
         self.update_counter(self.conn, key, str(task_type), tz=self.tz)
 
-    def get_task_stats(
-        self, user_id: int, precision: str, limit: int = 10
-    ) -> defaultdict:
+    def get_task_stats(self, user_id: int, precision: str, limit: int = 10) -> defaultdict:
         key = f"{self.prefix}:{user_id}:task"
 
         # for every task_type, there is a List[(timestamp, count)]
@@ -57,7 +55,8 @@ class RedisStats:
         key = f"{self.prefix}:{user_id}:model"
         self._update_rank(self.conn, key, str(model_id))
 
-    def update_keyword_wise_model_rank(self, user_id: int, model_id: int, model_mAP: float, keywords: List[str]) -> None:
+    def update_keyword_wise_model_rank(self, user_id: int, model_id: int, model_mAP: float,
+                                       keywords: List[str]) -> None:
         for keyword in keywords:
             key = f"{self.prefix}:{user_id}:model:{keyword}"
             self.conn.zadd(key, {str(model_id): model_mAP})
@@ -75,18 +74,13 @@ class RedisStats:
         keyword_wise_models = {}
         for key in self.get_keys(self.conn, prefix):
             keyword = key.replace(prefix, "")
-            keyword_wise_models[keyword] = [
-                (int(model_id), mAP)
-                for model_id, mAP in self._get_rank(self.conn, key, stop=limit)
-            ]
+            keyword_wise_models[keyword] = [(int(model_id), mAP)
+                                            for model_id, mAP in self._get_rank(self.conn, key, stop=limit)]
         return keyword_wise_models
 
     def get_top_models(self, user_id: int, limit: int = 5) -> List[Tuple[int, int]]:
         key = f"{self.prefix}:{user_id}:model"
-        return [
-            (int(model_id), ref_count)
-            for model_id, ref_count in self._get_rank(self.conn, key, stop=limit)
-        ]
+        return [(int(model_id), ref_count) for model_id, ref_count in self._get_rank(self.conn, key, stop=limit)]
 
     def delete_model_rank(self, user_id: int, model_id: int) -> None:
         key = f"{self.prefix}:{user_id}:model"
@@ -98,27 +92,20 @@ class RedisStats:
 
     def get_top_datasets(self, user_id: int, limit: int = 5) -> List:
         key = f"{self.prefix}:{user_id}:dataset"
-        return [
-            (int(dataset_id), ref_count)
-            for dataset_id, ref_count in self._get_rank(self.conn, key, stop=limit)
-        ]
+        return [(int(dataset_id), ref_count) for dataset_id, ref_count in self._get_rank(self.conn, key, stop=limit)]
 
     def delete_dataset_rank(self, user_id: int, dataset_id: int) -> None:
         key = f"{self.prefix}:{user_id}:dataset"
         self._delete_rank(self.conn, key, str(dataset_id))
 
     @staticmethod
-    def _update_rank(
-        conn: StrictRedis, key: str, name: str, count: int = 1
-    ) -> None:
+    def _update_rank(conn: StrictRedis, key: str, name: str, count: int = 1) -> None:
         # name, amount, value
         # "Increment the score of ``value`` in sorted set ``name`` by ``amount``"
         conn.zincrby(key, count, name)
 
     @staticmethod
-    def _get_rank(
-        conn: StrictRedis, key: str, start: int = 0, stop: int = -1
-    ) -> List:
+    def _get_rank(conn: StrictRedis, key: str, start: int = 0, stop: int = -1) -> List:
         return conn.zrange(key, start, stop, withscores=True, desc=True)
 
     @staticmethod
@@ -144,9 +131,7 @@ class RedisStats:
         pipe.execute()
 
     @staticmethod
-    def get_counter(
-        conn: StrictRedis, prefix: str, name: str, precision: str
-    ) -> List:
+    def get_counter(conn: StrictRedis, prefix: str, name: str, precision: str) -> List:
         assert precision in PRECISION
 
         hash = f"{precision}:{name}"
@@ -158,9 +143,7 @@ class RedisStats:
         return counter
 
     @staticmethod
-    def get_keys(
-        conn: StrictRedis, prefix: str
-    ) -> List:
+    def get_keys(conn: StrictRedis, prefix: str) -> List:
         """
         Caution, use this func when you're sure there are limited keys
         """
