@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Checkbox, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -17,14 +17,13 @@ import { TYPES } from '@/constants/image'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
-import { AddDelTwoIcon } from '@/components/common/icons'
-import { randomNumber } from "../../../utils/number"
+import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
-import ImageSelect from "../components/imageSelect"
+import ImageSelect from "@/components/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
-import ModelSelect from "../components/modelSelect"
-import RecommendKeywords from "../../../components/common/recommendKeywords"
+import ModelSelect from "@/components/modelSelect"
+import RecommendKeywords from "@/components/common/recommendKeywords"
 
 const { Option } = Select
 
@@ -277,7 +276,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 name='name'
                 rules={[
                   { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
-                  { type: 'string', min: 2, max: 20 },
+                  { type: 'string', min: 2, max: 50 },
                 ]}
               >
                 <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />

@@ -8,8 +8,8 @@ import t from "@/utils/t"
 import Foot from "@/components/common/footer"
 import styles from "../common.less"
 import loginBig from "@/assets/logo-big.png"
-import { EmailIcon, LockIcon } from "../../../components/common/icons"
-import LangBtn from "../../../components/common/langBtn"
+import { EmailIcon, LockIcon } from "@/components/common/icons"
+import LangBtn from "@/components/common/langBtn"
 
 const Login = ({ loginApi }) => {
   const history = useHistory()

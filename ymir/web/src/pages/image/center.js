@@ -15,10 +15,10 @@ import t from "@/utils/t"
 import { getTimes, getModelImportTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/model'
-import EditBox from "../../components/form/editBox"
-import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon } from "../../components/common/icons"
-import Actions from "../../components/table/actions"
-import TypeTag from "../../components/task/typeTag"
+import EditBox from "@/components/form/editBox"
+import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon } from "@/components/common/icons"
+import Actions from "@/components/table/actions"
+import TypeTag from "@/components/task/typeTag"
 
 const { confirm } = Modal
 const { useForm } = Form
