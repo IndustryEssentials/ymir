@@ -10,7 +10,12 @@ class APIError(HTTPException):
     code = 400000
     message = "General Client Error"
 
-    def __init__(self, status_code: int = None, detail: Any = None, headers: Optional[Dict[str, Any]] = None,) -> None:
+    def __init__(
+        self,
+        status_code: int = None,
+        detail: Any = None,
+        headers: Optional[Dict[str, Any]] = None,
+    ) -> None:
         status_code = status_code or self.status_code
         detail = detail or {"code": self.code, "message": self.message}
         super().__init__(status_code=status_code, detail=detail)

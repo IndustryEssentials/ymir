@@ -73,15 +73,6 @@ export function stopTask(id, fetch_result = false) {
 }
 
 /**
- * stop task and get label data
- * @param {number} id 
- * @returns 
- */
-export function getLabelData(id) {
-  return request.post(`/tasks/stop/${id}`, { label: 1 })
-}
-
-/**
  * update task, only support task name now
  * @param {number} id 
  * @param {string} name 

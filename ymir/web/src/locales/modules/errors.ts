@@ -1,6 +1,6 @@
 const errors = {
   'error1001': { cn: '接口错误', en: 'API_ERROR: API Error', },
-  'error1002': { cn: '验证失败', en: 'VALIDATION_FAILED: Validation Failed', },
+  'error1002': { cn: '参数校验失败', en: 'Parammeters Validation Failed', },
   'error1003': { cn: '未知错误', en: 'UNKNOWN_ERROR: Unkown Error', },
   'error1004': { cn: 'token失效，请重新登录', en: 'INVALID_TOKEN: Invalid Token, Please try again', },
   'error1005': { cn: '必填字段缺失', en: 'REQUIRED_FIELD_MISSING: ', },
