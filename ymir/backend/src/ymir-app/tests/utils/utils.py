@@ -5,6 +5,7 @@ from typing import Dict
 from fastapi.testclient import TestClient
 
 from app.config import settings
+from app.utils.security import frontend_hash
 
 
 def random_lower_string(k: int = 32) -> str:
@@ -27,7 +28,7 @@ def random_url() -> str:
 def get_admin_token_headers(client: TestClient) -> Dict[str, str]:
     login_data = {
         "username": settings.FIRST_ADMIN,
-        "password": settings.FIRST_ADMIN_PASSWORD,
+        "password": frontend_hash(settings.FIRST_ADMIN_PASSWORD),
         "scope": "ADMIN",
     }
     r = client.post(f"{settings.API_V1_STR}/auth/token", data=login_data)
@@ -40,7 +41,7 @@ def get_admin_token_headers(client: TestClient) -> Dict[str, str]:
 def get_super_admin_token_headers(client: TestClient) -> Dict[str, str]:
     login_data = {
         "username": settings.FIRST_ADMIN,
-        "password": settings.FIRST_ADMIN_PASSWORD,
+        "password": frontend_hash(settings.FIRST_ADMIN_PASSWORD),
         "scope": "NORMAL ADMIN SUPER_ADMIN",
     }
     r = client.post(f"{settings.API_V1_STR}/auth/token", data=login_data)

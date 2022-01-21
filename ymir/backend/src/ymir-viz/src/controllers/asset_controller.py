@@ -15,12 +15,7 @@ def get_assert_id_info(user_id: str, repo_id: str, branch_id: str, asset_id: str
 
 
 def get_asserts_info(
-    user_id: str,
-    repo_id: str,
-    branch_id: str,
-    offset: int = 0,
-    limit: int = 20,
-    class_id: int = None,
+    user_id: str, repo_id: str, branch_id: str, offset: int = 0, limit: int = 20, class_id: int = None,
 ) -> Dict:
     """
     API get assetst info

@@ -65,7 +65,8 @@ class Settings(BaseSettings):
 
     # RUNTIME
     RUNTIMES: Optional[
-        str] = '[{"name": "default_training_image", "hash": "c0963dfaf32a", "type": 1, "url": "industryessentials/executor-det-yolov4-training:release-0.3.0", "config": "{\\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"learning_rate\\": 0.0013, \\"max_batches\\": 20000, \\"warmup_iterations\\": 1000, \\"batch\\": 64, \\"subdivisions\\": 32, \\"shm_size\\": \\"16G\\"}"}, {"name": "default_mining_image", "hash": "b3bb4d1deaff", "type": 2, "url": "industryessentials/executor-det-yolov4-mining:release-0.3.0", "config": "{\\"data_workers\\": 28, \\"model_name\\": \\"yolo\\", \\"model_type\\": \\"detection\\", \\"strategy\\": \\"aldd_yolo\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"batch_size\\": 16, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}, {"name": "default_inference_image", "hash": "b3bb4d1deaff", "type": 9, "url": "industryessentials/executor-det-yolov4-mining:release-0.3.0", "config": "{\\"image_height\\": 608, \\"image_width\\": 608, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"write_result\\": true, \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}]'  # noqa: E501
+        str
+    ] = '[{"name": "default_training_image", "hash": "c0963dfaf32a", "type": 1, "url": "industryessentials/executor-det-yolov4-training:release-0.3.0", "config": "{\\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"learning_rate\\": 0.0013, \\"max_batches\\": 20000, \\"warmup_iterations\\": 1000, \\"batch\\": 64, \\"subdivisions\\": 32, \\"shm_size\\": \\"16G\\"}"}, {"name": "default_mining_image", "hash": "b3bb4d1deaff", "type": 2, "url": "industryessentials/executor-det-yolov4-mining:release-0.3.0", "config": "{\\"data_workers\\": 28, \\"model_name\\": \\"yolo\\", \\"model_type\\": \\"detection\\", \\"strategy\\": \\"aldd_yolo\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"batch_size\\": 16, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}, {"name": "default_inference_image", "hash": "b3bb4d1deaff", "type": 9, "url": "industryessentials/executor-det-yolov4-mining:release-0.3.0", "config": "{\\"image_height\\": 608, \\"image_width\\": 608, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"write_result\\": true, \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}]'  # noqa: E501
 
     # Online Sheet
     SHARING_TIMEOUT: int = 10
@@ -75,9 +76,11 @@ class Settings(BaseSettings):
     GITHUB_TIMEOUT: int = 30
     APP_CACHE_EXPIRE_IN_SECONDS: int = 3600
 
+    # Start up stuffs
     # Task Type To Survive Upon Start up
     #  default TaskTypeLabel = 3
     TASK_TYPES_WHITELIST: List[int] = [3]
+    INIT_SANDBOX_FOR_FIRST_USER: bool = True
 
     # Reverse keywords
     REVERSE_KEYWORDS_OUTPUT: bool = True
