@@ -129,7 +129,7 @@ const TaskChart = ({ getTaskStats }) => {
   return (
     <Card className={styles.box}
       headStyle={cardHead} bodyStyle={{...cardBody, height: 281}} 
-      bordered={false} title={<><BarchartIcon className={styles.headIcon} />{t('portal.task.static.title')}</>}
+      bordered={false} title={<><BarchartIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.task.static.title')}</span></>}
     >
       {series.length ? (
       <>

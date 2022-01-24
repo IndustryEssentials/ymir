@@ -16,8 +16,8 @@
   background: fade(@primary-color, 10);
   border-radius: 2px;
   border: 1px solid fade(@primary-color, 50);
-  line-height: 40px;
-  padding: 0 15px;
+  line-height: 25px;
+  padding: 6px 15px;
   color: @color;
   .tipIcon {
     color: @color;
@@ -33,4 +33,20 @@
 .selectedTag {
   margin-top: 2px;
   margin-bottom: 2px;
+}
+
+.odd:nth-child(4n+3), .odd:nth-child(4n+4){
+  background-color: rgba(0,0,0,.02);
+}
+.odd {
+  .name {
+    line-height: 50px;
+    margin: 0 10px;
+  }
+  :global(.ant-form-item) {
+    margin: 10px 0;
+  }
+  :global(.ant-select) {
+    color: rgba(0,0,0,0.65);
+  }
 }
