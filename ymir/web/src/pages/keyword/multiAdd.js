@@ -62,7 +62,6 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => { } }, ref) => {
       form={form}
       name='multiAddForm'
       labelAlign='left'
-      // size='large'
       preserve={false}
     >
       <Form.Item
