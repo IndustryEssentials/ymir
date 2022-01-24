@@ -152,7 +152,8 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
     logging.debug(f"update db single task request: {task_data}")
     try:
         response = requests.post(url=url, headers=custom_headers, json=task_data)
-    except requests.exceptions.RequestException as e:
+        response.raise_for_status()
+    except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
         logging.exception(msg=f"update db single task error ignored: {tid}, {e}")
         return (f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
 
