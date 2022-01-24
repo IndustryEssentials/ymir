@@ -128,7 +128,7 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
 
 
 # private: process
-def _run_train_cmd(cmd: str, out_log_path: str) -> int:
+def _run_train_cmd(cmd: List[str], out_log_path: str) -> int:
     """
     invoke training command
 
@@ -146,7 +146,7 @@ def _run_train_cmd(cmd: str, out_log_path: str) -> int:
     logging.info(f"out log path: {out_log_path}")
     with open(out_log_path, 'a') as f:
         # run and wait, if non-zero value returned, raise
-        subprocess.run(cmd.split(" "), check=True, stdout=f, stderr=f, text=True)
+        subprocess.run(cmd, check=True, stdout=f, stderr=f, text=True)
 
     return MirCode.RC_OK
 
@@ -159,10 +159,12 @@ def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained
     elif 'pretrained_model_params' in config:
         del config['pretrained_model_params']
 
-    logging.info("config: {}".format(config))
+    container_config = mir_utils.map_gpus_host_to_container(config)
+
+    logging.info("container config: {}".format(container_config))
 
     with open(out_config_path, "w") as f:
-        yaml.dump(config, f)
+        yaml.dump(container_config, f)
 
     return config
 
@@ -405,15 +407,21 @@ class CmdTrain(base.BaseCommand):
             task_id=task_id,
             pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
 
+        gpu_id = executor_config['gpu_id']
+
         # start train docker and wait
         path_binds = []
-        path_binds.append(f"-v {work_dir_in}:/in")
-        path_binds.append(f"-v {work_dir_out}:/out")
-        path_binds.append(f"-v {tensorboard_dir}:/out/tensorboard")
-        joint_path_binds = " ".join(path_binds)
+        path_binds.append(f"-v{work_dir_in}:/in")
+        path_binds.append(f"-v{work_dir_out}:/out")
+        path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
         shm_size = _get_shm_size(config_file)
-        cmd = (f"nvidia-docker run --rm --shm-size={shm_size} {joint_path_binds} --user {os.getuid()}:{os.getgid()} "
-               f"--name {executor_instance} {executor}")
+
+        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={shm_size}"]
+        cmd.extend(path_binds)
+        cmd.extend(['--gpus', f"\"device={gpu_id}\""])
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
+        cmd.extend(['--name', f"{executor_instance}"])
+        cmd.append(executor)
 
         task_code = MirCode.RC_OK
         task_error_msg = ''
