@@ -1,5 +1,5 @@
 import request from "@/utils/request"
-import { TASKTYPES } from "../constants/task"
+import { TASKTYPES } from "@/constants/task"
 
 /**
  * get (or filter) task list

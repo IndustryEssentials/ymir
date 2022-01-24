@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -15,7 +15,6 @@ from app.api.errors.errors import (
     UserNotFound,
 )
 from app.config import settings
-from app.constants.role import Role
 from app.utils import security
 from app.utils.email import send_reset_password_email
 
