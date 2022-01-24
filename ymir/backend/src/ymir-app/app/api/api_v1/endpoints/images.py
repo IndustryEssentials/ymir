@@ -1,15 +1,6 @@
 from typing import Any, Dict, Iterator, List
 
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Body,
-    Depends,
-    HTTPException,
-    Path,
-    Query,
-)
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from fastapi_cache.decorator import cache
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -21,26 +12,22 @@ from app.api.errors.errors import (
     DockerImageHavingRelationships,
     DockerImageNotFound,
     DuplicateDockerImageError,
-    DuplicateWorkspaceError,
-    FailedtoCreateWorkspace,
     FailedtoGetSharedDockerImages,
     FailedtoShareDockerImage,
     InvalidSharedImageConfig,
 )
 from app.config import settings
+from app.constants.state import DockerImageState, DockerImageType
 from app.models.image import DockerImage
 from app.schemas.image import (
     DockerImageCreate,
     DockerImageSharing,
-    DockerImageState,
-    DockerImageType,
-    DockerImageUpdate,
     SharedDockerImageOut,
     SharedDockerImagesOut,
 )
 from app.utils.github import get_github_table
 from app.utils.sheet import WufooAPI
-from app.utils.ymir_controller import ControllerClient, ControllerRequest
+from app.utils.ymir_controller import ControllerClient
 
 router = APIRouter()
 
