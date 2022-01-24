@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import { Link, useHistory, useParams, getLocale, } from "umi"
-import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Progress, Radio, Row, Col, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Radio, Row, Col, } from "antd"
 import {
   SearchOutlined,
   SyncOutlined,
@@ -10,21 +10,19 @@ import moment from "moment"
 
 import { format, getUnixTimeStamp, calDuration } from "@/utils/date"
 import t from "@/utils/t"
-import Empty from '@/components/empty/default'
-import { TASKSTATES, TASKTYPES } from "../../constants/task"
+import { TASKSTATES, TASKTYPES } from "@/constants/task"
 import { getTaskTypes, getTimes, getTaskStates } from '@/constants/query'
-import Breadcrumbs from "../../components/common/breadcrumb"
+import Breadcrumbs from "@/components/common/breadcrumb"
 import styles from "./index.less"
-import { CopyIcon, DeleteIcon, EditIcon, FlagIcon, InprogressIcon, ScreenIcon, SearchEyeIcon, StopIcon, TaggingIcon, TipsIcon, TrainIcon, VectorIcon } from "../../components/common/icons"
-import EditBox from "../../components/form/editBox"
-import StateTag from "../../components/task/stateTag"
-import RenderProgress from "../../components/common/progress"
-import Actions from "../../components/table/actions"
-import Confirm from "../../components/common/dangerConfirm"
+import { CopyIcon, DeleteIcon, EditIcon, FlagIcon, ScreenIcon, StopIcon, TaggingIcon, TrainIcon, VectorIcon } from "@/components/common/icons"
+import EditBox from "@/components/form/editBox"
+import StateTag from "@/components/task/stateTag"
+import RenderProgress from "@/components/common/progress"
+import Actions from "@/components/table/actions"
+import Confirm from "@/components/common/dangerConfirm"
 import Terminate from "./components/terminate"
 import { getTensorboardLink } from "../../services/common"
 
-const { confirm } = Modal
 const { useForm } = Form
 
 const initQuery = {
@@ -222,18 +220,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
     history.push({ pathname: `/home/task/${key}`,  state: { record } })
   }
 
-  const getLabels = (id, name) => {
-    Confirm({
-      content: t("task.action.getlabels.confirm.content", { name }),
-      onOk: async () => {
-        const result = await stopTask(id)
-        if (result) {
-          getData()
-        }
-      },
-      okText: t('task.action.labeldata'),
-    })
-  }
 
   const edit = (record) => {
     setCurrent({})
@@ -276,10 +262,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
     }
   }
 
-  const resetQuery = () => {
-    setQuery(initQuery)
-    form.resetFields()
-  }
 
   const actionMenus = (record) => {
     const { id, name, state, type, hash } = record
