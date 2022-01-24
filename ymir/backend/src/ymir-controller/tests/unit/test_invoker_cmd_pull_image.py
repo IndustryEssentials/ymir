@@ -98,4 +98,3 @@ class TestInvokerPullImage(unittest.TestCase):
         ]
 
         assert mock_run.call_args_list == args_list
-

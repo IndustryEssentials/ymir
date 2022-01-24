@@ -8,7 +8,6 @@ import {
   createDataset,
   updateDataset,
   getInternalDataset,
-  importDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
@@ -38,8 +37,8 @@ export default {
           type: "UPDATE_DATASETS",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *batchDatasets({ payload }, { call, put }) {
       const { code, result } = yield call(batchDatasets, payload)
@@ -64,8 +63,8 @@ export default {
           type: "UPDATE_ASSETS",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *getAsset({ payload }, { call, put }) {
       const { code, result } = yield call(getAsset, payload.id, payload.hash)
@@ -74,16 +73,20 @@ export default {
           type: "UPDATE_ASSET",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
-      return result
+      if (code === 0) {
+        return result
+      }
     },
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
-      return result
+      if (code === 0) {
+        return result
+      }
     },
     *updateDataset({ payload }, { call, put }) {
       const { id, name } = payload
@@ -99,12 +102,8 @@ export default {
           type: "UPDATE_PUBLICDATASETS",
           payload: result,
         })
+        return result
       }
-      return result
-    },
-    *importDataset({ payload }, { call, put }) {
-      const { code, result } = yield call(importDataset, payload)
-      return result
     },
     *updateDatasets({ payload }, { put, select }) {
       const datasets = yield select(state => state.dataset.datasets)

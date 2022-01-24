@@ -68,7 +68,6 @@ class TestInvokerMerge(unittest.TestCase):
         ret.stdout = RET_ID
         return ret
 
-
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_MERGE],

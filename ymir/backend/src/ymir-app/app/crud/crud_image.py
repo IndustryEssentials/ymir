@@ -1,19 +1,13 @@
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, desc, not_
+from sqlalchemy import desc, not_
 from sqlalchemy.orm import Session
 
-from app.config import settings
+from app.constants.state import DockerImageState, DockerImageType
 from app.crud.base import CRUDBase
 from app.models.image import DockerImage
 from app.models.image_config import DockerImageConfig
-from app.schemas.image import (
-    DockerImageCreate,
-    DockerImageState,
-    DockerImageType,
-    DockerImageUpdate,
-)
+from app.schemas.image import DockerImageCreate, DockerImageUpdate
 
 
 class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate]):

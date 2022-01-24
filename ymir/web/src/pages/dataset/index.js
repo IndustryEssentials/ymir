@@ -1,14 +1,13 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
 import styles from "./index.less"
 import { Link, useHistory, useLocation, useParams } from "umi"
-import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Radio, Tag, Tooltip, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
 import {
   SyncOutlined,
 } from "@ant-design/icons"
 import moment from "moment"
 
-import { numFormat } from "@/utils/number"
 import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
@@ -21,13 +20,14 @@ import EmptyState from '@/components/empty/dataset'
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
 // import Rect from '@/components/guide/rect'
-// import Guide from "../../components/guide/guide"
+// import Guide from "@/components/guide/guide"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
 
 import { ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, SearchIcon,
   TipsIcon, EditIcon, DeleteIcon, TreeIcon } from "@/components/common/icons"
+import { humanize } from "@/utils/number"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -123,7 +123,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
     {
       title: showTitle("dataset.column.asset_count"),
       dataIndex: "asset_count",
-      render: (num) => numFormat(num),
+      render: (num) => humanize(num),
       width: 120,
     },
     {
@@ -483,7 +483,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
           </ConfigProvider>
         </div>
       </div>
-      <EditBox record={current} action={saveName}>
+      <EditBox record={current} max={80} action={saveName}>
         {current.type ? <Form.Item
           label={t('dataset.column.source')}
         >

@@ -81,19 +81,22 @@ class TestInvokerCMDInference(unittest.TestCase):
         mock_json = {
             "detection": {
                 "pic_hash": {
-                    "annotations": [
-                        {
-                            "box": {"x": 300, "y": 35, "w": 81, "h": 88},
-                            "class_name": "no_helmet_head",
-                            "score": 0.991247296333313,
-                            "class_id": 3,
-                        }
-                    ],
+                    "annotations": [{
+                        "box": {
+                            "x": 300,
+                            "y": 35,
+                            "w": 81,
+                            "h": 88
+                        },
+                        "class_name": "no_helmet_head",
+                        "score": 0.991247296333313,
+                        "class_id": 3,
+                    }],
                 }
             }
         }
 
-        with mock.patch.object(InferenceCMDInvoker, "get_inference_result", return_value=mock_json) as mock_inference:
+        with mock.patch.object(InferenceCMDInvoker, "get_inference_result", return_value=mock_json):
             make_invoker_cmd_call(
                 invoker=RequestTypeToInvoker[backend_pb2.CMD_INFERENCE],
                 sandbox_root=self._sandbox_root,
@@ -108,19 +111,16 @@ class TestInvokerCMDInference(unittest.TestCase):
                 model_hash=model_hash,
             )
 
-        working_dir = os.path.join(
-            self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_INFERENCE), self._task_id
-        )
+        working_dir = os.path.join(self._sandbox_root, "work_dir",
+                                   backend_pb2.RequestType.Name(backend_pb2.CMD_INFERENCE), self._task_id)
         os.makedirs(working_dir, exist_ok=True)
         config_file = os.path.join(working_dir, "inference_config.yaml")
 
         index_file = os.path.join(working_dir, "inference_pic_index.txt")
 
-        cmd = (
-            f"mir infer -w {working_dir} --model-location {self._storage_root} --index-file {index_file} "
-            f"--model-hash {model_hash} --config-file {config_file} --executor {inference_image}"
-        )
+        cmd = (f"mir infer -w {working_dir} --model-location {self._storage_root} --index-file {index_file} "
+               f"--model-hash {model_hash} --config-file {config_file} --executor {inference_image}")
 
-        mock_run.assert_has_calls(
-            calls=[mock.call(cmd, capture_output=True, shell=True, text=True),]
-        )
+        mock_run.assert_has_calls(calls=[
+            mock.call(cmd, capture_output=True, shell=True, text=True),
+        ])

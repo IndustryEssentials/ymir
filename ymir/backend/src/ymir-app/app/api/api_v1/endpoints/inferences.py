@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Any, Dict, Generator
 
 from fastapi import APIRouter, Depends
@@ -16,11 +15,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import DockerImageType
 from app.utils.files import FailedToDownload, save_files
-from app.utils.ymir_controller import (
-    ControllerClient,
-    ControllerRequest,
-    ExtraRequestType,
-)
+from app.utils.ymir_controller import ControllerClient
 
 router = APIRouter()
 

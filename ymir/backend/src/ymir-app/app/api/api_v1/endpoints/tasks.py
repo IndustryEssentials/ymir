@@ -1,8 +1,8 @@
 import enum
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from operator import attrgetter
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
+    ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
@@ -31,16 +32,11 @@ from app.utils.class_ids import (
     get_keyword_name_to_id_mapping,
 )
 from app.utils.clickhouse import YmirClickHouse
-from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
-from app.utils.ymir_controller import (
-    ControllerClient,
-    ControllerRequest,
-    ExtraRequestType,
-)
+from app.utils.ymir_controller import ControllerClient, ControllerRequest
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
@@ -455,6 +451,10 @@ def update_task_status(
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
+    except ModelNotReady:
+        logger.warning("Model Not Ready")
+        return {"result": task}
+
     if updated_task:
         updated_task = crud.task.update_last_message_datetime(
             db, task=updated_task, dt=datetime.utcfromtimestamp(task_result.timestamp)
@@ -670,7 +670,7 @@ class TaskResultProxy:
         self.viz.config(user_id=task.user_id, branch_id=task.hash)
         model_info = self.viz.get_model()
         if not model_info:
-            raise ValueError("model not ready yet")
+            raise ModelNotReady()
 
         model = crud.model.get_by_hash(self.db, hash_=model_info["hash"])
         if model:

@@ -1,5 +1,5 @@
 import request from "@/utils/request"
-import { TASKTYPES } from "../constants/task"
+import { TASKTYPES } from "@/constants/task"
 
 /**
  * get (or filter) task list
@@ -70,15 +70,6 @@ export function deleteTask(id) {
  */
 export function stopTask(id, fetch_result = false) {
   return request.post(`/tasks/${id}/terminate`, { fetch_result })
-}
-
-/**
- * stop task and get label data
- * @param {number} id 
- * @returns 
- */
-export function getLabelData(id) {
-  return request.post(`/tasks/stop/${id}`, { label: 1 })
 }
 
 /**
