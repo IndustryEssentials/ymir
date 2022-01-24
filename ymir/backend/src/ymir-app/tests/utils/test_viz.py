@@ -86,7 +86,9 @@ class TestVizClient:
         user_id = random.randint(1000, 2000)
         task_id = random_lower_string()
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
-        viz.config(user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name)
+        viz.config(
+            user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name
+        )
         ret = viz.get_assets()
         assert isinstance(ret, m.Assets)
         assert ret.total
@@ -120,7 +122,9 @@ class TestVizClient:
         task_id = random_lower_string()
         asset_id = random_lower_string()
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
-        viz.config(user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name)
+        viz.config(
+            user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name
+        )
         ret = viz.get_asset(asset_id=asset_id)
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id

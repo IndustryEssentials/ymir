@@ -1,5 +1,5 @@
 from datetime import datetime
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
 from app.models import Dataset, Task
-from app.schemas.asset import Asset
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
 
 
