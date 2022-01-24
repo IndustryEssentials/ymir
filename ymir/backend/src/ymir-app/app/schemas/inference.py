@@ -1,6 +1,6 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, root_validator
 
 from app.schemas.common import Common
 

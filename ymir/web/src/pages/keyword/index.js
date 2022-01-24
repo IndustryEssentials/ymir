@@ -12,10 +12,10 @@ import {
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/keyword'
-import Actions from "../../components/table/actions"
+import Actions from "@/components/table/actions"
 import Add from './add'
 import MultiAdd from "./multiAdd"
-import { AddIcon, AddtaskIcon, EditIcon, } from "../../components/common/icons"
+import { AddIcon, AddtaskIcon, EditIcon, } from "@/components/common/icons"
 
 const { confirm } = Modal
 const { useForm } = Form

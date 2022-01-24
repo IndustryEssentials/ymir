@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.config import settings
-from app.models.task import TaskType
-from tests.utils.utils import random_lower_string, random_url
+from app.constants.state import TaskType
+from tests.utils.utils import random_lower_string
 
 
 def create_model(db: Session, client: TestClient, token) -> models.Model:

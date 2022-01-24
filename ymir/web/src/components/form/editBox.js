@@ -4,7 +4,7 @@ import t from '@/utils/t'
 import { getTaskTypes } from '@/constants/query'
 
 const { useForm } = Form
-const EditBox = ({ children, record, dataType = 'task', action = () => { } }) => {
+const EditBox = ({ children, record, max=50, action = () => { } }) => {
   const [editForm] = useForm()
   const [show, setShow] = useState(false)
   const { id, name, type, state } = record
@@ -45,7 +45,7 @@ const EditBox = ({ children, record, dataType = 'task', action = () => { } }) =>
         initialValue={name}
         rules={[
           { required: true, whitespace: true, message: t('common.editbox.form.name.required') },
-          { type: 'string', min: 2, max: dataType === 'task' ? 20 : 30 },
+          { type: 'string', min: 2, max },
         ]}
       >
         <Input placeholder={t('common.editbox.form.name.placeholder')} autoComplete={'off'} allowClear />

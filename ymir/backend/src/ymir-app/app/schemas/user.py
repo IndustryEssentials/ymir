@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import IntEnum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, EmailStr, Field, root_validator, validator
+from pydantic import BaseModel, EmailStr, validator
 
 from app.schemas.common import (
     Common,
