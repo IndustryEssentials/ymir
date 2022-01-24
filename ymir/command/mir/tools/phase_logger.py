@@ -1,18 +1,20 @@
 """ write task progress percent """
 
 import datetime
-from enum import Enum
+from enum import IntEnum
 import json
 import math
 import os
 from typing import Any, Dict, List, Optional
 
+from mir.protos import mir_command_pb2 as mirpb
 
-class PhaseStateEnum(str, Enum):
-    PENDING = 'pending'
-    RUNNING = 'running'
-    DONE = 'done'
-    ERROR = 'error'
+
+class PhaseStateEnum(IntEnum):
+    PENDING = mirpb.TaskStatePending
+    RUNNING = mirpb.TaskStateRunning
+    DONE = mirpb.TaskStateDone
+    ERROR = mirpb.TaskStateError
 
 
 class PhaseLogger:
