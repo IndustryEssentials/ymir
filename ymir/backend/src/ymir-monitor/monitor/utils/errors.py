@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 
 class APIError(HTTPException):
     status_code = 400
-    code = 400000
+    code = 150400
     message = "General Client Error"
 
     def __init__(
@@ -23,12 +23,12 @@ class APIError(HTTPException):
 
 
 class DuplicateTaskIDError(APIError):
-    code = 400400
+    code = 150401
     message = "task_id already exists"
 
 
 class LogFileError(APIError):
-    code = 400401
+    code = 150402
     message = "log file error"
 
 
@@ -38,7 +38,7 @@ def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
     else:
         detail = {  # type: ignore
             "errors": exc.detail,
-            "code": 500000,
+            "code": 150500,
             "message": "Unknown Error",
         }
     return JSONResponse(detail, exc.status_code)
