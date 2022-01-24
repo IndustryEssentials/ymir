@@ -7,8 +7,8 @@ import Loading from "@/components/common/loading"
 import Foot from "@/components/common/footer"
 import Empty from '@/components/empty/default'
 import '@/assets/icons/iconfont.css'
-import QuickActions from "../components/common/quickActions"
-import Guide from "../components/guide/guide"
+import QuickActions from "@/components/common/quickActions"
+import Guide from "@/components/guide/guide"
 
 const { Header, Content, Sider, Footer } = Layout
 message.config({ maxCount: 1 })

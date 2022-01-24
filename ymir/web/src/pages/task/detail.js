@@ -10,12 +10,12 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
 import Terminate from "./components/terminate"
 import { TASKSTATES, TASKTYPES } from '@/constants/task'
-import StateTag from '../../components/task/stateTag'
+import StateTag from '@/components/task/stateTag'
 import styles from "./detail.less"
 import {
   ArrowDownIcon, ArrowUpIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon,
   FileYesIcon, FileHistoryIcon, SearchEyeIcon, SearchIcon
-} from "../../components/common/icons"
+} from "@/components/common/icons"
 
 const { Item } = Descriptions
 
