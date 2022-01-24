@@ -5,11 +5,11 @@ import { Link, useParams, useHistory } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
-import Uploader from '../../components/form/uploader'
-import { randomNumber } from '../../utils/number'
+import Uploader from '@/components/form/uploader'
+import { randomNumber } from '@/utils/number'
 import s from './add.less'
-import Breadcrumbs from '../../components/common/breadcrumb'
-import { TipsIcon } from '../../components/common/icons'
+import Breadcrumbs from '@/components/common/breadcrumb'
+import { TipsIcon } from '@/components/common/icons'
 import options from '@antv/graphin/lib/layout/utils/options'
 import { getKeywords } from '../../services/keyword'
 import Tip from "@/components/form/tip"
@@ -216,7 +216,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               initialValue={'dataset_import_' + randomNumber()}
               rules={[
                 { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
-                { type: 'string', min: 2, max: 30 },
+                { type: 'string', min: 2, max: 80 },
               ]}
             >
               <Input autoComplete={'off'} allowClear />

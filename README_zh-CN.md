@@ -119,7 +119,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 ## 2.1. 环境依赖
 
-1. 需要GPU，并安装nvidia驱动: [https://www.nvidia.cn/geforce/drivers/](https://www.nvidia.cn/geforce/drivers/) 
+1. GPU版本需要GPU，并安装nvidia驱动: [https://www.nvidia.cn/geforce/drivers/](https://www.nvidia.cn/geforce/drivers/) 
 
 2. 需要安装docker：
 *  Docker & Docker Compose 安装： [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/) 
@@ -131,7 +131,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 ## 2.2. 安装 YMIR-GUI
 
-必须保证[环境依赖](#211-环境依赖)中所有条件已满足才能部署，否则容易出现各种不可控问题。
+需要保证[环境依赖](#211-环境依赖)中所有条件已满足才能部署，否则容易出现各种不可控问题。
 
 YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 
@@ -143,6 +143,14 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`sh ymir.sh start`
 
 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`sh ymir.sh stop`
+
+   如无可用显卡，需要安装CPU模式，请修改为CPU启动模式，修改.env文件将SERVER_RUNTIME参数修改为runc：
+
+`# nvidia for gpu, runc for cpu.`
+
+`SERVER_RUNTIME=runc`
+
+修改后重启服务即可。
 
 ## 2.3. 安装配置LabelStudio （可选）
 

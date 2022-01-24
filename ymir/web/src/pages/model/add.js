@@ -7,7 +7,7 @@ import {
 
 import s from './add.less'
 import t from '@/utils/t'
-import Uploader from '../../components/form/uploader'
+import Uploader from '@/components/form/uploader'
 
 const { Option } = Select
 const { useForm } = Form

@@ -2,13 +2,14 @@ from fastapi.testclient import TestClient
 
 from app.api.api_v1.endpoints import login as m
 from app.config import settings
+from app.utils.security import frontend_hash
 from tests.utils.utils import random_email, random_lower_string
 
 
 def test_get_access_token(client: TestClient) -> None:
     login_data = {
         "username": settings.FIRST_ADMIN,
-        "password": settings.FIRST_ADMIN_PASSWORD,
+        "password": frontend_hash(settings.FIRST_ADMIN_PASSWORD),
     }
     r = client.post(f"{settings.API_V1_STR}/auth/token", data=login_data)
     tokens = r.json()

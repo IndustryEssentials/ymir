@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 import logging
 from typing import Any
 
+from mir.tools import utils
+
 
 class BaseCommand(ABC):
     """base class for all commands in mir"""
@@ -10,7 +12,10 @@ class BaseCommand(ABC):
     def __init__(self, args: Any):
         self.args = args
 
-    # public: abstract
+    @utils.time_it
+    def cmd_run(self) -> int:
+        return self.run()
+
     @abstractmethod
     def run(self) -> int:
         logging.critical("BaseCommand run: this action should override in sub classes")

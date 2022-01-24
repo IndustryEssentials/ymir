@@ -4,7 +4,7 @@ import { connect } from 'dva'
 import { useParams, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
-import Breadcrumbs from "../../components/common/breadcrumb"
+import Breadcrumbs from "@/components/common/breadcrumb"
 import { TYPES, STATES, getImageTypeLabel, getImageStateLabel } from '@/constants/image'
 import { ROLES } from '@/constants/user'
 import LinkModal from "./components/relate"

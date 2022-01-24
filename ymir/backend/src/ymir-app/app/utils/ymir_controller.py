@@ -12,9 +12,8 @@ from id_definition.task_id import TaskId
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
 
-from app.models.task import Task, TaskType
+from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy
-from app.schemas.image import DockerImageType
 from app.schemas.task import MergeStrategy
 
 
@@ -322,14 +321,6 @@ class ControllerClient:
             task_type, user_id, workspace_id, task_id, args=task_parameters
         )
         return self.send(req)
-
-    def get_task_result(self, user_id: int, task_hash: str) -> Dict:
-        req = ControllerRequest(
-            ExtraRequestType.get_task_info, user_id, args={"task_ids": [task_hash]}
-        )
-        resp = self.send(req)
-        result = list(resp["resp_get_task_info"]["task_infos"].values())[0]
-        return result
 
     def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:
         req = ControllerRequest(

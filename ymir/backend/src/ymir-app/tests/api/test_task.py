@@ -40,42 +40,11 @@ def mock_viz(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_stats(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
 def mock_clickhouse(mocker):
     return mocker.Mock()
 
 
 class TestTaskResult:
-    def test_get_task_result(
-        self,
-        mocker,
-        mock_controller,
-        mock_db,
-        mock_graph_db,
-        mock_viz,
-        mock_controller_request,
-    ):
-        task_result_proxy = m.TaskResultProxy(
-            controller=mock_controller,
-            db=mock_db,
-            graph_db=mock_graph_db,
-            viz=mock_viz,
-            stats_client=mock_stats,
-            clickhouse=mock_clickhouse,
-        )
-        user_id = random.randint(1000, 2000)
-        task_hash = random_lower_string(32)
-        task_result_proxy.parse_resp = mocker.Mock(
-            return_value={"state": m.TaskState.done, "task_id": task_hash}
-        )
-        task = mocker.Mock(hash=task_hash)
-        result = task_result_proxy.get(task)
-        mock_controller.get_task_result.assert_called()
-
     def test_save_task_result(
         self, mocker, mock_controller, mock_db, mock_graph_db, mock_controller_request
     ):
@@ -84,7 +53,6 @@ class TestTaskResult:
             db=mock_db,
             graph_db=mock_graph_db,
             viz=mock_viz,
-            stats_client=mock_stats,
             clickhouse=mock_clickhouse,
         )
         task_result_proxy.get = mocker.Mock(
@@ -129,7 +97,6 @@ class TestTaskResult:
             db=mock_db,
             graph_db=mock_graph_db,
             viz=viz,
-            stats_client=mock_stats,
             clickhouse=mock_clickhouse,
         )
         user_id = random.randint(1000, 2000)
@@ -171,29 +138,6 @@ class TestNormalizeParameters:
             m.normalize_parameters(mocker.Mock(), random_lower_string(5), None, {})
             is None
         )
-
-
-class TestUpdateStats:
-    user_id = "0233"
-
-    def test_update_stats_only_update_task_stats(self, mocker):
-        stats = mocker.Mock()
-        task = mocker.Mock(parameters=None)
-        m.update_stats_for_ref_count(self.user_id, stats, task)
-        stats.update_task_stats.assert_called()
-        stats.update_model_rank.assert_not_called()
-
-    def test_update_stats_for_model(self, mocker):
-        stats = mocker.Mock()
-        task = mocker.Mock(parameters={"model_id": 1})
-        m.update_stats_for_ref_count(self.user_id, stats, task)
-        stats.update_model_rank.assert_called_with(self.user_id, 1)
-
-    def test_update_stats_for_dataset(self, mocker):
-        stats = mocker.Mock()
-        task = mocker.Mock(parameters={"datasets": [233]})
-        m.update_stats_for_ref_count(self.user_id, stats, task)
-        stats.update_dataset_rank.assert_called_with(self.user_id, 233)
 
 
 def create_task(client, headers):
@@ -313,13 +257,15 @@ class TestUpdateTaskStatus:
     ):
         r = create_task(client, normal_user_token_headers)
         task_hash = r.json()["result"]["hash"]
-        last_update_time = r.json()["result"]["update_datetime"]
-        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%dT%H:%M:%S.%f")
+        last_message_datetime = r.json()["result"]["last_message_datetime"]
+        last_message_datetime = datetime.strptime(
+            last_message_datetime, "%Y-%m-%dT%H:%M:%S.%f"
+        )
         data = {
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": datetime.timestamp(last_update_time) + 1,
+            "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) + 1,
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",
@@ -339,14 +285,16 @@ class TestUpdateTaskStatus:
     ):
         r = create_task(client, normal_user_token_headers)
         task_hash = r.json()["result"]["hash"]
-        last_update_time = r.json()["result"]["update_datetime"]
-        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%dT%H:%M:%S.%f")
+        last_message_datetime = r.json()["result"]["last_message_datetime"]
+        last_message_datetime = datetime.strptime(
+            last_message_datetime, "%Y-%m-%dT%H:%M:%S.%f"
+        )
 
         data = {
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
-            "timestamp": datetime.timestamp(last_update_time) - 1,
+            "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) - 1,
         }
         r = client.post(
             f"{settings.API_V1_STR}/tasks/status",

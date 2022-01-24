@@ -7,28 +7,48 @@ const pageMaps = [
 ]
 
 export default {
-  state: {},
+  state: {
+    socket: null,
+  },
   namespace: "socket",
+  effects: {
+    *getSocket({ payload }, { put, select }) {
+      let socket = yield select(state => state.socket.socket)
+      if (socket) {
+        return socket
+      }
+      const { hash } = yield put.resolve({
+        type: 'user/getUserInfo',
+      })
+      socket = getSocket(hash)
+      yield put({
+        type: 'updateSocket',
+        payload: socket,
+      })
+      return socket
+    }
+  },
+  reducers: {
+    updateSocket(state, { payload }) {
+      return {
+        ...state,
+        socket: payload,
+      }
+    }
+  },
   subscriptions: {
     setup({ dispatch, history }) {
-        let socket = null
       return history.listen(async location => {
         if (pageMaps.some(page => new RegExp(`^${page.path}$`).test(location.pathname))) {
-          const { hash } = await dispatch({
-            type: 'user/getUserInfo',
+          let socket = await dispatch({
+            type: 'getSocket',
           })
-          socket = getSocket(hash)
-
-          socket.on('update_taskstate', (data) => {
-            // console.log('socket -> update_taskstate data: ', data)
+          socket.off().on('update_taskstate', (data) => {
             pageMaps.forEach(page => dispatch({
               type: page.method,
               payload: data,
             }))
           })
-        } else {
-          // other page close socket
-          socket && socket.close()
         }
       })
     },

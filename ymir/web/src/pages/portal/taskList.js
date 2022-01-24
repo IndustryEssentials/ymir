@@ -11,7 +11,7 @@ import styles from './index.less'
 import { cardBody, cardHead } from "./components/styles"
 import { MytaskIcon, AddtaskIcon, } from '@/components/common/icons'
 import QuickAction from "./components/quickAction"
-import StateTag from "../../components/task/stateTag"
+import StateTag from "@/components/task/stateTag"
 
 const TaskList = ({ getTasks }) => {
   const history = useHistory()

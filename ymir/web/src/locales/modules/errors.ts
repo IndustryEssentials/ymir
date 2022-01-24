@@ -1,6 +1,6 @@
 const errors = {
   'error1001': { cn: '接口错误', en: 'API_ERROR: API Error', },
-  'error1002': { cn: '验证失败', en: 'VALIDATION_FAILED: Validation Failed', },
+  'error1002': { cn: '参数校验失败', en: 'Parammeters Validation Failed', },
   'error1003': { cn: '未知错误', en: 'UNKNOWN_ERROR: Unkown Error', },
   'error1004': { cn: 'token失效，请重新登录', en: 'INVALID_TOKEN: Invalid Token, Please try again', },
   'error1005': { cn: '必填字段缺失', en: 'REQUIRED_FIELD_MISSING: ', },
@@ -31,6 +31,7 @@ const errors = {
   'error11003': { cn: '共享镜像失败', en: 'Share docker image failed', },
   'error11004': { cn: '此镜像关联其他镜像，请清除关联后再处理', en: 'Clean relationships of docker images before deleting it', },
   'error12001': { cn: '无法获取GPU个数信息', en: 'Can not get server\'s GPU count', },
+  'error13001': { cn: 'ClickHouse连接失败，无法获取统计数据', en: 'ClickHouse connect error, then get statstics data failed', },
 }
 
 export default errors

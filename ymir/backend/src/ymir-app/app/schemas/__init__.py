@@ -55,6 +55,7 @@ from .sys_info import SysInfo, SysInfoOut
 from .task import (
     Task,
     TaskCreate,
+    TaskInternal,
     TaskOut,
     TaskParameter,
     Tasks,

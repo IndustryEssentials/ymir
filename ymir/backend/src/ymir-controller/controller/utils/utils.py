@@ -1,6 +1,9 @@
+from functools import wraps
 import logging
 import re
 import subprocess
+import time
+from typing import Callable, Dict
 
 from controller.utils.code import ResCode
 from id_definition import task_id as task_id_proto
@@ -66,3 +69,15 @@ def annotation_format_str(format: backend_pb2.LabelFormat) -> str:
         backend_pb2.LabelFormat.LABEL_STUDIO_JSON: 'ls_json',
     }
     return format_enum_dict[format]
+
+
+def time_it(f: Callable) -> Callable:
+    @wraps(f)
+    def wrapper(*args: tuple, **kwargs: Dict) -> Callable:
+        _start = time.time()
+        _ret = f(*args, **kwargs)
+        _cost = time.time() - _start
+        logging.info(f"|-{f.__name__} costs {_cost:.2f}s({_cost / 60:.2f}m).")
+        return _ret
+
+    return wrapper

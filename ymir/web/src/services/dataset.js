@@ -91,7 +91,3 @@ export function updateDataset(id, name) {
 export function getInternalDataset() {
   return request.get('/datasets/public')
 }
-
-export function importDataset({ name, type, internal, shareID, url }) {
-  return request.post('/datasets/import', { name, type, internal, shareID, url })
-}

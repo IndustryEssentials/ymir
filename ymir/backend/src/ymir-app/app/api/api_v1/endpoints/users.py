@@ -1,9 +1,7 @@
-from enum import IntEnum
 from typing import Any, Optional
 
 from fastapi import APIRouter, Body, Depends, Query, Security
 from fastapi.encoders import jsonable_encoder
-from fastapi.logger import logger
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 
@@ -15,11 +13,7 @@ from app.api.errors.errors import (
     UserNotFound,
 )
 from app.constants.role import Roles
-from app.utils.ymir_controller import (
-    ControllerClient,
-    ControllerRequest,
-    ExtraRequestType,
-)
+from app.utils.ymir_controller import ControllerClient
 
 router = APIRouter()
 

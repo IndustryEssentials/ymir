@@ -1,39 +1,38 @@
-import json
-from typing import Dict, Any, List, Iterator, Optional, Callable
 from functools import partial
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.logger import logger
 
 from app import models
 from app.api import deps
+from app.config import settings
+from app.schemas import (
+    Keyword,
+    KeywordsCreate,
+    KeywordsCreateOut,
+    KeywordsPaginationOut,
+    KeywordUpdate,
+)
+from app.utils.cache import CacheClient
+from app.utils.class_ids import (
+    find_duplication_in_labels,
+    flatten_labels,
+    keywords_to_labels,
+    labels_to_keywords,
+)
 from app.utils.ymir_controller import (
     ControllerClient,
     ControllerRequest,
     ExtraRequestType,
-)
-from app.api.errors.errors import DuplicateKeywordError
-from app.utils.cache import CacheClient
-from app.utils.class_ids import (
-    keywords_to_labels,
-    labels_to_keywords,
-    find_duplication_in_labels,
-    flatten_labels,
-)
-from app.schemas import (
-    KeywordsCreate,
-    KeywordsCreateOut,
-    KeywordsPaginationOut,
-    KeywordOut,
-    KeywordUpdate,
-    Keyword,
 )
 
 router = APIRouter()
 
 
 @router.get(
-    "/", response_model=KeywordsPaginationOut,
+    "/",
+    response_model=KeywordsPaginationOut,
 )
 def get_keywords(
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -48,6 +47,8 @@ def get_keywords(
     """
     filter_f = partial(filter_keyword, q) if q else None
     items = list(labels_to_keywords(labels, filter_f))
+    if settings.REVERSE_KEYWORDS_OUTPUT:
+        items.reverse()
 
     res = {"total": len(items), "items": paginate(items, offset, limit)}
     return {"result": res}
@@ -86,7 +87,8 @@ def create_keywords(
 
 
 @router.patch(
-    "/{keyword}", response_model=KeywordsCreateOut,
+    "/{keyword}",
+    response_model=KeywordsCreateOut,
 )
 def update_keyword_aliases(
     *,
@@ -118,7 +120,8 @@ def paginate(
     """
     Mimic the behavior of database query's offset-limit pagination
     """
-    return items[offset : (limit + offset if limit is not None else None)]
+    end = limit + offset if limit is not None else None
+    return items[offset:end]
 
 
 def filter_keyword(query: str, keyword: Dict) -> bool:

@@ -117,7 +117,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         asset_cache_dir: str,
         executor: str,
         executor_instance: str,
-        generate_annotations: bool
+        generate_annotations: bool,
     ) -> backend_pb2.GeneralResp:
         mining_cmd = (f"cd {repo_root} && {utils.mir_executable()} mining --dst-rev {task_id}@{task_id} "
                       f"-w {work_dir} --model-location {model_location} --media-location {media_location} "

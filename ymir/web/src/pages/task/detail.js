@@ -10,26 +10,28 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
 import Terminate from "./components/terminate"
 import { TASKSTATES, TASKTYPES } from '@/constants/task'
-import StateTag from '../../components/task/stateTag'
+import StateTag from '@/components/task/stateTag'
 import styles from "./detail.less"
 import {
   ArrowDownIcon, ArrowUpIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon,
   FileYesIcon, FileHistoryIcon, SearchEyeIcon, SearchIcon
-} from "../../components/common/icons"
+} from "@/components/common/icons"
 
 const { Item } = Descriptions
+
+const initError = {
+  code: 0,
+  message: ''
+}
 
 function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) {
   const history = useHistory()
   const { id } = useParams()
-  const [task, setTask] = useState({ id })
+  const [task, setTask] = useState({})
   const [dataset, setDataset] = useState({})
   const terminateRef = useRef(null)
   const [model, setModel] = useState({})
-  const [error, setError] = useState({
-    code: 0,
-    message: ''
-  })
+  const [error, setError] = useState(initError)
   const [showErrorMsg, setShowErrorMsg] = useState(false)
 
   useEffect(() => {
@@ -44,7 +46,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
     getResult()
     getError()
     goAnchor()
-  }, [task.state])
+  }, [task])
 
   function fetchTask() {
     getTask(id)
@@ -62,7 +64,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
   async function fetchResultDataset() {
     const id = task.result?.dataset_id
     if (!id) {
-      return
+      return setDataset({})
     }
     const result = await getDataset(id)
     if (result) {
@@ -76,7 +78,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
   async function fetchResultModel() {
     const id = task.result?.model_id
     if (!id) {
-      return
+      return setDataset({})
     }
     const result = await getModel(id)
     if (result) {
@@ -106,6 +108,8 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
     const error = task.result?.error
     if (error) {
       setError(error)
+    } else {
+      setError(initError)
     }
   }
 
@@ -154,7 +158,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
   )
 
   function renderResultTitle(type) {
-    let title = ''
+    let title = t('task.detail.result.empty')
     if (model.id) {
       title = t('task.mining.form.model.label')
     } else if (dataset.id) {

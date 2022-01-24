@@ -1,14 +1,15 @@
 import json
 import time
 from datetime import datetime
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.constants.state import TaskState, TaskType
 from app.crud.base import CRUDBase
-from app.models.task import Task, TaskState, TaskType
+from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 
 
@@ -70,6 +71,15 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
 
     def update_progress(self, db: Session, *, task: Task, progress: int) -> Task:
         task.progress = progress
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        return task
+
+    def update_last_message_datetime(
+        self, db: Session, *, task: Task, dt: datetime
+    ) -> Task:
+        task.last_message_datetime = dt
         db.add(task)
         db.commit()
         db.refresh(task)

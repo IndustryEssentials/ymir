@@ -1,5 +1,5 @@
 [run]
-omit = 
+omit =
     src/ymir-app/app/backend_pre_start.py
     src/ymir-app/app/initial_data.py
     src/ymir-app/app/gunicorn_conf.py

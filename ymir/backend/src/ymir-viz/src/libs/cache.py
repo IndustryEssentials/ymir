@@ -2,6 +2,7 @@ import json
 from typing import Dict, Any, List, Optional
 
 import redis
+from werkzeug.local import LocalProxy
 
 from src import config
 from src.libs import app_logger
@@ -12,11 +13,14 @@ class RedisCache:
         self._client = rds_client
 
     def get(self, key: str) -> Dict:
+        raw_value = self._client.get(key)
+        if raw_value is None:
+            return dict()
         try:
-            content = json.loads(str(self._client.get(key)))
-        except Exception as e:
-            app_logger.logger.error(f"{e}")
-            content = None
+            content = json.loads(str(raw_value))
+        except ValueError as e:
+            app_logger.logger.warning(f"loads {raw_value} error: {e}")
+            content = dict()
 
         return content
 
@@ -57,7 +61,5 @@ def get_connect() -> redis.Redis:
     return redis.StrictRedis.from_url(str(config.VIZ_REDIS_URI), encoding="utf8", decode_responses=True)
 
 
-# redis_cache = RedisCache(get_connect())
-from werkzeug.local import LocalProxy
 proxy_rds_con = LocalProxy(get_connect)
-redis_cache = RedisCache(proxy_rds_con)     # type: ignore
+redis_cache = RedisCache(proxy_rds_con)  # type: ignore
