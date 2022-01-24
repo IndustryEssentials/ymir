@@ -243,7 +243,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
 
 
 def map_gpus_host_to_container(config: dict) -> dict:
-    gpu_count = config['gpu_id'].count(',') + 1
+    gpu_id = config.get('gpu_id', '')
+    gpu_count = (gpu_id.count(',') + 1) if gpu_id else 0
     gpu_mapped_config = dict(config)
     gpu_mapped_config['gpu_id'] = ','.join([str(i) for i in range(gpu_count)])
     return gpu_mapped_config
