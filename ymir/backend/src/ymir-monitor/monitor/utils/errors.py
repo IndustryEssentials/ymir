@@ -1,34 +1,32 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from id_definition.error_codes import MonitorErrorCode
+
 
 class APIError(HTTPException):
     status_code = 400
-    code = 150400
-    message = "General Client Error"
+    code = MonitorErrorCode.general_error
+    message = "General Error"
 
-    def __init__(
-        self,
-        status_code: int = None,
-        detail: Any = None,
-        headers: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        status_code = status_code or self.status_code
-        detail = detail or {"code": self.code, "message": self.message}
-        super().__init__(status_code=status_code, detail=detail)
-        self.headers = headers
+    def __init__(self, message: Optional[str] = None, status_code: int = None, code: Optional[int] = None) -> None:
+        self.status_code = status_code or self.status_code
+        self.message = message or self.message
+        self.code = code or self.code
+
+        super().__init__(status_code=self.status_code, detail={"code": self.code, "message": self.message})
 
 
 class DuplicateTaskIDError(APIError):
-    code = 150401
+    code = MonitorErrorCode.duplicate_task_id
     message = "task_id already exists"
 
 
 class LogFileError(APIError):
-    code = 150402
+    code = MonitorErrorCode.percent_log_error
     message = "log file error"
 
 
@@ -38,7 +36,7 @@ def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
     else:
         detail = {  # type: ignore
             "errors": exc.detail,
-            "code": 150500,
+            "code": MonitorErrorCode.internal_error,
             "message": "Unknown Error",
         }
     return JSONResponse(detail, exc.status_code)
