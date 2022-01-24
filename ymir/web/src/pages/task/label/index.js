@@ -124,7 +124,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            size='large'
+            // size='large'
             colon={false}
           >
             <Tip hidden={true}>
@@ -181,7 +181,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                       <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
                     </Form.Item>
                   </Col>
-                  <Col style={{ lineHeight: '40px'}}>
+                  <Col style={{ lineHeight: '30px'}}>
                     <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
                   </Col>
                 </Row>
