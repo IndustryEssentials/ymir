@@ -41,8 +41,8 @@ function ModelHot({ getLatestModels, getHotModels }) {
   return (
     <Card className={`${styles.box} ${styles.hotModel}`} bordered={false}
       headStyle={cardHead} bodyStyle={cardBody}
-      title={<Title title={<><MymodelIcon className={styles.headIcon} />{t('portal.model.my.title')}</>} link='/home/model'>
-        <Radio.Group style={{ marginRight: 40 }} optionType='button' defaultValue={options[0].value} options={options} onChange={changeOrder} />
+      title={<Title title={<><MymodelIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.model.my.title')}</span></>} link='/home/model'>
+        <Radio.Group className={styles.tabLatestHot} optionType='button' defaultValue={options[0].value} options={options} onChange={changeOrder} />
       </Title>}
     >
       <Row gutter={10}>
@@ -50,7 +50,7 @@ function ModelHot({ getLatestModels, getHotModels }) {
           {models.map(model => <Col key={model.id} span={6}>
             <Card className={styles.boxItem} hoverable title={model.name} onClick={() => { history.push(`/home/model/detail/${model.id}`) }}>
               <Descriptions column={1} colon={false} labelStyle={{ justifyContent: 'flex-end', width: '68px' }}>
-                <Descriptions.Item label={'mAP'}>{model.map}</Descriptions.Item>
+                <Descriptions.Item className={styles.mapValue} label={'mAP'}>{model.map}</Descriptions.Item>
                 {/* <Descriptions.Item label={t('portal.cited')}>{model.count}</Descriptions.Item> */}
                 <Descriptions.Item label={t('portal.model.keywords')} contentStyle={{ flexWrap: 'wrap' }}>
                   <div className={styles.kwContainer}>{model?.keywords.map(keyword => <Tag className={styles.kwTag} key={keyword} title={keyword}>{keyword}</Tag>)}</div>

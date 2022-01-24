@@ -1,7 +1,6 @@
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel
 
 from .common import Common
 

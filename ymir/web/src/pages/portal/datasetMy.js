@@ -63,8 +63,8 @@ function Sets({ count = 3, getHotDatasets, getDatasets }) {
   return (
     <Card id='mydataset' className={`${styles.box} ${styles.myDataset}`} bordered={false}
       headStyle={cardHead} bodyStyle={cardBody}
-      title={<Title title={<><MydatasetIcon className={styles.headIcon} />{t('portal.dataset.my.title')}</>} link='/home/dataset'>
-        <Radio.Group style={{ marginRight: 40 }} optionType='button' defaultValue={options[0].value} options={options} onChange={changeOrder} />
+      title={<Title title={<><MydatasetIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.dataset.my.title')}</span></>} link='/home/dataset'>
+        <Radio.Group className={styles.tabLatestHot}  optionType='button' defaultValue={options[0].value} options={options} onChange={changeOrder} />
       </Title>}
     >
       <Row gutter={10} wrap='nowrap'>
