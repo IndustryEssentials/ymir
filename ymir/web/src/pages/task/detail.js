@@ -10,12 +10,12 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
 import Terminate from "./components/terminate"
 import { TASKSTATES, TASKTYPES } from '@/constants/task'
-import StateTag from '../../components/task/stateTag'
+import StateTag from '@/components/task/stateTag'
 import styles from "./detail.less"
 import {
   ArrowDownIcon, ArrowUpIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon,
   FileYesIcon, FileHistoryIcon, SearchEyeIcon, SearchIcon
-} from "../../components/common/icons"
+} from "@/components/common/icons"
 
 const { Item } = Descriptions
 
@@ -238,7 +238,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
         <Descriptions bordered labelStyle={labelStyle} title={<><FileHistoryIcon /> {t("task.detail.state.title")} </>} className={styles.infoTable}>
           <Item label={t('task.detail.state.current')}>
             <Row>
-              <Col><StateTag mode='icon' size='large' state={task.state} /></Col>
+              <Col><StateTag state={task.state} /></Col>
               <Col flex={1}>{task.state === TASKSTATES.DOING ? <Progress strokeColor={'#FAD337'} percent={task.progress} /> : null}</Col>
               {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ?
                 <Col><Button onClick={() => terminate(task)}>{t('task.action.terminate')}</Button></Col> : null}

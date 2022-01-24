@@ -1,21 +1,11 @@
-import enum
 from datetime import datetime
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Enum,
-    Integer,
-    SmallInteger,
-    String,
-    Text,
-)
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.config import settings
 from app.db.base_class import Base
-from app.models.image_config import DockerImageConfig
+from app.models.image_config import DockerImageConfig  # noqa
 from app.models.image_relationship import DockerImageRelationship
 
 

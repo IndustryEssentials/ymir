@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Generator, List
+from typing import Generator, List
 
 from fastapi import Depends, Security
 from fastapi.logger import logger
@@ -13,23 +13,17 @@ from app.api.errors.errors import (
     InactiveUser,
     InvalidScope,
     InvalidToken,
-    UserNotAdmin,
     UserNotFound,
     WorkspaceNotFound,
 )
 from app.config import settings
 from app.constants.role import Roles
-from app.constants.state import TaskType
 from app.db.session import SessionLocal
 from app.utils import cache as ymir_cache
-from app.utils import class_ids, graph, security, ymir_controller, ymir_viz
+from app.utils import graph, security, ymir_controller, ymir_viz
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.security import verify_api_key
-from app.utils.ymir_controller import (
-    ControllerClient,
-    ControllerRequest,
-    ExtraRequestType,
-)
+from app.utils.ymir_controller import ControllerClient
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/token",

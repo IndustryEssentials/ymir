@@ -59,7 +59,9 @@ async def swagger_ui_redirect() -> HTMLResponse:
 
 @app.on_event("startup")
 async def startup() -> None:
-    redis = aioredis.from_url(settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True)
+    redis = aioredis.from_url(
+        settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True
+    )
     FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
 
 

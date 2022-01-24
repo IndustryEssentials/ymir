@@ -11,7 +11,7 @@ import styles from './index.less'
 import { cardBody, cardHead } from "./components/styles"
 import { MytaskIcon, AddtaskIcon, } from '@/components/common/icons'
 import QuickAction from "./components/quickAction"
-import StateTag from "../../components/task/stateTag"
+import StateTag from "@/components/task/stateTag"
 
 const TaskList = ({ getTasks }) => {
   const history = useHistory()
@@ -32,7 +32,7 @@ const TaskList = ({ getTasks }) => {
 
   return <Card className={`${styles.box} ${styles.taskList}`} bordered={false}
     headStyle={cardHead} bodyStyle={cardBody}
-    title={<Title title={<><MytaskIcon className={styles.headIcon} />{t('portal.task.my.title')}</>} link='/home/task'></Title>}
+    title={<Title title={<><MytaskIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.task.my.title')}</span></>} link='/home/task'></Title>}
   >
     <Row gutter={10}>
       {tasks.length ? (<>

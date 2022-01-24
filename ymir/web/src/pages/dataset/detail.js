@@ -5,8 +5,8 @@ import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions,
 
 import styles from "./detail.less"
 import t from "@/utils/t"
-import Breadcrumbs from "../../components/common/breadcrumb"
-import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "../../components/common/icons"
+import Breadcrumbs from "@/components/common/breadcrumb"
+import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "@/components/common/icons"
 import Asset from "./components/asset"
 import { randomBetween } from '@/utils/number'
 

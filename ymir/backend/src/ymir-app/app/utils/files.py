@@ -11,8 +11,8 @@ from typing import Any, Dict, Generator, List, Tuple, Union
 from urllib.parse import urljoin, urlparse
 
 import requests
-from pydantic import AnyHttpUrl
 from fastapi.logger import logger
+from pydantic import AnyHttpUrl
 from requests.exceptions import (
     ConnectionError,
     HTTPError,

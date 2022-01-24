@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Checkbox, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -18,7 +18,7 @@ import { useHistory, useParams, useLocation } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyStateDataset from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
-import { randomNumber } from "../../../utils/number"
+import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
 import ImageSelect from "../components/imageSelect"
 
@@ -52,10 +52,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   const [trainSetCount, setTrainSetCount] = useState(1)
   const [hpVisible, setHpVisible] = useState(false)
   const [topk, setTopk] = useState(false)
-  const [selectedImage, setSelectedImage] = useState({})
-  const [stateConfig, setStateConfig] = useState([])
   const [gpu_count, setGPU] = useState(0)
-  const hpMaxSize = 30
 
   useEffect(() => {
     fetchSysInfo()
@@ -146,7 +143,6 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
     const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
-    setSelectedImage(image)
     setConfig(configObj.config)
   }
 
@@ -219,7 +215,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            size='large'
+            // size='large'
             colon={false}
           >
             <Tip hidden={true}>
@@ -228,7 +224,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               name='name'
               rules={[
                 { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
-                { type: 'string', min: 2, max: 20 },
+                { type: 'string', min: 2, max: 50 },
               ]}
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />

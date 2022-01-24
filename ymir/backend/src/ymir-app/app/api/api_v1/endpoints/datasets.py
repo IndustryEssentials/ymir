@@ -17,7 +17,6 @@ from app.api.errors.errors import (
     DatasetNotFound,
     DuplicateDatasetError,
     FailedtoCreateDataset,
-    FailedtoDownloadError,
     FieldValidationFailed,
     NoDatasetPermission,
 )
