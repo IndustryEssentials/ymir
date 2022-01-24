@@ -46,7 +46,7 @@ const TaskList = ({ getTasks }) => {
         </Col>)}
         <QuickAction icon={<AddtaskIcon style={{ fontSize: 50, color: '#36cbcb' }} />} label={t('portal.action.new.task')} link={'/home/task'}></QuickAction>
       </>) :
-        <EmptyState style={{ height: 236 }} />
+        <EmptyState style={{ height: 241 }} />
       }
     </Row>
   </Card>
