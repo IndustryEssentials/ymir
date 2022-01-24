@@ -53,6 +53,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   }, [id])
 
   useEffect(() => {
+    setCurrentPage((filterParams.offset / filterParams.limit) + 1)
     filter(filterParams)
   }, [filterParams])
 
@@ -78,7 +79,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setKeywords(Object.keys(keywords).map((key) => ({ key, count: keywords[key] })))
   }
   const goAsset = (hash, index) => {
-    setCurrentAsset({ hash, index: (currentPage - 1) * filterParams.limit + index})
+    setCurrentAsset({ hash, index: filterParams.offset + index})
     setAssetVisible(true)
   }
 

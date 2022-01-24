@@ -183,11 +183,10 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    generator.next({
+    const end = generator.next({
       code: 0,
       result: expected,
     })
-    const end = generator.next()
 
     expect(end.value.id).toBe(expected.id)
     expect(end.done).toBe(true)
