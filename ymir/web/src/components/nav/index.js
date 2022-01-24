@@ -39,12 +39,10 @@ const menus = () => [
       {
         label: t('common.top.menu.dataset'),
         key: "/home/dataset",
-        icon: <NavDatasetIcon className={styles.navIcon} />,
       },
       {
         label: t('common.top.menu.keyword'),
         key: "/home/keyword",
-        icon: <NavDatasetIcon className={styles.navIcon} />,
       },
     ]
   },
@@ -61,18 +59,11 @@ const menus = () => [
       {
         label: t('common.top.menu.image'),
         key: "/home/image",
-        icon: <NavModelmanageIcon className={styles.navIcon} />,
       },
-      // {
-      //   label: t('common.top.menu.image.center'),
-      //   key: "/home/image_center",
-      //   icon: <NavModelmanageIcon className={styles.navIcon} />,
-      // },
       {
         label: t('common.top.menu.permission'),
         key: "/home/permission",
         permission: ROLES.SUPER,
-        icon: <NavModelmanageIcon className={styles.navIcon} />,
       },
     ]
   },
