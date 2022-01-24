@@ -1,9 +1,7 @@
 import enum
-import random
-import secrets
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
@@ -14,7 +12,6 @@ from app.api.errors.errors import (
     DuplicateModelError,
     InvalidConfiguration,
     ModelNotFound,
-    NoModelPermission,
 )
 from app.config import settings
 from app.constants.state import TaskType

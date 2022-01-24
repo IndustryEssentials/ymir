@@ -4,10 +4,8 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
 from app.api.api_v1.endpoints import models as m
 from app.config import settings
-from app.models.task import TaskType
 from tests.utils.models import create_model
 from tests.utils.utils import random_lower_string
 

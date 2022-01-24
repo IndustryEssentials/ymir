@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
 import styles from "./index.less"
 import { Link, useHistory, useParams } from "umi"
-import { Form, Button, Input, Select, Table, Menu, Dropdown, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
+import { Form, Button, Input, Table, Menu, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
 import {
-  PlusOutlined,
   SearchOutlined,
   SyncOutlined,
 } from "@ant-design/icons"
@@ -15,10 +14,10 @@ import t from "@/utils/t"
 import { getTimes, getModelImportTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/model'
-import EditBox from "../../components/form/editBox"
-import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "../../components/common/icons"
-import Actions from "../../components/table/actions"
-import TypeTag from "../../components/task/typeTag"
+import EditBox from "@/components/form/editBox"
+import { ShieldIcon, VectorIcon, TipsIcon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "@/components/common/icons"
+import Actions from "@/components/table/actions"
+import TypeTag from "@/components/task/typeTag"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -354,7 +353,7 @@ function Keyword({ getModels, delModel, updateModel }) {
           </ConfigProvider>
         </div>
       </div>
-      <EditBox record={current} action={saveName}>
+      <EditBox record={current} max={80} action={saveName}>
         {current.source ? <Form.Item label={t('model.column.source')}>
           <TypeTag types={types} type={current.source} id={current.id} name={current.task_name} />
         </Form.Item> : null}

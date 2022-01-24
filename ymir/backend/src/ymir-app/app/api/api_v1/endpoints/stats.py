@@ -1,11 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import models, schemas
 from app.api import deps
 from app.utils.clickhouse import YmirClickHouse
 

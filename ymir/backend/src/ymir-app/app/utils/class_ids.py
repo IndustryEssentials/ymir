@@ -14,14 +14,17 @@ def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
         yield ",".join(label)
 
 
-def labels_to_keywords(labels: List[str], filter_f: Optional[Callable] = None, offset: int = 1) -> Iterator[Keyword]:
+def labels_to_keywords(
+    labels: List[str], filter_f: Optional[Callable] = None, offset: int = 1
+) -> Iterator[Keyword]:
     """
     label: 0,dog,puppy,pup,canine
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     """
     for label in labels:
         partition = label.split(",")
-        keyword = {"name": partition[offset], "aliases": partition[offset + 1:]}
+        offset_ = offset + 1
+        keyword = {"name": partition[offset], "aliases": partition[offset_:]}
         if filter_f is None or filter_f(keyword):
             yield Keyword(**keyword)
 

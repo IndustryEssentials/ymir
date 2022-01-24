@@ -1,11 +1,13 @@
 from dataclasses import asdict, dataclass, field
+from functools import wraps
 import logging
 import os
 import pathlib
+import time
 import requests
 import shutil
 import tarfile
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from PIL import Image, UnidentifiedImageError
 import yaml
@@ -13,6 +15,18 @@ import yaml
 from mir import scm
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+
+
+def time_it(f: Callable) -> Callable:
+    @wraps(f)
+    def wrapper(*args: tuple, **kwargs: Dict) -> Callable:
+        _start = time.time()
+        _ret = f(*args, **kwargs)
+        _cost = time.time() - _start
+        logging.info(f"|-{f.__name__} costs {_cost:.2f}s({_cost / 60:.2f}m).")
+        return _ret
+
+    return wrapper
 
 
 # project

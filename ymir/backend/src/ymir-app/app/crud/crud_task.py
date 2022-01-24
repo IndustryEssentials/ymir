@@ -1,14 +1,15 @@
 import json
 import time
 from datetime import datetime
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.constants.state import TaskState, TaskType
 from app.crud.base import CRUDBase
-from app.models.task import Task, TaskState, TaskType
+from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
 
 
