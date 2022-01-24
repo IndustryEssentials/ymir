@@ -6,7 +6,7 @@ import { useParams, useHistory } from "umi"
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumb from '@/components/common/breadcrumb'
-import Uploader from "../../components/form/uploader"
+import Uploader from "@/components/form/uploader"
 import AssetAnnotation from "@/components/dataset/asset_annotation"
 import { TYPES } from '@/constants/image'
 import styles from './verify.less'
