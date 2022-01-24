@@ -1,4 +1,3 @@
-import enum
 from datetime import datetime
 
 from sqlalchemy import (
@@ -6,7 +5,6 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-    Enum,
     Integer,
     SmallInteger,
     String,
@@ -14,7 +12,6 @@ from sqlalchemy import (
 )
 
 from app.config import settings
-from app.constants.state import TaskState, TaskType
 from app.db.base_class import Base
 
 

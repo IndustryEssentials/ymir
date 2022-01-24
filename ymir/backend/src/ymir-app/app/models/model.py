@@ -1,6 +1,14 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 
 from app.config import settings
 from app.db.base_class import Base
@@ -23,6 +31,4 @@ class Model(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
-    __table_args__ = (
-        UniqueConstraint('user_id', 'hash', name='uniq_user_hash'),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "hash", name="uniq_user_hash"),)

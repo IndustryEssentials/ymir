@@ -12,9 +12,8 @@ from id_definition.task_id import TaskId
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
 
-from app.models.task import Task, TaskType
+from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy
-from app.schemas.image import DockerImageType
 from app.schemas.task import MergeStrategy
 
 

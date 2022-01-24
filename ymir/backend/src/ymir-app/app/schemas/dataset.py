@@ -1,11 +1,10 @@
 import enum
 import json
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
-from pydantic import AnyHttpUrl, BaseModel, Field, root_validator, validator
+from pydantic import AnyHttpUrl, BaseModel, Field, root_validator
 
-from app.models.task import TaskState, TaskType
+from app.constants.state import TaskState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
