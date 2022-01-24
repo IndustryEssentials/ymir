@@ -263,7 +263,7 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
         infer_config[k] = v
 
     container_config = mir_utils.map_gpus_host_to_container(infer_config)
-    logging.debug(f"container config: {container_config}")
+    logging.info(f"container config: {container_config}")
 
     with open(dst_config_file, 'w') as f:
         yaml.dump(container_config, f)
