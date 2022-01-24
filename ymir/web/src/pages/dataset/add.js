@@ -206,7 +206,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             onFinish={submit}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            size='large'
+            // size='large'
             colon={false}
           >
             <Tip hidden={true}>
@@ -235,7 +235,6 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
 
             {isType(TYPES.INTERNAL) ? (
               <>
-              
               <Tip content={t('tip.task.filter.datasets')}>
                 <Form.Item
                   label={t('dataset.add.form.internal.label')}
@@ -262,7 +261,6 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                   : null}
               </>
             ) : null}
-
             <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
                 <Radio.Group
@@ -271,7 +269,6 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 />
               </Form.Item>
             </Tip>
-
             {showLabelStrategy ?
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.newkw.label')}>
@@ -285,54 +282,60 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 </Row>
               </Form.Item>
               </Tip> : null}
+  
               <Tip hidden={true}>
-            <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 4, span: 13 }}>
-              {newKeywords.length > 0 ?
-                <Form.List name='new_keywords'>
-                  {(fields, { add, remove }) => (
+              <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 8, span: 16 }}>
+                {newKeywords.length > 0 ?
+                  <Form.List name='new_keywords'>
+                    {(fields, { add, remove }) => (
 
-                    <Row gutter={20}>
-                      {fields.map((field, index) => (
-                        <>
-                          <Col span={3}>{newKeywords[field.name]?.name}</Col>
-                          <Col span={9}>
-                            <Form.Item
-                              {...field}
-                              name={[field.name, 'type']}
-                              fieldKey={[field.fieldKey, 'type']}
-                              initialValue={0}
-                              style={{ width: 120, display: 'inline-block' }}
-                            >
-                              <Select>
-                                <Select.Option value={0}>{t('dataset.add.newkw.asname')}</Select.Option>
-                                {/* <Select.Option value={1}>{t('dataset.add.newkw.asalias')}</Select.Option> */}
-                                <Select.Option value={2}>{t('dataset.add.newkw.ignore')}</Select.Option>
-                              </Select>
-                            </Form.Item>
-                            {/* <Form.Item
-                              {...field}
-                              dependencies={['new_keywords', field.name, 'type']}
-                              name={[field.name, 'key']}
-                              fieldKey={[field.fieldKey, 'key']}
-                              style={{ marginLeft: 10, width: 120, display: 'inline-block' }}
-                            >
-                              <Select
-                                showSearch
-                                onSearch={searchKeywords}
-                                notFoundContent
+                      <Row>
+                        {fields.map((field, index) => (
+                          <Col span={12} className={s.odd}>
+                          <Row gutter={22}>
+                            <Col span={5} className={s.name}>{newKeywords[field.name]?.name}</Col>
+                            <Col span={12}>
+                              <Form.Item
+                                {...field}
+                                name={[field.name, 'type']}
+                                fieldKey={[field.fieldKey, 'type']}
+                                initialValue={0}
+                                style={{ width: 150, display: 'inline-block' }}
                               >
-                                {currentKeywords.map(k => <Select.Option key={k.name} value={k.name}>{k.name}</Select.Option>)}
-                              </Select>
-                            </Form.Item> */}
+                                <Select>
+                                  <Select.Option value={0}>{t('dataset.add.newkw.asname')}</Select.Option>
+                                  {/* <Select.Option value={1}>{t('dataset.add.newkw.asalias')}</Select.Option> */}
+                                  <Select.Option value={2}>{t('dataset.add.newkw.ignore')}</Select.Option>
+                                </Select>
+                              </Form.Item>
+                              {/* <Form.Item
+                                {...field}
+                                dependencies={['new_keywords', field.name, 'type']}
+                                name={[field.name, 'key']}
+                                fieldKey={[field.fieldKey, 'key']}
+                                style={{ marginLeft: 10, width: 120, display: 'inline-block' }}
+                              >
+                                <Select
+                                  showSearch
+                                  onSearch={searchKeywords}
+                                  notFoundContent
+                                >
+                                  {currentKeywords.map(k => <Select.Option key={k.name} value={k.name}>{k.name}</Select.Option>)}
+                                </Select>
+                              </Form.Item> */}
+                            </Col>
+                          </Row>
                           </Col>
-                        </>
-                      ))}
-                    </Row>
-                  )}
-                </Form.List>
-                : t('dataset.add.newkeyword.empty')}
-            </Form.Item>
-            </Tip>
+                        ))}
+                      </Row>
+
+                    )}
+                  </Form.List>
+                  : t('dataset.add.newkeyword.empty')}
+              </Form.Item>
+              </Tip>
+
+
             {isType(TYPES.SHARE) ? (
               <Tip hidden={true}>
               <Form.Item
@@ -363,6 +366,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               </Form.Item>
               </Tip>
             ) : null}
+ 
             {isType(TYPES.PATH) ? (
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.path.label')} required>
