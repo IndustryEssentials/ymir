@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.api.errors import error_codes
+from app.api.errors.errors import error_codes
 from app.config import settings
 from tests.utils.utils import random_lower_string
 
