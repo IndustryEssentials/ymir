@@ -34,7 +34,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
 
   useEffect(() => {
     currentIndex !== null && fetchAssetHash()
-  }, [currentIndex])
+  }, [currentIndex, filterKeyword])
 
   useEffect(() => {
     if (!current) {

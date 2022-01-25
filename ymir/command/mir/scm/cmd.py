@@ -9,7 +9,7 @@ from subprocess import (Popen, PIPE)
 import sys
 import threading
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 from mir.scm.base import BaseScm
 
