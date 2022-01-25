@@ -21,6 +21,7 @@ class MirStorageLoader:
             mir_raw_data = mir_storage_ops.MirStorageOps.load(
                 mir_root=self.mir_root, mir_branch=self.branch_id, mir_storages=mir_storages, as_dict=True
             )
+        # TODO: command define
         except ValueError as e:
             app_logger.logger.error(e)
             raise exceptions.BranchNotExists(f"branch {self.branch_id} not exist from ymir command")
