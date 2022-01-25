@@ -17,7 +17,7 @@ class PhaseStateEnum(IntEnum):
     ERROR = mirpb.TaskStateError
 
 
-# TODO: make PhaseLoggerError a sub class of MirError 
+# TODO: make PhaseLoggerError a sub class of MirError
 class PhaseLoggerError(BaseException):
     def __init__(self, msg: str) -> None:
         super().__init__()
