@@ -1,5 +1,6 @@
 import styles from "./common.less"
 import { useEffect, useState, useRef } from "react"
+import { percent } from "../../utils/number"
 
 function AssetAnnotation({
   url,
@@ -24,7 +25,7 @@ function AssetAnnotation({
       return items.map(({ keyword, box, score, color = '#000' }) => {
         return {
           keyword,
-          score: score ? `${(score * 100).toFixed(2)}%` : null,
+          score: score ? percent(score) : null,
           color,
           ...box,
         }
