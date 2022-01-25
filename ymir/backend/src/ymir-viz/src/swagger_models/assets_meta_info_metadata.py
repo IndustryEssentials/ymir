@@ -1,13 +1,13 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-from datetime import date, datetime  # noqa: F401
 
+from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
-from src.models.base_model_ import Model
-from src.models.assets_meta_info_metadata_timestamp import AssetsMetaInfoMetadataTimestamp  # noqa: F401,E501
 from src import util
+from src.swagger_models.assets_meta_info_metadata_timestamp import AssetsMetaInfoMetadataTimestamp  # noqa: F401,E501
+from src.swagger_models.base_model_ import Model
 
 
 class AssetsMetaInfoMetadata(Model):
