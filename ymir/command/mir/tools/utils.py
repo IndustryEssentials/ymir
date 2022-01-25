@@ -256,9 +256,6 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     return model_storage
 
 
-def map_gpus_host_to_container(config: dict) -> dict:
-    gpu_id = config.get('gpu_id', '')
-    gpu_count = (gpu_id.count(',') + 1) if gpu_id else 0
-    gpu_mapped_config = dict(config)
-    gpu_mapped_config['gpu_id'] = ','.join([str(i) for i in range(gpu_count)])
-    return gpu_mapped_config
+def map_gpus_zero_index(gpu_id: str) -> str:
+    gpu_count = len(gpu_id.split(',')) if gpu_id else 0
+    return ','.join([str(i) for i in range(gpu_count)])

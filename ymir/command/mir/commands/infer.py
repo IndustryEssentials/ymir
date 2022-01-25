@@ -262,7 +262,8 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
     for k, v in kwargs.items():
         infer_config[k] = v
 
-    container_config = mir_utils.map_gpus_host_to_container(infer_config)
+    container_config = infer_config.copy()
+    container_config['gpu_id'] = mir_utils.map_gpus_zero_index(infer_config.get('gpu_id', ''))
     logging.info(f"container config: {container_config}")
 
     with open(dst_config_file, 'w') as f:

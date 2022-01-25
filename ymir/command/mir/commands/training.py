@@ -159,7 +159,8 @@ def _generate_config(config: Any, out_config_path: str, task_id: str, pretrained
     elif 'pretrained_model_params' in config:
         del config['pretrained_model_params']
 
-    container_config = mir_utils.map_gpus_host_to_container(config)
+    container_config = config.copy()
+    container_config['gpu_id'] = mir_utils.map_gpus_zero_index(config.get('gpu_id', ''))
 
     logging.info("container config: {}".format(container_config))
 
