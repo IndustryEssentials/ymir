@@ -18,10 +18,8 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 16.x
-        cache: 'yarn'
     - name: Test with npm
       run: |
         yarn install
-        yarn run build --prod
         yarn run test:coverage
       working-directory: ymir/web
