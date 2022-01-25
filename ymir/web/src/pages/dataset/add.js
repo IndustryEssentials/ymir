@@ -206,7 +206,6 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             onFinish={submit}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            // size='large'
             colon={false}
           >
             <Tip hidden={true}>

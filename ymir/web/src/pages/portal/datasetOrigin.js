@@ -56,7 +56,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
 
   return (
     <Card className={`${styles.box} ${styles.oset}`} bordered={false}
-      headStyle={cardHead} bodyStyle={{ ...cardBody, height: 281 }}
+      headStyle={cardHead} bodyStyle={{ ...cardBody, height: 286 }}
       title={<><MetadatasetIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.dataset.origin.title')}</span></>}
     >
       {sets.length ?

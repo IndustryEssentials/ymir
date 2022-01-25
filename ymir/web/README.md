@@ -10,18 +10,18 @@
 
 2. Install required dependencies
    ```bash
-   npm install
+   yarn install
    ```
 
 3. Config backend app address in .umirc.local.ts, it will be proxy in the same domain automatic.
 
 4. Start the development server
    ```bash
-   npm run start
+   yarn run start
    ```
 
 5. After you make changes and ready to use it in production, you need to create a production build
    ```bash
-   npm run build
+   yarn run build
    ```
    Now you have *.js and *.css files in the `ymir/` directory

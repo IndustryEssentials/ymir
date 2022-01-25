@@ -297,11 +297,9 @@ function Keyword({ getModels, delModel, updateModel }) {
           <Form
             name='queryForm'
             form={form}
-            // layout="inline"
             labelCol={{ flex: '100px' }}
             initialValues={{ source: "", time: 0, name: keyword || "" }}
             onValuesChange={search}
-            // size='large'
             colon={false}
           >
             <Row>

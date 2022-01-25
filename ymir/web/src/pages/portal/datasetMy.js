@@ -93,7 +93,7 @@ function Sets({ count = 3, getHotDatasets, getDatasets }) {
             link={'/home/dataset/add'}
           />
         </>
-          : <EmptyState style={{ height: 230 }} add={() => history.push('/home/dataset/add')} />}
+          : <EmptyState style={{ height: 246 }} add={() => history.push('/home/dataset/add')} />}
       </Row>
     </Card>
   )
