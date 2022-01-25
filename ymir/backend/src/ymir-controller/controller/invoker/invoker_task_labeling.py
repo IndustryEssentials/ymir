@@ -2,8 +2,9 @@ from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.label_model import label_runner
-from controller.utils import code, utils
+from controller.utils import utils
 from controller.utils.labels import LabelFileHandler
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -38,7 +39,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             export_annotation=labeling_request.export_annotation,
         )
 
-        return utils.make_general_response(code.ResCode.CTR_OK, "")
+        return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def _repr(self) -> str:
         labeling_request = self._request.req_create_task.labeling

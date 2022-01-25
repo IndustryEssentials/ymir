@@ -1,9 +1,9 @@
 import argparse
 import logging
-import statsd
 import sys
-
 from typing import Any
+
+import statsd
 
 from controller.utils import singleton
 
