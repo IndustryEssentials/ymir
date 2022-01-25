@@ -1,13 +1,16 @@
 import uuid
-from typing import Dict
+from typing import Dict, Tuple
 
 import connexion
 import sentry_sdk
-from flask import request
+from flask import request, jsonify
 from sentry_sdk.integrations.flask import FlaskIntegration
 
+from id_definition.error_codes import VizErrorCode
 from src.config import VIZ_SENTRY_DSN
 from src.encoder import JSONEncoder
+from src.libs.exceptions import VizException
+from werkzeug.wrappers import Response
 
 
 def config_app(app: connexion, config: Dict = None) -> None:
@@ -34,7 +37,17 @@ def create_connexion_app(config: Dict = None) -> connexion.App:
         request_id = request.headers.get("request_id", str(uuid.uuid1()))
         setattr(request.headers, "request_id", request_id)
 
-    # to do, add uniform error handler for all API
+    @app.errorhandler(VizException)
+    def handle_viz_exception(e: VizException) -> Tuple[Response, int]:
+        resp = dict(code=e.code, message=e.message)
+
+        return jsonify(resp), e.status_code
+
+    @app.errorhandler(Exception)
+    def handle_exception(e: Exception) -> Tuple[Response, int]:
+        resp = dict(code=VizErrorCode.internal_error, message=str(e))
+
+        return jsonify(resp), 500
 
     # For test server
     @app.route("/ping")
