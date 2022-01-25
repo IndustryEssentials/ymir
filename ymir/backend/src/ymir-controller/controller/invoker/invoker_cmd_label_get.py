@@ -1,7 +1,9 @@
-from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import code, utils, checker, labels
-from proto import backend_pb2
 from typing import List
+
+from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
+from controller.utils import utils, checker, labels
+from id_definition.error_codes import CTLResponseCode
+from proto import backend_pb2
 
 
 class LabelGetInvoker(BaseMirControllerInvoker):
@@ -13,7 +15,7 @@ class LabelGetInvoker(BaseMirControllerInvoker):
 
     @staticmethod
     def generate_response(all_labels: List[List]) -> backend_pb2.GeneralResp:
-        response = utils.make_general_response(code.ResCode.CTR_OK, "")
+        response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         result = [",".join(one_row_labels) for one_row_labels in all_labels]
         response.csv_labels.extend(result)
 

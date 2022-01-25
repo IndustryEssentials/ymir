@@ -6,8 +6,8 @@ import requests
 from requests import RequestException
 
 from controller.config import common_task as common_task_config
-from controller.utils import code
 from controller.utils.app_logger import logger
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -36,14 +36,14 @@ def write_task_progress(monitor_file: str,
                         tid: str,
                         percent: float,
                         state: backend_pb2.TaskState,
-                        msg: str = None) -> code.ResCode:
+                        msg: str = None) -> CTLResponseCode:
     if not monitor_file:
         raise RuntimeError("Invalid monitor_file")
     with open(monitor_file, 'w') as f:
         f.write('\t'.join([tid, str(int(datetime.now().timestamp())), str(percent), task_state_code_to_str(state)]))
         if msg:
             f.write('\n{}'.format(msg))
-    return code.ResCode.CTR_OK
+    return CTLResponseCode.CTR_OK
 
 
 def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], description: str = None) -> None:

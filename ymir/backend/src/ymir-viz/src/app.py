@@ -45,7 +45,7 @@ def create_connexion_app(config: Dict = None) -> connexion.App:
 
     @app.errorhandler(Exception)
     def handle_exception(e: Exception) -> Tuple[Response, int]:
-        resp = dict(code=VizErrorCode.internal_error, message=str(e))
+        resp = dict(code=VizErrorCode.INTERNAL_ERROR, message=str(e))
 
         return jsonify(resp), 500
 

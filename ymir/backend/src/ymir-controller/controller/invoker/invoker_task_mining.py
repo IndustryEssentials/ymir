@@ -5,7 +5,8 @@ import yaml
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils, invoker_call, gpu_utils, tasks_util
+from controller.utils import utils, invoker_call, gpu_utils, tasks_util
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -39,13 +40,13 @@ class TaskMiningInvoker(TaskBaseInvoker):
     ) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
         if mining_request.top_k < 0:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED,
                                                "invalid topk: {}".format(mining_request.top_k))
         if not request.model_hash:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid model_hash")
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid model_hash")
 
         if not mining_request.in_dataset_ids:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid_data_ids")
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid_data_ids")
 
         executor_instance = request.executor_instance
         if executor_instance != request.task_id:
@@ -65,7 +66,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
             ex_dataset_ids=mining_request.ex_dataset_ids,
             merge_strategy=request.merge_strategy,
         )
-        if merge_response.code != code.ResCode.CTR_OK:
+        if merge_response.code != CTLResponseCode.CTR_OK:
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
@@ -81,7 +82,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         if not config_file:
             msg = "Not enough GPU available"
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
-            return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, "Not enough GPU available")
+            return utils.make_general_response(CTLResponseCode.INTERNAL_ERROR, "Not enough GPU available")
 
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
