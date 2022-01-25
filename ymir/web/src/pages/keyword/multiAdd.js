@@ -50,7 +50,7 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => { } }, ref) => {
           name: pair[0],
           aliases,
         }
-      })
+      }).filter((name) => name)
     } catch (e) {
       message.error(t('keyword.multiadd.invalid'))
     }
@@ -62,7 +62,6 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => { } }, ref) => {
       form={form}
       name='multiAddForm'
       labelAlign='left'
-      // size='large'
       preserve={false}
     >
       <Form.Item

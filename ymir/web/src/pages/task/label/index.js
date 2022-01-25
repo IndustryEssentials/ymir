@@ -124,7 +124,6 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            // size='large'
             colon={false}
           >
             <Tip hidden={true}>

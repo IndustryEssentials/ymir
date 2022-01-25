@@ -336,13 +336,10 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
       <Form
         name='queryForm'
         form={form}
-        // layout="inline"
         labelCol={{ flex: '100px' }}
         initialValues={{ type: "", state: '', time: 0, name: keyword || "" }}
         onValuesChange={search}
-        // size='large'
         colon={false}
-      // onFinish={search}
       >
         <Row>
           <Col className={styles.queryColumn} span={12}>

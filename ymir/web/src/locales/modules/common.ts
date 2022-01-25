@@ -67,7 +67,7 @@ const common = {
   'common.value': {cn: '值', en: 'Value', },
   'common.rate': {cn: '比率', en: 'Rate', },
   'common.recommend.keyword.label': {cn: '常用标签', en: 'Recommend Keywords', },
-  'common.index.keyword.label': {cn: '标签索引', en: 'Index Keywords', },
+  'common.index.keyword.label': {cn: '标签', en: 'Keywords', },
 }
 
 export default common
