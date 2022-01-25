@@ -127,7 +127,7 @@ function Filter({
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           labelAlign={'left'}
-          size='large'
+          // size='middle'
           colon={false}
         >
           <Tip hidden={true}>
@@ -185,7 +185,7 @@ function Filter({
           <Tip hidden={true}>
           <Form.Item label={t('dataset.column.keyword')} required>
               <p>{t('task.filter.form.include.label')}</p>
-            <Tip content={t('tip.task.filter.includelable')}>
+            <Tip content={t('tip.task.filter.includelable')} span={1} formSpan={24}>
                 <Form.Item
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='inc'
@@ -203,7 +203,7 @@ function Filter({
                 </Form.Item>
               </Tip>
               <p>{t('task.filter.form.exclude.label')}</p>
-              <Tip content={t('tip.task.filter.excludelable')}>
+              <Tip content={t('tip.task.filter.excludelable')} span={1} formSpan={24}>
                 <Form.Item
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='exc'

@@ -32,7 +32,7 @@ const TaskList = ({ getTasks }) => {
 
   return <Card className={`${styles.box} ${styles.taskList}`} bordered={false}
     headStyle={cardHead} bodyStyle={cardBody}
-    title={<Title title={<><MytaskIcon className={styles.headIcon} />{t('portal.task.my.title')}</>} link='/home/task'></Title>}
+    title={<Title title={<><MytaskIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.task.my.title')}</span></>} link='/home/task'></Title>}
   >
     <Row gutter={10}>
       {tasks.length ? (<>
@@ -46,7 +46,7 @@ const TaskList = ({ getTasks }) => {
         </Col>)}
         <QuickAction icon={<AddtaskIcon style={{ fontSize: 50, color: '#36cbcb' }} />} label={t('portal.action.new.task')} link={'/home/task'}></QuickAction>
       </>) :
-        <EmptyState style={{ height: 236 }} />
+        <EmptyState style={{ height: 241 }} />
       }
     </Row>
   </Card>
