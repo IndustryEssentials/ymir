@@ -26,6 +26,7 @@ class MonitorErrorCode(IntEnum):
     INTERNAL_ERROR = 150500
 
 
+@unique
 class APIErrorCode(IntEnum):
     API_ERROR = 110101
     VALIDATION_FAILED = 110102
