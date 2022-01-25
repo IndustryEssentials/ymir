@@ -4,12 +4,12 @@ import os
 import sys
 from datetime import datetime
 
-from apscheduler.schedulers.blocking import BlockingScheduler
 import requests
 import sentry_sdk
+from apscheduler.schedulers.blocking import BlockingScheduler
 
-from controller.invoker.invoker_task_importing import TaskImportingInvoker
 from controller.config import label_task as label_task_config
+from controller.invoker.invoker_task_importing import TaskImportingInvoker
 from controller.label_model.label_studio import LabelStudio
 from controller.utils.app_logger import logger
 from controller.utils.redis import rds

@@ -9,7 +9,7 @@ from id_definition.error_codes import MonitorErrorCode
 
 class APIError(HTTPException):
     status_code = 400
-    code = MonitorErrorCode.general_error
+    code = MonitorErrorCode.GENERAL_ERROR
     message = "General Error"
 
     def __init__(self, message: Optional[str] = None, status_code: int = None, code: Optional[int] = None) -> None:
@@ -21,12 +21,12 @@ class APIError(HTTPException):
 
 
 class DuplicateTaskIDError(APIError):
-    code = MonitorErrorCode.duplicate_task_id
+    code = MonitorErrorCode.DUPLICATE_TASK_ID
     message = "task_id already exists"
 
 
 class LogFileError(APIError):
-    code = MonitorErrorCode.percent_log_error
+    code = MonitorErrorCode.PERCENT_LOG_ERROR
     message = "log file error"
 
 
@@ -36,7 +36,7 @@ def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
     else:
         detail = {  # type: ignore
             "errors": exc.detail,
-            "code": MonitorErrorCode.internal_error,
+            "code": MonitorErrorCode.INTERNAL_ERROR,
             "message": "Unknown Error",
         }
     return JSONResponse(detail, exc.status_code)

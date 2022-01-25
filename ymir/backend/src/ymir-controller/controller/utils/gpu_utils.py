@@ -1,5 +1,6 @@
 import time
 from typing import List, Dict, Set
+
 import sentry_sdk
 from pynvml import (
     nvmlInit,
@@ -11,8 +12,8 @@ from pynvml import (
 )
 
 from controller.config import gpu_task as gpu_task_config
-from controller.utils.redis import rds
 from controller.utils.app_logger import logger
+from controller.utils.redis import rds
 
 
 class GPUInfo:

@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 
 from google.protobuf import json_format
 
-from controller.utils import code, checker, metrics, utils
+from controller.utils import checker, metrics, utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -32,7 +33,7 @@ class BaseMirControllerInvoker(ABC):
         self._sandbox_root = sandbox_root
 
         ret = checker.check_request(request=request, prerequisites=[checker.Prerequisites.CHECK_TASK_ID])
-        if (ret.code != code.ResCode.CTR_OK):
+        if (ret.code != CTLResponseCode.CTR_OK):
             raise RuntimeError(f"task_id {request.task_id} error, abort")
         self._task_id = request.task_id
 
@@ -72,7 +73,7 @@ class BaseMirControllerInvoker(ABC):
         logging.info(str(self))
 
         response = self.pre_invoke()
-        if response.code != code.ResCode.CTR_OK:
+        if response.code != CTLResponseCode.CTR_OK:
             return response
 
         return self.invoke()

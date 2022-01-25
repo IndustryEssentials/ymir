@@ -3,7 +3,8 @@ import os
 from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils
+from controller.utils import utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -19,12 +20,12 @@ class TaskImportingInvoker(TaskBaseInvoker):
             if not os.access(anno_dir, os.R_OK):
                 error_str = f"invalid permissions of annotation_dir: {anno_dir}"
                 logging.error(error_str)
-                return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, error_str)
+                return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, error_str)
 
         if not os.access(media_dir, os.R_OK):
             error_str = f"invalid permissions of media_dir:{media_dir}"
             logging.error(error_str)
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, error_str)
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, error_str)
 
         media_files = [
             os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))
