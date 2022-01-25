@@ -5,7 +5,8 @@ import yaml
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils, invoker_call, revs, gpu_utils, labels, tasks_util
+from controller.utils import utils, invoker_call, revs, gpu_utils, labels, tasks_util
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -41,7 +42,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     ) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         if not train_request.in_dataset_types:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid dataset_types")
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid dataset_types")
 
         config_file = cls.gen_training_config_lock_gpus(repo_root, request.docker_image_config,
                                                         train_request.in_class_ids, working_dir)
@@ -54,7 +55,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
                 state=backend_pb2.TaskStateError,
                 msg=msg,
             )
-            return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, msg)
+            return utils.make_general_response(CTLResponseCode.INTERNAL_ERROR, msg)
 
         sub_task_id_1 = utils.sub_task_id(request.task_id, 1)
         in_dataset_ids = [
@@ -78,7 +79,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             in_dataset_ids=in_dataset_ids,
             merge_strategy=request.merge_strategy,
         )
-        if merge_response.code != code.ResCode.CTR_OK:
+        if merge_response.code != CTLResponseCode.CTR_OK:
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
@@ -95,7 +96,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         if not tensorboard_root:
             msg = "empty tensorboard_root"
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, msg)
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, msg)
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 

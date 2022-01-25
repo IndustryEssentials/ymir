@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.api.api_v1.endpoints import login as m
+from app.api.errors.errors import InvalidToken
 from app.config import settings
 from app.utils.security import frontend_hash
 from tests.utils.utils import random_email, random_lower_string
@@ -45,4 +46,4 @@ class TestResetPassword:
         }
         r = client.post(f"{settings.API_V1_STR}/reset-password/", json=j)
         assert r.status_code == 401
-        assert r.json()["code"] == 1004
+        assert r.json()["code"] == InvalidToken.code

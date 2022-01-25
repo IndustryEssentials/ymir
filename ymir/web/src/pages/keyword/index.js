@@ -183,7 +183,6 @@ function Keyword({ getKeywords }) {
             // layout="inline"
             labelCol={{ flex: '100px' }}
             onValuesChange={search}
-            // size='large'
             colon={false}
           >
             <Row>

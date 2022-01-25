@@ -1,12 +1,13 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import checker, code, revs, utils, labels
+from controller.utils import checker, revs, utils, labels
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
 class FilterBranchInvoker(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
         if not self._request.in_class_ids and not self._request.ex_class_ids:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ,
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED,
                                                'one of include/exclude ids is required.')
 
         return checker.check_request(request=self._request,

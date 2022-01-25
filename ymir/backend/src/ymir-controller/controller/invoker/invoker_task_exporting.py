@@ -3,7 +3,8 @@ import os
 from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils
+from controller.utils import utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -16,13 +17,13 @@ class TaskExportingInvoker(TaskBaseInvoker):
 
         asset_dir = exporting_request.asset_dir
         if not asset_dir:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "empty asset_dir")
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
         annotation_dir = exporting_request.annotation_dir
         if exporting_request.format != backend_pb2.LabelFormat.NO_ANNOTATION:
             if not annotation_dir:
-                return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "empty anno_dir")
+                return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "empty anno_dir")
             os.makedirs(annotation_dir, exist_ok=True)
 
         media_location = assets_config['assetskvlocation']
