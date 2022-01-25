@@ -1,5 +1,4 @@
 import random
-import time
 from datetime import datetime
 from typing import Dict
 
@@ -48,7 +47,7 @@ class TestTaskResult:
     def test_save_task_result(
         self, mocker, mock_controller, mock_db, mock_graph_db, mock_controller_request
     ):
-        task_result_proxy = m.TaskResultProxy(
+        task_result_proxy = m.TaskResultHandler(
             controller=mock_controller,
             db=mock_db,
             graph_db=mock_graph_db,
@@ -92,7 +91,7 @@ class TestTaskResult:
             total=len(items),
             ignored_keywords=ignored_keywords,
         )
-        proxy = m.TaskResultProxy(
+        proxy = m.TaskResultHandler(
             controller=mock_controller,
             db=mock_db,
             graph_db=mock_graph_db,

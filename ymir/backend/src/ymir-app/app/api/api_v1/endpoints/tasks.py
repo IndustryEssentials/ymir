@@ -439,7 +439,7 @@ def update_task_status(
         logger.warning("Attempt to update finished task, skip")
         raise ObsoleteTaskStatus()
 
-    task_result_proxy = TaskResultProxy(
+    task_result_handler = TaskResultHandler(
         db=db,
         graph_db=graph_db,
         controller=controller_client,
@@ -447,7 +447,7 @@ def update_task_status(
         clickhouse=clickhouse,
     )
     try:
-        updated_task = task_result_proxy.save(task_info, task_result.dict())
+        updated_task = task_result_handler.save(task_info, task_result.dict())
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
@@ -469,7 +469,7 @@ def is_obsolete_message(
     return last_update_time > msg_time
 
 
-class TaskResultProxy:
+class TaskResultHandler:
     def __init__(
         self,
         *,
