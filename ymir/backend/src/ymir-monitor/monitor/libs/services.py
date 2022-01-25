@@ -24,8 +24,8 @@ class TaskService:
         for one_log_file in log_paths:
             try:
                 percent_result = PercentLogHandler.parse_percent_log(one_log_file)
-            except ValueError:
-                raise LogFileError
+            except ValueError as e:
+                raise LogFileError(f"percent log content error {e}")
             result[one_log_file] = percent_result
 
         return result
@@ -80,7 +80,7 @@ class TaskService:
 
     def register_task(self, reg_parameters: TaskParameter) -> None:
         if self.check_existence(reg_parameters.task_id):
-            raise DuplicateTaskIDError
+            raise DuplicateTaskIDError(f"duplicate task id {reg_parameters.task_id}")
 
         raw_log_contents = self.get_raw_log_contents(reg_parameters.log_paths)
         if len(raw_log_contents) != len(reg_parameters.log_paths):
