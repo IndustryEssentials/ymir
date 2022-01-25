@@ -1,19 +1,32 @@
-from enum import IntEnum
+from enum import IntEnum, unique
 
 
+@unique
+class CTLResponseCode(IntEnum):
+    CTR_OK = 0
+
+    VALIDATION_FAILED = 130400
+    DOCKER_IMAGE_ERROR = 130401
+    INTERNAL_ERROR = 130500
+    UNKOWN_RESPONSE_FORMAT = 150501
+
+
+@unique
 class VizErrorCode(IntEnum):
-    general_error = 140400
-    branch_not_exists = 140401
-    internal_error = 140500
+    GENERAL_ERROR = 140400
+    BRANCH_NOT_EXISTS = 140401
+    INTERNAL_ERROR = 140500
 
 
+@unique
 class MonitorErrorCode(IntEnum):
-    general_error = 150400
-    duplicate_task_id = 150401
-    percent_log_error = 150402
-    internal_error = 150500
+    GENERAL_ERROR = 150400
+    DUPLICATE_TASK_ID = 150401
+    PERCENT_LOG_ERROR = 150402
+    INTERNAL_ERROR = 150500
 
 
+@unique
 class APIErrorCode(IntEnum):
     API_ERROR = 110101
     VALIDATION_FAILED = 110102

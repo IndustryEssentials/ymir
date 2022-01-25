@@ -4,7 +4,7 @@ from typing import Optional, Dict
 
 class VizException(Exception):
     status_code = 200
-    code = VizErrorCode.general_error
+    code = VizErrorCode.GENERAL_ERROR
     message = "Exception Occured"
 
     def __init__(
@@ -27,5 +27,5 @@ class VizException(Exception):
 
 
 class BranchNotExists(VizException):
-    code = VizErrorCode.branch_not_exists
+    code = VizErrorCode.BRANCH_NOT_EXISTS
     message = "branch not found"
