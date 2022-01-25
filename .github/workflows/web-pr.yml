@@ -18,11 +18,11 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 16.x
-        cache: 'npm'
-        cache-dependency-path: ymir/web/package-lock.json
+        cache: 'yarn'
+        cache-dependency-path: ymir/web/yarn.lock
     - name: Test with npm
       run: |
-        npm install
-        npm run build --prod
-        npm run test:coverage
+        yarn install
+        yarn run build --prod
+        yarn run test:coverage
       working-directory: ymir/web
