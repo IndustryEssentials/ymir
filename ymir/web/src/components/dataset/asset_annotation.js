@@ -1,7 +1,5 @@
 import styles from "./common.less"
 import { useEffect, useState, useRef } from "react"
-import t from "@/utils/t"
-import Color from 'color'
 
 function AssetAnnotation({
   url,
@@ -52,7 +50,7 @@ function AssetAnnotation({
             height: annotation.h * ratio - 2,
           }}
         >
-          <span className={styles.annotationTitle} style={{ backgroundColor: Color(annotation.color).fade(0.6)}}>{annotation.keyword}
+          <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color}}>{annotation.keyword}
           {annotation.score ? <> {annotation.score}</> : null}</span>
         </div>
       )
