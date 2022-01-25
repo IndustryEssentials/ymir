@@ -93,6 +93,7 @@ paths:
       tags:
       - asset
       summary: get asset_id info
+      description: ""
       operationId: get_assert_id_info
       parameters:
       - name: user_id

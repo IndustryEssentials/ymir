@@ -6,7 +6,7 @@ from mir.tools import mir_storage_ops
 
 from proto import backend_pb2
 from src import config
-from src.libs import utils
+from src.libs import utils, exceptions, app_logger
 
 
 class MirStorageLoader:
@@ -17,9 +17,14 @@ class MirStorageLoader:
     @utils.time_it
     def load_raw_message(self, mir_storages: List[pb_message.Message]) -> Dict:
         # using as_dict flag means already MessageToDict
-        mir_raw_data = mir_storage_ops.MirStorageOps.load(
-            mir_root=self.mir_root, mir_branch=self.branch_id, mir_storages=mir_storages, as_dict=True
-        )
+        try:
+            mir_raw_data = mir_storage_ops.MirStorageOps.load(
+                mir_root=self.mir_root, mir_branch=self.branch_id, mir_storages=mir_storages, as_dict=True
+            )
+        # TODO: command define
+        except ValueError as e:
+            app_logger.logger.error(e)
+            raise exceptions.BranchNotExists(f"branch {self.branch_id} not exist from ymir command")
 
         return mir_raw_data
 
