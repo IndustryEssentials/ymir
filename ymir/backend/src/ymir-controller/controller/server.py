@@ -1,17 +1,18 @@
 import argparse
-from distutils.util import strtobool
 import logging
 import os
 import re
 import sys
 from concurrent import futures
+from distutils.util import strtobool
 from typing import Any, Dict
 
 import grpc
 import sentry_sdk
 import yaml
 
-from controller.utils import code, metrics, utils, invoker_mapping
+from controller.utils import metrics, utils, invoker_mapping
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2, backend_pb2_grpc
 
 
@@ -36,7 +37,7 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
         if request.req_type not in invoker_mapping.RequestTypeToInvoker:
             message = "unknown invoker for req_type: {}".format(request.req_type)  # type: str
             logging.error(message)
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, message)
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, message)
 
         invoker_class = invoker_mapping.RequestTypeToInvoker[request.req_type]
         invoker = invoker_class(sandbox_root=self.sandbox_root,
@@ -47,7 +48,7 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
 
         if isinstance(invoker_result, backend_pb2.GeneralResp):
             return invoker_result
-        return utils.make_general_response(code.ResCode.CTR_SERVICE_UNKOWN_RESPONSE,
+        return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,
                                            "unknown result type: {}".format(type(invoker_result)))
 
 

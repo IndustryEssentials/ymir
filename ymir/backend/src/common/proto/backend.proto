@@ -33,6 +33,7 @@ enum TaskState {
     TaskStateMiss = 5;
 };
 
+//  deprecated
 enum RCode {
     //grpc status codes
     RC_OK = 0;

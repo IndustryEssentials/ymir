@@ -1,12 +1,12 @@
-from functools import wraps
 import logging
 import re
 import subprocess
 import time
+from functools import wraps
 from typing import Callable, Dict
 
-from controller.utils.code import ResCode
 from id_definition import task_id as task_id_proto
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -20,10 +20,10 @@ def run_command(cmd: str) -> backend_pb2.GeneralResp:
     result = subprocess.run(cmd, capture_output=True, shell=True, text=True)  # run and wait
     if result.returncode != 0:
         logging.error(f"run cmd error:\n {result.stderr}")
-        return make_general_response(ResCode.CTR_ERROR_UNKNOWN, result.stderr)
+        return make_general_response(CTLResponseCode.INTERNAL_ERROR, result.stderr)
 
     logging.info(f"run cmd succeed: \n {result.stdout}")
-    return make_general_response(ResCode.CTR_OK, result.stdout)
+    return make_general_response(CTLResponseCode.CTR_OK, result.stdout)
 
 
 def check_valid_input_string(inputs: str,

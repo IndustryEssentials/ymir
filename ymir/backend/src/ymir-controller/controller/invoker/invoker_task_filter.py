@@ -3,7 +3,8 @@ from typing import Dict
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, invoker_call, utils, tasks_util
+from controller.utils import invoker_call, utils, tasks_util
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -15,7 +16,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
         filter_request = request.req_create_task.filter
 
         if not filter_request.in_dataset_ids:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid_data_ids")
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid_data_ids")
 
         in_dataset_ids = list(filter_request.in_dataset_ids)
         sub_task_id_1 = utils.sub_task_id(request.task_id, 1)
@@ -29,7 +30,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
                                                             dst_task_id=request.task_id,
                                                             in_dataset_ids=in_dataset_ids,
                                                             merge_strategy=request.merge_strategy)
-        if merge_response.code != code.ResCode.CTR_OK:
+        if merge_response.code != CTLResponseCode.CTR_OK:
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
@@ -50,7 +51,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
                                                              in_class_ids=filter_request.in_class_ids,
                                                              ex_class_ids=filter_request.ex_class_ids)
 
-        if filter_response.code == code.ResCode.CTR_OK:
+        if filter_response.code == CTLResponseCode.CTR_OK:
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,

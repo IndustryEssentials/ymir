@@ -8,8 +8,9 @@ from PIL import Image
 from google.protobuf import json_format
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import code, utils, checker
+from controller.utils import utils, checker
 from controller.utils.app_logger import logger
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -61,7 +62,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def generate_inference_response(cls, inference_result: Dict) -> backend_pb2.GeneralResp:
-        resp = utils.make_general_response(code.ResCode.CTR_OK, "")
+        resp = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         result = dict(imageAnnotations=inference_result["detection"])
         resp_inference = backend_pb2.RespCMDInference()
         json_format.ParseDict(result, resp_inference, ignore_unknown_fields=False)
