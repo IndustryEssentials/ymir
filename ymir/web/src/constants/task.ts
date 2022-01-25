@@ -1,3 +1,5 @@
+import t from '@/utils/t'
+
 export const TASKTYPES = Object.freeze({
   TRAINING: 1,
   MINING: 2,
@@ -19,4 +21,17 @@ export const TASKSTATES = Object.freeze({
 
 export const isFinalState = (state: number) => {
   return [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) >= 0
+}
+
+export const getTaskTypeLabel = (type: number) => {
+
+  const labels = {
+    [TASKTYPES.TRAINING]: t('task.type.train'),
+    [TASKTYPES.MINING]: t('task.type.mine'),
+    [TASKTYPES.LABEL]: t('task.type.label'),
+    [TASKTYPES.FILTER]: t('task.type.filter'),
+    [TASKTYPES.IMPORT]: t('task.type.import'),
+  }
+
+  return labels[type]
 }
