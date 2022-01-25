@@ -70,10 +70,6 @@ export default {
     *deleteTask({ payload }, { call, put }) {
       let { code, result } = yield call(deleteTask, payload)
       if (code === 0) {
-        yield put({
-          type: "UPDATE_TASKS",
-          payload: result,
-        })
         return result
       }
     },

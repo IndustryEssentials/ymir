@@ -7,3 +7,5 @@ select = B,C,E,F,W,T4,B9
 exclude =
     src/ymir-viz/src/models
     src/ymir-app/alembic
+
+per-file-ignores = __init__.py:F401
