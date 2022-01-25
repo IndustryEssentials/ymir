@@ -23,7 +23,7 @@ class PhaseLoggerError(BaseException):
         self.msg = msg
 
 
-def _raise_if_false(condition: Any, msg: str):
+def _raise_if_false(condition: Any, msg: str) -> None:
     if not condition:
         raise PhaseLoggerError(msg=msg)
 
