@@ -5,7 +5,7 @@ import unittest
 from unittest import mock
 from mir.protos import mir_command_pb2 as mirpb
 
-from mir.tools.phase_logger import PhaseLogger, PhaseLoggerCenter, PhaseStateEnum
+from mir.tools.phase_logger import PhaseLogger, PhaseLoggerCenter, PhaseLoggerError, PhaseStateEnum
 
 from tests import utils as test_utils
 
@@ -69,13 +69,13 @@ class TestPhaseLogger(unittest.TestCase):
         self.assertEqual(0.5, pm.global_percent)
 
         # abnormal cases
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name=None)
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name='task_name', start=-1.0)
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name='task_name', end=2.0)
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name='task_name', start=0.5, end=0.3)
 
     def test_create_children(self):
@@ -106,13 +106,13 @@ class TestPhaseLogger(unittest.TestCase):
             self.assertEqual('/tmp/monitor.txt', child.monitor_file)
 
         # abnormal cases
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[])
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[1, 2, 3, 4, 5])
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[0.0, 1.0])
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[0.5, -0.4, 0.5, 0.4])
 
     def test_single_write(self):
