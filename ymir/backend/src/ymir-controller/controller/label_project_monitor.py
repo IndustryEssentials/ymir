@@ -8,13 +8,12 @@ import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+from common_utils.percent_log_util import LogState
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_importing import TaskImportingInvoker
 from controller.label_model.label_studio import LabelStudio
 from controller.utils.app_logger import logger
 from controller.utils.redis import rds
-from controller.utils.tasks_util import task_state_code_to_str
-from proto.backend_pb2 import TaskState
 
 
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
@@ -63,9 +62,8 @@ def lable_task_monitor() -> None:
         percent = label_instance.get_task_completion_percent(project_info['project_id'])
 
         logger.info(f'label task:{task_id} percent: {percent}')
-        state = task_state_code_to_str(TaskState.TaskStateDone) if percent == 1 else task_state_code_to_str(
-            TaskState.TaskStateRunning)
-        if state == task_state_code_to_str(TaskState.TaskStateDone):
+        state = LogState.DONE if percent == 1 else LogState.RUNNING
+        if state == LogState.DONE:
             # For remove some special tasks.Delete the task after labeling will save file
             remove_json_file(project_info["des_annotation_path"])
             try:
@@ -75,7 +73,7 @@ def lable_task_monitor() -> None:
             except requests.HTTPError as e:
                 sentry_sdk.capture_exception(e)
                 logger.error(f'get label task {task_id} error: {e}, set task_id:{task_id} error')
-                state = task_state_code_to_str(TaskState.TaskStateError)
+                state = LogState.ERROR
             index_file = _gen_index_file(project_info["des_annotation_path"])
             trigger_mir_import(
                 project_info["repo_root"],

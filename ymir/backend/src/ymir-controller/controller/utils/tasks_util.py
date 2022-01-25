@@ -5,42 +5,21 @@ from typing import List
 import requests
 from requests import RequestException
 
+from common_utils.percent_log_util import LogState
 from controller.config import common_task as common_task_config
 from controller.utils.app_logger import logger
 from id_definition.error_codes import CTLResponseCode
-from proto import backend_pb2
-
-
-def task_state_str_to_code(state: str) -> backend_pb2.TaskState:
-    _task_state_to_enum = {
-        "pending": backend_pb2.TaskState.TaskStatePending,
-        "running": backend_pb2.TaskState.TaskStateRunning,
-        "runing": backend_pb2.TaskState.TaskStateRunning,
-        "done": backend_pb2.TaskState.TaskStateDone,
-        "error": backend_pb2.TaskState.TaskStateError,
-    }
-    return _task_state_to_enum[state]
-
-
-def task_state_code_to_str(state: backend_pb2.TaskState) -> str:
-    _dict_enum_to_str = {
-        backend_pb2.TaskState.TaskStatePending: "pending",
-        backend_pb2.TaskState.TaskStateRunning: "running",
-        backend_pb2.TaskState.TaskStateDone: "done",
-        backend_pb2.TaskState.TaskStateError: "error",
-    }
-    return _dict_enum_to_str[state]
 
 
 def write_task_progress(monitor_file: str,
                         tid: str,
                         percent: float,
-                        state: backend_pb2.TaskState,
+                        state: LogState,
                         msg: str = None) -> CTLResponseCode:
     if not monitor_file:
         raise RuntimeError("Invalid monitor_file")
     with open(monitor_file, 'w') as f:
-        f.write('\t'.join([tid, str(int(datetime.now().timestamp())), str(percent), task_state_code_to_str(state)]))
+        f.write('\t'.join([tid, str(int(datetime.now().timestamp())), str(percent), str(state)]))
         if msg:
             f.write('\n{}'.format(msg))
     return CTLResponseCode.CTR_OK
