@@ -70,7 +70,7 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
 
 def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
     if not model_paths or not dest_path:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='invalid model_paths or dest_path')
 
     logging.info(f"packing models to {dest_path}")
@@ -95,7 +95,7 @@ def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_
 
 def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
     if not model_pack_path or not dest_path:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='invalid model_pack_path or dest_path')
 
     shutil.copyfile(model_pack_path, dest_path)
@@ -204,7 +204,7 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
     # check class names
     if model_storage.class_names != class_names:
         raise MirRuntimeError(
-            error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            error_code=MirCode.RC_CMD_INVALID_ARGS,
             error_message=f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
 
     return model_storage.models
@@ -431,7 +431,7 @@ class CmdTrain(base.BaseCommand):
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
-            task_code = MirCode.RC_CMD_ERROR_UNKNOWN
+            task_code = MirCode.RC_CMD_CONTAINER_ERROR
             task_error_msg = str(e)
 
         # save model

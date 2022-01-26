@@ -115,7 +115,7 @@ class CmdFilter(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
                                   error_message=f"invalid args: task id already exists: {task_id}")
         if not base_task_id:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                                   error_message='no base task id in tasks.mir')
 
         assert len(mir_annotations.task_annotations.keys()) == 1
