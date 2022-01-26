@@ -5,12 +5,12 @@ import connexion
 import sentry_sdk
 from flask import request, jsonify
 from sentry_sdk.integrations.flask import FlaskIntegration
+from werkzeug.wrappers import Response
 
 from id_definition.error_codes import VizErrorCode
 from src.config import VIZ_SENTRY_DSN
 from src.encoder import JSONEncoder
 from src.libs.exceptions import VizException
-from werkzeug.wrappers import Response
 
 
 def config_app(app: connexion, config: Dict = None) -> None:
