@@ -34,17 +34,18 @@ class ImageHandler(BaseMirControllerInvoker):
         return json.dumps(image_config)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_PULL_IMAGE:
-            raise RuntimeError("Mismatched req_type")
+        expected_type = backend_pb2.RequestType.CMD_PULL_IMAGE
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         check_image_command = f"docker image inspect {self._request.singleton_op} --format='ignore me'"
         check_response = utils.run_command(check_image_command)
         if check_response.code != CTLResponseCode.CTR_OK:
             pull_command = f"docker pull {self._request.singleton_op}"
-            pull_command_response = utils.run_command(pull_command)
+            pull_command_response = utils.run_command(cmd=pull_command, error_code=CTLResponseCode.DOCKER_IMAGE_ERROR,)
             if pull_command_response.code != CTLResponseCode.CTR_OK:
-                return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR,
-                                                   pull_command_response.message)
+                return pull_command_response
 
         hash_command = f"docker images {self._request.singleton_op} --format {'{{.ID}}'}"
         response = utils.run_command(hash_command)
@@ -64,6 +65,3 @@ class ImageHandler(BaseMirControllerInvoker):
             )
 
         return response
-
-    def _repr(self) -> str:
-        return f"image_pull: user: {self._request.user_id}, image_name: {self._request.singleton_op}"

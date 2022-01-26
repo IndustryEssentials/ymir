@@ -7,7 +7,7 @@ from proto import backend_pb2
 class FilterBranchInvoker(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
         if not self._request.in_class_ids and not self._request.ex_class_ids:
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED,
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                'one of include/exclude ids is required.')
 
         return checker.check_request(request=self._request,
@@ -21,8 +21,10 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
                                      mir_root=self._repo_root)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_FILTER:
-            raise RuntimeError("Mismatched req_type")
+        expected_type = backend_pb2.RequestType.CMD_FILTER
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         # invoke command
         filter_command = "cd {0} && {1} filter --dst-rev {2} --src-revs {3}".format(

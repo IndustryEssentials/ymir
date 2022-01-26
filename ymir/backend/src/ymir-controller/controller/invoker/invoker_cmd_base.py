@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from google.protobuf import json_format
 
-from controller.utils import checker, metrics, utils
+from controller.utils import checker, errors, metrics, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -29,12 +29,13 @@ class BaseMirControllerInvoker(ABC):
 
         # check sandbox_root
         if not os.path.isdir(sandbox_root):
-            raise RuntimeError(f"sandbox root {sandbox_root} not found, abort")
+            raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
+                                     f"sandbox root {sandbox_root} not found, abort.")
         self._sandbox_root = sandbox_root
 
         ret = checker.check_request(request=request, prerequisites=[checker.Prerequisites.CHECK_TASK_ID])
         if (ret.code != CTLResponseCode.CTR_OK):
-            raise RuntimeError(f"task_id {request.task_id} error, abort")
+            raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, f"task_id {request.task_id} error, abort.")
         self._task_id = request.task_id
 
         # check user_id
@@ -45,9 +46,13 @@ class BaseMirControllerInvoker(ABC):
 
         # check repo_id
         repo_id = request.repo_id
-        if user_id and repo_id:
-            self._repo_id = repo_id
-            self._repo_root = os.path.join(self._user_root, repo_id)
+        if repo_id:
+            if user_id:
+                self._repo_id = repo_id
+                self._repo_root = os.path.join(self._user_root, repo_id)
+            else:
+                raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
+                                         "repo id provided, but miss user id.")
 
         self._request = request
         self._assets_config = assets_config
@@ -57,6 +62,7 @@ class BaseMirControllerInvoker(ABC):
         self._send_request_metrics()
 
     def _send_request_metrics(self) -> None:
+        # not record internal requests.
         if self._request.req_type in [backend_pb2.RequestType.TASK_INFO, backend_pb2.RequestType.CMD_GPU_INFO_GET]:
             return
 
@@ -87,11 +93,17 @@ class BaseMirControllerInvoker(ABC):
         pass
 
     def prepare_work_dir(self) -> str:
-        if self._request.req_type == backend_pb2.RequestType.TASK_INFO:
+        # Only create work_dir for specific tasks.
+        if self._request.req_type not in [
+                backend_pb2.RequestType.TASK_CREATE,
+                backend_pb2.RequestType.CMD_FILTER,
+                backend_pb2.RequestType.CMD_MERGE,
+                backend_pb2.RequestType.CMD_INFERENCE,
+        ]:
             return ''
 
         # Prepare working dir.
-        if self._request.req_type == backend_pb2.TASK_CREATE:
+        if self._request.req_type == backend_pb2.RequestType.TASK_CREATE:
             type_dir = backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
         else:
             type_dir = backend_pb2.RequestType.Name(self._request.req_type)
@@ -107,8 +119,4 @@ class BaseMirControllerInvoker(ABC):
                                              preserving_proto_field_name=True,
                                              use_integers_for_enums=True)
 
-        return f"{self._repr()} \n request: \n {req_info}"
-
-    @abstractmethod
-    def _repr(self) -> str:
-        raise NotImplementedError()
+        return f" request: \n {req_info}"
