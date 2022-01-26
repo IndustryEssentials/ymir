@@ -22,10 +22,12 @@ class LabelGetInvoker(BaseMirControllerInvoker):
         return response
 
     def invoke(self) -> backend_pb2.GeneralResp:
+        expected_type = backend_pb2.RequestType.CMD_LABEL_GET
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
+
         label_handler = labels.LabelFileHandler(self._user_root)
         all_labels = label_handler.get_all_labels(with_reserve=False)
 
         return self.generate_response(all_labels)
-
-    def _repr(self) -> str:
-        return f"cmd_labels_get: user: {self._request.user_id}, task_id: {self._task_id} "

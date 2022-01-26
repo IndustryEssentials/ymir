@@ -43,7 +43,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     ) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         if not train_request.in_dataset_types:
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid dataset_types")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid dataset_types")
 
         config_file = cls.gen_training_config_lock_gpus(repo_root, request.docker_image_config,
                                                         train_request.in_class_ids, working_dir)
@@ -97,7 +97,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         if not tensorboard_root:
             msg = "empty tensorboard_root"
             tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, LogState.ERROR, msg)
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, msg)
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, msg)
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
@@ -142,15 +142,3 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             training_cmd += f" --model-hash {model_hash}"
 
         return utils.run_command(training_cmd)
-
-    def _repr(self) -> str:
-        train_request = self._request.req_create_task.training
-        in_dataset_ids = [
-            revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
-            for dataset_type in train_request.in_dataset_types
-        ]
-
-        repr = (f"task_training: user: {self._request.user_id}, repo: {self._request.repo_id} task_id: {self._task_id} "
-                f"in_dataset_types: {in_dataset_ids} in_class_ids: {train_request.in_class_ids}")
-
-        return repr
