@@ -34,7 +34,7 @@ class CmdInit(base.BaseCommand):
         return_code = checker.check(
             mir_root, [checker.Prerequisites.IS_OUTSIDE_GIT_REPO, checker.Prerequisites.IS_OUTSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
-            return return_code
+            return MirCode.RC_CMD_INIT_ERROR
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
