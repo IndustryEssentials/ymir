@@ -302,7 +302,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
                 <Button type="link" onClick={() => setShowErrorMsg(!showErrorMsg)}>
                   {showErrorMsg ? t('common.fold') : t('common.unfold')}{showErrorMsg ? <ArrowUpIcon /> : <ArrowDownIcon />}
                 </Button>
-                {formatErrorMessage(error.message)}
+                <p>{t(`error${error.code}`)}</p>
               </div>
             </Item>
           </>
