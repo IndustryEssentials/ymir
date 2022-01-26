@@ -78,6 +78,11 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
+        expected_type = backend_pb2.RequestType.CMD_INFERENCE
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
+
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
         config_file = self.gen_inference_config(self._request.docker_image_config, self._work_dir)
 
@@ -99,7 +104,3 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         infer_cmd = (f"{utils.mir_executable()} infer -w {work_dir} --model-location {model_location} --index-file "
                      f"{index_file} --model-hash {model_hash} --config-file {config_file} --executor {executor}")
         return utils.run_command(infer_cmd)
-
-    def _repr(self) -> str:
-        return (f"cmd_inference: user: {self._request.user_id}, task_id: {self._task_id} "
-                f"model_hash: {self._request.model_hash}")
