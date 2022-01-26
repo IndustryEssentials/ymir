@@ -7,6 +7,7 @@ import os
 from mir import scm
 from mir.commands import base
 from mir.tools import checker, class_ids
+from mir.tools.command_run_in_out import command_run_error_handler
 from mir.tools.code import MirCode
 
 
@@ -30,26 +31,21 @@ class CmdInit(base.BaseCommand):
 
     # public: run
     @staticmethod
+    @command_run_error_handler(error_code=MirCode.RC_CMD_INIT_ERROR)
     def run_with_args(mir_root: str) -> int:
         return_code = checker.check(
             mir_root, [checker.Prerequisites.IS_OUTSIDE_GIT_REPO, checker.Prerequisites.IS_OUTSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
             return MirCode.RC_CMD_INIT_ERROR
 
-        try:
-            repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
-            repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
-            repo_git.init()
-            repo_dvc.init()
+        repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
+        repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
+        repo_git.init()
+        repo_dvc.init()
 
-            CmdInit.__update_files(mir_root=mir_root)
-            CmdInit.__update_ignore(mir_root=mir_root,
-                                    git=repo_git,
-                                    ignored_items=['.mir_lock', class_ids.ids_file_name()])
-            repo_git.commit(["-m", "first commit"])
-        except Exception:
-            logging.exception(msg='init error')
-            return MirCode.RC_CMD_INIT_ERROR
+        CmdInit.__update_files(mir_root=mir_root)
+        CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', class_ids.ids_file_name()])
+        repo_git.commit(["-m", "first commit"])
 
         return MirCode.RC_OK
 

@@ -3,6 +3,7 @@ from functools import wraps
 from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable
+from aiohttp_retry import logging
 
 from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, phase_logger
 from mir.tools.code import MirCode
@@ -127,3 +128,20 @@ def command_run_in_out(f: Callable) -> Callable:
             raise e
 
     return wrapper
+
+
+def command_run_error_handler(error_code: int) -> Any:
+    """
+    call xxxcmd.run, if error happened, returns `error_code`
+    """
+    def decorated(f: Callable) -> Callable:
+        @wraps(f)
+        def wrapper(*args, **kwargs) -> Any:
+            try:
+                ret = f(*args, **kwargs)
+                return ret
+            except Exception:
+                logging.exception(msg=f"error happened when calling {f.__name__}")
+                return error_code
+        return wrapper
+    return decorated
