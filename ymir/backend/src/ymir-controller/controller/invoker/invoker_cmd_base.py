@@ -98,6 +98,7 @@ class BaseMirControllerInvoker(ABC):
                 backend_pb2.RequestType.TASK_CREATE,
                 backend_pb2.RequestType.CMD_FILTER,
                 backend_pb2.RequestType.CMD_MERGE,
+                backend_pb2.RequestType.CMD_INFERENCE,
         ]:
             return ''
 
