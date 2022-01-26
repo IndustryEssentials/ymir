@@ -37,7 +37,7 @@ class TestExodus(unittest.TestCase):
         # wrong branches
         self._test_open_abnormal_cases("fake-file", "fake-branch", MirCode.RC_CMD_INVALID_BRANCH_OR_TAG)
         # wrong file names
-        self._test_open_abnormal_cases("fake-file", "coco-2017-train", MirCode.RC_CMD_INVALID_MIR_FILE)
+        self._test_open_abnormal_cases("fake-file", "coco-2017-train", MirCode.RC_CMD_INVALID_MIR_REPO)
         # empty args
         self._test_open_abnormal_cases("fake-file", "", MirCode.RC_CMD_INVALID_ARGS)
         self._test_open_abnormal_cases("", "fake-branch", MirCode.RC_CMD_INVALID_ARGS)

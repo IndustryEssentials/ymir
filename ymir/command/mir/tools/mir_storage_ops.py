@@ -203,7 +203,7 @@ def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations) -> Non
         mir_annotations.head_task_id = task_ids[0]
     elif len(task_ids) > 1:
         # * now we allows only one task id in each mir_annotations
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f'more then one task ids found in mir_annotations: {task_ids}')
 
 
