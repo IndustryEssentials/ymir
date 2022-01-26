@@ -1,9 +1,9 @@
 import datetime
 from functools import wraps
+import logging
 from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable
-from aiohttp_retry import logging
 
 from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, phase_logger
 from mir.tools.code import MirCode
