@@ -54,6 +54,18 @@ const errors = {
   'error150401': { cn: 'controller 重复的任务id', en: 'controller: duplicate_task_id', },
   'error150402': { cn: 'controller 任务进度日志错误', en: 'controller: percent_log_error', },
   'error150500': { cn: 'controller 内部错误', en: 'controller: internal_error', },
+  'error160001': { cn: 'CMD: 参数不可用', en: 'RC_CMD_INVALID_ARGS: invalid args', },
+  'error160002': { cn: 'CMD: 训练集为空', en: 'RC_CMD_EMPTY_TRAIN_SET: empty train set', },
+  'error160003': { cn: 'CMD: 测试集为空', en: 'RC_CMD_EMPTY_VAL_SET: empty test set', },
+  'error160004': { cn: 'CMD: 容器错误', en: 'RC_CMD_CONTAINER_ERROR: image container error', },
+  'error160005': { cn: 'CMD: 未知类型', en: 'RC_CMD_UNKNOWN_TYPES: unkown type', },
+  'error160006': { cn: 'CMD: 分支或标签不可用', en: 'RC_CMD_INVALID_BRANCH_OR_TAG: invalid branch or tag', },
+  'error160007': { cn: 'CMD: 脏Repo，需要清理', en: 'RC_CMD_DIRTY_REPO: dirty repo.', },
+  'error160008': { cn: 'CMD: 合并错误', en: 'RC_CMD_MERGE_ERROR: merge error', },
+  'error160009': { cn: 'CMD: mir repo不可用', en: 'RC_CMD_INVALID_MIR_REPO: invalid mir repo.', },
+  'error160010': { cn: 'CMD: 文件不可用', en: 'RC_CMD_INVALID_FILE: invalid file', },
+  'error160011': { cn: 'CMD: 无结果生成', en: 'RC_CMD_NO_RESULT: no result', },
+  'error169999': { cn: 'CMD: 未知错误', en: 'RC_CMD_ERROR_UNKNOWN: unkown error', },
 }
 
 export default errors
