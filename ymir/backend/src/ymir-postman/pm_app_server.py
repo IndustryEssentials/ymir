@@ -41,7 +41,7 @@ else:
 def post_task_states(tid_to_taskstates: entities.TaskStateDict) -> entities.EventResp:
     uvicorn_logger.info(f"/events/taskstates: {tid_to_taskstates}")
     EventDispatcher.add_event(event_name='/events/taskstates',
-                              event_topic='raw',
+                              event_topic=constants.EVENT_TOPIC_RAW,
                               event_body=json.dumps(jsonable_encoder(tid_to_taskstates)))
 
     return entities.EventResp(return_code=0, return_msg=f"done, received: {len(tid_to_taskstates)} tasks")
