@@ -204,6 +204,7 @@ class TestCmdTraining(unittest.TestCase):
         with open(self._config_file, 'r') as f:
             config = yaml.safe_load(f.read())
         config['class_names'] = ['airplane']
+        config['gpu_id'] = '0'
         with open(self._config_file, 'w') as f:
             yaml.dump(config, f)
 

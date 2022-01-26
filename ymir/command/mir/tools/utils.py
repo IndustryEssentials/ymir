@@ -254,3 +254,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
                                  task_context=ymir_info_dict.get('task_context', {}))
 
     return model_storage
+
+
+def map_gpus_zero_index(gpu_id: str) -> str:
+    gpu_count = len(gpu_id.split(',')) if gpu_id else 0
+    return ','.join([str(i) for i in range(gpu_count)])
