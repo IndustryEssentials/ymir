@@ -7,6 +7,8 @@ from controller.label_model.label_studio import LabelStudio
 from controller.utils import utils
 from controller.utils.app_logger import logger
 from proto import backend_pb2
+from controller.label_model.aios import AIOS
+from controller.label_model.request_handler import RequestHandler
 
 
 def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, str, str]:
@@ -58,6 +60,11 @@ def start_label_task(
     # set your lable tools name
     if label_task_config.LABEL_STUDIO == label_task_config.LABEL_TOOL:
         label_instance = LabelStudio()
+    elif label_task_config.AIOS == label_task_config.LABEL_TOOL:
+        request_handler = RequestHandler(
+            host=label_task_config.LABEL_TOOL_HOST, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
+        )
+        label_instance = AIOS(request_handler)
     else:
         raise ValueError("Error! Please setting your label tools")
 
