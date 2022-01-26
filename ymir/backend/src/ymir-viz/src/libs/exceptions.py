@@ -1,5 +1,6 @@
-from id_definition.error_codes import VizErrorCode
 from typing import Optional, Dict
+
+from id_definition.error_codes import VizErrorCode
 
 
 class VizException(Exception):
