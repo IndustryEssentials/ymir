@@ -41,13 +41,13 @@ class TaskMiningInvoker(TaskBaseInvoker):
     ) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
         if mining_request.top_k < 0:
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED,
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                "invalid topk: {}".format(mining_request.top_k))
         if not request.model_hash:
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid model_hash")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid model_hash")
 
         if not mining_request.in_dataset_ids:
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid_data_ids")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
 
         executor_instance = request.executor_instance
         if executor_instance != request.task_id:
@@ -132,11 +132,3 @@ class TaskMiningInvoker(TaskBaseInvoker):
             mining_cmd += " --add-annotations"
 
         return utils.run_command(mining_cmd)
-
-    def _repr(self) -> str:
-        mining_request = self._request.req_create_task.mining
-        repr = (f"task_mining: user: {self._request.user_id},repo: {self._request.repo_id} task_id: {self._task_id} "
-                f"model_hash: {mining_request.model_hash} top_k: {mining_request.top_k} in_dataset_ids: "
-                f"{mining_request.in_dataset_ids} ex_dataset_ids: {mining_request.ex_dataset_ids} cached")
-
-        return repr

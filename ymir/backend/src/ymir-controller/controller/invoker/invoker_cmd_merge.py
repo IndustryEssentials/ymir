@@ -7,7 +7,7 @@ from proto import backend_pb2
 class MergeInvoker(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
         if not self._request.in_dataset_ids and not self._request.ex_dataset_ids:
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED,
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                'one of include/exclude branches is required.')
 
         return checker.check_request(request=self._request,
@@ -20,8 +20,10 @@ class MergeInvoker(BaseMirControllerInvoker):
                                      mir_root=self._repo_root)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_MERGE:
-            raise RuntimeError("Mismatched req_type")
+        expected_type = backend_pb2.RequestType.CMD_MERGE
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         command = "cd {0} && {1} merge --dst-rev {2} -s {3}".format(
             self._repo_root, utils.mir_executable(),
@@ -34,8 +36,3 @@ class MergeInvoker(BaseMirControllerInvoker):
         if self._request.ex_dataset_ids:
             command += " --ex-src-revs '{}'".format(revs.build_src_revs(in_src_revs=self._request.ex_dataset_ids))
         return utils.run_command(command)
-
-    def _repr(self) -> str:
-        return "cmd merge user: {0}, repo: {1}, task_id: {2} includes: {3}, excludes: {4}".format(
-            self._request.user_id, self._request.repo_id, self._task_id, ";".join(self._request.in_dataset_ids),
-            ";".join(self._request.ex_dataset_ids))
