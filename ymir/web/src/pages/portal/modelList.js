@@ -11,7 +11,6 @@ import Empty from '@/components/empty/default'
 import { percent } from "../../utils/number"
 
 const ModelList = ({ getModelsByMap }) => {
-  const [models, setModels] = useState([])
   const [keywords, setKeywords] = useState([])
   const [current, setCurrent] = useState('')
   const [kmodels, setKModels] = useState({})
@@ -25,11 +24,9 @@ const ModelList = ({ getModelsByMap }) => {
   }
 
   async function fetchModels() {
-    const { models, keywords, kmodels } = await getModelsByMap(35)
-    setModels(models)
+    const { keywords, kmodels } = await getModelsByMap(35)
     setKeywords(keywords)
     setKModels(kmodels)
-
     setCurrent(keywords[0])
   }
 
@@ -39,7 +36,7 @@ const ModelList = ({ getModelsByMap }) => {
   >
     <div><span>{t('common.index.keyword.label')}: </span>{keywords.map(k => <Tag className={`${k === current ? styles.current : ''} ${styles.kwtag}`} key={k} onClick={() => changeKeyword(k)}>{k}</Tag>)}</div>
     <List className={styles.boxItem} bordered={false}>
-      {models.length ? kmodels[current]?.filter(model => model).map((model, index) =>
+      {kmodels[current]?.length ? kmodels[current]?.filter(model => model).map((model, index) =>
         <List.Item key={model.id} actions={[<span className={styles.action} title={model.map}>{percent(model.map)}</span>]} title={model.name}>
           <Link className={styles.modelListItem} to={`/home/model/detail/${model.id}`}>
             <span className={`${styles['ol' + index]} ${styles.ol}`}>{index + 1}</span>
