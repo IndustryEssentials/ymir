@@ -65,12 +65,17 @@ class EventDispatcher:
             kvs = self._redis_connect.xreadgroup(groupname=self._group_name,
                                                  consumername='default',
                                                  streams={self._event_name: '>'},
-                                                 block=0)
+                                                 block=settings.HEARTBEAT_MILLISECONDS)
             self._handle_msgs_and_remove(kvs)
 
     def _handle_msgs_and_remove(self, kvs: Any) -> None:
         if not self._event_handler:
             logging.warning('EventDispatcher: handler not set')
+            return
+
+        # heartbeat: invoke handler with a fake message
+        if not kvs:
+            self._event_handler(ed=self, mid_and_msgs=[('', {'topic': constants.EVENT_TOPIC_HEARTBEAT, 'body': ''})])
             return
 
         for _, stream_msgs in kvs:

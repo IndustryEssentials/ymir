@@ -51,9 +51,10 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     update_db_result = _update_db(tid_to_tasks=tid_to_taskstates_latest)
     logging.info(f"update db result: {update_db_result}")
     _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
+    _update_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
+    # delay and retry
     if update_db_result.retry_tids:
         time.sleep(5)
-    _update_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
 
 
 def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
@@ -146,7 +147,8 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         'timestamp': task.percent_result.timestamp,
         'state': task.percent_result.state,
         'percent': task.percent_result.percent,
-        'state_message': task.percent_result.state_message
+        'state_message': task.percent_result.state_message,
+        'state_code': task.percent_result.state_code,
     }
 
     logging.debug(f"update db single task request: {task_data}")

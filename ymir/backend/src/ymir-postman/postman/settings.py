@@ -14,12 +14,14 @@ class Settings(BaseSettings):
 
     RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
     MAX_REDIS_STREAM_LENGTH = 10 * 3600 * 24 * 2  # two days, with 10 messages for each second
+    HEARTBEAT_MILLISECONDS = 60 * 1000
 
 
 class Constants(BaseSettings):
     PROJECT_NAME: str = "ymir postman"
     EVENT_TOPIC_RAW = 'raw'
     EVENT_TOPIC_INNER = '_inner_'
+    EVENT_TOPIC_HEARTBEAT = '_hb_'
 
     RC_OK = 0
     RC_FAILED_TO_UPDATE_TASK_STATUS = 7006
