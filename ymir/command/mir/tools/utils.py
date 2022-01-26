@@ -186,7 +186,7 @@ class ModelStorage:
         self.class_names = self.executor_config.get('class_names', [])
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='ModelStorage invalid: not enough infomations')
 
     def as_dict(self) -> Dict[str, Any]:
