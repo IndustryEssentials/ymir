@@ -106,12 +106,6 @@ function Verify({ getModel, verify }) {
     )
   }
 
-  function getExtrameScore(max = 'max') {
-    const scores = annotations.map(anno => anno.score)
-    return scores ? `${(Math[max](...scores) * 100).toFixed(2)}%` : ''
-  }
-
-
   function changeKeywords(tag, checked) {
     const selected = checked
       ? [...selectedKeywords, tag]
