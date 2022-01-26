@@ -186,7 +186,7 @@ class ModelStorage:
         self.class_names = self.executor_config.get('class_names', [])
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='ModelStorage invalid: not enough infomations')
 
     def as_dict(self) -> Dict[str, Any]:
@@ -254,3 +254,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
                                  task_context=ymir_info_dict.get('task_context', {}))
 
     return model_storage
+
+
+def map_gpus_zero_index(gpu_id: str) -> str:
+    gpu_count = len(gpu_id.split(',')) if gpu_id else 0
+    return ','.join([str(i) for i in range(gpu_count)])

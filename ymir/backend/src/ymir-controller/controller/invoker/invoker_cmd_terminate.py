@@ -3,8 +3,9 @@ import sentry_sdk
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.label_model.label_studio import LabelStudio
-from controller.utils import checker, utils, code, app_logger
+from controller.utils import checker, utils, app_logger
 from controller.utils.redis import rds
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -22,8 +23,10 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
         return content["project_id"]  # type: ignore
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_TERMINATE:
-            raise RuntimeError(f"Mismatched req_type CMD_TERMINATE: {self._request.req_type}")
+        expected_type = backend_pb2.RequestType.CMD_TERMINATE
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         if self._request.terminated_task_type in [
                 backend_pb2.TaskType.TaskTypeTraining,
@@ -31,7 +34,7 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
         ]:
             container_command = f"docker rm -f {self._request.executor_instance}"
             container_response = utils.run_command(container_command)
-            if container_response.code != code.ResCode.CTR_OK:
+            if container_response.code != CTLResponseCode.CTR_OK:
                 app_logger.logger.warning(container_response.message)
                 sentry_sdk.capture_message(container_response.message)
                 return container_response
@@ -41,8 +44,4 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
         else:
             app_logger.logger.info(f"Do nothing to terminate task_type:{self._request.req_type}")
 
-        return utils.make_general_response(code.ResCode.CTR_OK, "successful terminate")
-
-    def _repr(self) -> str:
-        return f"cmd_terminate: user: {self._request.user_id}, terminate \
-            executor_instance: {self._request.executor_instance}"
+        return utils.make_general_response(CTLResponseCode.CTR_OK, "successful terminate")

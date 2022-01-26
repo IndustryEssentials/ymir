@@ -266,7 +266,6 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            size='large'
             colon={false}
           >
 

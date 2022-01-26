@@ -2,12 +2,11 @@ import logging
 from typing import Dict
 from typing import List
 
-from common_utils.percent_log_util import PercentLogHandler
+from common_utils.percent_log_util import PercentLogHandler, LogState
 from monitor.config import settings
 from monitor.libs.redis_handler import RedisHandler
 from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
 from monitor.utils.errors import DuplicateTaskIDError, LogFileError
-from proto.backend_pb2 import TaskState
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,8 @@ class TaskService:
         for one_log_file in log_paths:
             try:
                 percent_result = PercentLogHandler.parse_percent_log(one_log_file)
-            except ValueError:
-                raise LogFileError
+            except ValueError as e:
+                raise LogFileError(f"percent log content error {e}")
             result[one_log_file] = percent_result
 
         return result
@@ -49,18 +48,18 @@ class TaskService:
             max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: int(x.timestamp))
 
         result = max_timestamp_content.copy()  # type: ignore
-        if TaskState.TaskStateError in log_files_state_set:
+        if LogState.ERROR in log_files_state_set:
             result.percent = 1.0
-            result.state = TaskState.TaskStateError
-        elif len(log_files_state_set) == 1 and TaskState.TaskStateDone in log_files_state_set:
+            result.state = LogState.ERROR
+        elif len(log_files_state_set) == 1 and LogState.DONE in log_files_state_set:
             result.percent = 1.0
-            result.state = TaskState.TaskStateDone
-        elif len(log_files_state_set) == 1 and TaskState.TaskStatePending in log_files_state_set:
+            result.state = LogState.DONE
+        elif len(log_files_state_set) == 1 and LogState.PENDING in log_files_state_set:
             result.percent = 0.0
-            result.state = TaskState.TaskStatePending
+            result.state = LogState.PENDING
         else:
             result.percent = percent / len(raw_log_contents)
-            result.state = TaskState.TaskStateRunning
+            result.state = LogState.RUNNING
 
         return result
 
@@ -80,7 +79,7 @@ class TaskService:
 
     def register_task(self, reg_parameters: TaskParameter) -> None:
         if self.check_existence(reg_parameters.task_id):
-            raise DuplicateTaskIDError
+            raise DuplicateTaskIDError(f"duplicate task id {reg_parameters.task_id}")
 
         raw_log_contents = self.get_raw_log_contents(reg_parameters.log_paths)
         if len(raw_log_contents) != len(reg_parameters.log_paths):
@@ -90,9 +89,7 @@ class TaskService:
         percent_result = PercentResult.parse_obj(percent_result.dict())
 
         task_info = TaskStorageStructure(
-            raw_log_contents=raw_log_contents,
-            task_extra_info=task_extra_info,
-            percent_result=percent_result,
+            raw_log_contents=raw_log_contents, task_extra_info=task_extra_info, percent_result=percent_result,
         )
 
         self.add_single_task(reg_parameters.task_id, task_info.dict())

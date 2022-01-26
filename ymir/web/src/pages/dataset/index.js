@@ -398,7 +398,6 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
             labelCol={{ flex: '100px' }}
             initialValues={{ type: "", time: 0, name: keyword || "" }}
             onValuesChange={search}
-            size='large'
             colon={false}
           // onFinish={search}
           >

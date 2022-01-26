@@ -91,13 +91,11 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
       title: showTitle("task.column.type"),
       dataIndex: "type",
       width: 160,
-      align: 'center',
       render: (type) => (types.find((t) => t.value === type))?.label,
     },
     {
       title: showTitle("task.column.state"),
       dataIndex: "state",
-      align: 'center',
       render: (state, record) => RenderProgress(state, record),
     },
     {
@@ -112,7 +110,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
       dataIndex: "duration",
       width: 200,
       sorter: true,
-      align: 'center',
       render: (seconds) => calDuration(seconds, getLocale()),
     },
     {
@@ -164,7 +161,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
   }
 
   function showTitle(str) {
-    return <div style={{ textAlign: 'center' }}><strong>{t(str)}</strong></div>
+    return <div><strong>{t(str)}</strong></div>
   }
   async function getData() {
     let params = {
@@ -339,13 +336,10 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
       <Form
         name='queryForm'
         form={form}
-        // layout="inline"
         labelCol={{ flex: '100px' }}
         initialValues={{ type: "", state: '', time: 0, name: keyword || "" }}
         onValuesChange={search}
-        size='large'
         colon={false}
-      // onFinish={search}
       >
         <Row>
           <Col className={styles.queryColumn} span={12}>

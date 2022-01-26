@@ -31,10 +31,10 @@ const ModelList = ({ getModelsByMap }) => {
   }
 
   return <Card className={`${styles.box} ${styles.modelList}`}
-    headStyle={cardHead} bodyStyle={{ ...cardBody, height: 281 }}
-    title={<><OptimalModelIcon className={styles.headIcon} />{t('portal.model.best.title')}</>}
+    headStyle={cardHead} bodyStyle={{ ...cardBody, height: 286 }}
+    title={<><OptimalModelIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.model.best.title')}</span></>}
   >
-    <Space>{keywords.map(k => <Tag className={`${k === current ? styles.current : ''} ${styles.kwtag}`} key={k} onClick={() => changeKeyword(k)}>{k}</Tag>)}</Space>
+    <div><span>{t('common.index.keyword.label')}: </span>{keywords.map(k => <Tag className={`${k === current ? styles.current : ''} ${styles.kwtag}`} key={k} onClick={() => changeKeyword(k)}>{k}</Tag>)}</div>
     <List className={styles.boxItem} bordered={false}>
       {models.length ? models.filter((model, index) => model.keywords.indexOf(current) >= 0 && index < 7).map((model, index) =>
         <List.Item key={model.id} actions={[<span className={styles.action}>{model.map}</span>]} title={model.name}>

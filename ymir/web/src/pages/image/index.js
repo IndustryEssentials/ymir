@@ -88,7 +88,6 @@ function Image() {
       layout="inline"
       initialValues={{ name: keyword || "" }}
       onValuesChange={search}
-      size='large'
       colon={false}
     >
       <Form.Item

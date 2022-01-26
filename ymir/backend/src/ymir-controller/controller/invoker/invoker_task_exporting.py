@@ -3,7 +3,8 @@ import os
 from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils
+from controller.utils import utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -16,13 +17,13 @@ class TaskExportingInvoker(TaskBaseInvoker):
 
         asset_dir = exporting_request.asset_dir
         if not asset_dir:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "empty asset_dir")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
         annotation_dir = exporting_request.annotation_dir
         if exporting_request.format != backend_pb2.LabelFormat.NO_ANNOTATION:
             if not annotation_dir:
-                return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "empty anno_dir")
+                return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "empty anno_dir")
             os.makedirs(annotation_dir, exist_ok=True)
 
         media_location = assets_config['assetskvlocation']
@@ -44,10 +45,3 @@ class TaskExportingInvoker(TaskBaseInvoker):
             f"--annotation-dir {annotation_dir} --src-revs {dataset_id} --format {annotation_format} -w {work_dir}")
 
         return utils.run_command(exporting_cmd)
-
-    def _repr(self) -> str:
-        exporting_request = self._request.req_create_task.exporting
-        return (
-            "task_exporting: user: {}, repo: {} task_id: {} src-revs: {} asset-dir: {} annotation-dir: {} format: {}".
-            format(self._request.user_id, self._request.repo_id, self._task_id, exporting_request.dataset_id,
-                   exporting_request.asset_dir, exporting_request.annotation_dir, exporting_request.format))
