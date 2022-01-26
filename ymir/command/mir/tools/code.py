@@ -3,7 +3,6 @@ from enum import IntEnum
 
 class MirCode(IntEnum):
     RC_OK = 0  # everything is ok, command finished without any errors or warnings
-    RC_CMD_INIT_ERROR = 233
     RC_CMD_INVALID_ARGS = 160001  # lack of necessary args, or unexpected args
     RC_CMD_EMPTY_TRAIN_SET = 160002  # no training set when training
     RC_CMD_EMPTY_VAL_SET = 160003  # no validation set when training
