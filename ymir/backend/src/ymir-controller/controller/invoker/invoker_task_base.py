@@ -2,6 +2,7 @@ import os
 import threading
 from typing import Dict
 
+from common_utils.percent_log_util import LogState
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, tasks_util, utils
 from id_definition.error_codes import CTLResponseCode
@@ -51,7 +52,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                        tid=request.task_id,
                                        percent=0.0,
-                                       state=backend_pb2.TaskStateRunning)
+                                       state=LogState.RUNNING)
 
         tasks_util.register_monitor_log(task_id=request.task_id, user_id=request.user_id, log_paths=[task_monitor_file])
 

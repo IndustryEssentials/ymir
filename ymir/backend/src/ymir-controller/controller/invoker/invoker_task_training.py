@@ -3,6 +3,7 @@ from typing import List, Dict
 
 import yaml
 
+from common_utils.percent_log_util import LogState
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import utils, invoker_call, revs, gpu_utils, labels, tasks_util
@@ -52,7 +53,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
                 monitor_file=task_monitor_file,
                 tid=request.task_id,
                 percent=1,
-                state=backend_pb2.TaskStateError,
+                state=LogState.ERROR,
                 msg=msg,
             )
             return utils.make_general_response(CTLResponseCode.INTERNAL_ERROR, msg)
@@ -83,7 +84,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=backend_pb2.TaskStateError,
+                                           state=LogState.ERROR,
                                            msg=merge_response.message)
             return merge_response
 
@@ -95,7 +96,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard_root = assets_config['tensorboard_root']
         if not tensorboard_root:
             msg = "empty tensorboard_root"
-            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
+            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, LogState.ERROR, msg)
             return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, msg)
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
