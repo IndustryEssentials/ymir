@@ -3,6 +3,7 @@ from typing import Dict
 
 import yaml
 
+from common_utils.percent_log_util import LogState
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import utils, invoker_call, gpu_utils, tasks_util
@@ -70,7 +71,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=backend_pb2.TaskStateError,
+                                           state=LogState.ERROR,
                                            msg=merge_response.message)
             return merge_response
 
@@ -81,7 +82,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         config_file = cls.gen_mining_config(request.docker_image_config, working_dir)
         if not config_file:
             msg = "Not enough GPU available"
-            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
+            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, LogState.ERROR, msg)
             return utils.make_general_response(CTLResponseCode.INTERNAL_ERROR, "Not enough GPU available")
 
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
