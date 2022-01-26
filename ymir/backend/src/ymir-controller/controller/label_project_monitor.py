@@ -36,12 +36,21 @@ def remove_json_file(des_annotation_path: str) -> None:
 
 def _gen_index_file(des_annotation_path: str) -> str:
     media_files = []
-    for one_file in os.listdir(des_annotation_path):
-        if one_file.endswith(".json"):
-            with open(os.path.join(des_annotation_path, one_file)) as f:
-                json_content = json.load(f)
-                pic_path = json_content["task"]["data"]["image"].replace("data/local-files/?d=", "")
-                media_files.append(pic_path)
+
+    if label_task_config.LABEL_STUDIO == label_task_config.LABEL_TOOL:
+        for one_file in os.listdir(des_annotation_path):
+            if one_file.endswith(".json"):
+                with open(os.path.join(des_annotation_path, one_file)) as f:
+                    json_content = json.load(f)
+                    pic_path = json_content["task"]["data"]["image"].replace("data/local-files/?d=", "")
+                    media_files.append(pic_path)
+    elif label_task_config.AIOS == label_task_config.LABEL_TOOL:
+        des_annotation_path += "/images"
+        for f in os.listdir(des_annotation_path):
+            if f.endswith(".jpeg") or f.endswith(".jpg") or f.endswith(".png"):
+                media_files.append(os.path.join(des_annotation_path, f))
+    else:
+        raise ValueError("LABEL_TOOL Error")
 
     index_file = os.path.join(des_annotation_path, "index.txt")
     with open(index_file, "w") as f:
