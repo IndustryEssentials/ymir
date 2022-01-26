@@ -7,7 +7,6 @@ import os
 from mir import scm
 from mir.commands import base
 from mir.tools import checker, class_ids
-from mir.tools.command_run_in_out import command_run_error_handler
 from mir.tools.code import MirCode
 
 
@@ -31,7 +30,6 @@ class CmdInit(base.BaseCommand):
 
     # public: run
     @staticmethod
-    @command_run_error_handler(error_code=MirCode.RC_CMD_INIT_ERROR)
     def run_with_args(mir_root: str) -> int:
         return_code = checker.check(
             mir_root, [checker.Prerequisites.IS_OUTSIDE_GIT_REPO, checker.Prerequisites.IS_OUTSIDE_MIR_REPO])
