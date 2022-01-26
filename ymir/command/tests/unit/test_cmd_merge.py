@@ -361,7 +361,7 @@ class TestMergeCmd(unittest.TestCase):
         ret = merge_instance.run()
 
         # check result
-        self.assertEqual(MirCode.RC_CMD_CONFLICTS_OCCURED, ret)
+        self.assertEqual(MirCode.RC_CMD_MERGE_ERROR, ret)
 
     def _test_tvt_host_00(self):
         """ normal case: with tvt flag assigned, strategy host, a + d, have joint assets """
