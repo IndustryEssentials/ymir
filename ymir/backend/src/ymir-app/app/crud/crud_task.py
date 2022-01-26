@@ -7,7 +7,7 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.constants.state import TaskState, TaskType
+from app.constants.state import FinalStates, TaskState, TaskType
 from app.crud.base import CRUDBase
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
@@ -50,14 +50,23 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             self.model.state.in_([state.value for state in states])
         ).all()
 
-    def update_state(self, db: Session, *, task: Task, new_state: TaskState) -> Task:
+    def update_state(
+        self,
+        db: Session,
+        *,
+        task: Task,
+        new_state: TaskState,
+        state_code: Optional[str] = None,
+    ) -> Task:
         task.state = new_state.value
+        if state_code is not None:
+            task.error_code = state_code
         db.add(task)
         db.commit()
         db.refresh(task)
 
         # for task reached finale, update `duration` correspondingly
-        if task.state in [TaskState.terminate, TaskState.done, TaskState.error]:
+        if task.state in FinalStates:
             self.update_duration(db, task=task)
 
         return task

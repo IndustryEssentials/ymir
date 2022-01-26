@@ -12,9 +12,12 @@ def create_model(db: Session, client: TestClient, token) -> models.Model:
     user_id = r.json()["result"]["id"]
     task_in = schemas.TaskCreate(
         name=random_lower_string(6),
+        hash=random_lower_string(6),
         type=TaskType.training,
     )
-    task = crud.task.create(db, obj_in=task_in)
+    task = crud.task.create_task(
+        db, obj_in=task_in, user_id=user_id, task_hash=random_lower_string()
+    )
     model_in = schemas.ModelCreate(
         hash=random_lower_string(10),
         name=random_lower_string(6),
