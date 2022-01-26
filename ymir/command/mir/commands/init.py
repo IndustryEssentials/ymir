@@ -43,7 +43,9 @@ class CmdInit(base.BaseCommand):
             repo_dvc.init()
 
             CmdInit.__update_files(mir_root=mir_root)
-            CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', class_ids.ids_file_name()])
+            CmdInit.__update_ignore(mir_root=mir_root,
+                                    git=repo_git,
+                                    ignored_items=['.mir_lock', class_ids.ids_file_name()])
             repo_git.commit(["-m", "first commit"])
         except Exception:
             logging.exception(msg='init error')
