@@ -1,5 +1,6 @@
 from typing import Dict
 
+from common_utils.percent_log_util import LogState
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
@@ -34,7 +35,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=backend_pb2.TaskStateError,
+                                           state=LogState.ERROR,
                                            msg=merge_response.message)
             return merge_response
 
@@ -55,12 +56,12 @@ class TaskFilterInvoker(TaskBaseInvoker):
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=backend_pb2.TaskStateDone)
+                                           state=LogState.DONE)
         else:
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=backend_pb2.TaskStateError,
+                                           state=LogState.ERROR,
                                            msg=filter_response.message)
 
         return filter_response
