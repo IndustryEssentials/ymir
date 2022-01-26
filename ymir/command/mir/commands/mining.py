@@ -121,7 +121,7 @@ class CmdMining(base.BaseCommand):
                                                                                       ms=mirpb.MirStorage.MIR_METADATAS)
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
                                   error_message='no assets found in metadatas.mir')
         if topk:
             if topk >= assets_count:
@@ -255,7 +255,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
     if not os.path.isfile(file_path):
-        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_FILE, f"Cannot find result file {file_path}")
+        raise MirRuntimeError(MirCode.RC_CMD_NO_RESULT, f"Cannot find result file {file_path}")
 
     asset_ids_set: Set[str] = set()
     idx_cnt = 0
