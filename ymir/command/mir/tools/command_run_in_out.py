@@ -1,6 +1,5 @@
 import datetime
 from functools import wraps
-import logging
 from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable
