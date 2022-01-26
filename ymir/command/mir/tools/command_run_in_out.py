@@ -136,7 +136,7 @@ def command_run_error_handler(error_code: int) -> Any:
     """
     def decorated(f: Callable) -> Callable:
         @wraps(f)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: tuple, **kwargs: dict) -> Any:
             try:
                 ret = f(*args, **kwargs)
                 return ret
