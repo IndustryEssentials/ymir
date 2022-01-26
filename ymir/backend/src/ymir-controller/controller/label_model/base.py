@@ -17,7 +17,7 @@ def catch_label_task_error(f: Callable) -> Callable:
             _ret = f(*args, **kwargs)
         except Exception as e:
             cur_time = int(datetime.now().timestamp())
-            status = f'{kwargs["task_id"]}\t{cur_time}\t0\t{LogState.ERROR}'
+            status = f'{kwargs["task_id"]}\t{cur_time}\t0\t{LogState.ERROR.value}'
             LabelBase.write_project_status(kwargs["monitor_file_path"], f"{status}\n{e}\n{traceback.format_exc()}")
             _ret = None
         return _ret
