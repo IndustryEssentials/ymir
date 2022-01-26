@@ -26,6 +26,10 @@ class EventDispatcher:
         logging.debug(f"ed start. event: {self._event_name}, group: {self._group_name}")
         self._read_redis_stream_msgs()
 
+    @property
+    def event_name(self) -> str:
+        return self._event_name
+
     @classmethod
     def get_redis_connect(cls) -> redis.Redis:
         return redis.StrictRedis.from_url(settings.PM_REDIS_URI, encoding="utf8", decode_responses=True)
