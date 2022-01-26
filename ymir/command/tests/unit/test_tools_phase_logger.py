@@ -3,8 +3,9 @@ import os
 import shutil
 import unittest
 from unittest import mock
+from mir.protos import mir_command_pb2 as mirpb
 
-from mir.tools.phase_logger import PhaseLogger, PhaseLoggerCenter, PhaseStateEnum
+from mir.tools.phase_logger import PhaseLogger, PhaseLoggerCenter, PhaseLoggerError, PhaseStateEnum
 
 from tests import utils as test_utils
 
@@ -29,7 +30,7 @@ class TestPhaseLogger(unittest.TestCase):
             shutil.rmtree(test_root)
 
     # protected: check result
-    def _check_monitor_file(self, task_name: str, global_percent: float, task_state: str, trace_message: str):
+    def _check_monitor_file(self, task_name: str, global_percent: float, task_state: int, trace_message: str):
         trace_message_line_count = len(trace_message.splitlines()) if trace_message else 0
         with open(self._monitor_file, 'r') as f:
             monitor_lines = f.read().splitlines()
@@ -38,7 +39,7 @@ class TestPhaseLogger(unittest.TestCase):
             self.assertEqual(4, len(monitor_parts))
             self.assertEqual(task_name, monitor_parts[0])
             self.assertEqual(f"{global_percent:.2f}", monitor_parts[2])
-            self.assertEqual(task_state, monitor_parts[3])
+            self.assertEqual(task_state, int(monitor_parts[3]))
 
             if trace_message:
                 self.assertEqual(trace_message.splitlines(), monitor_lines[1:])
@@ -68,13 +69,13 @@ class TestPhaseLogger(unittest.TestCase):
         self.assertEqual(0.5, pm.global_percent)
 
         # abnormal cases
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name=None)
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name='task_name', start=-1.0)
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name='task_name', end=2.0)
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             PhaseLogger(task_name='task_name', start=0.5, end=0.3)
 
     def test_create_children(self):
@@ -105,13 +106,13 @@ class TestPhaseLogger(unittest.TestCase):
             self.assertEqual('/tmp/monitor.txt', child.monitor_file)
 
         # abnormal cases
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[])
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[1, 2, 3, 4, 5])
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[0.0, 1.0])
-        with self.assertRaises(Exception):
+        with self.assertRaises(PhaseLoggerError):
             pm.create_children(deltas=[0.5, -0.4, 0.5, 0.4])
 
     def test_single_write(self):
@@ -124,11 +125,20 @@ class TestPhaseLogger(unittest.TestCase):
 
         pm = PhaseLogger(task_name='task_name', monitor_file=self._monitor_file)
         pm.update_percent_info(local_percent=0.1, task_state=PhaseStateEnum.RUNNING)
-        self._check_monitor_file(task_name=pm.task_name, global_percent=0.1, task_state='running', trace_message=None)
+        self._check_monitor_file(task_name=pm.task_name,
+                                 global_percent=0.1,
+                                 task_state=mirpb.TaskStateRunning,
+                                 trace_message=None)
         pm.update_percent_info(local_percent=0.5, task_state=PhaseStateEnum.RUNNING)
-        self._check_monitor_file(task_name=pm.task_name, global_percent=0.5, task_state='running', trace_message=None)
+        self._check_monitor_file(task_name=pm.task_name,
+                                 global_percent=0.5,
+                                 task_state=mirpb.TaskStateRunning,
+                                 trace_message=None)
         pm.update_percent_info(local_percent=1, task_state=PhaseStateEnum.DONE)
-        self._check_monitor_file(task_name=pm.task_name, global_percent=1, task_state='done', trace_message=None)
+        self._check_monitor_file(task_name=pm.task_name,
+                                 global_percent=1,
+                                 task_state=mirpb.TaskStateDone,
+                                 trace_message=None)
 
         TestPhaseLogger._deprepare_dir(self._test_root)
 
@@ -140,15 +150,27 @@ class TestPhaseLogger(unittest.TestCase):
 
         # child 0 write
         pm_children[0].update_percent_info(local_percent=0.1, task_state=PhaseStateEnum.RUNNING)
-        self._check_monitor_file(task_name=pm.task_name, global_percent=0.04, task_state='running', trace_message=None)
+        self._check_monitor_file(task_name=pm.task_name,
+                                 global_percent=0.04,
+                                 task_state=mirpb.TaskStateRunning,
+                                 trace_message=None)
         pm_children[0].update_percent_info(local_percent=0.9, task_state=PhaseStateEnum.RUNNING)
-        self._check_monitor_file(task_name=pm.task_name, global_percent=0.36, task_state='running', trace_message=None)
+        self._check_monitor_file(task_name=pm.task_name,
+                                 global_percent=0.36,
+                                 task_state=mirpb.TaskStateRunning,
+                                 trace_message=None)
 
         # child 1 write
         pm_children[1].update_percent_info(local_percent=0.1, task_state=PhaseStateEnum.RUNNING)
-        self._check_monitor_file(task_name=pm.task_name, global_percent=0.46, task_state='running', trace_message=None)
+        self._check_monitor_file(task_name=pm.task_name,
+                                 global_percent=0.46,
+                                 task_state=mirpb.TaskStateRunning,
+                                 trace_message=None)
         pm_children[1].update_percent_info(local_percent=1.0, task_state=PhaseStateEnum.DONE, trace_message='task done')
-        self._check_monitor_file(task_name=pm.task_name, global_percent=1, task_state='done', trace_message='task done')
+        self._check_monitor_file(task_name=pm.task_name,
+                                 global_percent=1,
+                                 task_state=mirpb.TaskStateDone,
+                                 trace_message='task done')
 
         TestPhaseLogger._deprepare_dir(self._test_root)
 
@@ -174,8 +196,11 @@ class TestPhaseLoggerCenter(unittest.TestCase):
         self.assertTrue(sub_logger.auto_done)
 
         PhaseLoggerCenter.update_phase('copy.read', task_state=PhaseStateEnum.DONE, trace_message='abc')
-        mock_run.assert_called_with(local_percent=1, task_state=PhaseStateEnum.DONE,
-                                    state_code=0, state_content=None, trace_message='abc')
+        mock_run.assert_called_with(local_percent=1,
+                                    task_state=PhaseStateEnum.DONE,
+                                    state_code=0,
+                                    state_content=None,
+                                    trace_message='abc')
 
         PhaseLoggerCenter.clear_all()
 

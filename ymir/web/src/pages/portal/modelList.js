@@ -31,7 +31,7 @@ const ModelList = ({ getModelsByMap }) => {
   }
 
   return <Card className={`${styles.box} ${styles.modelList}`}
-    headStyle={cardHead} bodyStyle={{ ...cardBody, height: 281 }}
+    headStyle={cardHead} bodyStyle={{ ...cardBody, height: 286 }}
     title={<><OptimalModelIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.model.best.title')}</span></>}
   >
     <div><span>{t('common.index.keyword.label')}: </span>{keywords.map(k => <Tag className={`${k === current ? styles.current : ''} ${styles.kwtag}`} key={k} onClick={() => changeKeyword(k)}>{k}</Tag>)}</div>

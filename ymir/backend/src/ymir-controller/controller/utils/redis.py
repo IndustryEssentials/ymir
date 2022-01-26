@@ -1,10 +1,10 @@
+import json
 from typing import Dict, List, Optional
 
 import redis
-import json
-from controller.utils.app_logger import logger
 
 from controller.config import common_task as common_task_config
+from controller.utils.app_logger import logger
 
 
 class MiddlewareRedis:

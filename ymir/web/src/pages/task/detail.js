@@ -9,7 +9,7 @@ import { getTensorboardLink } from '@/services/common'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { getTaskStates, getTaskTypes } from '@/constants/query'
 import Terminate from "./components/terminate"
-import { TASKSTATES, TASKTYPES } from '@/constants/task'
+import { TASKSTATES, TASKTYPES, getTaskTypeLabel } from '@/constants/task'
 import StateTag from '@/components/task/stateTag'
 import styles from "./detail.less"
 import {
@@ -152,7 +152,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
 
   const renderTitle = (
     <Row>
-      <Col flex={1}><strong>{t('task.detail.title')}</strong></Col>
+      <Col flex={1}><strong>{getTaskTypeLabel(task.type)}{t('task.detail.title')}</strong></Col>
       <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
     </Row>
   )

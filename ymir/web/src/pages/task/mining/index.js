@@ -215,7 +215,6 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            // size='large'
             colon={false}
           >
             <Tip hidden={true}>

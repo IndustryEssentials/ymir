@@ -60,7 +60,7 @@ function ModelHot({ getLatestModels, getHotModels }) {
           </Col>)}
           <QuickAction icon={<TrainIcon style={{ fontSize: 50, color: '#36cbcb' }} />} label={t('portal.action.train')} link={'/home/task/train'}></QuickAction>
         </>) :
-          <EmptyState style={{ height: 230 }} />
+          <EmptyState style={{ height: 246 }} />
         }
       </Row>
     </Card>
