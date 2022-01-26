@@ -1,7 +1,7 @@
 
 import { useHistory, useParams } from "react-router"
 import React, { useEffect, useRef, useState } from "react"
-import { Button, Card, Col, Descriptions, Row, Tag } from "antd"
+import { Button, Card, Col, Descriptions, Row, Tag, Space } from "antd"
 import { connect } from "dva"
 
 import { getDateFromTimestamp } from "@/utils/date"
@@ -24,6 +24,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   const [showAnnotations, setShowAnnotations] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [currentIndex, setCurrentIndex] = useState(null)
+  const [assetHistory, setAssetHistory] = useState([])
   const [colors] = useState(datasetKeywords.reduce((prev, curr, i) =>
     ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {}))
 
@@ -33,7 +34,10 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   }, [index])
 
   useEffect(() => {
-    currentIndex !== null && fetchAssetHash()
+    if (currentIndex !== null) {
+      fetchAssetHash()
+      setAssetHistory(history => [...history, currentIndex])
+    }
   }, [currentIndex, filterKeyword])
 
   useEffect(() => {
@@ -79,6 +83,15 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
 
   function random() {
     setCurrentIndex(randomBetween(0, total - 1, currentIndex))
+  }
+
+  function back() {
+    const index = assetHistory[assetHistory.length - 2]
+    if(typeof index !== 'undefined') {
+      const hist = assetHistory.slice(0, assetHistory.length - 2)
+      setAssetHistory(hist)
+      setCurrentIndex(index)
+    }
   }
 
   function changeKeywords(tag, checked) {
@@ -164,14 +177,22 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
                 </Descriptions.Item>
               </Descriptions>
             </Card>
+            <Space  className={styles.random}>
             <Button
-              className={styles.random}
               type="primary"
               style={{ marginTop: 20 }}
               onClick={random}
             >
               {t("dataset.asset.random")}
             </Button>
+            <Button
+              className={styles.back}
+              type="primary"
+              style={{ marginTop: 20 }}
+              onClick={back}
+            >
+              {t("dataset.asset.back")}
+            </Button></Space>
           </Col>
           <Col style={{ alignSelf: 'center' }} flex={'20px'}><RightOutlined hidden={currentIndex >= total - 1} className={styles.next} onClick={next} /></Col>
         </Row>
