@@ -24,6 +24,7 @@ enum TaskType {
     TaskTypeInfer = 9;
 };
 
+//  deprecated
 enum TaskState {
     TaskStateUnknown = 0;
     TaskStatePending = 1;
