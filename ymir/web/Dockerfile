@@ -4,10 +4,10 @@ WORKDIR /app
 ARG NPM_REGISTRY=https://registry.npmjs.org
 
 COPY package.json .
-COPY package-lock.json .
-RUN npm --registry ${NPM_REGISTRY} install
+RUN npm install -g yarn
+RUN yarn install --registry ${NPM_REGISTRY}
 COPY . .
-RUN npm run build:dev
+RUN yarn run build:dev
 
 FROM nginx:alpine
 COPY --from=builder /app/ymir /usr/share/nginx/html

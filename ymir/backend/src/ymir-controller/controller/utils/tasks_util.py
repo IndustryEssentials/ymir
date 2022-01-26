@@ -19,7 +19,7 @@ def write_task_progress(monitor_file: str,
     if not monitor_file:
         raise RuntimeError("Invalid monitor_file")
     with open(monitor_file, 'w') as f:
-        f.write('\t'.join([tid, str(int(datetime.now().timestamp())), str(percent), str(state)]))
+        f.write('\t'.join([tid, str(int(datetime.now().timestamp())), str(percent), str(state.value)]))
         if msg:
             f.write('\n{}'.format(msg))
     return CTLResponseCode.CTR_OK
