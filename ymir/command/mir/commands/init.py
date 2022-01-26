@@ -36,14 +36,18 @@ class CmdInit(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return MirCode.RC_CMD_INIT_ERROR
 
-        repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
-        repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
-        repo_git.init()
-        repo_dvc.init()
+        try:
+            repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
+            repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
+            repo_git.init()
+            repo_dvc.init()
 
-        CmdInit.__update_files(mir_root=mir_root)
-        CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', class_ids.ids_file_name()])
-        repo_git.commit(["-m", "first commit"])
+            CmdInit.__update_files(mir_root=mir_root)
+            CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', class_ids.ids_file_name()])
+            repo_git.commit(["-m", "first commit"])
+        except Exception:
+            logging.exception(msg='init error')
+            return MirCode.RC_CMD_INIT_ERROR
 
         return MirCode.RC_OK
 
