@@ -148,8 +148,8 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         'timestamp': task.percent_result.timestamp,
         'state': task.percent_result.state,
         'percent': task.percent_result.percent,
-        'state_message': task.percent_result.state_message,
         'state_code': task.percent_result.state_code,
+        'state_message': task.percent_result.state_message,
     }
 
     logging.debug(f"update db single task request: {task_data}")
