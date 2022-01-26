@@ -14,11 +14,11 @@ class TaskCopyInvoker(TaskBaseInvoker):
         copy_request = request.req_create_task.copy
 
         if not (copy_request.src_user_id and copy_request.src_repo_id):
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "Invalid src user and/or repo id")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "Invalid src user and/or repo id")
 
         src_root = os.path.join(sandbox_root, copy_request.src_user_id, copy_request.src_repo_id)
         if not os.path.isdir(src_root):
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED,
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                "Invalid src root: {}".format(src_root))
 
         sub_task_id_0 = utils.sub_task_id(request.task_id, 0)
@@ -41,9 +41,3 @@ class TaskCopyInvoker(TaskBaseInvoker):
             copying_cmd_str += " --ignore-unknown-types"
 
         return utils.run_command(copying_cmd_str)
-
-    def _repr(self) -> str:
-        return ("task_copy: user: {}, repo: {} task_id: {} copy_ruquest: {}".format(self._request.user_id,
-                                                                                    self._request.repo_id,
-                                                                                    self._task_id,
-                                                                                    self._request.req_create_task.copy))

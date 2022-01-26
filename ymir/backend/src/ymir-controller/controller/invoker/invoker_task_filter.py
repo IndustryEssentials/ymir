@@ -17,7 +17,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
         filter_request = request.req_create_task.filter
 
         if not filter_request.in_dataset_ids:
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid_data_ids")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
 
         in_dataset_ids = list(filter_request.in_dataset_ids)
         sub_task_id_1 = utils.sub_task_id(request.task_id, 1)
@@ -65,10 +65,3 @@ class TaskFilterInvoker(TaskBaseInvoker):
                                            msg=filter_response.message)
 
         return filter_response
-
-    def _repr(self) -> str:
-        filter_request = self._request.req_create_task.filter
-        return ("task_filter: user: {}, repo: {} task_id: {} in_dataset_ids: {} "
-                "in_class_ids: {} ex_class_ids: {}".format(self._request.user_id, self._request.repo_id, self._task_id,
-                                                           filter_request.in_dataset_ids, filter_request.in_class_ids,
-                                                           filter_request.ex_class_ids))
