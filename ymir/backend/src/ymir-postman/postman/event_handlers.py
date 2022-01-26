@@ -171,7 +171,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
     if not tids:
         return
 
-    event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
+    event_payloads = _remap_payloads_by_uid({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
 
     url = f"{settings.PM_URL}/events/push"
     try:
@@ -180,7 +180,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
         logging.exception('update sio error ignored')
 
 
-def _get_event_payloads(tid_to_taskstates: entities.TaskStateDict) -> entities.EventPayloadList:
+def _remap_payloads_by_uid(tid_to_taskstates: entities.TaskStateDict) -> entities.EventPayloadList:
     # sort by user
     uid_to_taskdatas: Dict[str, Dict[str, entities.TaskStatePercent]] = defaultdict(dict)
     for tid, taskstate in tid_to_taskstates.items():
