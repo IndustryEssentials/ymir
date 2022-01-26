@@ -242,7 +242,7 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
     empty_counter = 0
     for asset_id in asset_ids:
         if asset_id not in mir_metadatas.attributes:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"can not find asset id: {asset_id} in mir_metadatas")
         attrs = mir_metadatas.attributes[asset_id]
 
