@@ -121,7 +121,7 @@ def command_run_in_out(f: Callable) -> Callable:
             trace_message = f"cmd exception: {traceback.format_exc()}"
             mir_logger.update_percent_info(local_percent=1,
                                            task_state=phase_logger.PhaseStateEnum.ERROR,
-                                           state_code=MirCode.RC_RUNTIME_ERROR_UNKNOWN,
+                                           state_code=MirCode.RC_CMD_ERROR_UNKNOWN,
                                            state_content=str(e),
                                            trace_message=trace_message)
             raise e
