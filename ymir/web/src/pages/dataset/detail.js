@@ -9,6 +9,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "@/components/common/icons"
 import Asset from "./components/asset"
 import { randomBetween } from '@/utils/number'
+import { percent } from "../../utils/number"
 
 const { Option } = Select
 
@@ -91,7 +92,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   }
 
   const getRate = (count) => {
-    return Number(count * 100 / dataset.asset_count).toFixed(2) + '%'
+    return percent(count / dataset.asset_count)
   }
 
   const randomPageButton = (

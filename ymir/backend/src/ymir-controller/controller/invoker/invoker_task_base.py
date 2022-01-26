@@ -3,7 +3,8 @@ import threading
 from typing import Dict
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import code, checker, tasks_util, utils
+from controller.utils import checker, tasks_util, utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -35,7 +36,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                       ),
                                       daemon=True)
             thread.start()
-            return utils.make_general_response(code.ResCode.CTR_OK, "")
+            return utils.make_general_response(CTLResponseCode.CTR_OK, "")
         else:
             return self._task_invoke(sandbox_root=self._sandbox_root,
                                      repo_root=self._repo_root,
