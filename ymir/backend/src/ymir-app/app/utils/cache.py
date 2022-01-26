@@ -1,9 +1,9 @@
 import json
-from typing import Dict, Generator, List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 from redis import StrictRedis
-from app.config import settings
 
+from app.config import settings
 
 CACHED_KEYS = [KEYWORDS_CACHE_KEY, KEYWORD_ID_TO_NAME_KEY, KEYWORD_NAME_TO_ID_KEY] = [
     "keywords",

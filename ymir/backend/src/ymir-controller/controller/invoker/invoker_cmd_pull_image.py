@@ -6,14 +6,18 @@ import yaml
 
 from controller.config import common_task as common_task_config
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import checker, utils, code
+from controller.utils import checker, utils
 from controller.utils.app_logger import logger
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
 class ImageHandler(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(request=self._request, prerequisites=[checker.Prerequisites.CHECK_USER_ID],)
+        return checker.check_request(
+            request=self._request,
+            prerequisites=[checker.Prerequisites.CHECK_USER_ID],
+        )
 
     @staticmethod
     def convert_image_config(raw_image_config: str) -> Optional[str]:
@@ -21,7 +25,7 @@ class ImageHandler(BaseMirControllerInvoker):
             image_config = yaml.safe_load(raw_image_config)
             if not isinstance(image_config, dict):
                 raise ValueError(f"raw image config error: {raw_image_config}")
-        except Exception as e:
+        except Exception:
             error_message = f"raw image config error: {raw_image_config}"
             logger.error(error_message)
             sentry_sdk.capture_message(error_message)
@@ -35,13 +39,12 @@ class ImageHandler(BaseMirControllerInvoker):
 
         check_image_command = f"docker image inspect {self._request.singleton_op} --format='ignore me'"
         check_response = utils.run_command(check_image_command)
-        if check_response.code != code.ResCode.CTR_OK:
+        if check_response.code != CTLResponseCode.CTR_OK:
             pull_command = f"docker pull {self._request.singleton_op}"
             pull_command_response = utils.run_command(pull_command)
-            if pull_command_response.code != code.ResCode.CTR_OK:
-                return utils.make_general_response(
-                    backend_pb2.RCode.RC_SERVICE_DOCKER_IMAGE_ERROR, pull_command_response.message
-                )
+            if pull_command_response.code != CTLResponseCode.CTR_OK:
+                return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR,
+                                                   pull_command_response.message)
 
         hash_command = f"docker images {self._request.singleton_op} --format {'{{.ID}}'}"
         response = utils.run_command(hash_command)
@@ -56,7 +59,7 @@ class ImageHandler(BaseMirControllerInvoker):
 
         if len(response.docker_image_config) == 0:
             return utils.make_general_response(
-                backend_pb2.RCode.RC_SERVICE_DOCKER_IMAGE_ERROR,
+                CTLResponseCode.DOCKER_IMAGE_ERROR,
                 f"image {self._request.singleton_op} does not match any configuration",
             )
 

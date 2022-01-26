@@ -31,7 +31,6 @@ export default {
         })
         return imageList
       }
-      return result
     },
     *getShareImages({}, { call }) {
       const { code, result } = yield call(getShareImages)
@@ -46,12 +45,14 @@ export default {
           type: "UPDATE_IMAGE",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *delImage({ payload }, { call, put }) {
       const { code, result } = yield call(delImage, payload)
-      return result
+      if(code === 0) {
+        return result
+      }
     },
     *createImage({ payload }, { call, put }) {
       const { code, result } = yield call(createImage, payload)

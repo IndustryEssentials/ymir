@@ -3,7 +3,8 @@ import os
 from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils
+from controller.utils import utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -19,14 +20,16 @@ class TaskImportingInvoker(TaskBaseInvoker):
             if not os.access(anno_dir, os.R_OK):
                 error_str = f"invalid permissions of annotation_dir: {anno_dir}"
                 logging.error(error_str)
-                return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, error_str)
+                return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, error_str)
 
         if not os.access(media_dir, os.R_OK):
             error_str = f"invalid permissions of media_dir:{media_dir}"
             logging.error(error_str)
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, error_str)
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, error_str)
 
-        media_files = [os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))]
+        media_files = [
+            os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))
+        ]
         index_file = os.path.join(working_dir, 'index.txt')
         with open(index_file, 'w') as f:
             f.write('\n'.join(media_files))
@@ -44,12 +47,10 @@ class TaskImportingInvoker(TaskBaseInvoker):
         return importing_response
 
     @staticmethod
-    def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str,
-                      media_location: str, work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
-        importing_cmd = (
-            f"cd {repo_root} && mir import --dataset-name {task_id} --dst-rev {task_id}@{task_id} "
-            f"--src-revs master --index-file {index_file} --gen-dir {media_location} -w {work_dir}"
-        )
+    def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str, media_location: str,
+                      work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
+        importing_cmd = (f"cd {repo_root} && mir import --dataset-name {task_id} --dst-rev {task_id}@{task_id} "
+                         f"--src-revs master --index-file {index_file} --gen-dir {media_location} -w {work_dir}")
         if annotation_dir:
             importing_cmd += f" --annotation-dir {annotation_dir}"
         if name_strategy_ignore:

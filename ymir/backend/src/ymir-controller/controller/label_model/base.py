@@ -5,10 +5,9 @@ from datetime import datetime
 from functools import wraps
 from typing import Any, Callable, Dict, List
 
+from common_utils.percent_log_util import LogState
 from controller.config import label_task as label_task_config
 from controller.utils.redis import rds
-from controller.utils.tasks_util import task_state_code_to_str
-from proto.backend_pb2 import TaskState
 
 
 def catch_label_task_error(f: Callable) -> Callable:
@@ -18,8 +17,7 @@ def catch_label_task_error(f: Callable) -> Callable:
             _ret = f(*args, **kwargs)
         except Exception as e:
             cur_time = int(datetime.now().timestamp())
-            state_str = task_state_code_to_str(TaskState.TaskStateError)
-            status = f'{kwargs["task_id"]}\t{cur_time}\t0\t{state_str}'
+            status = f'{kwargs["task_id"]}\t{cur_time}\t0\t{LogState.ERROR.value}'
             LabelBase.write_project_status(kwargs["monitor_file_path"], f"{status}\n{e}\n{traceback.format_exc()}")
             _ret = None
         return _ret

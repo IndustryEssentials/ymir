@@ -44,10 +44,10 @@ export default {
             type: 'getSocket',
           })
           socket.off().on('update_taskstate', (data) => {
-            setTimeout(() => pageMaps.forEach(page => dispatch({
+            pageMaps.forEach(page => dispatch({
               type: page.method,
               payload: data,
-            })), 2000)
+            }))
           })
         }
       })

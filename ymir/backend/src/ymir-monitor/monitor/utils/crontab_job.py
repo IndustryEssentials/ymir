@@ -1,18 +1,17 @@
 import logging
 import sys
-from typing import Dict, List
+from typing import List
 
 import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from common_utils.percent_log_util import PercentLogHandler, PercentResult
+from common_utils.percent_log_util import PercentLogHandler, PercentResult, LogState
 from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
 from monitor.schemas.task import TaskSetStorageStructure
-from proto.backend_pb2 import TaskState
 
 
 def send_updated_task(updated_info: TaskSetStorageStructure) -> None:
@@ -51,9 +50,7 @@ def monitor_percent_log() -> None:
             except ValueError as e:
                 sentry_sdk.capture_exception(e)
                 logging.warning(e)
-                runtime_log_content = PercentResult(
-                    task_id=task_id, timestamp="123", percent=0.0, state=TaskState.TaskStateError
-                )
+                runtime_log_content = PercentResult(task_id=task_id, timestamp="123", percent=0.0, state=LogState.ERROR)
 
             runtime_log_contents[log_path] = runtime_log_content
             if runtime_log_content.timestamp != previous_log_content["timestamp"]:
@@ -61,10 +58,7 @@ def monitor_percent_log() -> None:
 
         if flag_task_updated:
             content_merged = TaskService.merge_task_progress_contents(runtime_log_contents)
-            if content_merged.state in [
-                TaskState.TaskStateDone,
-                TaskState.TaskStateError,
-            ]:
+            if content_merged.state in [LogState.DONE, LogState.ERROR]:
                 task_id_finished.append(task_id)
             task_updated[task_id] = dict(
                 raw_log_contents=runtime_log_contents,

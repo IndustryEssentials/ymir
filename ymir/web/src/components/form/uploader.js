@@ -8,11 +8,11 @@ import storage from '@/utils/storage'
 import t from '@/utils/t'
 import 'antd/es/slider/style'
 
-const typeFormat = {
-  img: ['image/jpeg', 'image/png', 'image/bmp'],
-  avatar: ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'],
-  zip: ['application/zip'],
-  doc: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/pdf'],
+const fileSuffix = {
+  img: ['jpeg', 'jpg', 'png', 'bmp'],
+  avatar: ['jpeg', 'jpg', 'png', 'gif', 'bmp'],
+  zip: ['zip'],
+  doc: ['doc', 'docx', 'txt', 'pdf'],
 }
 
 function Uploader({ className, value=null, format="zip", label, max = 200, 
@@ -37,7 +37,7 @@ function Uploader({ className, value=null, format="zip", label, max = 200,
   }
 
   function validFile(file) {
-    const isValid = typeFormat[format].indexOf(file.type) > -1
+    const isValid = fileSuffix[format].indexOf(file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()) > -1
     if (!isValid) {
       message.error(t('common.uploader.format.error'))
     }

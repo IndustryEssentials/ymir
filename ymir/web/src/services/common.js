@@ -16,6 +16,7 @@ export function getHistory({ type, id, max_hops }) {
 }
 
 export function getTensorboardLink(hash) {
+  hash = hash ? hash : ''
   return `/tensorboard/#scalars&regexInput=${hash}`
 }
 

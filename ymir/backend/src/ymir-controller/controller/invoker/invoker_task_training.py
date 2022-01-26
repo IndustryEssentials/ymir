@@ -3,15 +3,18 @@ from typing import List, Dict
 
 import yaml
 
+from common_utils.percent_log_util import LogState
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils, invoker_call, revs, gpu_utils, labels, tasks_util
+from controller.utils import utils, invoker_call, revs, gpu_utils, labels, tasks_util
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
 class TaskTrainingInvoker(TaskBaseInvoker):
     @classmethod
-    def gen_training_config(cls, repo_root: str, req_training_config: str, in_class_ids: List, work_dir: str) -> str:
+    def gen_training_config_lock_gpus(cls, repo_root: str, req_training_config: str, in_class_ids: List,
+                                      work_dir: str) -> str:
         training_config = yaml.safe_load(req_training_config)
         label_handler = labels.LabelFileHandler(repo_root)
         training_config["class_names"] = label_handler.get_main_labels_by_ids(in_class_ids)
@@ -40,7 +43,20 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     ) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         if not train_request.in_dataset_types:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid dataset_types")
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, "invalid dataset_types")
+
+        config_file = cls.gen_training_config_lock_gpus(repo_root, request.docker_image_config,
+                                                        train_request.in_class_ids, working_dir)
+        if not config_file:
+            msg = "Not enough GPU available"
+            tasks_util.write_task_progress(
+                monitor_file=task_monitor_file,
+                tid=request.task_id,
+                percent=1,
+                state=LogState.ERROR,
+                msg=msg,
+            )
+            return utils.make_general_response(CTLResponseCode.INTERNAL_ERROR, msg)
 
         sub_task_id_1 = utils.sub_task_id(request.task_id, 1)
         in_dataset_ids = [
@@ -64,11 +80,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             in_dataset_ids=in_dataset_ids,
             merge_strategy=request.merge_strategy,
         )
-        if merge_response.code != code.ResCode.CTR_OK:
+        if merge_response.code != CTLResponseCode.CTR_OK:
             tasks_util.write_task_progress(monitor_file=task_monitor_file,
                                            tid=request.task_id,
                                            percent=1.0,
-                                           state=backend_pb2.TaskStateError,
+                                           state=LogState.ERROR,
                                            msg=merge_response.message)
             return merge_response
 
@@ -76,19 +92,12 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op
-        config_file = cls.gen_training_config(
-            repo_root, request.docker_image_config, train_request.in_class_ids, working_dir
-        )
-        if not config_file:
-            msg = "Not enough GPU available"
-            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
-            return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, msg)
 
         tensorboard_root = assets_config['tensorboard_root']
         if not tensorboard_root:
             msg = "empty tensorboard_root"
-            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, msg)
+            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, LogState.ERROR, msg)
+            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, msg)
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
@@ -124,13 +133,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard: str,
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
-        training_cmd = (
-            f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
-            f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
-            f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
-            f"--executor-instance {executor_instance} "
-            f"--tensorboard {tensorboard}"
-        )
+        training_cmd = (f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
+                        f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
+                        f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
+                        f"--executor-instance {executor_instance} "
+                        f"--tensorboard {tensorboard}")
         if model_hash:
             training_cmd += f" --model-hash {model_hash}"
 
@@ -143,9 +150,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             for dataset_type in train_request.in_dataset_types
         ]
 
-        repr = (
-            f"task_training: user: {self._request.user_id}, repo: {self._request.repo_id} task_id: {self._task_id} "
-            f"in_dataset_types: {in_dataset_ids} in_class_ids: {train_request.in_class_ids}"
-        )
+        repr = (f"task_training: user: {self._request.user_id}, repo: {self._request.repo_id} task_id: {self._task_id} "
+                f"in_dataset_types: {in_dataset_ids} in_class_ids: {train_request.in_class_ids}")
 
         return repr

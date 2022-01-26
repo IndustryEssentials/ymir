@@ -27,10 +27,7 @@ def init_db(db: Session) -> None:
 
     user = crud.user.get_by_email(db, email=settings.FIRST_ADMIN)
     if not user:
-        if settings.IS_TESTING:
-            password = settings.FIRST_ADMIN_PASSWORD
-        else:
-            password = frontend_hash(settings.FIRST_ADMIN_PASSWORD)
+        password = frontend_hash(settings.FIRST_ADMIN_PASSWORD)
         user_in = schemas.UserCreate(
             email=settings.FIRST_ADMIN,
             password=password,
@@ -43,8 +40,8 @@ def init_db(db: Session) -> None:
     if not workspace:
         workspace_in = schemas.WorkspaceCreate(user_id=user.id)
         workspace = crud.workspace.create(db, obj_in=workspace_in)
-        # Ask controller to setup sandbox for initial user
-        if not settings.IS_TESTING:
+        if settings.INIT_SANDBOX_FOR_FIRST_USER:
+            # Ask controller to setup sandbox for initial user
             controller = ControllerClient(settings.GRPC_CHANNEL)
             controller.create_workspace(
                 user_id=workspace.user_id, workspace_id=workspace.hash

@@ -1,127 +1,125 @@
-import { 
-getDataset,
-getDatasets,
-batchDatasets,
-getAssetsOfDataset,
-getAsset,
-delDataset,
-createDataset,
-updateDataset,
-getInternalDataset,
-importDataset,
- } from "../dataset"
- import request from '@/utils/request'
-
- jest.mock('@/utils/request', () => {
-   const req = jest.fn()
-   req.get = jest.fn()
-   req.post = jest.fn()
-   return req
- })
+import {
+  getDataset,
+  getDatasets,
+  batchDatasets,
+  getAssetsOfDataset,
+  getAsset,
+  delDataset,
+  createDataset,
+  updateDataset,
+  getInternalDataset,
+} from "../dataset"
+import { product, products, requestExample } from './func'
 
 describe("service: dataset", () => {
 
-  
-  const product = (id) => ({ id })
-  const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
-
   it("getDataset -> success", () => {
-    const id = "641"
+    const id = 641
     const expected = { id, name: 'datasetname00345' }
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: expected,
-      })
-    })
-
-    getDataset(id).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.name).toBe(expected.name)
-      expect(result.id).toBe(expected.id)
-    })
+    requestExample(getDataset, id, expected, 'get')
+  })
+  it("getDataset -> params validate failed", () => {
+    requestExample(getDataset, null, null, 'get', 1002)
   })
 
-  it("getDatasets -> success", () => {
+  it("getDatasets -> success -> all filter conditions", () => {
     const params = { name: 'searchname', type: 1, start_time: 0, end_time: 0, limit: 20, offset: 0 }
-    const expected = products(9)
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: {
-          items: expected,
-          total: expected.length,
-        },
-      })
-    })
+    const expected = products(4)
 
-    getDatasets(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.items).toEqual(expected)
-      expect(result.total).toBe(expected.length)
-    })
+    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
+  })
+
+  it("getDatasets -> success -> filter name", () => {
+    const params = { name: 'partofname' }
+    const expected = products(2)
+
+    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
+  })
+
+  it("getDatasets -> success -> none filter conditions", () => {
+    const params = {}
+    const expected = products(5)
+
+    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
+  })
+
+  it("getDatasets -> success -> all filter conditions", () => {
+    const params = { type: 1, start_time: 0, end_time: 0, limit: 20, offset: 40 }
+    const expected = products(5)
+
+    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
   })
 
   it("batchDatasets -> success", () => {
-    const params = { ids: [1,2,3] }
+    const params = { ids: [1, 2, 3] }
     const expected = products(3)
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: {
-          items: expected,
-          total: expected.length,
-        },
-      })
-    })
+    requestExample(batchDatasets, params, { items: expected, total: expected.length }, 'get')
+  })
 
-    batchDatasets(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.items).toEqual(expected)
-      expect(result.total).toBe(expected.length)
-    })
+  it("delDataset -> success and ", () => {
+    const id = 644
+    const expected = { id }
+    requestExample(delDataset, id, expected)
+  })
+
+  it('delDataset -> can not find resource', () => {
+    requestExample(delDataset, null, null, null, 5001)
+  })
+  it("createDataset -> success", () => {
+    const id = 646
+    const datasets = { name: 'new dataset' }
+    const expected = { id, ...datasets }
+    requestExample(createDataset, datasets, expected, 'post')
+  })
+  it("createDataset -> create when user logouted", () => {
+    const datasets = { name: 'new dataset' }
+    requestExample(createDataset, datasets, null, 'post', 1004)
+  })
+  it("createDataset -> params validate failed", () => {
+    requestExample(createDataset, null, null, 'post', 1002)
+  })
+
+  it("updateDataset -> success", () => {
+    const id = 647
+    const name = 'new name of dataset'
+    const expected = { id, name }
+    requestExample(updateDataset, [id, name], expected)
+  })
+
+  it("updateDataset -> dulplicated name", () => {
+    const id = 648
+    const name = 'dulplicated name'
+    requestExample(updateDataset, [id, name], null, null, 4002)
+  })
+
+  it("updateDataset -> params validate failed", () => {
+    requestExample(updateDataset, null, null, null, 4002)
   })
 
   it("getAssetsOfDataset -> success", () => {
-    const params = {
-      id: "642",
-      keyword: 83,
-      limit: 20,
-      offset: 0,
-    }
+    const params = { id: 642 }
     const expected = products(11)
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: {
-          items: expected,
-          total: expected.length,
-        },
-      })
-    })
-
-    getAssetsOfDataset(params).then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.items).toEqual(expected)
-      expect(result.total).toBe(expected.length)
-    })
+    requestExample(getAssetsOfDataset, params, { items: expected, total: expected.length }, 'get')
   })
+
+  it("getAssetsOfDataset -> success with keywords", () => {
+    const params = { id: 642, keyword: 83, limit: 20, offset: 0, }
+    const expected = products(7)
+    requestExample(getAssetsOfDataset, params, { items: expected, total: expected.length }, 'get')
+  })
+
+  it("getAsset -> success", () => {
+    const hash = "643"
+    const expected = { hash, url: '/path/to/asset/image', annotations: [{ keyword: 'cat', box: [234, 34, 200, 403] }] }
+    requestExample(getAsset, hash, expected, 'get')
+  })
+
+  it('getAsset -> can not find resource', () => {
+    requestExample(getAsset, null, null, 'get', 5001)
+  })
+
   it("getInternalDataset -> success", () => {
     const expected = products(11)
-    request.get.mockImplementationOnce(() => {
-      return Promise.resolve({
-        code: 0,
-        result: {
-          items: expected,
-          total: expected.length,
-        },
-      })
-    })
-
-    getInternalDataset().then(({ code, result }) => {
-      expect(code).toBe(0)
-      expect(result.items).toEqual(expected)
-      expect(result.total).toBe(expected.length)
-    })
+    requestExample(getInternalDataset, {}, { items: expected, total: expected.length }, 'get')
   })
 })

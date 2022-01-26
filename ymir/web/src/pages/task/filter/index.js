@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from "react"
 import { connect } from "dva"
-import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Row, Col, Radio } from "antd"
+import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio } from "antd"
 import { useHistory, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
 import { randomNumber } from "@/utils/number"
-import Breadcrumbs from "../../../components/common/breadcrumb"
+import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
-import { TipsIcon } from '@/components/common/icons'
 import Tip from "@/components/form/tip"
-import RecommendKeywords from "../../../components/common/recommendKeywords"
+import RecommendKeywords from "@/components/common/recommendKeywords"
 const { Option } = Select
 
 function Filter({
@@ -128,7 +127,7 @@ function Filter({
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           labelAlign={'left'}
-          size='large'
+          // size='middle'
           colon={false}
         >
           <Tip hidden={true}>
@@ -137,7 +136,7 @@ function Filter({
               name='name'
               rules={[
                 { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
-                { type: 'string', min: 2, max: 20 },
+                { type: 'string', min: 2, max: 50 },
               ]}
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
@@ -186,7 +185,7 @@ function Filter({
           <Tip hidden={true}>
           <Form.Item label={t('dataset.column.keyword')} required>
               <p>{t('task.filter.form.include.label')}</p>
-            <Tip content={t('tip.task.filter.includelable')}>
+            <Tip content={t('tip.task.filter.includelable')} span={1} formSpan={24}>
                 <Form.Item
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='inc'
@@ -204,7 +203,7 @@ function Filter({
                 </Form.Item>
               </Tip>
               <p>{t('task.filter.form.exclude.label')}</p>
-              <Tip content={t('tip.task.filter.excludelable')}>
+              <Tip content={t('tip.task.filter.excludelable')} span={1} formSpan={24}>
                 <Form.Item
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='exc'

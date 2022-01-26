@@ -5,10 +5,11 @@ import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions,
 
 import styles from "./detail.less"
 import t from "@/utils/t"
-import Breadcrumbs from "../../components/common/breadcrumb"
-import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "../../components/common/icons"
+import Breadcrumbs from "@/components/common/breadcrumb"
+import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "@/components/common/icons"
 import Asset from "./components/asset"
 import { randomBetween } from '@/utils/number'
+import { percent } from "../../utils/number"
 
 const { Option } = Select
 
@@ -53,6 +54,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   }, [id])
 
   useEffect(() => {
+    setCurrentPage((filterParams.offset / filterParams.limit) + 1)
     filter(filterParams)
   }, [filterParams])
 
@@ -78,7 +80,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setKeywords(Object.keys(keywords).map((key) => ({ key, count: keywords[key] })))
   }
   const goAsset = (hash, index) => {
-    setCurrentAsset({ hash, index: (currentPage - 1) * filterParams.limit + index})
+    setCurrentAsset({ hash, index: filterParams.offset + index})
     setAssetVisible(true)
   }
 
@@ -90,7 +92,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   }
 
   const getRate = (count) => {
-    return Number(count * 100 / dataset.asset_count).toFixed(2) + '%'
+    return percent(count / dataset.asset_count)
   }
 
   const randomPageButton = (

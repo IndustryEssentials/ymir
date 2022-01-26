@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 
 from google.protobuf import json_format
 
-from controller.utils import code, checker, metrics
+from controller.utils import checker, metrics, utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -32,7 +33,7 @@ class BaseMirControllerInvoker(ABC):
         self._sandbox_root = sandbox_root
 
         ret = checker.check_request(request=request, prerequisites=[checker.Prerequisites.CHECK_TASK_ID])
-        if (ret.code != code.ResCode.CTR_OK):
+        if (ret.code != CTLResponseCode.CTR_OK):
             raise RuntimeError(f"task_id {request.task_id} error, abort")
         self._task_id = request.task_id
 
@@ -56,7 +57,7 @@ class BaseMirControllerInvoker(ABC):
         self._send_request_metrics()
 
     def _send_request_metrics(self) -> None:
-        if self._request.req_type == backend_pb2.RequestType.TASK_INFO:
+        if self._request.req_type in [backend_pb2.RequestType.TASK_INFO, backend_pb2.RequestType.CMD_GPU_INFO_GET]:
             return
 
         metrics_name = backend_pb2.RequestType.Name(self._request.req_type) + '.'
@@ -67,11 +68,12 @@ class BaseMirControllerInvoker(ABC):
         metrics.send_counter_metrics(metrics_name)
 
     # functions about invoke and pre_invoke
+    @utils.time_it
     def server_invoke(self) -> backend_pb2.GeneralResp:
         logging.info(str(self))
 
         response = self.pre_invoke()
-        if response.code != code.ResCode.CTR_OK:
+        if response.code != CTLResponseCode.CTR_OK:
             return response
 
         return self.invoke()

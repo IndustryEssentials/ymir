@@ -6,7 +6,7 @@ import { useParams, useHistory } from "umi"
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumb from '@/components/common/breadcrumb'
-import Uploader from "../../components/form/uploader"
+import Uploader from "@/components/form/uploader"
 import AssetAnnotation from "@/components/dataset/asset_annotation"
 import { TYPES } from '@/constants/image'
 import styles from './verify.less'
@@ -105,12 +105,6 @@ function Verify({ getModel, verify }) {
       />
     )
   }
-
-  function getExtrameScore(max = 'max') {
-    const scores = annotations.map(anno => anno.score)
-    return scores ? `${(Math[max](...scores) * 100).toFixed(2)}%` : ''
-  }
-
 
   function changeKeywords(tag, checked) {
     const selected = checked

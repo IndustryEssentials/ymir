@@ -1,8 +1,8 @@
 import os
 from typing import Tuple, List
 
-from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.config import label_task as label_task_config
+from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.label_model.label_studio import LabelStudio
 from controller.utils import utils
 from controller.utils.app_logger import logger

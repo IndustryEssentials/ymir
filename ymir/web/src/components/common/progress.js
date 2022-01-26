@@ -1,7 +1,7 @@
 import { Col, Progress, Row } from "antd"
 import { getLocale, Link } from "umi"
 
-import { TASKSTATES } from "../../constants/task"
+import { TASKSTATES } from "@/constants/task"
 import t from "@/utils/t"
 import StateTag from "../task/stateTag"
 import { calTimeLeft } from "@/utils/date"

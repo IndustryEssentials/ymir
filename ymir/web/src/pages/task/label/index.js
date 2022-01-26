@@ -7,13 +7,13 @@ import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
 import { useHistory, useParams, Link } from "umi"
-import Uploader from "../../../components/form/uploader"
-import Breadcrumbs from "../../../components/common/breadcrumb"
+import Uploader from "@/components/form/uploader"
+import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import { randomNumber } from "../../../utils/number"
+import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
-import RecommendKeywords from "../../../components/common/recommendKeywords"
-import { TASKSTATES } from "../../../constants/task"
+import RecommendKeywords from "@/components/common/recommendKeywords"
+import { TASKSTATES } from "@/constants/task"
 
 const { Option } = Select
 
@@ -124,7 +124,6 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
-            size='large'
             colon={false}
           >
             <Tip hidden={true}>
@@ -133,7 +132,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
               name='name'
               rules={[
                 { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
-                { type: 'string', min: 2, max: 20 },
+                { type: 'string', min: 2, max: 50 },
               ]}
             >
               <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
@@ -181,7 +180,7 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
                       <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
                     </Form.Item>
                   </Col>
-                  <Col style={{ lineHeight: '40px'}}>
+                  <Col style={{ lineHeight: '30px'}}>
                     <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
                   </Col>
                 </Row>

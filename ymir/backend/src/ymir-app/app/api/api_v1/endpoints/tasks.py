@@ -1,8 +1,8 @@
 import enum
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from operator import attrgetter
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
+    ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
@@ -31,16 +32,11 @@ from app.utils.class_ids import (
     get_keyword_name_to_id_mapping,
 )
 from app.utils.clickhouse import YmirClickHouse
-from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
-from app.utils.ymir_controller import (
-    ControllerClient,
-    ControllerRequest,
-    ExtraRequestType,
-)
+from app.utils.ymir_controller import ControllerClient, ControllerRequest
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
@@ -341,8 +337,7 @@ def get_task(
     if dataset:
         result["dataset_id"] = dataset.id
     if TaskState(task_info["state"]) is TaskState.error:
-        result = controller_client.get_task_result(current_user.id, task_info["hash"])
-        result["error"] = {"code": -1, "message": result.get("last_error")}
+        result["error"] = {"code": -1, "message": ""}
 
     task_info["result"] = result
     return {"result": task_info}
@@ -456,6 +451,10 @@ def update_task_status(
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
+    except ModelNotReady:
+        logger.warning("Model Not Ready")
+        return {"result": task}
+
     if updated_task:
         updated_task = crud.task.update_last_message_datetime(
             db, task=updated_task, dt=datetime.utcfromtimestamp(task_result.timestamp)
@@ -468,44 +467,6 @@ def is_obsolete_message(
     last_update_time: Union[float, int], msg_time: Union[float, int]
 ) -> bool:
     return last_update_time > msg_time
-
-
-@router.post(
-    "/update_status",
-    response_model=schemas.TasksOut,
-    dependencies=[Depends(deps.api_key_security)],
-    deprecated=True,
-)
-def batch_update_task_status(
-    *,
-    db: Session = Depends(deps.get_db),
-    graph_db: GraphClient = Depends(deps.get_graph_client),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-) -> Any:
-    """
-    Batch update given tasks status
-    """
-    tasks = crud.task.get_tasks_by_states(
-        db,
-        states=[TaskState.pending, TaskState.running, TaskState.premature],
-        including_deleted=True,
-    )
-    task_result_proxy = TaskResultProxy(
-        db=db,
-        graph_db=graph_db,
-        controller=controller_client,
-        viz=viz_client,
-        clickhouse=clickhouse,
-    )
-    for _, tasks_ in groupby(tasks, "user_id"):
-        for task_ in tasks_:
-            task = schemas.Task.from_orm(task_)
-            task_result = task_result_proxy.get(task)
-            task_result_proxy.save(task, task_result)
-
-    return {"result": {"total": len(tasks), "items": tasks}}
 
 
 class TaskResultProxy:
@@ -523,10 +484,6 @@ class TaskResultProxy:
         self.controller = controller
         self.clickhouse = clickhouse
         self.viz = viz
-
-    def get(self, task: schemas.Task) -> Dict:
-        result = self.controller.get_task_result(task.user_id, task.hash)
-        return result
 
     @staticmethod
     def should_fetch_task_result(previous_state: TaskState, state: TaskState) -> bool:
@@ -713,7 +670,7 @@ class TaskResultProxy:
         self.viz.config(user_id=task.user_id, branch_id=task.hash)
         model_info = self.viz.get_model()
         if not model_info:
-            raise ValueError("model not ready yet")
+            raise ModelNotReady()
 
         model = crud.model.get_by_hash(self.db, hash_=model_info["hash"])
         if model:

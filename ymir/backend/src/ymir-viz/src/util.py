@@ -1,7 +1,7 @@
 import datetime
 
 import six
-import typing
+
 from src import type_util
 
 
