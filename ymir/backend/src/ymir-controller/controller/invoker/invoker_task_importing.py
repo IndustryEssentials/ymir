@@ -20,12 +20,12 @@ class TaskImportingInvoker(TaskBaseInvoker):
             if not os.access(anno_dir, os.R_OK):
                 error_str = f"invalid permissions of annotation_dir: {anno_dir}"
                 logging.error(error_str)
-                return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, error_str)
+                return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, error_str)
 
         if not os.access(media_dir, os.R_OK):
             error_str = f"invalid permissions of media_dir:{media_dir}"
             logging.error(error_str)
-            return utils.make_general_response(CTLResponseCode.VALIDATION_FAILED, error_str)
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, error_str)
 
         media_files = [
             os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))
@@ -57,9 +57,3 @@ class TaskImportingInvoker(TaskBaseInvoker):
             importing_cmd += " --ignore-unknown-types"
 
         return utils.run_command(importing_cmd)
-
-    def _repr(self) -> str:
-        importing_request = self._request.req_create_task.importing
-        return ("task_importing: user: {}, repo: {} task_id: {} asset-dir: {} annotation-dir: {}".format(
-            self._request.user_id, self._request.repo_id, self._task_id, importing_request.asset_dir,
-            importing_request.annotation_dir))
