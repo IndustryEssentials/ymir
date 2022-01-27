@@ -51,7 +51,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         master_work_dir: str,
         sub_task_cnt: int,
         register_monitor: bool,
-    ):
+    ) -> None:
         if not (sub_task_cnt > 0 and task_id and user_id and master_work_dir):
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
                                      "create_subtask_workdir_monitor args error, abort.")
