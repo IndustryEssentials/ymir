@@ -17,7 +17,7 @@ const Config = defineConfig({
 
   // open mfsu
   // webpack5: false,
-  // dynamicImport: {},
+  dynamicImport: {},
   // mfsu: {},
 })
 
