@@ -4,7 +4,7 @@ import time
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, data_exporter, mir_repo_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, data_exporter, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.phase_logger import PhaseLoggerCenter
@@ -25,19 +25,14 @@ class CmdExport(base.BaseCommand):
                                        media_location=self.args.media_location,
                                        src_revs=self.args.src_revs,
                                        dst_rev=dst_rev,
+                                       in_cis=self.args.in_cis,
                                        work_dir=self.args.work_dir,
                                        format=self.args.format)
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str,
-                      asset_dir: str,
-                      annotation_dir: str,
-                      media_location: str,
-                      src_revs: str,
-                      format: str,
-                      work_dir: str,
-                      dst_rev: str) -> int:
+    def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, media_location: str, src_revs: str,
+                      format: str, in_cis: str, work_dir: str, dst_rev: str) -> int:
         # check args
         if not format:
             format = 'none'
@@ -81,10 +76,13 @@ class CmdExport(base.BaseCommand):
             logging.error('nothing to export')
             return MirCode.RC_CMD_INVALID_ARGS
 
+        cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+        type_ids_list = cls_mgr.id_for_names(in_cis.split(';')) if in_cis else []
+
         # export
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
-                             class_type_ids={},
+                             class_type_ids={type_id: type_id for type_id in type_ids_list},
                              asset_ids=asset_ids,
                              asset_dir=asset_dir,
                              annotation_dir=annotation_dir,
@@ -149,16 +147,18 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                       dest='src_revs',
                                       type=str,
                                       help='rev@bid: source rev and base task id')
-    exporting_arg_parser.add_argument("--dst-rev",
-                                      required=False,
-                                      dest="dst_rev",
-                                      type=str,
-                                      help="rev@tid")
+    exporting_arg_parser.add_argument("--dst-rev", required=False, dest="dst_rev", type=str, help="rev@tid")
     exporting_arg_parser.add_argument('--format',
                                       dest='format',
                                       type=str,
                                       default="none",
                                       choices=data_exporter.support_format_type(),
                                       help='annotation format: ark / voc / none')
+    exporting_arg_parser.add_argument("-p", '--cis',
+                                      dest="in_cis",
+                                      type=str,
+                                      required=False,
+                                      default='',
+                                      help="type names, do not set if you want to export all types")
     exporting_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
     exporting_arg_parser.set_defaults(func=CmdExport)
