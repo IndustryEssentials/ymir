@@ -97,7 +97,8 @@ class TestInvokerTaskImporting(unittest.TestCase):
                                          req_create_task=req_create_task)
 
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeImportData), self._task_id)
+                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeImportData), self._task_id, 'sub_task',
+                                   self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
         expected_cmd_importing = ("cd {0} && mir import --dataset-name {1} --dst-rev {1}@{1} --src-revs {2} "

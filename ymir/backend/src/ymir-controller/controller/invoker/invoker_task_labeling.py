@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
@@ -9,28 +10,29 @@ from proto import backend_pb2
 
 
 class TaskLabelingInvoker(TaskBaseInvoker):
+    def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+        return utils.make_general_response(CTLResponseCode.CTR_OK, "")
+
     @classmethod
-    def task_invoke(
-        cls,
-        sandbox_root: str,
-        repo_root: str,
-        assets_config: Dict[str, str],
-        working_dir: str,
-        task_monitor_file: str,
-        request: backend_pb2.GeneralReq,
-    ) -> backend_pb2.GeneralResp:
+    def subtask_count(cls) -> int:
+        return 1
+
+    @classmethod
+    def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
+                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
+                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
         labeling_request = request.req_create_task.labeling
+        logging.info(f"labeling_request: {labeling_request}")
         label_handler = LabelFileHandler(repo_root)
         keywords = label_handler.get_main_labels_by_ids(labeling_request.in_class_ids)
         labeler_accounts = list(labeling_request.labeler_accounts)
         media_location = assets_config["assetskvlocation"]
-        task_id = request.task_id
 
         label_runner.start_label_task(
             repo_root=repo_root,
-            working_dir=working_dir,
+            working_dir=subtask_workdir,
             media_location=media_location,
-            task_id=task_id,
+            task_id=subtask_id,
             project_name=labeling_request.project_name,
             dataset_id=labeling_request.dataset_id,
             keywords=keywords,

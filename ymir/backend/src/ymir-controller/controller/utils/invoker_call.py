@@ -99,7 +99,8 @@ def make_invoker_cmd_call(invoker: Any,
                           merge_strategy: int = None,
                           model_hash: str = None,
                           docker_image_config: str = None,
-                          terminated_task_type: str = None) -> backend_pb2.GeneralReq:
+                          terminated_task_type: str = None,
+                          work_dir: str = '') -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,
@@ -120,5 +121,9 @@ def make_invoker_cmd_call(invoker: Any,
                                model_hash=model_hash,
                                docker_image_config=docker_image_config,
                                terminated_task_type=terminated_task_type)
-    invoker = invoker(sandbox_root=sandbox_root, request=request, assets_config=assets_config, async_mode=async_mode)
+    invoker = invoker(sandbox_root=sandbox_root,
+                      request=request,
+                      assets_config=assets_config,
+                      async_mode=async_mode,
+                      work_dir=work_dir)
     return invoker.server_invoke()
