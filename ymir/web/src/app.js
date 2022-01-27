@@ -7,12 +7,3 @@ export const dva = {
     },
   },
 }
-
-export const onRouteChange = ({ routes, matchedRoutes, location, action }) => {
-  //change document.title
-  // console.log("onRouteChange", location, routes, matchedRoutes, action)
-  // umeng.trackPageview(matchedRoutes.lastItem.route.path)
-  // umeng.ready().then(() => {
-  //   console.log(window._czc, umeng)
-  // })
-}
