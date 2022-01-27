@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     RETRY_CACHE_KEY = 'retryhash:/events/taskstates'
     MAX_REDIS_STREAM_LENGTH = 10 * 3600 * 24 * 2  # two days, with 10 messages for each second
+    RETRY_SECONDS = 60
 
 
 class Constants(BaseSettings):
