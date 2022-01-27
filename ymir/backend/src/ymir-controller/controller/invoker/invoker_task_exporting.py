@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict
+from typing import Dict, List
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import utils
@@ -50,9 +50,11 @@ class TaskExportingInvoker(TaskBaseInvoker):
 
     @staticmethod
     def exporting_cmd(repo_root: str, dataset_id: str, annotation_format: str, asset_dir: str, annotation_dir: str,
-                      media_location: str, work_dir: str) -> backend_pb2.GeneralResp:
+                      media_location: str, work_dir: str, keywords: List[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = (
             f"cd {repo_root} && mir export --media-location {media_location} --asset-dir {asset_dir} "
             f"--annotation-dir {annotation_dir} --src-revs {dataset_id} --format {annotation_format} -w {work_dir}")
+        if keywords:
+            exporting_cmd += f" --cis \'{';'.join(keywords)}\'"
 
         return utils.run_command(exporting_cmd)
