@@ -25,34 +25,24 @@ import { getTensorboardLink } from "../../services/common"
 
 const { useForm } = Form
 
-const initQuery = {
-  name: "",
-  type: "",
-  time: 0,
-  offset: 0,
-  limit: 20,
-}
-
-function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
+function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, updateQuery, resetQuery }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [tasks, setTasks] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
-  const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
   const terminateRef = useRef(null)
-  let [init, setInit] = useState(Boolean(keyword))
+  const [lock, setLock] = useState(true)
   // const [showAdd, setSowAdd] = useState(false)
 
   /** use effect must put on the top */
   useEffect(() => {
-    if (init) {
-      setInit(false)
-      return
+    if (history.action !== 'POP') {
+      initState()
     }
-    getData()
-  }, [query])
+    setLock(false)
+  }, [history.location])
 
   useEffect(() => {
     const forceUpdate = taskList.items.some(task => task.forceUpdate)
@@ -64,12 +54,24 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
     }
   }, [taskList])
 
-  useEffect(() => {
+  useEffect(async () => {
     if (keyword) {
-      setQuery(old => ({ ...old, name: keyword }))
+      await updateQuery({ ...query, name: keyword })
       form.setFieldsValue({ name: keyword })
     }
+    setLock(false)
   }, [keyword])
+
+  useEffect(() => {
+    if (!lock) {
+      getData()
+    }
+  }, [query, lock])
+
+  async function initState() {
+     await resetQuery()
+     form.resetFields()
+  }
 
   const types = getTaskTypes()
   const states = getTaskStates()
@@ -157,7 +159,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
     const order_by = sorters.order ? sorters.field : undefined
-    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
+    updateQuery({ ...query, limit, offset, is_desc, order_by })
   }
 
   function showTitle(str) {
@@ -240,20 +242,18 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      setQuery((old) => ({
-        ...old,
+      updateQuery({
+        ...query,
         ...values,
-        offset: initQuery.offset,
-      }))
+      })
     } else {
       setTimeout(() => {
         // console.log('compact: ', name, form.getFieldValue('name'))
         if (name === form.getFieldValue('name')) {
-          setQuery((old) => ({
-            ...old,
+          updateQuery({
+            ...query,
             name,
-            offset: initQuery.offset,
-          }))
+          })
         }
       }, 1000)
     }
@@ -337,7 +337,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
         name='queryForm'
         form={form}
         labelCol={{ flex: '100px' }}
-        initialValues={{ type: "", state: '', time: 0, name: keyword || "" }}
+        initialValues={{ type: query.type, state: query.state, time: query.time, name: keyword || query.name }}
         onValuesChange={search}
         colon={false}
       >
@@ -433,6 +433,7 @@ const props = (state) => {
   return {
     logined: state.user.logined,
     taskList: state.task.tasks,
+    query: state.task.query,
   }
 }
 
@@ -460,6 +461,17 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'task/updateTask',
         payload: { id, name },
+      })
+    },
+    updateQuery: (query) => {
+      return dispatch({
+        type: 'task/updateQuery',
+        payload: query,
+      })
+    },
+    resetQuery: () => {
+      return dispatch({
+        type: 'task/resetQuery',
       })
     },
   }
