@@ -25,10 +25,10 @@ class MergeInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        command = "cd {0} && {1} merge --dst-rev {2} -s {3}".format(
+        command = "cd {0} && {1} merge --dst-rev {2} -s {3} -w {4}".format(
             self._repo_root, utils.mir_executable(),
             revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id),
-            backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower())
+            backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower(), self._work_dir)
 
         if self._request.in_dataset_ids:
             command += " --src-revs '{}'".format(

@@ -85,8 +85,12 @@ class TestInvokerFilterBranch(unittest.TestCase):
                                          ex_class_ids=ex_class_ids)
         print(MessageToDict(response))
 
-        expected_cmd = "cd {0} && mir filter --dst-rev {1}@{1} --src-revs {2}@{2} -p '{3}' -P '{4}'".format(
-            self._mir_repo_root, self._task_id, self.in_dataset_ids[0], 'car;person', 'car;person')
+        working_dir = os.path.join(self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_FILTER),
+                                   self._task_id)
+        os.makedirs(working_dir, exist_ok=True)
+
+        expected_cmd = "cd {0} && mir filter --dst-rev {1}@{1} --src-revs {2}@{2} -w {3} -p '{4}' -P '{5}'".format(
+            self._mir_repo_root, self._task_id, self.in_dataset_ids[0], working_dir, 'car;person', 'car;person')
         mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()

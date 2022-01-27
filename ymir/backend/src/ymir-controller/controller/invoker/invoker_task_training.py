@@ -57,6 +57,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             dst_task_id=request.task_id,
             in_dataset_ids=in_dataset_ids,
             merge_strategy=request.merge_strategy,
+            work_dir=subtask_workdir,
         )
 
         return merge_response
