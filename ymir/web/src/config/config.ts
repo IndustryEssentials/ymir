@@ -16,8 +16,8 @@ const Config = defineConfig({
   fastRefresh: {},
 
   // open mfsu
-  webpack5: false,
-  dynamicImport: {},
+  // webpack5: false,
+  // dynamicImport: {},
   // mfsu: {},
 })
 
