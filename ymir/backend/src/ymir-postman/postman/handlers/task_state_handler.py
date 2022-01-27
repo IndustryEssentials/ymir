@@ -42,8 +42,7 @@ redis_connect = event_dispatcher.EventDispatcher.get_redis_connect()
 
 
 def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kwargs: Any) -> None:
-    _, msgs = zip(*mid_and_msgs)
-    tid_to_taskstates_latest = _aggregate_msgs(msgs)
+    tid_to_taskstates_latest = _aggregate_msgs(mid_and_msgs)
     if not tid_to_taskstates_latest:
         return
 
@@ -51,26 +50,29 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     update_db_result = _update_db(tid_to_tasks=tid_to_taskstates_latest)
     logging.info(f"update db result: {update_db_result}")
     _update_sio(tids=update_db_result.success_tids, tid_to_taskstates=tid_to_taskstates_latest)
-    if update_db_result.retry_tids:
-        time.sleep(5)
     _update_retry(retry_tids=update_db_result.retry_tids, tid_to_taskstates_latest=tid_to_taskstates_latest)
+    # delay and retry
+    if update_db_result.retry_tids:
+        time.sleep(settings.RETRY_SECONDS)
+        ed.add_event(event_name=ed.event_name, event_topic=constants.EVENT_TOPIC_INNER, event_body='')
 
 
-def _aggregate_msgs(msgs: List[Dict[str, str]]) -> entities.TaskStateDict:
+def _aggregate_msgs(mid_and_msgs: List[Tuple[str, dict]]) -> entities.TaskStateDict:
     """
     for all redis stream msgs, deserialize them to entities, select the latest for each tid
     """
     tid_to_taskstates_latest: entities.TaskStateDict = _load_retry()
-    for msg in msgs:
-        msg_topic = msg['topic']
-        if msg_topic != constants.EVENT_TOPIC_RAW:
-            continue
+    if mid_and_msgs:
+        for _, msg in mid_and_msgs:
+            msg_topic = msg['topic']
+            if msg_topic != constants.EVENT_TOPIC_RAW:
+                continue
 
-        tid_to_taskstates = parse_raw_as(entities.TaskStateDict, msg['body'])
-        for tid, taskstate in tid_to_taskstates.items():
-            if (tid not in tid_to_taskstates_latest
-                    or tid_to_taskstates_latest[tid].percent_result.timestamp < taskstate.percent_result.timestamp):
-                tid_to_taskstates_latest[tid] = taskstate
+            tid_to_taskstates = parse_raw_as(entities.TaskStateDict, msg['body'])
+            for tid, taskstate in tid_to_taskstates.items():
+                if (tid not in tid_to_taskstates_latest
+                        or tid_to_taskstates_latest[tid].percent_result.timestamp < taskstate.percent_result.timestamp):
+                    tid_to_taskstates_latest[tid] = taskstate
     return tid_to_taskstates_latest
 
 
@@ -146,13 +148,15 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         'timestamp': task.percent_result.timestamp,
         'state': task.percent_result.state,
         'percent': task.percent_result.percent,
-        'state_message': task.percent_result.state_message
+        'state_code': task.percent_result.state_code,
+        'state_message': task.percent_result.state_message,
     }
 
     logging.debug(f"update db single task request: {task_data}")
     try:
         response = requests.post(url=url, headers=custom_headers, json=task_data)
-    except requests.exceptions.RequestException as e:
+        response.raise_for_status()
+    except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
         logging.exception(msg=f"update db single task error ignored: {tid}, {e}")
         return (f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
 
@@ -168,7 +172,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
     if not tids:
         return
 
-    event_payloads = _get_event_payloads({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
+    event_payloads = _remap_payloads_by_uid({tid: tid_to_taskstates[tid] for tid in tids if tid in tid_to_taskstates})
 
     url = f"{settings.PM_URL}/events/push"
     try:
@@ -177,7 +181,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
         logging.exception('update sio error ignored')
 
 
-def _get_event_payloads(tid_to_taskstates: entities.TaskStateDict) -> entities.EventPayloadList:
+def _remap_payloads_by_uid(tid_to_taskstates: entities.TaskStateDict) -> entities.EventPayloadList:
     # sort by user
     uid_to_taskdatas: Dict[str, Dict[str, entities.TaskStatePercent]] = defaultdict(dict)
     for tid, taskstate in tid_to_taskstates.items():
