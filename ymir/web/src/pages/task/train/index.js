@@ -188,7 +188,6 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function imageChange(_, image = {}) {
-    console.log('image change: ', _, image)
     const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
     setSelectedImage(image)
@@ -267,6 +266,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
             colon={false}
+            scrollToFirstError
           >
 
             <Tip hidden={true}>

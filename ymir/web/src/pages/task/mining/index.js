@@ -216,6 +216,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
             colon={false}
+            scrollToFirstError
           >
             <Tip hidden={true}>
             <Form.Item
