@@ -48,7 +48,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
       <Descriptions className={styles.setInfo} column={2}>
         <Descriptions.Item label={t('portal.dataset.asset.count')}>{humanize(set.asset_count)}</Descriptions.Item>
         <Descriptions.Item label={t('portal.dataset.keyword.count')}>
-          {set.keywords.length + ''}
+          {set?.keywords.length}
         </Descriptions.Item>
       </Descriptions>
     </>

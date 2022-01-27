@@ -11,6 +11,7 @@ import styles from './index.less'
 import { cardBody, cardHead } from "./components/styles"
 import { MymodelIcon, TrainIcon, } from '@/components/common/icons'
 import { options, ORDER } from "./components/orderOptions"
+import { percent } from "../../utils/number"
 
 function ModelHot({ getLatestModels, getHotModels }) {
   const history = useHistory()
@@ -50,8 +51,8 @@ function ModelHot({ getLatestModels, getHotModels }) {
           {models.map(model => <Col key={model.id} span={6}>
             <Card className={styles.boxItem} hoverable title={model.name} onClick={() => { history.push(`/home/model/detail/${model.id}`) }}>
               <Descriptions column={1} colon={false} labelStyle={{ justifyContent: 'flex-end', width: '68px' }}>
-                <Descriptions.Item className={styles.mapValue} label={'mAP'}>{model.map}</Descriptions.Item>
-                {/* <Descriptions.Item label={t('portal.cited')}>{model.count}</Descriptions.Item> */}
+                <Descriptions.Item className={styles.mapValue} label={'mAP'}><span title={model.map}>{percent(model.map)}</span></Descriptions.Item>
+                { model.count ? <Descriptions.Item label={t('portal.cited')}>{model.count}</Descriptions.Item> : null }
                 <Descriptions.Item label={t('portal.model.keywords')} contentStyle={{ flexWrap: 'wrap' }}>
                   <div className={styles.kwContainer}>{model?.keywords.map(keyword => <Tag className={styles.kwTag} key={keyword} title={keyword}>{keyword}</Tag>)}</div>
                 </Descriptions.Item>

@@ -19,7 +19,7 @@ function RenderProgress(state, { id, progress, create_datetime }, simple=false) 
           <InprogressIcon style={{ fontSize: 18, color: 'rgb(250, 211, 55)'}} />
         </Col>
         <Col flex={1}>
-          <Progress size="small" percent={progress} strokeWidth={8} strokeColor={'rgb(250, 211, 55)'} trailColor={'rgba(0, 0, 0, 0.06)'} />
+          <Progress size="small" percent={Math.floor(progress)} strokeWidth={8} strokeColor={'rgb(250, 211, 55)'} trailColor={'rgba(0, 0, 0, 0.06)'} />
           <div style={{color: 'rgba(0, 0, 0, 0.45)'}}>
             {t('task.column.state.timeleft.label')}{calTimeLeft(progress, create_datetime, getLocale())}</div>
         </Col>

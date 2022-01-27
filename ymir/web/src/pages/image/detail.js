@@ -85,7 +85,7 @@ function ImageDetail({ role, getImage }) {
   function renderTitle() {
     return (
       <Row>
-        <Col flex={1}>{image.name} <Link to={`/home/image/add/${id}`}><EditIcon /></Link></Col>
+        <Col flex={1}>{image.name} { isAdmin() ? <Link to={`/home/image/add/${id}`}><EditIcon /></Link> : null }</Col>
         <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
       </Row>
     )

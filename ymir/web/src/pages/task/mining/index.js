@@ -315,7 +315,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
               </Tip>
             </ConfigProvider>
 
-            <Tip content={t('tip.task.train.image')}>
+            <Tip content={t('tip.task.mining.image')}>
               <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
