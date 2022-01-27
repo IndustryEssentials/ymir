@@ -25,14 +25,14 @@ class CmdExport(base.BaseCommand):
                                        media_location=self.args.media_location,
                                        src_revs=self.args.src_revs,
                                        dst_rev=dst_rev,
-                                       in_cls=self.args.in_cls,
+                                       in_cis=self.args.in_cis,
                                        work_dir=self.args.work_dir,
                                        format=self.args.format)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, media_location: str, src_revs: str,
-                      format: str, in_cls: str, work_dir: str, dst_rev: str) -> int:
+                      format: str, in_cis: str, work_dir: str, dst_rev: str) -> int:
         # check args
         if not format:
             format = 'none'
@@ -77,7 +77,7 @@ class CmdExport(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-        type_ids_list = cls_mgr.id_for_names([name.strip() for name in in_cls.split(';')])
+        type_ids_list = cls_mgr.id_for_names(in_cis.split(';')) if in_cis else []
 
         # export
         data_exporter.export(mir_root=mir_root,
