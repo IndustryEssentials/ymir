@@ -138,7 +138,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                                                       self._sub_task_id, self._guest_id1,
                                                                       self._guest_id2))
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeTraining), self._task_id)
+                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeTraining), self._task_id, 'sub_task',
+                                   self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
         output_config = os.path.join(working_dir, 'task_config.yaml')

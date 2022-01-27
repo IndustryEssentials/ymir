@@ -76,6 +76,7 @@ class TestInvokerTaskMining(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         mining_config = {
             'data_workers': 28,
+            'class_names': [],
             'model_name': 'yolo',
             'model_type': 'detection',
             'strategy': 'aldd_yolo',
@@ -121,7 +122,8 @@ class TestInvokerTaskMining(unittest.TestCase):
                                                                                     self._sub_task_id, self._guest_id1,
                                                                                     self._guest_id2, self._guest_id3))
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeMining), self._task_id)
+                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeMining), self._task_id, 'sub_task',
+                                   self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
         output_config = os.path.join(working_dir, 'task_config.yaml')
