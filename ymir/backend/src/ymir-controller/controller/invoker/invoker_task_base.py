@@ -20,8 +20,10 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                      mir_root=self._repo_root)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.TASK_CREATE:
-            raise RuntimeError("Mismatched req_type")
+        expected_type = backend_pb2.RequestType.TASK_CREATE
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         self._task_monitor_file = os.path.join(self._work_dir, 'out', 'monitor.txt')
 
@@ -53,8 +55,12 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                        tid=request.task_id,
                                        percent=0.0,
                                        state=LogState.RUNNING)
-
-        tasks_util.register_monitor_log(task_id=request.task_id, user_id=request.user_id, log_paths=[task_monitor_file])
+        if not request.req_create_task.no_task_monitor:
+            tasks_util.register_monitor_log(
+                task_id=request.task_id,
+                user_id=request.user_id,
+                log_paths=[task_monitor_file],
+            )
 
         response = cls.task_invoke(sandbox_root=sandbox_root,
                                    repo_root=repo_root,
@@ -68,7 +74,3 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
                     task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         raise NotImplementedError
-
-    def _repr(self) -> str:
-        return "create_task_base: user: {}, repo: {} task_type: {}".format(self._request.user_id, self._request.repo_id,
-                                                                           self._request.req_create_task.task_type)

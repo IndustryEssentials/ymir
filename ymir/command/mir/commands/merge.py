@@ -51,7 +51,7 @@ def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas
         pass
     elif strategy == "stop":
         if len(id_joint) > 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_CONFLICTS_OCCURED,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
                                   error_message='found conflicts in strategy stop')
     else:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid strategy: {strategy}")
@@ -90,7 +90,7 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
                                                                 set(guest_image_annotations.keys()))
 
     if strategy == "stop" and joint_ids:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_CONFLICTS_OCCURED,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
                               error_message='found conflicts in strategy stop')
 
     for asset_id in host_only_ids:
@@ -132,7 +132,7 @@ def _get_union_keywords(host_keywords: Any, guest_keywords: Any, strategy: str) 
 def _merge_keywords(host_mir_keywords: Mapping, guest_mir_keywords: Mapping, id_guest_only: set, id_joint: set,
                     strategy: str) -> None:
     if host_mir_keywords is None or guest_mir_keywords is None:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE, error_message='Invalid keywords message map.')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR, error_message='Invalid keywords message map.')
 
     for asset_id in id_guest_only:
         if asset_id not in guest_mir_keywords:
@@ -219,7 +219,7 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
         return MirCode.RC_OK
     if strategy.lower() == "stop" and id_joint:
         logging.warning("found conflict on merge strategy STOP: abort")
-        return MirCode.RC_CMD_CONFLICTS_OCCURED
+        return MirCode.RC_CMD_MERGE_ERROR
 
     _merge_metadatas(host_mir_metadatas=host_mir_metadatas,
                      guest_mir_metadatas=guest_mir_metadatas,

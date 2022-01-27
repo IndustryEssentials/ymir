@@ -12,13 +12,14 @@ class LabelAddInvoker(BaseMirControllerInvoker):
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
+        expected_type = backend_pb2.RequestType.CMD_LABEL_ADD
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
+
         response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         label_handler = labels.LabelFileHandler(self._user_root)
         conflict_rows = label_handler.merge_labels(self._request.private_labels, self._request.check_only)
         response.csv_labels.extend([",".join(row) for row in conflict_rows])
 
         return response
-
-    def _repr(self) -> str:
-        return (f"cmd_labels_add: user: {self._request.user_id}, task_id: {self._task_id} "
-                f"private_labels: {self._request.private_labels}")

@@ -40,8 +40,3 @@ class TaskLabelingInvoker(TaskBaseInvoker):
         )
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
-
-    def _repr(self) -> str:
-        labeling_request = self._request.req_create_task.labeling
-        return "task_labeling: user: {}, repo: {} task_id: {} labeling_request: {}".format(
-            self._request.user_id, self._request.repo_id, self._task_id, labeling_request)

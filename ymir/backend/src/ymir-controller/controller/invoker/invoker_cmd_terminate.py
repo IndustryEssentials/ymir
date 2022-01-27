@@ -23,8 +23,10 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
         return content["project_id"]  # type: ignore
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_TERMINATE:
-            raise RuntimeError(f"Mismatched req_type CMD_TERMINATE: {self._request.req_type}")
+        expected_type = backend_pb2.RequestType.CMD_TERMINATE
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         if self._request.terminated_task_type in [
                 backend_pb2.TaskType.TaskTypeTraining,
@@ -43,7 +45,3 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
             app_logger.logger.info(f"Do nothing to terminate task_type:{self._request.req_type}")
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "successful terminate")
-
-    def _repr(self) -> str:
-        return f"cmd_terminate: user: {self._request.user_id}, terminate \
-            executor_instance: {self._request.executor_instance}"

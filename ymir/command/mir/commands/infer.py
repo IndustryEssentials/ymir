@@ -123,7 +123,7 @@ class CmdInfer(base.BaseCommand):
         model_names = model_storage.models
         class_names = model_storage.class_names
         if not class_names:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                                   error_message=f"empty class names in model: {model_hash}")
         config = prepare_config_file(config_file=config_file,
                                      dst_config_file=work_config_file,
@@ -225,7 +225,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
 
 def _process_infer_results(infer_result_file: str, max_boxes: int) -> None:
     if not os.path.isfile(infer_result_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
                               error_message=f"can not find result file: {infer_result_file}")
 
     with open(infer_result_file, 'r') as f:

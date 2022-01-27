@@ -16,6 +16,7 @@ import {
   ArrowDownIcon, ArrowUpIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon,
   FileYesIcon, FileHistoryIcon, SearchEyeIcon, SearchIcon
 } from "@/components/common/icons"
+import { percent } from "../../utils/number"
 
 const { Item } = Descriptions
 
@@ -290,7 +291,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
             </Item>
             <Item label={'ID'}>{model.id}</Item>
             <Item label={t('model.column.target')}>{model.keywords.join(', ')}</Item>
-            <Item label={'mAP'}>{percentFormat(model.map)}</Item>
+            <Item label={'mAP'}><span title={model.map}>{percent(model.map)}</span></Item>
             <Item label={t('model.column.create_time')}>{format(task.create_datetime)}</Item>
           </> : <Item label={t('task.detail.state.current')}>{t('task.detail.model.deleted')}</Item>)
             : null}
@@ -301,7 +302,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
                 <Button type="link" onClick={() => setShowErrorMsg(!showErrorMsg)}>
                   {showErrorMsg ? t('common.fold') : t('common.unfold')}{showErrorMsg ? <ArrowUpIcon /> : <ArrowDownIcon />}
                 </Button>
-                {formatErrorMessage(error.message)}
+                <p>{t(`error${error.code}`)}</p>
               </div>
             </Item>
           </>
