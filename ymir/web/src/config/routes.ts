@@ -48,7 +48,7 @@ const Routes = [
         title: 'task.label.title',
       },
       {
-        path: "/home/task/:keyword?",
+        path: "/home/task",
         name: "task",
         component: "@/pages/task/index",
         title: 'tasks.title',
@@ -60,14 +60,8 @@ const Routes = [
         title: "dataset.add.title",
       },
       {
-        path: "/home/dataset/:keyword?",
+        path: "/home/dataset",
         name: "dataset",
-        component: "@/pages/dataset/index",
-        title: "datasets.title",
-      },
-      {
-        path: "/home/dataset/s/:keyword?",
-        name: "datasetS",
         component: "@/pages/dataset/index",
         title: "datasets.title",
       },
@@ -96,7 +90,7 @@ const Routes = [
         title: "model.verify.title",
       },
       {
-        path: "/home/model/:keyword?",
+        path: "/home/model",
         name: "model",
         component: "@/pages/model/index",
         title: "models.title",

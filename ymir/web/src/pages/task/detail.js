@@ -40,6 +40,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
   }, [taskItem])
 
   useEffect(() => {
+    resetData()
     fetchTask()
   }, [id])
 
@@ -51,6 +52,13 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
 
   function fetchTask() {
     getTask(id)
+  }
+
+  function resetData() {
+    setTask({})
+    setModel({})
+    setDataset({})
+    setError({})
   }
 
   function getResult() {
@@ -181,9 +189,9 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
           <Item label={t('task.detail.label.id')}>{task.id}</Item>
           {isType(TASKTYPES.FILTER) ? (
             <>
-              <Item label={t('task.filter.form.datasets.label')}>{renderDatasetName(task.filterSets)}</Item>
-              <Item label={t('task.filter.form.include.label')} span={2}>{task.parameters.include_classes?.map(key => <Tag key={key}>{key}</Tag>)}</Item>
-              {task.parameters.exclude_classes ? <Item label={t('task.filter.form.exclude.label')} span={2}>{task.parameters.exclude_classes?.map(key => <Tag key={key}>{key}</Tag>)}</Item> : null}
+              <Item label={t('task.filter.form.datasets.label')} span={2}>{renderDatasetName(task.filterSets)}</Item>
+              <Item label={t('task.filter.form.include.label')}>{task.parameters.include_classes?.map(key => <Tag key={key}>{key}</Tag>)}</Item>
+              {task.parameters.exclude_classes?.length ? <Item label={t('task.filter.form.exclude.label')}>{task.parameters.exclude_classes?.map(key => <Tag key={key}>{key}</Tag>)}</Item> : null}
             </>
           ) : null}
 

@@ -69,7 +69,6 @@ export default {
     },
     *shareImage({ payload }, { call, put }) {
       const { id, ...res } = payload
-      console.log('model share image: ', id, res)
       const { code, result } = yield call(shareImage, id, res)
       if (code === 0) {
         return result
