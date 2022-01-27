@@ -13,7 +13,7 @@ from controller.label_model.request_handler import RequestHandler
 
 
 class AIOS(LabelBase):
-    def __init__(self, request_handler: RequestHandler) -> None:
+    def __init__(self, request_handler: RequestHandler = RequestHandler()) -> None:
         self._requests = request_handler
 
     @staticmethod

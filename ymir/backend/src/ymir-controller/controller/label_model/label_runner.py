@@ -61,10 +61,10 @@ def start_label_task(
     request_handler = RequestHandler(
         url=label_task_config.LABEL_TOOL_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
     )
-    if label_task_config.LABEL_STUDIO == label_task_config.LABEL_TOOL:
+    if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
         label_instance = LabelStudio(request_handler)
-    elif label_task_config.AIOS == label_task_config.LABEL_TOOL:
-        label_instance = AIOS(request_handler)
+    elif label_task_config.LABEL_TOOL == label_task_config.AIOS:
+        label_instance = AIOS(request_handler)  # type: ignore
     else:
         raise ValueError("Error! Please setting your label tools")
 
