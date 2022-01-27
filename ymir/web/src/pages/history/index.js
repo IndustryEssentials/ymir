@@ -227,7 +227,6 @@ function History({ getHistory, getDataset, getModel }) {
   }
 
   function clickEdge(ev) {
-    console.log('his event by click edge: ', ev)
     // do nothing now
   }
 

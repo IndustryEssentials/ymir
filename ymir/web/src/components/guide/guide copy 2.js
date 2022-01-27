@@ -30,7 +30,6 @@ const Guide = ({ children, elem, show = true }) => {
 
   useEffect(() => {
     if (elem) {
-      console.log('test elem: ', elem.getBoundingClientRect() )
       const { x, y, width, height } = elem.getBoundingClientRect()
       setPos({
         x, y, width, height,

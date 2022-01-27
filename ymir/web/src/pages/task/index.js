@@ -25,34 +25,24 @@ import { getTensorboardLink } from "../../services/common"
 
 const { useForm } = Form
 
-const initQuery = {
-  name: "",
-  type: "",
-  time: 0,
-  offset: 0,
-  limit: 20,
-}
-
-function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
-  const { keyword } = useParams()
+function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, updateQuery, resetQuery }) {
   const history = useHistory()
+  const { name } = history.location.query
   const [tasks, setTasks] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
-  const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
   const terminateRef = useRef(null)
-  let [init, setInit] = useState(Boolean(keyword))
+  const [lock, setLock] = useState(true)
   // const [showAdd, setSowAdd] = useState(false)
 
   /** use effect must put on the top */
   useEffect(() => {
-    if (init) {
-      setInit(false)
-      return
+    if (history.action !== 'POP') {
+      initState()
     }
-    getData()
-  }, [query])
+    setLock(false)
+  }, [history.location])
 
   useEffect(() => {
     const forceUpdate = taskList.items.some(task => task.forceUpdate)
@@ -64,12 +54,24 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
     }
   }, [taskList])
 
-  useEffect(() => {
-    if (keyword) {
-      setQuery(old => ({ ...old, name: keyword }))
-      form.setFieldsValue({ name: keyword })
+  useEffect(async () => {
+    if (name) {
+      await updateQuery({ ...query, name })
+      form.setFieldsValue({ name })
     }
-  }, [keyword])
+    setLock(false)
+  }, [name])
+
+  useEffect(() => {
+    if (!lock) {
+      getData()
+    }
+  }, [query, lock])
+
+  async function initState() {
+     await resetQuery()
+     form.resetFields()
+  }
 
   const types = getTaskTypes()
   const states = getTaskStates()
@@ -152,12 +154,11 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
 
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
-    console.log('tabel chagne: ', sorters, calDuration(365000, getLocale()))
     const limit = pageSize
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
     const order_by = sorters.order ? sorters.field : undefined
-    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
+    updateQuery({ ...query, limit, offset, is_desc, order_by })
   }
 
   function showTitle(str) {
@@ -240,20 +241,12 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      setQuery((old) => ({
-        ...old,
-        ...values,
-        offset: initQuery.offset,
-      }))
+      updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         // console.log('compact: ', name, form.getFieldValue('name'))
         if (name === form.getFieldValue('name')) {
-          setQuery((old) => ({
-            ...old,
-            name,
-            offset: initQuery.offset,
-          }))
+          updateQuery({ ...query, name, })
         }
       }, 1000)
     }
@@ -337,7 +330,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList }) {
         name='queryForm'
         form={form}
         labelCol={{ flex: '100px' }}
-        initialValues={{ type: "", state: '', time: 0, name: keyword || "" }}
+        initialValues={{ type: query.type, state: query.state, time: query.time, name: name || query.name }}
         onValuesChange={search}
         colon={false}
       >
@@ -433,6 +426,7 @@ const props = (state) => {
   return {
     logined: state.user.logined,
     taskList: state.task.tasks,
+    query: state.task.query,
   }
 }
 
@@ -460,6 +454,17 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'task/updateTask',
         payload: { id, name },
+      })
+    },
+    updateQuery: (query) => {
+      return dispatch({
+        type: 'task/updateQuery',
+        payload: query,
+      })
+    },
+    resetQuery: () => {
+      return dispatch({
+        type: 'task/resetQuery',
       })
     },
   }
