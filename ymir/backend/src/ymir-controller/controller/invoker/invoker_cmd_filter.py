@@ -27,10 +27,11 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         # invoke command
-        filter_command = "cd {0} && {1} filter --dst-rev {2} --src-revs {3}".format(
+        filter_command = "cd {0} && {1} filter --dst-rev {2} --src-revs {3} -w {4}".format(
             self._repo_root, utils.mir_executable(),
             revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id),
-            revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.his_task_id))
+            revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.his_task_id),
+            self._work_dir)
 
         label_handler = labels.LabelFileHandler(self._user_root)
         if self._request.in_class_ids:
@@ -40,9 +41,3 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
             filter_command += " -P '{}'".format(';'.join(
                 label_handler.get_main_labels_by_ids(self._request.ex_class_ids)))
         return utils.run_command(filter_command)
-
-    def _repr(self) -> str:
-        return ("filter: user: {}, repo: {}, task_id: {} in_class_ids: {}, ex_class_ids: {}"
-                " in_dataset_ids: {}".format(self._request.user_id, self._request.repo_id, self._task_id,
-                                             self._request.in_class_ids, self._request.ex_class_ids,
-                                             self._request.in_dataset_ids))

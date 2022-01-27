@@ -28,7 +28,8 @@ class TestInvokerTaskFilter(unittest.TestCase):
         self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzza5'
-        self._sub_task_id = utils.sub_task_id(self._task_id, 1)
+        self._sub_task_id_0 = utils.sub_task_id(self._task_id, 0)
+        self._sub_task_id_1 = utils.sub_task_id(self._task_id, 1)
         self._base_task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz4'
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
@@ -81,6 +82,15 @@ class TestInvokerTaskFilter(unittest.TestCase):
         req_create_task.task_type = backend_pb2.TaskTypeFilter
         req_create_task.no_task_monitor = True
         req_create_task.filter.CopyFrom(filter_request)
+
+        working_dir_root = os.path.join(self._sandbox_root, "work_dir",
+                                        backend_pb2.TaskType.Name(backend_pb2.TaskTypeFilter), self._task_id)
+        os.makedirs(working_dir_root, exist_ok=True)
+        working_dir_0 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_0)
+        os.makedirs(working_dir_0, exist_ok=True)
+        working_dir_1 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_1)
+        os.makedirs(working_dir_1, exist_ok=True)
+
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
                                          req_type=backend_pb2.TASK_CREATE,
@@ -88,15 +98,16 @@ class TestInvokerTaskFilter(unittest.TestCase):
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
                                          req_create_task=req_create_task,
-                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
+                                         merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
+                                         work_dir=working_dir_root)
         print(MessageToDict(response))
 
-        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
-                              "--src-revs '{3}@{3};{4}'".format(self._mir_repo_root, self._task_id, self._sub_task_id,
-                                                                self._guest_id1, self._guest_id2))
-        expected_cmd_filter = ("cd {0} && mir filter --dst-rev {1}@{1} --src-revs {1}@{2} "
-                               "-p '{3}' -P '{4}'".format(self._mir_repo_root, self._task_id, self._sub_task_id,
-                                                          'frisbee;car', 'frisbee;car'))
+        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host -w {3} "
+                              "--src-revs '{4}@{4};{5}'".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
+                                                                working_dir_1, self._guest_id1, self._guest_id2))
+        expected_cmd_filter = ("cd {0} && mir filter --dst-rev {1}@{1} --src-revs {1}@{2} -w {3} "
+                               "-p '{4}' -P '{5}'".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
+                                                          working_dir_0, 'frisbee;car', 'frisbee;car'))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
             mock.call(expected_cmd_filter, capture_output=True, shell=True, text=True),
