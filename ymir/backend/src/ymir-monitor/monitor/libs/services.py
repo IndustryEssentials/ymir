@@ -30,13 +30,7 @@ class TaskService:
         return result
 
     @staticmethod
-    def merge_task_progress_contents(raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
-        """
-        pending: if all log is pending
-        done: if all log is done
-        error: any log error
-        running: else
-        """
+    def merge_task_progress_contents(task_id: str, raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
         percent = 0.0
         log_files_state_set = set()
         max_timestamp_content = None
@@ -60,7 +54,7 @@ class TaskService:
         else:
             result.percent = percent / len(raw_log_contents)
             result.state = LogState.RUNNING
-
+        result.task_id = task_id
         return result
 
     def get_running_task(self) -> Dict[str, Dict]:
@@ -84,7 +78,7 @@ class TaskService:
         raw_log_contents = self.get_raw_log_contents(reg_parameters.log_paths)
         if len(raw_log_contents) != len(reg_parameters.log_paths):
             raise LogFileError
-        percent_result = self.merge_task_progress_contents(raw_log_contents)
+        percent_result = self.merge_task_progress_contents(reg_parameters.task_id, raw_log_contents)
         task_extra_info = TaskExtraInfo.parse_obj(reg_parameters.dict())
         percent_result = PercentResult.parse_obj(percent_result.dict())
 
