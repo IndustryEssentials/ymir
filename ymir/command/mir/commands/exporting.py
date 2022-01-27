@@ -154,7 +154,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                       default="none",
                                       choices=data_exporter.support_format_type(),
                                       help='annotation format: ark / voc / none')
-    exporting_arg_parser.add_argument("-p",
+    exporting_arg_parser.add_argument("-p", '--cis',
                                       dest="in_cis",
                                       type=str,
                                       required=False,
