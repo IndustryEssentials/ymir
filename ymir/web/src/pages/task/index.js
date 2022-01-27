@@ -242,18 +242,12 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, update
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      updateQuery({
-        ...query,
-        ...values,
-      })
+      updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         // console.log('compact: ', name, form.getFieldValue('name'))
         if (name === form.getFieldValue('name')) {
-          updateQuery({
-            ...query,
-            name,
-          })
+          updateQuery({ ...query, name, })
         }
       }, 1000)
     }
