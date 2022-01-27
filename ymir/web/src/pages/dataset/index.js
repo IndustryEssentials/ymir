@@ -31,14 +31,6 @@ import { humanize } from "@/utils/number"
 const { confirm } = Modal
 const { useForm } = Form
 
-const initQuery = {
-  name: "",
-  type: "",
-  time: 0,
-  offset: 0,
-  limit: 20,
-}
-
 function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, updateQuery, resetQuery }) {
   const { keyword } = useParams()
   const location = useLocation()
@@ -62,6 +54,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, u
     }
     setLock(false)
   }, [history.location])
+
   useEffect(() => {
     const forceUpdate = datasetList.items.some(dataset => dataset.forceUpdate)
     if (forceUpdate) {

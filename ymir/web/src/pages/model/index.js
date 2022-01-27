@@ -23,40 +23,43 @@ import TypeTag from "@/components/task/typeTag"
 const { confirm } = Modal
 const { useForm } = Form
 
-const initQuery = {
-  name: "",
-  type: "",
-  time: 0,
-  offset: 0,
-  limit: 20,
-}
-
-function Keyword({ getModels, delModel, updateModel }) {
+function Model({ getModels, delModel, updateModel, query, updateQuery, resetQuery }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [models, setModels] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
-  const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
-  const [showAdd, setSowAdd] = useState(false)
-  let [init, setInit] = useState(Boolean(keyword))
+  let [lock, setLock] = useState(true)
 
   /** use effect must put on the top */
   useEffect(() => {
-    if (init) {
-      setInit(false)
-      return
+    console.log('action: ', history, history.action, query)
+    if (history.action !== 'POP') {
+      initState()
     }
-    getData()
-  }, [query])
+    setLock(false)
+  }, [history.location])
 
-  useEffect(() => {
+
+  useEffect(async () => {
     if (keyword) {
-      setQuery(old => ({ ...old, name: keyword }))
+      await updateQuery({ ...query, name: keyword })
       form.setFieldsValue({ name: keyword })
     }
+    setLock(false)
   }, [keyword])
+
+  useEffect(() => {
+    if (!lock) {
+      getData()
+    }
+  }, [query, lock])
+
+  async function initState() {
+    await resetQuery()
+    form.resetFields()
+ }
 
   const types = getModelImportTypes()
 
@@ -124,7 +127,7 @@ function Keyword({ getModels, delModel, updateModel }) {
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
     const order_by = sorters.order ? sorters.field : undefined
-    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
+    updateQuery({ ...query, limit, offset, is_desc, order_by })
   }
 
   function showTitle(str) {
@@ -245,26 +248,14 @@ function Keyword({ getModels, delModel, updateModel }) {
     }
   }
 
-  const add = () => {
-    setSowAdd(true)
-  }
-
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      setQuery((old) => ({
-        ...old,
-        ...values,
-        offset: initQuery.offset,
-      }))
+      updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         if (name === form.getFieldValue('name')) {
-          setQuery((old) => ({
-            ...old,
-            name,
-            offset: initQuery.offset,
-          }))
+          updateQuery({ ...query, name, })
         }
       }, 1000)
     }
@@ -279,7 +270,7 @@ function Keyword({ getModels, delModel, updateModel }) {
             name='queryForm'
             form={form}
             labelCol={{ flex: '100px' }}
-            initialValues={{ source: "", time: 0, name: keyword || "" }}
+            initialValues={{ time: query.time, name: keyword || query.name }}
             onValuesChange={search}
             colon={false}
           >
@@ -343,7 +334,6 @@ function Keyword({ getModels, delModel, updateModel }) {
           {current.map}
         </Form.Item>
       </EditBox>
-      {/* <Add visible={showAdd} type='local' cancel={() => setSowAdd(false)} ok={() => { resetQuery(); getData() }} /> */}
     </div>
   )
 }
@@ -351,6 +341,7 @@ function Keyword({ getModels, delModel, updateModel }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    query: state.model.query,
   }
 }
 
@@ -374,7 +365,18 @@ const actions = (dispatch) => {
         payload: { id, name },
       })
     },
+    updateQuery: (query) => {
+      return dispatch({
+        type: 'model/updateQuery',
+        payload: query,
+      })
+    },
+    resetQuery: () => {
+      return dispatch({
+        type: 'model/resetQuery',
+      })
+    },
   }
 }
 
-export default connect(props, actions)(Keyword)
+export default connect(props, actions)(Model)
