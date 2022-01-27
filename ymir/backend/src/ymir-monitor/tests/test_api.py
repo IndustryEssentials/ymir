@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 
 from app.api.api_v1.api import tasks as m
 from app.config import settings
-from tests.utils.utils import random_lower_string
 
 
 @pytest.fixture(scope="function")
