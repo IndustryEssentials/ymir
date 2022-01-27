@@ -12,7 +12,6 @@ import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
 import { TASKSTATES } from '@/constants/task'
-import { getSetStates } from '@/constants/column'
 import { getDatasetTypes, getTimes } from '@/constants/query'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -40,7 +39,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
+function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, updateQuery, resetQuery }) {
   const { keyword } = useParams()
   const location = useLocation()
   const history = useHistory()
@@ -49,16 +48,20 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
   const [form] = useForm()
   const [selectedIds, setSelectedIds] = useState([])
   const [selectedAssets, setSelectedAssets] = useState(0)
-  const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
-  const [showAdd, setShowAdd] = useState(false)
-  let [init, setInit] = useState(Boolean(keyword))
+  let [lock, setLock] = useState(true)
 
   const types = getDatasetTypes()
   const times = getTimes()
-  const states = getSetStates()
 
   /** use effect must put on the top */
+  useEffect(() => {
+    console.log('action: ', history, history.action, query)
+    if (history.action !== 'POP') {
+      initState()
+    }
+    setLock(false)
+  }, [history.location])
   useEffect(() => {
     const forceUpdate = datasetList.items.some(dataset => dataset.forceUpdate)
     if (forceUpdate) {
@@ -69,20 +72,19 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
     }
   }, [datasetList])
 
-  useEffect(() => {
+  useEffect(async () => {
     if (keyword) {
-      setQuery(old => ({ ...old, name: keyword }))
+      await updateQuery({ ...query, name: keyword })
       form.setFieldsValue({ name: keyword })
     }
+    setLock(false)
   }, [keyword])
 
   useEffect(() => {
-    if (init) {
-      setInit(false)
-      return
+    if (!lock) {
+      getData()
     }
-    getData()
-  }, [query])
+  }, [query, lock])
 
   useEffect(() => {
     setSelectedAssets(
@@ -98,10 +100,14 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
 
   useEffect(() => {
     if (location.state?.type) {
-      setShowAdd(location.state.type === 'add')
       history.replace(location.pathname, {})
     }
   }, [location.state])
+
+  async function initState() {
+    await resetQuery()
+    form.resetFields()
+ }
 
   const columns = [
     {
@@ -240,7 +246,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
     const order_by = sorters.order ? sorters.field : undefined
-    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
+    updateQuery({ ...query, limit, offset, is_desc, order_by })
   }
 
   function showTitle(str) {
@@ -322,27 +328,14 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      setQuery((old) => ({
-        ...old,
-        ...values,
-        offset: initQuery.offset,
-      }))
+      updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         if (name === form.getFieldValue('name')) {
-          setQuery((old) => ({
-            ...old,
-            name,
-            offset: initQuery.offset,
-          }))
+          updateQuery({ ...query, name, })
         }
       }, 1000)
     }
-  }
-
-  const resetQuery = () => {
-    setQuery(initQuery)
-    form.resetFields()
   }
 
   function isImporting(state) {
@@ -396,7 +389,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList }) {
             form={form}
             // layout="inline"
             labelCol={{ flex: '100px' }}
-            initialValues={{ type: "", time: 0, name: keyword || "" }}
+            initialValues={{ type: query.type, time: query.time, name: keyword || query.name }}
             onValuesChange={search}
             colon={false}
           // onFinish={search}
@@ -502,6 +495,7 @@ const props = (state) => {
   return {
     logined: state.user.logined,
     datasetList: state.dataset.datasets,
+    query: state.dataset.query,
   }
 }
 
@@ -523,6 +517,17 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'dataset/updateDataset',
         payload: { id, name },
+      })
+    },
+    updateQuery: (query) => {
+      return dispatch({
+        type: 'dataset/updateQuery',
+        payload: query,
+      })
+    },
+    resetQuery: () => {
+      return dispatch({
+        type: 'dataset/resetQuery',
       })
     },
   }
