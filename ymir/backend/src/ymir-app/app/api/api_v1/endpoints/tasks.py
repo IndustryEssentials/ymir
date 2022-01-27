@@ -336,7 +336,7 @@ def get_task(
         result["model_id"] = model.id
     if dataset:
         result["dataset_id"] = dataset.id
-    if task_info["error_code"]:
+    if task_info["error_code"] and task_info["error_code"] != "0":
         result["error"] = {"code": task_info["error_code"]}
 
     task_info["result"] = result
