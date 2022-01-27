@@ -688,6 +688,7 @@ class TaskResultHandler:
             name=get_default_record_name(task.hash, task.name),
             hash=model_info["hash"],
             map=model_info["map"],
+            parameters=json.dumps(task.parameters) if task.parameters else None,
             user_id=task.user_id,
             task_id=task.id,
         )
