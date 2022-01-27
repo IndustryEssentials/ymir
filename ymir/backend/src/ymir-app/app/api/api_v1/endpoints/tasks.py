@@ -498,8 +498,8 @@ class TaskResultHandler:
     @staticmethod
     def is_valid_state(task_result: Dict) -> bool:
         if task_result and task_result["state"] != TaskState.unknown:
-            logger.info("skip invalid task_result: %s", task_result)
             return True
+        logger.info("skip invalid task_result: %s", task_result)
         return False
 
     @staticmethod
@@ -736,7 +736,7 @@ class TaskResultHandler:
                 TaskState.terminate if new_state in FinalStates else TaskState.premature
             )
         task_obj = crud.task.update_state(
-            self.db, task=task_obj, new_state=task.state, state_code=state_code
+            self.db, task=task_obj, new_state=new_state, state_code=state_code
         )
         return task_obj
 

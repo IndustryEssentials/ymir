@@ -57,7 +57,7 @@ def monitor_percent_log() -> None:
                 flag_task_updated = True
 
         if flag_task_updated:
-            content_merged = TaskService.merge_task_progress_contents(runtime_log_contents)
+            content_merged = TaskService.merge_task_progress_contents(task_id, runtime_log_contents)
             if content_merged.state in [LogState.DONE, LogState.ERROR]:
                 task_id_finished.append(task_id)
             task_updated[task_id] = dict(
