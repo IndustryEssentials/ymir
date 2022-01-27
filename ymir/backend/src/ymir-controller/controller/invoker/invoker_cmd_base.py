@@ -24,7 +24,8 @@ class BaseMirControllerInvoker(ABC):
                  sandbox_root: str,
                  request: backend_pb2.GeneralReq,
                  assets_config: dict,
-                 async_mode: bool = False) -> None:
+                 async_mode: bool = False,
+                 work_dir: str = '') -> None:
         super().__init__()
 
         # check sandbox_root
@@ -57,7 +58,7 @@ class BaseMirControllerInvoker(ABC):
         self._request = request
         self._assets_config = assets_config
         self._async_mode = async_mode
-        self._work_dir = self.prepare_work_dir()
+        self._work_dir = work_dir or self.prepare_work_dir()
 
         self._send_request_metrics()
 
@@ -119,4 +120,4 @@ class BaseMirControllerInvoker(ABC):
                                              preserving_proto_field_name=True,
                                              use_integers_for_enums=True)
 
-        return f" request: \n {req_info}"
+        return f" request: \n {req_info} \n async_mode: {self._async_mode} \n work_dir: {self._work_dir}"

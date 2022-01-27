@@ -9,23 +9,34 @@ from proto import backend_pb2
 
 
 class TaskExportingInvoker(TaskBaseInvoker):
-    @classmethod
-    def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict, working_dir: str,
-                    task_monitor_file: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+    def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         exporting_request = request.req_create_task.exporting
         logging.info(f"exporting_requests: {exporting_request}")
-
         asset_dir = exporting_request.asset_dir
         if not asset_dir:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "empty asset_dir")
+            return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
         annotation_dir = exporting_request.annotation_dir
         if exporting_request.format != backend_pb2.LabelFormat.NO_ANNOTATION:
             if not annotation_dir:
-                return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "empty anno_dir")
+                return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                                                   message="empty annotation_dir")
             os.makedirs(annotation_dir, exist_ok=True)
 
+        return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
+
+    @classmethod
+    def subtask_count(cls) -> int:
+        return 1
+
+    @classmethod
+    def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
+                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
+                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+        exporting_request = request.req_create_task.exporting
+        asset_dir = exporting_request.asset_dir
+        annotation_dir = exporting_request.annotation_dir
         media_location = assets_config['assetskvlocation']
         exporting_response = cls.exporting_cmd(repo_root=repo_root,
                                                dataset_id=exporting_request.dataset_id,
@@ -33,7 +44,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
                                                asset_dir=asset_dir,
                                                annotation_dir=annotation_dir,
                                                media_location=media_location,
-                                               work_dir=working_dir)
+                                               work_dir=subtask_workdir)
 
         return exporting_response
 

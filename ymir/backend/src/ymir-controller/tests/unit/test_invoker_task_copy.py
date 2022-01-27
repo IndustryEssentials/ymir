@@ -86,7 +86,8 @@ class TestInvokerTaskCopy(unittest.TestCase):
         mir_src_root = os.path.join(self._sandbox_root, copy_request.src_user_id, copy_request.src_repo_id)
         os.makedirs(mir_src_root)
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeCopyData), self._task_id)
+                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeCopyData), self._task_id, 'sub_task',
+                                   self._task_id)
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = backend_pb2.TaskTypeCopyData
