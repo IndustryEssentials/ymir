@@ -267,6 +267,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             onFinishFailed={onFinishFailed}
             labelAlign={'left'}
             colon={false}
+            scrollToFirstError
           >
 
             <Tip hidden={true}>
