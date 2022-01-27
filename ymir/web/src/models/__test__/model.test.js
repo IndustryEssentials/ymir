@@ -41,7 +41,7 @@ describe("models: model", () => {
   errorCode(model, 'updateModel')
   errorCode(model, 'verify')
   errorCode(model, 'getModelsByRef', [])
-  errorCode(model, 'getModelsByMap', {keywords: [], models: []})
+  errorCode(model, 'getModelsByMap', {keywords: [], kmodels: {}})
 
   it("effects: getModels", () => {
     const saga = model.effects.getModels
@@ -283,12 +283,16 @@ it("effects: getModelsByMap -> get stats result success-> batch models success",
     payload: { limit: 30 },
   }
   const keywords = ['cat', 'dog', 'person', 'tree', 'cup', 'light', 'phone']
-  const models = products(5)
-  const result = []
+  const models = products(5).map(({ id }) => ({ id, name: `model${id}`, map: 0.1 * (id + 1) }))
+  const result = {}
+  const kmodels = {}
   keywords.forEach((keyword, index) => {
-    result[keyword] = models
+    result[keyword] = models.map(model => [ model.id, model.map ])
   })
-  const expected = { models, keywords: keywords.slice(0, 5)}
+  keywords.slice(0, 5).forEach((keyword, index) => {
+    kmodels[keyword] = models
+  })
+  const expected = { kmodels, keywords: keywords.slice(0, 5)}
 
   const generator = saga(creator, { put, call, select })
   generator.next()
@@ -308,10 +312,10 @@ it("effects: getModelsByMap -> get stats result success-> batch models failed", 
     payload: { limit: 30 },
   }
   const keywords = ['cat', 'dog', 'person', 'tree', 'cup', 'light', 'phone']
-  const models = products(5)
-  const result = []
+  const models = products(5).map(({ id }) => ({ id, name: `model${id}`, map: 0.1 * (id + 1) }))
+  const result = {}
   keywords.forEach((keyword, index) => {
-    result[keyword] = models
+    result[keyword] = models.map(model => [ model.id, model.map ])
   })
 
   const generator = saga(creator, { put, call, select })
@@ -322,7 +326,7 @@ it("effects: getModelsByMap -> get stats result success-> batch models failed", 
   })
   const end = generator.next(undefined)
 
-  expect(end.value).toEqual({keywords: keywords.slice(0, 5), models: []})
+  expect(end.value).toEqual({keywords: keywords.slice(0, 5), kmodels: {}})
   expect(end.done).toBe(true)
 })
 it("effects: getModelsByMap -> get stats result = []", () => {
@@ -331,7 +335,7 @@ it("effects: getModelsByMap -> get stats result = []", () => {
     type: "getModelsByMap",
     payload: { limit: 30 },
   }
-  const result = []
+  const result = {}
 
   const generator = saga(creator, { put, call, select })
   generator.next()
@@ -340,7 +344,7 @@ it("effects: getModelsByMap -> get stats result = []", () => {
     result,
   })
 
-  expect(end.value).toEqual({keywords: [], models: []})
+  expect(end.value).toEqual({keywords: [], kmodels: {}})
   expect(end.done).toBe(true)
 })
 })

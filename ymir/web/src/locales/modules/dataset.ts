@@ -60,6 +60,7 @@ const dataset = {
   "dataset.asset.info.timestamp": { cn: "时间戳", en: "Timestamp", },
   "dataset.asset.info.keyword": { cn: "标签", en: "Keywords", },
   "dataset.asset.random": { cn: "随机图像", en: "Random Asset", },
+  "dataset.asset.back": { cn: "上一个", en: "Previous Asset", },
   "dataset.asset.empty": { cn: "查询不到指定asset", en: "Invalid Asset", },
   "dataset.asset.annotation.hide": { cn: "隐藏所有标注", en: "Hide All", },
   "dataset.asset.annotation.show": { cn: "显示所有标注", en: "Show All", },
