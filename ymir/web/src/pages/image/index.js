@@ -42,7 +42,6 @@ function Image() {
   }, [keyword])
 
   useEffect(() => {
-    console.log('location state: ', location.state)
     const type = location?.state?.type
     if (typeof type !== 'undefined') {
       setActive(type)

@@ -34,7 +34,6 @@ function Model({ getModels, delModel, updateModel, query, updateQuery, resetQuer
 
   /** use effect must put on the top */
   useEffect(() => {
-    console.log('action: ', history, history.action, query)
     if (history.action !== 'POP') {
       initState()
     }

@@ -246,7 +246,6 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, u
   }
 
   async function getData() {
-    console.log('get data: ', query)
     let params = {
       offset: query.offset,
       limit: query.limit,

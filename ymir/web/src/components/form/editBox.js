@@ -29,7 +29,6 @@ const EditBox = ({ children, record, max=50, action = () => { } }) => {
   }
   function onCancel() {
     setShow(false)
-    console.log('cancel id: ', record)
   }
   return <Modal
     visible={show}

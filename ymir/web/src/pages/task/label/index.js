@@ -79,7 +79,6 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
       label_members: emails,
       doc,
     }
-    console.log('test submit: ', params)
     const result = await createLabelTask(params)
     if (result) {
       history.replace("/home/task")

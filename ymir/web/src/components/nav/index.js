@@ -227,11 +227,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     updateCurrentPath(newPath) {
-      console.log("history", history)
-      // dispatch({
-      //   type: 'watchRoute/updateRoute'
-      //   payload:
-      // })
     },
     loginout() {
       return dispatch({

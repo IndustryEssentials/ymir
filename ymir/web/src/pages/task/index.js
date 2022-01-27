@@ -154,7 +154,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, update
 
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
-    console.log('tabel chagne: ', sorters, calDuration(365000, getLocale()))
     const limit = pageSize
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
