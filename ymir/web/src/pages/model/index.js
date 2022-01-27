@@ -11,6 +11,7 @@ import moment from "moment"
 
 import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
+import { percent } from '@/utils/number'
 import { getTimes, getModelImportTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/model'
@@ -95,6 +96,7 @@ function Keyword({ getModels, delModel, updateModel }) {
     {
       title: showTitle("model.column.map"),
       dataIndex: "map",
+      render: map => <span title={map}>{percent(map)}</span>,
       align: 'center',
     },
     {
@@ -266,27 +268,6 @@ function Keyword({ getModels, delModel, updateModel }) {
         }
       }, 1000)
     }
-  }
-
-  const resetQuery = () => {
-    setQuery(initQuery)
-    form.resetFields()
-  }
-
-  const moreActions = (record) => {
-    return (
-      <Menu>
-        {moreActionsList(record).map((action) => (
-          <Menu.Item
-            className={action.className}
-            key={action.key}
-            onClick={action.onclick}
-          >
-            {action.label}
-          </Menu.Item>
-        ))}
-      </Menu>
-    )
   }
 
   return (
