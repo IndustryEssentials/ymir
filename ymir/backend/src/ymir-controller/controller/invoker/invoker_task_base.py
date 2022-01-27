@@ -62,7 +62,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             tasks_util.write_task_progress(monitor_file=subtask_monitor_file,
                                            tid=utils.sub_task_id(task_id, idx),
                                            percent=0.0,
-                                           state=LogState.PENDING)
+                                           state=LogState.RUNNING)
             sub_monitor_files.append(subtask_monitor_file)
 
         if register_monitor:
