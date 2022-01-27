@@ -3,6 +3,7 @@ import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import t from '@/utils/t'
+import { percent } from '../../../utils/number'
 
 
 const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ...resProps }) => {
@@ -49,7 +50,7 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
       return {
         label: <Row gutter={10} wrap={false}>
           <Col flex={1}>{model.name}</Col>
-          <Col>mAP: <strong>{model.map}</strong></Col>
+          <Col>mAP: <strong title={model.map}>{percent(model.map)}</strong></Col>
           <Col>{t('model.column.target')}: {model.keywords.join(',')}</Col>
         </Row>,
         model,

@@ -13,6 +13,7 @@ import styles from './verify.less'
 import { NavDatasetIcon, EqualizerIcon } from '@/components/common/icons'
 import ImgDef from '@/assets/img_def.png'
 import ImageSelect from "../task/components/imageSelect"
+import { percent } from "../../utils/number"
 
 const { CheckableTag } = Tag
 
@@ -187,7 +188,7 @@ function Verify({ getModel, verify }) {
                   {model.name}
                 </Descriptions.Item>
                 <Descriptions.Item label={'mAP'}>
-                  {model.map}
+                  <span title={model.map}>{percent(model.map)}</span>
                 </Descriptions.Item>
                 <Descriptions.Item label={t("model.column.create_time")}>
                   {format(model.create_datetime)}
