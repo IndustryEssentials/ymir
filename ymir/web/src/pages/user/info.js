@@ -58,7 +58,6 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
   }
   const onAvatarOk = async (files, url) => {
     // submit
-    console.log('avatar: ', url)
     if (url) {
       const result = await updateUserInfo({ avatar: url })
       if (result) {

@@ -10,9 +10,4 @@ describe("app config", () => {
     dva.config.onError(err)
     expect(consoleSpy).toHaveBeenCalled()
   })
-
-  it("route change config", () => {
-    const location = window.location
-    onRouteChange({ location })
-  })
 })

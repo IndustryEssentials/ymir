@@ -12,9 +12,19 @@ import {
 } from "@/services/task"
 import { isFinalState } from '@/constants/task'
 
+const initQuery = {
+  name: '',
+  type: '',
+  state: '',
+  time: 0,
+  offset: 0,
+  limit: 20,
+}
+
 export default {
   namespace: "task",
   state: {
+    query: initQuery,
     tasks: {
       items: [],
       total: 0,
@@ -150,6 +160,23 @@ export default {
         payload: { ...task },
       })
     },
+    *updateQuery({ payload = {} }, { put, select }) {
+      const query = yield select(({ task }) => task.query)
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: {
+          ...query,
+          ...payload,
+          offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
+        }
+      })
+    },
+    *resetQuery({}, { put }) {
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: initQuery,
+      })
+    },
   },
   reducers: {
     UPDATE_TASKS(state, { payload }) {
@@ -162,6 +189,12 @@ export default {
       return {
         ...state,
         task: payload,
+      }
+    },
+    UPDATE_QUERY(state, { payload }) {
+      return {
+        ...state,
+        query: payload,
       }
     },
   },
