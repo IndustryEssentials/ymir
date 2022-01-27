@@ -1,8 +1,8 @@
 import logging
 import sys
 
-from postman import event_handlers
 from postman.event_dispatcher import EventDispatcher
+from postman.handlers import task_state_handler
 from postman.settings import settings
 
 
@@ -16,9 +16,7 @@ def main() -> None:
     logging.info(f"postman event dispatcher start with:\n    debug: {is_debug_mode} \n    settings: {settings}")
 
     # event dispatcher
-    ed = EventDispatcher(event_name='/events/taskstates')
-    ed.register_handler(event_handlers.on_task_state)
-    ed.start()
+    EventDispatcher(event_name='/events/taskstates', handler=task_state_handler.on_task_state).start()
 
 
 if __name__ == '__main__':

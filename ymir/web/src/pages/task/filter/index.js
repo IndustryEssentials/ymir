@@ -183,7 +183,7 @@ function Filter({
           </Tip>
 
           <Tip hidden={true}>
-          <Form.Item label={t('dataset.column.keyword')} required>
+          <Form.Item label={t('dataset.column.keyword')} required style={{ zIndex: 2, position: 'relative' }}>
               <p>{t('task.filter.form.include.label')}</p>
             <Tip content={t('tip.task.filter.includelable')} span={1} formSpan={24}>
                 <Form.Item
