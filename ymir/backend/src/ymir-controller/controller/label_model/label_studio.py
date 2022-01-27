@@ -8,41 +8,16 @@ from io import BytesIO
 from typing import Dict, List
 from xml.etree import ElementTree
 
-import requests
-
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
+from controller.label_model.request_handler import RequestHandler
 from controller.utils.app_logger import logger
-
-
-class RequestHandler:
-    def __init__(
-        self,
-        host: str = label_task_config.LABEL_STUDIO_HOST,
-        headers: Dict[str, str] = {"Authorization": label_task_config.LABEL_STUDIO_TOKEN},
-    ):
-        self.host = host
-        self.headers = headers
-
-    def get(self, url_path: str, params: Dict = {}) -> bytes:
-        resp = requests.get(url=f"{self.host}{url_path}", headers=self.headers, params=params, timeout=600)
-        resp.raise_for_status()
-        return resp.content
-
-    def post(self, url_path: str, params: Dict = {}, json_data: Dict = {}) -> bytes:
-        resp = requests.post(url=f"{self.host}{url_path}",
-                             headers=self.headers,
-                             params=params,
-                             json=json_data,
-                             timeout=600)
-        resp.raise_for_status()
-        return resp.content
 
 
 class LabelStudio(LabelBase):
     # https://labelstud.io/api/
-    def __init__(self) -> None:
-        self.requests = RequestHandler()
+    def __init__(self, request_handler: RequestHandler = RequestHandler()) -> None:
+        self.requests = request_handler
 
     @staticmethod
     def gen_detection_label_config(keywords: List) -> str:
@@ -69,8 +44,9 @@ class LabelStudio(LabelBase):
 
         return label_config
 
-    def create_label_project(self, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-                             **kwargs: Dict) -> int:
+    def create_label_project(
+        self, project_name: str, keywords: List, collaborators: List, expert_instruction: str, **kwargs: Dict
+    ) -> int:
         # Create a project and set up the labeling interface in Label Studio
         url_path = "/api/projects"
         label_config = self.gen_detection_label_config(keywords)
@@ -123,13 +99,7 @@ class LabelStudio(LabelBase):
         # Create a prediction for a specific task.
         url_path = "/api/predictions"
         data = dict(
-            model_version='',
-            result=predictions,
-            score=0,
-            cluster=0,
-            neighbors={},
-            mislabeling=0,
-            task=task_id,
+            model_version="", result=predictions, score=0, cluster=0, neighbors={}, mislabeling=0, task=task_id,
         )
 
         resp = self.requests.post(url_path=url_path, json_data=data)
@@ -194,14 +164,8 @@ class LabelStudio(LabelBase):
         params = {"id": "delete_tasks", "project": project_id}
         json_data = {
             "ordering": [],
-            "selectedItems": {
-                "all": False,
-                "included": unlabeled_task_ids
-            },
-            "filters": {
-                "conjunction": "and",
-                "items": []
-            },
+            "selectedItems": {"all": False, "included": unlabeled_task_ids},
+            "filters": {"conjunction": "and", "items": []},
             "project": str(project_id),
         }
 
@@ -258,9 +222,21 @@ class LabelStudio(LabelBase):
         logger.info(f"successful created {valid_prediction_cnt} predictions.")
 
     @catch_label_task_error
-    def run(self, task_id: str, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-            input_asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str, media_location: str,
-            import_work_dir: str, use_pre_annotation: bool) -> None:
+    def run(
+        self,
+        task_id: str,
+        project_name: str,
+        keywords: List,
+        collaborators: List,
+        expert_instruction: str,
+        input_asset_dir: str,
+        export_path: str,
+        monitor_file_path: str,
+        repo_root: str,
+        media_location: str,
+        import_work_dir: str,
+        use_pre_annotation: bool,
+    ) -> None:
         logger.info("start LabelStudio run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
@@ -268,5 +244,13 @@ class LabelStudio(LabelBase):
         self.sync_import_storage(storage_id)
         if use_pre_annotation:
             self.update_project_prediction(input_asset_dir, project_id)
-        self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root, media_location,
-                                      import_work_dir, exported_storage_id)
+        self.store_label_task_mapping(
+            project_id,
+            task_id,
+            monitor_file_path,
+            export_path,
+            repo_root,
+            media_location,
+            import_work_dir,
+            exported_storage_id,
+        )

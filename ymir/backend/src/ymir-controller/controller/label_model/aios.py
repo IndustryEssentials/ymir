@@ -1,6 +1,5 @@
 import glob
 import json
-import math
 import os
 import shutil
 import zipfile
@@ -8,15 +7,13 @@ from io import BytesIO
 from typing import Dict, List
 from xml.etree import ElementTree
 
-import requests
-
-from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
 from controller.utils.app_logger import logger
+from controller.label_model.request_handler import RequestHandler
 
 
 class AIOS(LabelBase):
-    def __init__(self, request_handler) -> None:
+    def __init__(self, request_handler: RequestHandler) -> None:
         self._requests = request_handler
 
     @staticmethod
@@ -119,27 +116,6 @@ class AIOS(LabelBase):
         url_path = f"/api/projects/{project_id}"
         resp = self._requests.get(url_path=url_path)
         return json.loads(resp)
-
-    def get_project_tasks(self, project_id: int, unlabelled_only: bool = False) -> List:
-        project_info = self.get_project_info(project_id)
-        task_num = project_info["task_number"]
-        url_path = f"/api/projects/{project_id}/tasks/"
-
-        tasks = []
-        for page in range(1, math.ceil(task_num / label_task_config.LABEL_PAGE_SIZE) + 1):
-            params = {
-                "page_size": label_task_config.LABEL_PAGE_SIZE,
-                "page": page,
-            }
-            all_content = self._requests.get(url_path=url_path, params=params)
-            for content in json.loads(all_content):
-                if unlabelled_only and content["is_labeled"]:
-                    continue
-                tasks.append(content)
-
-        logger.info(f"retrieved {len(tasks)} tasks in project {project_id} unlabelled_only: {unlabelled_only}")
-
-        return tasks
 
     def delete_unlabeled_task(self, project_id: int) -> None:
         pass

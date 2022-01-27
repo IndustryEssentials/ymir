@@ -1,18 +1,8 @@
-import glob
-import json
-import math
-import os
-import shutil
-import zipfile
-from io import BytesIO
-from typing import Dict, List
-from xml.etree import ElementTree
+from typing import Dict
 
 import requests
 
 from controller.config import label_task as label_task_config
-from controller.label_model.base import LabelBase, catch_label_task_error
-from controller.utils.app_logger import logger
 
 
 class RequestHandler:

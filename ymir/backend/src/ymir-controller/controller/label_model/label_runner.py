@@ -3,12 +3,12 @@ from typing import Tuple, List
 
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
+from controller.label_model.aios import AIOS
 from controller.label_model.label_studio import LabelStudio
+from controller.label_model.request_handler import RequestHandler
 from controller.utils import utils
 from controller.utils.app_logger import logger
 from proto import backend_pb2
-from controller.label_model.aios import AIOS
-from controller.label_model.request_handler import RequestHandler
 
 
 def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, str, str]:
@@ -58,12 +58,12 @@ def start_label_task(
 ) -> None:
     logger.info("start label task!!!")
     # set your lable tools name
+    request_handler = RequestHandler(
+        url=label_task_config.LABEL_TOOL_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
+    )
     if label_task_config.LABEL_STUDIO == label_task_config.LABEL_TOOL:
-        label_instance = LabelStudio()
+        label_instance = LabelStudio(request_handler)
     elif label_task_config.AIOS == label_task_config.LABEL_TOOL:
-        request_handler = RequestHandler(
-            url=label_task_config.LABEL_TOOL_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
-        )
         label_instance = AIOS(request_handler)
     else:
         raise ValueError("Error! Please setting your label tools")
