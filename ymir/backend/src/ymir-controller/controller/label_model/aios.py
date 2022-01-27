@@ -22,7 +22,6 @@ class AIOS(LabelBase):
     @staticmethod
     def gen_detection_label_config(keywords: List) -> str:
         """
-        gen detection label config according to label studio https://labelstud.io/playground/
         <View>
           <Image name="image" value="$image"/>
           <RectangleLabels name="label" toName="image">
@@ -44,9 +43,10 @@ class AIOS(LabelBase):
 
         return label_config
 
-    def create_label_project(self, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-                             **kwargs: Dict) -> int:
-        # Create a project and set up the labeling interface in Label Studio
+    def create_label_project(
+        self, project_name: str, keywords: List, collaborators: List, expert_instruction: str, **kwargs: Dict
+    ) -> int:
+        # Create a project and set up the labeling interface
         url_path = "/api/projects"
         label_config = self.gen_detection_label_config(keywords)
         data = dict(
@@ -93,23 +93,6 @@ class AIOS(LabelBase):
         exported_storage_id = json.loads(resp)["id"]
 
         return exported_storage_id
-
-    def update_prediction(self, task_id: int, predictions: List) -> Dict:
-        # Create a prediction for a specific task.
-        url_path = "/api/predictions"
-        data = dict(
-            model_version='',
-            result=predictions,
-            score=0,
-            cluster=0,
-            neighbors={},
-            mislabeling=0,
-            task=task_id,
-        )
-
-        resp = self._requests.post(url_path=url_path, json_data=data)
-
-        return json.loads(resp)
 
     def sync_import_storage(self, storage_id: int) -> None:
         # Sync tasks from a local file import storage connection
@@ -159,31 +142,10 @@ class AIOS(LabelBase):
         return tasks
 
     def delete_unlabeled_task(self, project_id: int) -> None:
-        unlabeled_tasks = self.get_project_tasks(project_id=project_id, unlabelled_only=True)
-
-        # label studio strange behavior, post [] will delete all tasks.
-        if not unlabeled_tasks:
-            return None
-        unlabeled_task_ids = [task["id"] for task in unlabeled_tasks]
-        url_path = "/api/dm/actions"
-        params = {"id": "delete_tasks", "project": project_id}
-        json_data = {
-            "ordering": [],
-            "selectedItems": {
-                "all": False,
-                "included": unlabeled_task_ids
-            },
-            "filters": {
-                "conjunction": "and",
-                "items": []
-            },
-            "project": str(project_id),
-        }
-
-        self._requests.post(url_path=url_path, params=params, json_data=json_data)
+        pass
 
     @classmethod
-    def _move_label_studio_voc_files(cls, des_path: str) -> None:
+    def _move_voc_files(cls, des_path: str) -> None:
         voc_files = glob.glob(f"{des_path}/**/*.xml")
         for voc_file in voc_files:
             base_name = os.path.basename(voc_file)
@@ -195,7 +157,7 @@ class AIOS(LabelBase):
             for names in zf.namelist():
                 zf.extract(names, des_path)
 
-        cls._move_label_studio_voc_files(des_path)
+        cls._move_voc_files(des_path)
 
     def convert_annotation_to_voc(self, project_id: int, des_path: str) -> None:
         url_path = f"/api/projects/{project_id}/export?exportType=VOC"
@@ -204,15 +166,34 @@ class AIOS(LabelBase):
 
         logger.info(f"success convert_annotation_to_ymir: {des_path}")
 
-
     @catch_label_task_error
-    def run(self, task_id: str, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-            input_asset_dir: str, export_path: str, monitor_file_path: str, repo_root: str, media_location: str,
-            import_work_dir: str, use_pre_annotation: bool) -> None:
-        logger.info("start LabelStudio run()")
+    def run(
+        self,
+        task_id: str,
+        project_name: str,
+        keywords: List,
+        collaborators: List,
+        expert_instruction: str,
+        input_asset_dir: str,
+        export_path: str,
+        monitor_file_path: str,
+        repo_root: str,
+        media_location: str,
+        import_work_dir: str,
+        use_pre_annotation: bool,
+    ) -> None:
+        logger.info("start AIOS run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
-        self.store_label_task_mapping(project_id, task_id, monitor_file_path, export_path, repo_root, media_location,
-                                      import_work_dir, exported_storage_id)
+        self.store_label_task_mapping(
+            project_id,
+            task_id,
+            monitor_file_path,
+            export_path,
+            repo_root,
+            media_location,
+            import_work_dir,
+            exported_storage_id,
+        )

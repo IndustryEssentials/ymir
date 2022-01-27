@@ -62,7 +62,7 @@ def start_label_task(
         label_instance = LabelStudio()
     elif label_task_config.AIOS == label_task_config.LABEL_TOOL:
         request_handler = RequestHandler(
-            host=label_task_config.LABEL_TOOL_HOST, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
+            url=label_task_config.LABEL_TOOL_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
         )
         label_instance = AIOS(request_handler)
     else:
