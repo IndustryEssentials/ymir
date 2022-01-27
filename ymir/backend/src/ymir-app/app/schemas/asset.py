@@ -1,9 +1,7 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Union
 
-from pydantic import AnyUrl, BaseModel, Field, validator
-
-from app.config import settings
+from pydantic import AnyUrl, BaseModel, Field
 
 from .common import Common
 

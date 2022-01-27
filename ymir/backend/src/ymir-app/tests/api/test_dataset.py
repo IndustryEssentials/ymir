@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.api_v1.api import datasets as m
+from app.api.errors.errors import DatasetNotFound
 from app.config import settings
 from tests.utils.utils import random_lower_string, random_url
 
@@ -252,7 +253,7 @@ class TestGetRandomAsset:
             headers=normal_user_token_headers,
         )
         assert r.status_code == 404
-        assert r.json()["code"] == 4001
+        assert r.json()["code"] == DatasetNotFound.code
 
     def test_get_random_offset(self, mocker):
         limit = random.randint(100, 200)

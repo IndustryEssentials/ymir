@@ -5,7 +5,6 @@ import {
   updateTask,
   createTask,
   stopTask,
-  getLabelData,
   createFilterTask,
   createMiningTask,
   createTrainTask,
@@ -71,23 +70,12 @@ export default {
     *deleteTask({ payload }, { call, put }) {
       let { code, result } = yield call(deleteTask, payload)
       if (code === 0) {
-        yield put({
-          type: "UPDATE_TASKS",
-          payload: result,
-        })
         return result
       }
     },
     *stopTask({ payload }, { call, put }) {
-      console.log('task model stop task', payload)
       const { id, with_data } = payload
       let { code, result } = yield call(stopTask, id, with_data)
-      if (code === 0) {
-        return result
-      }
-    },
-    *getLabelData({ payload }, { call, put }) {
-      let { code, result } = yield call(getLabelData, payload)
       if (code === 0) {
         return result
       }

@@ -26,8 +26,8 @@ export default {
           type: "UPDATE_MODELS",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
@@ -56,12 +56,14 @@ export default {
           type: "UPDATE_MODEL",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *delModel({ payload }, { call, put }) {
       const { code, result } = yield call(delModel, payload)
-      return result
+      if (code === 0) {
+        return result
+      }
     },
     *createModel({ payload }, { call, put }) {
       const { code, result } = yield call(createModel, payload)
@@ -106,20 +108,29 @@ export default {
     },
     *getModelsByMap({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'mms' })
-      let models = []
       let kws = []
+      let kmodels = {}
       if (code === 0) {
-        kws = Object.keys(result).slice(0, 4)
+        kws = Object.keys(result).slice(0, 5)
         const ids = [...new Set(kws.reduce((prev, current) => ([...prev, ...result[current].map(item => item[0])]), []))]
         if (ids.length) {
           const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
           if (modelsObj) {
-            models = modelsObj
+            kws.forEach(kw => {
+              kmodels[kw] = result[kw].map(item => {
+                const { id, name, map } = modelsObj.find(model => model.id === item[0])
+                if (name) {
+                  return {
+                    id, map, name,
+                  }
+                }
+              })
+            })
           }
         }
       }
       return {
-        models, keywords: kws,
+        keywords: kws, kmodels,
       }
     },
   },

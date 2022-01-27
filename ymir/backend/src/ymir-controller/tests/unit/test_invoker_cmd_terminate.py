@@ -4,8 +4,6 @@ import shutil
 import unittest
 from unittest import mock
 
-from google.protobuf.json_format import MessageToDict
-
 import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -71,6 +69,6 @@ class TestInvokerCMDTerminate(unittest.TestCase):
         )
 
         cmd = f"docker rm -f {executor_instance}"
-        mock_run.assert_has_calls(
-            calls=[mock.call(cmd, capture_output=True, shell=True, text=True),]
-        )
+        mock_run.assert_has_calls(calls=[
+            mock.call(cmd, capture_output=True, shell=True, text=True),
+        ])

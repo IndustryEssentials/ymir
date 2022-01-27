@@ -1,32 +1,10 @@
-import random
-import secrets
-from typing import Any, List
+from typing import Any
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    Path,
-    Query,
-    UploadFile,
-)
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, File, UploadFile
 
-from app import crud, models, schemas
+from app import models, schemas
 from app.api import deps
-from app.api.errors.errors import (
-    AssetNotFound,
-    DatasetNotFound,
-    DuplicateDatasetError,
-    NoDatasetPermission,
-    WorkspaceNotFound,
-)
-from app.config import settings
-from app.utils.files import host_file, md5_of_file
-from app.utils.ymir_controller import ControllerClient
-from app.utils.ymir_viz import VizClient
+from app.utils.files import host_file
 
 router = APIRouter()
 

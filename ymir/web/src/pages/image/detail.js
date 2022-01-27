@@ -4,7 +4,7 @@ import { connect } from 'dva'
 import { useParams, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
-import Breadcrumbs from "../../components/common/breadcrumb"
+import Breadcrumbs from "@/components/common/breadcrumb"
 import { TYPES, STATES, getImageTypeLabel, getImageStateLabel } from '@/constants/image'
 import { ROLES } from '@/constants/user'
 import LinkModal from "./components/relate"
@@ -13,6 +13,7 @@ import Del from './components/del'
 import styles from "./detail.less"
 import { EditIcon, VectorIcon, TrainIcon, } from '@/components/common/icons'
 import ImagesLink from "./components/imagesLink"
+import StateTag from '../../components/task/stateTag'
 
 const { Item } = Descriptions
 
@@ -84,7 +85,7 @@ function ImageDetail({ role, getImage }) {
   function renderTitle() {
     return (
       <Row>
-        <Col flex={1}>{image.name} <Link to={`/home/image/add/${id}`}><EditIcon /></Link></Col>
+        <Col flex={1}>{image.name} { isAdmin() ? <Link to={`/home/image/add/${id}`}><EditIcon /></Link> : null }</Col>
         <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
       </Row>
     )
@@ -94,7 +95,8 @@ function ImageDetail({ role, getImage }) {
     <div className={styles.imageDetail}>
       <Breadcrumbs />
       <Card title={renderTitle()}>
-        <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('image.detail.title')}>
+        <div className={styles.infoTable} >
+        <Descriptions bordered column={2} labelStyle={{ width: '200px'}} title={t('image.detail.title')}>
           <Item label={t('image.detail.label.name')}>{image.name}</Item>
           <Item label={t('image.detail.label.type')}>{getImageTypeLabel(image.type)}</Item>
           <Item label={t('image.detail.label.url')}>{image.url}</Item>
@@ -107,13 +109,15 @@ function ImageDetail({ role, getImage }) {
           <Item label={t('image.detail.label.config')} span={2}>
             {renderConfig(image.config)}
           </Item>
-          <Item label={t('image.detail.label.state')} span={2}>{getImageStateLabel(image.state)}</Item>
+          <Item label={t('image.detail.label.state')} span={2}> <StateTag state={image.state} /> </Item>
+         
           <Item label={''} span={2}><Space>
-            {isDone(image.state) ? renderTaskBtn() : null}
+            {isDone(image.state) ? renderTaskBtn() : null} 
             <Button hidden={!isAdmin() || !isDone()} onClick={share}>{t('image.action.share')}</Button>
-            <Button hidden={!isDone() && !isError()} onClick={del}>{t('common.del')}</Button>
+            <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del}>{t('common.del')}</Button>
           </Space></Item>
         </Descriptions>
+        </div>
       </Card>
       <LinkModal ref={linkModalRef} ok={() => fetchImage()} />
       <ShareModal ref={shareModalRef} ok={() => fetchImage()} />

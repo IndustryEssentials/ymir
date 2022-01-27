@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any, List
 
 from pydantic import BaseModel, Field, validator
 

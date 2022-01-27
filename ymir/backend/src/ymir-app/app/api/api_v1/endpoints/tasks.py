@@ -1,8 +1,8 @@
 import enum
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from operator import attrgetter
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
+    ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
@@ -31,16 +32,11 @@ from app.utils.class_ids import (
     get_keyword_name_to_id_mapping,
 )
 from app.utils.clickhouse import YmirClickHouse
-from app.utils.data import groupby
 from app.utils.email import send_task_result_email
 from app.utils.err import catch_error_and_report
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
-from app.utils.ymir_controller import (
-    ControllerClient,
-    ControllerRequest,
-    ExtraRequestType,
-)
+from app.utils.ymir_controller import ControllerClient, ControllerRequest
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
@@ -263,7 +259,7 @@ def normalize_parameters(
 
     if unified_datasets and p.get("include_classes"):
         # if keywords is provided, we have to figure out
-        # source dataset of each keyword
+        # source dataset for each keyword
         normalized["grouped_keywords"] = group_keywords_by_dataset(
             unified_datasets, p["include_classes"]
         )
@@ -340,9 +336,8 @@ def get_task(
         result["model_id"] = model.id
     if dataset:
         result["dataset_id"] = dataset.id
-    if TaskState(task_info["state"]) is TaskState.error:
-        result = controller_client.get_task_result(current_user.id, task_info["hash"])
-        result["error"] = {"code": -1, "message": result.get("last_error")}
+    if task_info["error_code"]:
+        result["error"] = {"code": task_info["error_code"]}
 
     task_info["result"] = result
     return {"result": task_info}
@@ -431,7 +426,7 @@ def update_task_status(
         jsonable_encoder(task_result),
     )
     task = crud.task.get_by_hash(db, hash_=task_result.hash)
-    if not (task and task.hash):
+    if not task:
         raise TaskNotFound()
 
     if is_obsolete_message(
@@ -444,7 +439,7 @@ def update_task_status(
         logger.warning("Attempt to update finished task, skip")
         raise ObsoleteTaskStatus()
 
-    task_result_proxy = TaskResultProxy(
+    task_result_handler = TaskResultHandler(
         db=db,
         graph_db=graph_db,
         controller=controller_client,
@@ -452,10 +447,14 @@ def update_task_status(
         clickhouse=clickhouse,
     )
     try:
-        updated_task = task_result_proxy.save(task_info, task_result.dict())
+        updated_task = task_result_handler.save(task_info, task_result.dict())
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
+    except ModelNotReady:
+        logger.warning("Model Not Ready")
+        return {"result": task}
+
     if updated_task:
         updated_task = crud.task.update_last_message_datetime(
             db, task=updated_task, dt=datetime.utcfromtimestamp(task_result.timestamp)
@@ -470,45 +469,7 @@ def is_obsolete_message(
     return last_update_time > msg_time
 
 
-@router.post(
-    "/update_status",
-    response_model=schemas.TasksOut,
-    dependencies=[Depends(deps.api_key_security)],
-    deprecated=True,
-)
-def batch_update_task_status(
-    *,
-    db: Session = Depends(deps.get_db),
-    graph_db: GraphClient = Depends(deps.get_graph_client),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-) -> Any:
-    """
-    Batch update given tasks status
-    """
-    tasks = crud.task.get_tasks_by_states(
-        db,
-        states=[TaskState.pending, TaskState.running, TaskState.premature],
-        including_deleted=True,
-    )
-    task_result_proxy = TaskResultProxy(
-        db=db,
-        graph_db=graph_db,
-        controller=controller_client,
-        viz=viz_client,
-        clickhouse=clickhouse,
-    )
-    for _, tasks_ in groupby(tasks, "user_id"):
-        for task_ in tasks_:
-            task = schemas.Task.from_orm(task_)
-            task_result = task_result_proxy.get(task)
-            task_result_proxy.save(task, task_result)
-
-    return {"result": {"total": len(tasks), "items": tasks}}
-
-
-class TaskResultProxy:
+class TaskResultHandler:
     def __init__(
         self,
         *,
@@ -524,22 +485,26 @@ class TaskResultProxy:
         self.clickhouse = clickhouse
         self.viz = viz
 
-    def get(self, task: schemas.Task) -> Dict:
-        result = self.controller.get_task_result(task.user_id, task.hash)
-        return result
-
     @staticmethod
     def should_fetch_task_result(previous_state: TaskState, state: TaskState) -> bool:
         if state is TaskState.done:
             return True
         # todo optimize
         #  task in premature state and reached finale, should fetch task result as well
-        if previous_state is TaskState.premature and state in [
-            TaskState.done,
-            TaskState.error,
-        ]:
+        if previous_state is TaskState.premature and state in FinalStates:
             return True
         return False
+
+    @staticmethod
+    def is_valid_state(task_result: Dict) -> bool:
+        if task_result and task_result["state"] != TaskState.unknown:
+            return True
+        logger.info("skip invalid task_result: %s", task_result)
+        return False
+
+    @staticmethod
+    def is_failed_import_task(task_type: TaskType, task_state: TaskState) -> bool:
+        return task_type is TaskType.import_data and task_state == TaskState.error
 
     def save(self, task: schemas.TaskInternal, task_result: Dict) -> Optional[Task]:
         """
@@ -549,27 +514,25 @@ class TaskResultProxy:
             - percent
             - state_message  # to parse ignored keywords
         """
-        if not task_result or task_result["state"] == TaskState.unknown:
-            logger.info("skip invalid task_result: %s", task_result)
+        if not self.is_valid_state(task_result):
             return None
-
         logger.debug(
             "task %s state: %s to %s", task.hash, task.state, task_result["state"]
         )
+
         if self.should_fetch_task_result(task.state, task_result["state"]):
             self.handle_finished_task(task)
 
-        # todo optimize
         # special logic for failed import dataset task
         #  - add ignored keywords
-        if (
-            task.type is TaskType.import_data
-            and task_result["state"] == TaskState.error
-        ):
+        if self.is_failed_import_task(task.type, task_result["state"]):
             self.handle_failed_import_task(task, task_result.get("state_message"))
 
-        updated_task = self.update_task_progress(
-            task, task_result["state"], task_result.get("percent", 0)
+        updated_task = self.update_task_progress_and_state(
+            task,
+            task_result["state"],
+            task_result["state_code"],
+            task_result.get("percent", 0),
         )
         if not updated_task:
             logger.warning("task %s not updated", task.hash)
@@ -583,6 +546,7 @@ class TaskResultProxy:
         if task_result["state"] in FinalStates:
             logger.debug("Sending notification for task: %s", task)
             self.send_notification(task, task_result["state"])
+
         return updated_task
 
     @catch_error_and_report
@@ -626,8 +590,8 @@ class TaskResultProxy:
             logger.debug("task result(new dataset): %s", dataset)
             node = schemas.Dataset.from_orm(dataset)  # type: ignore
         elif task.type in [TaskType.import_data, TaskType.copy_data]:
-            dataset = self.update_dataset(task)  # type: ignore
-            logger.debug("task result(updated dataset): %s", dataset)
+            dataset = self.finish_dataset(task)  # type: ignore
+            logger.debug("task result(finish dataset): %s", dataset)
             node = schemas.Dataset.from_orm(dataset)  # type: ignore
         else:
             logger.info("nothing to do for task: %s" % task)
@@ -653,7 +617,7 @@ class TaskResultProxy:
             "total": 0,
         }
         logger.debug("[failed task] update dataset with %s", dataset_info)
-        dataset = self.update_dataset(task, dataset_info)
+        dataset = self.finish_dataset(task, dataset_info)
         logger.debug("[failed task] added ignored_keywords to dataset: %s", dataset)
 
     def _parse_ignored_keywords(self, error_message: Optional[str]) -> List[str]:
@@ -685,7 +649,7 @@ class TaskResultProxy:
         dataset = crud.dataset.create(self.db, obj_in=dataset_in)
         return dataset
 
-    def update_dataset(
+    def finish_dataset(
         self, task: schemas.TaskInternal, dataset_info: Optional[Dict] = None
     ) -> Optional[Dataset]:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
@@ -713,7 +677,7 @@ class TaskResultProxy:
         self.viz.config(user_id=task.user_id, branch_id=task.hash)
         model_info = self.viz.get_model()
         if not model_info:
-            raise ValueError("model not ready yet")
+            raise ModelNotReady()
 
         model = crud.model.get_by_hash(self.db, hash_=model_info["hash"])
         if model:
@@ -746,8 +710,12 @@ class TaskResultProxy:
         }
         return result
 
-    def update_task_progress(
-        self, task: schemas.TaskInternal, task_state: int, task_progress: float
+    def update_task_progress_and_state(
+        self,
+        task: schemas.TaskInternal,
+        task_state: int,
+        state_code: Optional[str],
+        task_progress: float,
     ) -> Optional[Task]:
         task_obj = crud.task.get(self.db, id=task.id)
         if not task_obj:
@@ -756,18 +724,20 @@ class TaskResultProxy:
         task_obj = crud.task.update_progress(
             self.db, task=task_obj, progress=task_progress
         )
+
         new_state = TaskState(task_state)
-        if task_obj.state == TaskState.premature.value:
-            if new_state in [TaskState.done, TaskState.error]:
-                # ad hoc
-                #  for task in premature state
-                #  if state from Controller is done or error,
-                #  we have to convert back to terminate for frontend
-                new_state = TaskState.terminate
-            else:
-                # otherwise just return so as to keep it's premature state
-                return task_obj
-        task_obj = crud.task.update_state(self.db, task=task_obj, new_state=new_state)
+        if task_obj.state and TaskState(task_obj.state) is TaskState.premature:
+            # ad hoc
+            #  for task in premature state
+            #  if state from Controller is done or error,
+            #  we have to convert back to terminate for frontend
+            #  otherwise just return so as to keep it's premature state
+            new_state = (
+                TaskState.terminate if new_state in FinalStates else TaskState.premature
+            )
+        task_obj = crud.task.update_state(
+            self.db, task=task_obj, new_state=new_state, state_code=state_code
+        )
         return task_obj
 
     def get_parent_nodes(self, parameters: Dict) -> List:
