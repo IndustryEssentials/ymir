@@ -24,8 +24,8 @@ const { confirm } = Modal
 const { useForm } = Form
 
 function Model({ getModels, delModel, updateModel, query, updateQuery, resetQuery }) {
-  const { keyword } = useParams()
   const history = useHistory()
+  const { name } = history.location.query
   const [models, setModels] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
@@ -43,12 +43,12 @@ function Model({ getModels, delModel, updateModel, query, updateQuery, resetQuer
 
 
   useEffect(async () => {
-    if (keyword) {
-      await updateQuery({ ...query, name: keyword })
-      form.setFieldsValue({ name: keyword })
+    if (name) {
+      await updateQuery({ ...query, name })
+      form.setFieldsValue({ name })
     }
     setLock(false)
-  }, [keyword])
+  }, [name])
 
   useEffect(() => {
     if (!lock) {
@@ -270,7 +270,7 @@ function Model({ getModels, delModel, updateModel, query, updateQuery, resetQuer
             name='queryForm'
             form={form}
             labelCol={{ flex: '100px' }}
-            initialValues={{ time: query.time, name: keyword || query.name }}
+            initialValues={{ time: query.time, name: name || query.name }}
             onValuesChange={search}
             colon={false}
           >

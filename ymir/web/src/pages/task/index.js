@@ -26,8 +26,8 @@ import { getTensorboardLink } from "../../services/common"
 const { useForm } = Form
 
 function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, updateQuery, resetQuery }) {
-  const { keyword } = useParams()
   const history = useHistory()
+  const { name } = history.location.query
   const [tasks, setTasks] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
@@ -55,12 +55,12 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, update
   }, [taskList])
 
   useEffect(async () => {
-    if (keyword) {
-      await updateQuery({ ...query, name: keyword })
-      form.setFieldsValue({ name: keyword })
+    if (name) {
+      await updateQuery({ ...query, name })
+      form.setFieldsValue({ name })
     }
     setLock(false)
-  }, [keyword])
+  }, [name])
 
   useEffect(() => {
     if (!lock) {
@@ -331,7 +331,7 @@ function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, update
         name='queryForm'
         form={form}
         labelCol={{ flex: '100px' }}
-        initialValues={{ type: query.type, state: query.state, time: query.time, name: keyword || query.name }}
+        initialValues={{ type: query.type, state: query.state, time: query.time, name: name || query.name }}
         onValuesChange={search}
         colon={false}
       >

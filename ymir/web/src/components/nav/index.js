@@ -162,9 +162,9 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   }
 
   const searchContents = [
-    <Link className={styles.link} to={`/home/dataset/${searchValue}`}>{t('common.top.search.item.dataset', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/model/${searchValue}`}>{t('common.top.search.item.model', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/task/${searchValue}`}>{t('common.top.search.item.task', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/dataset?name=${searchValue}`}>{t('common.top.search.item.dataset', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/model?name=${searchValue}`}>{t('common.top.search.item.model', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/task?name=${searchValue}`}>{t('common.top.search.item.task', { searchValue })}</Link>,
   ]
 
   const searchContent = (

@@ -32,8 +32,8 @@ const { confirm } = Modal
 const { useForm } = Form
 
 function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, updateQuery, resetQuery }) {
-  const { keyword } = useParams()
   const location = useLocation()
+  const { name } = location.query
   const history = useHistory()
   const [datasets, setDatasets] = useState([])
   const [total, setTotal] = useState(0)
@@ -48,7 +48,6 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, u
 
   /** use effect must put on the top */
   useEffect(() => {
-    console.log('action: ', history, history.action, query)
     if (history.action !== 'POP') {
       initState()
     }
@@ -66,12 +65,12 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, u
   }, [datasetList])
 
   useEffect(async () => {
-    if (keyword) {
-      await updateQuery({ ...query, name: keyword })
-      form.setFieldsValue({ name: keyword })
+    if (name) {
+      await updateQuery({ ...query, name })
+      form.setFieldsValue({ name })
     }
     setLock(false)
-  }, [keyword])
+  }, [name])
 
   useEffect(() => {
     if (!lock) {
@@ -247,6 +246,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, u
   }
 
   async function getData() {
+    console.log('get data: ', query)
     let params = {
       offset: query.offset,
       limit: query.limit,
@@ -382,7 +382,7 @@ function Dataset({ getDatasets, delDataset, updateDataset, datasetList, query, u
             form={form}
             // layout="inline"
             labelCol={{ flex: '100px' }}
-            initialValues={{ type: query.type, time: query.time, name: keyword || query.name }}
+            initialValues={{ type: query.type, time: query.time, name: name || query.name }}
             onValuesChange={search}
             colon={false}
           // onFinish={search}
