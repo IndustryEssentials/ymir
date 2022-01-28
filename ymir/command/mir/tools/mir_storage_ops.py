@@ -173,7 +173,7 @@ class MirStorageOps():
                                                            as_dict=False)
 
         if not mir_storage_data.tasks[mir_storage_data.head_task_id].model.model_hash:
-            raise ValueError('no model')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no model")
 
         if as_dict:
             mir_storage_data = json_format.MessageToDict(mir_storage_data,
