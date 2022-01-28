@@ -154,6 +154,12 @@ class TestMirStorage(unittest.TestCase):
         with self.assertRaises(MirError):
             mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root, mir_branch='a', mir_task_id='t2')
 
+        # load_branch_contents
+        actual_contents_tuple = mir_storage_ops.MirStorageOps.load_branch_contents(mir_root=self._mir_root,
+                                                                                   mir_branch='a',
+                                                                                   mir_task_id='mining-task-id')
+        self.assertEqual(len(actual_contents_tuple), 4)
+
     # protected: misc
     def _prepare_dir(self):
         if os.path.isdir(self._mir_root):
