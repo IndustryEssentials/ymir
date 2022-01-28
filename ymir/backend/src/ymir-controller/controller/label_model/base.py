@@ -1,13 +1,15 @@
 import json
 import traceback
 from abc import ABC, abstractmethod
-from datetime import datetime
 from functools import wraps
+from requests.exceptions import ConnectionError
 from typing import Any, Callable, Dict, List
 
 from common_utils.percent_log_util import LogState
 from controller.config import label_task as label_task_config
+from controller.utils import tasks_util
 from controller.utils.redis import rds
+from id_definition.error_codes import CTLResponseCode
 
 
 def catch_label_task_error(f: Callable) -> Callable:
@@ -15,11 +17,25 @@ def catch_label_task_error(f: Callable) -> Callable:
     def wrapper(*args: tuple, **kwargs: Any) -> object:
         try:
             _ret = f(*args, **kwargs)
+        except ConnectionError as e:
+            tasks_util.write_task_progress(monitor_file=kwargs["monitor_file_path"],
+                                           tid=kwargs["task_id"],
+                                           percent=0.0,
+                                           state=LogState.ERROR,
+                                           error_code=CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR,
+                                           error_message=str(e),
+                                           msg=traceback.format_exc())
+            return None
         except Exception as e:
-            cur_time = int(datetime.now().timestamp())
-            status = f'{kwargs["task_id"]}\t{cur_time}\t0\t{LogState.ERROR.value}'
-            LabelBase.write_project_status(kwargs["monitor_file_path"], f"{status}\n{e}\n{traceback.format_exc()}")
-            _ret = None
+            tasks_util.write_task_progress(monitor_file=kwargs["monitor_file_path"],
+                                           tid=kwargs["task_id"],
+                                           percent=0.0,
+                                           state=LogState.ERROR,
+                                           error_code=CTLResponseCode.INVOKER_LABEL_TASK_UNKNOWN_ERROR,
+                                           error_message=str(e),
+                                           msg=traceback.format_exc())
+            return None
+
         return _ret
 
     return wrapper
@@ -60,17 +76,6 @@ class LabelBase(ABC):
     def run(self, **kwargs: Dict) -> Any:
         # start a label task
         pass
-
-    @staticmethod
-    def write_project_status(project_status_path: str, content: str) -> None:
-        """
-        worker need to log self status to project_status_path, controller will scan the file to get status
-        first line:
-        task_id, timestamp, percent, state, *_ = first_line[0].split()
-        state in ["pending", "running", "done", "error"]
-        """
-        with open(project_status_path, "w") as f:
-            f.write(content)
 
     # now we have to loop label task for get status
     # maybe add API for labeling tool to report self status later https://labelstud.io/guide/webhooks.html
