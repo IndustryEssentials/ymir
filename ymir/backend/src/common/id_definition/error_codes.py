@@ -21,6 +21,7 @@ class CTLResponseCode(IntEnum):
 class VizErrorCode(IntEnum):
     GENERAL_ERROR = 140400
     BRANCH_NOT_EXISTS = 140401
+    MODEL_NOT_EXISTS = 140402
     INTERNAL_ERROR = 140500
 
 
