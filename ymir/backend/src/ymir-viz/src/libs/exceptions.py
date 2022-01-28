@@ -4,7 +4,7 @@ from id_definition.error_codes import VizErrorCode
 
 
 class VizException(Exception):
-    status_code = 200
+    status_code = 400
     code = VizErrorCode.GENERAL_ERROR
     message = "Exception Occured"
 
@@ -30,3 +30,8 @@ class VizException(Exception):
 class BranchNotExists(VizException):
     code = VizErrorCode.BRANCH_NOT_EXISTS
     message = "branch not found"
+
+
+class ModelNotExists(VizException):
+    code = VizErrorCode.MODEL_NOT_EXISTS
+    message = "model not found"
