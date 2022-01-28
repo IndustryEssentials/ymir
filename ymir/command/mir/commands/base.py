@@ -17,6 +17,6 @@ class BaseCommand(ABC):
         return self.run()
 
     @abstractmethod
-    def run(self) -> int:
+    def run(self) -> int:  # pragma: no cover
         logging.critical("BaseCommand run: this action should override in sub classes")
         return 0
