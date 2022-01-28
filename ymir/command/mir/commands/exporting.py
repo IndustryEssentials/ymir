@@ -37,14 +37,8 @@ class CmdExport(base.BaseCommand):
         if not format:
             format = 'none'
 
-        if not asset_dir or not annotation_dir:
-            logging.error('empty --asset-dir or --annotation-dir')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not media_location:
-            logging.error('empty --media-location')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not src_revs:
-            logging.error('empty --src-revs')
+        if not asset_dir or not annotation_dir or not media_location or not src_revs:
+            logging.error('empty --asset-dir, --annotation-dir, --media-location or --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
         if format and (not data_exporter.check_support_format(format)):
             logging.error(f"invalid --format: {format}")
