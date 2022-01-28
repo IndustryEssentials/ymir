@@ -165,7 +165,7 @@ class MirStorageOps():
         return mir_storage_data
 
     @classmethod
-    def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str) -> dict:
+    def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
         mir_storage_data: mirpb.MirTasks = cls.load_single(mir_root=mir_root,
                                                            mir_branch=mir_branch,
                                                            ms=mirpb.MirStorage.MIR_TASKS,
