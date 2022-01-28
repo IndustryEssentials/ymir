@@ -1,5 +1,5 @@
 import os
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Tuple
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
@@ -180,6 +180,19 @@ class MirStorageOps():
                                          preserving_proto_field_name=True,
                                          use_integers_for_enums=True,
                                          including_default_value_fields=True)
+
+    @classmethod
+    def load_branch_contents(cls,
+                             mir_root: str,
+                             mir_branch: str,
+                             mir_task_id: str = '') -> Tuple[dict, dict, dict, dict]:
+        mir_storage_data = cls.load(mir_root=mir_root,
+                                    mir_branch=mir_branch,
+                                    mir_task_id=mir_task_id,
+                                    mir_storages=mir_storage.get_all_mir_storage(),
+                                    as_dict=True)
+        return (mir_storage_data[mirpb.MirStorage.MIR_METADATAS], mir_storage_data[mirpb.MirStorage.MIR_ANNOTATIONS],
+                mir_storage_data[mirpb.MirStorage.MIR_KEYWORDS], mir_storage_data[mirpb.MirStorage.MIR_TASKS])
 
 
 # public: presave actions
