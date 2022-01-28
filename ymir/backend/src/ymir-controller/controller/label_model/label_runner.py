@@ -31,7 +31,7 @@ def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, st
 
 
 def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, media_location: str,
-                        export_work_dir: str) -> None:
+                        export_work_dir: str, keywords: List[str]) -> None:
     # trigger ymir export, so that we can get pictures from ymir
     format_str = utils.annotation_format_str(backend_pb2.LabelFormat.LABEL_STUDIO_JSON)
 
@@ -41,7 +41,8 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
                                        asset_dir=input_asset_dir,
                                        annotation_dir=input_asset_dir,
                                        media_location=media_location,
-                                       work_dir=export_work_dir)
+                                       work_dir=export_work_dir,
+                                       keywords=keywords)
 
 
 def start_label_task(
@@ -74,7 +75,8 @@ def start_label_task(
                         dataset_id=dataset_id,
                         input_asset_dir=input_asset_dir,
                         media_location=media_location,
-                        export_work_dir=export_work_dir)
+                        export_work_dir=export_work_dir,
+                        keywords=keywords)
     label_instance.run(task_id=task_id,
                        project_name=project_name,
                        keywords=keywords,
