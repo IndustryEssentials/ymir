@@ -2,8 +2,7 @@ import os
 from typing import List, Dict
 
 from google.protobuf import message as pb_message
-from mir.tools import mir_storage_ops
-from mir.tools.errors import MirError
+from mir.tools import mir_storage_ops, errors
 
 from proto import backend_pb2
 from src import config
@@ -34,7 +33,7 @@ class MirStorageLoader:
             model_info = mir_storage_ops.MirStorageOps.load_single_model(
                 mir_root=self.mir_root, mir_branch=self.branch_id
             )
-        except MirError as e:
+        except errors.MirError:
             raise exceptions.ModelNotExists(f"model {self.branch_id} not found")
 
         return model_info
