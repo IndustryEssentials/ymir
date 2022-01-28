@@ -14,10 +14,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         if not train_request.in_dataset_types:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid dataset_types")
 
-        executor_instance = request.executor_instance
-        if executor_instance != request.task_id:
-            raise ValueError(f"executor_instance:{executor_instance} != task_id {request.task_id}")
-
         # store executor config in task_0 work_dir
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
@@ -76,7 +72,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
 
         previous_subtask_idx = 1
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        executor_instance = request.executor_instance
+        executor_instance = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,
             config_file=config_file,

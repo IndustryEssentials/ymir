@@ -105,7 +105,6 @@ class TestInvokerCMDInference(unittest.TestCase):
                 user_id=self._user_name,
                 repo_id=self._mir_repo_name,
                 task_id=self._task_id,
-                executor_instance=self._task_id,
                 singleton_op=inference_image,
                 docker_image_config=json.dumps(training_config),
                 model_hash=model_hash,

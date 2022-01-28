@@ -5,7 +5,7 @@ services:
     env_file:
       - .env
     ports:
-      - ${LABEL_STUDIO_OPEN_PORT}:8080
+      - ${LABEL_TOOL_PORT}:8080
     environment:
       - LOCAL_FILES_SERVING_ENABLED=true
       - SENTRY_DSN=
