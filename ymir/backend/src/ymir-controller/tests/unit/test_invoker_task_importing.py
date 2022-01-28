@@ -101,8 +101,8 @@ class TestInvokerTaskImporting(unittest.TestCase):
                                    self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
-        expected_cmd_importing = ("cd {0} && mir import --dataset-name {1} --dst-rev {1}@{1} --src-revs {2} "
-                                  "--index-file {3} --gen-dir {4} -w {5} --annotation-dir {4}".format(
+        expected_cmd_importing = ("cd '{0}' && mir import --dataset-name {1} --dst-rev {1}@{1} --src-revs {2} "
+                                  "--index-file '{3}' --gen-dir '{4}' -w '{5}' --annotation-dir '{4}'".format(
                                       self._mir_repo_root, self._task_id, 'master',
                                       os.path.join(working_dir, 'index.txt'), self._storage_root, working_dir))
         mock_run.assert_has_calls(calls=[

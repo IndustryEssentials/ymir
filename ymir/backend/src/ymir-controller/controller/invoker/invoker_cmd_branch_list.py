@@ -20,7 +20,7 @@ class BranchListInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        command = "cd {} && {} branch".format(self._repo_root, utils.mir_executable())
+        command = f"cd \'{self._repo_root}\' && {utils.mir_executable()} branch"
         response = utils.run_command(command)
 
         if response.code == 0 and response.message:

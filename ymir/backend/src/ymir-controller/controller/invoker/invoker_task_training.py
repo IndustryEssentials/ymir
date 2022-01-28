@@ -105,11 +105,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard: str,
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
-        training_cmd = (f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
-                        f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
-                        f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
-                        f"--executor-instance {executor_instance} "
-                        f"--tensorboard {tensorboard}")
+        training_cmd = (f"cd \'{repo_root}\' && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
+                        f"--model-location \'{models_upload_location}\' --media-location \'{media_location}\' "
+                        f"-w \'{work_dir}\' --src-revs {in_src_revs}@{his_rev} --config-file \'{config_file}\' "
+                        f"--executor {training_image} --executor-instance {executor_instance} "
+                        f"--tensorboard \'{tensorboard}\'")
         if model_hash:
             training_cmd += f" --model-hash {model_hash}"
 

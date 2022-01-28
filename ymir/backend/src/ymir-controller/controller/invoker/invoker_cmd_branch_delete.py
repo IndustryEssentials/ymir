@@ -22,6 +22,5 @@ class BranchDeleteInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         force_flag = "-D" if self._request.force else "-d"
-        command = "cd {0} && {1} branch {2} {3}".format(self._repo_root, utils.mir_executable(), force_flag,
-                                                        self._request.singleton_op)
-        return utils.run_command(command)
+        cmd = f"cd \'{self._repo_root}\' && {utils.mir_executable()} branch {force_flag} {self._request.singleton_op}"
+        return utils.run_command(cmd)

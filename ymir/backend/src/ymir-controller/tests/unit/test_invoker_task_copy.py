@@ -101,7 +101,7 @@ class TestInvokerTaskCopy(unittest.TestCase):
                                          task_id=self._task_id,
                                          req_create_task=req_create_task)
 
-        expected_cmd_copy = ("cd {0} && mir copy --src-root {1} --dst-rev {2}@{2} --src-revs {3}@{3} -w {4}".format(
+        expected_cmd_copy = ("cd '{0}' && mir copy --src-root {1} --dst-rev {2}@{2} --src-revs {3}@{3} -w '{4}'".format(
             self._mir_repo_root, mir_src_root, self._task_id, copy_request.src_dataset_id, working_dir))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_copy, capture_output=True, shell=True, text=True),

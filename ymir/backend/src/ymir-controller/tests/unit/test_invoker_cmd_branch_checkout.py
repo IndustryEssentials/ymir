@@ -76,7 +76,7 @@ class TestInvokerCheckoutCommit(unittest.TestCase):
                                          singleton_op=self._singleton_op)
         print(MessageToDict(response))
 
-        expected_cmd = "cd {0} && mir checkout {1}".format(self._mir_repo_root, self._singleton_op)
+        expected_cmd = "cd '{0}' && mir checkout {1}".format(self._mir_repo_root, self._singleton_op)
         mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
