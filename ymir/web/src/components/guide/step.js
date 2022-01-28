@@ -29,7 +29,7 @@ const Step = ({ elem, show = false }) => {
 
   useEffect(() => {
     if (elem) {
-      console.log('test elem: ', elem.getBoundingClientRect() )
+      // console.log('test elem: ', elem.getBoundingClientRect() )
       const { x, y, width, height } = elem.getBoundingClientRect()
       setPos({
         x, y, width, height,
