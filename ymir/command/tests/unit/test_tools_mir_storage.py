@@ -6,6 +6,7 @@ import google.protobuf.json_format as pb_format
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops
+from mir.tools.errors import MirError
 from tests import utils as test_utils
 
 
@@ -46,7 +47,7 @@ class TestMirStorage(unittest.TestCase):
 
         dict_annotations = {
             "task_annotations": {
-                "5928508c-1bc0-43dc-a094-0352079e39b5": {
+                "mining-task-id": {
                     "image_annotations": {
                         "d4e4a60147f1e35bc7f5bc89284aa16073b043c9": {
                             'annotations': [{
@@ -86,13 +87,19 @@ class TestMirStorage(unittest.TestCase):
 
         dict_tasks = {
             'tasks': {
-                '5928508c-1bc0-43dc-a094-0352079e39b5': {
+                'mining-task-id': {
                     'type': 'TaskTypeMining',
                     'name': 'mining',
                     'task_id': 'mining-task-id',
-                    'timestamp': '1624376173'
+                    'timestamp': '1624376173',
+                    'model': {
+                        'model_hash': 'abc123',
+                        'mean_average_precision': 0.5,
+                        'context': 'fake_context'
+                    }
                 }
-            }
+            },
+            'head_task_id': 'mining-task-id',
         }
         pb_format.ParseDict(dict_tasks, mir_tasks)
 
@@ -137,6 +144,15 @@ class TestMirStorage(unittest.TestCase):
                                                        mir_task_id='t2',
                                                        mir_storages=[x for x in mir_datas_expect.keys()])
         self.assertDictEqual(mir_datas, mir_datas_expect_2)
+
+        # load_single_model: have model
+        actual_dict_model = mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root,
+                                                                            mir_branch='a',
+                                                                            mir_task_id='mining-task-id')
+        self.assertEqual(actual_dict_model, dict_tasks['tasks']['mining-task-id']['model'])
+        # load_single_model: have no model
+        with self.assertRaises(MirError):
+            mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root, mir_branch='a', mir_task_id='t2')
 
     # protected: misc
     def _prepare_dir(self):

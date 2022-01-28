@@ -10,7 +10,7 @@ from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.errors import MirRuntimeError
+from mir.tools.errors import MirError, MirRuntimeError
 
 
 class MirStorageDatas:
@@ -165,22 +165,21 @@ class MirStorageOps():
         return mir_storage_data
 
     @classmethod
-    def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str, as_dict: bool = False) -> Any:
+    def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str) -> dict:
         mir_storage_data: mirpb.MirTasks = cls.load_single(mir_root=mir_root,
                                                            mir_branch=mir_branch,
                                                            ms=mirpb.MirStorage.MIR_TASKS,
                                                            mir_task_id=mir_task_id,
                                                            as_dict=False)
 
-        if not mir_storage_data.tasks[mir_storage_data.head_task_id].model.model_hash:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no model")
+        task_model = mir_storage_data.tasks[mir_storage_data.head_task_id].model
+        if not task_model.model_hash:
+            raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no model")
 
-        if as_dict:
-            mir_storage_data = json_format.MessageToDict(mir_storage_data,
-                                                         preserving_proto_field_name=True,
-                                                         use_integers_for_enums=True,
-                                                         including_default_value_fields=True)
-        return mir_storage_data
+        return json_format.MessageToDict(task_model,
+                                         preserving_proto_field_name=True,
+                                         use_integers_for_enums=True,
+                                         including_default_value_fields=True)
 
 
 # public: presave actions
