@@ -125,7 +125,6 @@ class TestInvokerTaskMining(unittest.TestCase):
             repo_id=self._mir_repo_name,
             task_id=self._task_id,
             req_create_task=req_create_task,
-            executor_instance=self._task_id,
             merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
             singleton_op='mining_image',
             model_hash=model_hash,

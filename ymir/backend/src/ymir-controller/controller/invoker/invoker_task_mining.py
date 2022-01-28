@@ -22,10 +22,6 @@ class TaskMiningInvoker(TaskBaseInvoker):
         if not mining_request.in_dataset_ids:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
 
-        executor_instance = request.executor_instance
-        if executor_instance != request.task_id:
-            raise ValueError(f'executor_instance:{executor_instance} != task_id {request.task_id}')
-
         # store executor config in task_0 work_dir
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
@@ -70,7 +66,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
-        executor_instance = request.executor_instance
+        executor_instance = request.task_id
         models_location = assets_config["modelskvlocation"]
         media_location = assets_config["assetskvlocation"]
         mining_image = request.singleton_op
