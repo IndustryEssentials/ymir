@@ -87,12 +87,11 @@ class TestInvokerMerge(unittest.TestCase):
                                    self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
-        expected_cmd = ("cd '{0}' && mir merge --dst-rev {1}@{2} -s host -w '{3}' "
-                        "--src-revs '{4}@{4};{5}' --ex-src-revs '{6}'".format(self._mir_repo_root, self._dst_task_id,
-                                                                              self._task_id, working_dir,
-                                                                              self._guest_id1, self._guest_id2,
-                                                                              self._guest_id3))
-        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True, text=True)
+        expected_cmd = ("cd {0} && mir merge --dst-rev {1}@{2} -s host -w {3} "
+                        "--src-revs {4}@{4};{5} --ex-src-revs {6}".format(self._mir_repo_root, self._dst_task_id,
+                                                                          self._task_id, working_dir, self._guest_id1,
+                                                                          self._guest_id2, self._guest_id3))
+        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, shell=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

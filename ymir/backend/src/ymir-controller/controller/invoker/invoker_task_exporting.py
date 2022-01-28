@@ -57,10 +57,13 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       media_location: str,
                       work_dir: str,
                       keywords: List[str] = None) -> backend_pb2.GeneralResp:
-        exporting_cmd = (f"cd \'{repo_root}\' && mir export --media-location \'{media_location}\' "
-                         f"--asset-dir \'{asset_dir}\' --annotation-dir \'{annotation_dir}\' --src-revs {dataset_id} "
-                         f"--format {annotation_format} -w \'{work_dir}\'")
+        exporting_cmd = [
+            'cd', repo_root, '&&',
+            utils.mir_executable(), 'export', '--media-location', media_location, '--asset-dir', asset_dir,
+            '--annotation-dir', annotation_dir, '--src-revs', dataset_id, '--format', annotation_format, '-w', work_dir
+        ]
         if keywords:
-            exporting_cmd += f" --cis \'{';'.join(keywords)}\'"
+            exporting_cmd.append('--cis')
+            exporting_cmd.append(';'.join(keywords))
 
         return utils.run_command(exporting_cmd)

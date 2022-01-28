@@ -39,20 +39,23 @@ class ImageHandler(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        check_image_command = f"docker image inspect {self._request.singleton_op} --format='ignore me'"
+        check_image_command = ['docker', 'image', 'inspect', self._request.singleton_op, '--format', 'ignore_me']
         check_response = utils.run_command(check_image_command)
         if check_response.code != CTLResponseCode.CTR_OK:
-            pull_command = f"docker pull {self._request.singleton_op}"
-            pull_command_response = utils.run_command(cmd=pull_command, error_code=CTLResponseCode.DOCKER_IMAGE_ERROR,)
+            pull_command = ['docker', 'pull', self._request.singleton_op]
+            pull_command_response = utils.run_command(
+                cmd=pull_command,
+                error_code=CTLResponseCode.DOCKER_IMAGE_ERROR,
+            )
             if pull_command_response.code != CTLResponseCode.CTR_OK:
                 return pull_command_response
 
-        hash_command = f"docker images {self._request.singleton_op} --format {'{{.ID}}'}"
+        hash_command = ['docker', 'images', self._request.singleton_op, '--format', '{{.ID}}']
         response = utils.run_command(hash_command)
         response.hash_id = response.message.strip()
 
         for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
-            config_command = f"docker run --rm {self._request.singleton_op} cat {image_config_path}"
+            config_command = ['docker', 'run', '--rm', self._request.singleton_op, 'cat', image_config_path]
             config_response = utils.run_command(config_command)
             image_config = self.convert_image_config(config_response.message)
             if image_config:

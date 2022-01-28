@@ -109,14 +109,17 @@ class TaskMiningInvoker(TaskBaseInvoker):
         executor_instance: str,
         generate_annotations: bool,
     ) -> backend_pb2.GeneralResp:
-        mining_cmd = (f"cd \'{repo_root}\' && {utils.mir_executable()} mining --dst-rev {task_id}@{task_id} "
-                      f"-w \'{work_dir}\' --model-location \'{model_location}\' --media-location \'{media_location}\' "
-                      f"--model-hash {model_hash} --src-revs {in_src_revs}@{his_rev} "
-                      f"--cache \'{asset_cache_dir}\' --config-file \'{config_file}\' --executor {executor} "
-                      f"--executor-instance {executor_instance}")
+        mining_cmd = [
+            'cd', repo_root, '&&',
+            utils.mir_executable(), 'mining', '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir, '--model-location',
+            model_location, '--media-location', media_location, '--model-hash', model_hash, '--src-revs',
+            f"{in_src_revs}@{his_rev}", '--cache', asset_cache_dir, '--config-file', config_file, '--executor',
+            executor, '--executor-instance', executor_instance
+        ]
         if top_k > 0:
-            mining_cmd += f" --topk {top_k}"
+            mining_cmd.append('--topk')
+            mining_cmd.append(str(top_k))
         if generate_annotations:
-            mining_cmd += " --add-annotations"
+            mining_cmd.append('--add-annotations')
 
         return utils.run_command(mining_cmd)

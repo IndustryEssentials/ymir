@@ -102,15 +102,15 @@ class TestInvokerTaskFilter(unittest.TestCase):
                                          work_dir=working_dir_root)
         print(MessageToDict(response))
 
-        expected_cmd_merge = ("cd '{0}' && mir merge --dst-rev {1}@{2} -s host -w '{3}' "
-                              "--src-revs '{4}@{4};{5}'".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
-                                                                working_dir_1, self._guest_id1, self._guest_id2))
-        expected_cmd_filter = ("cd '{0}' && mir filter --dst-rev {1}@{1} --src-revs {1}@{2} -w '{3}' "
-                               "-p '{4}' -P '{5}'".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
-                                                          working_dir_0, 'frisbee;car', 'frisbee;car'))
+        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host -w {3} "
+                              "--src-revs {4}@{4};{5}".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
+                                                              working_dir_1, self._guest_id1, self._guest_id2))
+        expected_cmd_filter = ("cd {0} && mir filter --dst-rev {1}@{1} --src-revs {1}@{2} -w {3} "
+                               "-p {4} -P {5}".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
+                                                      working_dir_0, 'frisbee;car', 'frisbee;car'))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
-            mock.call(expected_cmd_filter, capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_merge.split(' '), capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_filter.split(' '), capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

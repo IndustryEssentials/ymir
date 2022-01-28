@@ -25,14 +25,18 @@ class MergeInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        command = "cd \'{0}\' && {1} merge --dst-rev {2} -s {3} -w \'{4}\'".format(
-            self._repo_root, utils.mir_executable(),
-            revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id),
-            backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower(), self._work_dir)
+        command = [
+            'cd', self._repo_root, '&&',
+            utils.mir_executable(), 'merge', '--dst-rev',
+            revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id), '-s',
+            backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower(), '-w', self._work_dir
+        ]
 
         if self._request.in_dataset_ids:
-            command += " --src-revs '{}'".format(
+            command.append('--src-revs')
+            command.append(
                 revs.build_src_revs(in_src_revs=self._request.in_dataset_ids, his_tid=self._request.his_task_id))
         if self._request.ex_dataset_ids:
-            command += " --ex-src-revs '{}'".format(revs.build_src_revs(in_src_revs=self._request.ex_dataset_ids))
+            command.append('--ex-src-revs')
+            command.append(revs.build_src_revs(in_src_revs=self._request.ex_dataset_ids))
         return utils.run_command(command)

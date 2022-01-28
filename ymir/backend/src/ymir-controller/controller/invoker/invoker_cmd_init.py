@@ -33,7 +33,7 @@ class InitInvoker(BaseMirControllerInvoker):
         link_dst_file = os.path.join(self._repo_root, os.path.basename(label_file))
         os.link(label_file, link_dst_file)
 
-        command = f"cd \'{str(repo_path)}\' && {utils.mir_executable()} init"
+        command = ['cd', str(repo_path), '&&', utils.mir_executable(), 'init']
 
         return utils.run_command(
             cmd=command,

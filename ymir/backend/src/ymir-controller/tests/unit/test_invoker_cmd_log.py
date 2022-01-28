@@ -75,8 +75,8 @@ class TestInvokerLog(unittest.TestCase):
                                          repo_id=self._mir_repo_name)
         print(MessageToDict(response))
 
-        expected_cmd = "cd '{0}' && mir log".format(self._mir_repo_root)
-        mock_run.assert_called_once_with(expected_cmd, capture_output=True, shell=True, text=True)
+        expected_cmd = "cd {0} && mir log".format(self._mir_repo_root)
+        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, shell=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID, 'extStrs': [RET_ID]}
