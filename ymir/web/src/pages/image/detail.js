@@ -68,6 +68,15 @@ function ImageDetail({ role, getImage }) {
     return image.state === STATES.ERROR
   }
 
+  function renderConfigs(configs = []) {
+    return configs.map(({config, type }) => {
+      return <>
+      <h3>{getImageTypeLabel([type])[0]}</h3>
+      <div>{renderConfig(config)}</div>
+      </>
+    })
+  }
+
   function renderConfig(config = {}) {
     return Object.keys(config).map(key => <Row key={key}>
       <Col style={{ width: 200, fontWeight: 'bold' }}>{key}:</Col>
@@ -98,7 +107,7 @@ function ImageDetail({ role, getImage }) {
         <div className={styles.infoTable} >
         <Descriptions bordered column={2} labelStyle={{ width: '200px'}} title={t('image.detail.title')}>
           <Item label={t('image.detail.label.name')}>{image.name}</Item>
-          <Item label={t('image.detail.label.type')}>{getImageTypeLabel(image.type)}</Item>
+          <Item label={t('image.detail.label.type')}>{getImageTypeLabel(image.functions).join(',')}</Item>
           <Item label={t('image.detail.label.url')}>{image.url}</Item>
           <Item label={t('image.detail.label.share')}>{image.is_shared ? t('common.yes') : t('common.no')}</Item>
           <Item label={t('image.detail.label.related')} span={2}>
@@ -107,7 +116,7 @@ function ImageDetail({ role, getImage }) {
             </Row>
           </Item>
           <Item label={t('image.detail.label.config')} span={2}>
-            {renderConfig(image.config)}
+            {renderConfigs(image.configs)}
           </Item>
           <Item label={t('image.detail.label.state')} span={2}> <StateTag state={image.state} /> </Item>
          
