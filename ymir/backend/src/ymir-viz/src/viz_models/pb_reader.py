@@ -3,6 +3,7 @@ from typing import List, Dict
 
 from google.protobuf import message as pb_message
 from mir.tools import mir_storage_ops
+from mir.tools.errors import MirError
 
 from proto import backend_pb2
 from src import config
@@ -28,10 +29,15 @@ class MirStorageLoader:
 
         return mir_raw_data
 
-    def get_tasks_content(self) -> Dict:
-        raw_task_message = self.load_raw_message([backend_pb2.MirStorage.MIR_TASKS])
+    def get_model_info(self) -> Dict:
+        try:
+            model_info = mir_storage_ops.MirStorageOps.load_single_model(
+                mir_root=self.mir_root, mir_branch=self.branch_id
+            )
+        except MirError as e:
+            raise exceptions.ModelNotExists(f"model {self.branch_id} not found")
 
-        return raw_task_message[backend_pb2.MirStorage.MIR_TASKS]
+        return model_info
 
     def get_keywords_content(self) -> Dict:
         raw_keywords_message = self.load_raw_message([backend_pb2.MirStorage.MIR_KEYWORDS])
