@@ -1,10 +1,8 @@
 import os
-from typing import List, Dict
+from typing import Dict, Tuple
 
-from google.protobuf import message as pb_message
 from mir.tools import mir_storage_ops, errors
 
-from proto import backend_pb2
 from src import config
 from src.libs import utils, exceptions, app_logger
 
@@ -15,18 +13,18 @@ class MirStorageLoader:
         self.branch_id = branch_id
 
     @utils.time_it
-    def load_raw_message(self, mir_storages: List[pb_message.Message]) -> Dict:
+    def get_branch_contents(self) -> Tuple[Dict, Dict, Dict, Dict]:
         # using as_dict flag means already MessageToDict
         try:
-            mir_raw_data = mir_storage_ops.MirStorageOps.load(
-                mir_root=self.mir_root, mir_branch=self.branch_id, mir_storages=mir_storages, as_dict=True
+            metadatas, annotations, keywords, tasks = mir_storage_ops.MirStorageOps.load_branch_contents(
+                mir_root=self.mir_root, mir_branch=self.branch_id
             )
         # TODO: command define
         except ValueError as e:
             app_logger.logger.error(e)
             raise exceptions.BranchNotExists(f"branch {self.branch_id} not exist from ymir command")
 
-        return mir_raw_data
+        return metadatas, annotations, keywords, tasks
 
     def get_model_info(self) -> Dict:
         try:
@@ -37,11 +35,6 @@ class MirStorageLoader:
             raise exceptions.ModelNotExists(f"model {self.branch_id} not found")
 
         return model_info
-
-    def get_keywords_content(self) -> Dict:
-        raw_keywords_message = self.load_raw_message([backend_pb2.MirStorage.MIR_KEYWORDS])
-
-        return raw_keywords_message[backend_pb2.MirStorage.MIR_KEYWORDS]
 
     def format_mir_content(
         self, all_tasks_info: Dict, all_metadata: Dict, all_annotations: Dict, all_keywords: Dict
@@ -103,18 +96,7 @@ class MirStorageLoader:
             "ignored_labels": {'cat':5},
         }
         """
-        raw_message = self.load_raw_message(
-            [
-                backend_pb2.MirStorage.MIR_ANNOTATIONS,
-                backend_pb2.MirStorage.MIR_METADATAS,
-                backend_pb2.MirStorage.MIR_TASKS,
-            ]
-        )
-        annotations_message = raw_message[backend_pb2.MirStorage.MIR_ANNOTATIONS]
-        metadatas_message = raw_message[backend_pb2.MirStorage.MIR_METADATAS]
-        tasks_message = raw_message[backend_pb2.MirStorage.MIR_TASKS]
-        keywords_message = self.get_keywords_content()
-
-        result = self.format_mir_content(tasks_message, metadatas_message, annotations_message, keywords_message)
+        metadatas, annotations, keywords, tasks = self.get_branch_contents()
+        result = self.format_mir_content(tasks, metadatas, annotations, keywords)
 
         return result
