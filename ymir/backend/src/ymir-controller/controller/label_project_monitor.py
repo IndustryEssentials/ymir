@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
 
 import requests
 import sentry_sdk
@@ -11,10 +10,11 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from common_utils.percent_log_util import LogState
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_importing import TaskImportingInvoker
+from controller.label_model.aios import AIOS
 from controller.label_model.label_studio import LabelStudio
+from controller.utils import tasks_util
 from controller.utils.app_logger import logger
 from controller.utils.redis import rds
-from controller.label_model.aios import AIOS
 
 
 def trigger_mir_import(
@@ -97,8 +97,10 @@ def lable_task_monitor() -> None:
             rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
             logging.info(f"task {task_id} finished!!!")
 
-        content = f'{project_info["task_id"]}\t{int(datetime.now().timestamp())}\t{percent}\t{state.value}'
-        label_instance.write_project_status(project_info["monitor_file_path"], content)
+        tasks_util.write_task_progress(monitor_file=project_info["monitor_file_path"],
+                                       tid=project_info["task_id"],
+                                       percent=percent,
+                                       state=state)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import logging
 import traceback
 from datetime import datetime
 from typing import List
@@ -15,13 +16,20 @@ def write_task_progress(monitor_file: str,
                         tid: str,
                         percent: float,
                         state: LogState,
+                        error_code: int = None,
+                        error_message: str = None,
                         msg: str = None) -> CTLResponseCode:
     if not monitor_file:
         raise RuntimeError("Invalid monitor_file")
+    content_list: List[str] = [tid, str(int(datetime.now().timestamp())), str(percent), str(state.value)]
+    if error_code and error_message:
+        content_list.extend([str(error_code), error_message])
+    content = '\t'.join(content_list)
+    if msg:
+        content = '\n'.join([content, msg])
     with open(monitor_file, 'w') as f:
-        f.write('\t'.join([tid, str(int(datetime.now().timestamp())), str(percent), str(state.value)]))
-        if msg:
-            f.write('\n{}'.format(msg))
+        logging.info(f"writing task info to {monitor_file}\n{content}")
+        f.write(content)
     return CTLResponseCode.CTR_OK
 
 
