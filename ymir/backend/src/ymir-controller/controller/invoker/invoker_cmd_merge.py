@@ -26,10 +26,9 @@ class MergeInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         command = [
-            'cd', self._repo_root, '&&',
-            utils.mir_executable(), 'merge', '--dst-rev',
+            utils.mir_executable(), 'merge', '--root', self._repo_root, '--dst-rev',
             revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id), '-s',
-            backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower(), '-w', self._work_dir
+            backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower(), '-w', self._work_dir,
         ]
 
         if self._request.in_dataset_ids:

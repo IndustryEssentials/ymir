@@ -75,8 +75,8 @@ class TestInvokerBranchList(unittest.TestCase):
                                          task_id=self._task_id)
         print(MessageToDict(response))
 
-        expected_cmd = "cd {0} && mir branch".format(self._mir_repo_root)
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, shell=True, text=True)
+        expected_cmd = "mir branch --root {0}".format(self._mir_repo_root)
+        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'extStrs': RET_ID.split('\n')}

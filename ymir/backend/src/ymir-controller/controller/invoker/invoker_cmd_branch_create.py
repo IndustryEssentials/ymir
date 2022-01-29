@@ -22,5 +22,5 @@ class BranchCreateInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         branch_id = self._request.singleton_op
-        command = ['cd', self._repo_root, '&&', utils.mir_executable(), 'checkout', '-b', branch_id]
+        command = [utils.mir_executable(), 'checkout', '--root', self._repo_root, '-b', branch_id]
         return utils.run_command(command)

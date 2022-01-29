@@ -58,8 +58,8 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       work_dir: str,
                       keywords: List[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = [
-            'cd', repo_root, '&&',
-            utils.mir_executable(), 'export', '--media-location', media_location, '--asset-dir', asset_dir,
+            utils.mir_executable(), 'export', '--root', repo_root,
+            '--media-location', media_location, '--asset-dir', asset_dir,
             '--annotation-dir', annotation_dir, '--src-revs', dataset_id, '--format', annotation_format, '-w', work_dir
         ]
         if keywords:
