@@ -40,6 +40,7 @@ const model = {
   'model.detail.label.id': { en: 'Model ID', cn: '模型ID', },
   'model.detail.label.map': { en: 'mAP', cn: 'mAP值', },
   'model.detail.label.source': { en: 'Source', cn: '模型来源', },
+  'model.detail.label.image': { en: 'Train Image', cn: '训练镜像', },
   'model.detail.label.training_dataset': { en: 'Training Dataset', cn: '训练集', },
   'model.detail.label.verify_dataset': { en: 'Test Dataset', cn: '测试集', },
   'model.detail.label.test_dataset': { en: 'Test Dataset', cn: '测试集', },
