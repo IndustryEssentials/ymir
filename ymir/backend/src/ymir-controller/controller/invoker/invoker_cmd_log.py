@@ -23,7 +23,7 @@ class LogInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        command = "cd {0} && {1} log".format(self._repo_root, utils.mir_executable())
+        command = ['cd', self._repo_root, '&&', utils.mir_executable(), 'log']
         response = utils.run_command(command)
 
         if response.code == 0 and response.message:
