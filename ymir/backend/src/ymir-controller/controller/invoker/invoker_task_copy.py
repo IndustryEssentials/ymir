@@ -43,10 +43,13 @@ class TaskCopyInvoker(TaskBaseInvoker):
     @staticmethod
     def copying_cmd(repo_root: str, task_id: str, src_root: str, src_dataset_id: str, work_dir: str,
                     name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
-        copying_cmd_str = (f"cd {repo_root} && mir copy --src-root {src_root} --dst-rev {task_id}@{task_id} "
-                           f"--src-revs {src_dataset_id}@{src_dataset_id} -w {work_dir}")
+        copying_cmd_str = [
+            utils.mir_executable(), 'copy', '--root', repo_root,
+            '--src-root', src_root, '--dst-rev', f"{task_id}@{task_id}", '--src-revs',
+            f"{src_dataset_id}@{src_dataset_id}", '-w', work_dir
+        ]
 
         if name_strategy_ignore:
-            copying_cmd_str += " --ignore-unknown-types"
+            copying_cmd_str.append('--ignore-unknown-types')
 
         return utils.run_command(copying_cmd_str)

@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
+    ModelNotFound,
     ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -566,7 +567,11 @@ class TaskResultHandler:
     def handle_finished_task(self, task: schemas.TaskInternal) -> None:
         logger.debug("fetching %s task result from %s", task.type, task.hash)
         if task.type is TaskType.training:
-            model = self.add_new_model_if_not_exist(task)
+            try:
+                model = self.add_new_model_if_not_exist(task)
+            except ModelNotFound:
+                # skip following process if model not exist
+                return None
             model_info = jsonable_encoder(model)
             logger.debug("task result(new model): %s", model_info)
             keywords = schemas.model.extract_keywords(task.parameters)
@@ -676,9 +681,6 @@ class TaskResultHandler:
     def add_new_model_if_not_exist(self, task: schemas.TaskInternal) -> Model:
         self.viz.config(user_id=task.user_id, branch_id=task.hash)
         model_info = self.viz.get_model()
-        if not model_info:
-            raise ModelNotReady()
-
         model = crud.model.get_by_hash(self.db, hash_=model_info["hash"])
         if model:
             # model already added before

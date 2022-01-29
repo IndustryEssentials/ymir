@@ -86,7 +86,8 @@ function ModelDetail({ getModel }) {
           {renderDataset(model?.testSets)}
         </Item>
         <Item label={t('model.detail.label.dataset_percent')} span={2}>{renderDatasetPercent()}</Item>
-        <Item label={t('model.detail.label.train_type')} span={2}>{model.parameters?.train_type || 'Object Detection'}</Item>
+        <Item label={t('model.detail.label.train_type')}>{model.parameters?.train_type || 'Object Detection'}</Item>
+        <Item label={t('model.detail.label.image')}><Link to={`/home/image/detail/${model?.parameters?.docker_image_id}`}>{model?.parameters?.docker_image}</Link></Item>
         <Item label={t('model.detail.label.train_goal')} span={2}>{model.keywords?.map(keyword => (<Tag key={keyword}>{keyword}</Tag>))}</Item>
         <Item label={t('model.detail.label.framework')}>{model.parameters?.network} </Item>
         <Item label={t('model.detail.label.backbone')}>{model.parameters?.backbone}</Item>

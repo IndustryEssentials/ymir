@@ -99,7 +99,7 @@ describe("models: image", () => {
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual({ ...expected, functions: [] })
     expect(end.done).toBe(true)
   })
   it("effects: delImage", () => {
