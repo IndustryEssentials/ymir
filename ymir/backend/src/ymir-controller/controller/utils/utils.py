@@ -3,7 +3,7 @@ import re
 import subprocess
 import time
 from functools import wraps
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 from id_definition import task_id as task_id_proto
 from id_definition.error_codes import CTLResponseCode
@@ -15,8 +15,9 @@ def mir_executable() -> str:
     return "mir"
 
 
-def run_command(cmd: str, error_code: int = CTLResponseCode.RUN_COMMAND_ERROR) -> backend_pb2.GeneralResp:
-    logging.info(f"starting cmd: \n{cmd}\n")
+def run_command(cmd: List[str],
+                error_code: int = CTLResponseCode.RUN_COMMAND_ERROR) -> backend_pb2.GeneralResp:
+    logging.info(f"starting cmd: \n{' '.join(cmd)}\n")
     result = subprocess.run(cmd, capture_output=True, shell=True, text=True)  # run and wait
     if result.returncode != 0:
         logging.error(f"run cmd error:\n {result.stderr}")
