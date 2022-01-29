@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import List, Dict, Set
 
@@ -12,7 +13,6 @@ from pynvml import (
 )
 
 from controller.config import gpu_task as gpu_task_config
-from controller.utils.app_logger import logger
 from controller.utils.redis import rds
 
 
@@ -23,7 +23,7 @@ class GPUInfo:
         try:
             nvmlInit()
         except NVMLError as e:
-            logger.warning(f"No NVDIA GPU Driver {e}")
+            logging.warning(f"No NVDIA GPU Driver {e}")
             sentry_sdk.capture_exception(e)
 
             return gpu_info

@@ -1,5 +1,6 @@
 import glob
 import json
+import logging
 import math
 import os
 import shutil
@@ -11,7 +12,6 @@ from xml.etree import ElementTree
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
 from controller.label_model.request_handler import RequestHandler
-from controller.utils.app_logger import logger
 
 
 class LabelStudio(LabelBase):
@@ -149,7 +149,7 @@ class LabelStudio(LabelBase):
                     continue
                 tasks.append(content)
 
-        logger.info(f"retrieved {len(tasks)} tasks in project {project_id} unlabelled_only: {unlabelled_only}")
+        logging.info(f"retrieved {len(tasks)} tasks in project {project_id} unlabelled_only: {unlabelled_only}")
 
         return tasks
 
@@ -191,7 +191,7 @@ class LabelStudio(LabelBase):
         resp = self.requests.get(url_path=url_path)
         self.unzip_annotation_files(BytesIO(resp), des_path)
 
-        logger.info(f"success convert_annotation_to_ymir: {des_path}")
+        logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
     def update_project_prediction(self, input_asset_dir: str, project_id: int) -> None:
         map_filename_prediction = {}
@@ -219,7 +219,7 @@ class LabelStudio(LabelBase):
             self.update_prediction(task_id, predictions)
             valid_prediction_cnt += 1
 
-        logger.info(f"successful created {valid_prediction_cnt} predictions.")
+        logging.info(f"successful created {valid_prediction_cnt} predictions.")
 
     @catch_label_task_error
     def run(
@@ -237,7 +237,7 @@ class LabelStudio(LabelBase):
         import_work_dir: str,
         use_pre_annotation: bool,
     ) -> None:
-        logger.info("start LabelStudio run()")
+        logging.info("start LabelStudio run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
         exported_storage_id = self.set_export_storage(project_id, export_path)
