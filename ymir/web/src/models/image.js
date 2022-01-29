@@ -9,6 +9,13 @@ import {
   getShareImages,
 } from "@/services/image"
 
+function transferImage(image = {}) {
+  return {
+    ...image,
+    functions: (image.configs || []).map(config => config.type),
+  }
+}
+
 export default {
   namespace: "image",
   state: {
@@ -23,7 +30,7 @@ export default {
       const { code, result } = yield call(getImages, payload)
       if (code === 0) {
         const { items, total } = result
-        const images = items.map(image => ({ ...image, functions: (image.configs || []).map(config => config.type)}))
+        const images = items.map(image => transferImage(image))
         const imageList =  { items: images, total, }
         yield put({
           type: "UPDATE_IMAGES",
@@ -41,11 +48,12 @@ export default {
     *getImage({ payload }, { call, put }) {
       const { code, result } = yield call(getImage, payload)
       if (code === 0) {
+        const image = transferImage(result)
         yield put({
           type: "UPDATE_IMAGE",
-          payload: result,
+          payload: image,
         })
-        return result
+        return image
       }
     },
     *delImage({ payload }, { call, put }) {
