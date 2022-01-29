@@ -26,7 +26,6 @@ const Add = ({ getImage, createImage, updateImage }) => {
   }, [id])
 
   useEffect(() => {
-    console.log(location.state)
     if (!location.state) {
       return
     }

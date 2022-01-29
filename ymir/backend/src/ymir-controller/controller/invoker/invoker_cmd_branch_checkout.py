@@ -23,5 +23,5 @@ class BranchCheckoutInvoker(BaseMirControllerInvoker):
 
         # invoke command
         branch_id = self._request.singleton_op
-        command = "cd {0} && {1} checkout {2}".format(self._repo_root, utils.mir_executable(), branch_id)
+        command = [utils.mir_executable(), 'checkout', '--root', self._repo_root, branch_id]
         return utils.run_command(command)

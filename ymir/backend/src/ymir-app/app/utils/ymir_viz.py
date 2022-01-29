@@ -3,7 +3,9 @@ from typing import Dict, List, Optional
 
 import requests
 from fastapi.logger import logger
+from id_definition.error_codes import VizErrorCode
 
+from app.api.errors.errors import ModelNotFound, ModelNotReady
 from app.config import settings
 
 
@@ -140,13 +142,26 @@ class VizClient:
         assert self._keyword_id_to_name is not None, "ymir_viz not configured"
         return asdict(Asset.from_viz_res(asset_id, res, self._keyword_id_to_name))
 
-    def get_model(self) -> Optional[Dict]:
+    def get_model(self) -> Dict:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/models"  # noqa: E501
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
-        if not resp.ok:
-            return None
-        res = resp.json()["result"]
+        res = self.parse_resp(resp)
         return asdict(Model.from_viz_res(res))
+
+    def parse_resp(self, resp: requests.Response) -> Dict:
+        """
+        response falls in three categories:
+        1. valid result
+        2. task is finished, but model not exists
+        3. model not ready, try to get model later
+        """
+        if resp.ok:
+            return resp.json()["result"]
+        elif resp.status_code == 400:
+            error_code = resp.json()["code"]
+            if error_code == VizErrorCode.MODEL_NOT_EXISTS:
+                raise ModelNotFound()
+        raise ModelNotReady()
 
     def close(self) -> None:
         self.session.close()
