@@ -73,7 +73,7 @@ class TestInvokerCMDInference(unittest.TestCase):
             "warmup_iterations": 1000,
         }
         inference_image = "test_infer_image"
-        model_hash = "model hash id"
+        model_hash = "model_hash_id"
         assets_config = {
             "modelskvlocation": self._storage_root,
         }
@@ -117,9 +117,10 @@ class TestInvokerCMDInference(unittest.TestCase):
 
         index_file = os.path.join(working_dir, "inference_pic_index.txt")
 
-        cmd = (f"mir infer -w {working_dir} --model-location {self._storage_root} --index-file {index_file} "
-               f"--model-hash {model_hash} --config-file {config_file} --executor {inference_image}")
+        cmd = (f"mir infer -w {working_dir} --model-location {self._storage_root} "
+               f"--index-file {index_file} --model-hash {model_hash} "
+               f"--config-file {config_file} --executor {inference_image}")
 
         mock_run.assert_has_calls(calls=[
-            mock.call(cmd, capture_output=True, shell=True, text=True),
+            mock.call(cmd.split(' '), capture_output=True, text=True),
         ])

@@ -142,10 +142,10 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          docker_image_config=json.dumps(training_config))
         print(MessageToDict(response))
 
-        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host -w {3} "
-                              "--src-revs 'tr:{4}@{4};va:{5}'".format(self._mir_repo_root, self._task_id,
-                                                                      self._sub_task_id_1, working_dir_1,
-                                                                      self._guest_id1, self._guest_id2))
+        expected_cmd_merge = ("mir merge --root {0} --dst-rev {1}@{2} -s host -w {3} "
+                              "--src-revs tr:{4}@{4};va:{5}".format(self._mir_repo_root, self._task_id,
+                                                                    self._sub_task_id_1, working_dir_1, self._guest_id1,
+                                                                    self._guest_id2))
 
         output_config = os.path.join(working_dir_0, 'task_config.yaml')
         with open(output_config, "r") as f:
@@ -157,7 +157,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
 
-        training_cmd = ("cd {0} && mir train --dst-rev {1}@{1} --model-location {2} "
+        training_cmd = ("mir train --root {0} --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --config-file {5} --executor {6} "
                         "--executor-instance {7} --tensorboard {8}".format(self._mir_repo_root, self._task_id,
                                                                            self._storage_root, working_dir_0,
@@ -165,8 +165,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                                                            training_image, self._task_id,
                                                                            tensorboard_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
-            mock.call(training_cmd, capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
+            mock.call(training_cmd.split(' '), capture_output=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()
