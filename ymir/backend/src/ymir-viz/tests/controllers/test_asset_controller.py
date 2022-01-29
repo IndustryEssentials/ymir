@@ -87,8 +87,7 @@ def mock_mir_content(mocker):
     mocker.patch.object(RedisCache, "get")
 
 
-# open it when ymir command published
-class TmpCloseTestAssetController:
+class TestAssetController:
     def test_get_asserts_info(self, test_client, mock_mir_content):
         user_id = "user_id"
         repo_id = "repo_id"
