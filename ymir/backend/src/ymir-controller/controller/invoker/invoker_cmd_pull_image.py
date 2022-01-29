@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Optional
 
 import sentry_sdk
@@ -7,7 +8,6 @@ import yaml
 from controller.config import common_task as common_task_config
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
-from controller.utils.app_logger import logger
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -27,7 +27,7 @@ class ImageHandler(BaseMirControllerInvoker):
                 raise ValueError(f"raw image config error: {raw_image_config}")
         except Exception:
             error_message = f"raw image config error: {raw_image_config}"
-            logger.error(error_message)
+            logging.error(error_message)
             sentry_sdk.capture_message(error_message)
             return None
 
