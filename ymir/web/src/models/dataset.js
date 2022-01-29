@@ -12,9 +12,18 @@ import {
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
 
+const initQuery = {
+  name: "",
+  type: "",
+  time: 0,
+  offset: 0,
+  limit: 20,
+}
+
 export default {
   namespace: "dataset",
   state: {
+    query: initQuery,
     datasets: {
       items: [],
       total: 0,
@@ -145,6 +154,23 @@ export default {
       }
       return datasets
     },
+    *updateQuery({ payload = {} }, { put, select }) {
+      const query = yield select(({ task }) => task.query)
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: {
+          ...query,
+          ...payload,
+          offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
+        }
+      })
+    },
+    *resetQuery({}, { put }) {
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: initQuery,
+      })
+    },
   },
   reducers: {
     UPDATE_DATASETS(state, { payload }) {
@@ -175,6 +201,12 @@ export default {
       return {
         ...state,
         publicDatasets: payload
+      }
+    },
+    UPDATE_QUERY(state, { payload }) {
+      return {
+        ...state,
+        query: payload,
       }
     },
   },

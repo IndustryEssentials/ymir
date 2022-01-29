@@ -64,7 +64,6 @@ class ControllerRequest:
             user_id=self.user_id,
             repo_id=self.repo_id,
             task_id=self.task_id,
-            executor_instance=self.task_id,
         )
 
         method_name = "prepare_" + self.type.name

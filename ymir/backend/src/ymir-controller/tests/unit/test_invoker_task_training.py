@@ -32,7 +32,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self._storage_name = "media_storage_root"
         self._tensorboard_root_name = 'tensorboard_root'
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzd5'
-        self._sub_task_id = utils.sub_task_id(self._task_id, 1)
+        self._sub_task_id_0 = utils.sub_task_id(self._task_id, 0)
+        self._sub_task_id_1 = utils.sub_task_id(self._task_id, 1)
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
 
@@ -119,6 +120,15 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'assetskvlocation': self._storage_root,
             'tensorboard_root': self._tensorboard_root,
         }
+
+        working_dir_root = os.path.join(self._sandbox_root, "work_dir",
+                                        backend_pb2.TaskType.Name(backend_pb2.TaskTypeTraining), self._task_id)
+        os.makedirs(working_dir_root, exist_ok=True)
+        working_dir_0 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_0)
+        os.makedirs(working_dir_0, exist_ok=True)
+        working_dir_1 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_1)
+        os.makedirs(working_dir_1, exist_ok=True)
+
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
                                          assets_config=assets_config,
@@ -127,21 +137,17 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
                                          req_create_task=req_create_task,
-                                         executor_instance=self._task_id,
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
                                          singleton_op=training_image,
                                          docker_image_config=json.dumps(training_config))
         print(MessageToDict(response))
 
-        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host "
-                              "--src-revs 'tr:{3}@{3};va:{4}'".format(self._mir_repo_root, self._task_id,
-                                                                      self._sub_task_id, self._guest_id1,
-                                                                      self._guest_id2))
-        working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeTraining), self._task_id)
-        os.makedirs(working_dir, exist_ok=True)
+        expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host -w {3} "
+                              "--src-revs 'tr:{4}@{4};va:{5}'".format(self._mir_repo_root, self._task_id,
+                                                                      self._sub_task_id_1, working_dir_1,
+                                                                      self._guest_id1, self._guest_id2))
 
-        output_config = os.path.join(working_dir, 'task_config.yaml')
+        output_config = os.path.join(working_dir_0, 'task_config.yaml')
         with open(output_config, "r") as f:
             config = yaml.safe_load(f)
 
@@ -154,8 +160,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
         training_cmd = ("cd {0} && mir train --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --config-file {5} --executor {6} "
                         "--executor-instance {7} --tensorboard {8}".format(self._mir_repo_root, self._task_id,
-                                                                           self._storage_root, working_dir,
-                                                                           self._sub_task_id, output_config,
+                                                                           self._storage_root, working_dir_0,
+                                                                           self._sub_task_id_1, output_config,
                                                                            training_image, self._task_id,
                                                                            tensorboard_dir))
         mock_run.assert_has_calls(calls=[

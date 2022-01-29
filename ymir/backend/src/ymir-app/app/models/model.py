@@ -7,6 +7,7 @@ from sqlalchemy import (
     Float,
     Integer,
     String,
+    Text,
     UniqueConstraint,
 )
 
@@ -20,7 +21,7 @@ class Model(Base):
     hash = Column(String(settings.HASH_LEN_LIMIT), index=True)
     name = Column(String(settings.NAME_LEN_LIMIT), index=True)
     map = Column(Float)
-    parameters = Column(String(settings.PARA_LEN_LIMIT))
+    parameters = Column(Text(settings.PARA_LEN_LIMIT))
     task_id = Column(Integer, index=True)
     user_id = Column(Integer, index=True)
     is_deleted = Column(Boolean, default=False)

@@ -124,13 +124,13 @@ class TaskInternal(TaskInDBBase):
     state: TaskState
 
     @validator("parameters")
-    def loads_parameters(cls, v: str, values: Dict[str, Any]) -> Dict[str, Any]:
+    def loads_parameters(cls, v: str) -> Dict[str, Any]:
         if not v:
             return {}
         return json.loads(v)
 
     @validator("config")
-    def loads_config(cls, v: str, values: Dict[str, Any]) -> Dict[str, Any]:
+    def loads_config(cls, v: str) -> Dict[str, Any]:
         if not v:
             return {}
         return json.loads(v)

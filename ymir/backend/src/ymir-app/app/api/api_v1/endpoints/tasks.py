@@ -336,7 +336,7 @@ def get_task(
         result["model_id"] = model.id
     if dataset:
         result["dataset_id"] = dataset.id
-    if task_info["error_code"]:
+    if task_info["error_code"] and task_info["error_code"] != "0":
         result["error"] = {"code": task_info["error_code"]}
 
     task_info["result"] = result
@@ -688,6 +688,7 @@ class TaskResultHandler:
             name=get_default_record_name(task.hash, task.name),
             hash=model_info["hash"],
             map=model_info["map"],
+            parameters=json.dumps(task.parameters) if task.parameters else None,
             user_id=task.user_id,
             task_id=task.id,
         )
