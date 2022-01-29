@@ -32,7 +32,7 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
                 backend_pb2.TaskType.TaskTypeTraining,
                 backend_pb2.TaskType.TaskTypeMining,
         ]:
-            container_command = f"docker rm -f {self._request.executor_instance}"
+            container_command = ['docker', 'rm', '-f', self._request.executor_instance]
             container_response = utils.run_command(container_command)
             if container_response.code != CTLResponseCode.CTR_OK:
                 app_logger.logger.warning(container_response.message)

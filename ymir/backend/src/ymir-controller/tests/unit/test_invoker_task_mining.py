@@ -111,10 +111,10 @@ class TestInvokerTaskMining(unittest.TestCase):
         os.makedirs(working_dir_1, exist_ok=True)
 
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host -w {3} "
-                              "--src-revs '{4}@{4};{5}' --ex-src-revs '{6}'".format(self._mir_repo_root, self._task_id,
-                                                                                    self._sub_task_id_1, working_dir_1,
-                                                                                    self._guest_id1, self._guest_id2,
-                                                                                    self._guest_id3))
+                              "--src-revs {4}@{4};{5} --ex-src-revs {6}".format(self._mir_repo_root, self._task_id,
+                                                                                self._sub_task_id_1, working_dir_1,
+                                                                                self._guest_id1, self._guest_id2,
+                                                                                self._guest_id3))
 
         response = make_invoker_cmd_call(
             invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
@@ -145,8 +145,8 @@ class TestInvokerTaskMining(unittest.TestCase):
                                                                    self._sub_task_id_1, output_config, 'mining_image',
                                                                    asset_cache_dir, self._task_id))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
-            mock.call(mining_cmd, capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_merge.split(' '), capture_output=True, shell=True, text=True),
+            mock.call(mining_cmd.split(' '), capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()
