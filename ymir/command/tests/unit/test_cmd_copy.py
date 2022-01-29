@@ -158,8 +158,8 @@ class TestCmdCopy(unittest.TestCase):
         self.assertNotEqual(MirCode.RC_OK, return_code)
 
         fake_args = type('', (), {})()
-        fake_args.mir_root = 'whatever'
-        fake_args.data_mir_root = 'whatever'
+        fake_args.mir_root = self._mir_root + 'fake'
+        fake_args.data_mir_root = self._src_mir_root + 'fake'
         fake_args.data_src_revs = 'a@t0'
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
