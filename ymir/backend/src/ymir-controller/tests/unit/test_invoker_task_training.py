@@ -143,9 +143,9 @@ class TestInvokerTaskTraining(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd_merge = ("cd {0} && mir merge --dst-rev {1}@{2} -s host -w {3} "
-                              "--src-revs 'tr:{4}@{4};va:{5}'".format(self._mir_repo_root, self._task_id,
-                                                                      self._sub_task_id_1, working_dir_1,
-                                                                      self._guest_id1, self._guest_id2))
+                              "--src-revs tr:{4}@{4};va:{5}".format(self._mir_repo_root, self._task_id,
+                                                                    self._sub_task_id_1, working_dir_1, self._guest_id1,
+                                                                    self._guest_id2))
 
         output_config = os.path.join(working_dir_0, 'task_config.yaml')
         with open(output_config, "r") as f:
@@ -165,8 +165,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                                                            training_image, self._task_id,
                                                                            tensorboard_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge, capture_output=True, shell=True, text=True),
-            mock.call(training_cmd, capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_merge.split(' '), capture_output=True, shell=True, text=True),
+            mock.call(training_cmd.split(' '), capture_output=True, shell=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()
