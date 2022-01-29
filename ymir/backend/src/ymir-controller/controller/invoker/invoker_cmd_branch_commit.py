@@ -22,5 +22,5 @@ class BranchCommitInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         # invoke command
-        command = ['cd', self._repo_root, '&&', utils.mir_executable(), 'commit', '-m', self._request.commit_message]
+        command = [utils.mir_executable(), 'commit', '--root', self._repo_root, '-m', self._request.commit_message]
         return utils.run_command(command)

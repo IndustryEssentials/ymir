@@ -44,8 +44,8 @@ class TaskCopyInvoker(TaskBaseInvoker):
     def copying_cmd(repo_root: str, task_id: str, src_root: str, src_dataset_id: str, work_dir: str,
                     name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
         copying_cmd_str = [
-            'cd', repo_root, '&&',
-            utils.mir_executable(), 'copy', '--src-root', src_root, '--dst-rev', f"{task_id}@{task_id}", '--src-revs',
+            utils.mir_executable(), 'copy', '--root', repo_root,
+            '--src-root', src_root, '--dst-rev', f"{task_id}@{task_id}", '--src-revs',
             f"{src_dataset_id}@{src_dataset_id}", '-w', work_dir
         ]
 

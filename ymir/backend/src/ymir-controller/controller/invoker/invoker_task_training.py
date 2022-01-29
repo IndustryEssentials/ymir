@@ -106,8 +106,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
-            'cd', repo_root, '&&',
-            utils.mir_executable(), 'train', '--dst-rev', f"{task_id}@{task_id}", '--model-location',
+            utils.mir_executable(), 'train', '--root', repo_root,
+            '--dst-rev', f"{task_id}@{task_id}", '--model-location',
             models_upload_location, '--media-location', media_location, '-w', work_dir, '--src-revs',
             f"{in_src_revs}@{his_rev}", '--config-file', config_file, '--executor', training_image,
             '--executor-instance', executor_instance, '--tensorboard', tensorboard
