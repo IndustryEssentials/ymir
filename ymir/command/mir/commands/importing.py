@@ -103,7 +103,7 @@ class CmdImport(base.BaseCommand):
             if ignore_unknown_types:
                 logging.warning(f"unknown types: {unknown_types}")
             else:
-                raise MirRuntimeError(MirCode.RC_RUNTIME_UNKNOWN_TYPES, json.dumps(unknown_types))
+                raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
 
         # create and write tasks
         mir_tasks = mirpb.MirTasks()

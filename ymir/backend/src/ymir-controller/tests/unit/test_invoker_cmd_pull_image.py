@@ -71,31 +71,28 @@ class TestInvokerPullImage(unittest.TestCase):
 
         args_list = [
             mock.call(
-                "docker image inspect docker_image_name --format='ignore me'",
+                "docker image inspect docker_image_name --format ignore_me".split(' '),
                 capture_output=True,
-                shell=True,
                 text=True,
             ),
-            mock.call("docker images docker_image_name --format {{.ID}}", capture_output=True, shell=True, text=True),
+            mock.call("docker images docker_image_name --format {{.ID}}".split(' '),
+                      capture_output=True,
+                      text=True),
             mock.call(
-                "docker run --rm docker_image_name cat /img-man/training-template.yaml",
+                "docker run --rm docker_image_name cat /img-man/training-template.yaml".split(' '),
                 capture_output=True,
-                shell=True,
-                text=True,
-            ),
-            mock.call(
-                "docker run --rm docker_image_name cat /img-man/mining-template.yaml",
-                capture_output=True,
-                shell=True,
                 text=True,
             ),
             mock.call(
-                "docker run --rm docker_image_name cat /img-man/infer-template.yaml",
+                "docker run --rm docker_image_name cat /img-man/mining-template.yaml".split(' '),
                 capture_output=True,
-                shell=True,
+                text=True,
+            ),
+            mock.call(
+                "docker run --rm docker_image_name cat /img-man/infer-template.yaml".split(' '),
+                capture_output=True,
                 text=True,
             ),
         ]
 
         assert mock_run.call_args_list == args_list
-

@@ -18,7 +18,7 @@ export function imageIsPending (state: number) {
 }
 
 export const getImageTypeLabel = (functions: number[] = []) => {
-
+  console.log('params: ', functions)
   const labels = {
     [TYPES.UNKOWN]: t('image.type.unkown'),
     [TYPES.TRAINING]: t('image.type.train'),

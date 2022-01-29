@@ -1,5 +1,6 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -15,13 +16,12 @@ class BranchCheckoutInvoker(BaseMirControllerInvoker):
                                      mir_root=self._repo_root)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_BRANCH_CHECKOUT:
-            raise RuntimeError("Mismatched req_type")
+        expected_type = backend_pb2.RequestType.CMD_BRANCH_CHECKOUT
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
+
         # invoke command
         branch_id = self._request.singleton_op
-        command = "cd {0} && {1} checkout {2}".format(self._repo_root, utils.mir_executable(), branch_id)
+        command = [utils.mir_executable(), 'checkout', '--root', self._repo_root, branch_id]
         return utils.run_command(command)
-
-    def _repr(self) -> str:
-        return "checkout: user: {}, repo: {}, branch: {}".format(self._request.user_id, self._request.repo_id,
-                                                                 self._request.singleton_op)

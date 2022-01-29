@@ -39,12 +39,10 @@ const menus = () => [
       {
         label: t('common.top.menu.dataset'),
         key: "/home/dataset",
-        icon: <NavDatasetIcon className={styles.navIcon} />,
       },
       {
         label: t('common.top.menu.keyword'),
         key: "/home/keyword",
-        icon: <NavDatasetIcon className={styles.navIcon} />,
       },
     ]
   },
@@ -61,18 +59,11 @@ const menus = () => [
       {
         label: t('common.top.menu.image'),
         key: "/home/image",
-        icon: <NavModelmanageIcon className={styles.navIcon} />,
       },
-      // {
-      //   label: t('common.top.menu.image.center'),
-      //   key: "/home/image_center",
-      //   icon: <NavModelmanageIcon className={styles.navIcon} />,
-      // },
       {
         label: t('common.top.menu.permission'),
         key: "/home/permission",
         permission: ROLES.SUPER,
-        icon: <NavModelmanageIcon className={styles.navIcon} />,
       },
     ]
   },
@@ -171,9 +162,9 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   }
 
   const searchContents = [
-    <Link className={styles.link} to={`/home/dataset/${searchValue}`}>{t('common.top.search.item.dataset', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/model/${searchValue}`}>{t('common.top.search.item.model', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/task/${searchValue}`}>{t('common.top.search.item.task', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/dataset?name=${searchValue}`}>{t('common.top.search.item.dataset', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/model?name=${searchValue}`}>{t('common.top.search.item.model', { searchValue })}</Link>,
+    <Link className={styles.link} to={`/home/task?name=${searchValue}`}>{t('common.top.search.item.task', { searchValue })}</Link>,
   ]
 
   const searchContent = (
@@ -236,11 +227,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     updateCurrentPath(newPath) {
-      console.log("history", history)
-      // dispatch({
-      //   type: 'watchRoute/updateRoute'
-      //   payload:
-      // })
     },
     loginout() {
       return dispatch({

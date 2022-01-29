@@ -1,11 +1,7 @@
-import json
-from datetime import datetime
 from enum import IntEnum
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
-from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, validator
-
-from app.models.task import TaskState, TaskType
+from pydantic import BaseModel, Field
 
 from .common import Common
 

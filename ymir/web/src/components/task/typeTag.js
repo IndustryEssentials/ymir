@@ -1,5 +1,5 @@
 import { Link } from 'umi'
-import { TASKTYPES } from '../../constants/task'
+import { TASKTYPES } from '@/constants/task'
 import { getDatasetTypes } from '@/constants/query'
 import t from '@/utils/t'
 

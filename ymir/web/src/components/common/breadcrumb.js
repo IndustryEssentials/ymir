@@ -7,9 +7,9 @@ const { Item } = Breadcrumb
 
 const getCrumbs = () => [
   { path: '/home/portal', label: t('breadcrumbs.portal'), pid: 0, id: 1 },
-  { path: '/home/task/:keyword?', label: t('breadcrumbs.tasks'), pid: 1, id: 2 },
-  { path: '/home/model/:keyword?', label: t('breadcrumbs.models'), pid: 1, id: 3 },
-  { path: '/home/dataset/:keyword?', label: t('breadcrumbs.datasets'), pid: 1, id: 4 },
+  { path: '/home/task', label: t('breadcrumbs.tasks'), pid: 1, id: 2 },
+  { path: '/home/model', label: t('breadcrumbs.models'), pid: 1, id: 3 },
+  { path: '/home/dataset', label: t('breadcrumbs.datasets'), pid: 1, id: 4 },
   { path: '/home/task/filter/:ids?', label: t('breadcrumbs.task.filter'), pid: 2, id: 6 },
   { path: '/home/task/train/:ids?', label: t('breadcrumbs.task.training'), pid: 2, id: 7 },
   { path: '/home/task/label/:id?', label: t('breadcrumbs.task.label'), pid: 2, id: 8 },

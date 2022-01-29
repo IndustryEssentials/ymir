@@ -3,12 +3,11 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud
 from app.config import settings
 from app.constants.state import RunningStates, TaskState
 from app.db.session import SessionLocal
 from app.models.task import Task
-from app.utils.err import catch_error_and_report
 from app.utils.ymir_controller import ControllerClient
 
 logging.basicConfig(level=logging.INFO)
