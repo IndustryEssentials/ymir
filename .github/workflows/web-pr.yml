@@ -23,6 +23,5 @@ jobs:
     - name: Test with npm
       run: |
         npm install
-        npm run build --prod
         npm run test:coverage
       working-directory: ymir/web

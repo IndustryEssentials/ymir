@@ -1,11 +1,8 @@
-import enum
-import json
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel
 
-from app.constants.state import DockerImageState, DockerImageType
+from app.constants.state import DockerImageState
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,

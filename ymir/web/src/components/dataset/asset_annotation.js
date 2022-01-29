@@ -1,7 +1,6 @@
 import styles from "./common.less"
 import { useEffect, useState, useRef } from "react"
-import t from "@/utils/t"
-import Color from 'color'
+import { percent } from "../../utils/number"
 
 function AssetAnnotation({
   url,
@@ -26,7 +25,7 @@ function AssetAnnotation({
       return items.map(({ keyword, box, score, color = '#000' }) => {
         return {
           keyword,
-          score: score ? `${(score * 100).toFixed(2)}%` : null,
+          score: score ? percent(score) : null,
           color,
           ...box,
         }
@@ -52,7 +51,7 @@ function AssetAnnotation({
             height: annotation.h * ratio - 2,
           }}
         >
-          <span className={styles.annotationTitle} style={{ backgroundColor: Color(annotation.color).fade(0.6)}}>{annotation.keyword}
+          <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color}}>{annotation.keyword}
           {annotation.score ? <> {annotation.score}</> : null}</span>
         </div>
       )

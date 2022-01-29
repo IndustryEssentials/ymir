@@ -9,6 +9,13 @@ import {
   getShareImages,
 } from "@/services/image"
 
+function transferImage(image = {}) {
+  return {
+    ...image,
+    functions: (image.configs || []).map(config => config.type),
+  }
+}
+
 export default {
   namespace: "image",
   state: {
@@ -23,7 +30,7 @@ export default {
       const { code, result } = yield call(getImages, payload)
       if (code === 0) {
         const { items, total } = result
-        const images = items.map(image => ({ ...image, functions: (image.configs || []).map(config => config.type)}))
+        const images = items.map(image => transferImage(image))
         const imageList =  { items: images, total, }
         yield put({
           type: "UPDATE_IMAGES",
@@ -31,7 +38,6 @@ export default {
         })
         return imageList
       }
-      return result
     },
     *getShareImages({}, { call }) {
       const { code, result } = yield call(getShareImages)
@@ -42,16 +48,19 @@ export default {
     *getImage({ payload }, { call, put }) {
       const { code, result } = yield call(getImage, payload)
       if (code === 0) {
+        const image = transferImage(result)
         yield put({
           type: "UPDATE_IMAGE",
-          payload: result,
+          payload: image,
         })
+        return image
       }
-      return result
     },
     *delImage({ payload }, { call, put }) {
       const { code, result } = yield call(delImage, payload)
-      return result
+      if(code === 0) {
+        return result
+      }
     },
     *createImage({ payload }, { call, put }) {
       const { code, result } = yield call(createImage, payload)
@@ -68,7 +77,6 @@ export default {
     },
     *shareImage({ payload }, { call, put }) {
       const { id, ...res } = payload
-      console.log('model share image: ', id, res)
       const { code, result } = yield call(shareImage, id, res)
       if (code === 0) {
         return result

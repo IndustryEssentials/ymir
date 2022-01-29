@@ -122,7 +122,8 @@ class TestCmdInfer(unittest.TestCase):
                                          executor=fake_args.executor,
                                          executor_instance=fake_args.executor_instance,
                                          shm_size=None,
-                                         task_type=mock.ANY)
+                                         task_type=mock.ANY,
+                                         gpu_id='')
         mock_process.assert_called_once_with(infer_result_file=os.path.join(fake_args.work_dir, 'out',
                                                                             'infer-result.json'),
                                              max_boxes=50)

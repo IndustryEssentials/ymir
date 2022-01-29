@@ -3,13 +3,9 @@ import json
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
-from app.schemas.image import (
-    DockerImageCreate,
-    DockerImageState,
-    DockerImageType,
-    DockerImageUpdate,
-)
-from tests.utils.utils import random_hash, random_lower_string
+from app.constants.state import DockerImageState, DockerImageType
+from app.schemas.image import DockerImageCreate
+from tests.utils.utils import random_lower_string
 
 
 class TestCreateImage:

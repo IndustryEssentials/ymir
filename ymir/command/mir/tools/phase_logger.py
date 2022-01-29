@@ -1,18 +1,32 @@
 """ write task progress percent """
 
 import datetime
-from enum import Enum
+from enum import IntEnum
 import json
 import math
 import os
 from typing import Any, Dict, List, Optional
 
+from mir.protos import mir_command_pb2 as mirpb
 
-class PhaseStateEnum(str, Enum):
-    PENDING = 'pending'
-    RUNNING = 'running'
-    DONE = 'done'
-    ERROR = 'error'
+
+class PhaseStateEnum(IntEnum):
+    PENDING = mirpb.TaskStatePending
+    RUNNING = mirpb.TaskStateRunning
+    DONE = mirpb.TaskStateDone
+    ERROR = mirpb.TaskStateError
+
+
+# TODO: make PhaseLoggerError a sub class of MirError
+class PhaseLoggerError(BaseException):
+    def __init__(self, msg: str) -> None:
+        super().__init__()
+        self.msg = msg
+
+
+def _raise_if_false(condition: Any, msg: str) -> None:
+    if not condition:
+        raise PhaseLoggerError(msg=msg)
 
 
 class PhaseLogger:
@@ -23,10 +37,10 @@ class PhaseLogger:
                  start: float = 0.0,
                  end: float = 1.0,
                  auto_done: bool = False) -> None:
-        assert task_name
-        assert start >= 0 and start <= 1
-        assert end >= 0 and end <= 1
-        assert start < end
+        _raise_if_false(task_name, 'empty task name')
+        _raise_if_false(start >= 0 and start <= 1, 'invalid start')
+        _raise_if_false(end >= 0 and end <= 1, 'invalid end')
+        _raise_if_false(start < end, 'start ge end')
 
         self._task_name = task_name
         self._monitor_file = monitor_file
@@ -71,7 +85,7 @@ class PhaseLogger:
                             state_content: str = None,
                             trace_message: str = None) -> None:
         # if no monitor_file assgned, no need to write monitor percent log
-        assert local_percent >= 0 and local_percent <= 1
+        _raise_if_false(local_percent >= 0 and local_percent <= 1, 'invalid local_percent')
         self._local_percent = local_percent
 
         if not self.monitor_file:
@@ -109,9 +123,9 @@ class PhaseLogger:
         # check deltas
         total = 0.0
         for d in deltas:
-            assert d > 0 and d <= 1
+            _raise_if_false(d > 0 and d <= 1, 'invalid delta')
             total += d
-        assert math.isclose(total, 1), f"total: {total}"
+        _raise_if_false(math.isclose(total, 1), f"total: {total}")
 
         start = self.start_percent
         parent_delta = self.end_percent - self.start_percent
@@ -141,7 +155,7 @@ class PhaseLoggerCenter:
         conf_path = os.path.join(os.path.dirname(__file__), 'phase_logger_conf.json')
         with open(conf_path, 'r') as f:
             conf = json.loads(f.read())
-        assert top_phase in conf, f"{top_phase} not in {conf}"
+        _raise_if_false(top_phase in conf, f"{top_phase} not in {conf}")
 
         sub_phase_confs = conf[top_phase]
         sub_phase_names = []
@@ -168,7 +182,7 @@ class PhaseLoggerCenter:
         if not phase:
             return
 
-        assert phase in PhaseLoggerCenter._phase_name_to_loggers, f"unknown phase: {phase}"
+        _raise_if_false(phase in PhaseLoggerCenter._phase_name_to_loggers, f"unknown phase: {phase}")
 
         PhaseLoggerCenter._phase_name_to_loggers[phase].update_percent_info(local_percent=local_percent,
                                                                             task_state=task_state,

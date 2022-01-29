@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, Index, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String, Text
 
 from app.config import settings
+from app.constants.state import TaskType
 from app.db.base_class import Base
-from app.models.task import TaskType
 
 
 class Dataset(Base):

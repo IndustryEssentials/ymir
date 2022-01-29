@@ -47,7 +47,7 @@ request.interceptors.response.use(
   (err) => {
     let authrized = [401, 403]
     if (authrized.includes(err.request.status)) {
-      logout()
+      return logout()
     } else if (err.request.status === 504) {
       message.error('Request Timeout')
     } else {

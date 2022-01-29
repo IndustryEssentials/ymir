@@ -4,9 +4,10 @@ import { connect } from 'dva'
 import { useParams, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
-import Breadcrumbs from "../../components/common/breadcrumb"
+import Breadcrumbs from "@/components/common/breadcrumb"
 import TripleRates from "@/components/form/tripleRates"
 import styles from "./detail.less"
+import { percent } from "../../utils/number"
 
 const { Item } = Descriptions
 
@@ -22,10 +23,6 @@ function ModelDetail({ getModel }) {
       setModel(result)
     }
   }, [id])
-
-  const percentFormat = (value) => {
-    return Number(value) * 100 + '%'
-  }
 
   function renderDataset(sets = []) {
     if (!sets.length) {
@@ -80,7 +77,7 @@ function ModelDetail({ getModel }) {
       <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')}>
         <Item label={t('model.detail.label.name')}>{model.name}</Item>
         <Item label={t('model.detail.label.id')}>{model.id}</Item>
-        <Item label={t('model.detail.label.map')}>{percentFormat(model.map)}</Item>
+        <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
         <Item label={t('model.detail.label.source')}><Link to={`/home/task/detail/${model.task_id}`}>{model.task_name}</Link></Item>
         <Item label={t('model.detail.label.training_dataset')} span={2}>
           {renderDataset(model?.trainSets)}
@@ -89,7 +86,8 @@ function ModelDetail({ getModel }) {
           {renderDataset(model?.testSets)}
         </Item>
         <Item label={t('model.detail.label.dataset_percent')} span={2}>{renderDatasetPercent()}</Item>
-        <Item label={t('model.detail.label.train_type')} span={2}>{model.parameters?.train_type || 'Object Detection'}</Item>
+        <Item label={t('model.detail.label.train_type')}>{model.parameters?.train_type || 'Object Detection'}</Item>
+        <Item label={t('model.detail.label.image')}><Link to={`/home/image/detail/${model?.parameters?.docker_image_id}`}>{model?.parameters?.docker_image}</Link></Item>
         <Item label={t('model.detail.label.train_goal')} span={2}>{model.keywords?.map(keyword => (<Tag key={keyword}>{keyword}</Tag>))}</Item>
         <Item label={t('model.detail.label.framework')}>{model.parameters?.network} </Item>
         <Item label={t('model.detail.label.backbone')}>{model.parameters?.backbone}</Item>

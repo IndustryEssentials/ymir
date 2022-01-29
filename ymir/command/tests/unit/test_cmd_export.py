@@ -8,7 +8,7 @@ from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_exporter, hash_utils
+from mir.tools import class_ids, data_exporter, hash_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -24,6 +24,7 @@ class TestCmdExport(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__prepare_dirs()
+        self.__prepare_labels_csv()
         self.__prepare_mir_repo()
         self.__prepare_assets()
         return super().setUp()
@@ -42,6 +43,13 @@ class TestCmdExport(unittest.TestCase):
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
+
+    def __prepare_labels_csv(self):
+        with open(class_ids.ids_file_path(self._mir_root), 'w') as f:
+            f.write('# commented lines\n')
+            f.write('0,,freshbee\n')
+            f.write('2,,person\n')
+            f.write('52,,airplane,aeroplane\n')
 
     def __prepare_assets(self):
         '''
@@ -203,6 +211,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = 'b@b'
         fake_args.format = 'voc'
+        fake_args.in_cis = 'person'
         fake_args.work_dir = ''
         runner = exporting.CmdExport(fake_args)
         result = runner.run()
@@ -210,7 +219,7 @@ class TestCmdExport(unittest.TestCase):
 
         mock_export.assert_called_once_with(mir_root=self._mir_root,
                                             assets_location=self._assets_location,
-                                            class_type_ids={},
+                                            class_type_ids={2: 2},
                                             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4',
                                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
                                             asset_dir=self._dest_root,

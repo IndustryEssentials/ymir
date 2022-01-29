@@ -29,7 +29,6 @@ const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
   }
 
   function terminateNoData() {
-    console.log('terminate no data')
     Confirm({
       content: t("task.action.terminate.confirm.content", { name }),
       onOk: terminateTask,
