@@ -30,7 +30,7 @@ def locate_file_in_rev(mir_root: str, file_name: str, rev: str) -> str:
     # using git command: git rev-parse <rev>:<file_name>
     dvc_sha1 = scm_git.rev_parse("{}:{}.dvc".format(rev, file_name))
     if not dvc_sha1:
-        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_FILE, "found no dvc file: {}".format(file_name))
+        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_REPO, "found no dvc file: {}".format(file_name))
 
     # parse `file_name`.dvc to get file_name's sha1
     # using git command: git cat-file -p `dvc_sha1`
@@ -43,7 +43,7 @@ def locate_file_in_rev(mir_root: str, file_name: str, rev: str) -> str:
     dvc_file_str = scm_git.cat_file(["-p", dvc_sha1])
     dvc_file_yaml_data = yaml.safe_load(dvc_file_str)
     if not dvc_file_yaml_data.get("outs", None):
-        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_FILE, "found no singnature for file: {}".format(file_name))
+        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_REPO, "found no singnature for file: {}".format(file_name))
 
     file_hash = None  # type: Optional[str]
     out_list = dvc_file_yaml_data["outs"]
@@ -53,7 +53,7 @@ def locate_file_in_rev(mir_root: str, file_name: str, rev: str) -> str:
             break
 
     if not file_hash:
-        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_FILE, "found no singnature for file: {}".format(file_name))
+        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_REPO, "found no singnature for file: {}".format(file_name))
 
     # open that file (it's in .dvc/cache) and return `file_name`
     file_path = os.path.join(mir_root, ".dvc/cache", file_hash[:2], file_hash[2:])

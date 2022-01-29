@@ -1,14 +1,19 @@
+import logging
 import json
 import os
 from pathlib import Path
+import shutil
+import tests.utils as test_utils
 
 import pytest
 import requests
 
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
-from controller.invoker.invoker_task_labeling import TaskLabelingInvoker
 from controller.label_model import label_studio
+from controller.utils.invoker_call import make_invoker_cmd_call
+from controller.utils.invoker_mapping import RequestTypeToInvoker
 from controller.utils.labels import LabelFileHandler
+from proto import backend_pb2
 
 
 @pytest.fixture()
@@ -21,26 +26,20 @@ def mock_many(mocker):
     mocker.patch.object(LabelFileHandler, "get_main_labels_by_ids", return_value=["fake"])
 
 
-class Req:
-    pass
-
-
 class TestTaskLabelingInvoker:
     def test_task_invoke(self, mocker, mock_many):
-        label_req = Req()
-        label_req.in_class_ids = [0, 1]
-        label_req.labeler_accounts = ["a@a.com"]
+        label_req = backend_pb2.TaskReqLabeling()
+        label_req.in_class_ids[:] = [0, 1]
+        label_req.labeler_accounts[:] = ["a@a.com"]
         label_req.project_name = "fake_project_name"
         label_req.dataset_id = "id"
         label_req.expert_instruction_url = "url"
         label_req.export_annotation = False
 
-        create_req = Req()
-        create_req.labeling = label_req
-
-        req = Req()
-        req.task_id = "task_id"
-        req.req_create_task = create_req
+        req_create_task = backend_pb2.ReqCreateTask()
+        req_create_task.task_type = backend_pb2.TaskTypeLabel
+        req_create_task.labeling.CopyFrom(label_req)
+        req_create_task.no_task_monitor = True
 
         mock_resp = mocker.Mock()
         mock_resp.raise_for_status = mocker.Mock()
@@ -50,16 +49,32 @@ class TestTaskLabelingInvoker:
 
         mock_post = mocker.patch.object(requests, "post", return_value=mock_resp)
 
-        TaskLabelingInvoker.task_invoke(
-            sandbox_root="fake_sandbox_root",
-            repo_root="fake_repo_root",
-            assets_config=dict(assetskvlocation="fake_assetskvlocation"),
-            working_dir="fake_working_dir",
-            task_monitor_file="fake_task_monitor_file",
-            request=req,
-        )
+        sandbox_root = test_utils.dir_test_root(["test_invoker_labeling"])
+        user_name = "user"
+        mir_repo_name = "repoid"
+        task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzb5'
+        user_root = os.path.join(sandbox_root, user_name)
+        mir_repo_root = os.path.join(user_root, mir_repo_name)
+        test_utils.mir_repo_init(mir_repo_root)
 
+        working_dir = os.path.join(sandbox_root, "work_dir", backend_pb2.TaskType.Name(backend_pb2.TaskTypeLabel),
+                                   task_id, 'sub_task', task_id)
+        if os.path.isdir(working_dir):
+            logging.info("working_dir exists, remove it first")
+            shutil.rmtree(working_dir)
+        os.makedirs(working_dir)
+        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
+                                         sandbox_root=sandbox_root,
+                                         assets_config=dict(assetskvlocation="fake_assetskvlocation"),
+                                         req_type=backend_pb2.TASK_CREATE,
+                                         user_id=user_name,
+                                         repo_id=mir_repo_name,
+                                         task_id=task_id,
+                                         req_create_task=req_create_task)
         assert mock_post.call_count == 4
+
+        expected_ret = backend_pb2.GeneralResp()
+        assert response == expected_ret
 
     def test_get_task_completion_percent(self, mocker):
         mock_resp = mocker.Mock()

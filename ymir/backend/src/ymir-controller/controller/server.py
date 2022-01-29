@@ -4,14 +4,15 @@ import os
 import re
 import sys
 from concurrent import futures
+from distutils.util import strtobool
 from typing import Any, Dict
 
 import grpc
 import sentry_sdk
 import yaml
 
-from controller import task_monitor
-from controller.utils import code, metrics, utils, invoker_mapping
+from controller.utils import errors, metrics, utils, invoker_mapping
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2, backend_pb2_grpc
 
 
@@ -36,18 +37,21 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
         if request.req_type not in invoker_mapping.RequestTypeToInvoker:
             message = "unknown invoker for req_type: {}".format(request.req_type)  # type: str
             logging.error(message)
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, message)
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, message)
 
         invoker_class = invoker_mapping.RequestTypeToInvoker[request.req_type]
         invoker = invoker_class(sandbox_root=self.sandbox_root,
                                 request=request,
                                 assets_config=self.assets_config,
                                 async_mode=True)
-        invoker_result = invoker.server_invoke()
+        try:
+            invoker_result = invoker.server_invoke()
+        except errors.MirCtrError as e:
+            return utils.make_general_response(e.error_code, e.error_message)
 
         if isinstance(invoker_result, backend_pb2.GeneralResp):
             return invoker_result
-        return utils.make_general_response(code.ResCode.CTR_SERVICE_UNKOWN_RESPONSE,
+        return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,
                                            "unknown result type: {}".format(type(invoker_result)))
 
 
@@ -82,9 +86,8 @@ def parse_config_file(config_file: str) -> Any:
         return yaml.safe_load(f)
 
 
-def main(main_args: Any) -> int:
-    # set debug
-    if main_args.debug:
+def _set_debug_info(debug_mode: bool = False) -> None:
+    if debug_mode:
         logging.basicConfig(stream=sys.stdout,
                             format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
                             datefmt='%Y%m%d-%H:%M:%S',
@@ -94,24 +97,28 @@ def main(main_args: Any) -> int:
         logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.INFO)
     sentry_sdk.init(os.environ.get("CONTROLLER_SENTRY_DSN", None))
 
-    server_config = parse_config_file(main_args.config_file)
-    sandbox_root = server_config['SANDBOX']['sandboxroot']
-    os.makedirs(sandbox_root, exist_ok=True)
 
-    # start task monitor
-    monitor_storage_root = server_config['TASK_MONITOR']['storageroot']
-    os.makedirs(monitor_storage_root, exist_ok=True)
-    ctr_task_monitor = task_monitor.ControllerTaskMonitor(storage_root=monitor_storage_root)
-
-    # start metrics manager
-    metrics_config = server_config['METRICS']
-    metrics_permission_pass = metrics_config['allow_feedback'] or False
+def _init_metrics(metrics_config: Dict) -> None:
+    try:
+        metrics_permission_pass = bool(strtobool(metrics_config['allow_feedback']))
+    except (ValueError, AttributeError):  # NoneType
+        metrics_permission_pass = False
     metrics_uuid = metrics_config['anonymous_uuid'] or 'anonymous_uuid'
     manager = metrics.MetricsManager(permission_pass=metrics_permission_pass,
                                      uuid=metrics_uuid,
                                      server_host=metrics_config['server_host'],
                                      server_port=metrics_config['server_port'])
     manager.send_counter('init.start')
+
+
+def main(main_args: Any) -> int:
+    _set_debug_info(main_args.debug)
+
+    server_config = parse_config_file(main_args.config_file)
+    sandbox_root = server_config['SANDBOX']['sandboxroot']
+    os.makedirs(sandbox_root, exist_ok=True)
+
+    _init_metrics(server_config['METRICS'])
 
     # start grpc server
     port = server_config['SERVICE']['port']
@@ -124,8 +131,6 @@ def main(main_args: Any) -> int:
     logging.info("mir controller started, sandbox root: %s, port: %s", mc_service_impl.sandbox_root, port)
 
     server.wait_for_termination()  # message cycle started
-
-    ctr_task_monitor.stop_monitor()
 
     return 0
 

@@ -1,9 +1,7 @@
 import enum
-import random
-import secrets
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
@@ -14,13 +12,11 @@ from app.api.errors.errors import (
     DuplicateModelError,
     InvalidConfiguration,
     ModelNotFound,
-    NoModelPermission,
 )
 from app.config import settings
 from app.constants.state import TaskType
 from app.models.task import Task
 from app.utils.files import save_file
-from app.utils.stats import RedisStats
 from app.utils.ymir_controller import ControllerRequest
 
 router = APIRouter()
@@ -57,7 +53,6 @@ def list_models(
     start_time: int = Query(None, description="from this timestamp"),
     end_time: int = Query(None, description="to this timestamp"),
     current_user: models.User = Depends(deps.get_current_active_user),
-    stats_client: RedisStats = Depends(deps.get_stats_client),
 ) -> Any:
     """
     Get list of models,
@@ -152,7 +147,6 @@ def delete_model(
     db: Session = Depends(deps.get_db),
     model_id: int = Path(..., example="12"),
     current_user: models.User = Depends(deps.get_current_active_user),
-    stats_client: RedisStats = Depends(deps.get_stats_client),
 ) -> Any:
     """
     Delete model
@@ -161,17 +155,8 @@ def delete_model(
     model = crud.model.get_with_task(db, user_id=current_user.id, id=model_id)
     if not model:
         raise ModelNotFound()
-    model_keywords = schemas.Model.from_orm(model).keywords
 
     model = crud.model.soft_remove(db, id=model_id)
-
-    stats_client.delete_model_rank(current_user.id, model_id)
-    logger.info("deleted model(%s) from ref count", model_id)
-    if model_keywords:
-        stats_client.delete_keyword_wise_model_rank(
-            current_user.id, model_id, model_keywords
-        )
-    logger.info("deleted model(%s) from keyword mAP", model_id)
     return {"result": model}
 
 

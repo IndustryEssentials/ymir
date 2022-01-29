@@ -42,7 +42,6 @@ function Image() {
   }, [keyword])
 
   useEffect(() => {
-    console.log('location state: ', location.state)
     const type = location?.state?.type
     if (typeof type !== 'undefined') {
       setActive(type)
@@ -88,7 +87,6 @@ function Image() {
       layout="inline"
       initialValues={{ name: keyword || "" }}
       onValuesChange={search}
-      size='large'
       colon={false}
     >
       <Form.Item
@@ -106,7 +104,7 @@ function Image() {
   return (
     <div className={styles.image}>
       <Breadcrumbs />
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { console.log(key); history.replace({ state: { type: key }} )}} tabBarExtraContent={active === 'my' ? searchPanel : null}>
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { history.replace({ state: { type: key }} )}} tabBarExtraContent={active === 'my' ? searchPanel : null}>
         {contents[active]}
       </Card>
     </div>

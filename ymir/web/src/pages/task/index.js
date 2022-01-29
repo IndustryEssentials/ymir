@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import { Link, useHistory, useParams, getLocale, } from "umi"
-import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Progress, Radio, Row, Col, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Radio, Row, Col, } from "antd"
 import {
   SearchOutlined,
   SyncOutlined,
@@ -10,51 +10,39 @@ import moment from "moment"
 
 import { format, getUnixTimeStamp, calDuration } from "@/utils/date"
 import t from "@/utils/t"
-import Empty from '@/components/empty/default'
-import { TASKSTATES, TASKTYPES } from "../../constants/task"
+import { TASKSTATES, TASKTYPES } from "@/constants/task"
 import { getTaskTypes, getTimes, getTaskStates } from '@/constants/query'
-import Breadcrumbs from "../../components/common/breadcrumb"
+import Breadcrumbs from "@/components/common/breadcrumb"
 import styles from "./index.less"
-import { CopyIcon, DeleteIcon, EditIcon, FlagIcon, InprogressIcon, ScreenIcon, SearchEyeIcon, StopIcon, TaggingIcon, TipsIcon, TrainIcon, VectorIcon } from "../../components/common/icons"
-import EditBox from "../../components/form/editBox"
-import StateTag from "../../components/task/stateTag"
-import RenderProgress from "../../components/common/progress"
-import Actions from "../../components/table/actions"
-import Confirm from "../../components/common/dangerConfirm"
+import { CopyIcon, DeleteIcon, EditIcon, FlagIcon, ScreenIcon, StopIcon, TaggingIcon, TrainIcon, VectorIcon } from "@/components/common/icons"
+import EditBox from "@/components/form/editBox"
+import StateTag from "@/components/task/stateTag"
+import RenderProgress from "@/components/common/progress"
+import Actions from "@/components/table/actions"
+import Confirm from "@/components/common/dangerConfirm"
 import Terminate from "./components/terminate"
 import { getTensorboardLink } from "../../services/common"
 
-const { confirm } = Modal
 const { useForm } = Form
 
-const initQuery = {
-  name: "",
-  type: "",
-  time: 0,
-  offset: 0,
-  limit: 20,
-}
-
-function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList }) {
-  const { keyword } = useParams()
+function Task({ getTasks, delTask, updateTask, stopTask, taskList, query, updateQuery, resetQuery }) {
   const history = useHistory()
+  const { name } = history.location.query
   const [tasks, setTasks] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
-  const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
   const terminateRef = useRef(null)
-  let [init, setInit] = useState(Boolean(keyword))
+  const [lock, setLock] = useState(true)
   // const [showAdd, setSowAdd] = useState(false)
 
   /** use effect must put on the top */
   useEffect(() => {
-    if (init) {
-      setInit(false)
-      return
+    if (history.action !== 'POP') {
+      initState()
     }
-    getData()
-  }, [query])
+    setLock(false)
+  }, [history.location])
 
   useEffect(() => {
     const forceUpdate = taskList.items.some(task => task.forceUpdate)
@@ -66,12 +54,24 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
     }
   }, [taskList])
 
-  useEffect(() => {
-    if (keyword) {
-      setQuery(old => ({ ...old, name: keyword }))
-      form.setFieldsValue({ name: keyword })
+  useEffect(async () => {
+    if (name) {
+      await updateQuery({ ...query, name })
+      form.setFieldsValue({ name })
     }
-  }, [keyword])
+    setLock(false)
+  }, [name])
+
+  useEffect(() => {
+    if (!lock) {
+      getData()
+    }
+  }, [query, lock])
+
+  async function initState() {
+     await resetQuery()
+     form.resetFields()
+  }
 
   const types = getTaskTypes()
   const states = getTaskStates()
@@ -93,13 +93,11 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
       title: showTitle("task.column.type"),
       dataIndex: "type",
       width: 160,
-      align: 'center',
       render: (type) => (types.find((t) => t.value === type))?.label,
     },
     {
       title: showTitle("task.column.state"),
       dataIndex: "state",
-      align: 'center',
       render: (state, record) => RenderProgress(state, record),
     },
     {
@@ -114,7 +112,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
       dataIndex: "duration",
       width: 200,
       sorter: true,
-      align: 'center',
       render: (seconds) => calDuration(seconds, getLocale()),
     },
     {
@@ -157,16 +154,15 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
 
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
-    console.log('tabel chagne: ', sorters, calDuration(365000, getLocale()))
     const limit = pageSize
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
     const order_by = sorters.order ? sorters.field : undefined
-    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
+    updateQuery({ ...query, limit, offset, is_desc, order_by })
   }
 
   function showTitle(str) {
-    return <div style={{ textAlign: 'center' }}><strong>{t(str)}</strong></div>
+    return <div><strong>{t(str)}</strong></div>
   }
   async function getData() {
     let params = {
@@ -222,18 +218,6 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
     history.push({ pathname: `/home/task/${key}`,  state: { record } })
   }
 
-  const getLabels = (id, name) => {
-    Confirm({
-      content: t("task.action.getlabels.confirm.content", { name }),
-      onOk: async () => {
-        const result = await stopTask(id)
-        if (result) {
-          getData()
-        }
-      },
-      okText: t('task.action.labeldata'),
-    })
-  }
 
   const edit = (record) => {
     setCurrent({})
@@ -257,29 +241,17 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      setQuery((old) => ({
-        ...old,
-        ...values,
-        offset: initQuery.offset,
-      }))
+      updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         // console.log('compact: ', name, form.getFieldValue('name'))
         if (name === form.getFieldValue('name')) {
-          setQuery((old) => ({
-            ...old,
-            name,
-            offset: initQuery.offset,
-          }))
+          updateQuery({ ...query, name, })
         }
       }, 1000)
     }
   }
 
-  const resetQuery = () => {
-    setQuery(initQuery)
-    form.resetFields()
-  }
 
   const actionMenus = (record) => {
     const { id, name, state, type, hash } = record
@@ -357,13 +329,10 @@ function Task({ getTasks, delTask, updateTask, stopTask, getLabelData, taskList 
       <Form
         name='queryForm'
         form={form}
-        // layout="inline"
         labelCol={{ flex: '100px' }}
-        initialValues={{ type: "", state: '', time: 0, name: keyword || "" }}
+        initialValues={{ type: query.type, state: query.state, time: query.time, name: name || query.name }}
         onValuesChange={search}
-        size='large'
         colon={false}
-      // onFinish={search}
       >
         <Row>
           <Col className={styles.queryColumn} span={12}>
@@ -457,6 +426,7 @@ const props = (state) => {
   return {
     logined: state.user.logined,
     taskList: state.task.tasks,
+    query: state.task.query,
   }
 }
 
@@ -480,16 +450,21 @@ const actions = (dispatch) => {
         payload: id,
       })
     },
-    getLabelData: (id) => {
-      return dispatch({
-        type: 'task/getLabelData',
-        payload: id,
-      })
-    },
     updateTask: (id, name) => {
       return dispatch({
         type: 'task/updateTask',
         payload: { id, name },
+      })
+    },
+    updateQuery: (query) => {
+      return dispatch({
+        type: 'task/updateQuery',
+        payload: query,
+      })
+    },
+    resetQuery: () => {
+      return dispatch({
+        type: 'task/resetQuery',
       })
     },
   }

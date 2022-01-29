@@ -8,6 +8,5 @@ describe("config: config", () => {
     expect(config).toHaveProperty("hash", true)
     expect(config).toHaveProperty("nodeModulesTransform", expect.anything())
     expect(config).toHaveProperty("fastRefresh", expect.anything())
-    expect(config).toHaveProperty("webpack5", expect.anything())
   })
 })

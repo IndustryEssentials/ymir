@@ -1,17 +1,14 @@
-import json
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.logger import logger
 
 from app import models
 from app.api import deps
-from app.api.errors.errors import DuplicateKeywordError
 from app.config import settings
 from app.schemas import (
     Keyword,
-    KeywordOut,
     KeywordsCreate,
     KeywordsCreateOut,
     KeywordsPaginationOut,
@@ -123,7 +120,8 @@ def paginate(
     """
     Mimic the behavior of database query's offset-limit pagination
     """
-    return items[offset : (limit + offset if limit is not None else None)]
+    end = limit + offset if limit is not None else None
+    return items[offset:end]
 
 
 def filter_keyword(query: str, keyword: Dict) -> bool:

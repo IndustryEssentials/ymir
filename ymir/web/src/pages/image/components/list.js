@@ -13,7 +13,7 @@ import Del from './del'
 import s from "./list.less"
 import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/icons"
 import ImagesLink from "./imagesLink"
-import { FailIcon, SuccessIcon } from "../../../components/common/icons"
+import { FailIcon, SuccessIcon } from "@/components/common/icons"
 import { LoadingOutlined } from '@ant-design/icons'
 
 const initQuery = {

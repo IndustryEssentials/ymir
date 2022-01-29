@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.api.errors import error_codes
+from app.api.errors.errors import error_codes
 from app.config import settings
 from tests.utils.utils import random_lower_string
 
@@ -50,6 +50,34 @@ class TestGetImage:
         assert r.ok
         result = r.json()["result"]
         assert not result["is_shared"]
+
+
+class TestCreateImage:
+    def test_create_image_success(self, client: TestClient, admin_token_headers):
+        j = {"url": random_lower_string(), "name": random_lower_string()}
+        r = client.post(
+            f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j
+        )
+        assert r.ok
+        result = r.json()["result"]
+        assert result["name"] == j["name"]
+        assert not result["is_shared"]
+
+
+class TestDeleteImage:
+    def test_delete_a_image_success(self, client: TestClient, admin_token_headers):
+        j = {"url": random_lower_string(), "name": random_lower_string()}
+        r = client.post(
+            f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j
+        )
+        i = r.json()["result"]["id"]
+
+        r = client.delete(
+            f"{settings.API_V1_STR}/images/{i}",
+            headers=admin_token_headers,
+        )
+        assert r.ok
+        assert r.json()["result"]["is_deleted"] == 1
 
 
 class TestCreateRelationship:

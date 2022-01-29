@@ -87,6 +87,7 @@ class TaskUpdate(BaseModel):
 class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBase):
     hash: str
     state: Optional[TaskState] = TaskState.pending
+    error_code: Optional[str]
     duration: Optional[int] = Field(0, description="task process time in seconds")
     progress: Optional[float] = Field(0, description="from 0 to 100")
     parameters: Optional[str] = Field(
@@ -123,13 +124,13 @@ class TaskInternal(TaskInDBBase):
     state: TaskState
 
     @validator("parameters")
-    def loads_parameters(cls, v: str, values: Dict[str, Any]) -> Dict[str, Any]:
+    def loads_parameters(cls, v: str) -> Dict[str, Any]:
         if not v:
             return {}
         return json.loads(v)
 
     @validator("config")
-    def loads_config(cls, v: str, values: Dict[str, Any]) -> Dict[str, Any]:
+    def loads_config(cls, v: str) -> Dict[str, Any]:
         if not v:
             return {}
         return json.loads(v)
@@ -158,8 +159,9 @@ class TaskTerminate(BaseModel):
 class TaskUpdateStatus(BaseModel):
     hash: str
     timestamp: int
-    state: TaskState
     percent: Optional[float] = 0
+    state: TaskState
+    state_code: Optional[str]
     state_message: Optional[str]
 
 

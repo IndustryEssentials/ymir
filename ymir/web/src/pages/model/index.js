@@ -1,63 +1,64 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
 import styles from "./index.less"
 import { Link, useHistory, useParams } from "umi"
-import { Form, Button, Input, Select, Table, Menu, Dropdown, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
+import { Form, Button, Input, Table, Menu, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
 import {
-  PlusOutlined,
   SearchOutlined,
   SyncOutlined,
 } from "@ant-design/icons"
 import moment from "moment"
 
-import { numFormat } from "@/utils/number"
 import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
+import { percent } from '@/utils/number'
 import { getTimes, getModelImportTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/model'
-import EditBox from "../../components/form/editBox"
-import { ImportIcon, ShieldIcon, VectorIcon, TipsIcon, More1Icon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "../../components/common/icons"
-import Actions from "../../components/table/actions"
-import TypeTag from "../../components/task/typeTag"
+import EditBox from "@/components/form/editBox"
+import { ShieldIcon, VectorIcon, TipsIcon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "@/components/common/icons"
+import Actions from "@/components/table/actions"
+import TypeTag from "@/components/task/typeTag"
 
 const { confirm } = Modal
 const { useForm } = Form
 
-const initQuery = {
-  name: "",
-  type: "",
-  time: 0,
-  offset: 0,
-  limit: 20,
-}
-
-function Keyword({ getModels, delModel, updateModel }) {
-  const { keyword } = useParams()
+function Model({ getModels, delModel, updateModel, query, updateQuery, resetQuery }) {
   const history = useHistory()
+  const { name } = history.location.query
   const [models, setModels] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
-  const [query, setQuery] = useState(initQuery)
   const [current, setCurrent] = useState({})
-  const [showAdd, setSowAdd] = useState(false)
-  let [init, setInit] = useState(Boolean(keyword))
+  let [lock, setLock] = useState(true)
 
   /** use effect must put on the top */
   useEffect(() => {
-    if (init) {
-      setInit(false)
-      return
+    if (history.action !== 'POP') {
+      initState()
     }
-    getData()
-  }, [query])
+    setLock(false)
+  }, [history.location])
+
+
+  useEffect(async () => {
+    if (name) {
+      await updateQuery({ ...query, name })
+      form.setFieldsValue({ name })
+    }
+    setLock(false)
+  }, [name])
 
   useEffect(() => {
-    if (keyword) {
-      setQuery(old => ({ ...old, name: keyword }))
-      form.setFieldsValue({ name: keyword })
+    if (!lock) {
+      getData()
     }
-  }, [keyword])
+  }, [query, lock])
+
+  async function initState() {
+    await resetQuery()
+    form.resetFields()
+ }
 
   const types = getModelImportTypes()
 
@@ -97,6 +98,7 @@ function Keyword({ getModels, delModel, updateModel }) {
     {
       title: showTitle("model.column.map"),
       dataIndex: "map",
+      render: map => <span title={map}>{percent(map)}</span>,
       align: 'center',
     },
     {
@@ -124,7 +126,7 @@ function Keyword({ getModels, delModel, updateModel }) {
     const offset = (current - 1) * pageSize
     const is_desc = sorters.order === 'ascend' ? false : true
     const order_by = sorters.order ? sorters.field : undefined
-    setQuery((old) => ({ ...old, limit, offset, is_desc, order_by }))
+    updateQuery({ ...query, limit, offset, is_desc, order_by })
   }
 
   function showTitle(str) {
@@ -245,50 +247,17 @@ function Keyword({ getModels, delModel, updateModel }) {
     }
   }
 
-  const add = () => {
-    setSowAdd(true)
-  }
-
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      setQuery((old) => ({
-        ...old,
-        ...values,
-        offset: initQuery.offset,
-      }))
+      updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         if (name === form.getFieldValue('name')) {
-          setQuery((old) => ({
-            ...old,
-            name,
-            offset: initQuery.offset,
-          }))
+          updateQuery({ ...query, name, })
         }
       }, 1000)
     }
-  }
-
-  const resetQuery = () => {
-    setQuery(initQuery)
-    form.resetFields()
-  }
-
-  const moreActions = (record) => {
-    return (
-      <Menu>
-        {moreActionsList(record).map((action) => (
-          <Menu.Item
-            className={action.className}
-            key={action.key}
-            onClick={action.onclick}
-          >
-            {action.label}
-          </Menu.Item>
-        ))}
-      </Menu>
-    )
   }
 
   return (
@@ -299,11 +268,9 @@ function Keyword({ getModels, delModel, updateModel }) {
           <Form
             name='queryForm'
             form={form}
-            // layout="inline"
             labelCol={{ flex: '100px' }}
-            initialValues={{ source: "", time: 0, name: keyword || "" }}
+            initialValues={{ time: query.time, name: name || query.name }}
             onValuesChange={search}
-            size='large'
             colon={false}
           >
             <Row>
@@ -355,7 +322,7 @@ function Keyword({ getModels, delModel, updateModel }) {
           </ConfigProvider>
         </div>
       </div>
-      <EditBox record={current} action={saveName}>
+      <EditBox record={current} max={80} action={saveName}>
         {current.source ? <Form.Item label={t('model.column.source')}>
           <TypeTag types={types} type={current.source} id={current.id} name={current.task_name} />
         </Form.Item> : null}
@@ -366,7 +333,6 @@ function Keyword({ getModels, delModel, updateModel }) {
           {current.map}
         </Form.Item>
       </EditBox>
-      {/* <Add visible={showAdd} type='local' cancel={() => setSowAdd(false)} ok={() => { resetQuery(); getData() }} /> */}
     </div>
   )
 }
@@ -374,6 +340,7 @@ function Keyword({ getModels, delModel, updateModel }) {
 const props = (state) => {
   return {
     logined: state.user.logined,
+    query: state.model.query,
   }
 }
 
@@ -397,7 +364,18 @@ const actions = (dispatch) => {
         payload: { id, name },
       })
     },
+    updateQuery: (query) => {
+      return dispatch({
+        type: 'model/updateQuery',
+        payload: query,
+      })
+    },
+    resetQuery: () => {
+      return dispatch({
+        type: 'model/resetQuery',
+      })
+    },
   }
 }
 
-export default connect(props, actions)(Keyword)
+export default connect(props, actions)(Model)

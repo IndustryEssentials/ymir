@@ -87,6 +87,7 @@ def __parse_single_arg_rev(src_rev: str) -> TypRevTid:
         typ_rev_tid.tid = contents[1]
 
     if typ_rev_tid.typ and typ_rev_tid.typ not in {"tr", "va", "te"}:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid typ in typ:rev@tid: {src_rev}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"invalid typ in typ:rev@tid: {src_rev}")
 
     return typ_rev_tid

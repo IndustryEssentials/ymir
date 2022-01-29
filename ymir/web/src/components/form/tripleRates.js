@@ -3,6 +3,7 @@ import { Row, Col, } from "antd"
 import t from "@/utils/t"
 
 import style from "./tripleRates.less"
+import { percent } from "../../utils/number"
 
 function TripleRates({ parts, data }) {
 
@@ -26,7 +27,7 @@ function TripleRates({ parts, data }) {
   }, [parts])
 
   function format(num) {
-    return ((num / total) * 100.0).toFixed(2) + '%'
+    return percent(num / total)
   }
 
   return total ? (

@@ -1,9 +1,7 @@
 import json
-from datetime import datetime
-from enum import IntEnum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, root_validator
 
 from app.config import settings
 from app.schemas.common import (
@@ -33,6 +31,7 @@ class ModelImport(BaseModel):
     hash: str
     name: str
     map: Optional[str]
+    parameters: Optional[str]
     input_url: str
 
 
@@ -60,15 +59,11 @@ class Model(ModelInDB):
 
     @root_validator
     def make_up_fields(cls, values: Any) -> Any:
-        raw = values.pop("task_parameters", None)
-        parameters = json.loads(raw) if raw else {}
-        values["parameters"] = parameters
-
-        task_config_str = values.pop("task_config", None)
-        task_config = json.loads(task_config_str) if task_config_str else {}
-        values["config"] = task_config
-
+        parameters = values["parameters"] or values.pop("task_parameters", None)
+        values["parameters"] = parse_optional_json(parameters)
         values["keywords"] = extract_keywords(parameters)
+        values["config"] = parse_optional_json(values.pop("task_config", None))
+
         # the source of a model is actually the task
         # that import the model, copy the model or
         # train the model
@@ -77,6 +72,10 @@ class Model(ModelInDB):
         if values.get("hash"):
             values["url"] = get_model_url(values["hash"])
         return values
+
+
+def parse_optional_json(j: Optional[str]) -> Dict:
+    return json.loads(j) if j is not None else {}
 
 
 def get_model_url(model_hash: str) -> str:
