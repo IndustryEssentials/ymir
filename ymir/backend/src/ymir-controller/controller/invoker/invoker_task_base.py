@@ -152,7 +152,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                 subtask_id_dict=subtask_id_dict,
             )
             if ret.code != CTLResponseCode.CTR_OK:
-                logging.info(f"subtask failed: {subtask_func_name}")
+                logging.info(f"subtask failed: {subtask_func_name}\nret: {ret}")
                 return ret
 
         return ret
