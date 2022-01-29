@@ -74,11 +74,11 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   }
 
   function next() {
-    setCurrentIndex(cu => ({ ...cu, index: cu + 1 }))
+    setCurrentIndex(cu => ({ ...cu, index: cu.index + 1 }))
   }
 
   function prev() {
-    setCurrentIndex(cu => ({ ...cu, index: cu - 1 }))
+    setCurrentIndex(cu => ({ ...cu, index: cu.index - 1 }))
   }
 
   function random() {
