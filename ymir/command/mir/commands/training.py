@@ -22,7 +22,7 @@ from mir.tools.errors import MirRuntimeError
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> Tuple[str, float]:
+                           task_context: dict) -> Tuple[str, float]:  # pragma: no cover
     model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
     if not model_paths:
         # if have no models
@@ -128,7 +128,7 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
 
 
 # private: process
-def _run_train_cmd(cmd: List[str], out_log_path: str) -> int:
+def _run_train_cmd(cmd: List[str], out_log_path: str) -> int:  # pragma: no cover
     """
     invoke training command
 

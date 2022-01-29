@@ -7,7 +7,7 @@ from mir.tools import checker
 from mir.tools.code import MirCode
 
 
-class CmdReset(base.BaseCommand):
+class CmdReset(base.BaseCommand):  # pragma: no cover
     @staticmethod
     def run_with_args(mir_root: str, reset_hard: bool) -> int:
         return_code = checker.check(mir_root,
