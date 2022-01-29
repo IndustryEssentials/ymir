@@ -1,5 +1,6 @@
 import glob
 import json
+import logging
 import os
 import shutil
 import zipfile
@@ -8,7 +9,6 @@ from typing import Dict, List
 from xml.etree import ElementTree
 
 from controller.label_model.base import LabelBase, catch_label_task_error
-from controller.utils.app_logger import logger
 from controller.label_model.request_handler import RequestHandler
 
 
@@ -140,7 +140,7 @@ class AIOS(LabelBase):
         resp = self._requests.get(url_path=url_path)
         self.unzip_annotation_files(BytesIO(resp), des_path)
 
-        logger.info(f"success convert_annotation_to_ymir: {des_path}")
+        logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
     @catch_label_task_error
     def run(
@@ -158,7 +158,7 @@ class AIOS(LabelBase):
         import_work_dir: str,
         use_pre_annotation: bool,
     ) -> None:
-        logger.info("start AIOS run()")
+        logging.info("start AIOS run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
         exported_storage_id = self.set_export_storage(project_id, export_path)
