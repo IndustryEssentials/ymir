@@ -1,11 +1,11 @@
 import csv
+import logging
 import os
 from collections import Counter
 from pathlib import Path
 from typing import List, Iterable
 
 from controller.config import label_task as label_task_config
-from controller.utils.app_logger import logger
 
 
 class LabelFileHandler:
@@ -79,7 +79,7 @@ class LabelFileHandler:
         candidate_labels_list = [x.lower().split(",") for x in candidate_labels]
         candidates_list = [x for row in candidate_labels_list for x in row]
         if len(candidates_list) != len(set(candidates_list)):
-            logger.info(f"conflict candidate labels: {candidate_labels_list}")
+            logging.info(f"conflict candidate labels: {candidate_labels_list}")
             return candidate_labels_list
 
         existed_labels_without_id = self.get_all_labels(with_reserve=False, with_id=False)
@@ -114,7 +114,7 @@ class LabelFileHandler:
 
             existed_labels_without_id.append(candidate_list)
             existed_labels_set.update(candidate_set)
-        logger.info(f"conflict labels: {conflict_labels}")
+        logging.info(f"conflict labels: {conflict_labels}")
 
         if not (check_only or conflict_labels):
             self.write_label_file(existed_labels_without_id, add_preserve=True, add_id=True)

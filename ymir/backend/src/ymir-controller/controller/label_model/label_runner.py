@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Tuple, List
 
@@ -7,7 +8,6 @@ from controller.label_model.aios import AIOS
 from controller.label_model.label_studio import LabelStudio
 from controller.label_model.request_handler import RequestHandler
 from controller.utils import utils
-from controller.utils.app_logger import logger
 from proto import backend_pb2
 
 
@@ -57,7 +57,7 @@ def start_label_task(
     expert_instruction: str,
     export_annotation: bool,
 ) -> None:
-    logger.info("start label task!!!")
+    logging.info("start label task!!!")
     # set your lable tools name
     request_handler = RequestHandler(
         url=label_task_config.LABEL_TOOL_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
@@ -89,4 +89,4 @@ def start_label_task(
                        media_location=media_location,
                        import_work_dir=import_work_dir,
                        use_pre_annotation=export_annotation)
-    logger.info("finish label task!!!")
+    logging.info("finish label task!!!")
