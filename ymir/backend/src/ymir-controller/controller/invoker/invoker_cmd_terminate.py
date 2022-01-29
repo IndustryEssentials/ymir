@@ -1,9 +1,11 @@
+import logging
+
 import sentry_sdk
 
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.label_model.label_studio import LabelStudio
-from controller.utils import checker, utils, app_logger
+from controller.utils import checker, utils
 from controller.utils.redis import rds
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
@@ -35,13 +37,13 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
             container_command = ['docker', 'rm', '-f', self._request.executor_instance]
             container_response = utils.run_command(container_command)
             if container_response.code != CTLResponseCode.CTR_OK:
-                app_logger.logger.warning(container_response.message)
+                logging.warning(container_response.message)
                 sentry_sdk.capture_message(container_response.message)
                 return container_response
         elif self._request.terminated_task_type == backend_pb2.TaskType.TaskTypeLabel:
             project_id = self.get_project_id_by_task_id(self._request.executor_instance)
             LabelStudio().delete_unlabeled_task(project_id)
         else:
-            app_logger.logger.info(f"Do nothing to terminate task_type:{self._request.req_type}")
+            logging.info(f"Do nothing to terminate task_type:{self._request.req_type}")
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "successful terminate")
