@@ -39,4 +39,4 @@ def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], descr
     )
 
     if resp.status_code != 200:
-        raise errors.MirCtrError(CTLResponseCode.REG_LOG_MONITOR_ERROR, "reg percent log to monitor service error")
+        raise errors.MirCtrError(CTLResponseCode.REG_LOG_MONITOR_ERROR, f"reg to monitor service error: {resp.content}")
