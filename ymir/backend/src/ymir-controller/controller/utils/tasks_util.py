@@ -8,7 +8,6 @@ from requests import RequestException
 
 from common_utils.percent_log_util import LogState
 from controller.config import common_task as common_task_config
-from controller.utils.app_logger import logger
 from id_definition.error_codes import CTLResponseCode
 
 
@@ -42,4 +41,4 @@ def register_monitor_log(task_id: str, user_id: str, log_paths: List[str], descr
             timeout=5,
         )
     except RequestException:
-        logger.warning(f"register_monitor_log error: {traceback.format_exc()}")
+        logging.warning(f"register_monitor_log error: {traceback.format_exc()}")
