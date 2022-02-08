@@ -57,8 +57,8 @@ class TaskImportingInvoker(TaskBaseInvoker):
     def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str, media_location: str,
                       work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
         importing_cmd = [
-            'cd', repo_root, '&&',
-            utils.mir_executable(), 'import', '--dataset-name', task_id, '--dst-rev', f"{task_id}@{task_id}",
+            utils.mir_executable(), 'import', '--root', repo_root,
+            '--dataset-name', task_id, '--dst-rev', f"{task_id}@{task_id}",
             '--src-revs', 'master', '--index-file', index_file, '--gen-dir', media_location, '-w', work_dir
         ]
         if annotation_dir:

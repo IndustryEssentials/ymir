@@ -110,8 +110,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
         generate_annotations: bool,
     ) -> backend_pb2.GeneralResp:
         mining_cmd = [
-            'cd', repo_root, '&&',
-            utils.mir_executable(), 'mining', '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir, '--model-location',
+            utils.mir_executable(), 'mining', '--root', repo_root,
+            '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir, '--model-location',
             model_location, '--media-location', media_location, '--model-hash', model_hash, '--src-revs',
             f"{in_src_revs}@{his_rev}", '--cache', asset_cache_dir, '--config-file', config_file, '--executor',
             executor, '--executor-instance', executor_instance

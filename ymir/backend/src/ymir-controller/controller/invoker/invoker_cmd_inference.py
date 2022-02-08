@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shutil
 from typing import Dict
@@ -9,7 +10,6 @@ from google.protobuf import json_format
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import utils, checker
-from controller.utils.app_logger import logger
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -31,7 +31,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         if img_type in ["png", "jpeg", "jpg"]:
             return True
         else:
-            logger.warning(f"image error: {one_picture}")
+            logging.warning(f"image error: {one_picture}")
             return False
 
     @classmethod

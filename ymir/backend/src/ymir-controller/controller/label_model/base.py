@@ -2,8 +2,9 @@ import json
 import traceback
 from abc import ABC, abstractmethod
 from functools import wraps
-from requests.exceptions import ConnectionError
 from typing import Any, Callable, Dict, List
+
+from requests.exceptions import ConnectionError
 
 from common_utils.percent_log_util import LogState
 from controller.config import label_task as label_task_config

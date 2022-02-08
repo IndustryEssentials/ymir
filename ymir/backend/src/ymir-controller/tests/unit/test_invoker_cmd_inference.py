@@ -122,5 +122,5 @@ class TestInvokerCMDInference(unittest.TestCase):
                f"--config-file {config_file} --executor {inference_image}")
 
         mock_run.assert_has_calls(calls=[
-            mock.call(cmd.split(' '), capture_output=True, shell=True, text=True),
+            mock.call(cmd.split(' '), capture_output=True, text=True),
         ])

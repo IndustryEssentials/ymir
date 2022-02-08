@@ -13,7 +13,6 @@ from controller.invoker.invoker_task_importing import TaskImportingInvoker
 from controller.label_model.aios import AIOS
 from controller.label_model.label_studio import LabelStudio
 from controller.utils import tasks_util
-from controller.utils.app_logger import logger
 from controller.utils.redis import rds
 
 
@@ -70,7 +69,7 @@ def lable_task_monitor() -> None:
         project_info = json.loads(content)
         percent = label_instance.get_task_completion_percent(project_info["project_id"])
 
-        logger.info(f"label task:{task_id} percent: {percent}")
+        logging.info(f"label task:{task_id} percent: {percent}")
         state = LogState.DONE if percent == 1 else LogState.RUNNING
         if state == LogState.DONE:
             # For remove some special tasks.Delete the task after labeling will save file
@@ -82,7 +81,7 @@ def lable_task_monitor() -> None:
                 )
             except requests.HTTPError as e:
                 sentry_sdk.capture_exception(e)
-                logger.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
+                logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
                 state = LogState.ERROR
             index_file = _gen_index_file(project_info["des_annotation_path"])
             trigger_mir_import(
@@ -113,5 +112,5 @@ if __name__ == "__main__":
     )
     scheduler = BlockingScheduler()
     scheduler.add_job(lable_task_monitor, "interval", seconds=label_task_config.LABEL_TASK_LOOP_SECONDS, jitter=120)
-    logger.info("monitor_label_project is running...")
+    logging.info("monitor_label_project is running...")
     scheduler.start()
