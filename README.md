@@ -777,6 +777,7 @@ YMIR is licensed under version 2.0 of the Apache License. See the [LICENSE](http
 ## 7.3. Contact us
 
 Contact us with further questions:contact.viesc@gmail.com
+
 Or join our SLACK, we will answer your questions in real time:https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
