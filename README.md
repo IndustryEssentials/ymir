@@ -441,6 +441,8 @@ There could be one or more alias for each type label, for example: if television
 2,,tv,television
 ```
 
+You can edit this file by vi and other text editing tools. You can add alias to type labels or add new type labels, but it is not recommended to change or remove the id and name of any type label that already exists.
+
 The file `labels.csv` can be shared among multiple mir repos by establishing soft links.
 
 Users are required to prepare three data sets in advance.
