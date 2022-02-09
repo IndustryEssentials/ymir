@@ -147,10 +147,10 @@ git clone git@github.com:IndustryEssentials/ymir.git
 2. In the cloned YMIR folder, install and start the service by typing:
 
   ```sh
-sh ymir.sh start
+bash ymir.sh start
   ```
 
-After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `sh ymir.sh stop`
+After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
 If there is no available graphics card and you need to install CPU mode, please change it to CPU boot mode by modifying the .env file to change the SERVER_RUNTIME parameter to runc: 
 
