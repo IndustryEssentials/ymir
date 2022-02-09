@@ -17,6 +17,7 @@ English | [Simplified Chinese](README_zh-CN.md)
   - [2.2. Installation of YMIR-GUI](#22-installation-of-ymir-gui)
   - [2.3. Installation of label studio (optional)](#23-installation-of-label-studio-optional)
 - [3. Use YMIR-GUI: typical model production process](#3-use-ymir-gui-typical-model-production-process)
+  - [3.1. Label management](#31-label-management)
   - [3.1. Raw data preparation](#31-raw-data-preparation)
   - [3.2. Data labeling](#32-data-labeling)
   - [3.3. Model training](#33-model-training)
@@ -210,15 +211,19 @@ This section uses a complete model iteration process as an example to illustrate
 
 As shown in the figure above, YMIR divides the model development process into multiple steps. Details about how to run each step are listed in the subsequent sections.
 
-## 3.1. Raw data preparation
+## 3.1. Label management
+
+When you need to import a dataset with annotation files, please make sure the annotation type belongs to the existing label list of the system, otherwise you need to go to the label management interface to add custom labels in order to import the data. The following figure shows:
+
+![Label management](docs/images/Label-management.png)
+
+## 3.2. Raw data preparation
 
 The user prepares a dataset with training targets (training set and test set) for training an initial model. Before importing, please ensure that the format of the dataset meets the following requirements:
 
 *  The dataset is in.zip format, it should contain two folders named as "images" and "annotations" respectively;
 *  Images: create an ''images'' folder and place images in it. The formats currently supported by this platform are limited to jpg, jpeg, and png;
 *  Annotations: create an "annotations" folder and place annotation files formatted as [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/htmldoc/devkit_doc.html#SECTION00093000000000000000) (if there are no annotation files, leave the folder empty);
-*  For a labeled dataset, the labeled object type must belong to the built-in label list of the platform. Please click the link to view the detailed tag list, [Tag List] (https://github.com/IndustryEssentials/ymir-proto/blob/master/ymir/ids/type_id_names.csv) for details;
-*  If users need custom tags, please see [How to Modify the Category Name Tag File] (#71-faq).
 
 The platform supports four kinds of dataset importing: public dataset replication, network importing, local importing, and path importing.
 
@@ -229,7 +234,7 @@ The platform supports four kinds of dataset importing: public dataset replicatio
 
 ![public dataset2](docs/images/public-dataset2.jpeg)
 
-Select the eligible dataset and click [OK] to start copying.
+Select the dataset and choose whether you want to synchronize the labels contained in the public dataset, click [OK] to start copying.
 
 (2) Network import: users need to enter the URL path corresponding to the dataset as shown in the following:
 
@@ -249,7 +254,7 @@ Users can unpack and separate the training set (VOC2012_train), the test set (VO
 
 ![import success](docs/images/import-success.jpeg)
 
-## 3.2. Data labeling
+## 3.3. Data labeling
 
 If the imported training set or test set does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the Create Data Annotation Task interface as shown in the following figure.
 
@@ -261,7 +266,7 @@ The user must enter the task name, the dataset, the email address of the annotat
 
 After successful creation, users can view the corresponding task progress and other information on the task management interface. After the task is completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
 
-## 3.3. Model training
+## 3.4. Model training
 
 Click the [Train] button in the task management interface to jump to the Create Model Training Task interface, as shown in the following figure:
 
@@ -273,11 +278,9 @@ The user needs to enter the needed information in the form above to configure a 
 
 After successful creation, users can view the corresponding task progress and information on the task management page. Users can view the accuracy of the trained model (mAP value) after the task is completed.
 
-
-
 - **Model iterations (Improve accuracy through iteration)**
 
-## 3.4. Data mining
+## 3.5. Data mining
 
 YMIR provides data mining algorithms that support million-level data mining to quickly find the most favorite data for model optimization.
 
@@ -291,7 +294,7 @@ The user needs to enter the task name, select the data set (VOC2012_mining), and
 
 After a task is created, users can view the task progress and the result of the mining task on the task management page.
 
-## 3.5. Model iteration
+## 3.6. Model iteration
 
 ![process-en](docs/images/process-en.jpeg)
 
@@ -303,7 +306,7 @@ After the labeling task is completed, the training task should be created again.
 
 ![merge train](docs/images/merge-train3.jpeg)
 
-## 3.6. Model validation
+## 3.7. Model validation
 
 After training the model, users can validate the model. On the [Model Management] page, you can click the [Verify] button of the corresponding model to jump to the [Model Validation] page. As shown in the following figure:
 
@@ -317,7 +320,7 @@ The user can click the [Upload Image] button and select a local image to upload.
 
 Users can choose to download the trained model. Users can also choose to continue to use the model for mining. So as to enter the next round of data mining, data labeling, model training cycle, and further optimize the model.
 
-## 3.7. Model download
+## 3.8. Model download
 
 Users can click the [Download] button on the [Model List] page. The downloaded file is a tar package, which contains the network structure of the model, network weights, hyper-parameter configuration files, training environment parameters, and results. As shown below:
 
@@ -767,44 +770,14 @@ Mining and inference mirrors The configuration file templates for `industryessen
 
 After successful training, the system will output the ID of the model. The user can find the corresponding file according to this id at `--model-location`. In fact, it is a tar file that can be extracted directly using the tar command to get the "mxnet" model file in parameters and JSON format.
 
-**How to view and modify the label file of the category name?**
-
-This file is in the package installation directory. Use this command to view the content of this file:
-
-```
-cat `pip show ymir-proto | grep 'Location: ' | cut -d ' ' -f2`/ymir/ids/type_id_names.csv
-```
-
-And you may get output like this:
-
-```
-0,frisbee
-1,car
-2,person
-3,surfboard
-4,cat
-5,bed
-6,clock
-7,pizza,pizza pie
-8,skateboard
-9,dining table,diningtable,board
-```
-
-Each line of this configuration file is separated by commas. The first item is the category id, followed by the category name.
-
-Pay attention to this line with id 7. It has 3 items: "7, pizza, and pizza pie". The first one is category id, the second one is a category name, and the third one is category alias.
-
-In the filter command, the -c and -C arguments are mapped to category ids with this file. All category aliases have the same meaning as category names.
-
-You can edit this file by vi and other text editing tools. You can add alias to category or add new category, but it is not recommended to change the primary id and name of category that already existed.
-
 ## 7.2. License
 
 YMIR is licensed under version 2.0 of the Apache License. See the [LICENSE](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE) file for details.
 
 ## 7.3. Contact us
 
-Contact us with further questions：contact.viesc@gmail.com
+Contact us with further questions:contact.viesc@gmail.com
+Or join our SLACK, we will answer your questions in real time:https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
