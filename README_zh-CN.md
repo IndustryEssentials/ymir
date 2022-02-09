@@ -406,6 +406,30 @@ $ mir init # 将此目录初始化成一个mir repo
 $ mkdir ~/ymir-assets ~/ymir-models # 建立资源和模型存储目录，所有的图像资源都会保存在此目录中，而在mir repo中只会保留对这些资源的引用
 ```
 
+mir repo 中的标签通过标签文件进行统一管理，打开标签文件 `~/mir-demo-repo/labels.csv`，可以看到以下内容：
+
+```
+# type_id, preserved, main type name, alias...
+```
+
+在这个文件中，每一行代表一个类别标签，依次是标签 id（从 0 开始增长），留空，主标签名，一个或多个标签别名，例如，如果想要导入的数据集中含有 person, cat 和 tv 这几个标签，可以编辑此文件为：
+
+```
+0,,person
+1,,cat
+2,,tv
+```
+
+一个类别标签可以指定一个或多个别名，例如，如果指定 television 作为 tv 的别名，则 `labels.csv` 文件可更改为：
+
+```
+0,,person
+1,,cat
+2,,tv,television
+```
+
+`labels.csv` 文件可以通过建立软链接的方式，在多个 mir repo 之间共享。
+
 用户需要事先准备三个数据集：
 
 1. 训练集 dataset-training，带标注，用于初始模型的训练；
