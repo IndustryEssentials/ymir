@@ -41,7 +41,7 @@ class CmdImport(base.BaseCommand):
         if anno_abs and not os.path.isdir(anno_abs):
             logging.error(f"annotations dir invalid: {anno_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if not dst_rev:  # pragma: no cover
+        if not dst_rev:
             logging.error("empty --dst-rev")
             return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
@@ -49,7 +49,7 @@ class CmdImport(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
         if not dataset_name:
             dataset_name = dst_typ_rev_tid.tid
-        if not src_revs:  # pragma: no cover
+        if not src_revs:
             logging.error('empty --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)

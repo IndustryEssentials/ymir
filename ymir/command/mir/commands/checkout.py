@@ -42,7 +42,7 @@ class CmdCheckout(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     checkout_arg_parser = subparsers.add_parser("checkout",
                                                 aliases=["co"],
                                                 parents=[parent_parser],

@@ -13,8 +13,12 @@ exclude_lines =
     pragma: no cover
     import
     from
-    def run(self) -> int:
+    def run\(self\)
     bind_to_subparsers
     class CmdReset
+    _process_model_storage
+    _run_train_cmd
+    _process_infer_results
+    run_docker_cmd
 
 ignore_errors = True

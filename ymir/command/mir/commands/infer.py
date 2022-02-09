@@ -223,7 +223,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_results(infer_result_file: str, max_boxes: int) -> None:  # pragma: no cover
+def _process_infer_results(infer_result_file: str, max_boxes: int) -> None:
     if not os.path.isfile(infer_result_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
                               error_message=f"can not find result file: {infer_result_file}")
@@ -274,7 +274,7 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
                    executor: str, executor_instance: str, shm_size: Optional[str], task_type: str,
-                   gpu_id: str) -> int:  # pragma: no cover
+                   gpu_id: str) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
