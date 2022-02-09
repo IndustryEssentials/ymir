@@ -215,7 +215,7 @@ As shown in the figure above, YMIR divides the model development process into mu
 
 When you need to import a dataset with annotation files, please make sure the annotation type belongs to the existing label list of the system, otherwise you need to go to the label management interface to add custom labels in order to import the data. The following figure shows:
 
-![Label management](docs/images/Label-management.png)
+![Label management](docs/images/Label%20management.jpg)
 
 ## 3.2. Raw data preparation
 
