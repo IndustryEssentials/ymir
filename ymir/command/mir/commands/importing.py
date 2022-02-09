@@ -169,7 +169,7 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     importing_arg_parser = subparsers.add_parser("import",
                                                  parents=[parent_parser],
                                                  description="use this command to import data from img/anno folder",

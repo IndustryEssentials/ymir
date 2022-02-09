@@ -7,7 +7,7 @@ from mir.tools import checker
 from mir.tools.code import MirCode
 
 
-class CmdReset(base.BaseCommand):  # pragma: no cover
+class CmdReset(base.BaseCommand):
     @staticmethod
     def run_with_args(mir_root: str, reset_hard: bool) -> int:
         return_code = checker.check(mir_root,
@@ -35,7 +35,7 @@ class CmdReset(base.BaseCommand):  # pragma: no cover
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     reset_arg_parser = subparsers.add_parser("reset",
                                              parents=[parent_parser],
                                              description="use this command to undo changes to mir repo",

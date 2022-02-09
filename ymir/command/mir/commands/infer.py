@@ -303,7 +303,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
 
 # public: cli bind
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     infer_arg_parser = subparsers.add_parser('infer',
                                              description='use this command to inference images',
                                              help='inference images')
