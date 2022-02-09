@@ -117,7 +117,7 @@ How do users choose to install GUI or CMD?
 
 2. If you need to modify the default configuration of the system, such as customizing labels and replacing training algorithms, it is recommended to install CMD;
 
-This chapter contains the installation instructions for YMIR-GUI. If you need to use CMD, please refer to the [Ymir-CMD user guide] (#4-for-advanced-users-ymir-cmd-command-line-users-guide).
+This chapter contains the installation instructions for YMIR-GUI. If you need to use CMD, please refer to the [Ymir-CMD user guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide).
 
 ## 2.1. Environment dependencies
 
@@ -135,7 +135,7 @@ This chapter contains the installation instructions for YMIR-GUI. If you need to
 
 ## 2.2. Installation of YMIR-GUI
 
-The user must ensure that all the conditions in [Cuda environment dependencies] (#21-cuda-environment-dependencies) have been met, otherwise the installation may fail.
+The user must ensure that all the conditions in [Cuda environment dependencies](#21-cuda-environment-dependencies) have been met, otherwise the installation may fail.
 
 The YMIR-GUI project package is on DockerHub and the steps to install and deploy YMIR are as follows:
 
@@ -177,7 +177,7 @@ docker-compose -f docker-compose-component.yml up -d
 docker-compose -f docker-compose-component.yml ps
   ```
 
-The user can access label studio through the default URL [http://localhost:12007/] (http://localhost:12007/). The installation is successful if the login page shows up.
+The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
 
 3. Configure the label studio authorization token
 
@@ -298,7 +298,7 @@ After a task is created, users can view the task progress and the result of the 
 
 ![process-en](docs/images/process-en.jpeg)
 
-After the mining task is completed, the mined dataset (mine-voc, 500 images) is obtained from the dataset to be mined (VOC2012_mining). The mined dataset (mine-voc, 500 sheets) is labeled by repeating step [3.2 Data labeling] (#32-data-labeling)to obtain the labeled dataset (mine-voc-label, 500 sheets). The following figure shows:
+After the mining task is completed, the mined dataset (mine-voc, 500 images) is obtained from the dataset to be mined (VOC2012_mining). The mined dataset (mine-voc, 500 sheets) is labeled by repeating step [3.2 Data labeling](#32-data-labeling)to obtain the labeled dataset (mine-voc-label, 500 sheets). The following figure shows:
 
 ![mine success](docs/images/merge-train2.jpeg)
 
@@ -328,7 +328,7 @@ Users can click the [Download] button on the [Model List] page. The downloaded f
 
 # 4. For advanced users: YMIR-CMD (command line) user's guide
 
-This chapter contains the instructions for the YMIR-CMD. If you need to use the GUI, please refer to [Ymir-GUI Installation] (#2-installation).
+This chapter contains the instructions for the YMIR-CMD. If you need to use the GUI, please refer to [Ymir-GUI Installation](#2-installation).
 
 ## 4.1 Installation
 
@@ -361,7 +361,7 @@ All the following commands are prefixed with $ (which is also the Linux prompt u
 
 The system has the following requirements for external data.
 
-1. With [VOC annotations] (https://towardsdatascience.com/coco-data-format-for-object-detection-a4c5eaf518c5)
+1. With [VOC annotations](https://towardsdatascience.com/coco-data-format-for-object-detection-a4c5eaf518c5)
 
 2. The paths to all images (collectively referred to as assets or media in this system) need to be written uniformly in the "index.tsv" file. All annotation files need to be in the same directory.
 
@@ -742,19 +742,19 @@ Whenever the user needs to start a new task,
 
 * At this point, changes made by other users to the master branch's metadata will not affect the training data the user is using either.
 
-**The second scene**: Search for certain metadata by tag or keyword. The user starts the screening process until the data meets the requirements, and then the data is used. As shown below:
+**The second scene**: Search for certain metadata by label or keyword. The user starts the screening process until the data meets the requirements, and then the data is used. As shown below:
 
 ![Scenario2](docs/images/Scenario2.jpeg)
 
 At this point, whenever a user needs to carry out a new task,
-:: Users can search for metadata that basically matches the user's requirements by means of keywords, tags, and so on.
+:: Users can search for metadata that basically matches the user's requirements by means of keywords, labels, and so on.
 :: On this basis, users need sign out a new branch.
 :: Users can continue data filtering or cleansing on the new branch to obtain data that actually meets the requirements.
 :: Users can use this data for training.
 
 **The third scene**: incremental merging. Suppose the user has completed the training task of the model using certain metadata. At this point, there is an update to the metadata of the repository and the master branch. The user wishes to merge this part of the update into the currently used metadata.
 
-![Scenario3](docs/images/Scenario3.jpeg)
+![Scenario3]docs/images/Scenario3.jpeg)
 
 Suppose the user is now in FEATURE#2 and needs to do the following:
 :: You need switch back to master branch master.
