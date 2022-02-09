@@ -140,9 +140,9 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 将部署项目YMIR下拉到本地服务器，克隆仓库地址命令：
 `git clone git@github.com:IndustryEssentials/ymir.git`
 
-2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`sh ymir.sh start`
+2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`
 
-服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`sh ymir.sh stop`
+服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
    如无可用显卡，需要安装CPU模式，请修改为CPU启动模式，修改.env文件将SERVER_RUNTIME参数修改为runc：
 
