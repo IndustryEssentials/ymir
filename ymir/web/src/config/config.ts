@@ -13,26 +13,10 @@ const Config = defineConfig({
     type: "none",
   },
   headScripts: [{ src: '/config/config.js' } ],
-  // chainWebpack(config, { env, webpack, createCSSRule }) {
-    // gzip
-    // config.when(isEnvProduction, (config) => {
-    //   config
-    //     .plugin("compression-webpack-plugin")
-    //     .use(CompressionWebpackPlugin, [
-    //       {
-    //         filename: "[path].gz[query]",
-    //         algorithm: "gzip",
-    //         test: new RegExp("\\.(js|css)$"),
-    //         threshold: 10240,
-    //         minRatio: 0.8,
-    //       },
-    //     ]);
-    // });
-  // },
   fastRefresh: {},
 
   // open mfsu
-  webpack5: {},
+  // webpack5: false,
   dynamicImport: {},
   // mfsu: {},
 })

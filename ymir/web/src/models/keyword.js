@@ -22,8 +22,8 @@ export default {
           type: "UPDATE_KEYWORDS",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *updateKeywords({ payload }, { call, put }) {
       const { code, result } = yield call(updateKeywords, payload)

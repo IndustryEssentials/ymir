@@ -8,14 +8,22 @@ import {
   createDataset,
   updateDataset,
   getInternalDataset,
-  importDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
 
+const initQuery = {
+  name: "",
+  type: "",
+  time: 0,
+  offset: 0,
+  limit: 20,
+}
+
 export default {
   namespace: "dataset",
   state: {
+    query: initQuery,
     datasets: {
       items: [],
       total: 0,
@@ -38,8 +46,8 @@ export default {
           type: "UPDATE_DATASETS",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *batchDatasets({ payload }, { call, put }) {
       const { code, result } = yield call(batchDatasets, payload)
@@ -64,8 +72,8 @@ export default {
           type: "UPDATE_ASSETS",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *getAsset({ payload }, { call, put }) {
       const { code, result } = yield call(getAsset, payload.id, payload.hash)
@@ -74,16 +82,20 @@ export default {
           type: "UPDATE_ASSET",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
-      return result
+      if (code === 0) {
+        return result
+      }
     },
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
-      return result
+      if (code === 0) {
+        return result
+      }
     },
     *updateDataset({ payload }, { call, put }) {
       const { id, name } = payload
@@ -99,12 +111,8 @@ export default {
           type: "UPDATE_PUBLICDATASETS",
           payload: result,
         })
+        return result
       }
-      return result
-    },
-    *importDataset({ payload }, { call, put }) {
-      const { code, result } = yield call(importDataset, payload)
-      return result
     },
     *updateDatasets({ payload }, { put, select }) {
       const datasets = yield select(state => state.dataset.datasets)
@@ -146,6 +154,23 @@ export default {
       }
       return datasets
     },
+    *updateQuery({ payload = {} }, { put, select }) {
+      const query = yield select(({ task }) => task.query)
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: {
+          ...query,
+          ...payload,
+          offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
+        }
+      })
+    },
+    *resetQuery({}, { put }) {
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: initQuery,
+      })
+    },
   },
   reducers: {
     UPDATE_DATASETS(state, { payload }) {
@@ -176,6 +201,12 @@ export default {
       return {
         ...state,
         publicDatasets: payload
+      }
+    },
+    UPDATE_QUERY(state, { payload }) {
+      return {
+        ...state,
+        query: payload,
       }
     },
   },

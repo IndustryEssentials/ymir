@@ -61,7 +61,7 @@ const image = {
   'image.detail.label.url': { en: "Url", cn: "镜像地址", },
   'image.detail.label.share': { en: "Shared", cn: "是否共享镜像", },
   'image.detail.label.related': { en: "Related", cn: "关联镜像", },
-  'image.detail.label.config': { en: "Senior Config", cn: "镜像高级参数", },
+  'image.detail.label.config': { en: "Docker Functional Config", cn: "镜像功能参数", },
   'image.detail.label.state': { en: "Image State", cn: "镜像状态", },
   'image.detail.relate': { en: "Relate", cn: "去关联", },
   'image.select.opt.related': { en: "Related Images", cn: "关联镜像（推荐）", },

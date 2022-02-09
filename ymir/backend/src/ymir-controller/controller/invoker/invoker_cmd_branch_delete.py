@@ -1,5 +1,6 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -15,15 +16,11 @@ class BranchDeleteInvoker(BaseMirControllerInvoker):
                                      mir_root=self._repo_root)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_BRANCH_DEL:
-            raise RuntimeError("Mismatched req_type")
+        expected_type = backend_pb2.RequestType.CMD_BRANCH_DEL
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         force_flag = "-D" if self._request.force else "-d"
-        command = "cd {0} && {1} branch {2} {3}".format(self._repo_root, utils.mir_executable(), force_flag,
-                                                        self._request.singleton_op)
-        return utils.run_command(command)
-
-    def _repr(self) -> str:
-        force_flag = "-D" if self._request.force else "-d"
-        return "branch_delete user: {}, repo: {}, force_flag: {}, branch: {}".format(
-            self._request.user_id, self._request.repo_id, force_flag, self._request.singleton_op)
+        cmd = [utils.mir_executable(), 'branch', '--root', self._repo_root, force_flag, self._request.singleton_op]
+        return utils.run_command(cmd)

@@ -5,7 +5,6 @@ import {
   updateTask,
   createTask,
   stopTask,
-  getLabelData,
   createFilterTask,
   createMiningTask,
   createTrainTask,
@@ -13,9 +12,19 @@ import {
 } from "@/services/task"
 import { isFinalState } from '@/constants/task'
 
+const initQuery = {
+  name: '',
+  type: '',
+  state: '',
+  time: 0,
+  offset: 0,
+  limit: 20,
+}
+
 export default {
   namespace: "task",
   state: {
+    query: initQuery,
     tasks: {
       items: [],
       total: 0,
@@ -71,23 +80,12 @@ export default {
     *deleteTask({ payload }, { call, put }) {
       let { code, result } = yield call(deleteTask, payload)
       if (code === 0) {
-        yield put({
-          type: "UPDATE_TASKS",
-          payload: result,
-        })
         return result
       }
     },
     *stopTask({ payload }, { call, put }) {
-      console.log('task model stop task', payload)
       const { id, with_data } = payload
       let { code, result } = yield call(stopTask, id, with_data)
-      if (code === 0) {
-        return result
-      }
-    },
-    *getLabelData({ payload }, { call, put }) {
-      let { code, result } = yield call(getLabelData, payload)
       if (code === 0) {
         return result
       }
@@ -162,6 +160,23 @@ export default {
         payload: { ...task },
       })
     },
+    *updateQuery({ payload = {} }, { put, select }) {
+      const query = yield select(({ task }) => task.query)
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: {
+          ...query,
+          ...payload,
+          offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
+        }
+      })
+    },
+    *resetQuery({}, { put }) {
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: initQuery,
+      })
+    },
   },
   reducers: {
     UPDATE_TASKS(state, { payload }) {
@@ -174,6 +189,12 @@ export default {
       return {
         ...state,
         task: payload,
+      }
+    },
+    UPDATE_QUERY(state, { payload }) {
+      return {
+        ...state,
+        query: payload,
       }
     },
   },

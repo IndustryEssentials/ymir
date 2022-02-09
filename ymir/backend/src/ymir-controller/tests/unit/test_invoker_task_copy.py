@@ -86,7 +86,8 @@ class TestInvokerTaskCopy(unittest.TestCase):
         mir_src_root = os.path.join(self._sandbox_root, copy_request.src_user_id, copy_request.src_repo_id)
         os.makedirs(mir_src_root)
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeCopyData), self._task_id)
+                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeCopyData), self._task_id, 'sub_task',
+                                   self._task_id)
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = backend_pb2.TaskTypeCopyData
@@ -100,11 +101,10 @@ class TestInvokerTaskCopy(unittest.TestCase):
                                          task_id=self._task_id,
                                          req_create_task=req_create_task)
 
-
-        expected_cmd_copy = ("cd {0} && mir copy --src-root {1} --dst-rev {2}@{2} --src-revs {3}@{3} -w {4}".format(
+        expected_cmd_copy = ("mir copy --root {0} --src-root {1} --dst-rev {2}@{2} --src-revs {3}@{3} -w {4}".format(
             self._mir_repo_root, mir_src_root, self._task_id, copy_request.src_dataset_id, working_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_copy, capture_output=True, shell=True, text=True),
+            mock.call(expected_cmd_copy.split(' '), capture_output=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

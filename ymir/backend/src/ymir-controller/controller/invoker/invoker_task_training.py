@@ -1,56 +1,46 @@
 import os
-from typing import List, Dict
-
-import yaml
+from typing import Dict
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import code, utils, invoker_call, revs, gpu_utils, labels, tasks_util
+from controller.utils import invoker_call, revs, utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
 class TaskTrainingInvoker(TaskBaseInvoker):
-    @classmethod
-    def gen_training_config(cls, repo_root: str, req_training_config: str, in_class_ids: List, work_dir: str) -> str:
-        training_config = yaml.safe_load(req_training_config)
-        label_handler = labels.LabelFileHandler(repo_root)
-        training_config["class_names"] = label_handler.get_main_labels_by_ids(in_class_ids)
-        # when gpu_count > 0, use gpu model
-        if training_config["gpu_count"] > 0:
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(training_config["gpu_count"], lock_gpu=True)
-            if not gpu_ids:
-                return gpu_ids
-            else:
-                training_config["gpu_id"] = gpu_ids
-        output_config = os.path.join(work_dir, "task_config.yaml")
-        with open(output_config, "w") as f:
-            yaml.dump(training_config, f)
-
-        return output_config
-
-    @classmethod
-    def task_invoke(
-        cls,
-        sandbox_root: str,
-        repo_root: str,
-        assets_config: Dict[str, str],
-        working_dir: str,
-        task_monitor_file: str,
-        request: backend_pb2.GeneralReq,
-    ) -> backend_pb2.GeneralResp:
+    def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         if not train_request.in_dataset_types:
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, "invalid dataset_types")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid dataset_types")
 
-        sub_task_id_1 = utils.sub_task_id(request.task_id, 1)
+        # store executor config in task_0 work_dir
+        subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
+        output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
+        gpu_lock_ret = self.gen_executor_config_lock_gpus(
+            repo_root=self._repo_root,
+            req_executor_config=request.docker_image_config,
+            in_class_ids=train_request.in_class_ids,
+            output_config_file=output_config_file,
+        )
+        if not gpu_lock_ret:
+            return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
+
+        return utils.make_general_response(CTLResponseCode.CTR_OK, "")
+
+    @classmethod
+    def subtask_count(cls) -> int:
+        return 2
+
+    @classmethod
+    def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
+                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
+                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+        train_request = request.req_create_task.training
         in_dataset_ids = [
             revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
             for dataset_type in train_request.in_dataset_types
         ]
-
-        executor_instance = request.executor_instance
-        if executor_instance != request.task_id:
-            raise ValueError(f"executor_instance:{executor_instance} != task_id {request.task_id}")
 
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
@@ -58,48 +48,39 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             req_type=backend_pb2.CMD_MERGE,
             user_id=request.user_id,
             repo_id=request.repo_id,
-            task_id=sub_task_id_1,
+            task_id=subtask_id,
             his_task_id=train_request.in_dataset_types[0].dataset_id,
             dst_task_id=request.task_id,
             in_dataset_ids=in_dataset_ids,
             merge_strategy=request.merge_strategy,
+            work_dir=subtask_workdir,
         )
-        if merge_response.code != code.ResCode.CTR_OK:
-            tasks_util.write_task_progress(monitor_file=task_monitor_file,
-                                           tid=request.task_id,
-                                           percent=1.0,
-                                           state=backend_pb2.TaskStateError,
-                                           msg=merge_response.message)
-            return merge_response
 
-        sub_task_id = utils.sub_task_id(request.task_id, 0)
+        return merge_response
+
+    @classmethod
+    def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
+                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
+                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op
-        config_file = cls.gen_training_config(
-            repo_root, request.docker_image_config, train_request.in_class_ids, working_dir
-        )
-        if not config_file:
-            msg = "Not enough GPU available"
-            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
-            return utils.make_general_response(code.ResCode.CTR_ERROR_UNKNOWN, msg)
 
         tensorboard_root = assets_config['tensorboard_root']
-        if not tensorboard_root:
-            msg = "empty tensorboard_root"
-            tasks_util.write_task_progress(task_monitor_file, request.task_id, 1, backend_pb2.TaskStateError, msg)
-            return utils.make_general_response(code.ResCode.CTR_INVALID_SERVICE_REQ, msg)
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
+        previous_subtask_idx = 1
+        config_file = cls.gen_executor_config_path(subtask_workdir)
+        executor_instance = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,
             config_file=config_file,
             models_upload_location=models_upload_location,
             media_location=media_location,
-            task_id=sub_task_id,
-            work_dir=working_dir,
-            his_rev=sub_task_id_1,
+            task_id=subtask_id,
+            work_dir=subtask_workdir,
+            his_rev=subtask_id_dict[previous_subtask_idx],
             in_src_revs=request.task_id,
             training_image=training_image,
             executor_instance=executor_instance,
@@ -124,28 +105,15 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard: str,
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
-        training_cmd = (
-            f"cd {repo_root} && {utils.mir_executable()} train --dst-rev {task_id}@{task_id} "
-            f"--model-location {models_upload_location} --media-location {media_location} -w {work_dir} "
-            f"--src-revs {in_src_revs}@{his_rev} --config-file {config_file} --executor {training_image} "
-            f"--executor-instance {executor_instance} "
-            f"--tensorboard {tensorboard}"
-        )
+        training_cmd = [
+            utils.mir_executable(), 'train', '--root', repo_root,
+            '--dst-rev', f"{task_id}@{task_id}", '--model-location',
+            models_upload_location, '--media-location', media_location, '-w', work_dir, '--src-revs',
+            f"{in_src_revs}@{his_rev}", '--config-file', config_file, '--executor', training_image,
+            '--executor-instance', executor_instance, '--tensorboard', tensorboard
+        ]
         if model_hash:
-            training_cmd += f" --model-hash {model_hash}"
+            training_cmd.append('--model-hash')
+            training_cmd.append(model_hash)
 
         return utils.run_command(training_cmd)
-
-    def _repr(self) -> str:
-        train_request = self._request.req_create_task.training
-        in_dataset_ids = [
-            revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
-            for dataset_type in train_request.in_dataset_types
-        ]
-
-        repr = (
-            f"task_training: user: {self._request.user_id}, repo: {self._request.repo_id} task_id: {self._task_id} "
-            f"in_dataset_types: {in_dataset_ids} in_class_ids: {train_request.in_class_ids}"
-        )
-
-        return repr

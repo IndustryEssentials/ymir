@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
 
-from app.schemas.common import Common, IdModelMixin
+from app.schemas.common import Common
 
 
 class ImageRelationshipBase(BaseModel):

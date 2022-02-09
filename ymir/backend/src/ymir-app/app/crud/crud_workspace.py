@@ -1,7 +1,5 @@
-from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import Optional
 
-from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase

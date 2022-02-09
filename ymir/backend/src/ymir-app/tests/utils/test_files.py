@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
-
-from app.utils import files as m
-from app.config import settings
 from unittest.mock import patch
+
+from app.config import settings
+from app.utils import files as m
 from tests.utils.utils import random_url
 
 
@@ -42,4 +42,3 @@ class TestIsValidImportPath:
         anno_dir = tmp_path / "annotations"
         m.settings.SHARED_DATA_DIR = str(tmp_path)
         assert not m.is_valid_import_path(tmp_path)
-

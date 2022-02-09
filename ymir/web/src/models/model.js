@@ -9,9 +9,17 @@ import {
 } from "@/services/model"
 import { getStats } from "../services/common"
 
+const initQuery = {
+  name: "",
+  time: 0,
+  offset: 0,
+  limit: 20,
+}
+
 export default {
   namespace: "model",
   state: {
+    query: initQuery,
     models: {
       items: [],
       total: 0,
@@ -26,8 +34,8 @@ export default {
           type: "UPDATE_MODELS",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
@@ -56,12 +64,14 @@ export default {
           type: "UPDATE_MODEL",
           payload: result,
         })
+        return result
       }
-      return result
     },
     *delModel({ payload }, { call, put }) {
       const { code, result } = yield call(delModel, payload)
-      return result
+      if (code === 0) {
+        return result
+      }
     },
     *createModel({ payload }, { call, put }) {
       const { code, result } = yield call(createModel, payload)
@@ -106,21 +116,47 @@ export default {
     },
     *getModelsByMap({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'mms' })
-      let models = []
       let kws = []
+      let kmodels = {}
       if (code === 0) {
-        kws = Object.keys(result).slice(0, 4)
+        kws = Object.keys(result).slice(0, 5)
         const ids = [...new Set(kws.reduce((prev, current) => ([...prev, ...result[current].map(item => item[0])]), []))]
         if (ids.length) {
           const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
           if (modelsObj) {
-            models = modelsObj
+            kws.forEach(kw => {
+              kmodels[kw] = result[kw].map(item => {
+                const { id, name, map } = modelsObj.find(model => model.id === item[0])
+                if (name) {
+                  return {
+                    id, map, name,
+                  }
+                }
+              })
+            })
           }
         }
       }
       return {
-        models, keywords: kws,
+        keywords: kws, kmodels,
       }
+    },
+    *updateQuery({ payload = {} }, { put, select }) {
+      const query = yield select(({ task }) => task.query)
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: {
+          ...query,
+          ...payload,
+          offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
+        }
+      })
+    },
+    *resetQuery({}, { put }) {
+      yield put({
+        type: 'UPDATE_QUERY',
+        payload: initQuery,
+      })
     },
   },
   reducers: {
@@ -134,6 +170,12 @@ export default {
       return {
         ...state,
         model: payload
+      }
+    },
+    UPDATE_QUERY(state, { payload }) {
+      return {
+        ...state,
+        query: payload,
       }
     },
   },

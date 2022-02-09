@@ -1,8 +1,8 @@
+import json
+import logging
 from typing import Dict, List, Optional
 
 import redis
-import json
-from controller.utils.app_logger import logger
 
 from controller.config import common_task as common_task_config
 
@@ -19,7 +19,7 @@ class MiddlewareRedis:
             res = self._client.hget(name, key)
             return json.loads(str(res))
         except json.JSONDecodeError as e:
-            logger.error(f"{e}")
+            logging.error(f"{e}")
             return None
 
     def hgetall(self, name: str) -> Dict:

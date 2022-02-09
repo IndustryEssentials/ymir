@@ -116,7 +116,6 @@ describe("models: user", () => {
 
     expect(end.done).toBe(true)
 
-    // console.log("login: ", ca, updateLogined, end)
   })
   it("effects: getUserInfo -> get user from network", () => {
     const saga = user.effects.getUserInfo
@@ -139,7 +138,6 @@ describe("models: user", () => {
 
     expect(JSON.stringify(end.value)).toBe(JSON.stringify(expected))
     expect(end.done).toBe(true)
-    // console.log('get user info from remote: ', getCacheUser, getUserInfo, end)
   })
   it("effects: getUserInfo -> get cache user", () => {
     const saga = user.effects.getUserInfo

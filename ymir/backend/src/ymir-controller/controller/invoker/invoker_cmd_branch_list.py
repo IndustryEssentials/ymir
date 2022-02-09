@@ -1,5 +1,6 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
@@ -14,10 +15,12 @@ class BranchListInvoker(BaseMirControllerInvoker):
                                      mir_root=self._repo_root)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        if self._request.req_type != backend_pb2.CMD_BRANCH_LIST:
-            raise RuntimeError("Mismatched req_type")
+        expected_type = backend_pb2.RequestType.CMD_BRANCH_LIST
+        if self._request.req_type != expected_type:
+            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
+                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        command = "cd {} && {} branch".format(self._repo_root, utils.mir_executable())
+        command = [utils.mir_executable(), 'branch', '--root', self._repo_root]
         response = utils.run_command(command)
 
         if response.code == 0 and response.message:
@@ -30,6 +33,3 @@ class BranchListInvoker(BaseMirControllerInvoker):
             response.message = ""
 
         return response
-
-    def _repr(self) -> str:
-        return "branch list: user: {}, repo: {}".format(self._request.user_id, self._request.repo_id)

@@ -1,7 +1,6 @@
 import pytest
 from mir.tools.mir_storage_ops import MirStorageOps
 
-from proto import backend_pb2
 from src.libs.cache import RedisCache
 
 
@@ -81,13 +80,8 @@ def mock_mir_content(mocker):
 
     mocker.patch.object(
         MirStorageOps,
-        "load",
-        return_value={
-            backend_pb2.MirStorage.MIR_METADATAS: dict_metadatas,
-            backend_pb2.MirStorage.MIR_ANNOTATIONS: dict_annotations,
-            backend_pb2.MirStorage.MIR_KEYWORDS: dict_keywords,
-            backend_pb2.MirStorage.MIR_TASKS: mir_tasks_content,
-        },
+        "load_branch_contents",
+        return_value=(dict_metadatas, dict_annotations, dict_keywords, mir_tasks_content),
     )
 
     mocker.patch.object(RedisCache, "get")

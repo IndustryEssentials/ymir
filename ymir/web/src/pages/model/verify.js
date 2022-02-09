@@ -6,13 +6,14 @@ import { useParams, useHistory } from "umi"
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumb from '@/components/common/breadcrumb'
-import Uploader from "../../components/form/uploader"
+import Uploader from "@/components/form/uploader"
 import AssetAnnotation from "@/components/dataset/asset_annotation"
 import { TYPES } from '@/constants/image'
 import styles from './verify.less'
 import { NavDatasetIcon, EqualizerIcon } from '@/components/common/icons'
 import ImgDef from '@/assets/img_def.png'
 import ImageSelect from "../task/components/imageSelect"
+import { percent } from "../../utils/number"
 
 const { CheckableTag } = Tag
 
@@ -106,12 +107,6 @@ function Verify({ getModel, verify }) {
     )
   }
 
-  function getExtrameScore(max = 'max') {
-    const scores = annotations.map(anno => anno.score)
-    return scores ? `${(Math[max](...scores) * 100).toFixed(2)}%` : ''
-  }
-
-
   function changeKeywords(tag, checked) {
     const selected = checked
       ? [...selectedKeywords, tag]
@@ -193,7 +188,7 @@ function Verify({ getModel, verify }) {
                   {model.name}
                 </Descriptions.Item>
                 <Descriptions.Item label={'mAP'}>
-                  {model.map}
+                  <span title={model.map}>{percent(model.map)}</span>
                 </Descriptions.Item>
                 <Descriptions.Item label={t("model.column.create_time")}>
                   {format(model.create_datetime)}

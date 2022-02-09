@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Checkbox, Button, Form, Row, Col, List, Modal, message, Upload } from "antd"
-import { useHistory } from "umi"
+import { Card, Input, Button, Form, Row, Col, List, Modal, message } from "antd"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
-import Uploader from '../../components/form/uploader'
-import { phoneValidate } from "../../components/form/validators"
+import Uploader from '@/components/form/uploader'
+import { phoneValidate } from "@/components/form/validators"
 import s from "./common.less"
-import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon, UserSettingsIcon } from "../../components/common/icons"
+import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from "@/components/common/icons"
 
 const { useForm } = Form
 
-function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
+function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
 
   const [infoList, setInfoList] = useState([])
   const [usernameModify, setUsernameModify] = useState(false)
@@ -59,7 +58,6 @@ function Info({ getUserInfo, user, updateUserInfo, validatePwd, modifyPwd, getTo
   }
   const onAvatarOk = async (files, url) => {
     // submit
-    console.log('avatar: ', url)
     if (url) {
       const result = await updateUserInfo({ avatar: url })
       if (result) {
@@ -239,12 +237,6 @@ const props = (state) => {
 
 const acts = (dispatch) => {
   return {
-    getUserInfo: (refresh) => {
-      return dispatch({
-        type: "user/getUserInfo",
-        payload: refresh,
-      })
-    },
     updateUserInfo(info) {
       return dispatch({
         type: 'user/updateUserInfo',
