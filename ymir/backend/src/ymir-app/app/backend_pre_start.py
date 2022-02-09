@@ -6,7 +6,7 @@ from app.utils.err import retry
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-wait_seconds = 10
+wait_seconds = 15
 
 
 def init() -> None:
