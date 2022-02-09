@@ -419,6 +419,30 @@ $ mir init # init this directory to a mir repo
 $ mkdir ~/ymir-assets ~/ymir-models # Creates assets and models storage directory, mir repo only keeps reference to assets and models
 ```
 
+All type labels in mir repo are managed by `labels.csv`. Open file `~/mir-demo-repo/labels.csv`, and you can see the following contents:
+
+```
+# type_id, preserved, main type name, alias...
+```
+
+In `labels.csv`, each line represents a type label: type_id (start from 0), empty, main type name, alias. If the dataset contains person, cat and tv as it's label names, you can edit this file as follow:
+
+```
+0,,person
+1,,cat
+2,,tv
+```
+
+There could be one or more alias for each type label, for example: if television is sepecified as the alias for tv, the `labels.csv` could be changed to:
+
+```
+0,,person
+1,,cat
+2,,tv,television
+```
+
+The file `labels.csv` can be shared among multiple mir repos by establishing soft links.
+
 Users are required to prepare three data sets in advance.
 
 1. A training set (for example, named "dataset-training"), with annotations, for initial model training.
