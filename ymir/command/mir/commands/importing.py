@@ -35,14 +35,11 @@ class CmdImport(base.BaseCommand):
     def run_with_args(mir_root: str, index_file: str, ck_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
                       dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
         # Step 1: check args and prepare environment.
-        if not index_file or not gen_abs:
-            logging.error(f"Missing input args: index_file: {index_file}, gen_abs: {gen_abs}")
+        if not index_file or not gen_abs or not os.path.isfile(index_file):
+            logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         if anno_abs and not os.path.isdir(anno_abs):
             logging.error(f"annotations dir invalid: {anno_abs}")
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not os.path.isfile(index_file):
-            logging.error(f"index file invalid: {index_file}")
             return MirCode.RC_CMD_INVALID_ARGS
         if not dst_rev:
             logging.error("empty --dst-rev")
@@ -172,7 +169,7 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     importing_arg_parser = subparsers.add_parser("import",
                                                  parents=[parent_parser],
                                                  description="use this command to import data from img/anno folder",

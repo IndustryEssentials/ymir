@@ -54,7 +54,7 @@ class CmdInit(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     init_arg_parser = subparsers.add_parser("init",
                                             parents=[parent_parser],
                                             description="use this command to init mir repo",
