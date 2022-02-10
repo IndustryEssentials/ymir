@@ -39,7 +39,7 @@ class TaskService:
             percent += raw_log_content.percent
             if not max_timestamp_content:
                 max_timestamp_content = raw_log_content
-            max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: int(x.timestamp))
+            max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: float(x.timestamp))
 
         result = max_timestamp_content.copy()  # type: ignore
         if LogState.ERROR in log_files_state_set:
