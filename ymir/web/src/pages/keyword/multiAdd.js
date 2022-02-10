@@ -46,9 +46,11 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => { } }, ref) => {
         if (pair[1]) {
           aliases = pair[1].trim().split(/\s*,\s*/).filter(alias => !!alias)
         }
-        return {
-          name: pair[0],
-          aliases,
+        if (pair[0]) {
+          return {
+            name: pair[0].replace(',', ''),
+            aliases,
+          }
         }
       }).filter((name) => name)
     } catch (e) {
