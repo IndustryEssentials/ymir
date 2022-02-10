@@ -143,7 +143,7 @@ describe("models: common", () => {
     const errGen = saga(creator, { call })
     errGen.next()
     const errEnd = errGen.next({
-      code: 1004,
+      code: 110104,
       result: expect,
     })
     expect(errEnd.done).toBe(true)
