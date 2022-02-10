@@ -20,5 +20,7 @@ exclude_lines =
     _run_train_cmd
     _process_infer_results
     run_docker_cmd
+    _get_infer_annotations
+    mir_repo_commit_id
 
 ignore_errors = True
