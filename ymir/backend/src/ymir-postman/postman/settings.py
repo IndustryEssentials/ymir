@@ -23,7 +23,7 @@ class Constants(BaseSettings):
     EVENT_TOPIC_INNER = '_inner_'
 
     RC_OK = 0
-    RC_FAILED_TO_UPDATE_TASK_STATUS = 7006
+    RC_FAILED_TO_UPDATE_TASK_STATUS = 110706
 
 
 settings = Settings()
