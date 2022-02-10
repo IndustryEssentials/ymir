@@ -645,7 +645,7 @@ class TaskResultHandler:
             name=get_default_record_name(task.hash, task.name),
             hash=task.hash,
             type=task.type,
-            state=TaskState.done,
+            state=TaskState.done.value,
             user_id=task.user_id,
             task_id=task.id,
             predicates=self._extract_keywords(dataset_info),
