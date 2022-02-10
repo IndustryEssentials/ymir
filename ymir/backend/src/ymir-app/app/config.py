@@ -81,7 +81,7 @@ class Settings(BaseSettings):
     #  default TaskTypeLabel = 3
     TASK_TYPES_WHITELIST: List[int] = [3]
     INIT_SANDBOX_FOR_FIRST_USER: bool = True
-    WAIT_SECONDS: int = 15
+    RETRY_INTERVAL_SECONDS: int = 15
 
     # Reverse keywords
     REVERSE_KEYWORDS_OUTPUT: bool = True

@@ -16,7 +16,7 @@ def init() -> None:
 
 def main() -> None:
     logger.info("Initializing service")
-    retry(init, n_times=5, wait=settings.WAIT_SECONDS)
+    retry(init, n_times=5, wait=settings.RETRY_INTERVAL_SECONDS)
     logger.info("Service finished initializing")
 
 
