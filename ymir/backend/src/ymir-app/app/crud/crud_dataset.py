@@ -70,7 +70,10 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         if type_:
             query = query.filter(Dataset.type == type_.value)
         if state:
-            query = query.filter(Task.state == state.value)
+            # fixme
+            #  only datasets in (pending, done, error) state are visible;
+            #  datasets in other states (running, for example) are not visable
+            query = query.filter(Dataset.state == state.value)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
