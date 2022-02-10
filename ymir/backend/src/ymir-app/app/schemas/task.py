@@ -158,7 +158,7 @@ class TaskTerminate(BaseModel):
 
 class TaskUpdateStatus(BaseModel):
     hash: str
-    timestamp: int
+    timestamp: float
     percent: Optional[float] = 0
     state: TaskState
     state_code: Optional[str]
