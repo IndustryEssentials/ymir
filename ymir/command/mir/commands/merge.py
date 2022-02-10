@@ -363,7 +363,7 @@ class CmdMerge(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     merge_arg_parser = subparsers.add_parser("merge",
                                              parents=[parent_parser],
                                              description="use this command to merge contents from other branch",

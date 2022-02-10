@@ -25,7 +25,7 @@ class CmdStatus(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     status_arg_parser = subparsers.add_parser("status",
                                               parents=[parent_parser],
                                               description="use this command to show current workspace status",

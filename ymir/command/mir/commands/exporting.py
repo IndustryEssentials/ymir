@@ -37,14 +37,8 @@ class CmdExport(base.BaseCommand):
         if not format:
             format = 'none'
 
-        if not asset_dir or not annotation_dir:
-            logging.error('empty --asset-dir or --annotation-dir')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not media_location:
-            logging.error('empty --media-location')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not src_revs:
-            logging.error('empty --src-revs')
+        if not asset_dir or not annotation_dir or not media_location or not src_revs:
+            logging.error('empty --asset-dir, --annotation-dir, --media-location or --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
         if format and (not data_exporter.check_support_format(format)):
             logging.error(f"invalid --format: {format}")
@@ -122,7 +116,7 @@ class CmdExport(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     exporting_arg_parser = subparsers.add_parser('export',
                                                  parents=[parent_parser],
                                                  description='use this command to export data',
