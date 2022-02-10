@@ -53,7 +53,7 @@ class TestCmdImport(unittest.TestCase):
         args.ck_file = self._ck_file
         args.anno = self._data_xml_path
         args.gen = gen_folder
-        args.dataset_name = 'import-task-branch'
+        args.dataset_name = ''
         args.work_dir = self._work_dir
         args.ignore_unknown_types = False
         importing_instance = CmdImport(args)
@@ -66,6 +66,7 @@ class TestCmdImport(unittest.TestCase):
 
         # ignore unknown types
         args.ignore_unknown_types = True
+        args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-1'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
@@ -75,6 +76,7 @@ class TestCmdImport(unittest.TestCase):
         # have no annotations
         args.anno = None
         args.ignore_unknown_types = False
+        args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-2'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
@@ -86,6 +88,16 @@ class TestCmdImport(unittest.TestCase):
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         assert ret != MirCode.RC_OK
+
+        args.index_file = ''
+        assert CmdImport(args).run() != MirCode.RC_OK
+        args.index_file = self._idx_file
+
+        args.anno = ''
+        assert CmdImport(args).run() != MirCode.RC_OK
+        args.anno = self._data_xml_path + '/fake-one'
+        assert CmdImport(args).run() != MirCode.RC_OK
+        args.anno = self._data_xml_path
 
     def _check_repo(self, repo_root: str, with_person_ignored: bool, with_annotations: bool):
         mir_annotations = mirpb.MirAnnotations()
@@ -195,7 +207,7 @@ class TestCmdImport(unittest.TestCase):
         if with_annotations:
             dup_asset_id = '430df22960b0f369318705800139fcc8ec38a3e4'
             dict_keywords['keywords'][dup_asset_id]['predifined_keyids'] = sorted(
-                dict_keywords['keywords'][dup_asset_id]['predifined_keyids'])  # Protobuf does not care about order of list.
+                dict_keywords['keywords'][dup_asset_id]['predifined_keyids'])  # list is unsorted
             dup_keywords_id = 1
             dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'] = sorted(
                 dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'])
@@ -261,14 +273,14 @@ class TestCmdImport(unittest.TestCase):
         dict_metadatas_expect = {
             'attributes': {
                 '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'dataset_name': 'import-task-branch',
+                    'dataset_name': 'import-task-0',
                     'asset_type': 'AssetTypeImageJpeg',
                     'width': 500,
                     'height': 281,
                     'image_channels': 3
                 },
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'dataset_name': 'import-task-branch',
+                    'dataset_name': 'import-task-0',
                     'asset_type': 'AssetTypeImageJpeg',
                     'width': 500,
                     'height': 333,
