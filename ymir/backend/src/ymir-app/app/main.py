@@ -74,6 +74,7 @@ gunicorn_error_logger = logging.getLogger("gunicorn.error")
 gunicorn_logger = logging.getLogger("gunicorn")
 uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.handlers = gunicorn_error_logger.handlers
+logging.getLogger("multipart").setLevel(logging.WARNING)
 
 if __name__ == "__main__":
     import uvicorn
