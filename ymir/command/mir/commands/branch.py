@@ -37,7 +37,7 @@ class CmdBranch(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     branch_arg_parser = subparsers.add_parser("branch",
                                               parents=[parent_parser],
                                               description="use this command to show mir repo branches",

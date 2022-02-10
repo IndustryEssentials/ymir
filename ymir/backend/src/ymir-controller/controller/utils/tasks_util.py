@@ -19,7 +19,7 @@ def write_task_progress(monitor_file: str,
                         msg: str = None) -> CTLResponseCode:
     if not monitor_file:
         raise RuntimeError("Invalid monitor_file")
-    content_list: List[str] = [tid, str(int(datetime.now().timestamp())), str(percent), str(state.value)]
+    content_list: List[str] = [tid, f"{datetime.now().timestamp():.6f}", str(percent), str(state.value)]
     if error_code and error_message:
         content_list.extend([str(error_code), error_message])
     content = '\t'.join(content_list)

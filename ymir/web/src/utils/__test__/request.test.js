@@ -104,10 +104,10 @@ describe("utils: request", () => {
     const error = (status, data = null) => ({ request: { status }, response: { data } })
 
     const res = normal(0, { access_token: token })
-    const res1004 = normal(1004)
+    const res110104 = normal(110104)
     const res10001 = normal(10001)
 
-    const error4001004 = error(400, { code: 1004 })
+    const error400110104 = error(400, { code: 110104 })
     const error4001003 = error(400, { code: 1003 })
     const error401 = error(401)
     const error403 = error(403)
@@ -121,12 +121,12 @@ describe("utils: request", () => {
     expect(code).toBe(0)
     expect(result.access_token).toBe(token)
 
-    // 200 -> 1004
-    const res1004Result = reqHandler.fulfilled(res1004)
+    // 200 -> 110104
+    const res110104Result = reqHandler.fulfilled(res110104)
     expect(msgSpy).toHaveBeenCalled()
     expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
-    expect(res1004Result).toBeUndefined()
+    expect(res110104Result).toBeUndefined()
 
     // 200 -> 10001
     const res10001Result = reqHandler.fulfilled(res10001)
@@ -151,11 +151,11 @@ describe("utils: request", () => {
     expect(msgSpy).toHaveBeenCalled()
     expect(error4001003Result).toBe('error1003')
 
-    // 400 -> 1004
-    const error4001004Result = reqHandler.rejected(error4001004)
+    // 400 -> 110104
+    const error400110104Result = reqHandler.rejected(error400110104)
     expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
-    expect(error4001004Result).toBeUndefined()
+    expect(error400110104Result).toBeUndefined()
 
     // 405
     expect(() => {

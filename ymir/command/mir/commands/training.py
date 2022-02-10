@@ -473,7 +473,7 @@ class CmdTrain(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     train_arg_parser = subparsers.add_parser("train",
                                              parents=[parent_parser],
                                              description="use this command to train current workspace",

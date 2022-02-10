@@ -1,12 +1,11 @@
 import logging
 
+from app.config import settings
 from app.db.session import SessionLocal
 from app.utils.err import retry
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-wait_seconds = 5
 
 
 def init() -> None:
@@ -17,7 +16,7 @@ def init() -> None:
 
 def main() -> None:
     logger.info("Initializing service")
-    retry(init, n_times=5, wait=wait_seconds)
+    retry(init, n_times=5, wait=settings.RETRY_INTERVAL_SECONDS)
     logger.info("Service finished initializing")
 
 

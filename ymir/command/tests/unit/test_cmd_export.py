@@ -203,13 +203,14 @@ class TestCmdExport(unittest.TestCase):
     # private: test cases
     @mock.patch('mir.tools.data_exporter.export', side_effect='__mock_export')
     def test_normal_00(self, mock_export):
+        # normal case
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
         fake_args.annotation_dir = self._dest_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = 'b@b'
+        fake_args.dst_rev = ''
         fake_args.format = 'voc'
         fake_args.in_cis = 'person'
         fake_args.work_dir = ''
@@ -229,3 +230,18 @@ class TestCmdExport(unittest.TestCase):
                                             base_branch='a',
                                             base_task_id='a',  # see: fake_args.src_revs = 'a@a'
                                             format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC)
+
+        # abnormal case
+        fake_args = type('', (), {})()
+        fake_args.mir_root = self._mir_root
+        fake_args.asset_dir = ''
+        fake_args.annotation_dir = ''
+        fake_args.media_location = ''
+        fake_args.src_revs = 'a@a'
+        fake_args.dst_rev = ''
+        fake_args.format = 'voc'
+        fake_args.in_cis = 'person'
+        fake_args.work_dir = ''
+        runner = exporting.CmdExport(fake_args)
+        result = runner.run()
+        self.assertNotEqual(MirCode.RC_OK, result)

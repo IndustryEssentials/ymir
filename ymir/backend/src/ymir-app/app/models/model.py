@@ -20,6 +20,7 @@ class Model(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     hash = Column(String(settings.HASH_LEN_LIMIT), index=True)
     name = Column(String(settings.NAME_LEN_LIMIT), index=True)
+    state = Column(Integer, index=True)
     map = Column(Float)
     parameters = Column(Text(settings.PARA_LEN_LIMIT))
     task_id = Column(Integer, index=True)

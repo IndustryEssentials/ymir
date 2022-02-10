@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from typing import List
@@ -145,3 +144,26 @@ class TestCmdCopy(unittest.TestCase):
         # check result
         self.assertEqual(MirCode.RC_OK, return_code)
         self.__check_results(dst_branch='b', dst_tid='t1', ignore_unknown_types=True)
+
+        # run cmd: abnormal cases
+        fake_args = type('', (), {})()
+        fake_args.mir_root = ''
+        fake_args.data_mir_root = ''
+        fake_args.data_src_revs = 'a@t0'
+        fake_args.dst_rev = 'b@t1'
+        fake_args.work_dir = self._work_dir
+        fake_args.ignore_unknown_types = True
+        cmd_copy = copy.CmdCopy(fake_args)
+        return_code = cmd_copy.run()
+        self.assertNotEqual(MirCode.RC_OK, return_code)
+
+        fake_args = type('', (), {})()
+        fake_args.mir_root = self._mir_root + 'fake'
+        fake_args.data_mir_root = self._src_mir_root + 'fake'
+        fake_args.data_src_revs = 'a@t0'
+        fake_args.dst_rev = 'b@t1'
+        fake_args.work_dir = self._work_dir
+        fake_args.ignore_unknown_types = True
+        cmd_copy = copy.CmdCopy(fake_args)
+        return_code = cmd_copy.run()
+        self.assertNotEqual(MirCode.RC_OK, return_code)
