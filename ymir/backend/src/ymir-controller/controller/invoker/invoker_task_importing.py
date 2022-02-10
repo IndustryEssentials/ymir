@@ -65,6 +65,6 @@ class TaskImportingInvoker(TaskBaseInvoker):
             importing_cmd.append('--annotation-dir')
             importing_cmd.append(annotation_dir)
         if name_strategy_ignore:
-            importing_cmd += " --ignore-unknown-types"
+            importing_cmd.append("--ignore-unknown-types")
 
         return utils.run_command(importing_cmd)
