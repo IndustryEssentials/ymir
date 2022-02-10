@@ -37,7 +37,6 @@ class RedisHandler:
         return self._redis.hexists(name, key)
 
     def hmset(self, name: str, mapping: Dict) -> None:
-        print(mapping)
         self._redis.hset(name=name, mapping={key: json.dumps(value) for key, value in mapping.items()})
 
     def hgetall(self, name: str) -> Dict:
