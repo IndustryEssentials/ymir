@@ -175,7 +175,7 @@ label studio env
 
 LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
 
-LABEL_TOOL_PORT=12007
+LABEL_TOOL_PORT=set_your_label_tool_port
 
 LABEL_TOOL_TOKEN="Token token_value"
 
