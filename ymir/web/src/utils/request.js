@@ -37,7 +37,7 @@ request.interceptors.response.use(
   (res) => {
     if (res.data.code !== 0) {
       message.error(t(`error${res.data.code}`))
-      if (res.data.code === 1004) {
+      if (res.data.code === 110104) {
         return logout()
       }
     }
@@ -53,7 +53,7 @@ request.interceptors.response.use(
     } else {
       const res = err.response
       if (res && res.data && res.data.code) {
-        if (res.data.code === 1004) {
+        if (res.data.code === 110104) {
           return logout()
         }
         return message.error(t(`error${res.data.code}`))

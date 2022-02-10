@@ -207,7 +207,7 @@ class CmdFilter(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     filter_arg_parser = subparsers.add_parser("filter",
                                               parents=[parent_parser],
                                               description="use this command to filter assets",

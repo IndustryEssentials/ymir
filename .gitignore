@@ -82,3 +82,4 @@ mysql/
 redis/
 ymir-data/
 ymir-workplace
+.mir_lock

@@ -33,7 +33,7 @@ class PercentLogHandler:
             raise ValueError(f"invalid percent log file: {log_file}")
 
         task_id, timestamp, percent, state, *_ = content_row_one
-        percent_result = PercentResult(task_id=task_id, timestamp=int(timestamp), percent=percent, state=int(state))
+        percent_result = PercentResult(task_id=task_id, timestamp=float(timestamp), percent=percent, state=int(state))
         if len(content_row_one) > 4:
             percent_result.state_code = int(content_row_one[4])
         if len(content_row_one) > 5:
