@@ -664,7 +664,7 @@ class TaskResultHandler:
 
         dataset_info = dataset_info or self.get_dataset_info(task.user_id, task.hash)
         dataset_in = schemas.DatasetUpdate(
-            state=dataset_state,
+            state=dataset_state.value,
             predicates=self._extract_keywords(dataset_info),
             asset_count=dataset_info["total"],
             keyword_count=len(dataset_info["keywords"]),
