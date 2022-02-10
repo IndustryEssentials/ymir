@@ -94,8 +94,8 @@ class PhaseLogger:
         global_percent = min(self.global_percent, 1)
 
         with open(self.monitor_file, 'w') as f:
-            timestamp = int(datetime.datetime.now().timestamp())
-            f.write(f"{self.task_name}\t{timestamp}\t{global_percent:.2f}\t{task_state}")
+            timestamp = datetime.datetime.now().timestamp()
+            f.write(f"{self.task_name}\t{timestamp:.6f}\t{global_percent:.2f}\t{task_state}")
             if state_code and state_content:
                 f.write(f"\t{state_code}\t{state_content}")
             f.write("\n")
