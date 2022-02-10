@@ -23,6 +23,7 @@ class DatasetBase(BaseModel):
     name: str
     hash: str
     type: TaskType = Field(description="comes from related task type")
+    state: Optional[int] = TaskState.pending.value
     predicates: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
@@ -52,6 +53,7 @@ class DatasetCreate(DatasetBase):
 
 class DatasetUpdate(BaseModel):
     name: Optional[str]
+    state: Optional[int]
     predicates: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
@@ -69,7 +71,6 @@ class Dataset(DatasetInDB):
     keywords: Optional[List[str]] = None
     ignored_keywords: Optional[List[str]] = None
     source: Optional[TaskType] = None
-    state: Optional[TaskState] = None
     progress: Optional[float] = None
     task_id: Optional[int] = None
     task_name: Optional[str] = None
@@ -94,7 +95,10 @@ class Dataset(DatasetInDB):
         values["ignored_keywords"] = predicates.get("ignored_keywords", [])
 
         values["source"] = values.get("type")
-        values["state"] = values.get("task_state")
+        if not values["state"]:
+            # for legacy model records that have no state,
+            # use related task_state as fallback
+            values["state"] = values.get("task_state")
         values["progress"] = values.get("task_progress")
         return values
 

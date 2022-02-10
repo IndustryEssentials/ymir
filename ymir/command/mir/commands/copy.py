@@ -189,7 +189,7 @@ class CmdCopy(base.BaseCommand):
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     copy_arg_parser = subparsers.add_parser("copy",
                                             parents=[parent_parser],
                                             description="use this command to copy datas from another repo",

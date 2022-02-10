@@ -273,7 +273,8 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
-                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str, gpu_id: str) -> int:
+                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str,
+                   gpu_id: str) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
@@ -302,7 +303,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
 
 # public: cli bind
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:  # pragma: no cover
+                       parent_parser: argparse.ArgumentParser) -> None:
     infer_arg_parser = subparsers.add_parser('infer',
                                              description='use this command to inference images',
                                              help='inference images')

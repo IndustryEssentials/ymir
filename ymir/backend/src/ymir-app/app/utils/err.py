@@ -19,6 +19,7 @@ def retry(func: Callable, n_times: int = 3, wait: float = 0) -> Any:
         except Exception:
             if wait > 0:
                 time.sleep(wait)
+    logger.error(f"Error! retry {n_times} {func} also failed ")
     return func()
 
 

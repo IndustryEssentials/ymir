@@ -13,6 +13,7 @@ class Dataset(Base):
     name = Column(String(settings.NAME_LEN_LIMIT), index=True)
     hash = Column(String(settings.HASH_LEN_LIMIT), index=True, unique=True)
     type = Column(Enum(TaskType), index=True)
+    state = Column(Integer, index=True)
     predicates = Column(Text(settings.PRED_LEN_LIMIT))
     asset_count = Column(Integer)
     keyword_count = Column(Integer)
