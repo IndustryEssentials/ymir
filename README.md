@@ -186,11 +186,11 @@ The user can access label studio through the default URL [http://localhost:12007
   ```sh
   label studio env
 
-  LABEL_STUDIO_OPEN_HOST=http://xxx.xxx.xx.xxx
+  LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
 
-  LABEL_STUDIO_OPEN_PORT=12007
+  LABEL_TOOL_PORT=set_your_label_tool_port
 
-  LABEL_STUDIO_TOKEN="Token token_value"
+  LABEL_TOOL_TOKEN="Token token_value"
 
   LABEL_TASK_LOOP_SECONDS=60
   ```
