@@ -595,7 +595,7 @@ class TaskResultHandler:
             logger.debug("task result(new dataset): %s", dataset)
             node = schemas.Dataset.from_orm(dataset)  # type: ignore
         elif task.type in [TaskType.import_data, TaskType.copy_data]:
-            dataset = self.finish_dataset(task)  # type: ignore
+            dataset = self.finish_dataset(task, TaskState.done)  # type: ignore
             logger.debug("task result(finish dataset): %s", dataset)
             node = schemas.Dataset.from_orm(dataset)  # type: ignore
         else:
@@ -622,7 +622,7 @@ class TaskResultHandler:
             "total": 0,
         }
         logger.debug("[failed task] update dataset with %s", dataset_info)
-        dataset = self.finish_dataset(task, dataset_info)
+        dataset = self.finish_dataset(task, TaskState.error, dataset_info)
         logger.debug("[failed task] added ignored_keywords to dataset: %s", dataset)
 
     def _parse_ignored_keywords(self, error_message: Optional[str]) -> List[str]:
@@ -645,6 +645,7 @@ class TaskResultHandler:
             name=get_default_record_name(task.hash, task.name),
             hash=task.hash,
             type=task.type,
+            state=TaskState.done,
             user_id=task.user_id,
             task_id=task.id,
             predicates=self._extract_keywords(dataset_info),
@@ -655,7 +656,7 @@ class TaskResultHandler:
         return dataset
 
     def finish_dataset(
-        self, task: schemas.TaskInternal, dataset_info: Optional[Dict] = None
+        self, task: schemas.TaskInternal, dataset_state: TaskState, dataset_info: Optional[Dict] = None
     ) -> Optional[Dataset]:
         dataset = crud.dataset.get_by_hash(self.db, hash_=task.hash)
         if not dataset:
@@ -663,6 +664,7 @@ class TaskResultHandler:
 
         dataset_info = dataset_info or self.get_dataset_info(task.user_id, task.hash)
         dataset_in = schemas.DatasetUpdate(
+            state=dataset_state.value,
             predicates=self._extract_keywords(dataset_info),
             asset_count=dataset_info["total"],
             keyword_count=len(dataset_info["keywords"]),

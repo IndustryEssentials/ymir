@@ -73,7 +73,7 @@ describe("service: dataset", () => {
   })
   it("createDataset -> create when user logouted", () => {
     const datasets = { name: 'new dataset' }
-    requestExample(createDataset, datasets, null, 'post', 1004)
+    requestExample(createDataset, datasets, null, 'post', 110104)
   })
   it("createDataset -> params validate failed", () => {
     requestExample(createDataset, null, null, 'post', 1002)
