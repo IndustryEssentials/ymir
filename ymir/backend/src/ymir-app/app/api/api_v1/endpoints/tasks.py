@@ -433,6 +433,7 @@ def update_task_status(
     if is_obsolete_message(
         convert_datetime_to_timestamp(task.last_message_datetime), task_result.timestamp
     ):
+        logger.debug("[update status] ignore obsolete message")
         raise ObsoleteTaskStatus()
 
     task_info = schemas.TaskInternal.from_orm(task)
