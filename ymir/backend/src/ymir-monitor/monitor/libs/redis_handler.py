@@ -7,7 +7,14 @@ from monitor.config import settings
 
 
 def init_redis_pool(redis_uri: str = settings.BACKEND_REDIS_URL) -> Redis:
-    return StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
+    if settings.IS_TESTING:
+        import redislite
+
+        redis_con = redislite.StrictRedis("/tmp/redis.db", encoding="utf8", decode_responses=True)
+    else:
+        redis_con = StrictRedis.from_url(redis_uri, encoding="utf8", decode_responses=True)
+
+    return redis_con
 
 
 class RedisHandler:
@@ -30,6 +37,7 @@ class RedisHandler:
         return self._redis.hexists(name, key)
 
     def hmset(self, name: str, mapping: Dict) -> None:
+        print(mapping)
         self._redis.hset(name=name, mapping={key: json.dumps(value) for key, value in mapping.items()})
 
     def hgetall(self, name: str) -> Dict:

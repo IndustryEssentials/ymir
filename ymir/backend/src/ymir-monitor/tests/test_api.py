@@ -1,19 +1,20 @@
 from fastapi.testclient import TestClient
-from unittest import mock
+
 
 class TestReg:
-    def test_reg(self, client: TestClient):
+    def test_reg(self, client: TestClient, clear_redislite, mocker):
+        mocker.patch("os.path.exists", return_value=True)
+
+        data = "t0000003000003df78d31639637101	21245543	0.50	2"
+        mocker.patch("builtins.open", mocker.mock_open(read_data=data))
+
         body = dict(
             task_id="abcdadf",
             user_id="12",
-            log_paths=["/home/chao/lif_code/test/monitor.txt", "/home/chao/lif_code/test/m2.txt"],
+            log_paths=["/home/chao/lif_code/test/monitor.txtaa", "/home/chao/lif_code/test/m2.txtaa"],
         )
+        r = client.post(f"/api/v1/tasks", json=body)
+        assert r.status_code == 200
 
         r = client.post(f"/api/v1/tasks", json=body)
-
-        print(r.content)
-        #
-        # assert r.ok
-        # result = r.json()["result"]
-        # assert result["total"] == len(result["items"])
-        # assert "is_shared" in result["items"][0]
+        assert r.status_code == 400
