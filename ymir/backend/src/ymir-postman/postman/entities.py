@@ -9,7 +9,7 @@ class TaskStateExtra(BaseModel):
 
 class TaskStatePercent(BaseModel):
     task_id: str
-    timestamp: int = Field(gt=0)
+    timestamp: float = Field(gt=0)
     percent: float = Field(ge=0, le=1)
     state: int
     state_code: int
