@@ -173,11 +173,11 @@ label studio为YMIR外接的标注系统，选择安装可以完成数据标注�
 ```
 label studio env
 
-LABEL_STUDIO_OPEN_HOST=http://xxx.xxx.xx.xxx
+LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
 
-LABEL_STUDIO_OPEN_PORT=12007
+LABEL_TOOL_PORT=12007
 
-LABEL_STUDIO_TOKEN="Token token_value"
+LABEL_TOOL_TOKEN="Token token_value"
 
 LABEL_TASK_LOOP_SECONDS=60
 ```
