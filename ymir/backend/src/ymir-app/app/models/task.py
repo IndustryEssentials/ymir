@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     Text,
 )
+from sqlalchemy.dialects.mysql import DATETIME
 
 from app.config import settings
 from app.db.base_class import Base
@@ -29,7 +30,7 @@ class Task(Base):
     user_id = Column(Integer, index=True)
     is_deleted = Column(Boolean, default=False)
     duration = Column(BigInteger)
-    last_message_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
+    last_message_datetime = Column(DATETIME(fsp=6), default=datetime.utcnow, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
         DateTime,
