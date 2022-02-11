@@ -4,7 +4,7 @@ from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable
 
-from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, phase_logger, utils
+from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser, utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
