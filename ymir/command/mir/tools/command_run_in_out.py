@@ -4,7 +4,7 @@ from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable
 
-from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, phase_logger
+from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, phase_logger, utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
@@ -27,6 +27,7 @@ def _generate_mir_task(code: int, error_msg: str, dst_typ_rev_tid: revs_parser.T
     return task
 
 
+@utils.time_it
 def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str,
                   predefined_mir_tasks: Any) -> None:
     if not src_revs:
@@ -77,27 +78,22 @@ def command_run_in_out(f: Callable) -> Callable:
             if ret == MirCode.RC_OK:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
             else:
-                mir_logger.update_percent_info(local_percent=1,
-                                               task_state=phase_logger.PhaseStateEnum.ERROR,
-                                               state_code=ret,
-                                               state_content=trace_message,
-                                               trace_message=trace_message)
                 _commit_error(code=ret,
                               error_msg=trace_message,
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
                               predefined_mir_tasks=None)
+                mir_logger.update_percent_info(local_percent=1,
+                                               task_state=phase_logger.PhaseStateEnum.ERROR,
+                                               state_code=ret,
+                                               state_content=trace_message,
+                                               trace_message=trace_message)
 
             return ret
         except MirRuntimeError as e:
             trace_message = f"cmd exception: {traceback.format_exc()}"
 
-            mir_logger.update_percent_info(local_percent=1,
-                                           task_state=phase_logger.PhaseStateEnum.ERROR,
-                                           state_code=e.error_code,
-                                           state_content=e.error_message,
-                                           trace_message=trace_message)
             if e.needs_new_commit:
                 _commit_error(code=e.error_code,
                               error_msg=trace_message,
@@ -105,6 +101,11 @@ def command_run_in_out(f: Callable) -> Callable:
                               src_revs=src_revs,
                               dst_rev=dst_rev,
                               predefined_mir_tasks=e.mir_tasks)
+                mir_logger.update_percent_info(local_percent=1,
+                                           task_state=phase_logger.PhaseStateEnum.ERROR,
+                                           state_code=e.error_code,
+                                           state_content=e.error_message,
+                                           trace_message=trace_message)
 
             raise e
         except CalledProcessError as e:
