@@ -165,13 +165,19 @@ Restart YMIR after the modification.
 
 Label Studio is an external labeling system that works with YMIR. Install it if you plan to label data in the development process.
 
-1. In the YMIR directory, start the installation command:
+1. In the YMIR directory, modification Env file, configure label studio port：
+
+```
+LABEL_TOOL_PORT=set_your_label_tool_port
+```
+
+2. start the installation command:
 
   ```sh
 docker-compose -f docker-compose-component.yml up -d
   ```
 
-2. Check the status of label studio:
+3. Check the status of label studio:
 
   ```sh
 docker-compose -f docker-compose-component.yml ps
@@ -179,7 +185,7 @@ docker-compose -f docker-compose-component.yml ps
 
 The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
 
-3. Configure the label studio authorization token
+4. Configure the label studio authorization token
 
   After the user registers and log in to Label Studio, select "Account & Settings" in the upper right corner of the page. Then, copy the token value and paste it into the corresponding location (LABEL_STUDIO_TOKEN) in the .env configuration file of the YMIR project. An example is as follows:
 
@@ -197,7 +203,7 @@ The user can access label studio through the default URL [http://localhost:12007
 
   Restart ymir after configuring the host address (LABEL_STUDIO_OPEN_HOST) and the token (LABEL_STUDIO_TOKEN).
 
-4. The command to stop the label studio service is:
+5. The command to stop the label studio service is:
 
   ```sh
 docker-compose -f docker-compose-component.yml down
