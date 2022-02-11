@@ -156,7 +156,7 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 
 label studio为YMIR外接的标注系统，选择安装可以完成数据标注的操作流程。
 
-1.在上一节的YMIR目录下，修改.env文件，配置label studio端口：
+1. 在上一节的YMIR目录下，修改.env文件，配置label studio端口：
 
 ```
 LABEL_TOOL_PORT=set_your_label_tool_port
