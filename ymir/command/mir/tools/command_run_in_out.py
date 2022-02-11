@@ -1,3 +1,4 @@
+import copy
 import datetime
 from functools import wraps
 from subprocess import CalledProcessError
@@ -71,6 +72,8 @@ def command_run_in_out(f: Callable) -> Callable:
                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir))
         mir_logger.update_percent_info(local_percent=0, task_state=phase_logger.PhaseStateEnum.PENDING)
 
+        exc: Any = None
+
         try:
             ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, work_dir=work_dir, *args, **kwargs)
             trace_message = f"cmd return: {ret}"
@@ -92,39 +95,39 @@ def command_run_in_out(f: Callable) -> Callable:
 
             return ret
         except MirRuntimeError as e:
+            error_code = e.error_code
+            state_message = e.error_message
+            predefined_mir_tasks = e.mir_tasks
+            needs_new_commit = e.needs_new_commit
+            exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
-
-            if e.needs_new_commit:
-                _commit_error(code=e.error_code,
-                              error_msg=trace_message,
-                              mir_root=mir_root,
-                              src_revs=src_revs,
-                              dst_rev=dst_rev,
-                              predefined_mir_tasks=e.mir_tasks)
-            mir_logger.update_percent_info(local_percent=1,
-                                           task_state=phase_logger.PhaseStateEnum.ERROR,
-                                           state_code=e.error_code,
-                                           state_content=e.error_message,
-                                           trace_message=trace_message)
-
-            raise e
         except CalledProcessError as e:
+            error_code = MirCode.RC_CMD_CONTAINER_ERROR
+            state_message = str(e)
+            predefined_mir_tasks = None
+            needs_new_commit = True
+            exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
-
-            mir_logger.update_percent_info(local_percent=1,
-                                           task_state=phase_logger.PhaseStateEnum.ERROR,
-                                           state_code=MirCode.RC_CMD_CONTAINER_ERROR,
-                                           state_content=str(e),
-                                           trace_message=trace_message)
-
-            raise e
         except BaseException as e:
+            error_code = MirCode.RC_CMD_ERROR_UNKNOWN
+            state_message = str(e)
+            predefined_mir_tasks = None
+            needs_new_commit = True
+            exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
-            mir_logger.update_percent_info(local_percent=1,
-                                           task_state=phase_logger.PhaseStateEnum.ERROR,
-                                           state_code=MirCode.RC_CMD_ERROR_UNKNOWN,
-                                           state_content=str(e),
-                                           trace_message=trace_message)
-            raise e
+
+        if needs_new_commit:
+            _commit_error(code=error_code,
+                          error_msg=trace_message,
+                          mir_root=mir_root,
+                          src_revs=src_revs,
+                          dst_rev=dst_rev,
+                          predefined_mir_tasks=predefined_mir_tasks)
+        mir_logger.update_percent_info(local_percent=1,
+                                       task_state=phase_logger.PhaseStateEnum.ERROR,
+                                       state_code=error_code,
+                                       state_content=state_message,
+                                       trace_message=trace_message)
+        raise exc
 
     return wrapper
