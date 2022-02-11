@@ -1,6 +1,7 @@
 import copy
 import datetime
 from functools import wraps
+import logging
 from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable
@@ -76,24 +77,6 @@ def command_run_in_out(f: Callable) -> Callable:
 
         try:
             ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, work_dir=work_dir, *args, **kwargs)
-            trace_message = f"cmd return: {ret}"
-
-            if ret == MirCode.RC_OK:
-                mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
-            else:
-                _commit_error(code=ret,
-                              error_msg=trace_message,
-                              mir_root=mir_root,
-                              src_revs=src_revs,
-                              dst_rev=dst_rev,
-                              predefined_mir_tasks=None)
-                mir_logger.update_percent_info(local_percent=1,
-                                               task_state=phase_logger.PhaseStateEnum.ERROR,
-                                               state_code=ret,
-                                               state_content=trace_message,
-                                               trace_message=trace_message)
-
-            return ret
         except MirRuntimeError as e:
             error_code = e.error_code
             state_message = e.error_message
@@ -115,8 +98,28 @@ def command_run_in_out(f: Callable) -> Callable:
             needs_new_commit = True
             exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
+        else:
+            trace_message = f"cmd return: {ret}"
+
+            if ret == MirCode.RC_OK:
+                mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
+            else:
+                _commit_error(code=ret,
+                              error_msg=trace_message,
+                              mir_root=mir_root,
+                              src_revs=src_revs,
+                              dst_rev=dst_rev,
+                              predefined_mir_tasks=None)
+                mir_logger.update_percent_info(local_percent=1,
+                                               task_state=phase_logger.PhaseStateEnum.ERROR,
+                                               state_code=ret,
+                                               state_content=trace_message,
+                                               trace_message=trace_message)
+
+            return ret
 
         if needs_new_commit:
+            logging.info(f"commit error messages to: {dst_rev}")
             _commit_error(code=error_code,
                           error_msg=trace_message,
                           mir_root=mir_root,
