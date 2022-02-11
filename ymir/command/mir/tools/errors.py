@@ -28,5 +28,11 @@ class MirRuntimeError(MirError):
         self.needs_new_commit = needs_new_commit
         self.mir_tasks = mir_tasks
 
+    def __copy__(self) -> 'MirRuntimeError':
+        return MirRuntimeError(error_code=self.error_code,
+                               error_message=self.error_message,
+                               needs_new_commit=self.needs_new_commit,
+                               mir_tasks=self.mir_tasks)
+
     def __str__(self) -> str:
         return f"code: {self.error_code} content: {self.error_message}, needs new commit: {self.needs_new_commit}"
