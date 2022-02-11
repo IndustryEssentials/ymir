@@ -73,8 +73,8 @@ function ModelDetail({ getModel }) {
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
       <Card title={renderTitle()}>
-      {/* <h3 className={styles.title}>{t("dataset.detail.title")}</h3> */}
-      <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')}>
+      {/* {<h3 className={styles.title}>{t("dataset.detail.title")}</h3> } */}
+      <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className={styles.infoTable}>
         <Item label={t('model.detail.label.name')}>{model.name}</Item>
         <Item label={t('model.detail.label.id')}>{model.id}</Item>
         <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
