@@ -85,10 +85,12 @@ function ImageDetail({ role, getImage }) {
   }
 
   function renderTaskBtn() {
-    const type = isTrain(image.type) ? 'train' : 'mining'
-    return <Button onClick={() => history.push(`/home/task/${type}?image=${id}`)}>
-      {isTrain(image.type) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
-    </Button>
+    return image.functions.map(func => {
+      const type = isTrain(func) ? 'train' : 'mining'
+      return <Button onClick={() => history.push(`/home/task/${type}?image=${id}`)}>
+        {isTrain(func) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
+      </Button>
+    })
   }
 
   function renderTitle() {
