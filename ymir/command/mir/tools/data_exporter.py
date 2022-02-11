@@ -104,12 +104,12 @@ def export(mir_root: str,
     if not mir_root:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message="invalid mir_repo",
-                              needs_new_commit=False)
+                              needs_new_commit=False)  # TODO: needs new commit
 
     if not check_support_format(format_type):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message=f"invalid --format: {format_type}",
-                              needs_new_commit=False)
+                              needs_new_commit=False)  # TODO: needs new commit
 
     # export assets
     os.makedirs(asset_dir, exist_ok=True)
