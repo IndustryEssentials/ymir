@@ -101,11 +101,11 @@ def command_run_in_out(f: Callable) -> Callable:
                               src_revs=src_revs,
                               dst_rev=dst_rev,
                               predefined_mir_tasks=e.mir_tasks)
-                mir_logger.update_percent_info(local_percent=1,
-                                               task_state=phase_logger.PhaseStateEnum.ERROR,
-                                               state_code=e.error_code,
-                                               state_content=e.error_message,
-                                               trace_message=trace_message)
+            mir_logger.update_percent_info(local_percent=1,
+                                           task_state=phase_logger.PhaseStateEnum.ERROR,
+                                           state_code=e.error_code,
+                                           state_content=e.error_message,
+                                           trace_message=trace_message)
 
             raise e
         except CalledProcessError as e:
