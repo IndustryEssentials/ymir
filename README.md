@@ -171,7 +171,7 @@ Label Studio is an external labeling system that works with YMIR. Install it if 
 LABEL_TOOL_PORT=set_your_label_tool_port
 ```
 
-2. In the YMIR directory, start the installation command:
+2. Start the installation command:
 
   ```sh
 docker-compose -f docker-compose-component.yml up -d
