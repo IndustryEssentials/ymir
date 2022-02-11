@@ -55,7 +55,7 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
         task = _generate_mir_task(code=code, error_msg=error_msg, dst_typ_rev_tid=dst_typ_rev_tid)
         mir_storage_ops.add_mir_task(mir_tasks, task)
 
-    logging.info(f"commit error messages to: {dst_rev}")
+    logging.info(f"commit error messages to: {dst_rev}, code: {code}")
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,
                                                   task_id=dst_typ_rev_tid.tid,
