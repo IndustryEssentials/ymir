@@ -13,7 +13,7 @@ def client() -> Generator:
         yield c
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def clear_redislite():
     redis_client = init_redis_pool()
     redis_client.flushall()

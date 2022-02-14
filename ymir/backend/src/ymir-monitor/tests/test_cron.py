@@ -11,7 +11,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
     body = dict(task_id="task_id_1", user_id="12", log_paths=["/data/test/monitor.txt"],)
     client.post(f"/api/v1/tasks", json=body)
 
-    data = "task_id_1	21245567	1.0	3"
+    data = "task_id_1	21245567	1	3"
     mocker.patch("builtins.open", mocker.mock_open(read_data=data))
 
     mock_resp = mocker.Mock()
@@ -56,4 +56,4 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
         }
     }
 
-    assert r.json() == running_content
+    assert r.json()["result"]["task_id_1"] == running_content["result"]["task_id_1"]
