@@ -308,6 +308,7 @@ function Model({ getModels, delModel, updateModel, query, updateQuery, resetQuer
               dataSource={models}
               onChange={tableChange}
               rowKey={(record) => record.id}
+              rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
               pagination={{
                 showQuickJumper: true,
                 showSizeChanger: true,
