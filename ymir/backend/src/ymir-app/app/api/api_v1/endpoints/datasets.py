@@ -22,7 +22,7 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType
-from app.models.task import Task
+from app.models.dataset import Dataset
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.ymir_controller import ControllerClient, ControllerRequest
@@ -157,7 +157,7 @@ def create_dataset(
     logger.info("[create dataset] dataset record created: %s", dataset)
 
     # run background task when related task record has been created
-    background_tasks.add_task(import_dataset, db, controller_client, pre_dataset, task)
+    background_tasks.add_task(import_dataset, db, controller_client, pre_dataset, dataset)
 
     return {"result": dataset}
 
@@ -206,13 +206,13 @@ def import_dataset(
     db: Session,
     controller_client: ControllerClient,
     pre_dataset: PrepareDataset,
-    task: Task,
+    dataset: Dataset,
 ) -> None:
     try:
         _import_dataset(db, controller_client, pre_dataset)
     except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound) as e:
         logger.error("[create dataset] failed to import dataset: %s", e)
-        crud.task.update_state(db, task=task, new_state=TaskState.error)
+        crud.dataset.update_state(db, dataset_id=dataset.id, new_state=TaskState.error)
 
 
 def _import_dataset(

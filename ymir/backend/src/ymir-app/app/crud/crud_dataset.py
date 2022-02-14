@@ -6,6 +6,7 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
+from app.constants.state import TaskState
 from app.models import Dataset, Task
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
 
@@ -68,12 +69,14 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         if name:
             query = query.filter(Dataset.name.like(f"%{name}%"))
         if type_:
-            query = query.filter(Dataset.type == type_.value)
+            query = query.filter(Dataset.type == type_)
         if state:
             # fixme
-            #  only datasets in (pending, done, error) state are visible;
-            #  datasets in other states (running, for example) are not visable
-            query = query.filter(Dataset.state == state.value)
+            #  adhoc when search for final state, search against dataset.state
+            if state in [TaskState.done, TaskState.error]:
+                query = query.filter(Dataset.state == state.value)
+            else:
+                query = query.filter(Task.state == state.value)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
@@ -88,6 +91,22 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         self, db: Session, *, user_id: int
     ) -> Tuple[List[Dataset], int]:
         return self.get_multi_datasets(db, user_id=user_id)
+
+    def update_state(
+        self,
+        db: Session,
+        *,
+        dataset_id: int,
+        new_state: TaskState,
+    ) -> Optional[Dataset]:
+        dataset = self.get(db, id=dataset_id)
+        if not dataset:
+            return dataset
+        dataset.state = new_state.value
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+        return dataset
 
 
 dataset = CRUDDataset(Dataset)

@@ -156,35 +156,41 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 
 label studio为YMIR外接的标注系统，选择安装可以完成数据标注的操作流程。
 
-1. 在上一节的YMIR目录下，启动安装label studio命令如下：
+1. 在上一节的YMIR目录下，修改.env文件，配置label studio端口：
+
+```
+LABEL_TOOL_PORT=set_your_label_tool_port
+```
+
+2. 启动安装label studio命令如下：
 
 `docker-compose -f docker-compose-component.yml up -d`
 
-2. 完成后查看label studio状态命令如下：
+3. 完成后查看label studio状态命令如下：
 
 `docker-compose -f docker-compose-component.yml ps`（默认端口为12007）
 
 可以登录默认地址 [http://localhost:12007/](http://localhost:12007/) 显示登录界面即安装成功。
 
-3. 配置label studio授权token
+4. 配置label studio授权token
 
 注册登录label studio后，在页面右上角个人信息图标，选择"Account & Settings"获取Token值并复制，粘贴到YMIR项目的.env配置文件对应的位置（LABEL_STUDIO_TOKEN）。实例如下：
 
 ```
 label studio env
 
-LABEL_STUDIO_OPEN_HOST=http://xxx.xxx.xx.xxx
+LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
 
-LABEL_STUDIO_OPEN_PORT=12007
+LABEL_TOOL_PORT=set_your_label_tool_port
 
-LABEL_STUDIO_TOKEN="Token token_value"
+LABEL_TOOL_TOKEN="Token token_value"
 
 LABEL_TASK_LOOP_SECONDS=60
 ```
 
 配置好Host地址（LABEL_STUDIO_OPEN_HOST）和Token值（LABEL_STUDIO_TOKEN）后重启YMIR即可。
 
-4. 停止label studio服务命令如下：
+5. 停止label studio服务命令如下：
 
 `docker-compose -f docker-compose-component.yml down`
 
