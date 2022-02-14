@@ -7,7 +7,7 @@ from monitor.config import settings
 
 
 def init_redis_pool(redis_uri: str = settings.BACKEND_REDIS_URL) -> Redis:
-    if settings.IS_TESTING:
+    if settings.REDIS_TESTING:
         import redislite
 
         redis_con = redislite.StrictRedis("/tmp/redis.db", encoding="utf8", decode_responses=True)

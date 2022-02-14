@@ -22,7 +22,7 @@ class CacheClient:
         self.user_id = user_id
 
     def _get_redis_con(self, redis_uri: str) -> StrictRedis:
-        if settings.IS_TESTING:
+        if settings.REDIS_TESTING:
             import redislite
 
             redis_con = redislite.StrictRedis("/tmp/redis.db")
