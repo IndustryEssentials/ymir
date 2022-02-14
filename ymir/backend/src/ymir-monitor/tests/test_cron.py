@@ -11,7 +11,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
     body = dict(task_id="task_id_1", user_id="12", log_paths=["/data/test/monitor.txt"],)
     client.post(f"/api/v1/tasks", json=body)
 
-    data = "task_id_1	21245567	1	3"
+    data = "task_id_1	21245567	1.0	3"
     mocker.patch("builtins.open", mocker.mock_open(read_data=data))
 
     mock_resp = mocker.Mock()
@@ -29,7 +29,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
                 "raw_log_contents": {
                     "/data/test/monitor.txt": {
                         "task_id": "task_id_1",
-                        "timestamp": "21245567",
+                        "timestamp": "21245567.0",
                         "percent": 1.0,
                         "state": 3,
                         "state_code": 0,
@@ -45,7 +45,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
                 },
                 "percent_result": {
                     "task_id": "task_id_1",
-                    "timestamp": "21245567",
+                    "timestamp": "21245567.0",
                     "percent": 1.0,
                     "state": 3,
                     "state_code": 0,
