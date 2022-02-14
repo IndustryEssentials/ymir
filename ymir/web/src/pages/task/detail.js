@@ -16,7 +16,7 @@ import {
   ArrowDownIcon, ArrowUpIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon,
   FileYesIcon, FileHistoryIcon, SearchEyeIcon, SearchIcon
 } from "@/components/common/icons"
-import { percent } from "../../utils/number"
+import { percent, toFixed } from "../../utils/number"
 
 const { Item } = Descriptions
 
@@ -248,7 +248,7 @@ function TaskDetail({ getTask, getDataset, batchDatasets, getModel, taskItem }) 
           <Item label={t('task.detail.state.current')}>
             <Row>
               <Col><StateTag state={task.state} /></Col>
-              <Col flex={1}>{task.state === TASKSTATES.DOING ? <Progress strokeColor={'#FAD337'} percent={task.progress} /> : null}</Col>
+              <Col flex={1}>{task.state === TASKSTATES.DOING ? <Progress strokeColor={'#FAD337'} percent={toFixed(task.progress, 2)} /> : null}</Col>
               {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ?
                 <Col><Button onClick={() => terminate(task)}>{t('task.action.terminate')}</Button></Col> : null}
             </Row>
