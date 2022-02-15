@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "ymir monitor"
     INTERVAL_SECONDS: int = 20
     MONITOR_SENTRY_DSN: str = ""
+    REDIS_TESTING: bool = False
 
     MONITOR_RUNNING_KEY: str = "MONITOR_RUNNING_KEY:v1"
     MONITOR_FINISHED_KEY: str = "MONITOR_FINISHED_KEY:v1"
