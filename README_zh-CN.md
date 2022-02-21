@@ -338,8 +338,8 @@ $ mir --vesion
 
 ### 方式二：通过源码安装
 ```
-$ git clone --recursive git@github.com:IndustryEssentials/ymir-cmd.git
-$ cd ymir-cmd
+$ git clone --recursive git@github.com:IndustryEssentials/ymir.git
+$ cd ymir/command
 $ python setup.py clean --all install
 $ mir --version
 ```
