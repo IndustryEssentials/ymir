@@ -341,7 +341,7 @@ This chapter contains the instructions for the YMIR-CMD. If you need to use the 
 **Mode I. Pip Installation**
 
 ```
-# Requires >= Python3.7
+# Requires >= Python3.8.10
 $ pip install ymir-cmd
 $ mir --vesion
 ```
@@ -349,8 +349,8 @@ $ mir --vesion
 **Mode II. Installation from the source**
 
 ```
-$ git clone --recursive git@github.com:IndustryEssentials/ymir-cmd.git
-$ cd ymir-cmd
+$ git clone --recursive git@github.com:IndustryEssentials/ymir.git
+$ cd ymir/command
 $ python setup.py clean --all install
 $ mir --version
 ```
