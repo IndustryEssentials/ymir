@@ -331,7 +331,7 @@ LABEL_TASK_LOOP_SECONDS=60
 ### 方式一：通过pip安装
 
 ```
-# Requires >= Python3.7
+# Requires >= Python3.8.10
 $ pip install ymir-cmd
 $ mir --vesion
 ```
