@@ -97,7 +97,9 @@ def import_model(
 
     model_info = jsonable_encoder(model_import)
 
-    task = create_task_as_placeholder(db, user_id=current_user.id)
+    task = create_task_as_placeholder(
+        db, user_id=current_user.id, project_id=model_import.project_id
+    )
     logger.info("[import model] task created and hided: %s", task)
 
     existing_model_hash = crud.model.get_by_hash(db, hash_=model_import.hash)
@@ -120,9 +122,11 @@ def import_model(
         )
 
 
-def create_task_as_placeholder(db: Session, *, user_id: int) -> Task:
+def create_task_as_placeholder(db: Session, *, user_id: int, project_id: int) -> Task:
     task_id = ControllerRequest.gen_task_id(user_id)
-    task_in = schemas.TaskCreate(name=task_id, type=TaskType.import_data)
+    task_in = schemas.TaskCreate(
+        name=task_id, type=TaskType.import_data, project_id=project_id
+    )
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_id, user_id=user_id)
     crud.task.soft_remove(db, id=task.id)
     return task
@@ -152,7 +156,7 @@ def delete_model(
     Delete model
     (soft delete actually)
     """
-    model = crud.model.get_with_task(db, user_id=current_user.id, id=model_id)
+    model = crud.model.get_by_user_and_id(db, user_id=current_user.id, id=model_id)
     if not model:
         raise ModelNotFound()
 
@@ -173,7 +177,7 @@ def get_model(
     """
     Get verbose information of specific model
     """
-    model = crud.model.get_with_task(db, user_id=current_user.id, id=model_id)
+    model = crud.model.get_by_user_and_id(db, user_id=current_user.id, id=model_id)
     if not model:
         raise ModelNotFound()
     return {"result": model}

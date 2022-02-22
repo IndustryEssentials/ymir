@@ -15,11 +15,12 @@ class TestListModels:
         self,
         db: Session,
         client: TestClient,
+        user_id: int,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
         for _ in range(3):
-            create_model(db, client, normal_user_token_headers)
+            create_model(db, client, user_id)
         r = client.get(
             f"{settings.API_V1_STR}/models/", headers=normal_user_token_headers
         )
@@ -39,9 +40,14 @@ class TestBatchGetModels:
         assert len(r.json()["result"]) == 0
 
     def test_list_models_given_ids(
-        self, db: Session, client: TestClient, normal_user_token_headers, mocker
+        self,
+        db: Session,
+        client: TestClient,
+        user_id: int,
+        normal_user_token_headers,
+        mocker,
     ):
-        model = create_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, user_id)
         r = client.get(
             f"{settings.API_V1_STR}/models/batch",
             headers=normal_user_token_headers,
@@ -55,10 +61,11 @@ class TestChangeModelName:
         self,
         db: Session,
         client: TestClient,
+        user_id: int,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = create_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, user_id)
         old_name = model.name
         new_name = random_lower_string(6)
         r = client.patch(
@@ -89,10 +96,11 @@ class TestDeleteModel:
         self,
         db: Session,
         client: TestClient,
+        user_id: int,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = create_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, user_id)
         assert not model.is_deleted
         r = client.delete(
             f"{settings.API_V1_STR}/models/{model.id}",
@@ -118,16 +126,16 @@ class TestGetModel:
         self,
         db: Session,
         client: TestClient,
+        user_id: int,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = create_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, user_id)
         r = client.get(
             f"{settings.API_V1_STR}/models/{model.id}",
             headers=normal_user_token_headers,
         )
         assert model.hash == r.json()["result"]["hash"]
-        assert "config" in r.json()["result"]
 
     def test_get_model_not_found(
         self,
@@ -145,6 +153,8 @@ class TestGetModel:
 class TestCreatePlaceholderTask:
     def test_create_placeholder_task(self, db, mocker):
         user_id = random.randint(1000, 2000)
-        t = m.create_task_as_placeholder(db, user_id=user_id)
+        t = m.create_task_as_placeholder(
+            db, user_id=user_id, project_id=random.randint(100, 200)
+        )
         assert t.user_id == user_id
         assert t.is_deleted

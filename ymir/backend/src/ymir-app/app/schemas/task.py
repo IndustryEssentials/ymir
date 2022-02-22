@@ -23,8 +23,10 @@ class MergeStrategy(enum.IntEnum):
 class TaskBase(BaseModel):
     name: str
     type: TaskType
+    project_id: int
 
 
+# all the parameter will be packed into Task.parmeters
 class TaskParameter(BaseModel):
     include_datasets: Optional[List[int]]
     include_train_datasets: Optional[List[int]]
@@ -63,17 +65,17 @@ class TaskParameter(BaseModel):
 
 
 class TaskCreate(TaskBase):
-    parameters: Optional[TaskParameter] = Field(
-        None, description="task specific parameters"
-    )
+    parameters: Optional[TaskParameter] = Field(description="task specific parameters")
     config: Optional[Union[str, Dict]] = Field(
-        None, description="docker runtime configuration"
+        description="docker runtime configuration"
     )
 
     @validator("config")
     def dumps_config(
         cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]
     ) -> Optional[str]:
+        # we don't care what's inside of config
+        # just dumps it as string and save to db
         if isinstance(v, dict):
             return json.dumps(v)
         else:
@@ -147,13 +149,8 @@ class Task(TaskInternal):
         return v
 
 
-class Tasks(BaseModel):
-    total: int
-    items: List[Task]
-
-
 class TaskTerminate(BaseModel):
-    fetch_result: Optional[bool] = True
+    fetch_result: bool = True
 
 
 class TaskUpdateStatus(BaseModel):
@@ -169,5 +166,10 @@ class TaskOut(Common):
     result: Task
 
 
-class TasksOut(Common):
-    result: Tasks
+class TaskPagination(BaseModel):
+    total: int
+    items: List[Task]
+
+
+class TaskPaginationOut(Common):
+    result: TaskPagination

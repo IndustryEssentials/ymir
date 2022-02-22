@@ -13,14 +13,11 @@ class Settings(BaseSettings):
     CLICKHOUSE_URI: str = "clickhouse"
     TOKEN_URL: str = "/auth/token"
     GRPC_CHANNEL: str = "controller:50066"
-    DEFAULT_LIMIT: int = 20
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours
     APP_SECRET_KEY: str = secrets.token_urlsafe(32)
-    HASH_LEN_LIMIT: int = 50
-    NAME_LEN_LIMIT: int = 100
-    PARA_LEN_LIMIT: int = 500
-    CONFIG_LEN_LIMIT: int = 2000
-    PRED_LEN_LIMIT: int = 20000
+    DEFAULT_LIMIT: int = 20
+    STRING_LEN_LIMIT: int = 100
+    TEXT_LEN_LIMIT: int = 20000
     SENTRY_DSN: Optional[str]
 
     # assets viz
