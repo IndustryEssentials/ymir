@@ -6,7 +6,7 @@ import {
   createProject,
   updateProject,
 } from "@/services/project"
-import { transferProject, tranferInteration } from '@/constants/project'
+import { transferProject, transferInteration } from '@/constants/project'
 
 const initQuery = {
   name: "",
@@ -28,12 +28,15 @@ export default {
     *getProjects({ payload }, { call, put }) {
       const { code, result } = yield call(getProjects, payload)
       if (code === 0) {
-        const projects = { items: result.items.map(project => transferProject(project)), total: result.total }
+        const projects = { items: result.items.map(project => {
+          
+          return transferProject(project)
+        }), total: result.total }
         yield put({
           type: "UPDATE_LIST",
           payload: projects,
         })
-        return result
+        return projects
       }
     },
     *getProject({ payload }, { call, put }) {
@@ -51,7 +54,7 @@ export default {
       const projectId = payload
       const { code, result } = yield call(getInterations, projectId)
       if (code === 0) {
-        const interations = tranferInteration()
+        const interations = transferInteration()
         yield put({
           type: "UPDATE_INTERATIONS",
           payload: { id: projectId, interations },
@@ -79,7 +82,7 @@ export default {
       }
     },
     *updateQuery({ payload = {} }, { put, select }) {
-      const query = yield select(({ task }) => task.query)
+      const query = yield select(({ project }) => project.query)
       yield put({
         type: 'UPDATE_QUERY',
         payload: {

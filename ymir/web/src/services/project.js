@@ -1,13 +1,17 @@
 import request from "@/utils/request"
 
-/** dataset service */
+/** project service */
 /**
  *
  * @param {array[number]} id
  * @returns
  */
-export function getDataset(id) {
-  return request.get(`datasets/${id}`)
+export function getProject(id) {
+  return request.get(`projects/${id}`)
+}
+
+export function getInterations(id) {
+  return request.get(`projects/${id}/interations`)
 }
 
 /**
@@ -15,53 +19,30 @@ export function getDataset(id) {
  * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by = 1 }
  * @returns
  */
-export function getDatasets(params) {
-  return request.get("datasets/", { params })
+export function getProjects(params) {
+  console.log('get projects: ', params)
+  return request.get("projects/", { params })
 }
 
-export function batchDatasets(ids) {
-  return request.get('datasets/batch', { params: { ids: ids.toString() }})
-}
-
-/**
- * get assets of dataset
- * @param {object} param0 fitler condition
- * @returns
- */
-export function getAssetsOfDataset({
-  id,
-  keyword = null,
-  offset = 0,
-  limit = 20,
-}) {
-  return request.get(`datasets/${id}/assets`, {
-    params: {
-      keyword,
-      offset,
-      limit,
-    },
-  })
-}
-
-export function getAsset(id, hash) {
-  return request.get(`datasets/${id}/assets/${hash}`)
+export function batchProjects(ids) {
+  return request.get('projects/batch', { params: { ids: ids.toString() }})
 }
 
 /**
- * delete dataset
+ * delete project
  * @param {number} id
  * @returns
  */
-export function delDataset(id) {
+export function delProject(id) {
   return request({
     method: "delete",
-    url: `/datasets/${id}`,
+    url: `/projects/${id}`,
   })
 }
 
 /**
- * create a dataset
- * @param {object} dataset
+ * create a project
+ * @param {object} project
  * {
  *   "name": "string",
  *   "hash": "string",
@@ -74,20 +55,16 @@ export function delDataset(id) {
  * }
  * @returns
  */
-export function createDataset(dataset) {
-  return request.post("/datasets/", dataset)
+export function createProject(project) {
+  return request.post("/projects/", project)
 }
 
-export function updateDataset(id, name) {
+export function updateProject(id, name) {
   return request({
     method: "patch",
-    url: `/datasets/${id}`,
+    url: `/projects/${id}`,
     data: {
       name,
     },
   })
-}
-
-export function getInternalDataset() {
-  return request.get('/datasets/public')
 }

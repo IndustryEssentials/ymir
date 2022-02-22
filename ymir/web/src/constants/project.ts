@@ -1,9 +1,19 @@
 import { Project, originProject, originInteration, Interation } from "@/interface/project"
+import { format } from '@/utils/date'
 
 enum flag {
   map = 'mAP',
   interations = 'interation',
   trainset = 'trainset',
+}
+
+export enum Steps {
+  beforeMining = 0,
+  mining = 1,
+  labelling = 2,
+  merging = 3,
+  training = 4,
+  trained = 5,
 }
 
 /**
@@ -25,19 +35,23 @@ export function transferProject(data: originProject) {
     miningSet: data.mining_set,
     setsAccount: data.set_account,
     modelsAccount: data.models_account,
-    ambition: data.flag ? {
+    flag: data.flag ? {
       type: data.flag.type,
       value: data.flag.value,
     } : undefined,
     miningStrategy: data.mining_strategy,
-    currentInteration: data.current_interation,
-    createTime: data.create_datetime,
+    miningBlock: data.mining_block,
+    currentInteration: transferInteration(data.current_interation),
+    createTime: format(data.create_datetime),
     desc: data.description,
   }
   return project
 }
 
-export function transferInteration (data: originInteration) {
+export function transferInteration (data: originInteration | undefined) {
+  if (!data) {
+    return
+  }
   const interation : Interation = {
     id: data.id,
     name: data.name,

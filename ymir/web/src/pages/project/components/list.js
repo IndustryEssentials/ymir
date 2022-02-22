@@ -1,42 +1,46 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
-import { useHistory } from "umi"
-import { List, Skeleton, Space, Pagination, Col, Row, } from "antd"
+import { useHistory, Link } from "umi"
+import { List, Skeleton, Space, Pagination, Col, Row, Card, Button, Form, Input, } from "antd"
 
 import t from "@/utils/t"
 import Del from './del'
 import s from "./list.less"
-import { EditIcon, DeleteIcon, AddIcon } from "@/components/common/icons"
+import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/icons"
 
-const ProjectList = ({ role, filter, getProjects, list, query, updateQuery, resetQuery }) => {
+const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
 
   const history = useHistory()
   const [projects, setProjects] = useState([])
   const [total, setTotal] = useState(1)
+  const [form] = Form.useForm()
   const delRef = useRef(null)
 
   /** use effect must put on the top */
   useEffect(() => {
+    console.log('project list: ', list)
     setProjects(list.items)
     setTotal(list.total)
-  }, list)
+  }, [list])
 
   useEffect(() => {
     getData()
   }, [query])
 
-  useEffect(() => {
-    JSON.stringify(filter) !== JSON.stringify(query) && setQuery({ ...query, ...filter })
-  }, [filter])
+  // useEffect(() => {
+  //   JSON.stringify(filter) !== JSON.stringify(query) && updateQuery({ ...query, ...filter })
+  // }, [filter])
 
-  const pageChange = ({ current, pageSize }) => {
+  const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    console.log('project page change: ', limit, offset, pageSize, current)
+    updateQuery({ ...query, limit, offset })
   }
 
   async function getData() {
+    console.log('project get data: ', query)
     await getProjects(query)
   }
 
@@ -65,6 +69,10 @@ const ProjectList = ({ role, filter, getProjects, list, query, updateQuery, rese
     delRef.current.del(id, name)
   }
 
+  const search = (values) => {
+    updateQuery({ ...query, ...values })
+  }
+
   const delOk = (id) => {
     setProjects(projects.filter(project => project.id !== id))
     setTotal(old => old - 1)
@@ -90,24 +98,57 @@ const ProjectList = ({ role, filter, getProjects, list, query, updateQuery, rese
   }
 
   const addBtn = (
-    <div className={s.addBtn} onClick={() => history.push('/home/project/add')}><AddIcon />{t('project.new.label')}</div>
+    <Button className={s.addBtn} type="primary" onClick={() => history.push('/home/project/add')} icon={<AddIcon />}>{t('project.new.label')}</Button>
+  )
+
+  const searchPanel = (
+    <Form
+      name='queryForm'
+      form={form}
+      layout="inline"
+      onValuesChange={search}
+      colon={false}
+    >
+      <Form.Item name="name" label={t('project.query.name')}>
+        <Input style={{ width: '230%' }} placeholder={t("project.query.name.placeholder")} allowClear suffix={<SearchIcon />} />
+      </Form.Item>
+    </Form>
   )
 
   const renderItem = (item) => {
-    const title = <Row wrap={false}>
-      <Col flex={1}>{item.name}</Col>
+    const title = <Row wrap={false} className={s.title}>
+      <Col flex={1}>
+        <Space>
+          <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.flag.value}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.interation.current')}:</span><span className={s.titleContent}>{item?.currentInteration.currentStep}</span></span>
+        </Space>
+      </Col>
       <Col>{more(item)}</Col>
     </Row>
     const desc = <>
-      <Row>
-        <Col className={s.content.stats}>Datasets</Col>
-        <Col className={s.content.stats}>Models</Col>
-        <Col className={s.content.stats}>训练集/测试集/挖掘集</Col>
-        <Col className={s.content.stats}>迭代轮次</Col>
+      <Row className={s.content} justify="center">
+        <Col span={6} className={s.stats}>
+          <div className={s.contentLabel}>Datasets</div>
+          <div className={s.contentContent}>{item.setsAccount}</div>
+        </Col>
+        <Col span={6} className={s.stats}>
+          <div className={s.contentLabel}>Models</div>
+          <div className={s.contentContent}>{item.modelsAccount}</div>
+        </Col>
+        <Col span={6} className={s.stats}>
+          <div className={s.contentLabel}>{t('project.train_set')}/{t('project.test_set')}/{t('project.mining_set')}</div>
+          <div className={s.sets}>{item.trainSet}/{item.testSet}/{item.miningSet}</div>
+        </Col>
+        <Col span={6} className={s.stats}>
+          <div className={s.contentLabel}>{t('project.interation.number')}</div>
+          <div className={s.contentContent}>{item?.currentInteration.version}</div>
+        </Col>
       </Row>
       <Row>
-        <Col flex={1}>{t('project.content.desc')}: {item.desc}</Col>
-        <Col>{item.createTime}</Col>
+        <Col flex={1}><span className={s.bottomLabel}>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.desc}</span></Col>
+        <Col><span className={s.bottomContent}>{item.createTime}</span></Col>
       </Row>
     </>
 
@@ -121,17 +162,20 @@ const ProjectList = ({ role, filter, getProjects, list, query, updateQuery, rese
 
   return (
     <div className={s.projectContent}>
-      {addBtn}
-      <List
-        className={s.list}
-        dataSource={projects}
-        renderItem={renderItem}
-      />
-      <Pagination className={s.pager} onChange={pageChange}
-        defaultCurrent={1} defaultPageSize={query.limit} total={total}
-        showTotal={() => t('project.list.total', { total })}
-        showQuickJumper showSizeChanger />
-      <Del ref={delRef} ok={delOk} />
+      <Space className={s.actions}>{addBtn}</Space>
+      <Card>
+        {searchPanel}
+        <List
+          className={s.list}
+          dataSource={projects}
+          renderItem={renderItem}
+        />
+        <Pagination className={s.pager} onChange={pageChange}
+          defaultCurrent={1} defaultPageSize={query.limit} total={total}
+          showTotal={() => t('project.list.total', { total })}
+          showQuickJumper showSizeChanger />
+        <Del ref={delRef} ok={delOk} />
+      </Card>
     </div>
   )
 }
@@ -157,7 +201,7 @@ const actions = (dispatch) => {
         payload: query,
       })
     },
-    resetQuery: (        ) => {
+    resetQuery: () => {
       return dispatch({
         type: 'project/resetQuery',
       })

@@ -9,13 +9,13 @@ export interface Project {
   miningSet: Dataset,
   setsAccount: number,
   modelsAccount: number,
-  ambition?: {
+  flag?: {
     type: string,
     value: number,
   },
   miningStrategy: number,
   miningBlock?: number,
-  currentInteration?: number,
+  currentInteration?: Interation,
   createTime: string,
   desc?: string,
 }
@@ -61,7 +61,8 @@ export interface originProject {
   },
 
   mining_strategy: number,
-  current_interation?: number,
+  mining_block?: number,
+  current_interation?: originInteration,
   create_datetime: string,
   description?: string 
 }
