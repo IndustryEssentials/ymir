@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+from common_utils.percent_log_util import LogState
 from proto import backend_pb2 as mirsvrpb
 
 
@@ -11,9 +12,9 @@ class DockerImageType(IntEnum):
 
 
 class DockerImageState(IntEnum):
-    pending = mirsvrpb.TaskState.TaskStatePending
-    done = mirsvrpb.TaskState.TaskStateDone
-    error = mirsvrpb.TaskState.TaskStateError
+    pending = LogState.PENDING
+    done = LogState.DONE
+    error = LogState.PENDING.ERROR
 
 
 class TaskType(IntEnum):
@@ -30,11 +31,11 @@ class TaskType(IntEnum):
 
 
 class TaskState(IntEnum):
-    unknown = mirsvrpb.TaskState.TaskStateUnknown
-    pending = mirsvrpb.TaskState.TaskStatePending
-    running = mirsvrpb.TaskState.TaskStateRunning
-    done = mirsvrpb.TaskState.TaskStateDone
-    error = mirsvrpb.TaskState.TaskStateError
+    unknown = LogState.UNKNOWN
+    pending = LogState.PENDING
+    running = LogState.RUNNING
+    done = LogState.DONE
+    error = LogState.ERROR
     terminate = 100
     premature = 101  # terminate task while try to get result prematurely
 
