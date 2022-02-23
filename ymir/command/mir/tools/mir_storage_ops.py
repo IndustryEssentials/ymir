@@ -43,6 +43,10 @@ class MirStorageOps():
         build_keywords_index(mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
+        # gen mir_context
+        mir_context = mirpb.MirContext()
+        build_mir_context(mir_keywords=mir_keywords, project_class_ids=[], mir_context=mir_context)
+
         for ms, mir_data in mir_datas.items():
             mir_file_path = os.path.join(mir_root, mir_storage.mir_path(ms))
             with open(mir_file_path, "wb") as m_f:
@@ -87,6 +91,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
+        if mirpb.MirStorage.MIR_CONTEXT in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_context')
         if mirpb.MirStorage.MIR_TASKS not in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid mir_tasks')
 
@@ -200,23 +206,23 @@ def build_keywords_index(mir_keywords: mirpb.MirKeywords) -> int:
     if not mir_keywords:
         raise RuntimeError("Invalid mir_keywords")
 
-    mir_keywords.predifined_keyids_cnt.clear()
-    mir_keywords.customized_keywords_cnt.clear()
+    # mir_keywords.predifined_keyids_cnt.clear()
+    # mir_keywords.customized_keywords_cnt.clear()
     mir_keywords.index_predifined_keyids.clear()
 
     for asset_id, keywords in mir_keywords.keywords.items():
         for key_id in keywords.predifined_keyids:
-            mir_keywords.predifined_keyids_cnt[key_id] += 1
+            # mir_keywords.predifined_keyids_cnt[key_id] += 1
             mir_keywords.index_predifined_keyids[key_id].asset_ids.append(asset_id)
-        for keyword in keywords.customized_keywords:
-            mir_keywords.customized_keywords_cnt[keyword] += 1
+        # for keyword in keywords.customized_keywords:
+        #     mir_keywords.customized_keywords_cnt[keyword] += 1
 
-    mir_keywords.predifined_keyids_total = 0
-    for cnt in mir_keywords.predifined_keyids_cnt.values():
-        mir_keywords.predifined_keyids_total += cnt
-    mir_keywords.customized_keywords_total = 0
-    for cnt in mir_keywords.customized_keywords_cnt.values():
-        mir_keywords.customized_keywords_total += cnt
+    # mir_keywords.predifined_keyids_total = 0
+    # for cnt in mir_keywords.predifined_keyids_cnt.values():
+    #     mir_keywords.predifined_keyids_total += cnt
+    # mir_keywords.customized_keywords_total = 0
+    # for cnt in mir_keywords.customized_keywords_cnt.values():
+    #     mir_keywords.customized_keywords_total += cnt
 
     # Remove redundant index values.
     for key_id, assets in mir_keywords.index_predifined_keyids.items():
@@ -272,3 +278,8 @@ def generate_keywords_cis(single_task_annotations: mirpb.SingleTaskAnnotations,
     for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
         mir_keywords.keywords[asset_id].predifined_keyids[:] = set(
             [annotation.class_id for annotation in single_image_annotations.annotations])
+
+
+def build_mir_context(mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
+                      mir_context: mirpb.MirContext) -> None:
+    pass

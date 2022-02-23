@@ -3,12 +3,10 @@ import logging
 from typing import List
 import os
 
-import yaml
-
 from mir import scm
 from mir.commands import base
 from mir.scm.cmd import CmdScm
-from mir.tools import checker, class_ids
+from mir.tools import checker, class_ids, context
 from mir.tools.code import MirCode
 
 
@@ -24,12 +22,8 @@ class CmdInit(base.BaseCommand):
 
     @staticmethod
     def __create_project_contex_file(mir_root: str, project_class_ids: List[int]) -> None:
-        context_dir = os.path.join(mir_root, '.mir')
-        os.makedirs(context_dir, exist_ok=True)
-
-        with open(os.path.join(context_dir, 'context.yaml'), 'w') as f:
-            context_obj = {'project': {'class_ids': project_class_ids}}
-            yaml.dump(context_obj, f)
+        context_config = context.ContextConfig(project=context.ProjectContextConfig(class_ids=project_class_ids))
+        context.ContextManager(mir_root=mir_root).save(context_config=context_config)
 
     @staticmethod
     def __update_ignore(mir_root: str, git: CmdScm, ignored_items: List[str]) -> None:

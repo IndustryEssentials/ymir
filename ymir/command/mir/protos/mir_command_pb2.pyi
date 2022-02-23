@@ -138,11 +138,13 @@ class _MirStorageEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     MIR_ANNOTATIONS = MirStorage.V(1)
     MIR_KEYWORDS = MirStorage.V(2)
     MIR_TASKS = MirStorage.V(3)
+    MIR_CONTEXT = MirStorage.V(4)
 
 MIR_METADATAS = MirStorage.V(0)
 MIR_ANNOTATIONS = MirStorage.V(1)
 MIR_KEYWORDS = MirStorage.V(2)
 MIR_TASKS = MirStorage.V(3)
+MIR_CONTEXT = MirStorage.V(4)
 global___MirStorage = MirStorage
 
 
@@ -620,3 +622,84 @@ class ModelMeta(google.protobuf.message.Message):
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["context",b"context","mean_average_precision",b"mean_average_precision","model_hash",b"model_hash"]) -> None: ...
 global___ModelMeta = ModelMeta
+
+class MirContext(google.protobuf.message.Message):
+    """/ ========== context.mir =========="""
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class PredefinedKeyidsCntEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class ProjectPredefinedKeyidsCntEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class CustomizedKeywordsCntEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    NEGATIVE_IMAGES_CNT_FIELD_NUMBER: builtins.int
+    PROJECT_NEGATIVE_IMAGES_CNT_FIELD_NUMBER: builtins.int
+    IMAGES_CNT_FIELD_NUMBER: builtins.int
+    PREDEFINED_KEYIDS_CNT_FIELD_NUMBER: builtins.int
+    PROJECT_PREDEFINED_KEYIDS_CNT_FIELD_NUMBER: builtins.int
+    CUSTOMIZED_KEYWORDS_CNT_FIELD_NUMBER: builtins.int
+    negative_images_cnt: builtins.int = ...
+    """/ total negative images count (images without any annotations)"""
+
+    project_negative_images_cnt: builtins.int = ...
+    """/ total negative images count (images without any project class names)"""
+
+    images_cnt: builtins.int = ...
+    """/ total images count"""
+
+    @property
+    def predefined_keyids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
+        """/ key: class id, value: images count"""
+        pass
+    @property
+    def project_predefined_keyids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
+        """/ key: class id (only in this project), value: images count"""
+        pass
+    @property
+    def customized_keywords_cnt(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
+        """/ key: customized keywords, value: images count"""
+        pass
+    def __init__(self,
+        *,
+        negative_images_cnt : builtins.int = ...,
+        project_negative_images_cnt : builtins.int = ...,
+        images_cnt : builtins.int = ...,
+        predefined_keyids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
+        project_predefined_keyids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
+        customized_keywords_cnt : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["customized_keywords_cnt",b"customized_keywords_cnt","images_cnt",b"images_cnt","negative_images_cnt",b"negative_images_cnt","predefined_keyids_cnt",b"predefined_keyids_cnt","project_negative_images_cnt",b"project_negative_images_cnt","project_predefined_keyids_cnt",b"project_predefined_keyids_cnt"]) -> None: ...
+global___MirContext = MirContext
