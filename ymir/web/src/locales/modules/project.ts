@@ -17,6 +17,8 @@ const project = {
   "project.mining_set": { en: "Mining Set", cn: "挖掘集", },
   "project.interation.number": { en: "Interation Number", cn: "迭代轮次", },
   "project.content.desc": { en: "Description", cn: "描述", },
+  "project.tab.set.title": { en: "Datasets", cn: "数据集", },
+  "project.tab.model.title": { en: "Models", cn: "模型", },
 }
 
 export default project
