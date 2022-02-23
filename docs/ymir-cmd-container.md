@@ -145,13 +145,13 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
 例如：
 ```
-train_0 1622552974 0.5 running
+train_0 1622552974 0.5 2
 ```
 
 或者：
 
 ```
-train_0 1622552974 1 error
+train_0 1622552974 1 4
 no training data found
 ```
 
@@ -213,13 +213,13 @@ task_0    1622552975    1    done
 | /out/log.txt | 参考共同部分 |
 | /out/monitor.txt | 参考共同部分 |
 | /out/monitor-log.txt | 参考共同部分 |
-| /out/models | 必要，最终生成的模型的输出目录。<br>必须有一个 `result.yaml` 文件，格式参考注1 |
+| /out/models | 必要，最终生成的模型的输出目录，里面直接存放模型文件，没有下级子目录。<br>必须有一个 `result.yaml` 文件，格式参考注1 |
 
-注1. `result.yaml` 文件的格式如下：
+注1. `result.yaml` 文件的格式如下，其中 model 节点填入 `/out/models` 下的模型文件名（不带目录名 `/out/models`）：
 
 ```
 map: 1.000
-model: 
+model:
  - 149_1.000-symbol.json
  - 149_1.000-0149.params
 ```
