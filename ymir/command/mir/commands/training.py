@@ -65,7 +65,7 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
         logging.warning(traceback.format_exc())
         return [], 0.0
 
-    return ([os.path.join(model_root, name) for name in model_names], model_mAP)
+    return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
 
 
 def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
