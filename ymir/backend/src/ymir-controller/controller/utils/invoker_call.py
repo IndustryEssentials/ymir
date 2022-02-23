@@ -23,7 +23,6 @@ def make_cmd_request(user_id: str = None,
                      executor_instance: str = None,
                      merge_strategy: int = None,
                      req_create_task: backend_pb2.ReqCreateTask = None,
-                     task_info_req: backend_pb2.ReqGetTaskInfo = None,
                      docker_image_config: str = None,
                      terminated_task_type: str = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
@@ -63,8 +62,6 @@ def make_cmd_request(user_id: str = None,
         request.model_hash = model_hash
     if req_create_task is not None:
         request.req_create_task.CopyFrom(req_create_task)
-    if task_info_req is not None:
-        request.req_get_task_info.CopyFrom(task_info_req)
     if executor_instance is not None:
         request.executor_instance = executor_instance
     if merge_strategy is not None:
@@ -94,7 +91,6 @@ def make_invoker_cmd_call(invoker: Any,
                           force: bool = None,
                           commit_message: str = None,
                           req_create_task: backend_pb2.ReqCreateTask = None,
-                          task_info_req: backend_pb2.ReqGetTaskInfo = None,
                           async_mode: bool = False,
                           merge_strategy: int = None,
                           model_hash: str = None,
@@ -115,7 +111,6 @@ def make_invoker_cmd_call(invoker: Any,
                                force=force,
                                commit_message=commit_message,
                                req_create_task=req_create_task,
-                               task_info_req=task_info_req,
                                executor_instance=executor_instance,
                                merge_strategy=merge_strategy,
                                model_hash=model_hash,

@@ -15,14 +15,6 @@ def test_gen_typed_datasets():
 
 
 class TestControllerRequest:
-    def test_get_task_info(self):
-        task_type = m.ExtraRequestType.get_task_info
-        user_id = random.randint(1000, 2000)
-        task_ids = [random_lower_string() for _ in range(10)]
-
-        ret = m.ControllerRequest(task_type, user_id, args={"task_ids": task_ids})
-        assert ret.req.req_type == m.mirsvrpb.TASK_INFO
-
     def test_filter(self):
         task_type = m.TaskType.filter
         user_id = random.randint(1000, 2000)
