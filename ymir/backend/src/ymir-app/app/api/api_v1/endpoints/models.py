@@ -45,7 +45,6 @@ class SortField(enum.Enum):
 def list_models(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by model's name"),
-    source: TaskType = Query(None, description="the type of related task", example=1),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
@@ -62,7 +61,6 @@ def list_models(
         db,
         user_id=current_user.id,
         name=name,
-        task_type=source,
         offset=offset,
         limit=limit,
         order_by=order_by.name,

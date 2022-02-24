@@ -5,12 +5,12 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.models import Model
-from app.schemas.model import ModelCreate, ModelUpdate
+from app.models import DatasetGroup
+from app.schemas.dataset_group import DatasetGroupCreate, DatasetGroupUpdate
 
 
-class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
-    def get_multi_models(
+class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUpdate]):
+    def get_multi_dataset_groups(
         self,
         db: Session,
         *,
@@ -22,7 +22,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         limit: Optional[int],
         order_by: str,
         is_desc: bool = True,
-    ) -> Tuple[List[Model], int]:
+    ) -> Tuple[List[DatasetGroup], int]:
         query = db.query(self.model)
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 
@@ -48,4 +48,4 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return query.offset(offset).limit(limit).all(), query.count()
 
 
-model = CRUDModel(Model)
+dataset_group = CRUDDatasetGroup(DatasetGroup)
