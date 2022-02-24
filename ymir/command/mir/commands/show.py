@@ -110,7 +110,7 @@ class CmdShow(base.BaseCommand):
                                                                                   ms=mirpb.MIR_CONTEXT)
         cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         if verbose:
-            print(f"predefined key ids and assets count:")
+            print('predefined key ids and assets count:')
             cls._show_cis_verbose(predefined_keyids_cnt=mir_context.predefined_keyids_cnt, cls_id_mgr=cls_id_mgr)
             if mir_context.project_predefined_keyids_cnt:
                 print('project predefined key ids and assets count:')
