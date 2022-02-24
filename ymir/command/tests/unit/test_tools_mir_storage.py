@@ -275,7 +275,7 @@ class TestMirStorage(unittest.TestCase):
         actual_contents_tuple = mir_storage_ops.MirStorageOps.load_branch_contents(mir_root=self._mir_root,
                                                                                    mir_branch='a',
                                                                                    mir_task_id='mining-task-id')
-        self.assertEqual(len(actual_contents_tuple), 4)
+        self.assertEqual(len(actual_contents_tuple), 5)
 
     def test_build_keywords_00(self):
         pass
