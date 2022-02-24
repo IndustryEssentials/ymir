@@ -1,28 +1,32 @@
 from datetime import datetime
+from enum import IntEnum
 from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.models import Model
-from app.schemas.model import ModelCreate, ModelUpdate
+from app.models import Project
+from app.schemas.project import ProjectCreate, ProjectUpdate
 
 
-class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
-    def get_multi_models(
+class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
+    def get_multi_projects(
         self,
         db: Session,
         *,
         user_id: int,
-        name: Optional[str],
-        start_time: Optional[int],
-        end_time: Optional[int],
-        offset: Optional[int],
-        limit: Optional[int],
-        order_by: str,
+        name: Optional[str] = None,
+        type_: Optional[IntEnum] = None,
+        start_time: Optional[int] = None,
+        end_time: Optional[int] = None,
+        offset: Optional[int] = 0,
+        limit: Optional[int] = None,
+        order_by: str = "id",
         is_desc: bool = True,
-    ) -> Tuple[List[Model], int]:
+    ) -> Tuple[List[Project], int]:
+        # each dataset is associate with one task
+        # we need related task info as well
         query = db.query(self.model)
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 
@@ -37,7 +41,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             )
 
         if name:
-            # basic fuzzy search
             query = query.filter(self.model.name.like(f"%{name}%"))
 
         order_by_column = getattr(self.model, order_by)
@@ -45,7 +48,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             order_by_column = desc(order_by_column)
         query = query.order_by(order_by_column)
 
-        return query.offset(offset).limit(limit).all(), query.count()
+        if limit:
+            return query.offset(offset).limit(limit).all(), query.count()
+        return query.all(), query.count()
 
 
-model = CRUDModel(Model)
+project = CRUDProject(Project)
