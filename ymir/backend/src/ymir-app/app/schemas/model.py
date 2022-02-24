@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, root_validator
 
+from app.constants.state import ResultState
 from app.config import settings
 from app.schemas.common import (
     Common,
@@ -10,72 +11,7 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
-
-
-class ModelBase(BaseModel):
-    hash: str
-    name: str
-    map: Optional[str] = Field(description="Mean Average Precision")
-    parameters: Optional[str] = Field(
-        description="input parameters of related training task"
-    )
-    task_id: Optional[int]
-    user_id: Optional[int]
-
-
-class ModelCreate(ModelBase):
-    pass
-
-
-class ModelImport(BaseModel):
-    hash: str
-    name: str
-    map: Optional[str]
-    parameters: Optional[str]
-    input_url: str
-
-
-class ModelUpdate(BaseModel):
-    name: str
-
-
-class ModelInDB(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):
-    class Config:
-        orm_mode = True
-
-
-class Model(ModelInDB):
-    parameters: Optional[Any] = None
-    config: Optional[Any] = None
-    keywords: Optional[List[str]] = None
-    source: Optional[int] = None
-    task_type: Optional[int] = None
-    task_name: Optional[str] = None
-    task_id: Optional[int] = None
-    task_parameters: Optional[Any] = None
-    task_config: Optional[Any] = None
-
-    url: Optional[str] = None
-
-    @root_validator
-    def make_up_fields(cls, values: Any) -> Any:
-        parameters = values["parameters"] or values.pop("task_parameters", None)
-        values["parameters"] = parse_optional_json(parameters)
-        values["keywords"] = extract_keywords(parameters)
-        values["config"] = parse_optional_json(values.pop("task_config", None))
-
-        # the source of a model is actually the task
-        # that import the model, copy the model or
-        # train the model
-        values["source"] = values.get("task_type")
-        # make up the model url
-        if values.get("hash"):
-            values["url"] = get_model_url(values["hash"])
-        return values
-
-
-def parse_optional_json(j: Optional[str]) -> Dict:
-    return json.loads(j) if j is not None else {}
+from app.schemas.task import TaskInternal
 
 
 def get_model_url(model_hash: str) -> str:
@@ -90,7 +26,62 @@ def extract_keywords(parameters: Optional[Union[str, Dict]]) -> List:
     return parameters.get("include_classes", [])  # type: ignore
 
 
-class Models(BaseModel):
+class ModelBase(BaseModel):
+    hash: str
+    name: str
+    version_num: int
+    map: Optional[str] = Field(description="Mean Average Precision")
+    result_state: ResultState = ResultState.processing
+    model_group_id: int
+    project_id: int
+    task_id: Optional[int]
+    user_id: Optional[int]
+
+
+class ModelImport(BaseModel):
+    hash: str
+    name: str
+    input_url: Optional[str] = Field(description="from url")
+    input_model_id: Optional[int] = Field(description="from model of other user")
+    input_token: Optional[str] = Field(description="from uploaded file token")
+    project_id: int
+
+    @root_validator
+    def check_input_source(cls, values: Any) -> Any:
+        fields = ("input_url", "input_model_id", "input_token")
+        if all(values.get(i) is None for i in fields):
+            raise ValueError("Missing input source")
+        return values
+
+
+class ModelCreate(ModelBase):
+    pass
+
+
+class ModelUpdate(BaseModel):
+    name: str
+
+
+class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):
+    related_task: Optional[TaskInternal]
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to return to caller
+class Model(ModelInDBBase):
+    url: Optional[str] = None
+
+    @root_validator
+    def make_up_url(cls, values: Any) -> Any:
+        # make up the model url
+        if values.get("hash"):
+            values["url"] = get_model_url(values["hash"])
+        return values
+
+
+class ModelPagination(BaseModel):
     total: int
     items: List[Model]
 
@@ -104,4 +95,4 @@ class ModelsOut(Common):
 
 
 class ModelPaginationOut(Common):
-    result: Models
+    result: ModelPagination

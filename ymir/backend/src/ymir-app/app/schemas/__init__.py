@@ -1,10 +1,10 @@
-from .asset import Asset, AssetOut, Assets
+from .asset import Asset, AssetOut, AssetPaginationOut
 from .dataset import (
     Dataset,
     DatasetCreate,
     DatasetImport,
     DatasetOut,
-    Datasets,
+    DatasetPaginationOut,
     DatasetsOut,
     DatasetUpdate,
     ImportStrategy,
@@ -35,7 +35,6 @@ from .model import (
     ModelImport,
     ModelOut,
     ModelPaginationOut,
-    Models,
     ModelsOut,
     ModelUpdate,
 )
@@ -56,10 +55,9 @@ from .task import (
     Task,
     TaskCreate,
     TaskInternal,
+    TaskPaginationOut,
     TaskOut,
     TaskParameter,
-    Tasks,
-    TasksOut,
     TaskTerminate,
     TaskUpdate,
     TaskUpdateStatus,
