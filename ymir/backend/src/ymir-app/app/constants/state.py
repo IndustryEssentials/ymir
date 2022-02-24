@@ -40,5 +40,19 @@ class TaskState(IntEnum):
     premature = 101  # terminate task while try to get result prematurely
 
 
+class ResultState(IntEnum):
+    processing = 0
+    ready = 1
+    error = 2
+
+
+class IterationStage(IntEnum):
+    prepare_mining = 0
+    mining = 1
+    label = 2
+    prepare_training = 3
+    training = 4
+
+
 RunningStates = [TaskState.pending, TaskState.running, TaskState.premature]
 FinalStates = [TaskState.done, TaskState.error, TaskState.terminate]

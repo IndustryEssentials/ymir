@@ -12,11 +12,11 @@ from app.models.image_relationship import DockerImageRelationship
 class DockerImage(Base):
     __tablename__ = "docker_image"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String(settings.NAME_LEN_LIMIT), index=True)
-    url = Column(String(settings.PARA_LEN_LIMIT), index=True)
-    hash = Column(String(settings.HASH_LEN_LIMIT), index=True)
-    description = Column(Text(settings.CONFIG_LEN_LIMIT))
-    state = Column(Integer, index=True)
+    name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
+    url = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
+    hash = Column(String(settings.STRING_LEN_LIMIT), index=True)
+    description = Column(Text(settings.TEXT_LEN_LIMIT))
+    state = Column(Integer, index=True, nullable=False)
     related = relationship(
         "DockerImage",
         secondary=DockerImageRelationship.__table__,
@@ -29,8 +29,8 @@ class DockerImage(Base):
         primaryjoin="foreign(DockerImageConfig.image_id)==DockerImage.id",
         uselist=True,
     )
-    is_shared = Column(Boolean, default=False)
-    is_deleted = Column(Boolean, default=False)
+    is_shared = Column(Boolean, default=False, nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
         DateTime,

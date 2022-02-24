@@ -1,0 +1,52 @@
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
+
+from app.schemas.common import (
+    Common,
+    DateTimeModelMixin,
+    IdModelMixin,
+    IsDeletedModelMixin,
+)
+
+
+class ModelGroupBase(BaseModel):
+    name: str = Field(description="Model Group Name")
+    project_id: int
+    training_dataset_id: Optional[int]
+
+
+class ModelGroupCreate(ModelGroupBase):
+    pass
+
+
+class ModelGroupUpdate(BaseModel):
+    name: str
+
+
+class ModelGroupInDBBase(
+    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelGroupBase
+):
+    class Config:
+        orm_mode = True
+
+
+class ModelGroup(ModelGroupInDBBase):
+    pass
+
+
+class ModelGroupPagination(BaseModel):
+    total: int
+    items: List[ModelGroup]
+
+
+class ModelGroupOut(Common):
+    result: ModelGroup
+
+
+class ModelGroupsOut(Common):
+    result: List[ModelGroup]
+
+
+class ModelGroupPaginationOut(Common):
+    result: ModelGroupPagination
