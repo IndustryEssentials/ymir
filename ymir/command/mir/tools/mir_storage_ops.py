@@ -1,5 +1,5 @@
 import os
-from typing import Any, List, Dict, Optional, Tuple
+from typing import Any, List, Dict, Optional, Set, Tuple
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
@@ -8,7 +8,7 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
 
@@ -44,8 +44,14 @@ class MirStorageOps():
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
         # gen mir_context
+        context_config = context.ContextManager(mir_root=mir_root).load()
         mir_context = mirpb.MirContext()
-        build_mir_context(mir_keywords=mir_keywords, project_class_ids=[], mir_context=mir_context)
+        build_mir_context(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
+                          mir_annotations=mir_annotations,
+                          mir_keywords=mir_keywords,
+                          project_class_ids=context_config.project.class_ids,
+                          mir_context=mir_context)
+        mir_datas[mirpb.MirStorage.MIR_CONTEXT] = mir_context
 
         for ms, mir_data in mir_datas.items():
             mir_file_path = os.path.join(mir_root, mir_storage.mir_path(ms))
@@ -280,6 +286,26 @@ def generate_keywords_cis(single_task_annotations: mirpb.SingleTaskAnnotations,
             [annotation.class_id for annotation in single_image_annotations.annotations])
 
 
-def build_mir_context(mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
+def build_mir_context(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                      mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
                       mir_context: mirpb.MirContext) -> None:
-    pass
+    for _, keywords in mir_keywords.keywords.items():
+        for key_id in keywords.predifined_keyids:
+            mir_context.predefined_keyids_cnt[key_id] += 1
+
+    # project_predefined_keyids_cnt
+    project_positive_asset_ids: Set[str] = set()
+    for key_id in project_class_ids:
+        if key_id in mir_context.predefined_keyids_cnt:
+            mir_context.project_predefined_keyids_cnt[key_id] = mir_context.predefined_keyids_cnt[key_id]
+        else:
+            mir_context.project_predefined_keyids_cnt[key_id] = 0
+        project_positive_asset_ids.update(mir_keywords.index_predifined_keyids[key_id].asset_ids)
+
+    # image_cnt, negative_images_cnt, project_negative_images_cnt
+    mir_context.images_cnt = len(mir_metadatas.attributes)
+    mir_context.negative_images_cnt = mir_context.images_cnt - len(
+        mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations)
+    if project_class_ids:
+        mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
+        # if no project_class_ids, project_negative_images_cnt set to 0

@@ -20,6 +20,9 @@ class ContextManager:
         self._context_file_path = self.context_file_path_from_mir_root(mir_root=mir_root)
 
     def load(self) -> ContextConfig:
+        if not os.path.isfile(self._context_file_path):
+            return ContextConfig()
+
         with open(self._context_file_path, 'r') as f:
             context_obj = yaml.safe_load(f)
             return ContextConfig(project=ProjectContextConfig(**context_obj['project']))
