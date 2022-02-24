@@ -227,10 +227,6 @@ class TestCmdImport(unittest.TestCase):
                             'predifined_keyids': [1],
                         }
                     },
-                    # 'predifined_keyids_cnt': {
-                    #     1: 2
-                    # },
-                    # 'predifined_keyids_total': 2,
                     'index_predifined_keyids': {
                         1: {
                             'asset_ids':
@@ -258,11 +254,6 @@ class TestCmdImport(unittest.TestCase):
                             'predifined_keyids': [1, 2],
                         }
                     },
-                    # 'predifined_keyids_cnt': {
-                    #     1: 2,
-                    #     2: 1
-                    # },
-                    # 'predifined_keyids_total': 3,
                     'index_predifined_keyids': {
                         2: {
                             'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4']
