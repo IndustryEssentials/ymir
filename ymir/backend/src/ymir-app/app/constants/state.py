@@ -54,5 +54,14 @@ class IterationStage(IntEnum):
     training = 4
 
 
+class MiningStrategy(IntEnum):
+    chunk = 0
+    dedup = 1
+
+
+class TrainingType(IntEnum):
+    object_detect = 1
+
+
 RunningStates = [TaskState.pending, TaskState.running, TaskState.premature]
 FinalStates = [TaskState.done, TaskState.error, TaskState.terminate]

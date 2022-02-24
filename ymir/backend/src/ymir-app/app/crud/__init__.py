@@ -7,3 +7,7 @@ from .crud_role import role
 from .crud_task import task
 from .crud_user import user
 from .crud_workspace import workspace
+from .crud_project import project
+from .crud_iteration import iteration
+from .crud_dataset_group import dataset_group
+from .crud_model_group import model_group
