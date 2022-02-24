@@ -100,6 +100,7 @@ class TestCmdImport(unittest.TestCase):
         args.anno = self._data_xml_path
 
     def _check_repo(self, repo_root: str, with_person_ignored: bool, with_annotations: bool):
+        # check annotations.mir
         mir_annotations = mirpb.MirAnnotations()
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
             mir_annotations.ParseFromString(f.read())
@@ -200,10 +201,15 @@ class TestCmdImport(unittest.TestCase):
             dict_annotations_expect = {}
         self.assertDictEqual(dict_annotations_expect, dict_annotations)
 
+        # check keywords.mir and contexts.mir
         mir_keywords = mirpb.MirKeywords()
+        mir_context = mirpb.MirContext()
         with open(os.path.join(repo_root, 'keywords.mir'), 'rb') as f:
             mir_keywords.ParseFromString(f.read())
+        with open(os.path.join(repo_root, 'context.mir'), 'rb') as f:
+            mir_context.ParseFromString(f.read())
         dict_keywords = MessageToDict(mir_keywords, preserving_proto_field_name=True)
+        dict_context = MessageToDict(mir_context, preserving_proto_field_name=True, including_default_value_fields=True)
         if with_annotations:
             dup_asset_id = '430df22960b0f369318705800139fcc8ec38a3e4'
             dict_keywords['keywords'][dup_asset_id]['predifined_keyids'] = sorted(
@@ -221,16 +227,26 @@ class TestCmdImport(unittest.TestCase):
                             'predifined_keyids': [1],
                         }
                     },
-                    'predifined_keyids_cnt': {
-                        1: 2
-                    },
-                    'predifined_keyids_total': 2,
+                    # 'predifined_keyids_cnt': {
+                    #     1: 2
+                    # },
+                    # 'predifined_keyids_total': 2,
                     'index_predifined_keyids': {
                         1: {
                             'asset_ids':
                             ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
                         }
                     },
+                }
+                dict_context_expected = {
+                    'images_cnt': 2,
+                    'negative_images_cnt': 0,
+                    'project_negative_images_cnt': 0,
+                    'predefined_keyids_cnt': {
+                        1: 2,
+                    },
+                    'project_predefined_keyids_cnt': {},
+                    'customized_keywords_cnt': {},
                 }
             else:
                 dict_keywords_expect = {
@@ -242,11 +258,11 @@ class TestCmdImport(unittest.TestCase):
                             'predifined_keyids': [1, 2],
                         }
                     },
-                    'predifined_keyids_cnt': {
-                        1: 2,
-                        2: 1
-                    },
-                    'predifined_keyids_total': 3,
+                    # 'predifined_keyids_cnt': {
+                    #     1: 2,
+                    #     2: 1
+                    # },
+                    # 'predifined_keyids_total': 3,
                     'index_predifined_keyids': {
                         2: {
                             'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4']
@@ -257,15 +273,34 @@ class TestCmdImport(unittest.TestCase):
                         }
                     },
                 }
+                dict_context_expected = {
+                    'images_cnt': 2,
+                    'negative_images_cnt': 0,
+                    'project_negative_images_cnt': 0,
+                    'predefined_keyids_cnt': {
+                        1: 2,
+                        2: 1,
+                    },
+                    'project_predefined_keyids_cnt': {},
+                    'customized_keywords_cnt': {},
+                }
             try:
                 self.assertDictEqual(dict_keywords, dict_keywords_expect)
             except AssertionError as e:
                 logging.info(f"expected: {dict_keywords_expect}")
                 logging.info(f"actual: {dict_keywords}")
                 raise e
+            try:
+                self.assertDictEqual(dict_context, dict_context_expected)
+            except AssertionError as e:
+                logging.info(f"expected: {dict_context_expected}")
+                logging.info(f"actual: {dict_context}")
+                raise e
         else:
             self.assertEqual(0, len(dict_keywords))
+            self.assertEqual(0, len(dict_context['predefined_keyids_cnt']))
 
+        # check metadatas.mir
         mir_metadatas = mirpb.MirMetadatas()
         with open(os.path.join(repo_root, 'metadatas.mir'), 'rb') as f:
             mir_metadatas.ParseFromString(f.read())
@@ -294,6 +329,7 @@ class TestCmdImport(unittest.TestCase):
             for sub_key, expected_value in expected.items():
                 self.assertEqual(actual[sub_key], expected_value)
 
+        # check tasks.mir
         mir_tasks = mirpb.MirTasks()
         with open(os.path.join(repo_root, 'tasks.mir'), 'rb') as f:
             mir_tasks.ParseFromString(f.read())

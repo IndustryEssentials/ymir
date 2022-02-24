@@ -10,7 +10,7 @@ import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, context, data_exporter, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -155,10 +155,13 @@ class CmdMining(base.BaseCommand):
                         work_asset_path=work_asset_path,
                         work_index_file=work_index_file)
 
+        project_class_ids = context.ContextManager(mir_root=mir_root).load().project.class_ids
         infer.CmdInfer.run_with_args(work_dir=work_dir,
+                                     mir_root=mir_root,
                                      media_path=work_asset_path,
                                      model_location=model_location,
                                      model_hash=model_hash,
+                                     project_class_ids=project_class_ids,
                                      index_file=work_index_file,
                                      config_file=config_file,
                                      task_id=dst_typ_rev_tid.tid,

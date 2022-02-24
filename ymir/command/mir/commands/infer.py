@@ -4,11 +4,12 @@ import logging
 import os
 import subprocess
 import time
-from typing import Any, Tuple, Optional
+from typing import Any, List, Tuple, Optional
 
 import yaml
 
 from mir.commands import base
+from mir.tools import class_ids, context
 from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -36,9 +37,11 @@ class CmdInfer(base.BaseCommand):
         logging.debug("command infer: %s", self.args)
 
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
+                                      mir_root='',
                                       media_path=self.args.work_dir,
                                       model_location=self.args.model_location,
                                       model_hash=self.args.model_hash,
+                                      project_class_ids=[],
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
@@ -48,9 +51,11 @@ class CmdInfer(base.BaseCommand):
 
     @staticmethod
     def run_with_args(work_dir: str,
+                      mir_root: str,
                       media_path: str,
                       model_location: str,
                       model_hash: str,
+                      project_class_ids: List[int],
                       index_file: str,
                       config_file: str,
                       executor: str,
@@ -69,6 +74,7 @@ class CmdInfer(base.BaseCommand):
                 in cmd infer, set it to work_dir, in cmd mining, set it to media_cache or work_dir
             model_location (str): model location
             model_hash (str): model package hash (or model package name)
+            project_class_ids (List[int]): if this repo belongs to a project, pass project class ids
             index_file (str): index file, each line means an image abs path
             config_file (str): configuration file passed to infer executor
             executor (str): docker image name used to infer
@@ -125,6 +131,7 @@ class CmdInfer(base.BaseCommand):
         if not class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                                   error_message=f"empty class names in model: {model_hash}")
+        _compare_class_ids(mir_root=mir_root, class_names=class_names, project_class_ids=project_class_ids)
         config = prepare_config_file(config_file=config_file,
                                      dst_config_file=work_config_file,
                                      class_names=class_names,
@@ -273,8 +280,7 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
-                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str,
-                   gpu_id: str) -> int:
+                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str, gpu_id: str) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
@@ -301,9 +307,20 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     return MirCode.RC_OK
 
 
+def _compare_class_ids(mir_root: str, class_names: List[str], project_class_ids: List[int]) -> None:
+    if not project_class_ids:
+        return
+
+    class_ids_list = class_ids.ClassIdManager(mir_root=mir_root).id_for_names(class_names)
+    project_class_ids = context.ContextManager(mir_root=mir_root).load().project.class_ids
+    if project_class_ids != class_ids_list:
+        raise MirRuntimeError(
+            error_code=MirCode.RC_CMD_INVALID_ARGS,
+            error_message=f"class ids mismatch: model {class_ids_list} vs project {project_class_ids}")
+
+
 # public: cli bind
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     infer_arg_parser = subparsers.add_parser('infer',
                                              description='use this command to inference images',
                                              help='inference images')
