@@ -1,3 +1,4 @@
+from random import randint
 from sqlalchemy.orm import Session
 
 from app import crud
@@ -11,10 +12,13 @@ def test_create_model(db: Session) -> None:
     model_in = ModelCreate(
         db=db,
         name=model_name,
+        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
         task_id=1,
+        model_group_id=randint(1000, 2000),
+        project_id=randint(2001, 3000),
     )
     model = crud.model.create(db=db, obj_in=model_in)
     assert model.hash == model_hash
@@ -27,10 +31,13 @@ def test_get_model(db: Session) -> None:
     model_in = ModelCreate(
         db=db,
         name=model_name,
+        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
         task_id=1,
+        model_group_id=randint(1000, 2000),
+        project_id=randint(2001, 3000),
     )
     model = crud.model.create(db=db, obj_in=model_in)
     stored_model = crud.model.get(db=db, id=model.id)
@@ -45,10 +52,13 @@ def test_change_model_name(db: Session) -> None:
     model_in = ModelCreate(
         db=db,
         name=model_name,
+        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
         task_id=1,
+        model_group_id=randint(1000, 2000),
+        project_id=randint(2001, 3000),
     )
     model = crud.model.create(db=db, obj_in=model_in)
     stored_model = crud.model.get(db=db, id=model.id)
@@ -68,10 +78,13 @@ def test_delete_model(db: Session):
     model_in = ModelCreate(
         db=db,
         name=model_name,
+        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
         task_id=1,
+        model_group_id=randint(1000, 2000),
+        project_id=randint(2001, 3000),
     )
     model = crud.model.create(db=db, obj_in=model_in)
     stored_model = crud.model.get(db=db, id=model.id)

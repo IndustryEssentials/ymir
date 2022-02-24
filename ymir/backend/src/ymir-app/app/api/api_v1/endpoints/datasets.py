@@ -53,7 +53,7 @@ class SortField(enum.Enum):
 
 @router.get(
     "/",
-    response_model=schemas.DatasetOut,
+    response_model=schemas.DatasetPaginationOut,
 )
 def list_dataset(
     db: Session = Depends(deps.get_db),
@@ -90,7 +90,7 @@ def list_dataset(
 
 @router.get(
     "/public",
-    response_model=schemas.DatasetOut,
+    response_model=schemas.DatasetPaginationOut,
 )
 def get_public_datasets(
     db: Session = Depends(deps.get_db),
@@ -100,7 +100,7 @@ def get_public_datasets(
     Get all the public datasets,
     public datasets come from User 1
     """
-    datasets, total = crud.dataset.get_datasets_of_user(
+    datasets, total = crud.dataset.get_multi_by_user(
         db,
         user_id=settings.PUBLIC_DATASET_OWNER,
     )
@@ -138,7 +138,11 @@ def create_dataset(
         current_user.id, current_workspace.hash, dataset_import
     )
 
-    task_in = schemas.TaskCreate(name=pre_dataset.task_id, type=pre_dataset.task_type)
+    task_in = schemas.TaskCreate(
+        name=pre_dataset.task_id,
+        type=pre_dataset.task_type,
+        project_id=dataset_import.project_id,
+    )
     task = crud.task.create_task(
         db, obj_in=task_in, task_hash=pre_dataset.task_id, user_id=current_user.id
     )
@@ -148,8 +152,11 @@ def create_dataset(
 
     dataset_in = schemas.DatasetCreate(
         name=dataset_import.name,
+        version_num=dataset_import.version_num,
         hash=pre_dataset.task_id,
         type=pre_dataset.task_type,
+        dataset_group_id=dataset_import.dataset_group_id,
+        project_id=dataset_import.project_id,
         user_id=current_user.id,
         task_id=task.id,
     )
@@ -157,7 +164,9 @@ def create_dataset(
     logger.info("[create dataset] dataset record created: %s", dataset)
 
     # run background task when related task record has been created
-    background_tasks.add_task(import_dataset, db, controller_client, pre_dataset, dataset)
+    background_tasks.add_task(
+        import_dataset, db, controller_client, pre_dataset, dataset
+    )
 
     return {"result": dataset}
 
@@ -313,7 +322,9 @@ def get_dataset(
     """
     Get verbose information of specific dataset
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
     return {"result": dataset}
@@ -352,7 +363,7 @@ def update_dataset_name(
 
 @router.get(
     "/{dataset_id}/assets",
-    response_model=schemas.AssetOut,
+    response_model=schemas.AssetPaginationOut,
     responses={404: {"description": "Dataset Not Found"}},
 )
 def get_assets_of_dataset(
@@ -371,7 +382,9 @@ def get_assets_of_dataset(
     Get asset list of specific dataset,
     pagination is supported by means of offset and limit
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
 
@@ -388,7 +401,7 @@ def get_assets_of_dataset(
     viz_client.config(
         user_id=current_user.id,
         repo_id=current_workspace.hash,
-        branch_id=dataset.task_hash,  # type: ignore
+        branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
     assets = viz_client.get_assets(keyword_id=keyword_id, limit=limit, offset=offset)
@@ -416,7 +429,9 @@ def get_random_asset_id_of_dataset(
     """
     Get random asset from specific dataset
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
 
@@ -425,7 +440,7 @@ def get_random_asset_id_of_dataset(
     viz_client.config(
         user_id=current_user.id,
         repo_id=current_workspace.hash,
-        branch_id=dataset.task_hash,  # type: ignore
+        branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
     assets = viz_client.get_assets(keyword_id=None, offset=offset, limit=1)
@@ -458,7 +473,9 @@ def get_asset_of_dataset(
     """
     Get asset from specific dataset
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
 
@@ -466,7 +483,7 @@ def get_asset_of_dataset(
     viz_client.config(
         user_id=current_user.id,
         repo_id=current_workspace.hash,
-        branch_id=dataset.task_hash,  # type: ignore
+        branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
     asset = viz_client.get_asset(asset_id=asset_hash)

@@ -1,13 +1,9 @@
 import random
 from typing import Dict
 
-import fastapi
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
-from app.api.api_v1.api import datasets as m
 from app.api.errors.errors import (
     FailedtoDownloadError,
     InvalidInferenceConfig,
@@ -39,10 +35,11 @@ class TestPostInference:
         self,
         db: Session,
         client: TestClient,
+        user_id: int,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = create_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, user_id)
         j = {
             "model_id": model.id,
             "docker_image": random_lower_string(),
@@ -59,10 +56,11 @@ class TestPostInference:
         self,
         db: Session,
         client: TestClient,
+        user_id: int,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = create_model(db, client, normal_user_token_headers)
+        model = create_model(db, client, user_id)
         image, config = create_docker_image_and_configs(db, image_type=9)
         j = {
             "model_id": model.id,

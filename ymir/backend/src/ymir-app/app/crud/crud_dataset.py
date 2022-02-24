@@ -7,34 +7,11 @@ from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
 from app.constants.state import TaskState
-from app.models import Dataset, Task
+from app.models import Dataset
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
 
 
 class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
-    interested_fields = [
-        *Dataset.__table__.columns,
-        Task.type.label("task_type"),
-        Task.name.label("task_name"),
-        Task.hash.label("task_hash"),
-        Task.state.label("task_state"),
-        Task.progress.label("task_progress"),
-        Task.parameters.label("task_parameters"),
-        Task.config.label("task_config"),
-    ]
-
-    def get_with_task(
-        self, db: Session, *, user_id: Optional[int], id: int
-    ) -> Optional[Dataset]:
-        query = db.query(*self.interested_fields)
-        query = query.join(Task, self.model.task_id == Task.id)
-        query = query.filter(not_(self.model.is_deleted))
-        if id:
-            query = query.filter(self.model.id == id)
-        if user_id:
-            query = query.filter(self.model.user_id == user_id)
-        return query.first()
-
     def get_multi_datasets(
         self,
         db: Session,
@@ -52,8 +29,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
     ) -> Tuple[List[Dataset], int]:
         # each dataset is associate with one task
         # we need related task info as well
-        query = db.query(*self.interested_fields)
-        query = query.join(Task, self.model.task_id == Task.id)
+        query = db.query(self.model)
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 
         if start_time and end_time:
@@ -68,15 +44,10 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
 
         if name:
             query = query.filter(Dataset.name.like(f"%{name}%"))
-        if type_:
-            query = query.filter(Dataset.type == type_)
+        # todo
+        #  filter by dataset type (task type)
         if state:
-            # fixme
-            #  adhoc when search for final state, search against dataset.state
-            if state in [TaskState.done, TaskState.error]:
-                query = query.filter(Dataset.state == state.value)
-            else:
-                query = query.filter(Task.state == state.value)
+            query = query.filter(Dataset.result_state == state.value)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
@@ -86,11 +57,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         if limit:
             return query.offset(offset).limit(limit).all(), query.count()
         return query.all(), query.count()
-
-    def get_datasets_of_user(
-        self, db: Session, *, user_id: int
-    ) -> Tuple[List[Dataset], int]:
-        return self.get_multi_datasets(db, user_id=user_id)
 
     def update_state(
         self,
@@ -102,7 +68,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         dataset = self.get(db, id=dataset_id)
         if not dataset:
             return dataset
-        dataset.state = new_state.value
+        dataset.result_state = new_state.value
         db.add(dataset)
         db.commit()
         db.refresh(dataset)

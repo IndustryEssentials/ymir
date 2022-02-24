@@ -31,6 +31,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             config=config,
             hash=task_hash,
             user_id=user_id,
+            project_id=obj_in.project_id,
             state=TaskState.pending.value,
             progress=0,
             parameters=obj_in.parameters.json() if obj_in.parameters else None,
