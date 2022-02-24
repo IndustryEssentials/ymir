@@ -276,9 +276,3 @@ class TestMirStorage(unittest.TestCase):
                                                                                    mir_branch='a',
                                                                                    mir_task_id='mining-task-id')
         self.assertEqual(len(actual_contents_tuple), 5)
-
-    def test_build_keywords_00(self):
-        pass
-
-    def test_build_contex_00(self):
-        pass
