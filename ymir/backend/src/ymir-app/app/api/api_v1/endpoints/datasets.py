@@ -51,6 +51,18 @@ class SortField(enum.Enum):
     create_datetime = "create_datetime"
 
 
+@router.get("/dataset_groups", response_model=schemas.DatasetGroupPaginationOut)
+def list_model_groups(
+    db: Session = Depends(deps.get_db),
+    project_id: int = Query(None),
+    offset: int = Query(None),
+    limit: int = Query(None),
+    is_desc: bool = Query(True),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    pass
+
+
 @router.get(
     "/",
     response_model=schemas.DatasetPaginationOut,

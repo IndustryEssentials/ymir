@@ -21,7 +21,12 @@ def create_project(project_paras: schemas.ProjectCreateParameter) -> Any:
 @router.get(
     "/", response_model=schemas.ProjectPaginationOut,
 )
-def get_project(offset: int = Query(None), limit: int = Query(None), is_desc: bool = Query(True),) -> Any:
+def get_project(
+    name: str = Query(None, description="search by project's name"),
+    offset: int = Query(None),
+    limit: int = Query(None),
+    is_desc: bool = Query(True),
+) -> Any:
     pass
 
 
