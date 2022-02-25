@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import IntEnum
 from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
@@ -7,17 +6,16 @@ from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
 from app.models import Project
-from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.schemas.project import ProjectCreateParameter, ProjectUpdate
 
 
-class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
+class CRUDProject(CRUDBase[Project, ProjectCreateParameter, ProjectUpdate]):
     def get_multi_projects(
         self,
         db: Session,
         *,
         user_id: int,
         name: Optional[str] = None,
-        type_: Optional[IntEnum] = None,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
         offset: Optional[int] = 0,
