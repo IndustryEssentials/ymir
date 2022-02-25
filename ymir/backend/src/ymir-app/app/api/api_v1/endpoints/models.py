@@ -45,6 +45,7 @@ class SortField(enum.Enum):
 def list_models(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by model's name"),
+    training_dataset_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),

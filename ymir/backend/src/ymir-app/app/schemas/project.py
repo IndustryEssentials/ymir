@@ -26,6 +26,9 @@ class ProjectBase(BaseModel):
 
     training_dataset_group_id: int
 
+    current_iteration_id: int
+    is_deleted: int
+
 
 # Sufficient properties to create a project
 class ProjectCreate(ProjectBase):
@@ -53,7 +56,11 @@ class ProjectInDBBase(
 
 # Properties to return to caller
 class Project(ProjectInDBBase):
-    pass
+    dataset_count: int
+    model_count: int
+    training_dataset_name: str
+    mining_dataset_name: str
+    test_dataset_name: str
 
 
 class ProjectOut(Common):
@@ -71,3 +78,19 @@ class ProjectPagination(BaseModel):
 
 class ProjectPaginationOut(Common):
     result: ProjectPagination
+
+
+class ProjectCreateParameter(BaseModel):
+    name: str = Field(description="Project Name")
+
+    mining_strategy: MiningStrategy
+    chunk_size: Optional[int]
+
+    training_type: TrainingType = TrainingType.object_detect
+    training_keywords: List[str]
+
+    iteration_target: Optional[int]
+    map_target: Optional[float]
+    training_dataset_count_target: Optional[int]
+
+    description: Optional[str]

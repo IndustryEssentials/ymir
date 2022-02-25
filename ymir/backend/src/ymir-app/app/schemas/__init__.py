@@ -61,6 +61,7 @@ from .task import (
     TaskTerminate,
     TaskUpdate,
     TaskUpdateStatus,
+    UnificationDatasetsParameter,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (
@@ -74,3 +75,4 @@ from .user import (
     UserUpdate,
 )
 from .workspace import Workspace, WorkspaceCreate, WorkspaceOut
+from .project import ProjectCreateParameter, ProjectPaginationOut, Project
