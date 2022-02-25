@@ -25,7 +25,7 @@ from app.constants.state import TaskState, TaskType
 from app.models.dataset import Dataset
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
-from app.utils.ymir_controller import ControllerClient, ControllerRequest
+from app.utils.ymir_controller import ControllerClient, ControllerRequest, gen_task_hash
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
@@ -116,7 +116,6 @@ def create_dataset(
     db: Session = Depends(deps.get_db),
     dataset_import: schemas.DatasetImport,
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
@@ -134,9 +133,7 @@ def create_dataset(
     if dataset:
         raise DuplicateDatasetError()
 
-    pre_dataset = PrepareDataset.from_dataset_input(
-        current_user.id, current_workspace.hash, dataset_import
-    )
+    pre_dataset = PrepareDataset.from_dataset_input(current_user.id, dataset_import)
 
     task_in = schemas.TaskCreate(
         name=pre_dataset.task_id,
@@ -174,7 +171,7 @@ def create_dataset(
 @dataclass
 class PrepareDataset:
     user_id: int
-    workspace: Optional[str]
+    project_id: int
     src_url: Optional[str]
     src_dataset_id: Optional[int]
     src_path: Optional[str]
@@ -186,7 +183,6 @@ class PrepareDataset:
     def from_dataset_input(
         cls,
         user_id: int,
-        workspace: Optional[str],
         dataset_import: schemas.DatasetImport,
     ) -> "PrepareDataset":
         if dataset_import.input_url or dataset_import.input_path:
@@ -198,10 +194,10 @@ class PrepareDataset:
                 "[create dataset] refuse to create dataset without url or dataset_id"
             )
             raise FailedtoCreateDataset()
-        task_id = ControllerRequest.gen_task_id(user_id)
+        task_id = gen_task_hash(user_id, dataset_import.project_id)
         return cls(
             user_id=user_id,
-            workspace=workspace,
+            project_id=dataset_import.project_id,
             src_url=dataset_import.input_url,
             src_dataset_id=dataset_import.input_dataset_id,
             src_path=dataset_import.input_path,
@@ -265,7 +261,7 @@ def _import_dataset(
     req = ControllerRequest(
         pre_dataset.task_type,
         pre_dataset.user_id,
-        pre_dataset.workspace,
+        pre_dataset.project_id,
         pre_dataset.task_id,
         args=parameters,
     )
@@ -375,7 +371,6 @@ def get_assets_of_dataset(
     keyword_id: Optional[int] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
@@ -400,7 +395,7 @@ def get_assets_of_dataset(
 
     viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,
+        project_id=dataset.project_id,
         branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
@@ -423,7 +418,6 @@ def get_random_asset_id_of_dataset(
     dataset_id: int = Path(..., example="12"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
@@ -439,7 +433,7 @@ def get_random_asset_id_of_dataset(
     offset = get_random_asset_offset(dataset)
     viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,
+        project_id=dataset.project_id,
         branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
@@ -467,7 +461,6 @@ def get_asset_of_dataset(
     asset_hash: str = Path(..., description="in asset hash format"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     labels: List = Depends(deps.get_personal_labels),
 ) -> Any:
     """
@@ -482,7 +475,7 @@ def get_asset_of_dataset(
     keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
     viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,
+        project_id=dataset.project_id,
         branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )

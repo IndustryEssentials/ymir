@@ -27,7 +27,7 @@ from app.utils.class_ids import get_keyword_name_to_id_mapping
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
-from app.utils.ymir_controller import ControllerClient, ControllerRequest
+from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
@@ -85,7 +85,6 @@ def create_task(
     db: Session = Depends(deps.get_db),
     task_in: schemas.TaskCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     labels: List[str] = Depends(deps.get_personal_labels),
@@ -118,10 +117,10 @@ def create_task(
         parameters["docker_config"] = task_in.config
 
     try:
-        task_id = ControllerRequest.gen_task_id(current_user.id)
+        task_id = gen_task_hash(current_user.id, task_in.project_id)
         resp = controller_client.create_task(
             current_user.id,
-            current_workspace.hash,
+            task_in.project_id,
             task_id,
             task_in.type,
             parameters,

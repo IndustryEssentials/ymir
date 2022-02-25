@@ -18,7 +18,7 @@ from app.schemas.task import MergeStrategy
 
 
 class ExtraRequestType(enum.IntEnum):
-    create_workspace = 100
+    create_project = 100
     get_task_info = 200
     inference = 300
     add_label = 400
@@ -43,40 +43,45 @@ def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
         yield dataset_with_type
 
 
+def gen_user_hash(user_id: int) -> str:
+    return f"{user_id:0>4}"
+
+
+def gen_repo_hash(project_id: int) -> str:
+    return f"{project_id:0>6}"
+
+
+def gen_task_hash(user_id: int, project_id: int) -> str:
+    user_hash = gen_user_hash(user_id)
+    repo_hash = gen_repo_hash(project_id)
+    hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
+    return str(TaskId("t", "0", "00", user_hash, repo_hash, hex_task_id))
+
+
 @dataclass
 class ControllerRequest:
     type: Union[TaskType, ExtraRequestType]
-    user_id: Union[str, int]
-    repo_id: Optional[str] = None
+    user_id: int
+    project_id: int
     task_id: Optional[str] = None
     args: Optional[Dict] = None
     req: Optional[mirsvrpb.GeneralReq] = None
 
     def __post_init__(self) -> None:
-        if isinstance(self.user_id, int):
-            self.user_id = f"{self.user_id:0>4}"
-        if self.repo_id is None:
-            self.repo_id = f"{self.user_id:0>6}"
-        if self.task_id is None:
-            self.task_id = self.gen_task_id(self.user_id)
+        user_hash = gen_user_hash(self.user_id)
+        repo_hash = gen_repo_hash(self.project_id)
+        task_hash = self.task_id or gen_task_hash(self.user_id, self.project_id)
 
         request = mirsvrpb.GeneralReq(
-            user_id=self.user_id,
-            repo_id=self.repo_id,
-            task_id=self.task_id,
+            user_id=user_hash,
+            repo_id=repo_hash,
+            task_id=task_hash,
         )
 
         method_name = "prepare_" + self.type.name
         self.req = getattr(self, method_name)(request, self.args)
 
-    @staticmethod
-    def gen_task_id(user_id: Union[int, str]) -> str:
-        user_id = f"{user_id:0>4}"
-        repo_id = f"{user_id:0>6}"
-        hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
-        return str(TaskId("t", "0", "00", user_id, repo_id, hex_task_id))
-
-    def prepare_create_workspace(
+    def prepare_create_project(
         self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.REPO_CREATE
@@ -303,28 +308,49 @@ class ControllerClient:
             including_default_value_fields=True,
         )
 
+    def add_labels(self, user_id: int, new_labels: List, dry_run: bool) -> Dict:
+        # fixme
+        #  for task having nothing to do with project
+        #  is project_id still required?
+        project_id = 0
+        req = ControllerRequest(
+            ExtraRequestType.add_label,
+            user_id,
+            project_id=project_id,
+            args={"labels": new_labels, "dry_run": dry_run},
+        )
+        return self.send(req)
+
     def get_labels_of_user(self, user_id: int) -> List[str]:
-        req = ControllerRequest(ExtraRequestType.get_label, user_id)
+        # fixme
+        #  for task having nothing to do with project
+        #  is project_id still required?
+        project_id = 0
+        req = ControllerRequest(ExtraRequestType.get_label, user_id, project_id)
         resp = self.send(req)
         return list(resp["csv_labels"])
 
     def create_task(
         self,
         user_id: int,
-        workspace_id: Optional[str],
+        project_id: int,
         task_id: str,
         task_type: TaskType,
         task_parameters: Optional[Dict],
     ) -> Dict:
         req = ControllerRequest(
-            task_type, user_id, workspace_id, task_id, args=task_parameters
+            task_type, user_id, project_id, task_id, args=task_parameters
         )
         return self.send(req)
 
     def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:
+        # parse project_id from task_hash
+        project_id = TaskId.from_task_id(task_hash).repo_id
+
         req = ControllerRequest(
             ExtraRequestType.kill,
             user_id=user_id,
+            project_id=project_id,
             args={
                 "target_container": task_hash,
                 "task_type": task_type,
@@ -334,26 +360,34 @@ class ControllerClient:
         return resp
 
     def pull_docker_image(self, url: str, user_id: int) -> Dict:
+        # fixme
+        #  for task having nothing to do with project
+        #  is project_id still required?
+        project_id = 0
         req = ControllerRequest(
             ExtraRequestType.pull_image,
             user_id=user_id,
+            project_id=project_id,
             args={"url": url},
         )
         return self.send(req)
 
     def get_gpu_info(self, user_id: int) -> Dict[str, int]:
+        # fixme
+        #  for task having nothing to do with project
+        #  is project_id still required?
+        project_id = 0
         req = ControllerRequest(
             ExtraRequestType.get_gpu_info,
             user_id=user_id,
+            project_id=project_id,
         )
         resp = self.send(req)
         return {"gpu_count": resp["available_gpu_counts"]}
 
-    def create_workspace(
-        self, user_id: int, workspace_id: Optional[str] = None
-    ) -> Dict:
+    def create_project(self, user_id: int, project_id: int) -> Dict:
         req = ControllerRequest(
-            ExtraRequestType.create_workspace, user_id=user_id, repo_id=workspace_id
+            ExtraRequestType.create_project, user_id=user_id, project_id=project_id
         )
         return self.send(req)
 
@@ -365,11 +399,16 @@ class ControllerClient:
         docker_image: Optional[str],
         docker_config: Optional[str],
     ) -> Dict:
+        # fixme
+        #  for task having nothing to do with project
+        #  is project_id still required?
+        project_id = 0
         if None in (model_hash, docker_image, docker_config):
             raise ValueError("Missing model or docker image")
         req = ControllerRequest(
             ExtraRequestType.inference,
             user_id=user_id,
+            project_id=project_id,
             args={
                 "model_hash": model_hash,
                 "asset_dir": asset_dir,

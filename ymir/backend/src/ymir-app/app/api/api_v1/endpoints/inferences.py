@@ -29,7 +29,6 @@ def call_inference(
     inference_in: schemas.InferenceCreate,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
