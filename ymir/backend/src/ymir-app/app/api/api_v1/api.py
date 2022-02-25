@@ -14,7 +14,6 @@ from app.api.api_v1.endpoints import (
     tasks,
     upload,
     users,
-    workspaces,
     project
 )
 
@@ -29,7 +28,6 @@ api_router.include_router(datasets.router, prefix="/datasets", tags=["datasets"]
 api_router.include_router(models.router, prefix="/models", tags=["models"])
 api_router.include_router(keywords.router, prefix="/keywords", tags=["keywords"])
 api_router.include_router(graphs.router, prefix="/graphs", tags=["graphs"])
-api_router.include_router(workspaces.router, prefix="/workspaces", tags=["workspaces"])
 api_router.include_router(images.router, prefix="/images", tags=["docker_images"])
 api_router.include_router(inferences.router, prefix="/inferences", tags=["inference"])
 api_router.include_router(roles.router, prefix="/roles", tags=["roles"])

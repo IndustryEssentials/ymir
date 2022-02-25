@@ -6,7 +6,6 @@ from .crud_model import model
 from .crud_role import role
 from .crud_task import task
 from .crud_user import user
-from .crud_workspace import workspace
 from .crud_project import project
 from .crud_iteration import iteration
 from .crud_dataset_group import dataset_group

@@ -93,7 +93,7 @@ class VizClient:
         self.host = host
         self.session = requests.Session()
         self._user_id = None  # type: Optional[str]
-        self._repo_id = None  # type: Optional[str]
+        self._project_id = None  # type: Optional[str]
         self._branch_id = None  # type: Optional[str]
         self._keyword_id_to_name = None  # type: Optional[Dict]
 
@@ -101,12 +101,12 @@ class VizClient:
         self,
         *,
         user_id: int,
-        repo_id: Optional[str] = None,
+        project_id: int,
         branch_id: str,
         keyword_id_to_name: Optional[Dict] = None,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
-        self._repo_id = repo_id or f"{self._user_id:0>6}"
+        self._project_id = f"{project_id:0>6}"
         self._branch_id = branch_id
         self._keyword_id_to_name = keyword_id_to_name
 
@@ -117,7 +117,7 @@ class VizClient:
         offset: int = 0,
         limit: int = 20,
     ) -> Assets:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/assets"  # noqa: E501
+        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets"  # noqa: E501
 
         payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
@@ -133,7 +133,7 @@ class VizClient:
         *,
         asset_id: str,
     ) -> Optional[Dict]:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
+        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
 
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
@@ -143,7 +143,7 @@ class VizClient:
         return asdict(Asset.from_viz_res(asset_id, res, self._keyword_id_to_name))
 
     def get_model(self) -> Dict:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._repo_id}/branches/{self._branch_id}/models"  # noqa: E501
+        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/models"  # noqa: E501
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         return asdict(Model.from_viz_res(res))

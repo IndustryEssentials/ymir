@@ -91,11 +91,6 @@ class InvalidInferenceConfig(APIError):
     message = "Invalid Inference Model Config"
 
 
-class FailedtoCreateWorkspace(ControllerError):
-    code = error_codes.WORKSPACE_FAILED_TO_CREATE
-    message = "Failed to Create Workspace via Controller"
-
-
 class FailedtoCreateDataset(ControllerError):
     code = error_codes.DATASET_FAILED_TO_CREATE
     message = "Failed to Create Dataset via Controller"
@@ -129,11 +124,6 @@ class UserNotFound(NotFound):
 class TaskNotFound(NotFound):
     code = error_codes.TASK_NOT_FOUND
     message = "Task Not Found"
-
-
-class WorkspaceNotFound(NotFound):
-    code = error_codes.WORKSPACE_NOT_FOUND
-    message = "Workspace Not Found"
 
 
 class DatasetNotFound(NotFound):
@@ -221,11 +211,6 @@ class DuplicateError(APIError):
 class DuplicateUserNameError(DuplicateError):
     code = error_codes.USER_DUPLICATED_NAME
     message = "Duplicated User Name"
-
-
-class DuplicateWorkspaceError(DuplicateError):
-    code = error_codes.WORKSPACE_DUPLICATED_NAME
-    message = "Duplicated Workspace Name"
 
 
 class DuplicateDatasetError(DuplicateError):

@@ -74,7 +74,6 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .workspace import Workspace, WorkspaceCreate, WorkspaceOut
 from .project import ProjectCreateParameter, ProjectPaginationOut, Project
 from .dataset_group import DatasetGroupPaginationOut
 from .model_group import ModelGroupPaginationOut

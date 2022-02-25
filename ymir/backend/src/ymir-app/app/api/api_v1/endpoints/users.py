@@ -9,7 +9,6 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateUserNameError,
-    FailedtoCreateWorkspace,
     UserNotFound,
 )
 from app.constants.role import Roles
@@ -72,20 +71,6 @@ def create_user(
         password=password, email=email, phone=phone, username=username
     )
     user = crud.user.create(db, obj_in=user_in)
-
-    # fixme better user to workspace mapping
-    workspace_id = f"{user.id:0>6}"
-    crud.workspace.create(
-        db,
-        obj_in=schemas.WorkspaceCreate(
-            hash=workspace_id, name=workspace_id, user_id=user.id
-        ),
-    )
-    try:
-        controller_client.create_workspace(user_id=user.id)
-    except ValueError:
-        raise FailedtoCreateWorkspace()
-
     return {"result": user}
 
 

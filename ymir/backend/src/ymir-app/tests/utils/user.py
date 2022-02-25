@@ -7,7 +7,6 @@ from app import crud
 from app.config import settings
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
-from app.schemas.workspace import WorkspaceCreate
 from tests.utils.utils import random_email, random_lower_string
 
 
@@ -49,12 +48,4 @@ def authentication_token_from_email(
         user_in_update = UserUpdate(email=email, password=password)
         user = crud.user.update(db, db_obj=user, obj_in=user_in_update)
     user = crud.user.activate(db, user=user)
-    workspace = crud.workspace.get_by_user_id(db, user_id=user.id)
-    if not workspace:
-        workspace_in = WorkspaceCreate(
-            hash=f"{user.id:0>6}",
-            name=f"{user.id:0>6}",
-            user_id=user.id,
-        )
-        workspace = crud.workspace.create(db, obj_in=workspace_in)  # noqa: F841
     return user_authentication_headers(client=client, email=email, password=password)
