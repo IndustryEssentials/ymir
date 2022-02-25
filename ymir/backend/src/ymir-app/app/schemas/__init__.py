@@ -73,4 +73,10 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .workspace import Workspace, WorkspaceCreate, WorkspaceOut
+from .project import (
+    ProjectCreate,
+    ProjectUpdate,
+    Project,
+    ProjectOut,
+    ProjectPaginationOut,
+)

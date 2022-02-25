@@ -10,4 +10,3 @@ from .model_group import ModelGroup
 from .role import Role
 from .task import Task
 from .user import User
-from .workspace import Workspace

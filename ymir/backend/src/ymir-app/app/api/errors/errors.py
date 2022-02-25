@@ -91,11 +91,6 @@ class InvalidInferenceConfig(APIError):
     message = "Invalid Inference Model Config"
 
 
-class FailedtoCreateWorkspace(ControllerError):
-    code = error_codes.WORKSPACE_FAILED_TO_CREATE
-    message = "Failed to Create Workspace via Controller"
-
-
 class FailedtoCreateDataset(ControllerError):
     code = error_codes.DATASET_FAILED_TO_CREATE
     message = "Failed to Create Dataset via Controller"
@@ -129,11 +124,6 @@ class UserNotFound(NotFound):
 class TaskNotFound(NotFound):
     code = error_codes.TASK_NOT_FOUND
     message = "Task Not Found"
-
-
-class WorkspaceNotFound(NotFound):
-    code = error_codes.WORKSPACE_NOT_FOUND
-    message = "Workspace Not Found"
 
 
 class DatasetNotFound(NotFound):
@@ -223,11 +213,6 @@ class DuplicateUserNameError(DuplicateError):
     message = "Duplicated User Name"
 
 
-class DuplicateWorkspaceError(DuplicateError):
-    code = error_codes.WORKSPACE_DUPLICATED_NAME
-    message = "Duplicated Workspace Name"
-
-
 class DuplicateDatasetError(DuplicateError):
     code = error_codes.DATASET_DUPLICATED_NAME
     message = "Duplicated Dataset Name"
@@ -291,3 +276,18 @@ class FailedToUpdateTaskStatus(APIError):
 class FailedToConnectClickHouse(APIError):
     code = error_codes.FAILED_TO_CONNECT_CLICKHOUSE
     message = "Failed to Connect ClickHouse"
+
+
+class FailedToCreateProject(APIError):
+    code = error_codes.PROJECT_FAILED_TO_CREATE
+    message = "Failed to Create Project"
+
+
+class ProjectNotFound(NotFound):
+    code = error_codes.PROJECT_NOT_FOUND
+    message = "Project Not Found"
+
+
+class DuplicateProjectError(DuplicateError):
+    code = error_codes.PROJECT_DUPLICATED_NAME
+    message = "Duplicated Project Name"
