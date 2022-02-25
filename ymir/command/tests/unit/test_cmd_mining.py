@@ -9,8 +9,9 @@ from google.protobuf.json_format import ParseDict
 import yaml
 
 from mir.commands.mining import CmdMining
-import tests.utils as test_utils
+from mir.tools.utils import ModelStorage
 import mir.protos.mir_command_pb2 as mirpb
+import tests.utils as test_utils
 
 
 class TestMiningCmd(unittest.TestCase):
@@ -47,6 +48,12 @@ class TestMiningCmd(unittest.TestCase):
             f.writelines("d4e4a60147f1e35bc7f5bc89284aa16073b043c9\t0.1")
         return 0
 
+    def _mock_prepare_model(*args, **kwargs):
+        model_storage = ModelStorage(models=['0.params'],
+                                     executor_config={'class_names': ['person', 'cat']},
+                                     task_context={'task_id': '0'})
+        return model_storage
+
     # protected: custom: env prepare
     def _prepare_dirs(self):
         if os.path.isdir(self._sandbox_root):
@@ -63,6 +70,8 @@ class TestMiningCmd(unittest.TestCase):
         # init repo
         logging.info(f"mir repo: {self._mir_repo_root}")
         test_utils.mir_repo_init(self._mir_repo_root)
+        with open(os.path.join(self._mir_repo_root, 'labels.csv'), 'w') as f:
+            f.write('0,,person\n1,,cat\n')
         # prepare branch a
         test_utils.mir_repo_create_branch(self._mir_repo_root, "a")
         self._prepare_mir_repo_branch_mining()
@@ -139,7 +148,8 @@ class TestMiningCmd(unittest.TestCase):
 
     # public: test cases
     @mock.patch("mir.commands.infer.CmdInfer.run_with_args", side_effect=_mock_run_func)
-    def test_mining_cmd_00(self, mock_run):
+    @mock.patch("mir.tools.utils.prepare_model", side_effect=_mock_prepare_model)
+    def test_mining_cmd_00(self, mock_prepare, mock_run):
         self._prepare_dirs()
         self._prepare_config()
         self._prepare_mir_repo()
@@ -162,11 +172,8 @@ class TestMiningCmd(unittest.TestCase):
         mining_instance.run()
 
         mock_run.assert_called_once_with(work_dir=args.work_dir,
-                                         mir_root=args.mir_root,
                                          media_path=os.path.join(args.work_dir, 'in', 'candidate'),
-                                         model_location=args.model_location,
-                                         model_hash=args.model_hash,
-                                         project_class_ids=[],
+                                         model_storage=mock.ANY,
                                          index_file=os.path.join(args.work_dir, 'in', 'candidate', 'src-index.tsv'),
                                          config_file=args.config_file,
                                          task_id='mining-task-id',

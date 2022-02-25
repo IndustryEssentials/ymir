@@ -341,11 +341,8 @@ class CmdTrain(base.BaseCommand):
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")
             return MirCode.RC_CMD_INVALID_ARGS
-        project_class_ids = context.ContextManager(mir_root=mir_root).load().project.class_ids
-        # if mir repo belongs to a project, check class ids
-        if project_class_ids and project_class_ids != type_ids_list:
-            logging.info(f"class ids mismatch: config: {type_ids_list} vs project: {project_class_ids}")
-            return MirCode.RC_CMD_INVALID_ARGS
+
+        context.ContextManager(mir_root=mir_root).check_class_ids(current_class_ids=type_ids_list)
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 

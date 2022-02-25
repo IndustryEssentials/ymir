@@ -4,12 +4,11 @@ import logging
 import os
 import subprocess
 import time
-from typing import Any, List, Tuple, Optional
+from typing import Any, Tuple, Optional
 
 import yaml
 
 from mir.commands import base
-from mir.tools import class_ids, context
 from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -37,11 +36,9 @@ class CmdInfer(base.BaseCommand):
         logging.debug("command infer: %s", self.args)
 
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
-                                      mir_root='',
                                       media_path=self.args.work_dir,
                                       model_location=self.args.model_location,
                                       model_hash=self.args.model_hash,
-                                      project_class_ids=[],
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
@@ -51,15 +48,14 @@ class CmdInfer(base.BaseCommand):
 
     @staticmethod
     def run_with_args(work_dir: str,
-                      mir_root: str,
                       media_path: str,
-                      model_location: str,
-                      model_hash: str,
-                      project_class_ids: List[int],
                       index_file: str,
                       config_file: str,
                       executor: str,
                       executor_instance: str,
+                      model_location: str = '',
+                      model_hash: str = '',
+                      model_storage: mir_utils.ModelStorage = None,
                       task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
                       run_infer: bool = False,
@@ -91,12 +87,13 @@ class CmdInfer(base.BaseCommand):
         if not work_dir:
             logging.error('empty --work-dir, abort')
             return MirCode.RC_CMD_INVALID_ARGS
-        if not model_location:
-            logging.error('empty --model-location, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not model_hash:
-            logging.error('empty --model-hash, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
+        if not model_storage:
+            if not model_location:
+                logging.error('empty --model-location, abort')
+                return MirCode.RC_CMD_INVALID_ARGS
+            if not model_hash:
+                logging.error('empty --model-hash, abort')
+                return MirCode.RC_CMD_INVALID_ARGS
         if not index_file or not os.path.isfile(index_file):
             logging.error(f"invalid --index-file: {index_file}, abort")
             return MirCode.RC_CMD_INVALID_ARGS
@@ -125,13 +122,13 @@ class CmdInfer(base.BaseCommand):
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_storage = mir_utils.prepare_model(model_location, model_hash, work_model_path)
+        model_storage = model_storage or mir_utils.prepare_model(model_location, model_hash, work_model_path)
         model_names = model_storage.models
         class_names = model_storage.class_names
         if not class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                                   error_message=f"empty class names in model: {model_hash}")
-        _compare_class_ids(mir_root=mir_root, class_names=class_names, project_class_ids=project_class_ids)
+
         config = prepare_config_file(config_file=config_file,
                                      dst_config_file=work_config_file,
                                      class_names=class_names,
@@ -305,18 +302,6 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
         subprocess.run(cmd, check=True, stdout=f, stderr=f, text=True)
 
     return MirCode.RC_OK
-
-
-def _compare_class_ids(mir_root: str, class_names: List[str], project_class_ids: List[int]) -> None:
-    if not project_class_ids:
-        return
-
-    class_ids_list = class_ids.ClassIdManager(mir_root=mir_root).id_for_names(class_names)
-    project_class_ids = context.ContextManager(mir_root=mir_root).load().project.class_ids
-    if project_class_ids != class_ids_list:
-        raise MirRuntimeError(
-            error_code=MirCode.RC_CMD_INVALID_ARGS,
-            error_message=f"class ids mismatch: model {class_ids_list} vs project {project_class_ids}")
 
 
 # public: cli bind
