@@ -14,7 +14,6 @@ from app.api.errors.errors import (
     InvalidScope,
     InvalidToken,
     UserNotFound,
-    WorkspaceNotFound,
 )
 from app.config import settings
 from app.constants.role import Roles
@@ -96,16 +95,6 @@ def get_current_active_user(
     if not crud.user.is_active(current_user):
         raise InactiveUser()
     return current_user
-
-
-def get_current_workspace(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user),
-) -> models.Workspace:
-    workspace = crud.workspace.get_by_user_id(db, user_id=current_user.id)
-    if not workspace:
-        raise WorkspaceNotFound()
-    return workspace
 
 
 def get_current_active_admin(

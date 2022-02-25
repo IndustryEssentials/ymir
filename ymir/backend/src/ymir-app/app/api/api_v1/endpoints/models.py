@@ -17,7 +17,7 @@ from app.config import settings
 from app.constants.state import TaskType
 from app.models.task import Task
 from app.utils.files import save_file
-from app.utils.ymir_controller import ControllerRequest
+from app.utils.ymir_controller import gen_task_hash
 
 router = APIRouter()
 
@@ -81,7 +81,6 @@ def import_model(
     db: Session = Depends(deps.get_db),
     model_import: schemas.ModelImport,
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     background_tasks: BackgroundTasks,
 ) -> Any:
     existing_model_name = crud.model.get_by_user_and_name(
@@ -121,7 +120,7 @@ def import_model(
 
 
 def create_task_as_placeholder(db: Session, *, user_id: int, project_id: int) -> Task:
-    task_id = ControllerRequest.gen_task_id(user_id)
+    task_id = gen_task_hash(user_id, project_id)
     task_in = schemas.TaskCreate(
         name=task_id, type=TaskType.import_data, project_id=project_id
     )
