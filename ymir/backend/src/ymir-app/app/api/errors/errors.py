@@ -276,3 +276,18 @@ class FailedToUpdateTaskStatus(APIError):
 class FailedToConnectClickHouse(APIError):
     code = error_codes.FAILED_TO_CONNECT_CLICKHOUSE
     message = "Failed to Connect ClickHouse"
+
+
+class FailedToCreateProject(APIError):
+    code = error_codes.PROJECT_FAILED_TO_CREATE
+    message = "Failed to Create Project"
+
+
+class ProjectNotFound(NotFound):
+    code = error_codes.PROJECT_NOT_FOUND
+    message = "Project Not Found"
+
+
+class DuplicateProjectError(DuplicateError):
+    code = error_codes.PROJECT_DUPLICATED_NAME
+    message = "Duplicated Project Name"

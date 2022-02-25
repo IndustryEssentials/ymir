@@ -129,3 +129,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def total(self, db: Session) -> int:
         return db.query(self.model).count()
+
+    def is_duplicated_name(self, db: Session, user_id: int, name: str) -> bool:
+        return not (self.get_by_user_and_name(db, user_id, name) is None)
