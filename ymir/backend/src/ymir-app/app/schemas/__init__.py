@@ -73,4 +73,3 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .workspace import Workspace, WorkspaceCreate, WorkspaceOut

@@ -18,6 +18,7 @@ class TestControllerRequest:
     def test_filter(self):
         task_type = m.TaskType.filter
         user_id = random.randint(1000, 2000)
+        project_id = random.randint(1000, 2000)
 
         include_datasets = [random_lower_string() for _ in range(10)]
         include_classes = [random.randint(1, 80) for _ in range(10)]
@@ -26,6 +27,7 @@ class TestControllerRequest:
         ret = m.ControllerRequest(
             task_type,
             user_id,
+            project_id,
             args={
                 "include_datasets": include_datasets,
                 "include_classes": include_classes,
@@ -39,9 +41,11 @@ class TestControllerRequest:
     def test_training(self):
         task_type = m.TaskType.training
         user_id = random.randint(1000, 2000)
+        project_id = random.randint(1000, 2000)
         ret = m.ControllerRequest(
             task_type,
             user_id,
+            project_id,
             args={
                 "include_train_datasets": [],
                 "include_validation_datasets": [],
@@ -58,9 +62,11 @@ class TestControllerRequest:
     def test_mining(self):
         task_type = m.TaskType.mining
         user_id = random.randint(1000, 2000)
+        project_id = random.randint(1000, 2000)
         ret = m.ControllerRequest(
             task_type,
             user_id,
+            project_id,
             args={
                 "top_k": 1000,
                 "model_hash": random_lower_string(),
@@ -78,9 +84,11 @@ class TestControllerRequest:
     def test_label(self):
         task_type = m.TaskType.label
         user_id = random.randint(1000, 2000)
+        project_id = random.randint(1000, 2000)
         ret = m.ControllerRequest(
             task_type,
             user_id,
+            project_id,
             args={
                 "name": random_lower_string(),
                 "include_datasets": [random_lower_string()],
@@ -97,9 +105,11 @@ class TestControllerRequest:
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
         user_id = random.randint(1000, 2000)
+        project_id = random.randint(1000, 2000)
         ret = m.ControllerRequest(
             task_type,
             user_id,
+            project_id,
             args={
                 "src_user_id": f"{random.randint(1000, 2000):0>4}",
                 "src_repo_id": random_lower_string(),
@@ -112,11 +122,13 @@ class TestControllerRequest:
     def test_kill(self, mocker):
         task_type = m.ExtraRequestType.kill
         user_id = random.randint(1000, 2000)
+        project_id = random.randint(1000, 2000)
         task = mocker.Mock(hash=random_lower_string(), type=m.TaskType.label)
 
         kill_other_task = m.ControllerRequest(
             task_type,
             user_id,
+            project_id,
             args={"target_container": task.hash, "task_type": task.type},
         )
         assert kill_other_task.req.req_type == m.mirsvrpb.CMD_TERMINATE
