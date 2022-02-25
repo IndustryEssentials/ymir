@@ -70,7 +70,6 @@ class CmdInfer(base.BaseCommand):
                 in cmd infer, set it to work_dir, in cmd mining, set it to media_cache or work_dir
             model_location (str): model location
             model_hash (str): model package hash (or model package name)
-            project_class_ids (List[int]): if this repo belongs to a project, pass project class ids
             index_file (str): index file, each line means an image abs path
             config_file (str): configuration file passed to infer executor
             executor (str): docker image name used to infer
