@@ -13,7 +13,7 @@ class UserCreateInvoker(BaseMirControllerInvoker):
             prerequisites=[
                 checker.Prerequisites.CHECK_USER_ID,
             ],
-            mir_root=self._repo_root,
+            mir_root='',
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
