@@ -1,5 +1,6 @@
 import { 
-  getDatasets, 
+  getDatasets,
+  getDatasetVersions, 
   getDataset,
   batchDatasets,
   getAssetsOfDataset,
@@ -57,6 +58,16 @@ export default {
     },
     *getDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getDataset, payload)
+      if (code === 0) {
+        yield put({
+          type: "UPDATE_DATASET",
+          payload: result,
+        })
+        return result
+      }
+    },
+    *getDatasetVersions({ payload }, { call, put }) {
+      const { code, result } = yield call(getDatasetVersions, payload)
       if (code === 0) {
         yield put({
           type: "UPDATE_DATASET",

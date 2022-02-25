@@ -4,10 +4,20 @@ import request from "@/utils/request"
 /**
  *
  * @param {number} id
+ * @param {number} version
  * @returns
  */
 export function getModel(id) {
   return request.get(`models/${id}`)
+}
+
+/**
+ * get model versions
+ * @param {number} id model id
+ * @returns
+ */
+export function getModelVersions(group_id) {
+  return request.get(`models/${group_id}/version`)
 }
 
 /**

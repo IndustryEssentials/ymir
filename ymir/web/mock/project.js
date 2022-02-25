@@ -36,6 +36,17 @@ const list  = mockjs.mock({
   total: 29,
 })
 
+const groupItem = {
+  'id|+1': 3001,
+  'name': '@title(1,5)',
+  create_datetime: '@datetime'
+}
+
+const datasetGroup = mockjs.mock({
+  'items|1-20': [groupItem],
+  total: 74,
+})
+
 export default baseApi([
   {
     url: 'projects/',
@@ -44,9 +55,9 @@ export default baseApi([
     }
   },
   {
-    url: 'stats/keywords/hot',
+    url: 'projects/2001/datasets',
     data: {
-      result: Random.keywords(5)
+      result: datasetGroup
     }
   }
 ])

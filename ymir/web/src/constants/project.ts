@@ -1,4 +1,4 @@
-import { Project, originProject, originInteration, Interation } from "@/interface/project"
+import { Project, originProject, originInteration, Interation, } from "@/interface/project"
 import { format } from '@/utils/date'
 
 enum flag {

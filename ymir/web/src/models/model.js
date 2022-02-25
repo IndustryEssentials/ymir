@@ -1,5 +1,6 @@
 import { 
   getModels, 
+  getModelVersions,
   batchModels,
   getModel,
   delModel,
@@ -29,6 +30,16 @@ export default {
   effects: {
     *getModels({ payload }, { call, put }) {
       const { code, result } = yield call(getModels, payload)
+      if (code === 0) {
+        yield put({
+          type: "UPDATE_MODELS",
+          payload: result,
+        })
+        return result
+      }
+    },
+    *getModelVersions({ payload }, { call, put }) {
+      const { code, result } = yield call(getModelVersions, payload)
       if (code === 0) {
         yield put({
           type: "UPDATE_MODELS",

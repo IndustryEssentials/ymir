@@ -7,12 +7,22 @@ import request from "@/utils/request"
  * @returns
  */
 export function getDataset(id) {
-  return request.get(`datasets/${id}`)
+  return request.get(`datasets/detail/${id}`)
 }
 
 /**
+ *
+ * @param {array[number]} id
+ * @returns
+ */
+export function getDatasetVersions(id) {
+  return request.get(`datasets/${id}/versions`)
+}
+
+/**
+ * get datasets
  * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by = 1 }
+ * { name, offset = 0, limit = 10, is_desc = true }
  * @returns
  */
 export function getDatasets(params) {
