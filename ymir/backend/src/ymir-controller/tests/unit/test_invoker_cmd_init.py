@@ -89,7 +89,7 @@ class TestInvokerInit(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd = f"mir init --root {os.path.join(self._user_root, self._mir_repo_name)}"
-        expected_cmd += " --project-class-names \"person;cat\""
+        expected_cmd += " --project-class-names person;cat"
         mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()

@@ -23,8 +23,7 @@ class UserCreateInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         # create user root
-        repo_path = pathlib.Path(self._user_root)
-        repo_path.mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self._user_root).mkdir(parents=True, exist_ok=True)
         # create label file
         labels.LabelFileHandler(self._user_root)
 
