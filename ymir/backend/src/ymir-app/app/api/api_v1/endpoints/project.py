@@ -40,9 +40,9 @@ def update_project(project_id: int, project_paras: schemas.ProjectCreateParamete
 @router.delete(
     "/{project_id}",
     response_model=schemas.Project,
-    responses={400: {"description": "No permission"}, 404: {"description": "Task Not Found"},},
+    responses={400: {"description": "No permission"}, 404: {"description": "Task Not Found"}},
 )
 def delete_project(
-    project_id: int = Path(..., example="12"), offset: int = Query(None), limit: int = Query(None),
+    project_id: int = Path(..., example="12"), offset: int = Query(None), limit: int = Query(None)
 ) -> Any:
     pass
