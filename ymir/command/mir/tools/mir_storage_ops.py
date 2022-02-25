@@ -285,9 +285,9 @@ def build_mir_context(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.
     for key_id in project_class_ids:
         if key_id in mir_context.predefined_keyids_cnt:
             mir_context.project_predefined_keyids_cnt[key_id] = mir_context.predefined_keyids_cnt[key_id]
+            project_positive_asset_ids.update(mir_keywords.index_predifined_keyids[key_id].asset_ids)
         else:
             mir_context.project_predefined_keyids_cnt[key_id] = 0
-        project_positive_asset_ids.update(mir_keywords.index_predifined_keyids[key_id].asset_ids)
 
     # image_cnt, negative_images_cnt, project_negative_images_cnt
     mir_context.images_cnt = len(mir_metadatas.attributes)
