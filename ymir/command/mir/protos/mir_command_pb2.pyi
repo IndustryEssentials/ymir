@@ -385,32 +385,6 @@ class MirKeywords(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class PredifinedKeyidsCntEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.int = ...
-        value: builtins.int = ...
-        def __init__(self,
-            *,
-            key : builtins.int = ...,
-            value : builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
-    class CustomizedKeywordsCntEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text = ...
-        value: builtins.int = ...
-        def __init__(self,
-            *,
-            key : typing.Text = ...,
-            value : builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     class IndexPredifinedKeyidsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
@@ -427,10 +401,6 @@ class MirKeywords(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     KEYWORDS_FIELD_NUMBER: builtins.int
-    PREDIFINED_KEYIDS_CNT_FIELD_NUMBER: builtins.int
-    PREDIFINED_KEYIDS_TOTAL_FIELD_NUMBER: builtins.int
-    CUSTOMIZED_KEYWORDS_CNT_FIELD_NUMBER: builtins.int
-    CUSTOMIZED_KEYWORDS_TOTAL_FIELD_NUMBER: builtins.int
     INDEX_PREDIFINED_KEYIDS_FIELD_NUMBER: builtins.int
     @property
     def keywords(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Keywords]:
@@ -439,29 +409,15 @@ class MirKeywords(google.protobuf.message.Message):
         """
         pass
     @property
-    def predifined_keyids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]: ...
-    predifined_keyids_total: builtins.int = ...
-    """sum of predifined_keyids_cnt field."""
-
-    @property
-    def customized_keywords_cnt(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]: ...
-    customized_keywords_total: builtins.int = ...
-    """sum of predifined_keyids_cnt field."""
-
-    @property
     def index_predifined_keyids(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___Assets]:
-        """store index map from key_id to set of asset_ids."""
+        """key: class id, value: assert ids"""
         pass
     def __init__(self,
         *,
         keywords : typing.Optional[typing.Mapping[typing.Text, global___Keywords]] = ...,
-        predifined_keyids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
-        predifined_keyids_total : builtins.int = ...,
-        customized_keywords_cnt : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
-        customized_keywords_total : builtins.int = ...,
         index_predifined_keyids : typing.Optional[typing.Mapping[builtins.int, global___Assets]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["customized_keywords_cnt",b"customized_keywords_cnt","customized_keywords_total",b"customized_keywords_total","index_predifined_keyids",b"index_predifined_keyids","keywords",b"keywords","predifined_keyids_cnt",b"predifined_keyids_cnt","predifined_keyids_total",b"predifined_keyids_total"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["index_predifined_keyids",b"index_predifined_keyids","keywords",b"keywords"]) -> None: ...
 global___MirKeywords = MirKeywords
 
 class Assets(google.protobuf.message.Message):

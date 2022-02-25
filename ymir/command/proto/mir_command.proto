@@ -126,12 +126,6 @@ message MirKeywords {
     map<string, Keywords> keywords = 1;
     // key: class id, value: assert ids
     map<int32, Assets> index_predifined_keyids = 6;
-
-    /// deprecated fields
-    map<int32, int32> predifined_keyids_cnt = 2;
-    int32 predifined_keyids_total = 3;
-    map<string, int32> customized_keywords_cnt = 4;
-    int32 customized_keywords_total = 5;
 };
 
 message Assets {
