@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import IntEnum
 from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
@@ -17,7 +16,6 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         *,
         user_id: int,
         name: Optional[str] = None,
-        type_: Optional[IntEnum] = None,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
         offset: Optional[int] = 0,
