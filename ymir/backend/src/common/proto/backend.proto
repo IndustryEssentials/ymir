@@ -22,6 +22,7 @@ enum TaskType {
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
     TaskTypeInfer = 9;
+    TaskTypeMergeFilterSample = 10;
 };
 
 enum LabelFormat {
