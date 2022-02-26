@@ -159,7 +159,7 @@ class CmdMining(base.BaseCommand):
         model_storage = mir_utils.prepare_model(model_location=model_location,
                                                 model_hash=model_hash,
                                                 dst_model_path=work_model_path)
-        context.ContextManager(mir_root=mir_root).check_class_names(current_class_names=model_storage.class_names)
+        context.check_class_names(mir_root=mir_root, current_class_names=model_storage.class_names)
 
         infer.CmdInfer.run_with_args(work_dir=work_dir,
                                      media_path=work_asset_path,

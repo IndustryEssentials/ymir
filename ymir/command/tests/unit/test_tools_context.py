@@ -34,16 +34,14 @@ class TestToolsContext(unittest.TestCase):
 
         # case 1
         context_config.project.class_ids = [1, 2, 3]
-        context_manager = context.ContextManager(mir_root=self._test_root)
-        context_manager.save(context_config=context_config)
+        context.save(mir_root=self._test_root, context_config=context_config)
 
-        saved_context_config = context_manager.load()
+        saved_context_config = context.load(mir_root=self._test_root)
         self.assertEqual(context_config, saved_context_config)
 
         # case 2
         context_config = context.ContextConfig()
-        context_manager = context.ContextManager(mir_root=self._test_root)
-        context_manager.save(context_config=context_config)
+        context.save(mir_root=self._test_root, context_config=context_config)
 
-        saved_context_config = context_manager.load()
+        saved_context_config = context.load(mir_root=self._test_root)
         self.assertEqual(context_config, saved_context_config)

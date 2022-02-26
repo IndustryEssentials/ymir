@@ -85,7 +85,7 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_general_context_config(cls, mir_root: str) -> None:
-        context_config = context.ContextManager(mir_root=mir_root).load()
+        context_config = context.load(mir_root=mir_root)
         if context_config.project.class_ids:
             class_id_and_names: List[str] = []
             class_ids_mgr = class_ids.ClassIdManager(mir_root=mir_root)

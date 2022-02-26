@@ -342,7 +342,7 @@ class CmdTrain(base.BaseCommand):
             logging.info(f"type ids empty, please check config file: {config_file}")
             return MirCode.RC_CMD_INVALID_ARGS
 
-        context.ContextManager(mir_root=mir_root).check_class_ids(current_class_ids=type_ids_list)
+        context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list)
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
