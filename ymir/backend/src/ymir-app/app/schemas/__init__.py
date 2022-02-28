@@ -74,8 +74,18 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .dataset_group import DatasetGroupPaginationOut
-from .model_group import ModelGroupPaginationOut
+from .dataset_group import (
+    DatasetGroupOut,
+    DatasetGroupCreate,
+    DatasetGroupUpdate,
+    DatasetGroupPaginationOut,
+)
+from .model_group import (
+    ModelGroupOut,
+    ModelGroupCreate,
+    ModelGroupUpdate,
+    ModelGroupPaginationOut,
+)
 from .project import (
     ProjectCreate,
     ProjectUpdate,
