@@ -24,12 +24,10 @@ class ProjectBase(BaseModel):
     map_target: Optional[float]
     training_dataset_count_target: Optional[int]
 
-    training_dataset_group_id: int
-
 
 # Sufficient properties to create a project
 class ProjectCreate(ProjectBase):
-    pass
+    description: Optional[str]
 
 
 # Properties that can be changed
@@ -53,7 +51,14 @@ class ProjectInDBBase(
 
 # Properties to return to caller
 class Project(ProjectInDBBase):
-    pass
+    dataset_count: int
+    model_count: int
+    training_dataset_name: str
+    mining_dataset_name: str
+    test_dataset_name: str
+
+    training_dataset_group_id: int
+    current_iteration_id: int
 
 
 class ProjectOut(Common):

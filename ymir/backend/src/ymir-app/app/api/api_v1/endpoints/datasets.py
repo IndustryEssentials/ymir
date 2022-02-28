@@ -60,6 +60,7 @@ def list_dataset(
     name: str = Query(None, description="search by dataset's name"),
     type_: TaskType = Query(None, alias="type", description="type of related task"),
     state: TaskState = Query(None),
+    project_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
@@ -483,3 +484,14 @@ def get_asset_of_dataset(
     if not asset:
         raise AssetNotFound()
     return {"result": asset}
+
+
+@router.post(
+    "/unification_datasets",
+    response_model=schemas.Dataset,
+)
+def create_unification_datasets(
+    dataset_import: schemas.UnificationDatasetsParameter,
+    project_id: int
+) -> Any:
+    pass

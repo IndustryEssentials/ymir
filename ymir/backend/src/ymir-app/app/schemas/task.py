@@ -173,3 +173,38 @@ class TaskPagination(BaseModel):
 
 class TaskPaginationOut(Common):
     result: TaskPagination
+
+
+class CreateDatasetType(enum.IntEnum):
+    continued_dataset_group = 0
+    new_dataset_group = 1
+
+
+class TrainDataSet(BaseModel):
+    training_dataset_name: str
+    training_dataset_group: int
+    training_dataset_version: int
+
+
+class MergeDataSet(BaseModel):
+    include_dataset: List[str]
+    include_strategy: Optional[MergeStrategy] = Field(
+        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
+    )
+    exclude_dataset: List[str]
+
+
+class FiterLabel(BaseModel):
+    include_labels: List[str]
+    exclude_labels: List[str]
+
+
+class UnificationDatasetsParameter(BaseModel):
+    dataset_type: CreateDatasetType
+    training_dataset_group_name: Optional[str]
+    training_dataset_version: int
+    training_dataset_name: str
+
+    merge_dataset: Optional[MergeDataSet]
+    fiter_label: Optional[FiterLabel]
+    sampling_count: Optional[int]

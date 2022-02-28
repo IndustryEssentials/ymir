@@ -61,6 +61,7 @@ from .task import (
     TaskTerminate,
     TaskUpdate,
     TaskUpdateStatus,
+    UnificationDatasetsParameter,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (
@@ -73,6 +74,8 @@ from .user import (
     UserState,
     UserUpdate,
 )
+from .dataset_group import DatasetGroupPaginationOut
+from .model_group import ModelGroupPaginationOut
 from .project import (
     ProjectCreate,
     ProjectUpdate,
