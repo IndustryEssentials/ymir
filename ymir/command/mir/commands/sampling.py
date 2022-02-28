@@ -57,22 +57,30 @@ class CmdSampling(base.BaseCommand):
             sampled_assets_count = count
         else:
             sampled_assets_count = int(assets_count * rate)
-        if sampled_assets_count <= 0 or sampled_assets_count > assets_count:
+        if sampled_assets_count <= 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='sampled assets count is negative or out of range')
+                                  error_message='sampled assets count is negative')
+        if sampled_assets_count > assets_count:
+            logging.warning(f"sampled assets count: {sampled_assets_count} > assets count: {assets_count}, select all")
+            sampled_assets_count = assets_count
 
         # sampling
-        sampled_asset_ids = random.sample(mir_metadatas.attributes.keys(), sampled_assets_count)
-        # sampled_mir_metadatas and sampled_mir_annotations
-        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
-        image_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations
-        sampled_mir_metadatas = mirpb.MirMetadatas()
-        sampled_mir_annotations = mirpb.MirAnnotations()
-        for asset_id in sampled_asset_ids:
-            sampled_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
-            if asset_id in image_annotations:
-                sampled_mir_annotations.task_annotations[dst_typ_rev_tid.tid].image_annotations[asset_id].CopyFrom(
-                    image_annotations[asset_id])
+        if sampled_assets_count < assets_count:
+            sampled_asset_ids = random.sample(mir_metadatas.attributes.keys(), sampled_assets_count)
+            # sampled_mir_metadatas and sampled_mir_annotations
+            mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+            image_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations
+            sampled_mir_metadatas = mirpb.MirMetadatas()
+            sampled_mir_annotations = mirpb.MirAnnotations()
+            for asset_id in sampled_asset_ids:
+                sampled_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
+                if asset_id in image_annotations:
+                    sampled_mir_annotations.task_annotations[dst_typ_rev_tid.tid].image_annotations[asset_id].CopyFrom(
+                        image_annotations[asset_id])
+        else:
+            # if equals
+            sampled_mir_metadatas = mir_metadatas
+            sampled_mir_annotations = mir_annotations
 
         # mir_tasks
         sampled_mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
