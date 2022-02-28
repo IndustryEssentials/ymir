@@ -273,10 +273,8 @@ def build_mir_keywords(single_task_annotations: mirpb.SingleTaskAnnotations, mir
 def build_mir_context(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
                       mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
                       mir_context: mirpb.MirContext) -> None:
-    # for each assets, add 1 to all key ids it has
-    for _, keywords in mir_keywords.keywords.items():
-        for key_id in keywords.predifined_keyids:
-            mir_context.predefined_keyids_cnt[key_id] += 1
+    for key_id, assets in mir_keywords.index_predifined_keyids.items():
+        mir_context.predefined_keyids_cnt[key_id] = len(assets.asset_ids)
 
     # project_predefined_keyids_cnt: assets count for project class ids
     #   suppose we have: 13 images for key 5, 15 images for key 6, and proejct_class_ids = [3, 5]
