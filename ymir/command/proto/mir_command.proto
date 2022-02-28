@@ -178,12 +178,12 @@ message ModelMeta {
 
 /// ========== context.mir ==========
 message MirContext {
-    /// total negative images count (images without any annotations)
-    int32 negative_images_cnt = 1;
-    /// total negative images count (images without any project class names)
-    int32 project_negative_images_cnt = 2;
     /// total images count
-    int32 images_cnt = 3;
+    int32 images_cnt = 1;
+    /// total negative images count (images without any annotations)
+    int32 negative_images_cnt = 2;
+    /// total negative images count (images without any project class names)
+    int32 project_negative_images_cnt = 3;
     /// key: class id, value: images count
     map<int32, int32> predefined_keyids_cnt = 4;
     /// key: class id (only in this project), value: images count

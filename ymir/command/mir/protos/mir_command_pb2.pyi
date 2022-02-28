@@ -621,20 +621,20 @@ class MirContext(google.protobuf.message.Message):
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
+    IMAGES_CNT_FIELD_NUMBER: builtins.int
     NEGATIVE_IMAGES_CNT_FIELD_NUMBER: builtins.int
     PROJECT_NEGATIVE_IMAGES_CNT_FIELD_NUMBER: builtins.int
-    IMAGES_CNT_FIELD_NUMBER: builtins.int
     PREDEFINED_KEYIDS_CNT_FIELD_NUMBER: builtins.int
     PROJECT_PREDEFINED_KEYIDS_CNT_FIELD_NUMBER: builtins.int
     CUSTOMIZED_KEYWORDS_CNT_FIELD_NUMBER: builtins.int
+    images_cnt: builtins.int = ...
+    """/ total images count"""
+
     negative_images_cnt: builtins.int = ...
     """/ total negative images count (images without any annotations)"""
 
     project_negative_images_cnt: builtins.int = ...
     """/ total negative images count (images without any project class names)"""
-
-    images_cnt: builtins.int = ...
-    """/ total images count"""
 
     @property
     def predefined_keyids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
@@ -650,9 +650,9 @@ class MirContext(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
+        images_cnt : builtins.int = ...,
         negative_images_cnt : builtins.int = ...,
         project_negative_images_cnt : builtins.int = ...,
-        images_cnt : builtins.int = ...,
         predefined_keyids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         project_predefined_keyids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         customized_keywords_cnt : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
