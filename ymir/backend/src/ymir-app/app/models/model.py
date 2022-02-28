@@ -8,6 +8,7 @@ from sqlalchemy import (
     Integer,
     String,
     SmallInteger,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
@@ -32,6 +33,9 @@ class Model(Base):
 
     # imported/copied model has no mAP
     map = Column(Float, nullable=True)
+
+    # Materialized Path
+    path = Column(Text(settings.TEXT_LEN_LIMIT))
 
     related_task = relationship(
         "Task",

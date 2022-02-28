@@ -28,6 +28,9 @@ class Dataset(Base):
     asset_count = Column(Integer)
     keyword_count = Column(Integer)
 
+    # Materialized Path
+    path = Column(Text(settings.TEXT_LEN_LIMIT))
+
     related_task = relationship(
         "Task",
         primaryjoin="foreign(Task.id)==Dataset.task_id",
