@@ -55,7 +55,6 @@ class CmdInfer(base.BaseCommand):
                       executor_instance: str,
                       model_location: str = '',
                       model_hash: str = '',
-                      model_storage: mir_utils.ModelStorage = None,
                       task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
                       run_infer: bool = False,
@@ -86,13 +85,12 @@ class CmdInfer(base.BaseCommand):
         if not work_dir:
             logging.error('empty --work-dir, abort')
             return MirCode.RC_CMD_INVALID_ARGS
-        if not model_storage:
-            if not model_location:
-                logging.error('empty --model-location, abort')
-                return MirCode.RC_CMD_INVALID_ARGS
-            if not model_hash:
-                logging.error('empty --model-hash, abort')
-                return MirCode.RC_CMD_INVALID_ARGS
+        if not model_location:
+            logging.error('empty --model-location, abort')
+            return MirCode.RC_CMD_INVALID_ARGS
+        if not model_hash:
+            logging.error('empty --model-hash, abort')
+            return MirCode.RC_CMD_INVALID_ARGS
         if not index_file or not os.path.isfile(index_file):
             logging.error(f"invalid --index-file: {index_file}, abort")
             return MirCode.RC_CMD_INVALID_ARGS
@@ -121,7 +119,7 @@ class CmdInfer(base.BaseCommand):
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_storage = model_storage or mir_utils.prepare_model(model_location, model_hash, work_model_path)
+        model_storage = mir_utils.prepare_model(model_location, model_hash, work_model_path)
         model_names = model_storage.models
         class_names = model_storage.class_names
         if not class_names:
