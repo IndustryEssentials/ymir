@@ -85,11 +85,11 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_general_context_config(cls, mir_root: str) -> None:
-        context_config = context.load(mir_root=mir_root)
-        if context_config.project.class_ids:
+        project_class_ids = context.load(mir_root=mir_root)
+        if project_class_ids:
             class_id_and_names: List[str] = []
             class_ids_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-            for class_id in context_config.project.class_ids:
+            for class_id in project_class_ids:
                 class_id_and_names.append(f"{class_id} ({class_ids_mgr.main_name_for_id(class_id)})")
             print(f"project classes: {'; '.join(class_id_and_names)}")
         else:
@@ -131,16 +131,16 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_cks(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
-        mir_contex: mirpb.MirContext = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                                 mir_branch=src_typ_rev_tid.rev,
-                                                                                 mir_task_id=src_typ_rev_tid.tid,
-                                                                                 ms=mirpb.MIR_CONTEXT)
+        mir_context: mirpb.MirContext = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
+                                                                                  mir_branch=src_typ_rev_tid.rev,
+                                                                                  mir_task_id=src_typ_rev_tid.tid,
+                                                                                  ms=mirpb.MIR_CONTEXT)
         if verbose:
-            print(f"customized keywords ({len(mir_contex.customized_keywords_cnt)}):")
-            for ck, cnt in mir_contex.customized_keywords_cnt.items():
+            print(f"customized keywords ({len(mir_context.customized_keywords_cnt)}):")
+            for ck, cnt in mir_context.customized_keywords_cnt.items():
                 print(f"  {ck}: {cnt}")
         else:
-            cks = list(mir_contex.customized_keywords_cnt.keys())
+            cks = list(mir_context.customized_keywords_cnt.keys())
             print(';'.join(cks))
 
 

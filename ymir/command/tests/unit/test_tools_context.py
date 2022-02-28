@@ -30,18 +30,16 @@ class TestToolsContext(unittest.TestCase):
 
     # test cases
     def test_00(self):
-        context_config = context.ContextConfig()
-
         # case 1
-        context_config.project.class_ids = [1, 2, 3]
-        context.save(mir_root=self._test_root, context_config=context_config)
+        project_class_ids = [1, 2, 3]
+        context.save(mir_root=self._test_root, project_class_ids=project_class_ids)
 
-        saved_context_config = context.load(mir_root=self._test_root)
-        self.assertEqual(context_config, saved_context_config)
+        saved_project_class_ids = context.load(mir_root=self._test_root)
+        self.assertEqual(project_class_ids, saved_project_class_ids)
 
         # case 2
-        context_config = context.ContextConfig()
-        context.save(mir_root=self._test_root, context_config=context_config)
+        project_class_ids = []
+        context.save(mir_root=self._test_root, project_class_ids=project_class_ids)
 
-        saved_context_config = context.load(mir_root=self._test_root)
-        self.assertEqual(context_config, saved_context_config)
+        saved_project_class_ids = context.load(mir_root=self._test_root)
+        self.assertEqual(project_class_ids, saved_project_class_ids)

@@ -288,9 +288,7 @@ class TestMirStorage(unittest.TestCase):
 
     def test_normal_01(self):
         # change project settings
-        context_config = context.load(mir_root=self._mir_root)
-        context_config.project.class_ids = [3, 4]
-        context.save(mir_root=self._mir_root, context_config=context_config)
+        context.save(mir_root=self._mir_root, project_class_ids=[3, 4])
 
         mir_metadatas, mir_annotations, mir_keywords, mir_tasks, mir_context = self._prepare_mir_pb(with_project=True)
 

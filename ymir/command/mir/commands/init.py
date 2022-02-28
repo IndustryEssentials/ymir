@@ -22,9 +22,7 @@ class CmdInit(base.BaseCommand):
 
     @staticmethod
     def __create_project_contex_file(mir_root: str, project_class_ids: List[int]) -> None:
-        context_config = context.ContextConfig()
-        context_config.project.class_ids = project_class_ids
-        context.save(mir_root=mir_root, context_config=context_config)
+        context.save(mir_root=mir_root, project_class_ids=project_class_ids)
 
     @staticmethod
     def __update_ignore(mir_root: str, git: CmdScm, ignored_items: List[str]) -> None:

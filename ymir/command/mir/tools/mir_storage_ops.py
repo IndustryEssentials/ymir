@@ -44,12 +44,12 @@ class MirStorageOps():
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
         # gen mir_context
-        context_config = context.load(mir_root=mir_root)
+        project_class_ids = context.load(mir_root=mir_root)
         mir_context = mirpb.MirContext()
         build_mir_context(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
                           mir_annotations=mir_annotations,
                           mir_keywords=mir_keywords,
-                          project_class_ids=context_config.project.class_ids,
+                          project_class_ids=project_class_ids,
                           mir_context=mir_context)
         mir_datas[mirpb.MirStorage.MIR_CONTEXT] = mir_context
 
