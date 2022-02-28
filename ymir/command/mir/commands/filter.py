@@ -6,10 +6,10 @@ from typing import Any, Callable, List, Tuple, Optional, Set, Union
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
+from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
-from mir.tools.code import MirCode
 
 # type for function `__include_match` and `__exclude_match`
 __IncludeExcludeCallableType = Callable[[Set[str], mirpb.MirKeywords, str, Any], Set[str]]

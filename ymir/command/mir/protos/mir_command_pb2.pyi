@@ -77,6 +77,8 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     TaskTypeExportData = TaskType.V(6)
     TaskTypeCopyData = TaskType.V(7)
     TaskTypeMerge = TaskType.V(8)
+    TaskTypeInfer = TaskType.V(9)
+    TaskTypeSampling = TaskType.V(10)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -87,6 +89,8 @@ TaskTypeImportData = TaskType.V(5)
 TaskTypeExportData = TaskType.V(6)
 TaskTypeCopyData = TaskType.V(7)
 TaskTypeMerge = TaskType.V(8)
+TaskTypeInfer = TaskType.V(9)
+TaskTypeSampling = TaskType.V(10)
 global___TaskType = TaskType
 
 

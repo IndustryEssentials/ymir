@@ -131,7 +131,7 @@ def command_run_in_out(f: Callable) -> Callable:
                                        state_code=error_code,
                                        state_content=state_message,
                                        trace_message=trace_message)
-        logging.info(f"command fail: {dst_rev}, exc: {exc}, error_code: {error_code}, new commit: {needs_new_commit}")
+        logging.info(f"command failed: {dst_rev}; exc: {exc}")
         raise exc
 
     return wrapper
