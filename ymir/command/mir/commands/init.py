@@ -13,7 +13,7 @@ from mir.tools.code import MirCode
 class CmdInit(base.BaseCommand):
     # private: misc
     @staticmethod
-    def __create_label_file(mir_root: str) -> None:
+    def __create_label_file_if_no_exists(mir_root: str) -> None:
         # creates a new label file if not exists
         label_file_path = class_ids.ids_file_path(mir_root=mir_root)
         if not os.path.isfile(label_file_path):
@@ -40,15 +40,14 @@ class CmdInit(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
-        repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
+        CmdInit.__create_label_file_if_no_exists(mir_root=mir_root)
 
         project_class_ids = class_ids.ClassIdManager(mir_root=mir_root).id_for_names(
             project_class_names.strip().lower().split(';')) if project_class_names else []
-
-        CmdInit.__create_label_file(mir_root=mir_root)
         context.save(mir_root=mir_root, project_class_ids=project_class_ids)
 
+        repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
+        repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
         repo_git.init()
         repo_dvc.init()
 
