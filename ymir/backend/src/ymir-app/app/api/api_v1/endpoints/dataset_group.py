@@ -12,6 +12,7 @@ router = APIRouter()
 @router.get("/", response_model=schemas.DatasetGroupPaginationOut)
 def list_model_groups(
     db: Session = Depends(deps.get_db),
+    name: str = Query(None),
     project_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
