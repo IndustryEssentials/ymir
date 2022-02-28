@@ -5,7 +5,7 @@ import time
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -45,10 +45,11 @@ class CmdSampling(base.BaseCommand):
             mir_root = '.'
 
         # read all
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                       mir_branch=src_typ_rev_tid.rev,
-                                                       mir_task_id=src_typ_rev_tid.tid,
-                                                       mir_storages=mir_storage.get_all_mir_storage())
+        mir_datas = mir_storage_ops.MirStorageOps.load(
+            mir_root=mir_root,
+            mir_branch=src_typ_rev_tid.rev,
+            mir_task_id=src_typ_rev_tid.tid,
+            mir_storages=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         assets_count = len(mir_metadatas.attributes)
         sampled_assets_count = 0
