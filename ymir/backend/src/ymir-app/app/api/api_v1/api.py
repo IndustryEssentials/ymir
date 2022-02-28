@@ -15,8 +15,8 @@ from app.api.api_v1.endpoints import (
     upload,
     users,
     projects,
-    dataset_group,
-    model_group,
+    dataset_groups,
+    model_groups,
 )
 
 api_router = APIRouter()
@@ -34,6 +34,10 @@ api_router.include_router(images.router, prefix="/images", tags=["docker_images"
 api_router.include_router(inferences.router, prefix="/inferences", tags=["inference"])
 api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
 api_router.include_router(info.router, prefix="/sys_info", tags=["sys"])
-api_router.include_router(projects.router, prefix="/project", tags=["project"])
-api_router.include_router(dataset_group.router, prefix="/dataset_group", tags=["dataset_group"])
-api_router.include_router(model_group.router, prefix="/model_group", tags=["model_group"])
+api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
+api_router.include_router(
+    dataset_groups.router, prefix="/dataset_groups", tags=["dataset_groups"]
+)
+api_router.include_router(
+    model_groups.router, prefix="/model_groups", tags=["model_groups"]
+)
