@@ -9,7 +9,7 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.get("/dataset_groups", response_model=schemas.DatasetGroupPaginationOut)
+@router.get("/", response_model=schemas.DatasetGroupPaginationOut)
 def list_model_groups(
     db: Session = Depends(deps.get_db),
     project_id: int = Query(None),

@@ -9,7 +9,7 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.get("/model_groups", response_model=schemas.ModelGroupPaginationOut)
+@router.get("/", response_model=schemas.ModelGroupPaginationOut)
 def list_model_groups(
     db: Session = Depends(deps.get_db),
     project_id: int = Query(None),
