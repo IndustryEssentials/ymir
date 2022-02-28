@@ -8,6 +8,7 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
+from app.schemas.model import Model
 
 
 class ModelGroupBase(BaseModel):
@@ -27,6 +28,8 @@ class ModelGroupUpdate(BaseModel):
 class ModelGroupInDBBase(
     IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelGroupBase
 ):
+    models: List[Model]
+
     class Config:
         orm_mode = True
 
