@@ -47,7 +47,7 @@ class CmdInit(base.BaseCommand):
             project_class_names.strip().lower().split(';')) if project_class_names else []
 
         CmdInit.__create_label_file(mir_root=mir_root)
-        CmdInit.__create_project_contex_file(mir_root=mir_root, project_class_ids=project_class_ids)
+        context.save(mir_root=mir_root, project_class_ids=project_class_ids)
 
         repo_git.init()
         repo_dvc.init()
