@@ -57,6 +57,7 @@ class IterationStage(IntEnum):
 class MiningStrategy(IntEnum):
     chunk = 0
     dedup = 1
+    customize = 2
 
 
 class TrainingType(IntEnum):

@@ -70,6 +70,7 @@ class Project(Base):
     )
 
     is_deleted = Column(Boolean, default=False, nullable=False)
+    description = Column(String(settings.STRING_LEN_LIMIT))
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
         DateTime,
