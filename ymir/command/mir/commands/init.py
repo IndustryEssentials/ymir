@@ -21,10 +21,6 @@ class CmdInit(base.BaseCommand):
                 f.write('# type_id, preserved, main type name, alias...\n')
 
     @staticmethod
-    def __create_project_contex_file(mir_root: str, project_class_ids: List[int]) -> None:
-        context.save(mir_root=mir_root, project_class_ids=project_class_ids)
-
-    @staticmethod
     def __update_ignore(mir_root: str, git: CmdScm, ignored_items: List[str]) -> None:
         gitignore_file = os.path.join(mir_root, '.gitignore')
         with open(gitignore_file, 'a') as f:
