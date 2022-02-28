@@ -26,7 +26,7 @@ class ProjectBase(BaseModel):
 
 
 # Sufficient properties to create a project
-class ProjectCreateParameter(ProjectBase):
+class ProjectCreate(ProjectBase):
     description: Optional[str]
 
 

@@ -41,18 +41,6 @@ class SortField(enum.Enum):
     map = "map"
 
 
-@router.get("/model_groups", response_model=schemas.ModelGroupPaginationOut)
-def list_model_groups(
-    db: Session = Depends(deps.get_db),
-    project_id: int = Query(None),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    is_desc: bool = Query(True),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    pass
-
-
 @router.get("/", response_model=schemas.ModelPaginationOut)
 def list_models(
     db: Session = Depends(deps.get_db),

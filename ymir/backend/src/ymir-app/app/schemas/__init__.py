@@ -77,7 +77,7 @@ from .user import (
 from .dataset_group import DatasetGroupPaginationOut
 from .model_group import ModelGroupPaginationOut
 from .project import (
-    ProjectCreateParameter,
+    ProjectCreate,
     ProjectUpdate,
     Project,
     ProjectOut,

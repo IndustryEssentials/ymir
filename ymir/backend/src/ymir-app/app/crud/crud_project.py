@@ -6,10 +6,10 @@ from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
 from app.models import Project
-from app.schemas.project import ProjectCreateParameter, ProjectUpdate
+from app.schemas.project import ProjectCreate, ProjectUpdate
 
 
-class CRUDProject(CRUDBase[Project, ProjectCreateParameter, ProjectUpdate]):
+class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
     def get_multi_projects(
         self,
         db: Session,

@@ -63,7 +63,7 @@ def create_project(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_admin),
-    project_in: schemas.ProjectCreateParameter,
+    project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
@@ -100,7 +100,7 @@ def get_project(
     project = crud.project.get(db, id=project_id)
     if not project:
         raise ProjectNotFound()
-
+    # todo : get dataset name , get dataset count
     return {"result": project}
 
 
