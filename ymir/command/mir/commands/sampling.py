@@ -106,7 +106,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                                 parents=[parent_parser],
                                                 description='use this command to sample assets and annotations',
                                                 help='filter assets')
-    sampling_arg_parser.add_argument('--src-revs', dest='src_revs', type=str, help='type:rev@bid')
+    sampling_arg_parser.add_argument('--src-revs', dest='src_revs', type=str, help='rev@bid')
     sampling_arg_parser.add_argument('--dst-rev', dest='dst_rev', type=str, help='rev@tid')
     sampling_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
     group = sampling_arg_parser.add_mutually_exclusive_group(required=True)
