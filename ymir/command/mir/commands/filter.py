@@ -166,15 +166,6 @@ class CmdFilter(base.BaseCommand):
             matched_mir_annotations.task_annotations[task_id].image_annotations[asset_id].CopyFrom(
                 base_task_annotations.image_annotations[asset_id])
 
-        # generate matched tasks
-        task = mirpb.Task()
-        task.type = mirpb.TaskType.TaskTypeFilter
-        task.name = f"filter bid: {base_task_id}, tid: {task_id}, select: {in_cis} exclude: {ex_cis}"
-        task.base_task_id = base_task_id
-        task.task_id = task_id
-        task.timestamp = int(datetime.datetime.now().timestamp())
-        mir_storage_ops.add_mir_task(mir_tasks, task)
-
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
         PhaseLoggerCenter.update_phase(phase='filter.change')
@@ -182,15 +173,17 @@ class CmdFilter(base.BaseCommand):
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
 
+        commit_message = f"filter bid: {base_task_id}, tid: {task_id}, select: {in_cis} exclude: {ex_cis}"
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=task_id,
                                                       his_branch=src_typ_rev_tid.rev,
+                                                      base_task_id=base_task_id,
+                                                      task_type=mirpb.TaskType.TaskTypeFilter,
                                                       mir_datas=matched_mir_contents,
-                                                      commit_message=task.name)
+                                                      commit_message=commit_message)
 
         return MirCode.RC_OK
 
