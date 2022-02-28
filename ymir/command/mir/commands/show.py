@@ -131,17 +131,7 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_cks(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
-        mir_context: mirpb.MirContext = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                                  mir_branch=src_typ_rev_tid.rev,
-                                                                                  mir_task_id=src_typ_rev_tid.tid,
-                                                                                  ms=mirpb.MIR_CONTEXT)
-        if verbose:
-            print(f"customized keywords ({len(mir_context.customized_keywords_cnt)}):")
-            for ck, cnt in mir_context.customized_keywords_cnt.items():
-                print(f"  {ck}: {cnt}")
-        else:
-            cks = list(mir_context.customized_keywords_cnt.keys())
-            print(';'.join(cks))
+        print('')  # currently no customized keywords
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
