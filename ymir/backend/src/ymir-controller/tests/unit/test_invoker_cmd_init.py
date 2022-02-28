@@ -78,7 +78,6 @@ class TestInvokerInit(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_init_01(self, mock_run):
-        pass
         response = make_invoker_cmd_call(sandbox_root=self._sandbox_root,
                                          req_type=backend_pb2.CMD_INIT,
                                          invoker=RequestTypeToInvoker[backend_pb2.CMD_INIT],
