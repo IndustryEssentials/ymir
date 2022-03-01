@@ -61,7 +61,7 @@ from .task import (
     TaskTerminate,
     TaskUpdate,
     TaskUpdateStatus,
-    UnificationDatasetsParameter,
+    DatasetsFusionParameter,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (
