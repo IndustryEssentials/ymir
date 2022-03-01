@@ -492,61 +492,7 @@ def get_asset_of_dataset(
     response_model=schemas.Dataset,
 )
 def create_unification_datasets(
-    *,
-    db: Session = Depends(deps.get_db),
-    task_in: schemas.UnificationDatasetsParameter,
-    project_id: int,
-    current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    labels: List[str] = Depends(deps.get_personal_labels),
+    dataset_import: schemas.UnificationDatasetsParameter,
+    project_id: int
 ) -> Any:
-    """
-       Create dataset processing task
-    """
-    logger.debug(
-        "[create task] create task with payload: %s", jsonable_encoder(task_in)
-    )
-    task = crud.task.get_by_user_and_name(
-        db, user_id=current_user.id, name=task_in.name
-    )
-    if task:
-        raise DuplicateTaskError()
-
-    keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
-
-    parameters = normalize_parameters(
-        db, task_in.name, task_in.parameters, keyword_name_to_id
-    )
-
-    task = crud.dataset.create_task(
-        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
-    )
-
-
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
-    )
-
-
-
-    try:
-        task_id = gen_task_hash(current_user.id, task_in.project_id)
-        resp = controller_client.create_task(
-            current_user.id,
-            task_in.project_id,
-            task_id,
-            task_in.type,
-            parameters,
-        )
-        logger.info("[create task] controller response: %s", resp)
-    except ValueError:
-        # todo parse error message
-        raise FailedtoCreateTask()
-
-
-
-    logger.info("[create task] created task name: %s" % task_in.name)
-    return {"result": task}
-
-
-
+    pass
