@@ -488,10 +488,10 @@ def get_asset_of_dataset(
 
 
 @router.post(
-    "/unification_datasets",
+    "/dataset_fusion",
     response_model=schemas.Dataset,
 )
-def create_unification_datasets(
+def create_dataset_fusion(
     dataset_import: schemas.DatasetsFusionParameter, project_id: int
 ) -> Any:
     pass
