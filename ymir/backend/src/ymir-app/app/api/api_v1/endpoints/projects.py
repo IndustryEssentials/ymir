@@ -80,6 +80,7 @@ def create_project(
     # todo
     # call controller
     # create dataset_group info
+    # init one empty dataset
 
     logger.info("[create project] project record created: %s", project)
     return {"result": project}

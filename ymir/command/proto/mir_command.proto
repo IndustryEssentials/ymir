@@ -34,6 +34,8 @@ enum TaskType {
     TaskTypeExportData = 6;
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
+    TaskTypeInfer = 9;
+    TaskTypeSampling = 10;
 };
 
 enum TaskState {
@@ -126,6 +128,8 @@ message MirKeywords {
     map<string, Keywords> keywords = 1;
     // key: class id, value: assert ids
     map<int32, Assets> index_predifined_keyids = 6;
+
+    reserved 2, 3, 4, 5;
 };
 
 message Assets {
