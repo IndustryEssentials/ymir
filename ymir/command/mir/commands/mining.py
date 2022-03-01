@@ -342,8 +342,7 @@ def _get_shm_size(mining_config_file_path: str) -> str:
 
 
 # public: arg parser
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     mining_arg_parser = subparsers.add_parser('mining',
                                               parents=[parent_parser],
                                               description='use this command to mine in current workspace',

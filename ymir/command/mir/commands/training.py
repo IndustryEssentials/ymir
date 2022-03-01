@@ -12,7 +12,7 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, context, data_exporter, hash_utils, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
@@ -336,6 +336,11 @@ class CmdTrain(base.BaseCommand):
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")
             return MirCode.RC_CMD_INVALID_ARGS
+
+        if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='project class ids mismatch')
+
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
         # export train set
