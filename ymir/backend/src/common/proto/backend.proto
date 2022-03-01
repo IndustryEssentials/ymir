@@ -215,8 +215,10 @@ message TaskReqFusion {
     MergeStrategy merge_strategy = 3;
     repeated int32 in_class_ids = 4;
     repeated int32 ex_class_ids = 5;
-    int32 count = 6;
-    float rate = 7;
+    oneof count_or_rate {
+        int32 count = 6;
+        float rate = 7;
+    }
 }
 
 message RespCMDInference {
