@@ -199,7 +199,7 @@ class FiterLabel(BaseModel):
     exclude_labels: List[str]
 
 
-class UnificationDatasetsParameter(BaseModel):
+class DatasetsFusionParameter(BaseModel):
     dataset_type: CreateDatasetType
     training_dataset_group_name: Optional[str]
     training_dataset_version: int

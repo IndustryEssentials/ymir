@@ -492,6 +492,6 @@ def get_asset_of_dataset(
     response_model=schemas.Dataset,
 )
 def create_unification_datasets(
-    dataset_import: schemas.UnificationDatasetsParameter, project_id: int
+    dataset_import: schemas.DatasetsFusionParameter, project_id: int
 ) -> Any:
     pass
