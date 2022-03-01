@@ -41,13 +41,13 @@ const models = mockjs.mock({
 })
 export default baseApi([
   {
-    url: 'model_group/',
+    url: 'model_groups/',
     data: {
       result: groups,
     }
   },
   {
-    url: 'models/',
+    url: 'model_groups/4001',
     data: {
       result: models,
     }

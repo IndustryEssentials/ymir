@@ -16,7 +16,7 @@ export function getDataset(id) {
  * @returns 
  */
 export function getDatasetVersions(group_id) {
-  return request.get(`dataset_groups/`, { params: { group_id }})
+  return request.get(`dataset_groups/${group_id}`)
 }
 
 /**

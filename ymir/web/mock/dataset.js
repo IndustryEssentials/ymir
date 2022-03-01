@@ -42,13 +42,13 @@ const groups = mockjs.mock({
 
 export default baseApi([
   {
-    url: 'dataset_group/',
+    url: 'dataset_groups/',
     data: {
       result: groups,
     }
   },
   {
-    url: 'datasets/',
+    url: 'dataset_groups/4001',
     data: {
       result: list,
     }
