@@ -83,6 +83,7 @@ class mir_controller_serviceServicer(object):
         Args:
         GeneralReq.user: user name for this sandbox
         GeneralReq.repo: repo name
+        GeneralReq.private_labels: project class names (training target)
         Returns:
         0: success
         errors when:
