@@ -215,7 +215,7 @@ message TaskReqFusion {
     MergeStrategy merge_strategy = 3;
     repeated int32 in_class_ids = 4;
     repeated int32 ex_class_ids = 5;
-    oneof count_or_rate {
+    oneof sampling {
         int32 count = 6;
         float rate = 7;
     }
