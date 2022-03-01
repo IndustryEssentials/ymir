@@ -1,5 +1,5 @@
 import os
-from typing import Any, List, Dict, Optional, Tuple
+from typing import Any, List, Dict, Optional, Set, Tuple
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
@@ -8,7 +8,7 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
 
@@ -34,15 +34,26 @@ class MirStorageOps():
             empty_mir_annotations.task_annotations[mir_tasks.head_task_id]  # empty task_annotation
             mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = empty_mir_annotations
 
-        # gen mir_keywords
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
-        mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
         build_annotations_head_task_id(mir_annotations=mir_annotations)
-        generate_keywords_cis(single_task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id],
-                              mir_keywords=mir_keywords)
-        build_keywords_index(mir_keywords=mir_keywords)
+
+        # gen mir_keywords
+        mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
+        build_mir_keywords(single_task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id],
+                           mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
+        # gen mir_context
+        project_class_ids = context.load(mir_root=mir_root)
+        mir_context = mirpb.MirContext()
+        build_mir_context(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
+                          mir_annotations=mir_annotations,
+                          mir_keywords=mir_keywords,
+                          project_class_ids=project_class_ids,
+                          mir_context=mir_context)
+        mir_datas[mirpb.MirStorage.MIR_CONTEXT] = mir_context
+
+        # save to file
         for ms, mir_data in mir_datas.items():
             mir_file_path = os.path.join(mir_root, mir_storage.mir_path(ms))
             with open(mir_file_path, "wb") as m_f:
@@ -87,6 +98,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
+        if mirpb.MirStorage.MIR_CONTEXT in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_context')
         if mirpb.MirStorage.MIR_TASKS not in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid mir_tasks')
 
@@ -185,47 +198,18 @@ class MirStorageOps():
     def load_branch_contents(cls,
                              mir_root: str,
                              mir_branch: str,
-                             mir_task_id: str = '') -> Tuple[dict, dict, dict, dict]:
+                             mir_task_id: str = '') -> Tuple[dict, dict, dict, dict, dict]:
         mir_storage_data = cls.load(mir_root=mir_root,
                                     mir_branch=mir_branch,
                                     mir_task_id=mir_task_id,
                                     mir_storages=mir_storage.get_all_mir_storage(),
                                     as_dict=True)
         return (mir_storage_data[mirpb.MirStorage.MIR_METADATAS], mir_storage_data[mirpb.MirStorage.MIR_ANNOTATIONS],
-                mir_storage_data[mirpb.MirStorage.MIR_KEYWORDS], mir_storage_data[mirpb.MirStorage.MIR_TASKS])
+                mir_storage_data[mirpb.MirStorage.MIR_KEYWORDS], mir_storage_data[mirpb.MirStorage.MIR_TASKS],
+                mir_storage_data[mirpb.MirStorage.MIR_CONTEXT])
 
 
 # public: presave actions
-def build_keywords_index(mir_keywords: mirpb.MirKeywords) -> int:
-    if not mir_keywords:
-        raise RuntimeError("Invalid mir_keywords")
-
-    mir_keywords.predifined_keyids_cnt.clear()
-    mir_keywords.customized_keywords_cnt.clear()
-    mir_keywords.index_predifined_keyids.clear()
-
-    for asset_id, keywords in mir_keywords.keywords.items():
-        for key_id in keywords.predifined_keyids:
-            mir_keywords.predifined_keyids_cnt[key_id] += 1
-            mir_keywords.index_predifined_keyids[key_id].asset_ids.append(asset_id)
-        for keyword in keywords.customized_keywords:
-            mir_keywords.customized_keywords_cnt[keyword] += 1
-
-    mir_keywords.predifined_keyids_total = 0
-    for cnt in mir_keywords.predifined_keyids_cnt.values():
-        mir_keywords.predifined_keyids_total += cnt
-    mir_keywords.customized_keywords_total = 0
-    for cnt in mir_keywords.customized_keywords_cnt.values():
-        mir_keywords.customized_keywords_total += cnt
-
-    # Remove redundant index values.
-    for key_id, assets in mir_keywords.index_predifined_keyids.items():
-        mir_keywords.index_predifined_keyids[key_id].asset_ids[:] = set(
-            mir_keywords.index_predifined_keyids[key_id].asset_ids)
-
-    return MirCode.RC_OK
-
-
 def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations) -> None:
     task_ids = list(mir_annotations.task_annotations.keys())
     if len(task_ids) == 1:
@@ -260,15 +244,53 @@ def add_mir_task(mir_tasks: mirpb.MirTasks, task: mirpb.Task) -> None:
     mir_tasks.head_task_id = task.task_id
 
 
-def generate_keywords_cis(single_task_annotations: mirpb.SingleTaskAnnotations,
-                          mir_keywords: mirpb.MirKeywords) -> None:
+def build_mir_keywords(single_task_annotations: mirpb.SingleTaskAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
     """
-    generate mir_keywords's keyids from single_task_annotations
+    build mir_keywords from single_task_annotations
 
     Args:
         single_task_annotations (mirpb.SingleTaskAnnotations)
         mir_keywords (mirpb.MirKeywords)
     """
+    # build mir_keywords.keywords
     for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
         mir_keywords.keywords[asset_id].predifined_keyids[:] = set(
             [annotation.class_id for annotation in single_image_annotations.annotations])
+
+    # build mir_keywords.index_predifined_keyids
+    mir_keywords.index_predifined_keyids.clear()
+
+    for asset_id, keywords in mir_keywords.keywords.items():
+        for key_id in keywords.predifined_keyids:
+            mir_keywords.index_predifined_keyids[key_id].asset_ids.append(asset_id)
+
+    # Remove redundant index values and sort
+    for key_id, assets in mir_keywords.index_predifined_keyids.items():
+        mir_keywords.index_predifined_keyids[key_id].asset_ids[:] = set(
+            mir_keywords.index_predifined_keyids[key_id].asset_ids)
+
+
+def build_mir_context(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                      mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
+                      mir_context: mirpb.MirContext) -> None:
+    for key_id, assets in mir_keywords.index_predifined_keyids.items():
+        mir_context.predefined_keyids_cnt[key_id] = len(assets.asset_ids)
+
+    # project_predefined_keyids_cnt: assets count for project class ids
+    #   suppose we have: 13 images for key 5, 15 images for key 6, and proejct_class_ids = [3, 5]
+    #   project_predefined_keyids_cnt should be: {3: 0, 5: 13}
+    project_positive_asset_ids: Set[str] = set()
+    for key_id in project_class_ids:
+        if key_id in mir_context.predefined_keyids_cnt:
+            mir_context.project_predefined_keyids_cnt[key_id] = mir_context.predefined_keyids_cnt[key_id]
+            project_positive_asset_ids.update(mir_keywords.index_predifined_keyids[key_id].asset_ids)
+        else:
+            mir_context.project_predefined_keyids_cnt[key_id] = 0
+
+    # image_cnt, negative_images_cnt, project_negative_images_cnt
+    mir_context.images_cnt = len(mir_metadatas.attributes)
+    mir_context.negative_images_cnt = mir_context.images_cnt - len(
+        mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations)
+    if project_class_ids:
+        mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
+        # if no project_class_ids, project_negative_images_cnt set to 0
