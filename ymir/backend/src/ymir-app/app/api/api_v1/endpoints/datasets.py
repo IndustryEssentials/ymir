@@ -60,8 +60,6 @@ def list_datasets(
     name: str = Query(None, description="search by dataset's name"),
     type_: TaskType = Query(None, alias="type", description="type of related task"),
     state: TaskState = Query(None),
-    project_id: int = Query(None),
-    dataset_group_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
