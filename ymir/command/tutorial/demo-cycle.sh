@@ -244,19 +244,19 @@ exclude() {
     if [[ $2 -eq 0 ]]; then
         # first exclude merge:
         _echo_in_color $C_YELLOW \
-                       "exclude from $MINING_SET_PREFIX - $_TRAINED_TRAINING_SET_PREFIX-0 to $_EXCLUDED_SET_PREFIX-0"
+                       "exclude from $MINING_SET_PREFIX - $_MERGED_TRAINING_SET_PREFIX-0 to $_EXCLUDED_SET_PREFIX-0"
         $MIR_EXE merge --root $MIR_ROOT \
                        --src-revs "$MINING_SET_PREFIX@$MINING_SET_PREFIX" \
-                       --ex-src-revs "$_TRAINED_TRAINING_SET_PREFIX-0@$_TRAINED_TRAINING_SET_PREFIX-0" \
+                       --ex-src-revs "$_MERGED_TRAINING_SET_PREFIX-0@$_MERGED_TRAINING_SET_PREFIX-0" \
                        --dst-rev "$_EXCLUDED_SET_PREFIX-0@$_EXCLUDED_SET_PREFIX-0" \
                        -s host
     elif [[ $2 -gt 0 ]]; then
         _PREVIOUS_CYCLE_NUM=$(($2 - 1))
         _echo_in_color $C_YELLOW \
-                       "exclude from $_EXCLUDED_SET_PREFIX-$_PREVIOUS_CYCLE_NUM - $_TRAINED_TRAINING_SET_PREFIX-$2 to $_EXCLUDED_SET_PREFIX-$2"
+                       "exclude from $_EXCLUDED_SET_PREFIX-$_PREVIOUS_CYCLE_NUM - $_MERGED_TRAINING_SET_PREFIX-$2 to $_EXCLUDED_SET_PREFIX-$2"
         $MIR_EXE merge --root $MIR_ROOT \
                        --src-revs "$_EXCLUDED_SET_PREFIX-$_PREVIOUS_CYCLE_NUM@$_EXCLUDED_SET_PREFIX-$_PREVIOUS_CYCLE_NUM" \
-                       --ex-src-revs "$_TRAINED_TRAINING_SET_PREFIX-$2@$_TRAINED_TRAINING_SET_PREFIX-$2" \
+                       --ex-src-revs "$_MERGED_TRAINING_SET_PREFIX-$2@$_MERGED_TRAINING_SET_PREFIX-$2" \
                        --dst-rev "$_EXCLUDED_SET_PREFIX-$2@$_EXCLUDED_SET_PREFIX-$2" \
                        -s host
     else
