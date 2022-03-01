@@ -28,6 +28,7 @@ class TaskType(IntEnum):
     copy_data = mirsvrpb.TaskType.TaskTypeCopyData
     merge = mirsvrpb.TaskType.TaskTypeMerge
     infer = mirsvrpb.TaskType.TaskTypeInfer
+    data_fusion = mirsvrpb.TaskType.TaskTypeFusion
 
 
 class TaskState(IntEnum):
