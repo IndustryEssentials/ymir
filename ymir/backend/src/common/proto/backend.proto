@@ -24,7 +24,7 @@ enum TaskType {
     TaskTypeInfer = 9;
     TaskTypeSampling = 10;
     /// merge -> filter -> sampling
-    TaskTypeProcessData = 11;
+    TaskTypeFusion = 11;
 };
 
 enum LabelFormat {
@@ -47,7 +47,6 @@ enum MergeStrategy {
 }
 
 enum RequestType {
-    reserved 15, 1002;
     UNKNOWN = 0;
     // CMD task
     CMD_BRANCH_DEL = 1;
@@ -66,6 +65,7 @@ enum RequestType {
     CMD_TERMINATE = 14;
     CMD_PULL_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
+    CMD_SAMPLING = 18;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -77,10 +77,11 @@ enum RequestType {
 
     // Long task
     TASK_CREATE = 1001;
+
+    reserved 15, 1002;
 }
 
 message GeneralReq {
-    reserved 1002;
     string user_id = 1;
     string repo_id = 2;
     RequestType req_type = 3;
@@ -112,10 +113,11 @@ message GeneralReq {
     MergeStrategy merge_strategy = 20;
     TaskType terminated_task_type = 21;
     ReqCreateTask req_create_task = 1001;
+
+    reserved 1002;
 }
 
 message GeneralResp {
-    reserved 1000;
     int32 code = 1;
     string req_task_id = 2;
     string message = 3;
@@ -125,6 +127,8 @@ message GeneralResp {
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     RespCMDInference detection = 1001;
+
+    reserved 1000;
 }
 
 // base args for create task request
@@ -134,7 +138,7 @@ message ReqCreateTask {
     float sampling_rate = 2;
     bool no_task_monitor = 3;
 
-    TaskReqFilter filter = 101;
+    TaskReqFilter filter = 101 [deprecated=true];
     TaskReqTraining training = 102;
     TaskReqMining mining = 103;
     TaskReqImporting importing = 104;
@@ -142,7 +146,7 @@ message ReqCreateTask {
     TaskReqInference inference = 106;
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
-    TaskReqProcessData process_data = 109;
+    TaskReqFusion fusion = 109;
 }
 
 message TaskReqFilter {
@@ -152,21 +156,23 @@ message TaskReqFilter {
 }
 
 message TaskReqTraining {
-    reserved 3;
     message TrainingDatasetType {
         string dataset_id = 1;
         TvtType dataset_type = 2;
     }
     repeated TrainingDatasetType in_dataset_types = 1;
     repeated int32 in_class_ids = 2;
+
+    reserved 3;
 }
 
 message TaskReqMining {
-    reserved 3, 5;
     repeated string in_dataset_ids = 1;
     repeated string ex_dataset_ids = 2;
     int32 top_k = 4;  // > 0, will keep all if set to 0.
     bool generate_annotations = 6;
+
+    reserved 3, 5;
 }
 
 message TaskReqImporting {
@@ -203,14 +209,16 @@ message TaskReqLabeling {
     bool export_annotation = 6;
 }
 
-message TaskReqProcessData {
-    repeated string merge_in_dataset_ids = 1;
-    repeated string merge_ex_dataset_ids = 2;
+message TaskReqFusion {
+    repeated string in_dataset_ids = 1;
+    repeated string ex_dataset_ids = 2;
     MergeStrategy merge_strategy = 3;
-    repeated int32 filter_in_class_ids = 4;
-    repeated int32 filter_ex_class_ids = 5;
-    int32 sampling_count = 6;
-    float sampling_rate = 7;
+    repeated int32 in_class_ids = 4;
+    repeated int32 ex_class_ids = 5;
+    oneof count_or_rate {
+        int32 count = 6;
+        float rate = 7;
+    }
 }
 
 message RespCMDInference {
