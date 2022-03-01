@@ -502,7 +502,6 @@ def create_unification_datasets(
 ) -> Any:
     """
        Create dataset processing task
-
     """
     logger.debug(
         "[create task] create task with payload: %s", jsonable_encoder(task_in)
@@ -515,10 +514,19 @@ def create_unification_datasets(
 
     keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
 
-    # todo: using pydantic to do the normalization
     parameters = normalize_parameters(
         db, task_in.name, task_in.parameters, keyword_name_to_id
     )
+
+    task = crud.dataset.create_task(
+        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
+    )
+
+
+    task = crud.task.create_task(
+        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
+    )
+
 
 
     try:
@@ -534,15 +542,6 @@ def create_unification_datasets(
     except ValueError:
         # todo parse error message
         raise FailedtoCreateTask()
-
-    task = crud.dataset.create_task(
-        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
-    )
-
-
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_id, user_id=current_user.id
-    )
 
 
 
