@@ -187,11 +187,11 @@ class TrainDataSet(BaseModel):
 
 
 class MergeDataSet(BaseModel):
-    include_dataset: List[str]
+    include_datasets: List[str]
     include_strategy: Optional[MergeStrategy] = Field(
         MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
     )
-    exclude_dataset: List[str]
+    exclude_datasets: List[str]
 
 
 class FiterLabel(BaseModel):

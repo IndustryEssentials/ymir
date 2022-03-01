@@ -27,7 +27,7 @@ from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.ymir_controller import ControllerClient, ControllerRequest, gen_task_hash
 from app.utils.ymir_viz import VizClient
-from fastapi.encoders import jsonable_encoder
+
 router = APIRouter()
 
 
@@ -492,7 +492,6 @@ def get_asset_of_dataset(
     response_model=schemas.Dataset,
 )
 def create_unification_datasets(
-    dataset_import: schemas.UnificationDatasetsParameter,
-    project_id: int
+    dataset_import: schemas.UnificationDatasetsParameter, project_id: int
 ) -> Any:
     pass
