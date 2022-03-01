@@ -138,6 +138,7 @@ message ReqCreateTask {
     float sampling_rate = 2;
     bool no_task_monitor = 3;
 
+    TaskReqFilter filter = 101 [deprecated=true];
     TaskReqTraining training = 102;
     TaskReqMining mining = 103;
     TaskReqImporting importing = 104;
@@ -146,8 +147,6 @@ message ReqCreateTask {
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
     TaskReqFusion fusion = 109;
-
-    reserved 101;
 }
 
 message TaskReqFilter {
