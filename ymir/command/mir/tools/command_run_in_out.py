@@ -1,5 +1,4 @@
 import copy
-import datetime
 from functools import wraps
 import logging
 from subprocess import CalledProcessError
@@ -15,18 +14,6 @@ from mir.protos import mir_command_pb2 as mirpb
 # private: monitor.txt logger
 def _get_task_name(dst_rev: str) -> str:
     return revs_parser.parse_single_arg_rev(dst_rev).tid if dst_rev else 'default_task'
-
-
-# private: commit on errors
-def _generate_mir_task(code: int, error_msg: str, dst_typ_rev_tid: revs_parser.TypRevTid) -> mirpb.Task:
-    task = mirpb.Task()
-    task.type = mirpb.TaskType.TaskTypeUnknown
-    task.task_id = dst_typ_rev_tid.tid
-    task.name = dst_typ_rev_tid.tid
-    task.timestamp = int(datetime.datetime.now().timestamp())
-    task.return_code = code
-    task.return_msg = error_msg
-    return task
 
 
 @utils.time_it
@@ -52,8 +39,12 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                                   mir_branch=src_typ_rev_tid.rev,
                                                                   ms=mirpb.MIR_TASKS,
                                                                   mir_task_id=src_typ_rev_tid.tid)
-        task = _generate_mir_task(code=code, error_msg=error_msg, dst_typ_rev_tid=dst_typ_rev_tid)
-        mir_storage_ops.add_mir_task(mir_tasks, task)
+        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+                                        task_type=mirpb.TaskType.TaskTypeUnknown,
+                                        task_id=dst_typ_rev_tid.tid,
+                                        message='commit error',
+                                        return_code=code,
+                                        return_msg=error_msg)
 
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,
@@ -131,7 +122,7 @@ def command_run_in_out(f: Callable) -> Callable:
                                        state_code=error_code,
                                        state_content=state_message,
                                        trace_message=trace_message)
-        logging.info(f"command fail: {dst_rev}, exc: {exc}, error_code: {error_code}, new commit: {needs_new_commit}")
+        logging.info(f"command failed: {dst_rev}; exc: {exc}")
         raise exc
 
     return wrapper

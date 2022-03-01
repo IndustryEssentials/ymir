@@ -8,6 +8,6 @@ class DockerImageConfig(Base):
     __tablename__ = "docker_image_config"
     image_id = Column(Integer, primary_key=True, index=True, nullable=False)
     type = Column(Integer, primary_key=True, index=True, nullable=False)
-    config = Column(Text(settings.CONFIG_LEN_LIMIT), nullable=False)
+    config = Column(Text(settings.TEXT_LEN_LIMIT), nullable=False)
 
     __table_args__ = (UniqueConstraint("image_id", "type", name="unique_image_type"),)

@@ -14,6 +14,7 @@ from controller.invoker import (
     invoker_cmd_merge,
     invoker_cmd_pull_image,
     invoker_cmd_terminate,
+    invoker_cmd_user_create,
     invoker_task_factory,
 )
 
@@ -37,4 +38,5 @@ RequestTypeToInvoker = {
     backend_pb2.CMD_TERMINATE: invoker_cmd_terminate.CMDTerminateInvoker,
     backend_pb2.REPO_CREATE: invoker_cmd_init.InitInvoker,
     backend_pb2.TASK_CREATE: invoker_task_factory.CreateTaskInvokerFactory,
+    backend_pb2.USER_CREATE: invoker_cmd_user_create.UserCreateInvoker,
 }

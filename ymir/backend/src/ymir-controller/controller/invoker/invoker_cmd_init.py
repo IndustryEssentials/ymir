@@ -34,6 +34,8 @@ class InitInvoker(BaseMirControllerInvoker):
         os.link(label_file, link_dst_file)
 
         command = [utils.mir_executable(), 'init', '--root', self._repo_root]
+        if self._request.private_labels:
+            command.extend(['--project-class-names', ';'.join(self._request.private_labels)])
 
         return utils.run_command(
             cmd=command,

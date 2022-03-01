@@ -1,10 +1,10 @@
-from .asset import Asset, AssetOut, Assets
+from .asset import Asset, AssetOut, AssetPaginationOut
 from .dataset import (
     Dataset,
     DatasetCreate,
     DatasetImport,
     DatasetOut,
-    Datasets,
+    DatasetPaginationOut,
     DatasetsOut,
     DatasetUpdate,
     ImportStrategy,
@@ -35,7 +35,6 @@ from .model import (
     ModelImport,
     ModelOut,
     ModelPaginationOut,
-    Models,
     ModelsOut,
     ModelUpdate,
 )
@@ -56,13 +55,13 @@ from .task import (
     Task,
     TaskCreate,
     TaskInternal,
+    TaskPaginationOut,
     TaskOut,
     TaskParameter,
-    Tasks,
-    TasksOut,
     TaskTerminate,
     TaskUpdate,
     TaskUpdateStatus,
+    UnificationDatasetsParameter,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (
@@ -75,4 +74,22 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .workspace import Workspace, WorkspaceCreate, WorkspaceOut
+from .dataset_group import (
+    DatasetGroupOut,
+    DatasetGroupCreate,
+    DatasetGroupUpdate,
+    DatasetGroupPaginationOut,
+)
+from .model_group import (
+    ModelGroupOut,
+    ModelGroupCreate,
+    ModelGroupUpdate,
+    ModelGroupPaginationOut,
+)
+from .project import (
+    ProjectCreate,
+    ProjectUpdate,
+    Project,
+    ProjectOut,
+    ProjectPaginationOut,
+)

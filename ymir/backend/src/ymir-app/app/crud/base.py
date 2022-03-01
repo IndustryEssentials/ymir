@@ -28,9 +28,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get(self, db: Session, id: Any) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.id == id).first()  # type: ignore
 
-    def get_multi_by_ids(self, db: Session, *, ids: List[int]) -> List[ModelType]:
-        return db.query(self.model).filter(self.model.id.in_(ids)).all()  # type: ignore
-
     def get_by_user_and_id(
         self, db: Session, *, user_id: int, id: Any
     ) -> Optional[ModelType]:
@@ -70,6 +67,19 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self, db: Session, *, offset: int = 0, limit: int = settings.DEFAULT_LIMIT
     ) -> List[ModelType]:
         return db.query(self.model).offset(offset).limit(limit).all()
+
+    def get_multi_by_ids(self, db: Session, *, ids: List[int]) -> List[ModelType]:
+        return db.query(self.model).filter(self.model.id.in_(ids)).all()  # type: ignore
+
+    def get_multi_by_user(self, db: Session, *, user_id: int) -> List[ModelType]:
+        return (
+            db.query(self.model)
+            .filter(
+                self.model.user_id == user_id,  # type: ignore
+                not_(self.model.is_deleted),  # type: ignore
+            )
+            .all()
+        )
 
     def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
@@ -119,3 +129,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def total(self, db: Session) -> int:
         return db.query(self.model).count()
+
+    def is_duplicated_name(self, db: Session, user_id: int, name: str) -> bool:
+        return not (self.get_by_user_and_name(db, user_id, name) is None)

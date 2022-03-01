@@ -1,5 +1,4 @@
 import argparse
-import datetime
 import logging
 import os
 import shutil
@@ -13,7 +12,7 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, context, data_exporter, hash_utils, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
@@ -65,13 +64,12 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
         logging.warning(traceback.format_exc())
         return [], 0.0
 
-    return ([os.path.join(model_root, name) for name in model_names], model_mAP)
+    return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
 
 
 def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
     if not model_paths or not dest_path:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='invalid model_paths or dest_path')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid model_paths or dest_path')
 
     logging.info(f"packing models to {dest_path}")
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
@@ -109,21 +107,18 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
     """
     logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
 
-    task = mirpb.Task()
-    task.type = mirpb.TaskTypeTraining
-    task.name = "training done"
-    task.task_id = dst_rev_tid.tid
-    task.timestamp = int(datetime.datetime.now().timestamp())
-    task.model.model_hash = model_sha1
-    task.model.mean_average_precision = mAP
-    task.return_code = task_ret_code
-    task.return_msg = task_err_msg
-
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                           mir_branch=src_rev_tid.rev,
                                                                           mir_task_id=src_rev_tid.tid,
                                                                           ms=mirpb.MirStorage.MIR_TASKS)
-    mir_storage_ops.add_mir_task(mir_tasks, task)
+    mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+                                    task_type=mirpb.TaskType.TaskTypeTraining,
+                                    task_id=dst_rev_tid.tid,
+                                    message='training',
+                                    return_code=task_ret_code,
+                                    return_msg=task_err_msg)
+    mir_tasks.tasks[mir_tasks.head_task_id].model.model_hash = model_sha1
+    mir_tasks.tasks[mir_tasks.head_task_id].model.mean_average_precision = mAP
     return mir_tasks
 
 
@@ -341,6 +336,11 @@ class CmdTrain(base.BaseCommand):
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")
             return MirCode.RC_CMD_INVALID_ARGS
+
+        if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='project class ids mismatch')
+
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
         # export train set
@@ -472,8 +472,7 @@ class CmdTrain(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     train_arg_parser = subparsers.add_parser("train",
                                              parents=[parent_parser],
                                              description="use this command to train current workspace",
