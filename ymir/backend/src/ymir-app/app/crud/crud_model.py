@@ -4,39 +4,18 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
-from app.constants.state import TaskType
 from app.crud.base import CRUDBase
-from app.models import Model, Task
+from app.models import Model
 from app.schemas.model import ModelCreate, ModelUpdate
 
 
 class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
-    interested_fields = [
-        *Model.__table__.columns,
-        Task.type.label("task_type"),
-        Task.name.label("task_name"),
-        Task.state.label("task_state"),
-        Task.parameters.label("task_parameters"),
-        Task.config.label("task_config"),
-    ]
-
-    def get_with_task(self, db: Session, *, user_id: int, id: int) -> Optional[Model]:
-        query = db.query(*self.interested_fields)
-        query = query.join(Task, self.model.task_id == Task.id)
-        query = query.filter(
-            self.model.id == id,
-            self.model.user_id == user_id,
-            not_(self.model.is_deleted),
-        )
-        return query.first()
-
     def get_multi_models(
         self,
         db: Session,
         *,
         user_id: int,
         name: Optional[str],
-        task_type: Optional[TaskType],
         start_time: Optional[int],
         end_time: Optional[int],
         offset: Optional[int],
@@ -44,8 +23,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         order_by: str,
         is_desc: bool = True,
     ) -> Tuple[List[Model], int]:
-        query = db.query(*self.interested_fields)
-        query = query.join(Task, self.model.task_id == Task.id)
+        query = db.query(self.model)
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 
         if start_time and end_time:
@@ -60,10 +38,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
 
         if name:
             # basic fuzzy search
-            query = query.filter(Model.name.like(f"%{name}%"))
-
-        if task_type:
-            query = query.filter(Task.type == task_type.value)
+            query = query.filter(self.model.name.like(f"%{name}%"))
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:

@@ -11,13 +11,6 @@ from tests.utils.tasks import create_task
 from tests.utils.utils import random_lower_string
 
 
-@pytest.fixture()
-def user_id(mocker, client: TestClient, normal_user_token_headers: Dict[str, str]):
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
-    current_user = r.json()["result"]
-    return current_user["id"]
-
-
 @pytest.fixture(scope="function")
 def mock_controller(mocker):
     c = mocker.Mock()
@@ -49,70 +42,6 @@ def mock_viz(mocker):
 @pytest.fixture(scope="function")
 def mock_clickhouse(mocker):
     return mocker.Mock()
-
-
-class TestTaskResult:
-    def test_save_task_result(
-        self, mocker, mock_controller, mock_db, mock_graph_db, mock_controller_request
-    ):
-        task_result_proxy = m.TaskResultHandler(
-            controller=mock_controller,
-            db=mock_db,
-            graph_db=mock_graph_db,
-            viz=mock_viz,
-            clickhouse=mock_clickhouse,
-        )
-        task_result_proxy.get = mocker.Mock(
-            return_value={
-                "name": random_lower_string(),
-                "hash": random_lower_string(),
-                "state": m.TaskState.done,
-                "state_code": 0,
-            }
-        )
-        mock_handler = mocker.Mock()
-        task_result_proxy.handle_finished_task = mock_handler
-        task_hash = random_lower_string(32)
-        task_result_proxy.parse_resp = mocker.Mock(
-            return_value={"state": m.TaskState.done, "task_id": task_hash}
-        )
-        task_result_proxy.send_notification = mocker.Mock()
-        task_result_proxy.add_new_model_if_not_exist = mocker.Mock()
-        task_result_proxy.add_new_dataset_if_not_exist = mocker.Mock()
-
-        task_result_proxy.update_task_progress_and_state = mocker.Mock(
-            return_value=None
-        )
-
-        user_id = random.randint(1000, 2000)
-        task_hash = random_lower_string(32)
-        task = mocker.Mock(hash=task_hash)
-        result = task_result_proxy.get(task)
-        task_result_proxy.save(task, result)
-        mock_handler.assert_called()
-
-    def test_get_dataset_info(self, mocker, mock_controller, mock_db, mock_graph_db):
-        viz = mocker.Mock()
-        keywords = {"a": 1, "b": 2, "c": 3, "d": 4}
-        ignored_keywords = {"x": 1, "y": 2, "z": 3}
-        items = list(range(random.randint(10, 100)))
-        viz.get_assets.return_value = mocker.Mock(
-            keywords=keywords,
-            items=items,
-            total=len(items),
-            ignored_keywords=ignored_keywords,
-        )
-        proxy = m.TaskResultHandler(
-            controller=mock_controller,
-            db=mock_db,
-            graph_db=mock_graph_db,
-            viz=viz,
-            clickhouse=mock_clickhouse,
-        )
-        user_id = random.randint(1000, 2000)
-        task_hash = random_lower_string(32)
-        result = proxy.get_dataset_info(user_id, task_hash)
-        assert result["keywords"] == list(keywords.keys())
 
 
 def test_get_default_dataset_name():

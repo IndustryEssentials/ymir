@@ -24,36 +24,6 @@ enum TaskType {
     TaskTypeInfer = 9;
 };
 
-//  deprecated
-enum TaskState {
-    TaskStateUnknown = 0;
-    TaskStatePending = 1;
-    TaskStateRunning = 2;
-    TaskStateDone = 3;
-    TaskStateError = 4;
-    TaskStateMiss = 5;
-};
-
-//  deprecated
-enum RCode {
-    //grpc status codes
-    RC_OK = 0;
-    RC_ERROR_UNKNOWN = 1;
-
-    RC_SERVICE_ERROR_UNKNOWN = 1000;
-    RC_SERVICE_INVALID_REQ = 1001;
-    RC_SERVICE_INVOKE_ERROR = 1002;
-    RC_SERVICE_UNKOWN_RESPONSE = 1003;
-    RC_SERVICE_TASK_INVOKER_ERROR = 1004;
-    RC_SERVICE_INFO_INVOKER_ERROR = 1005;
-    RC_SERVICE_DOCKER_IMAGE_ERROR = 1006;
-
-    // app state_code
-    RC_TASK_UNKNOWN_ERROR = 2000;
-    RC_TASK_LABEL_CONFLICT_ERROR = 2001;
-
-}
-
 enum LabelFormat {
     NO_ANNOTATION = 0;
     PASCAL_VOC = 1;
@@ -74,6 +44,7 @@ enum MergeStrategy {
 }
 
 enum RequestType {
+    reserved 15, 1002;
     UNKNOWN = 0;
     // CMD task
     CMD_BRANCH_DEL = 1;
@@ -90,7 +61,6 @@ enum RequestType {
     CMD_LABEL_ADD = 12;
     CMD_LABEL_GET = 13;
     CMD_TERMINATE = 14;
-    CMD_LABLE_TASK_TERMINATE = 15 [deprecated = true];
     CMD_PULL_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
 
@@ -104,10 +74,10 @@ enum RequestType {
 
     // Long task
     TASK_CREATE = 1001;
-    TASK_INFO = 1002 [deprecated = true];
 }
 
 message GeneralReq {
+    reserved 1002;
     string user_id = 1;
     string repo_id = 2;
     RequestType req_type = 3;
@@ -131,16 +101,18 @@ message GeneralReq {
     string model_hash = 14;
     string asset_dir = 15;
     string docker_image_config = 16;
+    // init repo: project labels (training target)
+    // add labels: labels you want to add
     repeated string private_labels = 17;
     bool check_only=18;
     string executor_instance = 19;
     MergeStrategy merge_strategy = 20;
     TaskType terminated_task_type = 21;
     ReqCreateTask req_create_task = 1001;
-    ReqGetTaskInfo req_get_task_info = 1002 [deprecated = true];
 }
 
 message GeneralResp {
+    reserved 1000;
     int32 code = 1;
     string req_task_id = 2;
     string message = 3;
@@ -149,7 +121,6 @@ message GeneralResp {
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
-    RespGetTaskInfo resp_get_task_info = 1000 [deprecated = true];
     RespCMDInference detection = 1001;
 }
 
@@ -177,21 +148,20 @@ message TaskReqFilter {
 }
 
 message TaskReqTraining {
+    reserved 3;
     message TrainingDatasetType {
         string dataset_id = 1;
         TvtType dataset_type = 2;
     }
     repeated TrainingDatasetType in_dataset_types = 1;
     repeated int32 in_class_ids = 2;
-    string training_config = 3 [deprecated = true];
 }
 
 message TaskReqMining {
+    reserved 3, 5;
     repeated string in_dataset_ids = 1;
     repeated string ex_dataset_ids = 2;
-    string model_hash = 3 [deprecated = true];
     int32 top_k = 4;  // > 0, will keep all if set to 0.
-    string mining_config = 5 [deprecated = true];
     bool generate_annotations = 6;
 }
 
@@ -229,34 +199,6 @@ message TaskReqLabeling {
     bool export_annotation = 6;
 }
 
-message ReqGetTaskInfo {
-    repeated string task_ids = 1 [deprecated = true];
-}
-
-// deprecated = true
-message RespGetTaskInfo {
-    // key: task id, value: task info
-    map<string, TaskInfoItem> task_infos = 1;
-}
-
-// sub for `TaskMonitorStorageItem_`  deprecated = true
-message TaskInfoItem {
-    string task_id = 1; // Copy of task id.
-    string base_task_id = 2;
-    string user_id = 3;
-    string repo_id = 4;
-    TaskType type = 5;
-    TaskState state = 6;
-    int64 start_timestamp = 7;
-    int64 finish_timestamp = 8;
-    int64 update_timestamp = 9;
-    float percent = 10;
-    // last_error is trace_stack_message
-    string last_error = 11;
-    int32 state_code = 12;
-    string state_message = 13;
-}
-
 message RespCMDInference {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
@@ -282,20 +224,6 @@ message Rect {
     int32 h = 4;
 };
 
-
-/// task monitor storage   deprecated = true
-message TaskMonitorStorage {
-    map<string, TaskMonitorStorageItem> tasks = 1;
-};
-
-message TaskMonitorStorageItem {
-    TaskInfoItem general_info = 1;
-    string monitor_file_path = 2;
-    string storage_file_path = 3;
-    string repo_root = 4;
-    string branch_name = 5;
-    GeneralReq request = 100;
-};
 
 service mir_controller_service {
     /*
@@ -356,6 +284,7 @@ service mir_controller_service {
         Args:
             GeneralReq.user: user name for this sandbox
             GeneralReq.repo: repo name
+            GeneralReq.private_labels: project class names (training target)
         Returns:
             0: success
             errors when:

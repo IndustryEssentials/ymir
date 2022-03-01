@@ -36,7 +36,7 @@ export function randomBetween(n, m, exclude) {
   return result
 }
 
-const toFixed = (value, len) => {
+export const toFixed = (value, len) => {
   var s = value + ""
   if (!len) len = 0
   if (s.indexOf(".") == -1) s += "."

@@ -13,14 +13,11 @@ class Settings(BaseSettings):
     CLICKHOUSE_URI: str = "clickhouse"
     TOKEN_URL: str = "/auth/token"
     GRPC_CHANNEL: str = "controller:50066"
-    DEFAULT_LIMIT: int = 20
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours
     APP_SECRET_KEY: str = secrets.token_urlsafe(32)
-    HASH_LEN_LIMIT: int = 50
-    NAME_LEN_LIMIT: int = 100
-    PARA_LEN_LIMIT: int = 500
-    CONFIG_LEN_LIMIT: int = 2000
-    PRED_LEN_LIMIT: int = 20000
+    DEFAULT_LIMIT: int = 20
+    STRING_LEN_LIMIT: int = 100
+    TEXT_LEN_LIMIT: int = 20000
     SENTRY_DSN: Optional[str]
 
     # assets viz
@@ -34,7 +31,7 @@ class Settings(BaseSettings):
 
     USE_200_EVERYWHERE: bool = True
 
-    IS_TESTING: bool = False
+    REDIS_TESTING: bool = False
     APP_API_KEY: str = secrets.token_urlsafe(32)
 
     # paths to share data with Controller, etc
@@ -66,7 +63,7 @@ class Settings(BaseSettings):
     # RUNTIME
     RUNTIMES: Optional[
         str
-    ] = '[{"name": "default_training_image", "hash": "d9f9ed3ceeaf", "type": 1, "url": "industryessentials/executor-det-yolov4-training:release-0.4.0", "config": "{\\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"learning_rate\\": 0.0013, \\"max_batches\\": 20000, \\"warmup_iterations\\": 1000, \\"batch\\": 64, \\"subdivisions\\": 32, \\"shm_size\\": \\"16G\\"}"}, {"name": "default_mining_image", "hash": "cdd66d019862", "type": 2, "url": "industryessentials/executor-det-yolov4-mining:release-0.4.0", "config": "{\\"data_workers\\": 28, \\"model_name\\": \\"yolo\\", \\"model_type\\": \\"detection\\", \\"strategy\\": \\"aldd_yolo\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"batch_size\\": 16, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}, {"name": "default_inference_image", "hash": "cdd66d019862", "type": 9, "url": "industryessentials/executor-det-yolov4-mining:release-0.4.0", "config": "{\\"image_height\\": 608, \\"image_width\\": 608, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"write_result\\": true, \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}]'  # noqa: E501
+    ] = '[{"name": "default_training_image", "hash": "9af9b02a22b0", "type": 1, "url": "industryessentials/executor-det-yolov4-training:release-0.4.1", "config": "{\\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"learning_rate\\": 0.0013, \\"max_batches\\": 20000, \\"warmup_iterations\\": 1000, \\"batch\\": 64, \\"subdivisions\\": 32, \\"shm_size\\": \\"16G\\"}"}, {"name": "default_mining_image", "hash": "a573d13b71bb", "type": 2, "url": "industryessentials/executor-det-yolov4-mining:release-0.4.1", "config": "{\\"data_workers\\": 28, \\"model_name\\": \\"yolo\\", \\"model_type\\": \\"detection\\", \\"strategy\\": \\"aldd_yolo\\", \\"image_height\\": 608, \\"image_width\\": 608, \\"batch_size\\": 16, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}, {"name": "default_inference_image", "hash": "a573d13b71bb", "type": 9, "url": "industryessentials/executor-det-yolov4-mining:release-0.4.1", "config": "{\\"image_height\\": 608, \\"image_width\\": 608, \\"anchors\\": \\"12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401\\", \\"write_result\\": true, \\"confidence_thresh\\": 0.1, \\"nms_thresh\\": 0.45, \\"max_boxes\\": 50}"}]'  # noqa: E501
 
     # Online Sheet
     SHARING_TIMEOUT: int = 10

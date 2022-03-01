@@ -1,0 +1,3 @@
+[run]
+omit =
+    src/ymir-monitor/monitor/config.py

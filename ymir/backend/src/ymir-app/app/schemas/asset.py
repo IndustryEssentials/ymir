@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic import BaseModel, Field
 
 from .common import Common
 
@@ -24,17 +24,21 @@ class AssetUpdate(AssetBase):
 
 
 class Asset(AssetBase):
-    url: Union[AnyUrl, str]
+    url: str
     annotations: Optional[List[Dict]]
     metadata: Optional[Dict]
     keywords: Optional[List[str]]
 
 
-class Assets(BaseModel):
+class AssetOut(Common):
+    result: Asset
+
+
+class AssetPagination(BaseModel):
     total: int
     items: List[Asset]
     keywords: Dict[str, int]
 
 
-class AssetOut(Common):
-    result: Union[Asset, Assets]
+class AssetPaginationOut(Common):
+    result: AssetPagination

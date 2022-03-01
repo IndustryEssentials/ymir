@@ -8,8 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.api import deps
 from app.config import settings
-from app.db.base_class import Base
-from app.db.session import SessionLocal, engine
+from app.db.session import SessionLocal
 from app.main import app
 from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_admin_token_headers, get_super_admin_token_headers
@@ -24,6 +23,7 @@ def fake_controller_client() -> Generator:
     try:
         client = Mock()
         client.send.return_value = {"csv_labels": ["tabby", "kitten"]}
+        client.add_labels.return_value = {"csv_labels": ["tabby", "kitten"]}
         client.get_gpu_info.return_value = {"gpu_count": 233}
         client.pull_docker_image.return_value = {
             "hash_id": "hash_abcd",
@@ -118,3 +118,10 @@ def admin_token_headers(client: TestClient) -> Dict[str, str]:
 @pytest.fixture(scope="module")
 def super_admin_token_headers(client: TestClient) -> Dict[str, str]:
     return get_super_admin_token_headers(client)
+
+
+@pytest.fixture()
+def user_id(mocker, client: TestClient, normal_user_token_headers: Dict[str, str]):
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()["result"]
+    return current_user["id"]

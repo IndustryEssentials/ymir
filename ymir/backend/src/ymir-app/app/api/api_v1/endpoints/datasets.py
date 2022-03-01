@@ -25,7 +25,7 @@ from app.constants.state import TaskState, TaskType
 from app.models.dataset import Dataset
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
-from app.utils.ymir_controller import ControllerClient, ControllerRequest
+from app.utils.ymir_controller import ControllerClient, ControllerRequest, gen_task_hash
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
@@ -53,13 +53,14 @@ class SortField(enum.Enum):
 
 @router.get(
     "/",
-    response_model=schemas.DatasetOut,
+    response_model=schemas.DatasetPaginationOut,
 )
-def list_dataset(
+def list_datasets(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by dataset's name"),
     type_: TaskType = Query(None, alias="type", description="type of related task"),
     state: TaskState = Query(None),
+    project_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
@@ -90,7 +91,7 @@ def list_dataset(
 
 @router.get(
     "/public",
-    response_model=schemas.DatasetOut,
+    response_model=schemas.DatasetPaginationOut,
 )
 def get_public_datasets(
     db: Session = Depends(deps.get_db),
@@ -100,7 +101,7 @@ def get_public_datasets(
     Get all the public datasets,
     public datasets come from User 1
     """
-    datasets, total = crud.dataset.get_datasets_of_user(
+    datasets, total = crud.dataset.get_multi_by_user(
         db,
         user_id=settings.PUBLIC_DATASET_OWNER,
     )
@@ -116,7 +117,6 @@ def create_dataset(
     db: Session = Depends(deps.get_db),
     dataset_import: schemas.DatasetImport,
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
@@ -134,11 +134,13 @@ def create_dataset(
     if dataset:
         raise DuplicateDatasetError()
 
-    pre_dataset = PrepareDataset.from_dataset_input(
-        current_user.id, current_workspace.hash, dataset_import
-    )
+    pre_dataset = PrepareDataset.from_dataset_input(current_user.id, dataset_import)
 
-    task_in = schemas.TaskCreate(name=pre_dataset.task_id, type=pre_dataset.task_type)
+    task_in = schemas.TaskCreate(
+        name=pre_dataset.task_id,
+        type=pre_dataset.task_type,
+        project_id=dataset_import.project_id,
+    )
     task = crud.task.create_task(
         db, obj_in=task_in, task_hash=pre_dataset.task_id, user_id=current_user.id
     )
@@ -148,8 +150,11 @@ def create_dataset(
 
     dataset_in = schemas.DatasetCreate(
         name=dataset_import.name,
+        version_num=dataset_import.version_num,
         hash=pre_dataset.task_id,
         type=pre_dataset.task_type,
+        dataset_group_id=dataset_import.dataset_group_id,
+        project_id=dataset_import.project_id,
         user_id=current_user.id,
         task_id=task.id,
     )
@@ -157,7 +162,9 @@ def create_dataset(
     logger.info("[create dataset] dataset record created: %s", dataset)
 
     # run background task when related task record has been created
-    background_tasks.add_task(import_dataset, db, controller_client, pre_dataset, dataset)
+    background_tasks.add_task(
+        import_dataset, db, controller_client, pre_dataset, dataset
+    )
 
     return {"result": dataset}
 
@@ -165,7 +172,7 @@ def create_dataset(
 @dataclass
 class PrepareDataset:
     user_id: int
-    workspace: Optional[str]
+    project_id: int
     src_url: Optional[str]
     src_dataset_id: Optional[int]
     src_path: Optional[str]
@@ -177,7 +184,6 @@ class PrepareDataset:
     def from_dataset_input(
         cls,
         user_id: int,
-        workspace: Optional[str],
         dataset_import: schemas.DatasetImport,
     ) -> "PrepareDataset":
         if dataset_import.input_url or dataset_import.input_path:
@@ -189,10 +195,10 @@ class PrepareDataset:
                 "[create dataset] refuse to create dataset without url or dataset_id"
             )
             raise FailedtoCreateDataset()
-        task_id = ControllerRequest.gen_task_id(user_id)
+        task_id = gen_task_hash(user_id, dataset_import.project_id)
         return cls(
             user_id=user_id,
-            workspace=workspace,
+            project_id=dataset_import.project_id,
             src_url=dataset_import.input_url,
             src_dataset_id=dataset_import.input_dataset_id,
             src_path=dataset_import.input_path,
@@ -256,7 +262,7 @@ def _import_dataset(
     req = ControllerRequest(
         pre_dataset.task_type,
         pre_dataset.user_id,
-        pre_dataset.workspace,
+        pre_dataset.project_id,
         pre_dataset.task_id,
         args=parameters,
     )
@@ -313,7 +319,9 @@ def get_dataset(
     """
     Get verbose information of specific dataset
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
     return {"result": dataset}
@@ -352,7 +360,7 @@ def update_dataset_name(
 
 @router.get(
     "/{dataset_id}/assets",
-    response_model=schemas.AssetOut,
+    response_model=schemas.AssetPaginationOut,
     responses={404: {"description": "Dataset Not Found"}},
 )
 def get_assets_of_dataset(
@@ -364,14 +372,15 @@ def get_assets_of_dataset(
     keyword_id: Optional[int] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Get asset list of specific dataset,
     pagination is supported by means of offset and limit
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
 
@@ -387,8 +396,8 @@ def get_assets_of_dataset(
 
     viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,
-        branch_id=dataset.task_hash,  # type: ignore
+        project_id=dataset.project_id,
+        branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
     assets = viz_client.get_assets(keyword_id=keyword_id, limit=limit, offset=offset)
@@ -410,13 +419,14 @@ def get_random_asset_id_of_dataset(
     dataset_id: int = Path(..., example="12"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Get random asset from specific dataset
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
 
@@ -424,8 +434,8 @@ def get_random_asset_id_of_dataset(
     offset = get_random_asset_offset(dataset)
     viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,
-        branch_id=dataset.task_hash,  # type: ignore
+        project_id=dataset.project_id,
+        branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
     assets = viz_client.get_assets(keyword_id=None, offset=offset, limit=1)
@@ -452,24 +462,35 @@ def get_asset_of_dataset(
     asset_hash: str = Path(..., description="in asset hash format"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    current_workspace: models.Workspace = Depends(deps.get_current_workspace),
     labels: List = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Get asset from specific dataset
     """
-    dataset = crud.dataset.get_with_task(db, user_id=current_user.id, id=dataset_id)
+    dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=dataset_id
+    )
     if not dataset:
         raise DatasetNotFound()
 
     keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
     viz_client.config(
         user_id=current_user.id,
-        repo_id=current_workspace.hash,
-        branch_id=dataset.task_hash,  # type: ignore
+        project_id=dataset.project_id,
+        branch_id=dataset.hash,
         keyword_id_to_name=keyword_id_to_name,
     )
     asset = viz_client.get_asset(asset_id=asset_hash)
     if not asset:
         raise AssetNotFound()
     return {"result": asset}
+
+
+@router.post(
+    "/unification_datasets",
+    response_model=schemas.Dataset,
+)
+def create_unification_datasets(
+    dataset_import: schemas.UnificationDatasetsParameter, project_id: int
+) -> Any:
+    pass

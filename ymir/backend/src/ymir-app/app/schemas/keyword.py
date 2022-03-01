@@ -3,11 +3,14 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from .common import Common
+from datetime import datetime
 
 
 class KeywordBase(BaseModel):
     name: str
     aliases: Optional[List[str]]
+    create_time: datetime = None  # type: ignore
+    update_time: datetime = None  # type: ignore
 
 
 class Keyword(KeywordBase):

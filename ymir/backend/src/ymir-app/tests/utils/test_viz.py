@@ -84,10 +84,14 @@ class TestVizClient:
         mock_session.get.return_value = resp
         viz.session = mock_session
         user_id = random.randint(1000, 2000)
+        project_id = random.randint(1000, 2000)
         task_id = random_lower_string()
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
         viz.config(
-            user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name
+            user_id=user_id,
+            project_id=project_id,
+            branch_id=task_id,
+            keyword_id_to_name=keyword_id_to_name,
         )
         ret = viz.get_assets()
         assert isinstance(ret, m.Assets)
@@ -119,11 +123,15 @@ class TestVizClient:
         viz.session = mock_session
 
         user_id = random.randint(100, 200)
+        project_id = random.randint(100, 200)
         task_id = random_lower_string()
         asset_id = random_lower_string()
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
         viz.config(
-            user_id=user_id, branch_id=task_id, keyword_id_to_name=keyword_id_to_name
+            user_id=user_id,
+            project_id=project_id,
+            branch_id=task_id,
+            keyword_id_to_name=keyword_id_to_name,
         )
         ret = viz.get_asset(asset_id=asset_id)
         assert isinstance(ret, dict)
@@ -143,8 +151,9 @@ class TestVizClient:
         viz.session = mock_session
 
         user_id = random.randint(100, 200)
+        project_id = random.randint(100, 200)
         task_id = random_lower_string()
-        viz.config(user_id=user_id, branch_id=task_id)
+        viz.config(user_id=user_id, project_id=project_id, branch_id=task_id)
         ret = viz.get_model()
         assert isinstance(ret, dict)
         assert ret["hash"] == res["model_id"]

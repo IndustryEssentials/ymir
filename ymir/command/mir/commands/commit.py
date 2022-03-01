@@ -19,7 +19,7 @@ class CmdCommit(base.BaseCommand):
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
 
-        for f in ["metadatas.mir", "annotations.mir", "keywords.mir", "tasks.mir"]:
+        for f in ["metadatas.mir", "annotations.mir", "keywords.mir", "tasks.mir", "context.mir"]:
             if os.path.isfile(os.path.join(mir_root, f)):
                 repo_dvc.add(f)
         repo_git.add('.')
