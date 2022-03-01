@@ -291,3 +291,23 @@ class ProjectNotFound(NotFound):
 class DuplicateProjectError(DuplicateError):
     code = error_codes.PROJECT_DUPLICATED_NAME
     message = "Duplicated Project Name"
+
+
+class DatasetGroupNotFound(NotFound):
+    code = error_codes.DATASET_GROUP_NOT_FOUND
+    message = "DatasetGroup Not Found"
+
+
+class DuplicateDatasetGroupError(DuplicateError):
+    code = error_codes.DATASET_GROUP_DUPLICATED_NAME
+    message = "Duplicated DatasetGroup Name"
+
+
+class ModelGroupNotFound(NotFound):
+    code = error_codes.MODEL_GROUP_NOT_FOUND
+    message = "ModelGroup Not Found"
+
+
+class DuplicateModelGroupError(DuplicateError):
+    code = error_codes.MODEL_GROUP_DUPLICATED_NAME
+    message = "Duplicated ModelGroup Name"

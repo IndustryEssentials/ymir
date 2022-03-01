@@ -132,14 +132,15 @@ class CmdCopy(base.BaseCommand):
         PhaseLoggerCenter.update_phase(phase='copy.change')
 
         # save and commit
-        mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mir_annotations
-        mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
-        del mir_datas[mirpb.MirStorage.MIR_KEYWORDS]
+        copied_mir_datas = {}
+        copied_mir_datas[mirpb.MirStorage.MIR_METADATAS] = mir_datas[mirpb.MirStorage.MIR_METADATAS]
+        copied_mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mir_annotations
+        copied_mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_revs,
-                                                      mir_datas=mir_datas,
+                                                      mir_datas=copied_mir_datas,
                                                       commit_message=task.name)
 
         return MirCode.RC_OK

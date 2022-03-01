@@ -55,7 +55,7 @@ class SortField(enum.Enum):
     "/",
     response_model=schemas.DatasetPaginationOut,
 )
-def list_dataset(
+def list_datasets(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by dataset's name"),
     type_: TaskType = Query(None, alias="type", description="type of related task"),
