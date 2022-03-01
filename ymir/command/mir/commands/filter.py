@@ -1,5 +1,4 @@
 import argparse
-import datetime
 import logging
 from typing import Any, Callable, List, Tuple, Optional, Set, Union
 
@@ -170,18 +169,21 @@ class CmdFilter(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
+        commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
+        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+                                        task_type=mirpb.TaskType.TaskTypeFilter,
+                                        task_id=task_id,
+                                        message=commit_message)
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
+            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
 
-        commit_message = f"filter bid: {base_task_id}, tid: {task_id}, select: {in_cis} exclude: {ex_cis}"
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=task_id,
                                                       his_branch=src_typ_rev_tid.rev,
-                                                      base_task_id=base_task_id,
-                                                      task_type=mirpb.TaskType.TaskTypeFilter,
                                                       mir_datas=matched_mir_contents,
                                                       commit_message=commit_message)
 
@@ -199,8 +201,7 @@ class CmdFilter(base.BaseCommand):
                                        work_dir=self.args.work_dir)
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     filter_arg_parser = subparsers.add_parser("filter",
                                               parents=[parent_parser],
                                               description="use this command to filter assets",

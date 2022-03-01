@@ -56,8 +56,8 @@ class MirStorageOps():
 
     # public: save and load
     @classmethod
-    def save_and_commit(cls, mir_root: str, mir_branch: str, task_id: str, his_branch: Optional[str], base_task_id: str,
-                        task_type: int, mir_datas: Dict['mirpb.MirStorage.V', Any], commit_message: str) -> int:
+    def save_and_commit(cls, mir_root: str, mir_branch: str, task_id: str, his_branch: Optional[str], mir_datas: dict,
+                        commit_message: str) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -88,16 +88,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
-        if mirpb.MirStorage.MIR_TASKS in mir_datas:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_tasks')
-
-        mir_tasks = mirpb.MirTasks()
-        build_mir_tasks(mir_tasks=mir_tasks,
-                        task_type=task_type,
-                        base_task_id=base_task_id,
-                        task_id=task_id,
-                        message=commit_message)
-        mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
+        if mirpb.MirStorage.MIR_TASKS not in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need mir_tasks')
 
         branch_exists = mir_repo_utils.mir_check_branch_exists(mir_root=mir_root, branch=mir_branch)
         if not branch_exists and not his_branch:
@@ -245,27 +237,32 @@ def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations) -> Non
                               error_message=f'more then one task ids found in mir_annotations: {task_ids}')
 
 
-def build_mir_tasks(mir_tasks: mirpb.MirTasks, task_type: mirpb.TaskType.V, base_task_id: str, task_id: str,
-                    message: str) -> None:
+def build_mir_tasks(mir_tasks: mirpb.MirTasks,
+                    task_type: 'mirpb.TaskType.V',
+                    task_id: str,
+                    message: str,
+                    unknown_types: Dict[str, int] = {},
+                    model_hash: str = '',
+                    model_mAP: float = 0,
+                    return_code: int = 0,
+                    return_msg: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message
-    task.base_task_id = base_task_id
     task.task_id = task_id
     task.timestamp = int(time.time())
 
+    for k, v in unknown_types.items():
+        task.unknown_types[k] = v
+
+    task.model.model_hash = model_hash
+    task.model.mean_average_precision = model_mAP
+    task.return_code = return_code
+    task.return_msg = return_msg
+
+    task.ancestor_task_id = mir_tasks.head_task_id
     mir_tasks.tasks[task.task_id].CopyFrom(task)
     mir_tasks.head_task_id = task.task_id
-    # if not task.task_id:
-    #     raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
-    # if task.task_id in mir_tasks.tasks:
-    #     raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
-    #                           error_message=f"tasl id {task.task_id} already exists")
-
-    # orig_head_task_id = mir_tasks.head_task_id
-    # task.ancestor_task_id = orig_head_task_id
-    # mir_tasks.tasks[task.task_id].CopyFrom(task)
-    # mir_tasks.head_task_id = task.task_id
 
 
 def generate_keywords_cis(single_task_annotations: mirpb.SingleTaskAnnotations,

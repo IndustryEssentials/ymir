@@ -1,7 +1,6 @@
 import argparse
 import logging
 import random
-import time
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -49,7 +48,7 @@ class CmdSampling(base.BaseCommand):
             mir_root=mir_root,
             mir_branch=src_typ_rev_tid.rev,
             mir_task_id=src_typ_rev_tid.tid,
-            mir_storages=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
+            mir_storages=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_TASKS])
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         assets_count = len(mir_metadatas.attributes)
         sampled_assets_count = 0
@@ -83,14 +82,12 @@ class CmdSampling(base.BaseCommand):
             sampled_mir_annotations = mir_annotations
 
         # mir_tasks
-        sampled_mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
-        task = mirpb.Task()
-        task.type = mirpb.TaskType.TaskTypeSampling
-        task.name = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
-        task.base_task_id = src_typ_rev_tid.tid
-        task.task_id = dst_typ_rev_tid.tid
-        task.timestamp = int(time.time())
-        mir_storage_ops.add_mir_task(sampled_mir_tasks, task)
+        message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
+        mir_tasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
+        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+                                        task_type=mirpb.TaskType.TaskTypeSampling,
+                                        task_id=dst_typ_rev_tid.tid,
+                                        message=message)
 
         logging.info(f"sampling done, assets count: {sampled_assets_count}")
 
@@ -98,14 +95,14 @@ class CmdSampling(base.BaseCommand):
         sampled_mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: sampled_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: sampled_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: sampled_mir_tasks,
+            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas=sampled_mir_datas,
-                                                      commit_message=task.name)
+                                                      commit_message=message)
 
         return MirCode.RC_OK
 
