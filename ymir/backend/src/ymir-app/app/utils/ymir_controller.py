@@ -63,7 +63,7 @@ def gen_task_hash(user_id: int, project_id: int) -> str:
 class ControllerRequest:
     type: Union[TaskType, ExtraRequestType]
     user_id: int
-    project_id: Optional[int] = 0
+    project_id: int = 0
     task_id: Optional[str] = None
     args: Optional[Dict] = None
     req: Optional[mirsvrpb.GeneralReq] = None
