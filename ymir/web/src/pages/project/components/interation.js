@@ -7,7 +7,7 @@ function Interation ({}) {
   const Num = ({ num, state }) => {
     return <div>{num}</div>
   }
-  return <div className={s.interation}>    
+  return <div className={s.interation} hidden={true}>    
     <Row>
       <Col flex={1}>
         <Num num={1} state={1}>1</Num>

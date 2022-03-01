@@ -12,21 +12,42 @@ export function getModel(id) {
 }
 
 /**
- * get model versions
- * @param {number} id model id
- * @returns
+ * get model versions by model group id
+ * @param {number} group_id 
+ * @returns 
  */
 export function getModelVersions(group_id) {
-  return request.get(`models/${group_id}/version`)
+  return request.get(`model_groups/`, { params: { group_id }})
 }
 
 /**
- * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by: 1|2 }
+ * query models
+ * @param {object} param1 {
+ *   {number} project_id 
+ *   {number} type task type
+ *   {number} state model state
+ *   {string} name model name
+ *   {number} offset  query start
+ *   {number} limit query count 
+ * }
+ * @returns 
+ */
+ export function queryModels({ project_id, type, state, name, offset = 0, limit = 10 }) {
+  return request.get("models/", { params: { project_id, type, state, name, offset, limit } })
+}
+
+/**
+ * get models
+ * @param {object} param1 {
+ *   {number} project_id 
+ *   {string} name model name
+ *   {number} offset  query start
+ *   {number} limit query count 
+ * }
  * @returns
  */
-export function getModels(params) {
-  return request.get("models/", { params })
+export function getModels(project_id, { name, offset = 0, limit = 10 }) {
+  return request.get("model_groups/", { params: { project_id, name, offset, limit } })
 }
 
 /**

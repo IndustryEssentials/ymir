@@ -33,7 +33,7 @@ const list = mockjs.mock({
 
 const groups = mockjs.mock({
   'items|1-20': [{
-    'id|+': 4001,
+    'id|+1': 4001,
     name: '@title(1,5)',
     createTime: '@datetime',
   }],
@@ -42,19 +42,19 @@ const groups = mockjs.mock({
 
 export default baseApi([
   {
-    url: 'datasets/',
+    url: 'dataset_group/',
     data: {
       result: groups,
     }
   },
   {
-    url: 'datasets/10008/versions',
+    url: 'datasets/',
     data: {
       result: list,
     }
   },
   {
-    url: 'datasets/detail/10008',
+    url: 'datasets/10008',
     data: {
       result: item,
     }

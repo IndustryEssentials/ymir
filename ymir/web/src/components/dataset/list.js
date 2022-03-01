@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, version } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory, useLocation, useParams } from "umi"
-import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, } from "antd"
-import moment from "moment"
+import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, Pagination, } from "antd"
 
 import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
 import { TASKSTATES } from '@/constants/task'
-import { getDatasetTypes, getTimes } from '@/constants/query'
 
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
@@ -22,23 +20,20 @@ import {
   TipsIcon, EditIcon, DeleteIcon, TreeIcon
 } from "@/components/common/icons"
 import { humanize } from "@/utils/number"
+import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
 
 const { confirm } = Modal
 const { useForm } = Form
 
-function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, updateQuery, resetQuery }) {
+function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, updateDataset, updateQuery, resetQuery, getVersions, }) {
   const location = useLocation()
   const { name } = location.query
   const history = useHistory()
   const [datasets, setDatasets] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
-  const [selectedIds, setSelectedIds] = useState([])
   const [current, setCurrent] = useState({})
   let [lock, setLock] = useState(true)
-
-  const types = getDatasetTypes()
-  const times = getTimes()
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -49,13 +44,13 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
   }, [history.location])
 
   useEffect(() => {
-    const forceUpdate = datasetList.items.some(dataset => dataset.forceUpdate)
-    if (forceUpdate) {
-      getData()
-    } else {
-      setDatasets(datasetList.items)
-      setTotal(datasetList.total)
-    }
+    // const forceUpdate = datasetList.items.some(dataset => dataset.forceUpdate)
+    // if (forceUpdate) {
+    //   getData()
+    // } else {
+    setDatasets(datasetList.items)
+    setTotal(datasetList.total)
+    // }
   }, [datasetList])
 
   useEffect(async () => {
@@ -121,20 +116,6 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
       },
     },
     {
-      title: showTitle("dataset.column.ignored_keyword"),
-      dataIndex: "ignored_keywords",
-      render: (keywords) => {
-        const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
-        return <Tooltip placement='left' title={label}
-          color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
-          mouseEnterDelay={0.5}
-        >{label}</Tooltip>
-      },
-      ellipsis: {
-        showTitle: false,
-      },
-    },
-    {
       title: showTitle('dataset.column.state'),
       dataIndex: 'state',
       render: (state, record) => RenderProgress(state, record, true),
@@ -164,6 +145,13 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
     let actions = []
     const menus = [
       {
+        key: "filter",
+        label: t("dataset.action.filter"),
+        onclick: () => history.push(`/home/task/filter/${id}`),
+        hidden: () => !keyword_count,
+        icon: <ScreenIcon className={styles.addBtnIcon} />,
+      },
+      {
         key: "train",
         label: t("dataset.action.train"),
         onclick: () => history.push(`/home/task/train/${id}`),
@@ -181,25 +169,6 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
         onclick: () => history.push(`/home/task/label/${id}`),
         icon: <TaggingIcon />,
       },
-      {
-        key: "filter",
-        label: t("dataset.action.filter"),
-        onclick: () => history.push(`/home/task/filter/${id}`),
-        hidden: () => !keyword_count,
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: "history",
-        label: t("dataset.action.history"),
-        onclick: () => history.push(`/home/history/dataset/${id}`),
-        icon: <TreeIcon />,
-      },
-      {
-        key: "edit",
-        label: t("dataset.action.edit"),
-        onclick: () => edit(record),
-        icon: <EditIcon />,
-      },
     ]
     const delMenu = {
       key: "del",
@@ -216,11 +185,12 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
+  }
+
+  const listChange = ({ current, pageSize }) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    const is_desc = sorters.order === 'ascend' ? false : true
-    const order_by = sorters.order ? sorters.field : undefined
-    updateQuery({ ...query, limit, offset, is_desc, order_by })
+    updateQuery({ ...query, limit, offset })
   }
 
   function showTitle(str) {
@@ -228,29 +198,22 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
   }
 
   async function getData() {
-    let params = {
-      offset: query.offset,
-      limit: query.limit,
-      is_desc: query.is_desc,
-      order_by: query.order_by,
+    getDatasets(pid, query)
+  }
+
+  async function showVersions(id) {
+    if (!datasets.some(item => item.id === id && item.showVersions)) {
+      const result = await getVersions(id)
+      if (!result) {
+        return
+      }
     }
-    if (query.type !== "") {
-      params.type = query.type
-    }
-    if (query.time) {
-      const now = moment()
-      const today = moment([now.year(), now.month(), now.date()])
-      const startTime = today.subtract(query.time - 1, 'd')
-      params.end_time = getUnixTimeStamp(now)
-      params.start_time = getUnixTimeStamp(startTime)
-    }
-    if (query.name) {
-      params.name = query.name
-    }
-    const { items, total } = await getDatasets(params)
-    if (items) {
-      setSelectedIds([])
-    }
+    setDatasets(datasets.map(item => {
+      if (item.id === id) {
+        item.showVersions = !item.showVersions
+      }
+      return item
+    }))
   }
 
   const del = (id, name) => {
@@ -290,10 +253,6 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
     }
   }
 
-  const getSelectedIds = () => {
-    return selectedIds.join("|")
-  }
-
   const add = () => {
     history.push('/home/dataset/add')
   }
@@ -330,6 +289,32 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
     </Button>
   )
 
+  const renderGroups = (<>
+    <div className={styles.groupList}>
+      {datasets.map(group => <div className={styles.groupItem} key={group.id}>
+        <Row className={styles.groupTitle}>
+          <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{ group.showVersions ? <ArrowDownIcon /> :<ArrowRightIcon />} </span>
+            <span className={styles.groupName}>{group.name}</span></Col>
+          <Col><Space>
+            <a onClick={edit} title={t('common.modify')}><EditIcon /></a>
+            <a onClick={del} title={t('common.del')}><DeleteIcon /></a>
+          </Space></Col>
+        </Row>
+        <div className={styles.groupTable} hidden={!group.showVersions}>
+          <Table
+            dataSource={versions[group.id]}
+            onChange={tableChange}
+            rowKey={(record) => record.id}
+            rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
+            columns={columns}
+            pagination={false}
+          />
+        </div>
+      </div>)}
+    </div>
+    <Pagination className={styles.pager} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+  </>)
+
   return (
     <div className={styles.dataset}>
       <div className={styles.actions}>
@@ -342,12 +327,10 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
           <Form
             name='queryForm'
             form={form}
-            // layout="inline"
             labelCol={{ flex: '100px' }}
             initialValues={{ type: query.type, time: query.time, name: name || query.name }}
             onValuesChange={search}
             colon={false}
-          // onFinish={search}
           >
             <Row>
               <Col className={styles.queryColumn} span={12}>
@@ -355,51 +338,11 @@ function Datasets({ getDatasets, delDataset, updateDataset, datasetList, query, 
                   <Input placeholder={t("dataset.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
                 </Form.Item>
               </Col>
-              <Col className={styles.queryColumn} span={12}>
-                <Form.Item
-                  name="type"
-                  label={t("dataset.column.source")}
-                >
-                  <Radio.Group options={types.filter(type => !type.hidden)} optionType='button'></Radio.Group>
-                </Form.Item></Col>
-              <Col className={styles.queryColumn} span={12}>
-                <Form.Item
-                  name="time"
-                  label={t("dataset.column.create_time")}
-                >
-                  <Radio.Group options={times} optionType="button"></Radio.Group>
-                </Form.Item></Col>
             </Row>
 
           </Form>
         </div>
-        <div className={styles.table}>
-          <Table
-            dataSource={datasets}
-            onChange={tableChange}
-            rowKey={(record) => record.id}
-            rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
-            pagination={{
-              showQuickJumper: true,
-              showSizeChanger: true,
-              total: total,
-              // total: 500,
-              defaultPageSize: query.limit,
-              showTotal: (total) => t("dataset.pager.total.label", { total }),
-              defaultCurrent: 1,
-            }}
-            rowSelection={{
-              selectedRowKeys: selectedIds,
-              onChange: (selected, rows) => {
-                setSelectedIds(selected)
-              },
-              getCheckboxProps: (record) => ({
-                disabled: isImporting(record.state) || isImportFail(record.state),
-              })
-            }}
-            columns={columns}
-          ></Table>
-        </div>
+        {renderGroups}
       </div>
       <EditBox record={current} max={80} action={saveName}>
         {current.type ? <Form.Item
@@ -421,22 +364,29 @@ const props = (state) => {
   return {
     logined: state.user.logined,
     datasetList: state.dataset.datasets,
+    versions: state.dataset.versions,
     query: state.dataset.query,
   }
 }
 
 const actions = (dispatch) => {
   return {
-    getDatasets: (payload) => {
+    getDatasets: (pid, query) => {
       return dispatch({
         type: 'dataset/getDatasets',
-        payload,
+        payload: { pid, query },
       })
     },
-    delDataset: (payload) => {
+    getVersions: (gid) => {
+      return dispatch({
+        type: 'dataset/getDatasetVersions',
+        payload: gid,
+      })
+    },
+    delDataset: (id) => {
       return dispatch({
         type: 'dataset/delDataset',
-        payload,
+        payload: id,
       })
     },
     updateDataset: (id, name) => {

@@ -5,8 +5,8 @@ import { useParams } from "umi"
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Interation from './components/interation'
-import Datasets from './components/datasets'
-import Models from './components/models'
+import Datasets from '@/components/dataset/list'
+import Models from '@/components/model/list'
 
 import styles from "./detail.less"
 
@@ -19,18 +19,16 @@ function ProjectDetail() {
   const { id } = useParams()
   const [active, setActive] = useState(tabsTitle[0].key)
   const content = {
-    'set': <Datasets />,
-    'model': <Models />
+    'set': <Datasets pid={id} />,
+    'model': <Models pid={id} />
   }
-
-  console.log('project detail id: ', id)
 
   return (
     <div className={styles.projectDetail}>
       <Breadcrumbs />
       <Interation id={id} />
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} 
-        style={{ margin: '0 -5vw', background: 'transparent'}}
+        style={{ margin: '-20px -5vw 0', background: 'transparent'}}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px'}}
         bodyStyle={{ padding: '0 5vw'}}>
         {content[active]}
