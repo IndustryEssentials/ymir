@@ -1,5 +1,4 @@
 import argparse
-import datetime
 import logging
 import json
 import os
@@ -104,14 +103,11 @@ class CmdImport(base.BaseCommand):
 
         # create and write tasks
         mir_tasks = mirpb.MirTasks()
-        task = mirpb.Task()
-        task.type = mirpb.TaskTypeImportData
-        task.name = f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}"
-        task.task_id = dst_typ_rev_tid.tid
-        task.timestamp = int(datetime.datetime.now().timestamp())
-        for type_name, count in unknown_types.items():
-            task.unknown_types[type_name] = count
-        mir_storage_ops.add_mir_task(mir_tasks, task)
+        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+                                        task_type=mirpb.TaskTypeImportData,
+                                        task_id=dst_typ_rev_tid.tid,
+                                        message=f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}",
+                                        unknown_types=unknown_types)
 
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
@@ -168,8 +164,7 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
     return MirCode.RC_OK
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     importing_arg_parser = subparsers.add_parser("import",
                                                  parents=[parent_parser],
                                                  description="use this command to import data from img/anno folder",

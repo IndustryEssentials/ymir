@@ -54,6 +54,7 @@ def list_projects(
         start_time=start_time,
         end_time=end_time,
     )
+    # todo : get dataset name , get dataset count
     return {"result": {"total": total, "items": projects}}
 
 
@@ -77,6 +78,7 @@ def create_project(
 
     # todo
     # call controller
+    # create dataset_group info
 
     logger.info("[create project] project record created: %s", project)
     return {"result": project}
@@ -98,7 +100,7 @@ def get_project(
     project = crud.project.get(db, id=project_id)
     if not project:
         raise ProjectNotFound()
-
+    # todo : get dataset name , get dataset count
     return {"result": project}
 
 

@@ -8,6 +8,7 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
+from app.schemas.dataset import Dataset
 
 
 class DatasetGroupBase(BaseModel):
@@ -26,6 +27,8 @@ class DatasetGroupUpdate(BaseModel):
 class DatasetGroupInDBBase(
     IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetGroupBase
 ):
+    datasets: List[Dataset]
+
     class Config:
         orm_mode = True
 

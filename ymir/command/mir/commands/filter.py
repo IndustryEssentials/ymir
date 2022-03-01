@@ -1,5 +1,4 @@
 import argparse
-import datetime
 import logging
 from typing import Any, Callable, List, Tuple, Optional, Set, Union
 
@@ -166,19 +165,15 @@ class CmdFilter(base.BaseCommand):
             matched_mir_annotations.task_annotations[task_id].image_annotations[asset_id].CopyFrom(
                 base_task_annotations.image_annotations[asset_id])
 
-        # generate matched tasks
-        task = mirpb.Task()
-        task.type = mirpb.TaskType.TaskTypeFilter
-        task.name = f"filter bid: {base_task_id}, tid: {task_id}, select: {in_cis} exclude: {ex_cis}"
-        task.base_task_id = base_task_id
-        task.task_id = task_id
-        task.timestamp = int(datetime.datetime.now().timestamp())
-        mir_storage_ops.add_mir_task(mir_tasks, task)
-
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
+        commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
+        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+                                        task_type=mirpb.TaskType.TaskTypeFilter,
+                                        task_id=task_id,
+                                        message=commit_message)
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
@@ -190,7 +185,7 @@ class CmdFilter(base.BaseCommand):
                                                       task_id=task_id,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas=matched_mir_contents,
-                                                      commit_message=task.name)
+                                                      commit_message=commit_message)
 
         return MirCode.RC_OK
 
@@ -206,8 +201,7 @@ class CmdFilter(base.BaseCommand):
                                        work_dir=self.args.work_dir)
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     filter_arg_parser = subparsers.add_parser("filter",
                                               parents=[parent_parser],
                                               description="use this command to filter assets",
