@@ -22,6 +22,9 @@ enum TaskType {
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
     TaskTypeInfer = 9;
+    TaskTypeSampling = 10;
+    /// merge -> filter -> sampling
+    TaskTypeProcessData = 11;
 };
 
 enum LabelFormat {
@@ -139,6 +142,7 @@ message ReqCreateTask {
     TaskReqInference inference = 106;
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
+    TaskReqProcessData process_data = 109;
 }
 
 message TaskReqFilter {
@@ -197,6 +201,16 @@ message TaskReqLabeling {
     string expert_instruction_url = 4;
     string project_name = 5;
     bool export_annotation = 6;
+}
+
+message TaskReqProcessData {
+    repeated string merge_in_dataset_ids = 1;
+    repeated string merge_ex_dataset_ids = 2;
+    MergeStrategy merge_strategy = 3;
+    repeated int32 filter_in_class_ids = 4;
+    repeated int32 filter_ex_class_ids = 5;
+    int32 sampling_count = 6;
+    float sampling_rate = 7;
 }
 
 message RespCMDInference {
