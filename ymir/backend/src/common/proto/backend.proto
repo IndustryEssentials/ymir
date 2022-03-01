@@ -66,6 +66,7 @@ enum RequestType {
     CMD_TERMINATE = 14;
     CMD_PULL_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
+    CMD_SAMPLING = 18;
 
     // Sandbox path operation
     USER_LIST = 101;
