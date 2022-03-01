@@ -3,7 +3,6 @@ mir merge: merge contents from another guest branch to current branch
 """
 
 import argparse
-import datetime
 import logging
 from typing import Any, Mapping, Tuple
 
@@ -337,12 +336,11 @@ class CmdMerge(base.BaseCommand):
                 return ret
 
         # create and write tasks
-        task = mirpb.Task()
-        task.type = mirpb.TaskTypeMerge
-        task.name = f"merge: {src_revs} - {ex_src_revs} to {dst_rev}"
-        task.task_id = dst_typ_rev_tid.tid
-        task.timestamp = int(datetime.datetime.now().timestamp())
-        mir_storage_ops.add_mir_task(host_mir_tasks, task)
+        message = f"merge: {src_revs} - {ex_src_revs} to {dst_rev}"
+        mir_storage_ops.build_mir_tasks(mir_tasks=host_mir_tasks,
+                                        task_type=mirpb.TaskType.TaskTypeMerge,
+                                        task_id=dst_typ_rev_tid.tid,
+                                        message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}")
 
         host_typ_rev_tid = src_typ_rev_tids[0]
         mir_data = {
@@ -355,7 +353,7 @@ class CmdMerge(base.BaseCommand):
                                                       task_id=dst_typ_rev_tid.tid,
                                                       his_branch=host_typ_rev_tid.rev,
                                                       mir_datas=mir_data,
-                                                      commit_message=task.name)
+                                                      commit_message=message)
 
         logging.debug("mir merge: write files done")
 

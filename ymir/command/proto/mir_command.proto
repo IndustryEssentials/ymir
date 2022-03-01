@@ -34,6 +34,8 @@ enum TaskType {
     TaskTypeExportData = 6;
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
+    TaskTypeInfer = 9;
+    TaskTypeSampling = 10;
 };
 
 enum TaskState {
