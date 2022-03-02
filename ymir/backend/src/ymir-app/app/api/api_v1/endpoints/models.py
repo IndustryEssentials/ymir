@@ -15,7 +15,6 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskType
-from app.models.task import Task
 from app.utils.files import save_file
 from app.utils.ymir_controller import gen_task_hash
 
@@ -55,7 +54,8 @@ def list_models(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Get list of models,
+    Get list of models
+
     pagination is supported by means of offset and limit
     """
     models, total = crud.model.get_multi_models(
@@ -84,51 +84,74 @@ def import_model(
     current_user: models.User = Depends(deps.get_current_active_user),
     background_tasks: BackgroundTasks,
 ) -> Any:
+
+    # 1. validation
     if crud.model.is_duplicated_name(
         db, user_id=current_user.id, name=model_import.name
     ):
         raise DuplicateModelError()
-
     if not settings.MODELS_PATH:
+        # fixme
+        #  adhoc put model file to underlying storage directly
         raise InvalidConfiguration()
 
+    # 2. create placeholder task
     task = create_task_as_placeholder(
         db, user_id=current_user.id, project_id=model_import.project_id
     )
     logger.info("[import model] related task created: %s", task)
 
-    # bind imported model to the placeholding task
-    model_info = jsonable_encoder(model_import)
-    model_info["task_id"] = task.id
-    model_info["user_id"] = current_user.id
-    model = crud.model.create(db, obj_in=schemas.ModelCreate(**model_info))
+    # 3. create model record
+    model = create_model_record(db, model_import, task)
     logger.info("[import model] model record created: %s", model)
 
-    existing_model_hash = crud.model.get_by_hash(db, hash_=model_import.hash)
-    if existing_model_hash:
-        logger.info(
-            "model of same hash (%s) exists, just add a new reference",
-            model_import.hash,
-        )
-    else:
-        background_tasks.add_task(
-            save_model_file, model_import.input_url, settings.MODELS_PATH
-        )
+    # 4. run background task
+    storage_path = settings.MODELS_PATH
+    background_tasks.add_task(
+        import_model_in_background, model_import.input_url, model.hash, storage_path
+    )
     return {"result": model}
 
 
-def create_task_as_placeholder(db: Session, *, user_id: int, project_id: int) -> Task:
-    task_id = gen_task_hash(user_id, project_id)
+def create_task_as_placeholder(
+    db: Session, *, user_id: int, project_id: int
+) -> models.Task:
+    task_hash = gen_task_hash(user_id, project_id)
     task_in = schemas.TaskCreate(
-        name=task_id, type=TaskType.import_data, project_id=project_id
+        name=task_hash, type=TaskType.import_data, project_id=project_id
     )
-    task = crud.task.create_task(db, obj_in=task_in, task_hash=task_id, user_id=user_id)
+    task = crud.task.create_task(
+        db, obj_in=task_in, task_hash=task_hash, user_id=user_id
+    )
     return task
 
 
-def save_model_file(model_url: str, storage_path: str) -> None:
-    logger.info("[import model] start importing model file from %s", model_url)
-    save_file(model_url, storage_path)
+def create_model_record(
+    db: Session, model_import: schemas.ModelImport, task: models.Task
+) -> models.Model:
+    """
+    bind task info to model record
+    """
+    model_info = jsonable_encoder(model_import)
+    model_info.update(
+        {
+            "hash": task.hash,
+            "task_id": task.id,
+            "user_id": task.user_id,
+        }
+    )
+    return crud.model.create(db, obj_in=schemas.ModelCreate(**model_info))
+
+
+def import_model_in_background(
+    model_url: str, model_hash: str, storage_path: str
+) -> None:
+    logger.info(
+        "[import model] start importing model file from %s, save to %s",
+        model_url,
+        storage_path,
+    )
+    save_file(model_url, storage_path, model_hash)
 
 
 @router.delete(

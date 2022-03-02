@@ -113,7 +113,7 @@ class TestControllerRequest:
             args={
                 "src_user_id": f"{random.randint(1000, 2000):0>4}",
                 "src_repo_id": random_lower_string(),
-                "src_dataset_id": random_lower_string(),
+                "src_resource_id": random_lower_string(),
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
