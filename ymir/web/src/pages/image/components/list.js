@@ -42,7 +42,7 @@ const ImageList = ({ role, filter, getImages }) => {
     JSON.stringify(filter) !== JSON.stringify(query) && setQuery({ ...query, ...filter })
   }, [filter])
 
-  const pageChange = ({ current, pageSize }) => {
+  const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     setQuery((old) => ({ ...old, limit, offset }))

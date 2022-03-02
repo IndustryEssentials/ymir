@@ -1,5 +1,6 @@
 import { 
-  getDatasets, 
+  getDatasets,
+  getDatasetVersions, 
   getDataset,
   batchDatasets,
   getAssetsOfDataset,
@@ -28,6 +29,7 @@ export default {
       items: [],
       total: 0,
     },
+    versions: {},
     dataset: {},
     assets: {
       items: [],
@@ -40,7 +42,8 @@ export default {
   },
   effects: {
     *getDatasets({ payload }, { call, put }) {
-      const { code, result } = yield call(getDatasets, payload)
+      const { pid, query } = payload
+      const { code, result } = yield call(getDatasets, pid, query)
       if (code === 0) {
         yield put({
           type: "UPDATE_DATASETS",
@@ -63,6 +66,22 @@ export default {
           payload: result,
         })
         return result
+      }
+    },
+    *getDatasetVersions({ payload }, { select, call, put }) {
+      const gid = payload
+      const versions = yield select(({ dataset }) => dataset.versions)
+      if (versions[gid]) {
+        return versions[gid]
+      }
+      const { code, result } = yield call(getDatasetVersions, gid)
+      if (code === 0) {
+        const vs = { id: gid, versions: result.items }
+        yield put({
+          type: "UPDATE_VERSIONS",
+          payload: vs,
+        })
+        return result.items
       }
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
@@ -177,6 +196,15 @@ export default {
       return {
         ...state,
         datasets: payload
+      }
+    },
+    UPDATE_VERSIONS(state, { payload }) {
+      const { id, versions } = payload
+      const vs = state.versions 
+      vs[id] = versions
+      return {
+        ...state,
+        versions: vs,
       }
     },
     UPDATE_DATASET(state, { payload }) {

@@ -7,6 +7,7 @@ const common = {
   'common.top.menu.dataset': { cn: "数据集管理", en: "Dataset", },
   'common.top.menu.model': { cn: "模型管理", en: "Model", },
   'common.top.menu.data': { cn: "数据管理", en: "Data", },
+  'common.top.menu.project': { cn: "项目管理", en: "Project", },
   'common.top.menu.keyword': { cn: "标签管理", en: "Keyword", },
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
   'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
