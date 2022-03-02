@@ -21,6 +21,10 @@ const routeTitle = {
   "task.label.title": { cn: `${SysName}-新建标注任务`, en: `${SysName} - Create Label Task`, },
   "history.title": { cn: `${SysName}-历史树`, en: `${SysName} - History Tree`, },
   "keywords.title": { cn: `${SysName}-标签管理`, en: `${SysName} - Keywords`, },
+  "projects.title": { cn: `${SysName}-项目管理`, en: `${SysName} - Project`, },
+  "project.title": { cn: `${SysName}-项目详情`, en: `${SysName} - Project Detail`, },
+  "project.add.title": { cn: `${SysName}-设置项目`, en: `${SysName} - Project Settings`, },
+  "project.interation.title": { cn: `${SysName}-迭代详情`, en: `${SysName} - Project Interation`, },
 }
 
 export default routeTitle

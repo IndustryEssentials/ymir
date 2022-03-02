@@ -22,6 +22,10 @@ const breadcrumbs = {
   'breadcrumbs.user.info': { cn: '用户管理', en: 'User Information', },
   'breadcrumbs.images': { cn: '镜像列表', en: 'Images', },
   'breadcrumbs.image': { cn: '镜像详情', en: 'Image', },
+  'breadcrumbs.projects': { cn: '项目管理', en: 'Project', },
+  'breadcrumbs.project': { cn: '项目详情', en: 'Detail', },
+  'breadcrumbs.project.add': { cn: '项目设置', en: 'Settings', },
+  'breadcrumbs.project.interation': { cn: '项目迭代', en: 'Interation', },
 }
 
 export default breadcrumbs
