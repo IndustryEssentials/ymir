@@ -83,12 +83,14 @@ class TestInvokerInit(unittest.TestCase):
                                          invoker=RequestTypeToInvoker[backend_pb2.CMD_INIT],
                                          user_id=self._user_name,
                                          task_id=self._task_id,
+                                         dst_task_id=self._task_id,
                                          repo_id=self._mir_repo_name,
                                          private_labels=['person', 'cat'])
         print(MessageToDict(response))
 
         expected_cmd = f"mir init --root {os.path.join(self._user_root, self._mir_repo_name)}"
-        expected_cmd += " --project-class-names person;cat"
+        expected_cmd += ' --project-class-names person;cat'
+        expected_cmd += f" --with-empty-rev {self._task_id}@{self._task_id}"
         mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()

@@ -36,6 +36,8 @@ class InitInvoker(BaseMirControllerInvoker):
         command = [utils.mir_executable(), 'init', '--root', self._repo_root]
         if self._request.private_labels:
             command.extend(['--project-class-names', ';'.join(self._request.private_labels)])
+        if self._request.task_id and self._request.dst_task_id:
+            command.extend(['--with-empty-rev', f"{self._request.dst_task_id}@{self._request.task_id}"])
 
         return utils.run_command(
             cmd=command,
