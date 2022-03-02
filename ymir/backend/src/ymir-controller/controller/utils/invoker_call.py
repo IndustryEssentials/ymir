@@ -24,7 +24,9 @@ def make_cmd_request(user_id: str = None,
                      merge_strategy: int = None,
                      req_create_task: backend_pb2.ReqCreateTask = None,
                      docker_image_config: str = None,
-                     terminated_task_type: str = None) -> backend_pb2.GeneralReq:
+                     terminated_task_type: str = None,
+                     count: int = None,
+                     rate: float = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -70,6 +72,10 @@ def make_cmd_request(user_id: str = None,
         request.docker_image_config = docker_image_config
     if terminated_task_type is not None:
         request.terminated_task_type = terminated_task_type
+    if count is not None:
+        request.count = count
+    if rate is not None:
+        request.rate = rate
     return request
 
 
@@ -97,6 +103,8 @@ def make_invoker_cmd_call(invoker: Any,
                           model_hash: str = None,
                           docker_image_config: str = None,
                           terminated_task_type: str = None,
+                          count: int = None,
+                          rate: float = None,
                           work_dir: str = '') -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
@@ -117,7 +125,9 @@ def make_invoker_cmd_call(invoker: Any,
                                merge_strategy=merge_strategy,
                                model_hash=model_hash,
                                docker_image_config=docker_image_config,
-                               terminated_task_type=terminated_task_type)
+                               terminated_task_type=terminated_task_type,
+                               count=count,
+                               rate=rate)
     invoker = invoker(sandbox_root=sandbox_root,
                       request=request,
                       assets_config=assets_config,

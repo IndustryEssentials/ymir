@@ -2,15 +2,15 @@ from typing import Dict
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
-from controller.utils import invoker_call, revs, utils
+from controller.utils import invoker_call, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
-class TaskMfsInvoker(TaskBaseInvoker):
+class TaskFusionInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        if not request.req_create_task.process_data.merge_in_dataset_ids:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, 'empty merge_in_dataset_ids')
+        if not request.req_create_task.fusion.in_dataset_ids:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, 'empty in_dataset_ids')
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
@@ -23,7 +23,7 @@ class TaskMfsInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
         """ merge """
-        process_data_req = request.req_create_task.process_data
+        fusion_req = request.req_create_task.fusion
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
             sandbox_root=sandbox_root,
@@ -31,11 +31,11 @@ class TaskMfsInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=subtask_id,
-            his_task_id=process_data_req.merge_in_dataset_ids[0],
+            his_task_id=fusion_req.in_dataset_ids[0],
             dst_task_id=request.task_id,
-            in_dataset_ids=process_data_req.merge_in_dataset_ids,
-            ex_dataset_ids=process_data_req.merge_ex_dataset_ids,
-            merge_strategy=process_data_req.merge_strategy,
+            in_dataset_ids=fusion_req.in_dataset_ids,
+            ex_dataset_ids=fusion_req.ex_dataset_ids,
+            merge_strategy=fusion_req.merge_strategy,
             work_dir=subtask_workdir,
         )
         return merge_response
@@ -44,11 +44,38 @@ class TaskMfsInvoker(TaskBaseInvoker):
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
-        process_data_req = request.req_create_task.process_data
-        
+        """ filter """
+        fusion_req = request.req_create_task.fusion
+        filter_response = invoker_call.make_invoker_cmd_call(
+            sandbox_root=sandbox_root,
+            req_type=backend_pb2.CMD_FILTER,
+            user_id=request.user_id,
+            repo_id=request.repo_id,
+            task_id=subtask_id,
+            his_task_id=fusion_req.in_dataset_ids[0],
+            dst_task_id=request.task_id,
+            in_class_ids=fusion_req.in_class_ids,
+            ex_class_ids=fusion_req.ex_class_ids,
+            work_dir=subtask_workdir,
+        )
+        return filter_response
 
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
-        pass
+        """ sampling """
+        fusion_req = request.req_create_task.fusion
+        sampling_response = invoker_call.make_invoker_cmd_call(
+            sandbox_root=sandbox_root,
+            req_type=backend_pb2.CMD_SAMPLING,
+            user_id=request.user_id,
+            repo_id=request.repo_id,
+            task_id=subtask_id,
+            his_task_id=fusion_req.in_dataset_ids[0],
+            dst_task_id=request.task_id,
+            count=fusion_req.count,
+            rate=fusion_req.rate,
+            work_dir=subtask_workdir,
+        )
+        return sampling_response

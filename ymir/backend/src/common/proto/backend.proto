@@ -112,6 +112,8 @@ message GeneralReq {
     string executor_instance = 19;
     MergeStrategy merge_strategy = 20;
     TaskType terminated_task_type = 21;
+    int32 count = 22;
+    float rate = 23;
     ReqCreateTask req_create_task = 1001;
 
     reserved 1002;
