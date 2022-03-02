@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, message, Modal, Select, Space, Radio } from 'antd'
+import { Button, Card, Form, Input, message, Modal, Select, Space, Radio, Row, Col, InputNumber } from 'antd'
 import { connect } from 'dva'
 import { useParams, useHistory, useLocation } from "umi"
 
@@ -10,7 +10,7 @@ import Tip from '@/components/form/tip'
 
 const { useForm } = Form
 
-const Add = ({ getProject, createProject, updateProject }) => {
+const Add = ({ keywords, getProject, createProject, updateProject, getKeywords }) => {
   const { id } = useParams()
   const history = useHistory()
   const location = useLocation()
@@ -26,21 +26,8 @@ const Add = ({ getProject, createProject, updateProject }) => {
   }, [id])
 
   useEffect(() => {
-    if (!location.state) {
-      return
-    }
-    const record = location.state.record
-    if (!record?.docker_name) {
-      return
-    }
-    const { docker_name, description, organization, contributor } = record
-    const project = {
-      name: docker_name,
-      url: docker_name,
-      description: `${description}\n---------\nOrg.: ${organization}\nContributor: ${contributor}`,
-    }
-    setProject(project)
-  }, [location.state])
+    getKeywords({ limit: 100000 })
+  }, [])
 
   useEffect(() => {
     initForm(project)
@@ -59,19 +46,14 @@ const Add = ({ getProject, createProject, updateProject }) => {
     isEdit ? update(values) : create(values)
   }
 
-  const checkProjectUrl = (_, value) => {
-    const reg = /^([a-zA-Z0-9]{4,30}\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(:[a-zA-Z0-9._-]+)?$/
+  const checkProjectName = (_, value) => {
+    const reg = /^[a-z0-9]+(?:[._-][a-z0-9]+)*(:[a-zA-Z0-9._-]+)?$/
     if (!value || reg.test(value.trim())) {
       return Promise.resolve()
     }
-    return Promise.reject(t('project.add.form.url.invalid'))
+    return Promise.reject(t('project.add.form.name.invalid'))
   }
-  const urlChange = ({ target }) => {
-    const name = form.getFieldValue('name')
-    if (!userInput) {
-      form.setFieldsValue({ name: target.value })
-    }
-  }
+
   async function fetchProject() {
     const result = await getProject(id)
     if (result) {
@@ -79,11 +61,12 @@ const Add = ({ getProject, createProject, updateProject }) => {
     }
   }
 
-  async function create({ url, name, description }) {
+  async function create({ name, description, ...values }) {
+    console.log('hello create project: ', name, description, values)
     var params = {
-      url: url.trim(),
       name: name.trim(),
       description: (description || '').trim(),
+      ...values,
     }
     const result = await createProject(params)
     if (result) {
@@ -110,30 +93,65 @@ const Add = ({ getProject, createProject, updateProject }) => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.project.add')}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 4 }} onFinish={submit}>
+          <Form form={form} labelCol={{ span: 4 }} onFinish={submit} scrollToFirstError>
             <Tip content={t('tip.project.add.name')}>
-              <Form.Item
-                label={t('project.add.form.url')}
-                name='url'
-                rules={[
-                  { required: true, message: t('project.add.form.url.required') },
-                  { validator: checkProjectUrl },
-                ]}
-              >
-                <Input placeholder={t('project.add.form.url.placeholder')} disabled={project.url} autoComplete='off' allowClear onChange={urlChange} />
-              </Form.Item>
-            </Tip>
-            <Tip content={t('tip.project.add.url')}>
               <Form.Item
                 label={t('project.add.form.name')}
                 name='name'
                 rules={[
-                  { required: true, whitespace: true, message: t('project.add.form.name.placeholder') },
-                  { max: 50 },
+                  { required: true, message: t('project.add.form.name.required') },
+                  { validator: checkProjectName },
                 ]}
               >
-                <Input placeholder={t('project.add.form.name.placeholder')} maxLength={50}
-                  autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
+                <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
+              </Form.Item>
+            </Tip>
+            <Tip content={t('tip.project.add.type')}>
+              <Form.Item
+                label={t('project.add.form.type')}
+                name='type'
+                initialValue={0}
+              >
+                <Radio.Group>
+                    <Radio value={0}>{t('task.train.form.traintypes.detect')}</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Tip>
+            <Tip content={t('tip.project.add.keyword')}>
+              <Form.Item
+                label={t('project.add.form.keyword.label')}
+                name="keywords"
+                rules={[
+                  { required: true, message: t('project.add.form.keyword.required') }
+                ]}
+              >
+                <Select mode="multiple" showArrow
+                  placeholder={t('project.add.form.keyword.placeholder')} 
+                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+                    {console.log('render keywords: ', keywords)}
+                  {keywords.map(keyword => (
+                    <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                      <Row>
+                        <Col flex={1}>{keyword.name}</Col>
+                      </Row>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Tip>
+            <Tip content={t('tip.project.add.target')}>
+              <Form.Item label={t('project.add.form.target')}>
+                <div className={s.targetPanel}>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='map'>
+                    <InputNumber min={0} max={100} step={1} formatter={value => `${value}%`} parser={value => value.replace('%', '')} style={{ width: '100%' }} placeholder={t('project.add.form.target.map.placeholder')} allowClear />
+                  </Form.Item>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.interations')} name='interations'>
+                    <InputNumber min={1} step={1} placeholder={t('project.add.form.target.interations.placeholder')} style={{ width: '100%' }} allowClear />
+                  </Form.Item>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='dataset'>
+                    <InputNumber min={1} step={1} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} allowClear />
+                  </Form.Item>
+                </div>
               </Form.Item>
             </Tip>
             <Tip content={t('tip.project.add.desc')}>
@@ -168,6 +186,11 @@ const Add = ({ getProject, createProject, updateProject }) => {
   )
 }
 
+const props = (state) => {
+  return {
+    keywords: state.keyword.keywords.items,
+  }
+}
 
 const actions = (dispatch) => {
   return {
@@ -189,7 +212,13 @@ const actions = (dispatch) => {
         payload: id,
       })
     },
+    getKeywords(payload) {
+      return dispatch({
+        type: 'keyword/getKeywords',
+        payload,
+      })
+    },
   }
 }
 
-export default connect(null, actions)(Add)
+export default connect(props, actions)(Add)
