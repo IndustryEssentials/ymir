@@ -12,6 +12,7 @@ class DatasetGroup(Base):
     __tablename__ = "dataset_group"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
+    description = Column(String(settings.STRING_LEN_LIMIT))
 
     project_id = Column(Integer, index=True, nullable=False)
     user_id = Column(Integer, index=True, nullable=False)

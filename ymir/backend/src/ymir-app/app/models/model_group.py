@@ -12,6 +12,7 @@ class ModelGroup(Base):
     __tablename__ = "model_group"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
+    description = Column(String(settings.STRING_LEN_LIMIT))
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
