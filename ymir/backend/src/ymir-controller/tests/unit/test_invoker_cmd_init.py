@@ -83,7 +83,6 @@ class TestInvokerInit(unittest.TestCase):
                                          invoker=RequestTypeToInvoker[backend_pb2.CMD_INIT],
                                          user_id=self._user_name,
                                          task_id=self._task_id,
-                                         dst_task_id=self._task_id,
                                          repo_id=self._mir_repo_name,
                                          private_labels=['person', 'cat'])
         print(MessageToDict(response))
