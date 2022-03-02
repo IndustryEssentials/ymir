@@ -22,8 +22,8 @@ class TestExodus(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        # if os.path.isdir(self._mir_root):
-        #     shutil.rmtree(self._mir_root)
+        if os.path.isdir(self._mir_root):
+            shutil.rmtree(self._mir_root)
         return super().tearDown()
 
     # public: test cases
