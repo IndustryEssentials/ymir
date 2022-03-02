@@ -112,11 +112,11 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                                                           mir_task_id=src_rev_tid.tid,
                                                                           ms=mirpb.MirStorage.MIR_TASKS)
     mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                    task_type=mirpb.TaskType.TaskTypeTraining,
-                                    task_id=dst_rev_tid.tid,
-                                    message='training',
-                                    return_code=task_ret_code,
-                                    return_msg=task_err_msg)
+                                     task_type=mirpb.TaskType.TaskTypeTraining,
+                                     task_id=dst_rev_tid.tid,
+                                     message='training',
+                                     return_code=task_ret_code,
+                                     return_msg=task_err_msg)
     mir_tasks.tasks[mir_tasks.head_task_id].model.model_hash = model_sha1
     mir_tasks.tasks[mir_tasks.head_task_id].model.mean_average_precision = mAP
     return mir_tasks

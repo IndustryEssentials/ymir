@@ -338,9 +338,9 @@ class CmdMerge(base.BaseCommand):
         # create and write tasks
         message = f"merge: {src_revs} - {ex_src_revs} to {dst_rev}"
         mir_storage_ops.update_mir_tasks(mir_tasks=host_mir_tasks,
-                                        task_type=mirpb.TaskType.TaskTypeMerge,
-                                        task_id=dst_typ_rev_tid.tid,
-                                        message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}")
+                                         task_type=mirpb.TaskType.TaskTypeMerge,
+                                         task_id=dst_typ_rev_tid.tid,
+                                         message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}")
 
         host_typ_rev_tid = src_typ_rev_tids[0]
         mir_data = {

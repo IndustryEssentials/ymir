@@ -85,9 +85,9 @@ class CmdSampling(base.BaseCommand):
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
         mir_tasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                        task_type=mirpb.TaskType.TaskTypeSampling,
-                                        task_id=dst_typ_rev_tid.tid,
-                                        message=message)
+                                         task_type=mirpb.TaskType.TaskTypeSampling,
+                                         task_id=dst_typ_rev_tid.tid,
+                                         message=message)
 
         logging.info(f"sampling done, assets count: {sampled_assets_count}")
 

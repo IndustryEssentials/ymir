@@ -175,9 +175,9 @@ class TestCmdExport(unittest.TestCase):
         # tasks
         mir_tasks = mirpb.MirTasks()
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                        task_type=mirpb.TaskType.TaskTypeImportData,
-                                        task_id='a',
-                                        message='import')
+                                         task_type=mirpb.TaskType.TaskTypeImportData,
+                                         task_id='a',
+                                         message='import')
 
         # save and commit
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,

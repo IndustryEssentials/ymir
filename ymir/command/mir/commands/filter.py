@@ -171,9 +171,9 @@ class CmdFilter(base.BaseCommand):
 
         commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                        task_type=mirpb.TaskType.TaskTypeFilter,
-                                        task_id=task_id,
-                                        message=commit_message)
+                                         task_type=mirpb.TaskType.TaskTypeFilter,
+                                         task_id=task_id,
+                                         message=commit_message)
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
