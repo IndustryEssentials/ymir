@@ -42,8 +42,6 @@ class CmdInit(base.BaseCommand):
 
         mir_metadatas = mirpb.MirMetadatas()
         mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.head_task_id = dst_rev_tid.tid
-        mir_annotations.task_annotations[dst_rev_tid.tid]  # empty single_task_annotations
         mir_tasks = mirpb.MirTasks()
         mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
                                         task_type=mirpb.TaskTypeInit,
