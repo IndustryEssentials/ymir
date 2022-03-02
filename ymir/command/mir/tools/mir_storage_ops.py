@@ -227,14 +227,14 @@ def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations, head_t
 
 
 def update_mir_tasks(mir_tasks: mirpb.MirTasks,
-                    task_type: 'mirpb.TaskType.V',
-                    task_id: str,
-                    message: str,
-                    unknown_types: Dict[str, int] = {},
-                    model_hash: str = '',
-                    model_mAP: float = 0,
-                    return_code: int = 0,
-                    return_msg: str = '') -> None:
+                     task_type: 'mirpb.TaskType.V',
+                     task_id: str,
+                     message: str,
+                     unknown_types: Dict[str, int] = {},
+                     model_hash: str = '',
+                     model_mAP: float = 0,
+                     return_code: int = 0,
+                     return_msg: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message
