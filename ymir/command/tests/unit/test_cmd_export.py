@@ -174,7 +174,7 @@ class TestCmdExport(unittest.TestCase):
 
         # tasks
         mir_tasks = mirpb.MirTasks()
-        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                         task_type=mirpb.TaskType.TaskTypeImportData,
                                         task_id='a',
                                         message='import')

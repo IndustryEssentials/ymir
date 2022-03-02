@@ -228,7 +228,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     #   mir_keywords: auto generated from mir_annotations, so do nothing
 
     #   update_mir_task
-    mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+    mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                     task_type=mirpb.TaskTypeMining,
                                     task_id=dst_typ_rev_tid.tid,
                                     message='mining')

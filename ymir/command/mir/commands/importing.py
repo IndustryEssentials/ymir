@@ -103,7 +103,7 @@ class CmdImport(base.BaseCommand):
 
         # create and write tasks
         mir_tasks = mirpb.MirTasks()
-        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                         task_type=mirpb.TaskTypeImportData,
                                         task_id=dst_typ_rev_tid.tid,
                                         message=f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}",

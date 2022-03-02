@@ -226,7 +226,7 @@ def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations, head_t
     mir_annotations.head_task_id = head_task_id
 
 
-def build_mir_tasks(mir_tasks: mirpb.MirTasks,
+def update_mir_tasks(mir_tasks: mirpb.MirTasks,
                     task_type: 'mirpb.TaskType.V',
                     task_id: str,
                     message: str,

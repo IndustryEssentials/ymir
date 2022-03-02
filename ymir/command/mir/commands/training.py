@@ -111,7 +111,7 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                                                           mir_branch=src_rev_tid.rev,
                                                                           mir_task_id=src_rev_tid.tid,
                                                                           ms=mirpb.MirStorage.MIR_TASKS)
-    mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+    mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                     task_type=mirpb.TaskType.TaskTypeTraining,
                                     task_id=dst_rev_tid.tid,
                                     message='training',

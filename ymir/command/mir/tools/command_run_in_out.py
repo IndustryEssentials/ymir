@@ -39,7 +39,7 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                                   mir_branch=src_typ_rev_tid.rev,
                                                                   ms=mirpb.MIR_TASKS,
                                                                   mir_task_id=src_typ_rev_tid.tid)
-        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                         task_type=mirpb.TaskType.TaskTypeUnknown,
                                         task_id=dst_typ_rev_tid.tid,
                                         message='commit error',

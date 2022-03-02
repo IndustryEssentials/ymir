@@ -170,7 +170,7 @@ class CmdFilter(base.BaseCommand):
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
         commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
-        mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                         task_type=mirpb.TaskType.TaskTypeFilter,
                                         task_id=task_id,
                                         message=commit_message)
