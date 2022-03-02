@@ -54,7 +54,6 @@ def list_projects(
         start_time=start_time,
         end_time=end_time,
     )
-    # todo : get dataset name , get dataset count
     return {"result": {"total": total, "items": projects}}
 
 
@@ -74,7 +73,9 @@ def create_project(
         db, user_id=current_user.id, name=project_in.name
     ):
         raise DuplicateProjectError()
-    project = crud.project.create(db, obj_in=project_in)
+    project = crud.project.create_with_user_id(
+        db, user_id=current_user.id, obj_in=project_in
+    )
 
     # todo
     # call controller

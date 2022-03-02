@@ -1,6 +1,7 @@
+import json
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from app.constants.state import MiningStrategy, TrainingType
 from app.schemas.common import (
@@ -13,12 +14,12 @@ from app.schemas.common import (
 
 class ProjectBase(BaseModel):
     name: str = Field(description="Iteration Name")
+    description: Optional[str]
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
     chunk_size: Optional[int]
 
     training_type: TrainingType = TrainingType.object_detect
-    training_keywords: List[str]
 
     iteration_target: Optional[int]
     map_target: Optional[float]
@@ -27,7 +28,13 @@ class ProjectBase(BaseModel):
 
 # Sufficient properties to create a project
 class ProjectCreate(ProjectBase):
-    description: Optional[str]
+    training_keywords: List[str]
+
+    @validator("training_keywords")
+    def dumps_keywords(cls, v: List[str]) -> str:
+        # we don't care what's inside of keywords
+        # just dumps it as string and save to db
+        return json.dumps(v)
 
 
 # Properties that can be changed
@@ -38,6 +45,7 @@ class ProjectUpdate(BaseModel):
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
     chunk_size: Optional[int]
+    training_dataset_group_id: int
     mining_dataset_id: int
     testing_dataset_id: int
 
@@ -51,14 +59,14 @@ class ProjectInDBBase(
 
 # Properties to return to caller
 class Project(ProjectInDBBase):
-    dataset_count: int
-    model_count: int
-    training_dataset_name: str
-    mining_dataset_name: str
-    test_dataset_name: str
+    dataset_count: int = 0
+    model_count: int = 0
+    training_keywords: List[str]
+    current_iteration_id: Optional[int]
 
-    training_dataset_group_id: int
-    current_iteration_id: int
+    @validator("training_keywords", pre=True)
+    def unpack_keywords(cls, v: str) -> List[str]:
+        return json.loads(v)
 
 
 class ProjectOut(Common):

@@ -1,9 +1,9 @@
 import enum
 from typing import Any, List, Optional, Dict
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, root_validator, validator
 
-from app.constants.state import ResultState
+from app.constants.state import ResultState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -36,16 +36,18 @@ class DatasetBase(BaseModel):
 class DatasetImport(DatasetBase):
     input_url: Optional[str] = Field(description="from url")
     input_dataset_id: Optional[int] = Field(description="from dataset of other user")
-    input_token: Optional[str] = Field(description="from uploaded file token")
     input_path: Optional[str] = Field(description="from path on ymir server")
     strategy: ImportStrategy = Field(description="strategy about importing annotations")
+    import_type: Optional[TaskType]
 
-    @root_validator
-    def check_input_source(cls, values: Any) -> Any:
-        fields = ("input_url", "input_dataset_id", "input_token", "input_path")
-        if all(values.get(i) is None for i in fields):
+    @validator("import_type", pre=True, always=True)
+    def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
+        if values.get("input_url") or values.get("input_path"):
+            return TaskType.import_data
+        elif values.get("input_dataset_id"):
+            return TaskType.copy_data
+        else:
             raise ValueError("Missing input source")
-        return values
 
 
 # Sufficient properties to create a dataset

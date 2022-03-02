@@ -89,6 +89,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
+    def create_with_user_id(
+        self, db: Session, *, user_id: int, obj_in: CreateSchemaType
+    ) -> ModelType:
+        obj_in_data = jsonable_encoder(obj_in)
+        obj_in_data["user_id"] = user_id
+        db_obj = self.model(**obj_in_data)  # type: ignore
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
     def update(
         self,
         db: Session,
