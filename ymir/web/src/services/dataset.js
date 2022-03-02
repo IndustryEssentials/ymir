@@ -11,12 +11,41 @@ export function getDataset(id) {
 }
 
 /**
- * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by = 1 }
- * @returns
+ * get dataset versions by group id
+ * @param {number} group_id 
+ * @returns 
  */
-export function getDatasets(params) {
-  return request.get("datasets/", { params })
+export function getDatasetVersions(group_id) {
+  return request.get(`dataset_groups/${group_id}`)
+}
+
+/**
+ * get datasets
+ * @param {object} param1 {
+ *   {number} project_id 
+ *   {number} type task type
+ *   {number} state dataset state
+ *   {string} name dataset name
+ *   {number} offset  query start
+ *   {number} limit query count 
+ * }
+ * @returns 
+ */
+export function queryDatasets({ project_id, type, state, name, offset = 0, limit = 10 }) {
+  return request.get("datasets/", { params: { project_id, type, state, name, offset, limit } })
+}
+/**
+ * get dataset groups
+ * @param {object} param1 {
+ *   {number} project_id 
+ *   {string} name dataset name
+ *   {number} offset  query start
+ *   {number} limit query count 
+ * }
+ * @returns 
+ */
+export function getDatasets(project_id, { name, offset = 0, limit = 10 }) {
+  return request.get("dataset_groups/", { params: { project_id, name, offset, limit } })
 }
 
 export function batchDatasets(ids) {

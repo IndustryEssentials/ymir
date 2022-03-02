@@ -3,7 +3,7 @@ import itertools
 import secrets
 import time
 from dataclasses import dataclass
-from typing import Dict, Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Union
 
 import grpc
 from fastapi.logger import logger
@@ -407,6 +407,18 @@ class ControllerClient:
     def create_project(self, user_id: int, project_id: int) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.create_project, user_id=user_id, project_id=project_id
+        )
+        return self.send(req)
+
+    def import_dataset(
+        self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict
+    ) -> Dict:
+        req = ControllerRequest(
+            task_type,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_hash,
+            args=args,
         )
         return self.send(req)
 

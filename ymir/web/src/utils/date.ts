@@ -1,7 +1,7 @@
 import moment from "moment"
 const DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
-export function format(utc_datetime) {
+export function format(utc_datetime: string | number | moment.Moment) {
   return moment.utc(utc_datetime).local().format(DATE_FORMAT)
 }
 
@@ -10,26 +10,27 @@ export function format(utc_datetime) {
  * @param {number|string} timestamp 
  * @returns {string}
  */
-export function getDateFromTimestamp(timestamp) {
-  return format(moment(Number(timestamp) * 1000))
+export function getDateFromTimestamp(timestamp: number | string) {
+  const ts: number = Number(timestamp) * 1000
+  return format(moment(ts))
 }
 
-export function getUnixTimeStamp(date) {
+export function getUnixTimeStamp(date: string) {
   return moment(date).format("X")
 }
 
-export function calTimeLeft(progress, utcTime, locale) {
+export function calTimeLeft(progress: number, utcTime: string, locale: string) {
   if (!progress) {
     return '...'
   }
-  const endTime = moment().format('x')
-  const startTime = moment.utc(utcTime).format('x')
+  const endTime = Number(moment().format('x'))
+  const startTime = Number(moment.utc(utcTime).format('x'))
   const result = Math.round((endTime - startTime) * (100 - progress) / progress)
   const temp = moment.duration(result).locale(locale)
   return temp.humanize({ s: 0 })
 }
 
-export function calDuration(seconds, locale) {
+export function calDuration(seconds: number, locale: string) {
   const duration = moment.duration(seconds * 1000).locale(locale)
   return seconds ? duration.humanize({ s: 0 }) : ''
 }

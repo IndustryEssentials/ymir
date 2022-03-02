@@ -142,6 +142,30 @@ const Routes = [
         component: "@/pages/user/permission",
         title: "user.permission.title",
       },
+      {
+        path: "/home/project",
+        name: "project",
+        component: "@/pages/project/index",
+        title: "projects.title",
+      },
+      {
+        path: "/home/project/detail/:id",
+        name: "projectDetail",
+        component: "@/pages/project/detail",
+        title: "project.title",
+      },
+      {
+        path: "/home/project/add/:id?",
+        name: "projectAdd",
+        component: "@/pages/project/add",
+        title: "project.add.title",
+      },
+      {
+        path: "/home/project/interation/:pid",
+        name: "projectInteration",
+        component: "@/pages/project/interation",
+        title: "project.interation.title",
+      },
     ],
   },
   {

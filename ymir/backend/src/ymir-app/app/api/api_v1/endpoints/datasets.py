@@ -2,7 +2,6 @@ import enum
 import pathlib
 import random
 import tempfile
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from zipfile import BadZipFile
 
@@ -22,10 +21,14 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType
-from app.models.dataset import Dataset
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
-from app.utils.ymir_controller import ControllerClient, ControllerRequest, gen_task_hash
+from app.utils.ymir_controller import (
+    ControllerClient,
+    gen_task_hash,
+    gen_user_hash,
+    gen_repo_hash,
+)
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
@@ -127,31 +130,30 @@ def create_dataset(
     - ignore_unknown_annotations = 2
     - stop_upon_unknown_annotations = 3
     """
+    # 1. check if name is available
     dataset = crud.dataset.get_by_user_and_name(
         db, user_id=current_user.id, name=dataset_import.name
     )
     if dataset:
         raise DuplicateDatasetError()
 
-    pre_dataset = PrepareDataset.from_dataset_input(current_user.id, dataset_import)
-
+    # 2. create task
+    task_hash = gen_task_hash(current_user.id, dataset_import.project_id)
     task_in = schemas.TaskCreate(
-        name=pre_dataset.task_id,
-        type=pre_dataset.task_type,
+        name=task_hash,
+        type=dataset_import.import_type,
         project_id=dataset_import.project_id,
     )
     task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=pre_dataset.task_id, user_id=current_user.id
+        db, obj_in=task_in, task_hash=task_hash, user_id=current_user.id
     )
-    # todo: better way to hide task of importing data
-    crud.task.soft_remove(db, id=task.id)
-    logger.info("[create dataset] task created and hided: %s", task)
+    logger.info("[create dataset] related task record created: %s", task)
 
+    # 3. create dataset record
     dataset_in = schemas.DatasetCreate(
         name=dataset_import.name,
         version_num=dataset_import.version_num,
-        hash=pre_dataset.task_id,
-        type=pre_dataset.task_type,
+        hash=task_hash,
         dataset_group_id=dataset_import.dataset_group_id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
@@ -160,116 +162,85 @@ def create_dataset(
     dataset = crud.dataset.create(db, obj_in=dataset_in)
     logger.info("[create dataset] dataset record created: %s", dataset)
 
-    # run background task when related task record has been created
+    # 4. run background task
     background_tasks.add_task(
-        import_dataset, db, controller_client, pre_dataset, dataset
+        import_dataset_in_background,
+        db,
+        controller_client,
+        dataset_import,
+        current_user.id,
+        task_hash,
+        dataset.id,
     )
 
     return {"result": dataset}
 
 
-@dataclass
-class PrepareDataset:
-    user_id: int
-    project_id: int
-    src_url: Optional[str]
-    src_dataset_id: Optional[int]
-    src_path: Optional[str]
-    task_type: TaskType
-    task_id: str
-    strategy: schemas.ImportStrategy
-
-    @classmethod
-    def from_dataset_input(
-        cls,
-        user_id: int,
-        dataset_import: schemas.DatasetImport,
-    ) -> "PrepareDataset":
-        if dataset_import.input_url or dataset_import.input_path:
-            task_type = TaskType.import_data
-        elif dataset_import.input_dataset_id:
-            task_type = TaskType.copy_data
-        else:
-            logger.exception(
-                "[create dataset] refuse to create dataset without url or dataset_id"
-            )
-            raise FailedtoCreateDataset()
-        task_id = gen_task_hash(user_id, dataset_import.project_id)
-        return cls(
-            user_id=user_id,
-            project_id=dataset_import.project_id,
-            src_url=dataset_import.input_url,
-            src_dataset_id=dataset_import.input_dataset_id,
-            src_path=dataset_import.input_path,
-            task_type=task_type,
-            task_id=task_id,
-            strategy=dataset_import.strategy,
-        )
-
-
-def import_dataset(
+def import_dataset_in_background(
     db: Session,
     controller_client: ControllerClient,
-    pre_dataset: PrepareDataset,
-    dataset: Dataset,
+    pre_dataset: schemas.DatasetImport,
+    user_id: int,
+    task_hash: str,
+    dataset_id: int,
 ) -> None:
     try:
-        _import_dataset(db, controller_client, pre_dataset)
+        _import_dataset(db, controller_client, pre_dataset, user_id, task_hash)
     except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound) as e:
         logger.error("[create dataset] failed to import dataset: %s", e)
-        crud.dataset.update_state(db, dataset_id=dataset.id, new_state=TaskState.error)
+        crud.dataset.update_state(db, dataset_id=dataset_id, new_state=TaskState.error)
 
 
 def _import_dataset(
-    db: Session, controller_client: ControllerClient, pre_dataset: PrepareDataset
+    db: Session,
+    controller_client: ControllerClient,
+    pre_dataset: schemas.DatasetImport,
+    user_id: int,
+    task_hash: str,
 ) -> None:
     parameters = {}  # type: Dict[str, Any]
-    if pre_dataset.src_url is not None:
+    if pre_dataset.input_url is not None:
         # Controller will read this directory later
         # so temp_dir will not be removed here
         temp_dir = tempfile.mkdtemp(
             prefix="import_dataset_", dir=settings.SHARED_DATA_DIR
         )
-        paths = prepare_dataset(pre_dataset.src_url, temp_dir)
+        paths = prepare_dataset(pre_dataset.input_url, temp_dir)
         if "annotations" not in paths or "images" not in paths:
             raise FailedtoCreateDataset()
         parameters = {
             "annotation_dir": str(paths["annotations"]),
             "asset_dir": str(paths["images"]),
+            "strategy": pre_dataset.strategy,
         }
-    elif pre_dataset.src_path is not None:
-        src_path = pathlib.Path(pre_dataset.src_path)
+    elif pre_dataset.input_path is not None:
+        src_path = pathlib.Path(pre_dataset.input_path)
         if not is_valid_import_path(src_path):
             raise FailedtoCreateDataset()
         parameters = {
             "annotation_dir": str(src_path / "annotations"),
             "asset_dir": str(src_path / "images"),
+            "strategy": pre_dataset.strategy,
         }
-    elif pre_dataset.src_dataset_id is not None:
-        dataset = crud.dataset.get(db, id=pre_dataset.src_dataset_id)
+    elif pre_dataset.input_dataset_id is not None:
+        dataset = crud.dataset.get(db, id=pre_dataset.input_dataset_id)
         if not dataset:
             raise DatasetNotFound()
-        user_id = f"{dataset.user_id:0>4}"
-        repo_id = f"{dataset.user_id:0>6}"
         parameters = {
-            "src_user_id": user_id,
-            "src_repo_id": repo_id,
+            "src_user_id": gen_user_hash(dataset.user_id),
+            "src_repo_id": gen_repo_hash(dataset.project_id),
             "src_dataset_id": dataset.hash,
+            "strategy": pre_dataset.strategy,
         }
 
-    parameters["strategy"] = pre_dataset.strategy
-    req = ControllerRequest(
-        pre_dataset.task_type,
-        pre_dataset.user_id,
-        pre_dataset.project_id,
-        pre_dataset.task_id,
-        args=parameters,
-    )
-    logger.info("[create dataset] controller request: %s", req)
-
     try:
-        resp = controller_client.send(req)
-        logger.info("[create dataset] controller response: %s", resp)
+        controller_client.import_dataset(
+            user_id,
+            pre_dataset.project_id,
+            task_hash,
+            pre_dataset.import_type,
+            parameters,
+        )
     except ValueError as e:
         # todo parse error message
         logger.exception("[create dataset] controller error: %s", e)
