@@ -4,7 +4,9 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
+from app import schemas
 from app.crud.base import CRUDBase
+from app.constants.state import TaskState, ResultState
 from app.models import Model
 from app.schemas.model import ModelCreate, ModelUpdate
 
@@ -46,6 +48,67 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         query = query.order_by(order_by_column)
 
         return query.offset(offset).limit(limit).all(), query.count()
+
+    def get_latest_version(self, db: Session, model_group_id: int) -> Optional[int]:
+        query = db.query(self.model)
+        latest_model_in_group = (
+            query.filter(self.model.model_group_id == model_group_id)
+            .order_by(desc(self.model.id))
+            .first()
+        )
+        if latest_model_in_group:
+            return latest_model_in_group.version_num
+        return None
+
+    def create_with_version(self, db: Session, obj_in: ModelCreate) -> Model:
+        # fixme
+        #  add mutex lock to protect latest_version
+        latest_version = self.get_latest_version(db, obj_in.model_group_id)
+
+        db_obj = Model(
+            name=obj_in.name,
+            version_num=latest_version + 1 if latest_version else 0,
+            hash=obj_in.hash,
+            result_state=obj_in.result_state,
+            model_group_id=obj_in.model_group_id,
+            project_id=obj_in.project_id,
+            user_id=obj_in.user_id,  # type: ignore
+            task_id=obj_in.task_id,  # type: ignore
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
+    def create_as_task_result(
+        self, db: Session, task: schemas.TaskInternal, dest_group_id: int
+    ) -> Model:
+        model_in = ModelCreate(
+            name=task.hash,
+            hash=task.hash,
+            result_state=ResultState.processing,
+            model_group_id=dest_group_id,
+            project_id=task.project_id,
+            user_id=task.user_id,
+            task_id=task.id,
+        )
+        return self.create_with_version(db, obj_in=model_in)
+
+    def update_state(
+        self,
+        db: Session,
+        *,
+        model_id: int,
+        new_state: TaskState,
+    ) -> Optional[Model]:
+        model = self.get(db, id=model_id)
+        if not model:
+            return model
+        model.result_state = new_state.value
+        db.add(model)
+        db.commit()
+        db.refresh(model)
+        return model
 
 
 model = CRUDModel(Model)

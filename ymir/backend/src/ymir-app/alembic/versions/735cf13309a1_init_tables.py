@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: dca234635290
+Revision ID: 735cf13309a1
 Revises:
-Create Date: 2022-03-01 11:10:15.821457
+Create Date: 2022-03-04 17:21:30.568348
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "dca234635290"
+revision = "735cf13309a1"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -316,7 +316,7 @@ def upgrade():
         sa.Column("state", sa.Integer(), nullable=False),
         sa.Column("parameters", sa.Text(length=20000), nullable=True),
         sa.Column("config", sa.Text(length=20000), nullable=True),
-        sa.Column("progress", sa.SmallInteger(), nullable=True),
+        sa.Column("percent", sa.Float(), nullable=True),
         sa.Column("duration", sa.Integer(), nullable=True),
         sa.Column("error_code", sa.String(length=20), nullable=True),
         sa.Column("user_id", sa.Integer(), nullable=False),

@@ -41,6 +41,11 @@ class TaskState(IntEnum):
     premature = 101  # terminate task while try to get result prematurely
 
 
+class ResultType(IntEnum):
+    dataset = 0
+    model = 1
+
+
 class ResultState(IntEnum):
     processing = 0
     ready = 1

@@ -56,9 +56,10 @@ def test_get_default_dataset_name():
 class TestNormalizeParameters:
     def test_normalize_task_parameters_succeed(self, mocker):
         mocker.patch.object(m, "crud")
+        mocker.patch.object(m, "group_keywords_by_dataset")
         params = {
-            "include_classes": "cat,dog,boy".split(","),
-            "include_datasets": [1, 2, 3],
+            "keywords": "cat,dog,boy".split(","),
+            "dataset_id": 1,
             "model_id": 233,
             "name": random_lower_string(5),
             "else": None,
@@ -68,8 +69,8 @@ class TestNormalizeParameters:
         res = m.normalize_parameters(
             mocker.Mock(), random_lower_string(5), params, keywords_mapping
         )
-        assert res["include_classes"] == [1, 2, 3]
-        assert "include_datasets" in res
+        assert res["class_ids"] == [1, 2, 3]
+        assert "dataset_hash" in res
         assert "model_hash" in res
 
     def test_normalize_task_parameters_skip(self, mocker):
