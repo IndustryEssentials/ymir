@@ -157,4 +157,5 @@ class TestCreatePlaceholderTask:
             db, user_id=user_id, project_id=random.randint(100, 200)
         )
         assert t.user_id == user_id
-        assert t.is_deleted
+        # we do not need to hide related task anymore
+        assert not t.is_deleted

@@ -63,7 +63,9 @@ def create_dataset_group(
         db, user_id=current_user.id, name=obj_in.name
     ):
         raise DuplicateDatasetGroupError()
-    dataset_group = crud.dataset_group.create(db, obj_in=obj_in)
+    dataset_group = crud.dataset_group.create_with_user_id(
+        db, user_id=current_user.id, obj_in=obj_in
+    )
     logger.info("[create datasetgroup] dataset group record created: %s", dataset_group)
     return {"result": dataset_group}
 
