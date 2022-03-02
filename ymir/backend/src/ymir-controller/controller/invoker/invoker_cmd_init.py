@@ -2,7 +2,7 @@ import os
 import pathlib
 
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import checker, utils, labels
+from controller.utils import checker, utils, labels, revs
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -37,7 +37,10 @@ class InitInvoker(BaseMirControllerInvoker):
         if self._request.private_labels:
             command.extend(['--project-class-names', ';'.join(self._request.private_labels)])
         if self._request.task_id and self._request.dst_task_id:
-            command.extend(['--with-empty-rev', f"{self._request.dst_task_id}@{self._request.task_id}"])
+            command.extend([
+                '--with-empty-rev',
+                revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._request.task_id)
+            ])
 
         return utils.run_command(
             cmd=command,

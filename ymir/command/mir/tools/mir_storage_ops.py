@@ -210,14 +210,20 @@ class MirStorageOps():
 
 # public: presave actions
 def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
-    if len(mir_annotations.task_annotations) > 1:
+    task_annotations_count = len(mir_annotations.task_annotations)
+    if task_annotations_count == 0:
+        mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
+    elif task_annotations_count == 1:
+        task_id = list(mir_annotations.task_annotations.keys())[0]
+        if task_id != head_task_id:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"annotation head task id mismatch: {head_task_id} != {task_id}")
+    elif task_annotations_count > 1:
         # * now we allows only one task id in each mir_annotations
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message='more then one task ids found in mir_annotations')
 
     mir_annotations.head_task_id = head_task_id
-    if head_task_id not in mir_annotations.task_annotations:
-        mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
 
 
 def build_mir_tasks(mir_tasks: mirpb.MirTasks,
