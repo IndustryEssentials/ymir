@@ -5,15 +5,23 @@ let intl: IntlShape
 
 // not use for string show on initial state
 export default (id: string, values = {}) => {
-  if (!intl) {
-    intl = useIntl()
+  try {
+    if (!intl) {
+      intl = useIntl()
+    }
+    return intl.formatMessage({ id }, values)
+  } catch (err) {
+    console.log('locale error: ')
   }
-  return intl.formatMessage({ id }, values)
 }
 
 export function formatHtml(id: string, values = {}) {
-  if (!intl) {
-    intl = useIntl()
+  try {
+    if (!intl) {
+      intl = useIntl()
+    }
+    return intl.formatHTMLMessage({ id }, values)
+  } catch (err) {
+    // console.log('locale error: ', err)
   }
-  return intl.formatHTMLMessage({ id }, values)
 }
