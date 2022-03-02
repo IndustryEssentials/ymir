@@ -20,10 +20,11 @@ def get_asserts_info(
     """
     API get assetst info
     """
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     result = asset.Asset(user_id, repo_id, branch_id).get_assets_info(offset, limit, class_id)
 
     resp = utils.suss_resp()
     resp.update({"result": result})
-    app_logger.logger.info(f"get_asserts_info: {resp}")
+    app_logger.logger.error(f"get_asserts_info: {resp}")
 
     return resp

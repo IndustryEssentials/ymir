@@ -93,6 +93,7 @@ class ControllerRequest:
     ) -> mirsvrpb.GeneralReq:
         # project training target labels
         request.private_labels[:] = args["labels"]
+        request.dst_task_id = args["initial_dataset_id"]
         request.req_type = mirsvrpb.REPO_CREATE
         return request
 

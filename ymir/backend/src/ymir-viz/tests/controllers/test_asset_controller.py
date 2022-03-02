@@ -8,25 +8,12 @@ from src.libs.cache import RedisCache
 def mock_mir_content(mocker):
     dict_keywords = {
         "keywords": {
-            "d4e4a60147f1e35bc7f5bc89284aa16073b043c9": {
-                "predifined_keyids": [52]
-            },
-            "430df22960b0f369318705800139fcc8ec38a3e4": {
-                "predifined_keyids": [2, 52]
-            },
+            "d4e4a60147f1e35bc7f5bc89284aa16073b043c9": {"predifined_keyids": [52]},
+            "430df22960b0f369318705800139fcc8ec38a3e4": {"predifined_keyids": [2, 52]},
         },
-        "predifined_keyids_cnt": {
-            52: 2,
-            2: 1
-        },
-        "predifined_keyids_total": 3,
         "index_predifined_keyids": {
-            2: {
-                "asset_ids": ["430df22960b0f369318705800139fcc8ec38a3e4"]
-            },
-            52: {
-                "asset_ids": ["430df22960b0f369318705800139fcc8ec38a3e4", "d4e4a60147f1e35bc7f5bc89284aa16073b043c9"]
-            },
+            2: {"asset_ids": ["430df22960b0f369318705800139fcc8ec38a3e4"]},
+            52: {"asset_ids": ["430df22960b0f369318705800139fcc8ec38a3e4", "d4e4a60147f1e35bc7f5bc89284aa16073b043c9"]},
         },
     }
 
@@ -35,15 +22,7 @@ def mock_mir_content(mocker):
             "5928508c-1bc0-43dc-a094-0352079e39b5": {
                 "image_annotations": {
                     "d4e4a60147f1e35bc7f5bc89284aa16073b043c9": {
-                        "annotations": [{
-                            "box": {
-                                "x": 26,
-                                "y": 189,
-                                "w": 19,
-                                "h": 50
-                            },
-                            "class_id": 2
-                        }]
+                        "annotations": [{"box": {"x": 26, "y": 189, "w": 19, "h": 50}, "class_id": 2}]
                     }
                 }
             }
@@ -68,20 +47,21 @@ def mock_mir_content(mocker):
         }
     }
 
-    mir_tasks_content = {
-        "tasks": {
-            '5928508c-1bc0-43dc-a094-0352079e39b5': {
-                "unknown_types": {
-                    "nuknow_cat": 5
-                },
-            }
-        }
+    mir_tasks_content = {"tasks": {"5928508c-1bc0-43dc-a094-0352079e39b5": {"unknown_types": {"nuknow_cat": 5},}}}
+
+    statistic_info = {
+        "images_cnt": 1420,
+        "negative_images_cnt": 1,
+        "project_negative_images_cnt": 2,
+        "predefined_keyids_cnt": {52: 2, 2: 1},
+        "project_predefined_keyids_cnt": {52: 2, 2: 1},
+        "customized_keywords_cnt": {},
     }
 
     mocker.patch.object(
         MirStorageOps,
         "load_branch_contents",
-        return_value=(dict_metadatas, dict_annotations, dict_keywords, mir_tasks_content),
+        return_value=(dict_metadatas, dict_annotations, dict_keywords, mir_tasks_content, statistic_info),
     )
 
     mocker.patch.object(RedisCache, "get")
@@ -93,53 +73,34 @@ class TestAssetController:
         repo_id = "repo_id"
         branch_id = "5928508c-1bc0-43dc-a094-0352079e39b5"
         expect_data = {
-            "class_ids_count": {
-                "2": 1,
-                "52": 2
-            },
+            "class_ids_count": {"2": 1, "52": 2},
+            "ignored_labels": {"nuknow_cat": 5},
+            "negative_info": {"negative_images_cnt": 1, "project_negative_images_cnt": 2},
             "elements": [
-                {
-                    "asset_id": "d4e4a60147f1e35bc7f5bc89284aa16073b043c9",
-                    "class_ids": [52]
-                },
-                {
-                    "asset_id": "430df22960b0f369318705800139fcc8ec38a3e4",
-                    "class_ids": [2, 52]
-                },
+                {"asset_id": "d4e4a60147f1e35bc7f5bc89284aa16073b043c9", "class_ids": [52]},
+                {"asset_id": "430df22960b0f369318705800139fcc8ec38a3e4", "class_ids": [2, 52]},
             ],
-            "ignored_labels": {
-                "nuknow_cat": 5
-            },
-            "limit":
-            20,
-            "offset":
-            0,
-            "total":
-            2,
+            "limit": 20,
+            "offset": 0,
+            "total": 2,
         }
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets")
         assert resp.status_code == 200
         assert resp.json()["result"] == expect_data
 
         expect_data = {
-            "class_ids_count": {
-                "2": 1,
-                "52": 2
-            },
-            "elements": [{
-                "asset_id": "430df22960b0f369318705800139fcc8ec38a3e4",
-                "class_ids": [2, 52]
-            }],
-            "ignored_labels": {
-                "nuknow_cat": 5
-            },
+            "class_ids_count": {"2": 1, "52": 2},
+            "elements": [{"asset_id": "430df22960b0f369318705800139fcc8ec38a3e4", "class_ids": [2, 52]}],
+            "ignored_labels": {"nuknow_cat": 5},
+            "negative_info": {"negative_images_cnt": 1, "project_negative_images_cnt": 2},
             "limit": 20,
             "offset": 0,
             "total": 1,
         }
         filter_class_id = "class_id=2"
         resp = test_client.get(
-            f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets?{filter_class_id}")
+            f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets?{filter_class_id}"
+        )
         assert resp.status_code == 200
         assert resp.json()["result"] == expect_data
 
@@ -150,21 +111,8 @@ class TestAssetController:
         asset_id = "d4e4a60147f1e35bc7f5bc89284aa16073b043c9"
 
         expect_data = {
-            "metadata": {
-                "asset_type": "2",
-                "width": 1080,
-                "height": 1620,
-                "image_channels": 3
-            },
-            "annotations": [{
-                "box": {
-                    "x": 26,
-                    "y": 189,
-                    "w": 19,
-                    "h": 50
-                },
-                "class_id": 2
-            }],
+            "metadata": {"asset_type": "2", "width": 1080, "height": 1620, "image_channels": 3},
+            "annotations": [{"box": {"x": 26, "y": 189, "w": 19, "h": 50}, "class_id": 2}],
             "class_ids": [52],
         }
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets/{asset_id}")
@@ -176,12 +124,7 @@ class TestAssetController:
         expect_data = {
             "annotations": [],
             "class_ids": [2, 52],
-            "metadata": {
-                "asset_type": "2",
-                "height": 1620,
-                "image_channels": 3,
-                "width": 1080
-            },
+            "metadata": {"asset_type": "2", "height": 1620, "image_channels": 3, "width": 1080},
         }
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets/{asset_id}")
 
