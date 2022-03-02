@@ -141,7 +141,7 @@ class TestExodus(unittest.TestCase):
                                        mir_tasks=mir_tasks,
                                        src_branch='master',
                                        dst_branch='a',
-                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
+                                       task_id='mining-task-id',
                                        no_space_message="branch_a_for_test_exodus")
 
         test_utils.mir_repo_checkout(self._mir_root, "master")

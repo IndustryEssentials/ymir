@@ -102,6 +102,11 @@ class MirStorageOps():
         if mirpb.MirStorage.MIR_TASKS not in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need mir_tasks')
 
+        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
+        if task_id != mir_tasks.head_task_id:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"head task id mismatch: {mir_tasks.head_task_id} != {task_id}")
+
         branch_exists = mir_repo_utils.mir_check_branch_exists(mir_root=mir_root, branch=mir_branch)
         if not branch_exists and not his_branch:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
