@@ -65,17 +65,13 @@ class Asset(BaseModel):
 
     @utils.time_it
     def get_assets_info(self, offset: int, limit: int, class_id: int) -> Dict:
-        app_logger.logger.warning("9999999999999999999999999999999999999999999")
         class_id = class_id if class_id is not None else config.ALL_INDEX_CLASSIDS
 
         if self.check_cache_existence():
-            app_logger.logger.warning("888888888888888888888888888888888")
             result = self.get_assets_info_from_cache(self.cache_key, offset, limit, class_id)
             app_logger.logger.info("get_assets_info from cache")
         else:
-            app_logger.logger.warning("7777777777777777777777777777777777")
             assets_content = self.get_assets_content_from_pb()
-            app_logger.logger.warning(assets_content)
             result = self.format_assets_info(assets_content, offset, limit, class_id)
 
             # asynchronous generate cache content,and we can add some policy to trigger it later
