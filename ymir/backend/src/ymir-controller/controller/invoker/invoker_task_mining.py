@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict
+from typing import Dict, List
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
@@ -37,8 +37,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def subtask_count(cls) -> int:
-        return 2
+    def subtask_weights(cls) -> List[float]:
+        return [0.99, 0.01]
 
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],

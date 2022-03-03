@@ -1,6 +1,6 @@
 import os
 from enum import IntEnum
-from typing import Dict, List, Optional
+from typing import Dict, Optional, Tuple
 
 from pydantic import BaseModel, validator
 
@@ -15,11 +15,12 @@ class TaskParameter(BaseModel):
     task_id: str
     user_id: str
     monitor_type: MonitorType = MonitorType.PERCENT
-    log_paths: List[str]
+    log_path_weights: Dict[str, float]
     description: Optional[str]
 
-    @validator("log_paths", each_item=True)
-    def check_files(cls, log_path: str) -> str:
+    @validator("log_path_weights", each_item=True)
+    def check_files(cls, log_path_weight: Tuple[str, float]) -> str:
+        log_path = log_path_weight[0]
         if not os.path.exists(log_path):
             raise ValueError(f"log_path not exists {log_path}")
 
@@ -29,7 +30,7 @@ class TaskParameter(BaseModel):
 class TaskExtraInfo(BaseModel):
     user_id: Optional[str] = None
     monitor_type: MonitorType = MonitorType.PERCENT
-    log_paths: List[str]
+    log_path_weights: Dict[str, float]
     description: Optional[str]
 
 

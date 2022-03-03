@@ -1,6 +1,5 @@
 import logging
 from typing import Dict
-from typing import List
 
 from common_utils.percent_log_util import PercentLogHandler, LogState
 from monitor.config import settings
@@ -18,7 +17,7 @@ class TaskService:
     def add_single_task(self, task_id: str, task_info: Dict) -> None:
         self._redis.hset(settings.MONITOR_RUNNING_KEY, task_id, task_info)
 
-    def get_raw_log_contents(self, log_paths: List[str]) -> Dict[str, PercentResult]:
+    def get_raw_log_contents(self, log_paths: Dict[str, float]) -> Dict[str, PercentResult]:
         result = dict()
         for one_log_file in log_paths:
             try:
@@ -30,13 +29,17 @@ class TaskService:
         return result
 
     @staticmethod
-    def merge_task_progress_contents(task_id: str, raw_log_contents: Dict[str, PercentResult]) -> PercentResult:
+    def merge_task_progress_contents(task_id: str, raw_log_contents: Dict[str, PercentResult],
+                                     log_path_weights: Dict[str, float]) -> PercentResult:
         percent = 0.0
         log_files_state_set = set()
         max_timestamp_content = None
-        for raw_log_content in raw_log_contents.values():
+        log_files = raw_log_contents.keys()
+        for log_file in log_files:
+            raw_log_content = raw_log_contents[log_file]
+            log_weight = log_path_weights[log_file]
             log_files_state_set.add(raw_log_content.state)
-            percent += raw_log_content.percent
+            percent += raw_log_content.percent * log_weight
             if not max_timestamp_content:
                 max_timestamp_content = raw_log_content
             max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: float(x.timestamp))
@@ -75,15 +78,21 @@ class TaskService:
         if self.check_existence(reg_parameters.task_id):
             raise DuplicateTaskIDError(f"duplicate task id {reg_parameters.task_id}")
 
-        raw_log_contents = self.get_raw_log_contents(reg_parameters.log_paths)
-        if len(raw_log_contents) != len(reg_parameters.log_paths):
+        raw_log_contents = self.get_raw_log_contents(reg_parameters.log_path_weights)
+        if len(raw_log_contents) != len(reg_parameters.log_path_weights):
             raise LogFileError
-        percent_result = self.merge_task_progress_contents(reg_parameters.task_id, raw_log_contents)
+        percent_result = self.merge_task_progress_contents(
+            task_id=reg_parameters.task_id,
+            raw_log_contents=raw_log_contents,
+            log_path_weights=reg_parameters.log_path_weights,
+        )
         task_extra_info = TaskExtraInfo.parse_obj(reg_parameters.dict())
         percent_result = PercentResult.parse_obj(percent_result.dict())
 
         task_info = TaskStorageStructure(
-            raw_log_contents=raw_log_contents, task_extra_info=task_extra_info, percent_result=percent_result,
+            raw_log_contents=raw_log_contents,
+            task_extra_info=task_extra_info,
+            percent_result=percent_result,
         )
 
         self.add_single_task(reg_parameters.task_id, task_info.dict())

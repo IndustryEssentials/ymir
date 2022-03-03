@@ -5,7 +5,7 @@ from typing import Dict, List
 
 import yaml
 
-from common_utils.percent_log_util import LogState
+from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, errors, gpu_utils, labels, tasks_util, utils
 from id_definition.error_codes import CTLResponseCode
@@ -49,27 +49,30 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         task_id: str,
         user_id: str,
         master_work_dir: str,
-        sub_task_cnt: int,
+        subtask_weights: List[float],
         register_monitor: bool,
     ) -> None:
-        if not (sub_task_cnt > 0 and task_id and user_id and master_work_dir):
+        if not (subtask_weights and task_id and user_id and master_work_dir):
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
                                      "create_subtask_workdir_monitor args error, abort.")
-        sub_monitor_files = []
-        for idx in range(sub_task_cnt):
+        if abs(sum(subtask_weights) - 1) >= 0.01:
+            raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid weights, abort.")
+        sub_monitor_files_weights = {}
+        for idx in range(len(subtask_weights)):
             subtask_id = utils.sub_task_id(task_id, idx)
             subtask_monitor_file = cls.subtask_monitor_file(master_work_dir=master_work_dir, subtask_id=subtask_id)
-            tasks_util.write_task_progress(monitor_file=subtask_monitor_file,
-                                           tid=utils.sub_task_id(task_id, idx),
-                                           percent=0.0,
-                                           state=LogState.RUNNING)
-            sub_monitor_files.append(subtask_monitor_file)
+            PercentLogHandler.write_percent_log(log_file=subtask_monitor_file,
+                                                tid=utils.sub_task_id(task_id, idx),
+                                                percent=0.0,
+                                                state=LogState.RUNNING)
+            sub_monitor_files_weights[subtask_monitor_file] = subtask_weights[idx]
 
+        logging.info(f"task {task_id} logging weights:\n{sub_monitor_files_weights}\n")
         if register_monitor:
             tasks_util.register_monitor_log(
                 task_id=task_id,
                 user_id=user_id,
-                log_paths=sub_monitor_files,
+                log_paths_weights=sub_monitor_files_weights,
             )
         return
 
@@ -106,7 +109,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         self.create_subtask_workdir_monitor(task_id=self._task_id,
                                             user_id=self._user_id,
                                             master_work_dir=self._work_dir,
-                                            sub_task_cnt=self.subtask_count(),
+                                            subtask_weights=self.subtask_weights(),
                                             register_monitor=(not self._request.req_create_task.no_task_monitor))
 
         if self._async_mode:
@@ -132,8 +135,9 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
                     request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         subtask_id_dict: Dict[int, str] = {}
+        subtask_weights = cls.subtask_weights()
         # revsersed, to makesure the last subtask idx is 0.
-        for subtask_idx in reversed(range(cls.subtask_count())):
+        for subtask_idx in reversed(range(len(subtask_weights))):
             logging.info(f"processing subtask {subtask_idx}")
 
             subtask_id = utils.sub_task_id(request.task_id, subtask_idx)
@@ -161,7 +165,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         raise NotImplementedError
 
     @classmethod
-    def subtask_count(cls) -> int:
+    def subtask_weights(cls) -> List:
         raise NotImplementedError
 
     @classmethod

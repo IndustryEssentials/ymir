@@ -1,7 +1,7 @@
 import requests
 from fastapi.testclient import TestClient
 
-from monitor.utils.crontab_job import monitor_percent_log
+from monitor.utils.crontab_job import update_monitor_percent_log
 
 
 def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
@@ -9,7 +9,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
     data = "task_id_1	21245543	0.50	2"
     mocker.patch("builtins.open", mocker.mock_open(read_data=data))
     body = dict(task_id="task_id_1", user_id="12", log_paths=["/data/test/monitor.txt"],)
-    client.post(f"/api/v1/tasks", json=body)
+    client.post("/api/v1/tasks", json=body)
 
     data = "task_id_1	21245567	1	3"
     mocker.patch("builtins.open", mocker.mock_open(read_data=data))
@@ -19,9 +19,9 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
     mock_resp.status_code = 200
     mocker.patch.object(requests, "post", return_value=mock_resp)
 
-    monitor_percent_log()
+    update_monitor_percent_log()
 
-    r = client.get(f"/api/v1/finished_tasks")
+    r = client.get("/api/v1/finished_tasks")
 
     running_content = {
         "result": {

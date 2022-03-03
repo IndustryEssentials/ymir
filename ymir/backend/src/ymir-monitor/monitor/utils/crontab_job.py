@@ -11,7 +11,7 @@ from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
-from monitor.schemas.task import TaskSetStorageStructure
+from monitor.schemas.task import TaskExtraInfo, TaskSetStorageStructure
 
 
 def send_updated_task(updated_info: TaskSetStorageStructure) -> None:
@@ -35,7 +35,7 @@ def deal_updated_task(
         logging.info(f"finished task ids {task_id_finished}")
 
 
-def monitor_percent_log() -> None:
+def update_monitor_percent_log() -> None:
     redis_client = redis_handler.RedisHandler()
     contents = redis_client.hgetall(settings.MONITOR_RUNNING_KEY)
 
@@ -44,6 +44,7 @@ def monitor_percent_log() -> None:
     for task_id, content in contents.items():
         flag_task_updated = False
         runtime_log_contents = dict()
+        logging.info(f"content: {content}")
         for log_path, previous_log_content in content["raw_log_contents"].items():
             try:
                 runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
@@ -57,12 +58,17 @@ def monitor_percent_log() -> None:
                 flag_task_updated = True
 
         if flag_task_updated:
-            content_merged = TaskService.merge_task_progress_contents(task_id, runtime_log_contents)
+            task_extra_info: TaskExtraInfo = content["task_extra_info"]
+            content_merged = TaskService.merge_task_progress_contents(
+                task_id=task_id,
+                raw_log_contents=runtime_log_contents,
+                log_path_weights=task_extra_info.log_path_weights,
+            )
             if content_merged.state in [LogState.DONE, LogState.ERROR]:
                 task_id_finished.append(task_id)
             task_updated[task_id] = dict(
                 raw_log_contents=runtime_log_contents,
-                task_extra_info=content["task_extra_info"],
+                task_extra_info=task_extra_info,
                 percent_result=content_merged,
             )
 
@@ -75,5 +81,5 @@ if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, format="%(levelname)-8s: [%(asctime)s] %(message)s", level=logging.INFO)
     sentry_sdk.init(settings.MONITOR_SENTRY_DSN)
     sched = BlockingScheduler()
-    sched.add_job(monitor_percent_log, "interval", seconds=settings.INTERVAL_SECONDS)
+    sched.add_job(update_monitor_percent_log, "interval", seconds=settings.INTERVAL_SECONDS)
     sched.start()
