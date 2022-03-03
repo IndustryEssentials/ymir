@@ -82,6 +82,8 @@ def create_project(
     # create dataset_group info
     # init one empty dataset
 
+    controller_client.create_project(user_id=current_user.id)
+
     logger.info("[create project] project record created: %s", project)
     return {"result": project}
 
