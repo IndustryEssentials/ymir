@@ -83,33 +83,12 @@ def create_project(
     )
 
     task_id = gen_task_hash(current_user.id, project.id)
-
-    # 2.create dataset group to build dataset info
-    dataset_name = f"{project_in.name}_training_dataset"
-    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
-    dataset_group = crud.dataset_group.create_with_user_id(
-        db, user_id=current_user.id, obj_in=dataset_paras
-    )
-
-    # 3.create init dataset, but has no task id,
-    dataset_in = schemas.DatasetCreate(
-        name=dataset_name,
-        version_num=0,
-        hash=task_id,
-        dataset_group_id=dataset_group.id,
-        project_id=project.id,
-        user_id=current_user.id,
-        result_state=ResultState.ready,
-        task_id=project.id,
-    )
-    dataset = crud.dataset.create(db, obj_in=dataset_in)
-
     keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
     training_keywords = [
         keyword_name_to_id[keyword] for keyword in project_in.training_keywords
     ]
 
-    # 4.send to controller
+    # 2.send to controller
     try:
         resp = controller_client.create_project(
             user_id=current_user.id,
@@ -121,6 +100,26 @@ def create_project(
     except ValueError:
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
+
+    # 3.create dataset group to build dataset info
+    dataset_name = f"{project_in.name}_training_dataset"
+    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
+    dataset_group = crud.dataset_group.create_with_user_id(
+        db, user_id=current_user.id, obj_in=dataset_paras
+    )
+
+    # 4.create init dataset, but has no task id,
+    dataset_in = schemas.DatasetCreate(
+        name=dataset_name,
+        version_num=0,
+        hash=task_id,
+        dataset_group_id=dataset_group.id,
+        project_id=project.id,
+        user_id=current_user.id,
+        result_state=ResultState.ready,
+        task_id=project.id,
+    )
+    crud.dataset.create(db, obj_in=dataset_in)
 
     # 5.update project info
     project = crud.project.update(
