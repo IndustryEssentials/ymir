@@ -23,31 +23,27 @@ describe("service: dataset", () => {
   })
 
   it("getDatasets -> success -> all filter conditions", () => {
-    const params = { name: 'searchname', type: 1, start_time: 0, end_time: 0, limit: 20, offset: 0 }
+    const pid = 25234
+    const params = { name: 'searchname', limit: 20, offset: 0 }
     const expected = products(4)
 
-    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
+    requestExample(getDatasets, [pid, params], { items: expected, total: expected.length }, 'get')
   })
 
   it("getDatasets -> success -> filter name", () => {
+    const pid = 25235
     const params = { name: 'partofname' }
     const expected = products(2)
 
-    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
+    requestExample(getDatasets, [pid, params], { items: expected, total: expected.length }, 'get')
   })
 
   it("getDatasets -> success -> none filter conditions", () => {
+    const pid = 25236
     const params = {}
     const expected = products(5)
 
-    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
-  })
-
-  it("getDatasets -> success -> all filter conditions", () => {
-    const params = { type: 1, start_time: 0, end_time: 0, limit: 20, offset: 40 }
-    const expected = products(5)
-
-    requestExample(getDatasets, params, { items: expected, total: expected.length }, 'get')
+    requestExample(getDatasets, [pid, params], { items: expected, total: expected.length }, 'get')
   })
 
   it("batchDatasets -> success", () => {

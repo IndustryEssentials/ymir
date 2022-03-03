@@ -63,7 +63,9 @@ def create_model_group(
         db, user_id=current_user.id, name=obj_in.name
     ):
         raise DuplicateModelGroupError()
-    model_group = crud.model_group.create(db, obj_in=obj_in)
+    model_group = crud.model_group.create_with_user_id(
+        db, user_id=current_user.id, obj_in=obj_in
+    )
     logger.info("[create modelgroup] model group record created: %s", model_group)
     return {"result": model_group}
 

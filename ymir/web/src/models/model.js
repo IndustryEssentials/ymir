@@ -1,5 +1,6 @@
 import { 
   getModels, 
+  getModelVersions,
   batchModels,
   getModel,
   delModel,
@@ -24,17 +25,35 @@ export default {
       items: [],
       total: 0,
     },
+    versions: {},
     model: {},
   },
   effects: {
     *getModels({ payload }, { call, put }) {
-      const { code, result } = yield call(getModels, payload)
+      const { pid, query } = payload
+      const { code, result } = yield call(getModels, pid, query)
       if (code === 0) {
         yield put({
           type: "UPDATE_MODELS",
           payload: result,
         })
         return result
+      }
+    },
+    *getModelVersions({ payload }, { select, call, put }) {
+      const gid = payload
+      const versions = yield select(({ model }) => model.versions)
+      if (versions[gid]) {
+        return versions[gid]
+      }
+      const { code, result } = yield call(getModelVersions, gid)
+      if (code === 0) {
+        const vs = { id: gid, versions: result.items }
+        yield put({
+          type: "UPDATE_VERSIONS",
+          payload: vs,
+        })
+        return result.items
       }
     },
     *batchModels({ payload }, { call, put }) {
@@ -164,6 +183,15 @@ export default {
       return {
         ...state,
         models: payload
+      }
+    },
+    UPDATE_VERSIONS(state, { payload }) {
+      const { id, versions } = payload
+      const vs = state.versions 
+      vs[id] = versions
+      return {
+        ...state,
+        versions: vs,
       }
     },
     UPDATE_MODEL(state, { payload }) {

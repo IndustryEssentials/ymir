@@ -22,7 +22,7 @@ class TestCmdInit(unittest.TestCase):
         with open(os.path.join(test_root, 'labels.csv'), 'w') as f:
             f.write('0,,xbox\n1,,person\n2,,cat\n')
 
-        init.CmdInit.run_with_args(mir_root=test_root, project_class_names='cat;person')
+        init.CmdInit.run_with_args(mir_root=test_root, project_class_names='cat;person', empty_rev='a@a')
 
         assert (os.path.isdir(os.path.join(test_root, ".git")))
         assert (os.path.isdir(os.path.join(test_root, ".dvc")))

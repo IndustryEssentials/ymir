@@ -84,31 +84,27 @@ def import_model(
     current_user: models.User = Depends(deps.get_current_active_user),
     background_tasks: BackgroundTasks,
 ) -> Any:
-    existing_model_name = crud.model.get_by_user_and_name(
+    if crud.model.is_duplicated_name(
         db, user_id=current_user.id, name=model_import.name
-    )
-    if existing_model_name:
+    ):
         raise DuplicateModelError()
 
     if not settings.MODELS_PATH:
         raise InvalidConfiguration()
 
-    model_info = jsonable_encoder(model_import)
-
     task = create_task_as_placeholder(
         db, user_id=current_user.id, project_id=model_import.project_id
     )
-    logger.info("[import model] task created and hided: %s", task)
-
-    existing_model_hash = crud.model.get_by_hash(db, hash_=model_import.hash)
+    logger.info("[import model] related task created: %s", task)
 
     # bind imported model to the placeholding task
+    model_info = jsonable_encoder(model_import)
     model_info["task_id"] = task.id
     model_info["user_id"] = current_user.id
-    model_in = schemas.ModelCreate(**model_info)
-    model = crud.model.create(db, obj_in=model_in)
+    model = crud.model.create(db, obj_in=schemas.ModelCreate(**model_info))
     logger.info("[import model] model record created: %s", model)
 
+    existing_model_hash = crud.model.get_by_hash(db, hash_=model_import.hash)
     if existing_model_hash:
         logger.info(
             "model of same hash (%s) exists, just add a new reference",
@@ -118,6 +114,7 @@ def import_model(
         background_tasks.add_task(
             save_model_file, model_import.input_url, settings.MODELS_PATH
         )
+    return {"result": model}
 
 
 def create_task_as_placeholder(db: Session, *, user_id: int, project_id: int) -> Task:
@@ -126,7 +123,6 @@ def create_task_as_placeholder(db: Session, *, user_id: int, project_id: int) ->
         name=task_id, type=TaskType.import_data, project_id=project_id
     )
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_id, user_id=user_id)
-    crud.task.soft_remove(db, id=task.id)
     return task
 
 
