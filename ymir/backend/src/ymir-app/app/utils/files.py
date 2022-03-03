@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
 from tempfile import NamedTemporaryFile, mkdtemp
-from typing import Any, Dict, Generator, List, Tuple, Union
+from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -114,8 +114,12 @@ def prepare_dataset(url: Union[AnyHttpUrl, str], output_dir: Union[str, Path]) -
     return dict(locate_dirs(output_dir, ["images", "annotations"]))
 
 
-def save_file(url: Union[AnyHttpUrl, str], output_dir: Union[str, Path]) -> Path:
-    filename = Path(urlparse(url).path).name
+def save_file(
+    url: Union[AnyHttpUrl, str],
+    output_dir: Union[str, Path],
+    output_filename: Optional[str] = None,
+) -> Path:
+    filename = output_filename or Path(urlparse(url).path).name
     output_file = Path(output_dir) / filename
     save_file_content(url, output_file)
     return output_file

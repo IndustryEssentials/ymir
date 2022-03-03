@@ -228,10 +228,10 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     #   mir_keywords: auto generated from mir_annotations, so do nothing
 
     #   update_mir_task
-    mir_storage_ops.build_mir_tasks(mir_tasks=mir_tasks,
-                                    task_type=mirpb.TaskTypeMining,
-                                    task_id=dst_typ_rev_tid.tid,
-                                    message='mining')
+    mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
+                                     task_type=mirpb.TaskTypeMining,
+                                     task_id=dst_typ_rev_tid.tid,
+                                     message='mining')
     mir_tasks.tasks[mir_tasks.head_task_id].model.model_hash = model_hash
 
     # step 3: store results and commit.
