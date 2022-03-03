@@ -150,6 +150,8 @@ git clone git@github.com:IndustryEssentials/ymir.git
   ```sh
 bash ymir.sh start
   ```
+  
+It is recommended not to use the ```sudo``` command, as it may result in insufficient privileges.
 
 After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
@@ -170,6 +172,7 @@ Label Studio is an external labeling system that works with YMIR. Install it if 
   ```sh
 docker-compose -f docker-compose-component.yml up -d
   ```
+It is recommended not to use the ```sudo``` command, as it may result in insufficient privileges.
 
 2. Check the status of label studio:
 
@@ -217,6 +220,8 @@ When you need to import a dataset with annotation files, please make sure the an
 
 ![Label management](docs/images/Label%20management.jpg)
 
+The primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
+
 ## 3.2. Raw data preparation
 
 The user prepares a dataset with training targets (training set and test set) for training an initial model. Before importing, please ensure that the format of the dataset meets the following requirements:
@@ -246,13 +251,15 @@ Users can download the example **Sample.zip** for reference as follows:
 
 ![local import](docs/images/local-import.jpeg)
 
-(4) Path Import: The user must enter the dataset's absolute path in the server, as shown in the figure below:
+(4) Path Import:
+
+1. Download the open-source dataset VOC2012 ([Click to download VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar)) and unzip it. Change the folder name as required, and then compressing them separately into zip packages that meet the import requirements.
+
+2. Place dataset VOC2012 under ymir-workplace/importing_pic.
+
+3. Select 'path import' and enter the absolute path address of the dataset in the server: /data/sharing/voc2012, as shown in the figure below:
 
 ![path import](docs/images/path-import.jpeg)
-
-Users can unpack and separate the training set (VOC2012_train), the test set (VOC2012_val), and the dataset to be mined (VOC2012_mining) from the open-source dataset VOC2012 ([click to download VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar)) . The user needs to modify the folder names, then compress them into separate zip packages that meet the import requirements and import them by local import. As the following figures show:
-
-![import success](docs/images/import-success.jpeg)
 
 ## 3.3. Data labeling
 
