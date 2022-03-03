@@ -85,4 +85,3 @@ ymir-workplace
 .mir_lock
 .local
 .pre-commit-config.yaml
-.flake8
