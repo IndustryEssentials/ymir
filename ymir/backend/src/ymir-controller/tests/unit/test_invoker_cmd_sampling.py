@@ -83,7 +83,7 @@ class TestInvokerSampling(unittest.TestCase):
         self.assertEqual(response.code, 0)
         self.assertEqual(response.message, 'done')
 
-        work_dir = os.path.join(self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_FILTER),
+        work_dir = os.path.join(self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_SAMPLING),
                                 self._task_id)
         expected_cmd = f"mir sampling --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id}"
         expected_cmd += f" --src-revs {self.in_dataset_ids[0]}@{self.in_dataset_ids[0]}"
