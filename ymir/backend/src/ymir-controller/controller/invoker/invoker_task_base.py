@@ -165,6 +165,12 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         raise NotImplementedError
 
     @classmethod
+    def subtask_invoke_2(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
+                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
+                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+        raise NotImplementedError
+
+    @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
