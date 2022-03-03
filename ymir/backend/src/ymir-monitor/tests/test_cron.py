@@ -40,7 +40,9 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
                 "task_extra_info": {
                     "user_id": "12",
                     "monitor_type": 1,
-                    "log_paths": ["/data/test/monitor.txt"],
+                    "log_path_weights": {
+                        "/data/test/monitor.txt": 1.0
+                    },
                     "description": None,
                 },
                 "percent_result": {
