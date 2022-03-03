@@ -10,7 +10,7 @@ import Tip from '@/components/form/tip'
 
 const { useForm } = Form
 
-const Add = ({ keywords, getProject, createProject, updateProject, getKeywords }) => {
+const Add = ({ keywords, datasets, getProject, createProject, updateProject, getKeywords }) => {
   const { id } = useParams()
   const history = useHistory()
   const location = useLocation()
@@ -88,6 +88,13 @@ const Add = ({ keywords, getProject, createProject, updateProject, getKeywords }
     }
   }
 
+  const renderSetSelect = (sets = []) => <Select showArrow
+    placeholder={t('project.add.form.trainset.placeholder')}>
+    {sets.map(set => (
+      <Option key={set.name} value={set.id}>{set.name}</Option>
+    ))}
+  </Select>
+
   return (
     <div className={s.projectAdd}>
       <Breadcrumbs />
@@ -128,7 +135,6 @@ const Add = ({ keywords, getProject, createProject, updateProject, getKeywords }
                 <Select mode="multiple" showArrow
                   placeholder={t('project.add.form.keyword.placeholder')} 
                   filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-                    {console.log('render keywords: ', keywords)}
                   {keywords.map(keyword => (
                     <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
                       <Row>
@@ -163,6 +169,17 @@ const Add = ({ keywords, getProject, createProject, updateProject, getKeywords }
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
               </Form.Item>
             </Tip>
+            <div className={s.interationSettings} hidden={true}>
+              <h3>{t('project.interation.settings.title')}</h3>
+              <Tip content={t('tip.project.add.trainset')}>
+                <Form.Item
+                  label={t('project.add.form.keyword.label')}
+                  name="train_set"
+                >
+                  {renderSetSelect(datasets)}
+                </Form.Item>
+              </Tip>
+            </div>
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 4 }}>
                 <Space size={20}>
@@ -189,6 +206,7 @@ const Add = ({ keywords, getProject, createProject, updateProject, getKeywords }
 const props = (state) => {
   return {
     keywords: state.keyword.keywords.items,
+    datasets: state.project.datasets,
   }
 }
 
