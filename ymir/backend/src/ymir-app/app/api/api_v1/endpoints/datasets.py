@@ -131,10 +131,9 @@ def create_dataset(
     - stop_upon_unknown_annotations = 3
     """
     # 1. check if name is available
-    dataset = crud.dataset.get_by_user_and_name(
+    if crud.dataset.is_duplicated_name(
         db, user_id=current_user.id, name=dataset_import.name
-    )
-    if dataset:
+    ):
         raise DuplicateDatasetError()
 
     # 2. create task
@@ -194,51 +193,51 @@ def import_dataset_in_background(
 def _import_dataset(
     db: Session,
     controller_client: ControllerClient,
-    pre_dataset: schemas.DatasetImport,
+    dataset_import: schemas.DatasetImport,
     user_id: int,
     task_hash: str,
 ) -> None:
     parameters = {}  # type: Dict[str, Any]
-    if pre_dataset.input_url is not None:
+    if dataset_import.input_url is not None:
         # Controller will read this directory later
         # so temp_dir will not be removed here
         temp_dir = tempfile.mkdtemp(
             prefix="import_dataset_", dir=settings.SHARED_DATA_DIR
         )
-        paths = prepare_dataset(pre_dataset.input_url, temp_dir)
+        paths = prepare_dataset(dataset_import.input_url, temp_dir)
         if "annotations" not in paths or "images" not in paths:
             raise FailedtoCreateDataset()
         parameters = {
             "annotation_dir": str(paths["annotations"]),
             "asset_dir": str(paths["images"]),
-            "strategy": pre_dataset.strategy,
+            "strategy": dataset_import.strategy,
         }
-    elif pre_dataset.input_path is not None:
-        src_path = pathlib.Path(pre_dataset.input_path)
+    elif dataset_import.input_path is not None:
+        src_path = pathlib.Path(dataset_import.input_path)
         if not is_valid_import_path(src_path):
             raise FailedtoCreateDataset()
         parameters = {
             "annotation_dir": str(src_path / "annotations"),
             "asset_dir": str(src_path / "images"),
-            "strategy": pre_dataset.strategy,
+            "strategy": dataset_import.strategy,
         }
-    elif pre_dataset.input_dataset_id is not None:
-        dataset = crud.dataset.get(db, id=pre_dataset.input_dataset_id)
+    elif dataset_import.input_dataset_id is not None:
+        dataset = crud.dataset.get(db, id=dataset_import.input_dataset_id)
         if not dataset:
             raise DatasetNotFound()
         parameters = {
             "src_user_id": gen_user_hash(dataset.user_id),
             "src_repo_id": gen_repo_hash(dataset.project_id),
-            "src_dataset_id": dataset.hash,
-            "strategy": pre_dataset.strategy,
+            "src_resource_id": dataset.hash,
+            "strategy": dataset_import.strategy,
         }
 
     try:
         controller_client.import_dataset(
             user_id,
-            pre_dataset.project_id,
+            dataset_import.project_id,
             task_hash,
-            pre_dataset.import_type,
+            dataset_import.import_type,
             parameters,
         )
     except ValueError as e:
