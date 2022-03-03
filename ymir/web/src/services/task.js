@@ -86,23 +86,28 @@ export function updateTask(id, name) {
   })
 }
 
-export function createFilterTask({
-  name,
-  datasets,
-  include = [],
-  exclude = [],
-  strategy,
+/**
+ * create fusion task
+ * @param {object} param0 
+ * {
+ * {number} project_id
+ * {number} dataset_group_id
+ * {number} main_dataset_id 
+ * {array<number>} [include_datasets]
+ * {number} [include_strategy]
+ * {array<number>} [exclude_datasets]
+ * {array<string>} [include_labels]
+ * {array<string>} [exclude_labels]
+ * {number} [sampling_count]
+ * }
+ * @returns 
+ */
+export function createFusionTask({
+  project_id, dataset_group_id, main_dataset_id, include_datasets = [], include_strategy = [],
+  exclude_datasets = [], include_labels = [], exclude_labels = [], sampling_count,
 }) {
-  return createTask({
-    type: TASKTYPES.FILTER,
-    name,
-    parameters: {
-      name,
-      strategy,
-      include_datasets: datasets,
-      include_classes: include,
-      exclude_classes: exclude,
-    },
+  return request.post('​/datasets​/dataset_fusion', {
+    project_id, dataset_group_id, main_dataset_id, include_datasets, include_strategy, exclude_datasets, include_labels, exclude_labels, sampling_count,
   })
 }
 

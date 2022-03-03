@@ -514,7 +514,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
                     <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
-                      {t('task.filter.create')}
+                      {t('task.create')}
                     </Button>
                   </Form.Item>
                   <Form.Item name='backBtn' noStyle>

@@ -15,9 +15,9 @@ import Tip from "@/components/form/tip"
 import RecommendKeywords from "@/components/common/recommendKeywords"
 const { Option } = Select
 
-function Filter({
+function Fusion({
   getDatasets,
-  createFilterTask,
+  createFusionTask,
 }) {
   const { ids } = useParams()
   const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
@@ -30,13 +30,13 @@ function Filter({
 
   const initialValues = {
     datasets: datasetIds,
-    name: 'task_filter_' + randomNumber(),
+    name: 'task_fusion_' + randomNumber(),
   }
 
   useEffect(async () => {
     const result = await getDatasets({ limit: 100000 })
     if (result) {
-      setDatasets(result.items.filter(dataset => TASKSTATES.FINISH === dataset.state && dataset.keyword_count))
+      setDatasets(result.items.fusion(dataset => TASKSTATES.FINISH === dataset.state && dataset.keyword_count))
     }
   }, [])
 
@@ -82,9 +82,9 @@ function Filter({
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
     }
-    const result = await createFilterTask(params)
+    const result = await createFusionTask(params)
     if (result) {
-      message.info(t('task.filter.create.success.msg'))
+      message.info(t('task.fusion.create.success.msg'))
       history.replace('/home/task')
     }
   }
@@ -111,17 +111,17 @@ function Filter({
     if ([...selectedKeywords, ...selectedExcludeKeywords].length) {
       return Promise.resolve()
     } else {
-      return Promise.reject(t('task.filter.tip.keyword.required'))
+      return Promise.reject(t('task.fusion.tip.keyword.required'))
     }
   }
 
   return (
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
-      <Card className={commonStyles.container} title={t('breadcrumbs.task.filter')}>
+      <Card className={commonStyles.container} title={t('breadcrumbs.task.fusion')}>
         <Form
           form={form}
-          name='filterForm'
+          name='fusionForm'
           {...formLayout}
           initialValues={initialValues}
           onFinish={onFinish}
@@ -132,31 +132,31 @@ function Filter({
         >
           <Tip hidden={true}>
             <Form.Item
-              label={t('task.filter.form.name.label')}
+              label={t('task.fusion.form.name.label')}
               name='name'
               rules={[
-                { required: true, whitespace: true, message: t('task.filter.form.name.placeholder'), },
+                { required: true, whitespace: true, message: t('task.fusion.form.name.placeholder'), },
                 { type: 'string', min: 2, max: 50 },
               ]}
             >
-              <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
+              <Input placeholder={t('task.fusion.form.name.required')} autoComplete='off' allowClear />
             </Form.Item>
           </Tip>
 
           <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
           <Tip hidden={true}>
             <Form.Item
-              label={t('task.filter.form.datasets.label')}
+              label={t('task.fusion.form.datasets.label')}
               required
               name="datasets"
               rules={[
-                { required: true, message: t('task.filter.form.datasets.required') },
+                { required: true, message: t('task.fusion.form.datasets.required') },
               ]}
             >
               <Select
-                placeholder={t('task.filter.form.filter.datasets.placeholder')}
+                placeholder={t('task.fusion.form.fusion.datasets.placeholder')}
                 mode='multiple'
-                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                fusionOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                 onChange={datasetChange}
                 showArrow
               >
@@ -184,8 +184,8 @@ function Filter({
 
           <Tip hidden={true}>
           <Form.Item label={t('dataset.column.keyword')} required style={{ zIndex: 2, position: 'relative' }}>
-              <p>{t('task.filter.form.include.label')}</p>
-            <Tip content={t('tip.task.filter.includelable')} span={1} formSpan={24}>
+              <p>{t('task.fusion.form.include.label')}</p>
+            <Tip content={t('tip.task.fusion.includelable')} span={1} formSpan={24}>
                 <Form.Item
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='inc'
@@ -202,13 +202,13 @@ function Filter({
                   </Select>
                 </Form.Item>
               </Tip>
-              <p>{t('task.filter.form.exclude.label')}</p>
-              <Tip content={t('tip.task.filter.excludelable')} span={1} formSpan={24}>
+              <p>{t('task.fusion.form.exclude.label')}</p>
+              <Tip content={t('tip.task.fusion.excludelable')} span={1} formSpan={24}>
                 <Form.Item
                   labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
                   name='exc'
                   dependencies={['inc']}
-                  help={t('task.filter.tip.keyword.required')}
+                  help={t('task.fusion.tip.keyword.required')}
                   rules={[
                     { validator: requireOne },
                   ]}
@@ -231,7 +231,7 @@ function Filter({
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>
                 <Button type="primary" size="large" htmlType="submit">
-                  {t('task.filter.create')}
+                  {t('task.fusion.create')}
                 </Button>
               </Form.Item>
               <Form.Item name='backBtn' noStyle>
@@ -256,13 +256,13 @@ const mapDispatchToProps = (dispatch) => {
         payload,
       })
     },
-    createFilterTask(payload) {
+    createFusionTask(payload) {
       return dispatch({
-        type: "task/createFilterTask",
+        type: "task/createFusionTask",
         payload,
       })
     },
   }
 }
 
-export default connect(null, mapDispatchToProps)(Filter)
+export default connect(null, mapDispatchToProps)(Fusion)

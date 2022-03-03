@@ -10,7 +10,7 @@ const getCrumbs = () => [
   { path: '/home/task', label: t('breadcrumbs.tasks'), pid: 1, id: 2 },
   { path: '/home/model', label: t('breadcrumbs.models'), pid: 1, id: 3 },
   { path: '/home/dataset', label: t('breadcrumbs.datasets'), pid: 1, id: 4 },
-  { path: '/home/task/filter/:ids?', label: t('breadcrumbs.task.filter'), pid: 2, id: 6 },
+  { path: '/home/task/fusion/:ids?', label: t('breadcrumbs.task.fusion'), pid: 2, id: 6 },
   { path: '/home/task/train/:ids?', label: t('breadcrumbs.task.training'), pid: 2, id: 7 },
   { path: '/home/task/label/:id?', label: t('breadcrumbs.task.label'), pid: 2, id: 8 },
   { path: '/home/task/mining/:ids?', label: t('breadcrumbs.task.mining'), pid: 2, id: 9 },

@@ -5,6 +5,7 @@ import {
   updateTask,
   createTask,
   stopTask,
+  createFusionTask,
   createFilterTask,
   createMiningTask,
   createTrainTask,
@@ -98,6 +99,12 @@ export default {
           type: "UPDATE_TASK",
           payload: result,
         })
+        return result
+      }
+    },
+    *createFusionTask({ payload }, { call, put }) {
+      let { code, result } = yield call(createFusionTask, payload)
+      if (code === 0) {
         return result
       }
     },

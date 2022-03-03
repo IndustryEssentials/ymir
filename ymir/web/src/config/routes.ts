@@ -24,10 +24,10 @@ const Routes = [
         title: 'task.title',
       },
       {
-        path: "/home/task/filter/:ids?",
+        path: "/home/task/fusion/:ids?",
         name: "taskFilter",
-        component: "@/pages/task/filter/index",
-        title: 'task.filter.title',
+        component: "@/pages/task/fusion/index",
+        title: 'task.fusion.title',
       },
       {
         path: "/home/task/mining/:ids?",
