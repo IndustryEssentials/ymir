@@ -91,7 +91,7 @@ def create_project(
         db, user_id=current_user.id, obj_in=dataset_paras
     )
 
-    # 3.create dataset, but has no task id,
+    # 3.create init dataset, but has no task id,
     dataset_in = schemas.DatasetCreate(
         name=dataset_name,
         version_num=0,
@@ -100,7 +100,6 @@ def create_project(
         project_id=project.id,
         user_id=current_user.id,
         result_state=ResultState.ready,
-        # init dataset has no task
         task_id=project.id,
     )
     dataset = crud.dataset.create(db, obj_in=dataset_in)
