@@ -10,13 +10,12 @@ import Tip from '@/components/form/tip'
 
 const { useForm } = Form
 
-const Add = ({ keywords, datasets, getProject, createProject, updateProject, getKeywords }) => {
+const Add = ({ keywords, datasets, projects, getProject, createProject, updateProject, getKeywords }) => {
   const { id } = useParams()
   const history = useHistory()
   const location = useLocation()
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
-  const [userInput, setUserInput] = useState(false)
   const [project, setProject] = useState({ id })
 
   useEffect(() => {
@@ -24,6 +23,12 @@ const Add = ({ keywords, datasets, getProject, createProject, updateProject, get
 
     id && fetchProject()
   }, [id])
+
+  useEffect(() => {
+    if (projects[id]) {
+      setProject(projects[id])
+    }
+  }, [projects[id]])
 
   useEffect(() => {
     getKeywords({ limit: 100000 })
@@ -34,10 +39,13 @@ const Add = ({ keywords, datasets, getProject, createProject, updateProject, get
   }, [project])
 
   function initForm(project = {}) {
-    const { name, url, description } = project
+    const { name, targetMap, targetDataset, targetInteration, description } = project
     if (name) {
       form.setFieldsValue({
-        name, url, description,
+        name, keywords, description,
+        map_target: targetMap,
+        iteration_target: targetInteration,
+        training_dataset_count_target: targetDataset,
       })
     }
   }
@@ -47,7 +55,7 @@ const Add = ({ keywords, datasets, getProject, createProject, updateProject, get
   }
 
   const checkProjectName = (_, value) => {
-    const reg = /^[a-z0-9]+(?:[._-][a-z0-9]+)*(:[a-zA-Z0-9._-]+)?$/
+    const reg = /^[a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*$/
     if (!value || reg.test(value.trim())) {
       return Promise.resolve()
     }
@@ -56,13 +64,9 @@ const Add = ({ keywords, datasets, getProject, createProject, updateProject, get
 
   async function fetchProject() {
     const result = await getProject(id)
-    if (result) {
-      setProject(result)
-    }
   }
 
   async function create({ name, description, ...values }) {
-    console.log('hello create project: ', name, description, values)
     var params = {
       name: name.trim(),
       description: (description || '').trim(),
@@ -75,11 +79,12 @@ const Add = ({ keywords, datasets, getProject, createProject, updateProject, get
     }
   }
 
-  async function update({ name, description }) {
+  async function update({ name, description, ...values }) {
     var params = {
       id,
       name: name.trim(),
       description: (description || '').trim(),
+      ...values,
     }
     const result = await updateProject(params)
     if (result) {
@@ -148,13 +153,13 @@ const Add = ({ keywords, datasets, getProject, createProject, updateProject, get
             <Tip content={t('tip.project.add.target')}>
               <Form.Item label={t('project.add.form.target')}>
                 <div className={s.targetPanel}>
-                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='map'>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='map_target'>
                     <InputNumber min={0} max={100} step={1} formatter={value => `${value}%`} parser={value => value.replace('%', '')} style={{ width: '100%' }} placeholder={t('project.add.form.target.map.placeholder')} allowClear />
                   </Form.Item>
-                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.interations')} name='interations'>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.interations')} name='iteration_target'>
                     <InputNumber min={1} step={1} placeholder={t('project.add.form.target.interations.placeholder')} style={{ width: '100%' }} allowClear />
                   </Form.Item>
-                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='dataset'>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='training_dataset_count_target'>
                     <InputNumber min={1} step={1} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} allowClear />
                   </Form.Item>
                 </div>
@@ -207,6 +212,7 @@ const props = (state) => {
   return {
     keywords: state.keyword.keywords.items,
     datasets: state.project.datasets,
+    projects: state.project.projects,
   }
 }
 
