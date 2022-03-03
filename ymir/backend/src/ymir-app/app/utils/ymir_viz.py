@@ -53,6 +53,7 @@ class Assets:
     items: List
     keywords: Dict[str, int]
     ignored_keywords: Dict[str, int]
+    negative_info: Dict[str, int]
 
     @classmethod
     def from_viz_res(cls, res: Dict, keyword_id_to_name: Dict) -> "Assets":
@@ -75,7 +76,8 @@ class Assets:
             if int(class_id) in keyword_id_to_name
         }
         ignored_keywords = res["ignored_labels"]
-        return cls(res["total"], assets, keywords, ignored_keywords)
+        negative_info = res["negative_info"]
+        return cls(res["total"], assets, keywords, ignored_keywords, negative_info)
 
 
 @dataclass

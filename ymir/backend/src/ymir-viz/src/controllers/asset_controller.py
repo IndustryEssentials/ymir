@@ -24,6 +24,5 @@ def get_asserts_info(
 
     resp = utils.suss_resp()
     resp.update({"result": result})
-    app_logger.logger.info(f"get_asserts_info: {resp}")
 
     return resp

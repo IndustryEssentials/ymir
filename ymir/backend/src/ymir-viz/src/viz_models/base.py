@@ -65,7 +65,11 @@ class BaseModel:
 
         redis_cache.set(
             f"{cache_key}:{config.ASSETS_ATTRIBUTES}",
-            {"class_ids_count": asset_content["class_ids_count"], "ignored_labels": asset_content["ignored_labels"]},
+            {
+                "class_ids_count": asset_content["class_ids_count"],
+                "ignored_labels": asset_content["ignored_labels"],
+                "negative_info": asset_content["negative_info"],
+            },
         )
         redis_cache.set(f"{cache_key}:{config.CACHE_STATUS}", {"flag": 1})
         app_logger.logger.info("finish setting cache!!!")
