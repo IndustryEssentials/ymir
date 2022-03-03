@@ -25,6 +25,7 @@ class Asset(BaseModel):
         result = dict(
             class_ids_count=assets_content["class_ids_count"],
             ignored_labels=assets_content["ignored_labels"],
+            negative_info=assets_content["negative_info"],
             elements=elements,
             limit=limit,
             offset=offset,
@@ -53,6 +54,7 @@ class Asset(BaseModel):
         result = dict(
             class_ids_count=assets_attributes["class_ids_count"],
             ignored_labels=assets_attributes["ignored_labels"],
+            negative_info=assets_attributes["negative_info"],
             elements=elements,
             limit=limit,
             offset=offset,
