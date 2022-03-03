@@ -5,7 +5,7 @@ import unittest
 import google.protobuf.json_format as pb_format
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import exodus
+from mir.tools import exodus, mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 import tests.utils as test_utils
@@ -99,7 +99,7 @@ class TestExodus(unittest.TestCase):
 
         dict_annotations = {
             "task_annotations": {
-                "5928508c-1bc0-43dc-a094-0352079e39b5": {
+                "mining-task-id": {
                     "image_annotations": {
                         "d4e4a60147f1e35bc7f5bc89284aa16073b043c9": {
                             'annotations': [{
@@ -129,17 +129,11 @@ class TestExodus(unittest.TestCase):
         }
         pb_format.ParseDict(dict_keywords, mir_keywords)
 
-        dict_tasks = {
-            'tasks': {
-                '5928508c-1bc0-43dc-a094-0352079e39b5': {
-                    'type': 'TaskTypeMining',
-                    'name': 'mining',
-                    'task_id': 'mining-task-id',
-                    'timestamp': '1624376173'
-                }
-            }
-        }
-        pb_format.ParseDict(dict_tasks, mir_tasks)
+        mir_tasks = mirpb.MirTasks()
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
+                                         task_type=mirpb.TaskType.TaskTypeMining,
+                                         task_id='mining-task-id',
+                                         message='mining')
 
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,
                                        mir_metadatas=mir_metadatas,
@@ -147,7 +141,7 @@ class TestExodus(unittest.TestCase):
                                        mir_tasks=mir_tasks,
                                        src_branch='master',
                                        dst_branch='a',
-                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
+                                       task_id='mining-task-id',
                                        no_space_message="branch_a_for_test_exodus")
 
         test_utils.mir_repo_checkout(self._mir_root, "master")
