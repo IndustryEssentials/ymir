@@ -230,7 +230,7 @@ class ControllerRequest:
 
         copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
-        copy_request.src_dataset_id = args["src_dataset_id"]
+        copy_request.src_dataset_id = args["src_resource_id"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeCopyData
