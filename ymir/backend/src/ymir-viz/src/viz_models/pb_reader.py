@@ -21,14 +21,18 @@ class MirStorageLoader:
                 annotations,
                 keywords,
                 tasks,
-                statistic_info,
-            ) = mir_storage_ops.MirStorageOps.load_branch_contents(mir_root=self.mir_root, mir_branch=self.branch_id)
+                context_info,
+            ) = mir_storage_ops.MirStorageOps.load_branch_contents(
+                mir_root=self.mir_root, mir_branch=self.branch_id
+            )
         # TODO: command define
         except ValueError as e:
             app_logger.logger.error(e)
-            raise exceptions.BranchNotExists(f"branch {self.branch_id} not exist from ymir command")
+            raise exceptions.BranchNotExists(
+                f"branch {self.branch_id} not exist from ymir command"
+            )
 
-        return metadatas, annotations, keywords, tasks, statistic_info
+        return metadatas, annotations, keywords, tasks, context_info
 
     def get_model_info(self) -> Dict:
         try:
@@ -41,7 +45,12 @@ class MirStorageLoader:
         return model_info
 
     def format_mir_content(
-        self, all_tasks_info: Dict, all_metadata: Dict, all_annotations: Dict, all_keywords: Dict, statistic_info: Dict
+        self,
+        all_tasks_info: Dict,
+        all_metadata: Dict,
+        all_annotations: Dict,
+        all_keywords: Dict,
+        context_info: Dict,
     ) -> Dict:
         """
         return like this structure
@@ -58,30 +67,48 @@ class MirStorageLoader:
         }
         """
         head_task_id = all_annotations["head_task_id"]
-        annotations = all_annotations["task_annotations"][head_task_id].get("image_annotations", {})
+        annotations = all_annotations["task_annotations"][head_task_id].get(
+            "image_annotations", {}
+        )
 
         assets_detail = dict()
         # add all assets index into index_predifined_keyids, key is config.ALL_INDEX_CLASSIDS
-        all_keywords["index_predifined_keyids"][config.ALL_INDEX_CLASSIDS] = dict(asset_ids=[])
+        all_keywords["index_predifined_keyids"][config.ALL_INDEX_CLASSIDS] = dict(
+            asset_ids=[]
+        )
         for asset_id, asset_id_metadata in all_metadata["attributes"].items():
-            all_keywords["index_predifined_keyids"][config.ALL_INDEX_CLASSIDS]["asset_ids"].append(asset_id)
+            all_keywords["index_predifined_keyids"][config.ALL_INDEX_CLASSIDS][
+                "asset_ids"
+            ].append(asset_id)
 
             # set unlabeled asset_id annotations to []
             asset_id_annotation = annotations.get(asset_id, [])
             keywords_asset_id = all_keywords["keywords"].get(asset_id, [])
-            class_ids = keywords_asset_id["predifined_keyids"] if keywords_asset_id else []
-            asset_id_annotation = asset_id_annotation["annotations"] if asset_id_annotation else asset_id_annotation
-            asset_detail = dict(metadata=asset_id_metadata, annotations=asset_id_annotation, class_ids=class_ids,)
+            class_ids = (
+                keywords_asset_id["predifined_keyids"] if keywords_asset_id else []
+            )
+            asset_id_annotation = (
+                asset_id_annotation["annotations"]
+                if asset_id_annotation
+                else asset_id_annotation
+            )
+            asset_detail = dict(
+                metadata=asset_id_metadata,
+                annotations=asset_id_annotation,
+                class_ids=class_ids,
+            )
             assets_detail[asset_id] = asset_detail
         result = dict(
             asset_ids_detail=assets_detail,
             class_ids_index=all_keywords["index_predifined_keyids"],
-            class_ids_count=statistic_info["predefined_keyids_cnt"],
+            class_ids_count=context_info["predefined_keyids_cnt"],
             negative_info=dict(
-                negative_images_cnt=statistic_info["negative_images_cnt"],
-                project_negative_images_cnt=statistic_info["project_negative_images_cnt"],
+                negative_images_cnt=context_info["negative_images_cnt"],
+                project_negative_images_cnt=context_info["project_negative_images_cnt"],
             ),
-            ignored_labels=all_tasks_info["tasks"][self.branch_id].get("unknown_types", {}),
+            ignored_labels=all_tasks_info["tasks"][self.branch_id].get(
+                "unknown_types", {}
+            ),
         )
         return result
 
@@ -100,7 +127,15 @@ class MirStorageLoader:
             "ignored_labels": {'cat':5},
         }
         """
-        metadatas, annotations, keywords, tasks, statistic_info = self.get_branch_contents()
-        result = self.format_mir_content(tasks, metadatas, annotations, keywords, statistic_info)
+        (
+            metadatas,
+            annotations,
+            keywords,
+            tasks,
+            context_info,
+        ) = self.get_branch_contents()
+        result = self.format_mir_content(
+            tasks, metadatas, annotations, keywords, context_info
+        )
 
         return result
