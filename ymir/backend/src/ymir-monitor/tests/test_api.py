@@ -11,7 +11,10 @@ class TestReg:
         body = dict(
             task_id="abcdadf",
             user_id="12",
-            log_paths=["/home/chao/lif_code/test/monitor.txtaa", "/home/chao/lif_code/test/m2.txtaa"],
+            log_path_weights={
+                "/home/chao/lif_code/test/monitor.txtaa": 0.5,
+                "/home/chao/lif_code/test/m2.txtaa": 0.5
+            },
         )
         r = client.post("/api/v1/tasks", json=body)
         assert r.status_code == 200
