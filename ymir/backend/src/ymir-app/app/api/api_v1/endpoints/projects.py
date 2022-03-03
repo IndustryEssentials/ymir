@@ -77,21 +77,21 @@ def create_project(
     ):
         raise DuplicateProjectError()
 
-    # create project to get task_id for sending to controller
+    # 1.create project to get task_id for sending to controller
     project = crud.project.create_project(
         db, user_id=current_user.id, obj_in=project_in
     )
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    # create dataset group to build dataset info
+    # 2.create dataset group to build dataset info
     dataset_name = f"{project_in.name}_training_dataset"
     dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
     dataset_group = crud.dataset_group.create_with_user_id(
         db, user_id=current_user.id, obj_in=dataset_paras
     )
 
-    # create dataset, but has no task id,
+    # 3.create dataset, but has no task id,
     dataset_in = schemas.DatasetCreate(
         name=dataset_name,
         version_num=0,
@@ -110,6 +110,7 @@ def create_project(
         keyword_name_to_id[keyword] for keyword in project_in.training_keywords
     ]
 
+    # 4.send to controller
     try:
         resp = controller_client.create_project(
             user_id=current_user.id,
@@ -122,7 +123,7 @@ def create_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
-    # update project info
+    # 5.update project info
     project = crud.project.update(
         db,
         db_obj=project,
@@ -149,7 +150,6 @@ def get_project(
     project = crud.project.get(db, id=project_id)
     if not project:
         raise ProjectNotFound()
-    # todo : get dataset name , get dataset count
     return {"result": project}
 
 
