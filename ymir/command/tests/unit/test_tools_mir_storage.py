@@ -245,10 +245,15 @@ class TestMirStorage(unittest.TestCase):
             raise e
 
         # add another commit a@t2, which has empty dataset
+        mir_tasks_2 = mirpb.MirTasks()
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks_2,
+                                         task_type=mirpb.TaskType.TaskTypeMining,
+                                         task_id='t2',
+                                         message='task-t2')
         mir_datas_expect_2 = {
             mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
             mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
-            mirpb.MirStorage.MIR_TASKS: mirpb.MirTasks(),
+            mirpb.MirStorage.MIR_TASKS: mir_tasks_2,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',

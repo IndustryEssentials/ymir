@@ -8,7 +8,7 @@ from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, data_exporter, hash_utils
+from mir.tools import class_ids, data_exporter, hash_utils, mir_storage_ops
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -173,18 +173,11 @@ class TestCmdExport(unittest.TestCase):
         json_format.ParseDict(keywords_dict, mir_keywords)
 
         # tasks
-        tasks_dict = {
-            'tasks': {
-                'a': {
-                    'type': 'TaskTypeImportData',
-                    'name': 'import',
-                    'task_id': 'a',
-                    'timestamp': 17020362735,
-                }
-            }
-        }
         mir_tasks = mirpb.MirTasks()
-        json_format.ParseDict(tasks_dict, mir_tasks)
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
+                                         task_type=mirpb.TaskType.TaskTypeImportData,
+                                         task_id='a',
+                                         message='import')
 
         # save and commit
         test_utils.mir_repo_commit_all(mir_root=self._mir_root,
