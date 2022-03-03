@@ -123,7 +123,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 2. 需要安装docker：
 *  Docker & Docker Compose 安装： [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/) 
-*  NVIDIA Docker安装： [https://github.com/NVIDIA/nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
+*  NVIDIA Docker安装： [htt ps://github.com/NVIDIA/nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
  
 3. 推荐服务器配置：
 *  NVIDIA GeForce RTX 2080 Ti 12G
@@ -140,7 +140,7 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 将部署项目YMIR下拉到本地服务器，克隆仓库地址命令：
 `git clone git@github.com:IndustryEssentials/ymir.git`
 
-2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`
+2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`，建议不要使用sudo命令，否则可能会造成权限不足。
 
 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
@@ -156,35 +156,41 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 
 label studio为YMIR外接的标注系统，选择安装可以完成数据标注的操作流程。
 
-1. 在上一节的YMIR目录下，启动安装label studio命令如下：
+1. 在上一节的YMIR目录下，修改.env文件，配置label studio端口：
+
+```
+LABEL_TOOL_PORT=set_your_label_tool_port
+```
+
+2. 启动安装label studio命令如下，建议不要使用sudo命令，否则可能会造成权限不足：
 
 `docker-compose -f docker-compose-component.yml up -d`
 
-2. 完成后查看label studio状态命令如下：
+3. 完成后查看label studio状态命令如下：
 
 `docker-compose -f docker-compose-component.yml ps`（默认端口为12007）
 
 可以登录默认地址 [http://localhost:12007/](http://localhost:12007/) 显示登录界面即安装成功。
 
-3. 配置label studio授权token
+4. 配置label studio授权token
 
 注册登录label studio后，在页面右上角个人信息图标，选择"Account & Settings"获取Token值并复制，粘贴到YMIR项目的.env配置文件对应的位置（LABEL_STUDIO_TOKEN）。实例如下：
 
 ```
 label studio env
 
-LABEL_STUDIO_OPEN_HOST=http://xxx.xxx.xx.xxx
+LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
 
-LABEL_STUDIO_OPEN_PORT=12007
+LABEL_TOOL_PORT=set_your_label_tool_port
 
-LABEL_STUDIO_TOKEN="Token token_value"
+LABEL_TOOL_TOKEN="Token token_value"
 
 LABEL_TASK_LOOP_SECONDS=60
 ```
 
 配置好Host地址（LABEL_STUDIO_OPEN_HOST）和Token值（LABEL_STUDIO_TOKEN）后重启YMIR即可。
 
-4. 停止label studio服务命令如下：
+5. 停止label studio服务命令如下：
 
 `docker-compose -f docker-compose-component.yml down`
 
@@ -205,6 +211,8 @@ LABEL_TASK_LOOP_SECONDS=60
 当用户需要导入的数据集带有标注文件时，请确保标注类型属于系统已有的标签列表，否则需要用户前往标签管理界面新增自定义标签，以便导入数据。如下图所示：
 
 ![标签管理](docs/images/%E6%96%B0%E5%A2%9E%E6%A0%87%E7%AD%BE.jpg)
+
+其中标签的主名与别名表示同一类标签，当某些数据集的标注包含别名时，会在导入时合并变更为主名。如，标签列表中包含标签bike（别名bicycle），导入某数据集A（仅包含标签bicycle），则导入后在数据集详情显示标注为bike。
 
 ## 3.2. 原始数据准备
 
@@ -240,7 +248,13 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ![路径导入](docs/images/%E8%B7%AF%E5%BE%84%E5%AF%BC%E5%85%A5.jpeg)
 
-通过在网络中下载开源数据集VOC2012([点击下载VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar))，解压并分出训练集（VOC2012_train）、测试集（VOC2012_val）和待挖掘数据集（VOC2012_mining），按要求修改文件夹名称，再分别压缩为符合导入要求的zip包，通过本地导入的方式导入。如下图所示：
+1.通过在网络中下载开源数据集VOC2012([点击下载VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar))，解压缩后按要求修改文件夹名称，再分别压缩为符合导入要求的zip包；
+
+2.把VOC2012放到ymir-workplace/importing_pic下面；
+
+3.选择路径导入，填上路径地址/data/sharing/voc2012_train。
+
+如下图所示：
 
 ![voc训练集测试集](docs/images/voc%E8%AE%AD%E7%BB%83%E9%9B%86%E6%B5%8B%E8%AF%95%E9%9B%86.jpeg)
 
@@ -431,6 +445,8 @@ mir repo 中的标签通过标签文件进行统一管理，打开标签文件 `
 1,,cat
 2,,tv,television
 ```
+
+可以使用vi，或其他的编辑工具对此文件进行编辑，用户可以添加类别的别名，也可以增加新的类别，但不建议更改或删除已经有的类别的主名和id。
 
 `labels.csv` 文件可以通过建立软链接的方式，在多个 mir repo 之间共享。
 
