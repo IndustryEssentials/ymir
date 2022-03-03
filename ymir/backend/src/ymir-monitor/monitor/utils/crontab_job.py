@@ -11,7 +11,7 @@ from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
-from monitor.schemas.task import TaskExtraInfo, TaskSetStorageStructure
+from monitor.schemas.task import TaskSetStorageStructure
 
 
 def send_updated_task(updated_info: TaskSetStorageStructure) -> None:
