@@ -31,12 +31,10 @@ class MirStorageOps():
         if mirpb.MirStorage.MIR_METADATAS not in mir_datas:
             mir_datas[mirpb.MirStorage.MIR_METADATAS] = mirpb.MirMetadatas()
         if mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
-            empty_mir_annotations = mirpb.MirAnnotations()
-            empty_mir_annotations.task_annotations[mir_tasks.head_task_id]  # empty task_annotation
-            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = empty_mir_annotations
+            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mirpb.MirAnnotations()
 
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
-        build_annotations_head_task_id(mir_annotations=mir_annotations)
+        build_annotations_head_task_id(mir_annotations=mir_annotations, head_task_id=mir_tasks.head_task_id)
 
         # gen mir_keywords
         mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
@@ -103,6 +101,11 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_context')
         if mirpb.MirStorage.MIR_TASKS not in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need mir_tasks')
+
+        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
+        if task_id != mir_tasks.head_task_id:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"head task id mismatch: {mir_tasks.head_task_id} != {task_id}")
 
         branch_exists = mir_repo_utils.mir_check_branch_exists(mir_root=mir_root, branch=mir_branch)
         if not branch_exists and not his_branch:
@@ -211,25 +214,32 @@ class MirStorageOps():
 
 
 # public: presave actions
-def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations) -> None:
-    task_ids = list(mir_annotations.task_annotations.keys())
-    if len(task_ids) == 1:
-        mir_annotations.head_task_id = task_ids[0]
-    elif len(task_ids) > 1:
+def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
+    task_annotations_count = len(mir_annotations.task_annotations)
+    if task_annotations_count == 0:
+        mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
+    elif task_annotations_count == 1:
+        task_id = list(mir_annotations.task_annotations.keys())[0]
+        if task_id != head_task_id:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"annotation head task id mismatch: {head_task_id} != {task_id}")
+    elif task_annotations_count > 1:
         # * now we allows only one task id in each mir_annotations
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                              error_message=f'more then one task ids found in mir_annotations: {task_ids}')
+                              error_message='more then one task ids found in mir_annotations')
+
+    mir_annotations.head_task_id = head_task_id
 
 
-def build_mir_tasks(mir_tasks: mirpb.MirTasks,
-                    task_type: 'mirpb.TaskType.V',
-                    task_id: str,
-                    message: str,
-                    unknown_types: Dict[str, int] = {},
-                    model_hash: str = '',
-                    model_mAP: float = 0,
-                    return_code: int = 0,
-                    return_msg: str = '') -> None:
+def update_mir_tasks(mir_tasks: mirpb.MirTasks,
+                     task_type: 'mirpb.TaskType.V',
+                     task_id: str,
+                     message: str,
+                     unknown_types: Dict[str, int] = {},
+                     model_hash: str = '',
+                     model_mAP: float = 0,
+                     return_code: int = 0,
+                     return_msg: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message

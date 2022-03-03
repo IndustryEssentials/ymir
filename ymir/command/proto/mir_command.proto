@@ -36,6 +36,7 @@ enum TaskType {
     TaskTypeMerge = 8;
     TaskTypeInfer = 9;
     TaskTypeSampling = 10;
+    TaskTypeInit = 12;
 };
 
 enum TaskState {
