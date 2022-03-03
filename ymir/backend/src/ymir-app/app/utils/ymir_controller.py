@@ -3,7 +3,7 @@ import itertools
 import secrets
 import time
 from dataclasses import dataclass
-from typing import Dict, Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Union
 
 import grpc
 from fastapi.logger import logger
@@ -83,13 +83,13 @@ class ControllerRequest:
         self.req = getattr(self, method_name)(request, self.args)
 
     def prepare_create_user(
-            self, request: mirsvrpb.GeneralReq, args: Dict
+        self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.USER_CREATE
         return request
 
     def prepare_create_project(
-            self, request: mirsvrpb.GeneralReq, args: Dict
+        self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         # project training target labels
         request.private_labels[:] = args["labels"]
@@ -230,7 +230,7 @@ class ControllerRequest:
 
         copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
-        copy_request.src_dataset_id = args["src_dataset_id"]
+        copy_request.src_dataset_id = args["src_resource_id"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeCopyData
@@ -286,7 +286,7 @@ class ControllerRequest:
         return request
 
     def prepare_data_fusion(
-            self, request: mirsvrpb.GeneralReq, args: Dict
+        self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()
         data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
@@ -294,9 +294,7 @@ class ControllerRequest:
             args["include_strategy"]
         ]
         if args.get("exclude_dataset"):
-            data_fusion_request.ex_dataset_ids[:] = args[
-                "exclude_dataset"
-            ]
+            data_fusion_request.ex_dataset_ids[:] = args["exclude_dataset"]
 
         if args.get("include_labels"):
             data_fusion_request.in_class_ids[:] = args["include_classes"]
@@ -396,17 +394,25 @@ class ControllerClient:
         resp = self.send(req)
         return {"gpu_count": resp["available_gpu_counts"]}
 
-    def create_user(
-            self, user_id: int
-    ) -> Dict:
-        req = ControllerRequest(
-            ExtraRequestType.create_user, user_id=user_id
-        )
+    def create_user(self, user_id: int) -> Dict:
+        req = ControllerRequest(ExtraRequestType.create_user, user_id=user_id)
         return self.send(req)
 
     def create_project(self, user_id: int, project_id: int) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.create_project, user_id=user_id, project_id=project_id
+        )
+        return self.send(req)
+
+    def import_dataset(
+        self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict
+    ) -> Dict:
+        req = ControllerRequest(
+            task_type,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_hash,
+            args=args,
         )
         return self.send(req)
 
