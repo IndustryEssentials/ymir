@@ -1,6 +1,5 @@
 import json
 from typing import List, Optional
-from decimal import Decimal
 from pydantic import BaseModel, Field, validator
 
 from app.constants.state import MiningStrategy, TrainingType
@@ -22,7 +21,7 @@ class ProjectBase(BaseModel):
     training_type: TrainingType = TrainingType.object_detect
 
     iteration_target: Optional[int]
-    map_target: Optional[Decimal]
+    map_target: Optional[float]
     training_dataset_count_target: Optional[int]
 
 
