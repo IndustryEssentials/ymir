@@ -472,7 +472,8 @@ def create_dataset_fusion(
     Create data fusion
     """
     logger.debug(
-        "[create task] create task with payload: %s", jsonable_encoder(task_in)
+        "[create task] create dataset fusion with payload: %s",
+        jsonable_encoder(task_in),
     )
     keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
     task_id = gen_task_hash(current_user.id, task_in.project_id)
@@ -529,7 +530,5 @@ def create_dataset_fusion(
     )
     dataset = crud.dataset.create(db, obj_in=dataset_in)
     logger.info("[create dataset] dataset record created: %s", dataset)
-
-    print(dataset)
 
     return {"result": dataset}
