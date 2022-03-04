@@ -123,7 +123,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 2. 需要安装docker：
 *  Docker & Docker Compose 安装： [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/) 
-*  NVIDIA Docker安装： [htt ps://github.com/NVIDIA/nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
+*  NVIDIA Docker安装： [https://github.com/NVIDIA/nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
  
 3. 推荐服务器配置：
 *  NVIDIA GeForce RTX 2080 Ti 12G
@@ -140,7 +140,7 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 将部署项目YMIR下拉到本地服务器，克隆仓库地址命令：
 `git clone git@github.com:IndustryEssentials/ymir.git`
 
-2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`，建议不要使用sudo命令，否则可能会造成权限不足。
+2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`，建议不要使用```sudo```命令，否则可能会造成权限不足。
 
 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
@@ -162,7 +162,7 @@ label studio为YMIR外接的标注系统，选择安装可以完成数据标注�
 LABEL_TOOL_PORT=set_your_label_tool_port
 ```
 
-2. 启动安装label studio命令如下，建议不要使用sudo命令，否则可能会造成权限不足：
+2. 启动安装label studio命令如下，建议不要使用```sudo```命令，否则可能会造成权限不足。：
 
 `docker-compose -f docker-compose-component.yml up -d`
 
