@@ -35,11 +35,12 @@ class TaskService:
         log_files_state_set = set()
         max_timestamp_content = None
         log_files = raw_log_contents.keys()
+        total_weights = sum(log_path_weights.values())
         for log_file in log_files:
             raw_log_content = raw_log_contents[log_file]
             log_weight = log_path_weights[log_file]
             log_files_state_set.add(raw_log_content.state)
-            percent += raw_log_content.percent * log_weight
+            percent += raw_log_content.percent * log_weight / total_weights
             if not max_timestamp_content:
                 max_timestamp_content = raw_log_content
             max_timestamp_content = max(max_timestamp_content, raw_log_content, key=lambda x: float(x.timestamp))
@@ -55,7 +56,7 @@ class TaskService:
             result.percent = 0.0
             result.state = LogState.PENDING
         else:
-            result.percent = percent / len(raw_log_contents)
+            result.percent = percent
             result.state = LogState.RUNNING
         result.task_id = task_id
         return result
