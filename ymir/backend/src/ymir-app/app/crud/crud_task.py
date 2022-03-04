@@ -21,6 +21,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         obj_in: TaskCreate,
         task_hash: str,
         user_id: int,
+        state: int = TaskState.pending.value,
+        progress: int = 0,
     ) -> Task:
         config = obj_in.config
         if isinstance(config, dict):
@@ -32,8 +34,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             hash=task_hash,
             user_id=user_id,
             project_id=obj_in.project_id,
-            state=TaskState.pending.value,
-            progress=0,
+            state=state,
+            progress=progress,
             parameters=obj_in.parameters.json() if obj_in.parameters else None,
         )
         db.add(db_obj)

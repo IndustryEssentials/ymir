@@ -37,6 +37,7 @@ def list_dataset_groups(
     dataset_groups, total = crud.dataset_group.get_multi_dataset_groups(
         db,
         user_id=current_user.id,
+        project_id=project_id,
         name=name,
         offset=offset,
         limit=limit,
