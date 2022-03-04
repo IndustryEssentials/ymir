@@ -150,7 +150,7 @@ git clone git@github.com:IndustryEssentials/ymir.git
   ```sh
 bash ymir.sh start
   ```
-  
+
 It is recommended not to use the ```sudo``` command, as it may result in insufficient privileges.
 
 After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
@@ -167,14 +167,21 @@ Restart YMIR after the modification.
 
 Label Studio is an external labeling system that works with YMIR. Install it if you plan to label data in the development process.
 
-1. In the YMIR directory, start the installation command:
+1. In the YMIR directory, modification Env file, configure label studio port：
+
+```
+LABEL_TOOL_PORT=set_your_label_tool_port
+```
+
+2. Start the installation command:
 
   ```sh
 docker-compose -f docker-compose-component.yml up -d
   ```
+
 It is recommended not to use the ```sudo``` command, as it may result in insufficient privileges.
 
-2. Check the status of label studio:
+3. Check the status of label studio:
 
   ```sh
 docker-compose -f docker-compose-component.yml ps
@@ -182,25 +189,25 @@ docker-compose -f docker-compose-component.yml ps
 
 The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
 
-3. Configure the label studio authorization token
+4. Configure the label studio authorization token
 
   After the user registers and log in to Label Studio, select "Account & Settings" in the upper right corner of the page. Then, copy the token value and paste it into the corresponding location (LABEL_STUDIO_TOKEN) in the .env configuration file of the YMIR project. An example is as follows:
 
   ```sh
   label studio env
 
-  LABEL_STUDIO_OPEN_HOST=http://xxx.xxx.xx.xxx
+  LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
 
-  LABEL_STUDIO_OPEN_PORT=12007
+  LABEL_TOOL_PORT=set_your_label_tool_port
 
-  LABEL_STUDIO_TOKEN="Token token_value"
+  LABEL_TOOL_TOKEN="Token token_value"
 
   LABEL_TASK_LOOP_SECONDS=60
   ```
 
   Restart ymir after configuring the host address (LABEL_STUDIO_OPEN_HOST) and the token (LABEL_STUDIO_TOKEN).
 
-4. The command to stop the label studio service is:
+5. The command to stop the label studio service is:
 
   ```sh
 docker-compose -f docker-compose-component.yml down
@@ -219,6 +226,7 @@ As shown in the figure above, YMIR divides the model development process into mu
 When you need to import a dataset with annotation files, please make sure the annotation type belongs to the existing label list of the system, otherwise you need to go to the label management interface to add custom labels in order to import the data. The following figure shows:
 
 ![Label management](docs/images/Label%20management.jpg)
+
 
 The primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
 
@@ -450,6 +458,8 @@ There could be one or more alias for each type label, for example: if television
 1,,cat
 2,,tv,television
 ```
+
+You can edit this file by vi and other text editing tools. You can add alias to type labels or add new type labels, but it is not recommended to change or remove the id and name of any type label that already exists.
 
 The file `labels.csv` can be shared among multiple mir repos by establishing soft links.
 
