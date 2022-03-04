@@ -15,6 +15,7 @@ class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUp
         db: Session,
         *,
         user_id: int,
+        project_id: Optional[int],
         name: Optional[str],
         start_time: Optional[int],
         end_time: Optional[int],
@@ -35,6 +36,9 @@ class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUp
                     self.model.create_datetime <= _end_time,
                 )
             )
+
+        if project_id:
+            query = query.filter(self.model.project_id == project_id)
 
         if name:
             # basic fuzzy search

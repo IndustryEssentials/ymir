@@ -70,3 +70,12 @@ def flatten_labels(labels: List[str]) -> List[str]:
     just split it as csv to get all the names
     """
     return [name for label in list(labels) for name in label.split(",")]
+
+
+def convert_keywords_to_classes(
+    all_user_labels: List[str], keywords: List[str]
+) -> List[int]:
+    keyword_name_to_id = get_keyword_name_to_id_mapping(all_user_labels)
+
+    training_classes = [keyword_name_to_id[keyword] for keyword in keywords]
+    return training_classes
