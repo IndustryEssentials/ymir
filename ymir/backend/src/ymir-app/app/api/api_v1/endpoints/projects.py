@@ -4,7 +4,8 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-
+from app.constants.state import TaskState
+from app.constants.state import TaskType
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -101,6 +102,21 @@ def create_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
+    # 3.create task info
+    task_info = schemas.TaskCreate(
+        name=project_in.name,
+        type=TaskType.data_fusion,
+        project_id=project.id,
+    )
+    task = crud.task.create_task(
+        db,
+        obj_in=task_info,
+        task_hash=task_id,
+        user_id=current_user.id,
+        state=TaskState.done.value,
+        progress=100,
+    )
+
     # 3.create dataset group to build dataset info
     dataset_name = f"{project_in.name}_training_dataset"
     dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
@@ -108,7 +124,7 @@ def create_project(
         db, user_id=current_user.id, obj_in=dataset_paras
     )
 
-    # 4.create init dataset, but has no task id,
+    # 4.create init dataset
     dataset_in = schemas.DatasetCreate(
         name=dataset_name,
         version_num=0,
@@ -117,7 +133,7 @@ def create_project(
         project_id=project.id,
         user_id=current_user.id,
         result_state=ResultState.ready,
-        task_id=project.id,
+        task_id=task.id,
     )
     crud.dataset.create(db, obj_in=dataset_in)
 
