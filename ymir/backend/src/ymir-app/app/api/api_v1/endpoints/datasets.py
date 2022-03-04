@@ -477,16 +477,12 @@ def create_dataset_fusion(
     keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
     task_id = gen_task_hash(current_user.id, task_in.project_id)
     parameters = dict(
-        include_datasets=task_in["main_dataset_id"] + task_in["include_datasets"],
-        include_strategy=task_in["include_strategy"],
-        exclude_datasets=task_in["exclude_datasets"],
-        include_labels=[
-            keyword_name_to_id[label] for label in task_in["include_labels"]
-        ],
-        exclude_labels=[
-            keyword_name_to_id[label] for label in task_in["exclude_labels"]
-        ],
-        sampling_count=task_in["sampling_count"],
+        include_datasets=[task_in.main_dataset_id] + task_in.include_datasets,
+        include_strategy=task_in.include_strategy,
+        exclude_datasets=task_in.exclude_datasets,
+        include_labels=[keyword_name_to_id[label] for label in task_in.include_labels],
+        exclude_labels=[keyword_name_to_id[label] for label in task_in.exclude_labels],
+        sampling_count=task_in.sampling_count,
     )
 
     try:
@@ -498,10 +494,14 @@ def create_dataset_fusion(
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
-        # todo parse error message
         raise FailedtoCreateTask()
 
-    task_info = schemas.TaskCreate()
+    # todo, data fusion parameter is diffrence from other task, save
+    task_info = schemas.TaskCreate(
+        name=task_id,
+        type=TaskType.data_fusion,
+        project_id=task_in.project_id,
+    )
     # 1. create task
     task = crud.task.create_task(
         db, obj_in=task_info, task_hash=task_id, user_id=current_user.id
@@ -518,11 +518,11 @@ def create_dataset_fusion(
     )
 
     # todo unify name
-    name = f"{dataset_group.name}{main_dataset.version_num + 1}"
+    name = f"{dataset_group.name}{main_dataset.version_num + 1}"  # type: ignore
     # 3. create dataset record
     dataset_in = schemas.DatasetCreate(
         name=name,
-        version_num=main_dataset.version_num + 1,
+        version_num=main_dataset.version_num + 1,  # type: ignore
         hash=task_id,
         dataset_group_id=task_in.dataset_group_id,
         project_id=task_in.project_id,
