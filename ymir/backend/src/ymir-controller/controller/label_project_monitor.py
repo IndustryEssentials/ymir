@@ -7,12 +7,11 @@ import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from common_utils.percent_log_util import LogState
+from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_importing import TaskImportingInvoker
 from controller.label_model.aios import AIOS
 from controller.label_model.label_studio import LabelStudio
-from controller.utils import tasks_util
 from controller.utils.redis import rds
 
 
@@ -96,10 +95,10 @@ def lable_task_monitor() -> None:
             rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
             logging.info(f"task {task_id} finished!!!")
 
-        tasks_util.write_task_progress(monitor_file=project_info["monitor_file_path"],
-                                       tid=project_info["task_id"],
-                                       percent=percent,
-                                       state=state)
+        PercentLogHandler.write_percent_log(log_file=project_info["monitor_file_path"],
+                                            tid=project_info["task_id"],
+                                            percent=percent,
+                                            state=state)
 
 
 if __name__ == "__main__":

@@ -27,8 +27,8 @@ class TaskExportingInvoker(TaskBaseInvoker):
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
 
     @classmethod
-    def subtask_count(cls) -> int:
-        return 1
+    def subtask_weights(cls) -> List[float]:
+        return [1.0]
 
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],

@@ -1,12 +1,6 @@
 import { Project, originProject, originInteration, Interation, } from "@/interface/project"
 import { format } from '@/utils/date'
 
-enum flag {
-  map = 'mAP',
-  interations = 'interation',
-  trainset = 'trainset',
-}
-
 export enum Steps {
   beforeMining = 0,
   mining = 1,
@@ -29,21 +23,21 @@ export function transferProject(data: originProject) {
   const project : Project = {
     id: data.id,
     name: data.name,
-    keywords: data.keywords,
+    keywords: data.training_keywords,
     trainSet: data.train_set,
     testSet: data.test_set,
     miningSet: data.mining_set,
     setsAccount: data.set_account,
     modelsAccount: data.models_account,
-    flag: data.flag ? {
-      type: data.flag.type,
-      value: data.flag.value,
-    } : undefined,
     miningStrategy: data.mining_strategy,
-    miningBlock: data.mining_block,
+    chunkSize: data.chunk_size,
     currentInteration: transferInteration(data.current_interation),
     createTime: format(data.create_datetime),
-    desc: data.description,
+    description: data.description,
+    type: data.training_type,
+    targetMap: data.map_target,
+    targetDataset: data.training_dataset_count_target,
+    targetInteration: data.iteration_target,
   }
   return project
 }

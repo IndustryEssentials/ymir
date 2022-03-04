@@ -16,16 +16,11 @@ export function getInterations(id) {
 
 /**
  * @param {*} params
- * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, is_desc = true, order_by = 1 }
+ * { name, offset = 0, limit = 10 }
  * @returns
  */
-export function getProjects(params) {
-  console.log('get projects: ', params)
-  return request.get("projects/", { params })
-}
-
-export function batchProjects(ids) {
-  return request.get('projects/batch', { params: { ids: ids.toString() }})
+export function getProjects({ name, offset = 0, limit = 0 }) {
+  return request.get("projects/", { params: { name, offset, limit } })
 }
 
 /**
@@ -44,14 +39,13 @@ export function delProject(id) {
  * create a project
  * @param {object} project
  * {
- *   "name": "string",
- *   "hash": "string",
- *   "type": 1,
- *   "predicates": "string",
- *   "asset_count": 0,
- *   "keyword_count": 0,
- *   "user_id": 0,
- *   "task_id": 0
+ * {string}    description
+ * {number}    iteration_target
+ * {array<string>}    keywords
+ * {number}    map_target
+ * {string}    name
+ * {number}    training_dataset_count_target
+ * {number}    type
  * }
  * @returns
  */
@@ -59,12 +53,25 @@ export function createProject(project) {
   return request.post("/projects/", project)
 }
 
-export function updateProject(id, name) {
+/**
+ * update project
+ * @param {number} id 
+ * @param {object} params 
+ * {
+ * {string}    description
+ * {number}    iteration_target
+ * {array<string>}    keywords
+ * {number}    map_target
+ * {string}    name
+ * {number}    training_dataset_count_target
+ * {number}    type
+ * }
+ * @returns 
+ */
+export function updateProject(id, params) {
   return request({
     method: "patch",
     url: `/projects/${id}`,
-    data: {
-      name,
-    },
+    data: params,
   })
 }
