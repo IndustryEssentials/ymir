@@ -19,7 +19,6 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
 
   /** use effect must put on the top */
   useEffect(() => {
-    console.log('project list: ', list)
     setProjects(list.items)
     setTotal(list.total)
   }, [list])
@@ -28,19 +27,13 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
     getData()
   }, [query])
 
-  // useEffect(() => {
-  //   JSON.stringify(filter) !== JSON.stringify(query) && updateQuery({ ...query, ...filter })
-  // }, [filter])
-
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    console.log('project page change: ', limit, offset, pageSize, current)
     updateQuery({ ...query, limit, offset })
   }
 
   async function getData() {
-    console.log('project get data: ', query)
     await getProjects(query)
   }
 
@@ -121,7 +114,7 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
         <Space>
           <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.flag.value}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.interation.current')}:</span><span className={s.titleContent}>{item?.currentInteration.currentStep}</span></span>
         </Space>
       </Col>
@@ -147,7 +140,7 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
         </Col>
       </Row>
       <Row>
-        <Col flex={1}><span className={s.bottomLabel}>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.desc}</span></Col>
+        <Col flex={1}><span className={s.bottomLabel}>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.description}</span></Col>
         <Col><span className={s.bottomContent}>{item.createTime}</span></Col>
       </Row>
     </>

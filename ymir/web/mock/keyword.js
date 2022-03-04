@@ -12,7 +12,18 @@ Random.extend({
 
 export const random = Random
 
+const keywords = mockjs.mock({
+  'items|0-100': [{ name: '@title(1,2)', aliases: []}],
+  total: '@integer(1,100)'
+})
+
 export default baseApi([
+  {
+    url: 'keywords/',
+    data: {
+      result: keywords,
+    }
+  },
   {
     url: 'stats/keywords/recommend',
     data: {
