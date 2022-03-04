@@ -458,7 +458,7 @@ def get_asset_of_dataset(
 
 @router.post(
     "/dataset_fusion",
-    response_model=schemas.Dataset,
+    response_model=schemas.DatasetOut,
 )
 def create_dataset_fusion(
     *,
@@ -529,5 +529,7 @@ def create_dataset_fusion(
     )
     dataset = crud.dataset.create(db, obj_in=dataset_in)
     logger.info("[create dataset] dataset record created: %s", dataset)
+
+    print(dataset)
 
     return {"result": dataset}

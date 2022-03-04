@@ -11,6 +11,7 @@ from app.api.errors.errors import DatasetNotFound
 from app.config import settings
 from tests.utils.utils import random_lower_string, random_url
 from tests.utils.datasets import create_dataset_record
+from tests.utils.dataset_groups import create_dataset_group_record
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -290,3 +291,41 @@ class TestGetRandomAsset:
         limit = random.randint(100, 200)
         dataset = mocker.Mock(asset_count=limit)
         assert 0 <= m.get_random_asset_offset(dataset) <= limit
+
+
+class TestCreateDataFusion:
+    def test_create_dataset_fusion_succeed(
+        self,
+        client: TestClient,
+        normal_user_token_headers,
+        db: Session,
+        user_id: int,
+        mocker,
+    ):
+        dataset_group_obj = create_dataset_group_record(
+            db, project_id=1, user_id=user_id
+        )
+        dataset_obj = create_dataset_record(
+            db, user_id=user_id, dataset_group_id=dataset_group_obj.id
+        )
+
+        j = {
+            "project_id": 1,
+            "dataset_group_id": dataset_group_obj.id,
+            "main_dataset_id": dataset_obj.id,
+            "include_datasets": [],
+            "include_strategy": 1,
+            "exclude_datasets": [],
+            "include_labels": [],
+            "exclude_labels": [],
+        }
+
+        print(j)
+        r = client.post(
+            f"{settings.API_V1_STR}/datasets/dataset_fusion",
+            headers=normal_user_token_headers,
+            json=j,
+        )
+
+        assert r.status_code == 200
+        assert r.json()["code"] == 0
