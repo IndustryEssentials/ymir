@@ -145,9 +145,9 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     let actions = []
     const menus = [
       {
-        key: "filter",
-        label: t("dataset.action.filter"),
-        onclick: () => history.push(`/home/task/filter/${id}`),
+        key: "fusion",
+        label: t("dataset.action.fusion"),
+        onclick: () => history.push(`/home/task/fusion/${id}`),
         hidden: () => !keyword_count,
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
@@ -373,13 +373,13 @@ const actions = (dispatch) => {
   return {
     getDatasets: (pid, query) => {
       return dispatch({
-        type: 'dataset/getDatasets',
+        type: 'dataset/getDatasetGroups',
         payload: { pid, query },
       })
     },
     getVersions: (gid) => {
       return dispatch({
-        type: 'dataset/getDatasetVersions',
+        type: 'dataset/getDatasetByGroup',
         payload: gid,
       })
     },

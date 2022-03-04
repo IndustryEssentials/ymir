@@ -3,10 +3,8 @@ import {
   getTask,
   deleteTask,
   updateTask,
-  createTask,
   stopTask,
   createFusionTask,
-  createFilterTask,
   createMiningTask,
   createTrainTask,
   createLabelTask,
@@ -104,12 +102,6 @@ export default {
     },
     *createFusionTask({ payload }, { call, put }) {
       let { code, result } = yield call(createFusionTask, payload)
-      if (code === 0) {
-        return result
-      }
-    },
-    *createFilterTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createFilterTask, payload)
       if (code === 0) {
         return result
       }

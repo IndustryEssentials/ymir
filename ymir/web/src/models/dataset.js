@@ -1,49 +1,29 @@
 import { 
-  getDatasets,
-  getDatasetVersions, 
-  getDataset,
-  batchDatasets,
-  getAssetsOfDataset,
-  getAsset,
-  delDataset,
-  createDataset,
-  updateDataset,
-  getInternalDataset,
+  getDatasetGroups, getDatasetByGroup,  queryDatasets, getDataset, batchDatasets,
+  getAssetsOfDataset, getAsset, delDataset, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
+import { transferDataset, } from '@/constants/dataset'
 
-const initQuery = {
-  name: "",
-  type: "",
-  time: 0,
-  offset: 0,
-  limit: 20,
-}
+const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
 
 export default {
   namespace: "dataset",
   state: {
     query: initQuery,
-    datasets: {
-      items: [],
-      total: 0,
-    },
+    datasets: { items: [], total: 0, },
     versions: {},
     dataset: {},
-    assets: {
-      items: [],
-      total: 0,
-    },
-    asset: {
-      annotations: [],
-    },
+    assets: { items: [], total: 0, },
+    asset: { annotations: [], },
+    allDatasets: [],
     publicDatasets: [],
   },
   effects: {
-    *getDatasets({ payload }, { call, put }) {
+    *getDatasetGroups({ payload }, { call, put }) {
       const { pid, query } = payload
-      const { code, result } = yield call(getDatasets, pid, query)
+      const { code, result } = yield call(getDatasetGroups, pid, query)
       if (code === 0) {
         yield put({
           type: "UPDATE_DATASETS",
@@ -68,13 +48,13 @@ export default {
         return result
       }
     },
-    *getDatasetVersions({ payload }, { select, call, put }) {
+    *getDatasetByGroup({ payload }, { select, call, put }) {
       const gid = payload
       const versions = yield select(({ dataset }) => dataset.versions)
       if (versions[gid]) {
         return versions[gid]
       }
-      const { code, result } = yield call(getDatasetVersions, gid)
+      const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
         const vs = { id: gid, versions: result.items }
         yield put({
@@ -82,6 +62,28 @@ export default {
           payload: vs,
         })
         return result.items
+      }
+    },
+    *queryDatasets({ payload }, { select, call, put }) {
+      const { code, result } = yield call(queryDatasets, payload)
+      if (code === 0) {
+        console.log('query datset: ', result)
+        return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
+      }
+    },
+    *queryAllDatasets({ payload }, { select, call, put }) {
+      const datasets = yield select(({ dataset }) => dataset.allDatasets)
+      if (datasets.length) {
+        return datasets
+      }
+      console.log('query all before: ', datasets)
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { limit: 10000 }})
+      console.log('project query all : ', dss)
+      if (dss) {
+        yield put({
+          type: "UPDATE_ALL_DATASETS",
+          payload: dss.items,
+        })
       }
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
@@ -196,6 +198,12 @@ export default {
       return {
         ...state,
         datasets: payload
+      }
+    },
+    UPDATE_ALL_DATASETS(state, { payload }) {
+      return {
+        ...state,
+        allDatasets: payload
       }
     },
     UPDATE_VERSIONS(state, { payload }) {

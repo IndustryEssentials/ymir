@@ -15,7 +15,7 @@ export function getDataset(id) {
  * @param {number} group_id 
  * @returns 
  */
-export function getDatasetVersions(group_id) {
+export function getDatasetByGroup(group_id) {
   return request.get(`dataset_groups/${group_id}`)
 }
 
@@ -44,7 +44,7 @@ export function queryDatasets({ project_id, type, state, name, offset = 0, limit
  * }
  * @returns 
  */
-export function getDatasets(project_id, { name, offset = 0, limit = 10 }) {
+export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
   return request.get("dataset_groups/", { params: { project_id, name, offset, limit } })
 }
 

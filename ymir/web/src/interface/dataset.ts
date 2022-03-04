@@ -5,10 +5,10 @@ export interface DatasetGroup {
   createTime: string,
 }
 
-export interface DatasetVersion {
+export interface Dataset {
   id: number,
   name: string,
-  version: number,
+  version: string,
   keywords: Array<string>,
   state: number,
   createTime: string,
@@ -25,7 +25,7 @@ export interface OriginDatasetGroup {
   create_datetime: string,
 }
 
-export interface OriginDatasetVersion {
+export interface OriginDataset {
   id: number,
   name: string,
   version: number,

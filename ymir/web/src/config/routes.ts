@@ -48,22 +48,10 @@ const Routes = [
         title: 'task.label.title',
       },
       {
-        path: "/home/task",
-        name: "task",
-        component: "@/pages/task/index",
-        title: 'tasks.title',
-      },
-      {
         path: "/home/dataset/add/:id?",
         name: "datasetImport",
         component: "@/pages/dataset/add",
         title: "dataset.add.title",
-      },
-      {
-        path: "/home/dataset",
-        name: "dataset",
-        component: "@/pages/dataset/index",
-        title: "datasets.title",
       },
       {
         path: "/home/dataset/detail/:id",
@@ -88,12 +76,6 @@ const Routes = [
         name: "modelVerify",
         component: "@/pages/model/verify",
         title: "model.verify.title",
-      },
-      {
-        path: "/home/model",
-        name: "model",
-        component: "@/pages/model/index",
-        title: "models.title",
       },
       {
         path: "/home/modify_pwd",

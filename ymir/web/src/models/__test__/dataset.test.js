@@ -9,7 +9,7 @@ function equalObject(obj1, obj2) {
 }
 
 describe("models: dataset", () => {
-  errorCode(dataset, 'getDatasets')
+  errorCode(dataset, 'getDatasetGroups')
   errorCode(dataset, 'getDataset')
   errorCode(dataset, 'batchDatasets')
   errorCode(dataset, 'getAssetsOfDataset')
@@ -76,10 +76,10 @@ describe("models: dataset", () => {
     expect(result.publicDatasets.join(',')).toBe(expected.join(','))
   })
 
-  it("effects: getDatasets", () => {
-    const saga = dataset.effects.getDatasets
+  it("effects: getDatasetGroups", () => {
+    const saga = dataset.effects.getDatasetGroups
     const creator = {
-      type: "getDatasets",
+      type: "getDatasetGroups",
       payload: {},
     }
     const expected = { items: [1, 2, , 3, 4], total: 4 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { connect } from "dva"
-import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio } from "antd"
+import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio, Row, Col, InputNumber } from "antd"
 import { useHistory, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
@@ -8,41 +8,45 @@ import t from "@/utils/t"
 import { randomNumber } from "@/utils/number"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import styles from "./index.less"
+import s from "./index.less"
 import commonStyles from "../common.less"
 import { TASKSTATES } from '@/constants/task'
 import Tip from "@/components/form/tip"
 import RecommendKeywords from "@/components/common/recommendKeywords"
+import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
+
 const { Option } = Select
 
-function Fusion({
-  getDatasets,
-  createFusionTask,
-}) {
-  const { ids } = useParams()
-  const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
+function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
+  const { id } = useParams()
   const history = useHistory()
   const [form] = Form.useForm()
+  const [dataset, setDataset] = useState({})
   const [datasets, setDatasets] = useState([])
+  const [includeDatasets, setIncludeDatasets] = useState([])
+  const [excludeDatasets, setExcludeDatasets] = useState([])
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [selectedExcludeKeywords, setExclude] = useState([])
+  const [selectedExcludeKeywords, setExcludeKeywords] = useState([])
 
   const initialValues = {
-    datasets: datasetIds,
     name: 'task_fusion_' + randomNumber(),
   }
 
-  useEffect(async () => {
-    const result = await getDatasets({ limit: 100000 })
-    if (result) {
-      setDatasets(result.items.fusion(dataset => TASKSTATES.FINISH === dataset.state && dataset.keyword_count))
-    }
+  useEffect(() => {
+    fetchDatasets()
   }, [])
 
   useEffect(() => {
+    console.log('project get datasets: ', datasets)
     getKeywords()
+    setDataset(datasets.find(ds => ds.id === id))
   }, [datasets])
+
+  useEffect(() => {
+    console.log('all datasets project: ', allDatasets)
+    setDatasets(allDatasets.filter(dataset => TASKSTATES.FINISH === dataset.state && dataset.keywords.length))
+  }, [allDatasets])
 
   useEffect(() => {
     const state = history.location.state
@@ -59,13 +63,13 @@ function Fusion({
         strategy,
       })
       setSelectedKeywords(include_classes)
-      setExclude(exclude_classes)
+      setExcludeKeywords(exclude_classes)
       history.replace({ state: {} })
     }
   }, [history.location.state])
 
   const getKeywords = () => {
-    const selectedDataset = form.getFieldValue('datasets')
+    const selectedDataset = [id, ...includeDatasets]
     let ks = datasets.reduce((prev, current) => selectedDataset.indexOf(current.id) >= 0
       ? prev.concat(current.keywords)
       : prev, [])
@@ -93,12 +97,22 @@ function Fusion({
     console.log("on finish failed: ", err)
   }
 
-  function datasetChange() {
+  async function fetchDatasets() {
+    await getDatasets()
+  }
+
+  function onIncludeDatasetChange(values) {
+    setIncludeDatasets(values)
+
     getKeywords()
     // reset
     setSelectedKeywords([])
-    setExclude([])
+    setExcludeKeywords([])
     form.setFieldsValue({ inc: [], exc: [] })
+  }
+  function onExcludeDatasetChange(values) {
+    setExcludeDatasets(values)
+    // todo inter keywords
   }
 
   function selectRecommendKeywords(keyword) {
@@ -113,6 +127,44 @@ function Fusion({
     } else {
       return Promise.reject(t('task.fusion.tip.keyword.required'))
     }
+  }
+
+  const Panel = ({ hasHeader = true, show = false, label = '', children }) => {
+    const [visible, setVisible] = useState(false)
+
+    useEffect(() => {
+      setVisible(show)
+    }, [show])
+
+    return (
+      <div className={s.panel}>
+        {hasHeader ? <Row className={s.header}>
+          <Col flex={1}>{label}</Col>
+          <Col onClick={() => setVisible(!visible)}>{visible ? <span><ArrowDownIcon /></span> : <span><ArrowRightIcon /></span>}</Col>
+        </Row> : null}
+        <div className={s.content} hidden={!visible}>
+          {children}
+        </div>
+      </div>
+    )
+  }
+
+  const datasetSelect = (filter = [], onChange = () => { }) => {
+    return (
+      <Select
+        placeholder={t('task.fusion.form.datasets.placeholder')}
+        mode='multiple'
+        filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        onChange={onChange}
+        showArrow
+      >
+        {datasets.filter(ds => !filter.includes(ds.id)).map(item => (
+          <Option value={item.id} key={item.name}>
+            {item.name}({item.assetCount})
+          </Option>
+        ))}
+      </Select>
+    )
   }
 
   return (
@@ -130,117 +182,105 @@ function Fusion({
           // size='middle'
           colon={false}
         >
-          <Tip hidden={true}>
-            <Form.Item
-              label={t('task.fusion.form.name.label')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('task.fusion.form.name.placeholder'), },
-                { type: 'string', min: 2, max: 50 },
-              ]}
-            >
-              <Input placeholder={t('task.fusion.form.name.required')} autoComplete='off' allowClear />
-            </Form.Item>
-          </Tip>
-
-          <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
-          <Tip hidden={true}>
-            <Form.Item
-              label={t('task.fusion.form.datasets.label')}
-              required
-              name="datasets"
-              rules={[
-                { required: true, message: t('task.fusion.form.datasets.required') },
-              ]}
-            >
-              <Select
-                placeholder={t('task.fusion.form.fusion.datasets.placeholder')}
-                mode='multiple'
-                fusionOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={datasetChange}
-                showArrow
-              >
-                {datasets.map(item => (
-                  <Option value={item.id} key={item.name}>
-                    {item.name}({item.asset_count})
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+          <Panel hasHeader={false}>
+            <Tip hidden={true}>
+              <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset?.name} {dataset?.version}</span></Form.Item>
             </Tip>
-          </ConfigProvider>
-    
-          <Tip hidden={true}>
-          <Form.Item name='strategy'
-            hidden={form.getFieldValue('datasets')?.length < 2}
-            initialValue={2} label={t('task.train.form.repeatdata.label')}>
-            <Radio.Group options={[
-              { value: 2, label: t('task.train.form.repeatdata.latest') },
-              { value: 3, label: t('task.train.form.repeatdata.original') },
-              { value: 1, label: t('task.train.form.repeatdata.terminate') },
-            ]} />
-          </Form.Item>
-          </Tip>
-
-          <Tip hidden={true}>
-          <Form.Item label={t('dataset.column.keyword')} required style={{ zIndex: 2, position: 'relative' }}>
-              <p>{t('task.fusion.form.include.label')}</p>
-            <Tip content={t('tip.task.fusion.includelable')} span={1} formSpan={24}>
-                <Form.Item
-                  labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-                  name='inc'
-                  help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
-                >
-                  <Select
-                    mode='multiple'
-                    onChange={(value) => setSelectedKeywords(value)}
-                    showArrow
-                  >
-                    {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
-                      ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                      : null)}
-                  </Select>
+          </Panel>
+          <Panel label={t('task.fusion.header.merge')} show={true}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+              <Tip hidden={true}>
+                <Form.Item label={t('task.fusion.form.datasets.label')} name="include_datasets">
+                  {datasetSelect(excludeDatasets, onIncludeDatasetChange)}
                 </Form.Item>
               </Tip>
-              <p>{t('task.fusion.form.exclude.label')}</p>
-              <Tip content={t('tip.task.fusion.excludelable')} span={1} formSpan={24}>
-                <Form.Item
-                  labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-                  name='exc'
-                  dependencies={['inc']}
-                  help={t('task.fusion.tip.keyword.required')}
-                  rules={[
-                    { validator: requireOne },
-                  ]}
-                >
-                <Select
-                  mode='multiple'
-                  onChange={(value) => setExclude(value)}
-                  showArrow
-                >
-                  {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
-                    ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                    : null)}
-                </Select>
+              <Tip hidden={true}>
+                <Form.Item name='strategy'
+                  hidden={includeDatasets.length < 1}
+                  initialValue={2} label={t('task.train.form.repeatdata.label')}>
+                  <Radio.Group options={[
+                    { value: 2, label: t('task.train.form.repeatdata.latest') },
+                    { value: 3, label: t('task.train.form.repeatdata.original') },
+                    { value: 1, label: t('task.train.form.repeatdata.terminate') },
+                  ]} />
+                </Form.Item>
+              </Tip>
+              <Tip hidden={true}>
+                <Form.Item label={t('task.fusion.form.datasets.label')} name="exclude_datasets">
+                  {datasetSelect(includeDatasets, onExcludeDatasetChange)}
+                </Form.Item>
+              </Tip>
+            </ConfigProvider>
+          </Panel>
+          <Panel label={t('task.fusion.header.filter')}>
+
+            <Tip hidden={true}>
+              <Form.Item label={t('dataset.column.keyword')} required style={{ zIndex: 2, position: 'relative' }}>
+                <p>{t('task.fusion.form.include.label')}</p>
+                <Tip content={t('tip.task.fusion.includelable')} span={1} formSpan={24}>
+                  <Form.Item
+                    labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
+                    name='inc'
+                    help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
+                  >
+                    <Select
+                      mode='multiple'
+                      onChange={(value) => setSelectedKeywords(value)}
+                      showArrow
+                    >
+                      {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
+                        ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                        : null)}
+                    </Select>
+                  </Form.Item>
+                </Tip>
+                <p>{t('task.fusion.form.exclude.label')}</p>
+                <Tip content={t('tip.task.fusion.excludelable')} span={1} formSpan={24}>
+                  <Form.Item
+                    labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
+                    name='exc'
+                    dependencies={['inc']}
+                    help={t('task.fusion.tip.keyword.required')}
+                    rules={[
+                      { validator: requireOne },
+                    ]}
+                  >
+                    <Select
+                      mode='multiple'
+                      onChange={(value) => setExcludeKeywords(value)}
+                      showArrow
+                    >
+                      {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
+                        ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                        : null)}
+                    </Select>
+                  </Form.Item>
+                </Tip>
               </Form.Item>
             </Tip>
-          </Form.Item>
-          </Tip>
+          </Panel>
+          <Panel label={t('task.fusion.header.sampling')}>
+            <Tip>
+              <Form.Item name='sampling_count'>
+                <InputNumber step={1} min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Tip>
+          </Panel>
           <Tip hidden={true}>
-          <Form.Item className={styles.submit} wrapperCol={{ offset: 8 }}>
-            <Space size={20}>
-              <Form.Item name='submitBtn' noStyle>
-                <Button type="primary" size="large" htmlType="submit">
-                  {t('task.fusion.create')}
-                </Button>
-              </Form.Item>
-              <Form.Item name='backBtn' noStyle>
-                <Button size="large" onClick={() => history.goBack()}>
-                  {t('task.btn.back')}
-                </Button>
-              </Form.Item>
-            </Space>
-          </Form.Item>
+            <Form.Item className={s.submit} wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('task.create')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Tip>
         </Form>
       </Card>
@@ -248,12 +288,16 @@ function Fusion({
   )
 }
 
+const props = (state) => {
+  return {
+    allDatasets: state.dataset.allDatasets,
+  }
+}
 const mapDispatchToProps = (dispatch) => {
   return {
-    getDatasets(payload) {
+    getDatasets() {
       return dispatch({
-        type: "dataset/getDatasets",
-        payload,
+        type: "dataset/queryAllDatasets",
       })
     },
     createFusionTask(payload) {
@@ -265,4 +309,4 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-export default connect(null, mapDispatchToProps)(Fusion)
+export default connect(props, mapDispatchToProps)(Fusion)
