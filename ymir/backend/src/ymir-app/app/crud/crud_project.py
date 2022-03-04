@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import List, Optional, Tuple
 
@@ -18,8 +19,9 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         user_id: int,
     ) -> Project:
 
-        # todo unify List to str storage
-        training_keywords = ";".join(obj_in.training_keywords)
+        training_keywords = (
+            json.dumps(obj_in.training_keywords) if obj_in.training_keywords else ""
+        )
 
         db_obj = Project(
             user_id=user_id,

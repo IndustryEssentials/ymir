@@ -29,12 +29,6 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     training_keywords: List[str]
 
-    @validator("training_keywords")
-    def dumps_keywords(cls, v: List[str]) -> str:
-        # we don't care what's inside of keywords
-        # just dumps it as string and save to db
-        return json.dumps(v)
-
 
 # Properties that can be changed
 class ProjectUpdate(BaseModel):
