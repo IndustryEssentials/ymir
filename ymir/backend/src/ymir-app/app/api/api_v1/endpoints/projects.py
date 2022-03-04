@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 from app.constants.state import TaskState
-from app.constants.state import TaskType
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -15,7 +14,7 @@ from app.api.errors.errors import (
 )
 from app.constants.state import ResultState
 from app.utils.class_ids import get_keyword_name_to_id_mapping
-from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.utils.ymir_controller import ControllerClient, gen_task_hash, ExtraRequestType
 
 router = APIRouter()
 
@@ -85,7 +84,7 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
     keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
-    training_keywords = [
+    training_classes = [
         keyword_name_to_id[keyword] for keyword in project_in.training_keywords
     ]
 
@@ -95,7 +94,7 @@ def create_project(
             user_id=current_user.id,
             project_id=project.id,
             task_id=task_id,
-            args={"training_keywords": training_keywords},
+            args={"training_classes": training_classes},
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
@@ -105,7 +104,7 @@ def create_project(
     # 3.create task info
     task_info = schemas.TaskCreate(
         name=project_in.name,
-        type=TaskType.data_fusion,
+        type=ExtraRequestType.create_project,
         project_id=project.id,
     )
     task = crud.task.create_task(
