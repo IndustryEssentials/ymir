@@ -518,7 +518,7 @@ def create_dataset_fusion(
     )
 
     # todo unify name
-    name = f"{dataset_group.name}{main_dataset.version_num + 1}"  # type: ignore
+    name = f"{dataset_group.name}_{main_dataset.version_num + 1}"  # type: ignore
     # 3. create dataset record
     dataset_in = schemas.DatasetCreate(
         name=name,
