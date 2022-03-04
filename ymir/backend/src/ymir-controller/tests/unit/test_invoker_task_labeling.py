@@ -18,7 +18,6 @@ from proto import backend_pb2
 
 @pytest.fixture()
 def mock_many(mocker):
-    mocker.patch.object(os, "makedirs")
     mocker.patch.object(TaskExportingInvoker, "exporting_cmd")
     mocker.patch("builtins.open", mocker.mock_open(read_data="data"))
     mocker.patch("os.listdir", return_value=[])
@@ -55,6 +54,10 @@ class TestTaskLabelingInvoker:
         task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzb5'
         user_root = os.path.join(sandbox_root, user_name)
         mir_repo_root = os.path.join(user_root, mir_repo_name)
+        if os.path.isdir(mir_repo_root):
+            logging.info("mir_repo_root exists, remove it first")
+            shutil.rmtree(mir_repo_root)
+        os.makedirs(mir_repo_root)
         test_utils.mir_repo_init(mir_repo_root)
 
         working_dir = os.path.join(sandbox_root, "work_dir", backend_pb2.TaskType.Name(backend_pb2.TaskTypeLabel),
@@ -75,6 +78,9 @@ class TestTaskLabelingInvoker:
 
         expected_ret = backend_pb2.GeneralResp()
         assert response == expected_ret
+
+        shutil.rmtree(working_dir)
+        shutil.rmtree(mir_repo_root)
 
     def test_get_task_completion_percent(self, mocker):
         mock_resp = mocker.Mock()

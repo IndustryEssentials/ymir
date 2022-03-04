@@ -1,5 +1,7 @@
+from datetime import datetime
 from enum import IntEnum, unique
-from typing import Optional
+import logging
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -42,3 +44,24 @@ class PercentLogHandler:
             percent_result.stack_error_info = "\n".join(monitor_file_lines[1:100])
 
         return percent_result
+
+    @staticmethod
+    def write_percent_log(log_file: str,
+                          tid: str,
+                          percent: float,
+                          state: LogState,
+                          error_code: int = None,
+                          error_message: str = None,
+                          msg: str = None) -> None:
+        if not log_file:
+            raise RuntimeError("Invalid log_file")
+        content_list: List[str] = [tid, f"{datetime.now().timestamp():.6f}", str(percent), str(state.value)]
+        if error_code and error_message:
+            content_list.extend([str(error_code), error_message])
+        content = '\t'.join(content_list)
+        if msg:
+            content = '\n'.join([content, msg])
+        with open(log_file, 'w') as f:
+            logging.info(f"writing task info to {log_file}\n{content}")
+            f.write(content)
+        return
