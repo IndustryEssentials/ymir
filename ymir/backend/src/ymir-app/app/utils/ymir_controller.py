@@ -285,7 +285,7 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_GPU_INFO_GET
         return request
 
-    def prepare_create_data_fusion(
+    def prepare_data_fusion(
         self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()

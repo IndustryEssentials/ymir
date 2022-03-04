@@ -116,7 +116,9 @@ def create_project(
 
     # 3.create dataset group to build dataset info
     dataset_name = f"{project_in.name}_training_dataset"
-    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
+    dataset_paras = schemas.DatasetGroupCreate(
+        name=dataset_name, project_id=project.id, user_id=current_user.id
+    )
     dataset_group = crud.dataset_group.create_with_user_id(
         db, user_id=current_user.id, obj_in=dataset_paras
     )
