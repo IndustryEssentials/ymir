@@ -140,7 +140,7 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 将部署项目YMIR下拉到本地服务器，克隆仓库地址命令：
 `git clone git@github.com:IndustryEssentials/ymir.git`
 
-2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`
+2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`，建议不要使用```sudo```命令，否则可能会造成权限不足。
 
 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
@@ -162,7 +162,7 @@ label studio为YMIR外接的标注系统，选择安装可以完成数据标注�
 LABEL_TOOL_PORT=set_your_label_tool_port
 ```
 
-2. 启动安装label studio命令如下：
+2. 启动安装label studio命令如下，建议不要使用```sudo```命令，否则可能会造成权限不足。：
 
 `docker-compose -f docker-compose-component.yml up -d`
 
@@ -212,6 +212,8 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ![标签管理](docs/images/%E6%96%B0%E5%A2%9E%E6%A0%87%E7%AD%BE.jpg)
 
+其中标签的主名与别名表示同一类标签，当某些数据集的标注包含别名时，会在导入时合并变更为主名。如，标签列表中包含标签bike（别名bicycle），导入某数据集A（仅包含标签bicycle），则导入后在数据集详情显示标注为bike。
+
 ## 3.2. 原始数据准备
 
 用户准备好带有训练目标的数据集（训练集，测试集），用于训练初始模型。针对本身带有标注文件的数据集，在导入之前，需要保证数据集的格式符合格式要求：
@@ -246,7 +248,13 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ![路径导入](docs/images/%E8%B7%AF%E5%BE%84%E5%AF%BC%E5%85%A5.jpeg)
 
-通过在网络中下载开源数据集VOC2012([点击下载VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar))，解压并分出训练集（VOC2012_train）、测试集（VOC2012_val）和待挖掘数据集（VOC2012_mining），按要求修改文件夹名称，再分别压缩为符合导入要求的zip包，通过本地导入的方式导入。如下图所示：
+1.通过在网络中下载开源数据集VOC2012([点击下载VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar))，解压缩后按要求修改文件夹名称，再分别压缩为符合导入要求的zip包；
+
+2.把VOC2012放到ymir-workplace/importing_pic下面；
+
+3.选择路径导入，填上路径地址/data/sharing/voc2012_train。
+
+如下图所示：
 
 ![voc训练集测试集](docs/images/voc%E8%AE%AD%E7%BB%83%E9%9B%86%E6%B5%8B%E8%AF%95%E9%9B%86.jpeg)
 
