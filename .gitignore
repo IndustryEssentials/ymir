@@ -84,3 +84,4 @@ ymir-data/
 ymir-workplace
 .mir_lock
 .local
+.pre-commit-config.yaml

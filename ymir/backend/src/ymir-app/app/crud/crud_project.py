@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import List, Optional, Tuple
 
@@ -10,6 +11,32 @@ from app.schemas.project import ProjectCreate, ProjectUpdate
 
 
 class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
+    def create_project(
+        self,
+        db: Session,
+        *,
+        obj_in: ProjectCreate,
+        user_id: int,
+    ) -> Project:
+
+        training_keywords = json.dumps(obj_in.training_keywords)
+
+        db_obj = Project(
+            user_id=user_id,
+            name=obj_in.name,
+            iteration_target=obj_in.iteration_target,
+            map_target=obj_in.map_target,  # type: ignore
+            training_dataset_count_target=obj_in.training_dataset_count_target,
+            mining_strategy=obj_in.mining_strategy,
+            chunk_size=obj_in.chunk_size,
+            training_type=obj_in.training_type,
+            training_keywords=training_keywords,
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
     def get_multi_projects(
         self,
         db: Session,
