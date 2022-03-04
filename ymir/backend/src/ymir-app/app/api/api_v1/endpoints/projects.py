@@ -13,7 +13,7 @@ from app.api.errors.errors import (
     FailedToCreateProject,
 )
 from app.constants.state import ResultState
-from app.utils.class_ids import get_keyword_name_to_id_mapping
+from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash, ExtraRequestType
 
 router = APIRouter()
@@ -83,10 +83,8 @@ def create_project(
     )
 
     task_id = gen_task_hash(current_user.id, project.id)
-    keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
-    training_classes = [
-        keyword_name_to_id[keyword] for keyword in project_in.training_keywords
-    ]
+
+    training_classes = convert_keywords_to_classes(labels, project_in.training_keywords)
 
     # 2.send to controller
     try:
