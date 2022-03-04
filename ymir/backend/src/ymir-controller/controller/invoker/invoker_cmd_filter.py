@@ -6,10 +6,6 @@ from proto import backend_pb2
 
 class FilterBranchInvoker(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        if not self._request.in_class_ids and not self._request.ex_class_ids:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               'one of include/exclude ids is required.')
-
         return checker.check_request(request=self._request,
                                      prerequisites=[
                                          checker.Prerequisites.CHECK_USER_ID,
