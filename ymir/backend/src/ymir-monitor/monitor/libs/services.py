@@ -5,7 +5,7 @@ from common_utils.percent_log_util import PercentLogHandler, LogState
 from monitor.config import settings
 from monitor.libs.redis_handler import RedisHandler
 from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
-from monitor.utils.errors import DuplicateTaskIDError, LogFileError, LogWeightError
+from monitor.utils.errors import DuplicateTaskIDError, LogFileError
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +82,6 @@ class TaskService:
         raw_log_contents = self.get_raw_log_contents(log_path_weights)
         if len(raw_log_contents) != len(reg_parameters.log_path_weights):
             raise LogFileError
-
-        delta = 0.001
-        if abs(sum(log_path_weights.values()) - 1) > delta:
-            raise LogWeightError
 
         percent_result = self.merge_task_progress_contents(
             task_id=reg_parameters.task_id,

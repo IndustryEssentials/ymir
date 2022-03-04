@@ -55,7 +55,9 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if not (subtask_weights and task_id and user_id and master_work_dir):
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
                                      "create_subtask_workdir_monitor args error, abort.")
-        if abs(sum(subtask_weights) - 1) >= 0.01:
+
+        delta = 0.001
+        if abs(sum(subtask_weights) - 1) >= delta:
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid weights, abort.")
         sub_monitor_files_weights = {}
         for idx in range(len(subtask_weights)):

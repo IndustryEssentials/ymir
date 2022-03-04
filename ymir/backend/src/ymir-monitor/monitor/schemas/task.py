@@ -5,6 +5,7 @@ from typing import Dict, Optional
 from pydantic import BaseModel, validator
 
 from common_utils.percent_log_util import PercentResult
+from monitor.utils.errors import LogWeightError
 
 
 class MonitorType(IntEnum):
@@ -23,6 +24,10 @@ class TaskParameter(BaseModel):
         for log_path in log_path_weights:
             if not os.path.exists(log_path):
                 raise ValueError(f"log_path not exists {log_path}")
+
+        delta = 0.001
+        if abs(sum(log_path_weights.values()) - 1) >= delta:
+            raise LogWeightError
 
         return log_path_weights
 
