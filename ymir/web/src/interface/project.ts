@@ -3,21 +3,21 @@ type Dataset = number
 export interface Project {
   id: number,
   name: string,
+  type: number,
   keywords: Array<string>,
+  targetMap: number,
+  targetDataset: number,
+  targetInteration: number,
   trainSet: Dataset,
   testSet: Dataset,
   miningSet: Dataset,
   setsAccount: number,
   modelsAccount: number,
-  flag?: {
-    type: string,
-    value: number,
-  },
   miningStrategy: number,
-  miningBlock?: number,
+  chunkSize?: number,
   currentInteration?: Interation,
   createTime: string,
-  desc?: string,
+  description?: string,
 }
 
 export interface Interation {
@@ -48,21 +48,19 @@ export interface originInteration {
 export interface originProject {
   id: number,
   name: string,
-  keywords: Array<string>,
+  training_keywords: Array<string>,
   train_set: Dataset,
   test_set: Dataset,
   mining_set: Dataset,
-
   set_account: number,
   models_account: number,
-  flag?: {
-    type: string,
-    value: number
-  },
-
   mining_strategy: number,
-  mining_block?: number,
+  chunk_size?: number,
   current_interation?: originInteration,
   create_datetime: string,
   description?: string 
+  training_type: number,
+  iteration_target: number,
+  map_target: number,
+  training_dataset_count_target: number,
 }
