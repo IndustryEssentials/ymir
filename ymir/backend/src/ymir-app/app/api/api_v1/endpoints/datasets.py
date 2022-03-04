@@ -469,7 +469,7 @@ def create_dataset_fusion(
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
-    Create task
+    Create data fusion
     """
     logger.debug(
         "[create task] create task with payload: %s", jsonable_encoder(task_in)
@@ -484,7 +484,6 @@ def create_dataset_fusion(
         exclude_labels=[keyword_name_to_id[label] for label in task_in.exclude_labels],
         sampling_count=task_in.sampling_count,
     )
-
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,
@@ -516,7 +515,6 @@ def create_dataset_fusion(
     dataset_group = crud.dataset_group.get_by_user_and_id(
         db, user_id=current_user.id, id=task_in.dataset_group_id
     )
-
     # todo unify name
     name = f"{dataset_group.name}_{main_dataset.version_num + 1}"  # type: ignore
     # 3. create dataset record
@@ -527,9 +525,9 @@ def create_dataset_fusion(
         dataset_group_id=task_in.dataset_group_id,
         project_id=task_in.project_id,
         user_id=current_user.id,
-        task_id=task_id,
+        task_id=task.id,
     )
     dataset = crud.dataset.create(db, obj_in=dataset_in)
     logger.info("[create dataset] dataset record created: %s", dataset)
 
-    return {"result": task}
+    return {"result": dataset}
