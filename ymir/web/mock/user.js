@@ -11,4 +11,15 @@ export default baseApi([
       }
     }
   },
+  {
+    url: 'users/me',
+    data: {
+      result: {
+        username: 'Leader',
+        email: 'test@leader.com',
+        phone: '18888888888',
+        role: 3,
+      }
+    }
+  },
 ])

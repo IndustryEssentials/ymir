@@ -13,6 +13,7 @@ import keyword from './modules/keyword'
 import user from './modules/user'
 import image from './modules/image'
 import tip from './modules/tip'
+import project from './modules/project'
 
 export default {
   ...common,
@@ -29,4 +30,5 @@ export default {
   ...user,
   ...image,
   ...tip,
+  ...project,
 }

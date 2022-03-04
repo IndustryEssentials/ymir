@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react"
 import ReactDOM from "react-dom"
-import { Menu, Dropdown, List, Row, Col, Popover, Input, Space, Image } from "antd"
+import { Menu, Dropdown, Row, Col, Space } from "antd"
 import {
-  SearchOutlined,
   LogoutOutlined,
 } from "@ant-design/icons"
 import { connect } from "dva"
@@ -14,8 +13,7 @@ import LangBtn from "../common/langBtn"
 import styles from "./index.less"
 import './menu.less'
 import logo from '@/assets/logo_a.png'
-import { NavHomeIcon, NavTaskIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
-import GuideStep from "../guide/step"
+import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
 import { GithubIcon, UserIcon } from "../common/icons"
 
 const { SubMenu } = Menu
@@ -27,35 +25,19 @@ const menus = () => [
     icon: <NavHomeIcon className={styles.navIcon} />,
   },
   {
-    label: t('common.top.menu.task'),
-    key: "/home/task",
-    icon: <NavTaskIcon className={styles.navIcon} />,
-  },
-  {
-    label: t('common.top.menu.data'),
-    key: "/home/datasets",
+    label: t('common.top.menu.project'),
+    key: "/home/project",
     icon: <NavDatasetIcon className={styles.navIcon} />,
-    sub: [
-      {
-        label: t('common.top.menu.dataset'),
-        key: "/home/dataset",
-      },
-      {
-        label: t('common.top.menu.keyword'),
-        key: "/home/keyword",
-      },
-    ]
-  },
-  {
-    label: t('common.top.menu.model'),
-    key: "/home/model",
-    icon: <NavModelmanageIcon className={styles.navIcon} />,
   },
   {
     label: t('common.top.menu.configure'),
     key: "/home/configures",
     icon: <NavModelmanageIcon className={styles.navIcon} />,
     sub: [
+      {
+        label: t('common.top.menu.keyword'),
+        key: "/home/keyword",
+      },
       {
         label: t('common.top.menu.image'),
         key: "/home/image",
@@ -131,6 +113,7 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   )
 
   const renderMenu = (menus) => {
+    console.log('menus: ', menus)
     return menus.map((menu, i) => {
       if (menu.sub) {
         return (
@@ -161,43 +144,17 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
     })
   }
 
-  const searchContents = [
-    <Link className={styles.link} to={`/home/dataset?name=${searchValue}`}>{t('common.top.search.item.dataset', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/model?name=${searchValue}`}>{t('common.top.search.item.model', { searchValue })}</Link>,
-    <Link className={styles.link} to={`/home/task?name=${searchValue}`}>{t('common.top.search.item.task', { searchValue })}</Link>,
-  ]
-
-  const searchContent = (
-    <List
-      dataSource={searchContents}
-      bordered={false}
-      renderItem={item => <List.Item>{item}</List.Item>}
-    >
-    </List>
-  )
-
   return (
     <Row className={styles.nav} gutter={24} align="middle">
       <div className={styles.logo} style={{ overflow: simple ? 'initial' : 'hidden' }}><Link to='/' title={'YMIR'}><img src={logo} /></Link></div>
       {!simple ? <>
         <Col flex={1}>
           <Menu className='nav-menu' selectedKeys={defaultKeys} mode="horizontal">
-            {renderMenu((menus()))}
+            {renderMenu(menus())}
           </Menu>
         </Col>
         <Col style={{ textAlign: "right" }}>
           <Space size={20}>
-            <Popover trigger="focus" content={searchContent} visible={visible && !!searchValue}>
-              <Input type="search" className={styles.search}
-                value={searchValue}
-                placeholder={t('common.top.search.placeholder')}
-                onChange={e => setSearchValue(e.target.value)}
-                onFocus={() => setTimeout(() => setVisible(true), 200)}
-                onBlur={() => setTimeout(() => setVisible(false), 200)}
-                suffix={<SearchOutlined style={{ color: '#fff', fontSize: 20 }} />}
-              />
-
-            </Popover>
             <Dropdown overlay={menu} placement="bottomRight">
               <div className={styles.user}>
                 <span className={styles.avatar}>{avatar ? <img src={avatar} /> : (username || 'Y').charAt(0).toUpperCase()}</span>
@@ -207,7 +164,6 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
             </Dropdown>
             <LangBtn />
           </Space>
-          <GuideStep elem={guideTarget}></GuideStep>
         </Col>
       </> : renderSimple}
     </Row>

@@ -5,9 +5,11 @@ import os
 
 from mir import scm
 from mir.commands import base
+from mir.protos import mir_command_pb2 as mirpb
 from mir.scm.cmd import CmdScm
-from mir.tools import checker, class_ids, context
+from mir.tools import checker, class_ids, context, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 class CmdInit(base.BaseCommand):
@@ -28,9 +30,38 @@ class CmdInit(base.BaseCommand):
                 f.write(f"{item}\n")
         git.add(gitignore_file)
 
+    @staticmethod
+    def __commit_empty_dataset(mir_root: str, empty_rev: str) -> None:
+        if not empty_rev:
+            return
+
+        dst_rev_tid = revs_parser.parse_single_arg_rev(empty_rev)
+        if checker.check_dst_rev(dst_typ_rev_tid=dst_rev_tid) != MirCode.RC_OK:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid empty_rev: {empty_rev}")
+
+        mir_metadatas = mirpb.MirMetadatas()
+        mir_annotations = mirpb.MirAnnotations()
+        mir_tasks = mirpb.MirTasks()
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
+                                         task_type=mirpb.TaskTypeInit,
+                                         task_id=dst_rev_tid.tid,
+                                         message='init empty dataset')
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+            mirpb.MirStorage.MIR_TASKS: mir_tasks,
+        }
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                                      mir_branch=dst_rev_tid.rev,
+                                                      task_id=dst_rev_tid.tid,
+                                                      his_branch='master',
+                                                      mir_datas=mir_datas,
+                                                      commit_message='init empty dataset')
+
     # public: run
     @staticmethod
-    def run_with_args(mir_root: str, project_class_names: str) -> int:
+    def run_with_args(mir_root: str, project_class_names: str, empty_rev: str) -> int:
         return_code = checker.check(
             mir_root, [checker.Prerequisites.IS_OUTSIDE_GIT_REPO, checker.Prerequisites.IS_OUTSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
@@ -52,12 +83,17 @@ class CmdInit(base.BaseCommand):
                                 ignored_items=['.mir_lock', class_ids.ids_file_name(), '.mir'])
         repo_git.commit(["-m", "first commit"])
 
+        # creates an empty dataset if empty_rev provided
+        CmdInit.__commit_empty_dataset(mir_root=mir_root, empty_rev=empty_rev)
+
         return MirCode.RC_OK
 
     def run(self) -> int:
         logging.debug("command init: %s", self.args)
 
-        return self.run_with_args(mir_root=self.args.mir_root, project_class_names=self.args.project_class_names)
+        return self.run_with_args(mir_root=self.args.mir_root,
+                                  project_class_names=self.args.project_class_names,
+                                  empty_rev=self.args.empty_rev)
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
@@ -71,4 +107,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                  type=str,
                                  default='',
                                  help='project class type names, separated by semicolon')
+    init_arg_parser.add_argument('--with-empty-rev',
+                                 dest='empty_rev',
+                                 required=False,
+                                 type=str,
+                                 default='',
+                                 help='rev@tid, if provided, also creates an empty dataset in this branch')
     init_arg_parser.set_defaults(func=CmdInit)

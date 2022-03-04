@@ -1,5 +1,4 @@
-import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
@@ -18,19 +17,11 @@ def get_model_url(model_hash: str) -> str:
     return f"{settings.NGINX_PREFIX}/ymir-models/{model_hash}"
 
 
-def extract_keywords(parameters: Optional[Union[str, Dict]]) -> List:
-    if not parameters:
-        return []
-    if isinstance(parameters, str):
-        parameters = json.loads(parameters)
-    return parameters.get("include_classes", [])  # type: ignore
-
-
 class ModelBase(BaseModel):
     hash: str
     name: str
     version_num: int
-    map: Optional[str] = Field(description="Mean Average Precision")
+    map: Optional[float] = Field(description="Mean Average Precision")
     result_state: ResultState = ResultState.processing
     model_group_id: int
     project_id: int
@@ -38,17 +29,13 @@ class ModelBase(BaseModel):
     user_id: Optional[int]
 
 
-class ModelImport(BaseModel):
-    hash: str
-    name: str
+class ModelImport(ModelBase):
     input_url: Optional[str] = Field(description="from url")
     input_model_id: Optional[int] = Field(description="from model of other user")
-    input_token: Optional[str] = Field(description="from uploaded file token")
-    project_id: int
 
     @root_validator
     def check_input_source(cls, values: Any) -> Any:
-        fields = ("input_url", "input_model_id", "input_token")
+        fields = ("input_url", "input_model_id")
         if all(values.get(i) is None for i in fields):
             raise ValueError("Missing input source")
         return values

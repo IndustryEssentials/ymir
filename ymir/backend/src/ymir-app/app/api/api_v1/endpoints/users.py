@@ -10,6 +10,7 @@ from app.api import deps
 from app.api.errors.errors import (
     DuplicateUserNameError,
     UserNotFound,
+    FailedToCreateUser,
 )
 from app.constants.role import Roles
 from app.utils.ymir_controller import ControllerClient
@@ -71,6 +72,12 @@ def create_user(
         password=password, email=email, phone=phone, username=username
     )
     user = crud.user.create(db, obj_in=user_in)
+
+    try:
+        controller_client.create_user(user_id=user.id)
+    except ValueError:
+        raise FailedToCreateUser()
+
     return {"result": user}
 
 

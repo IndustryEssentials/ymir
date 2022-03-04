@@ -311,3 +311,8 @@ class ModelGroupNotFound(NotFound):
 class DuplicateModelGroupError(DuplicateError):
     code = error_codes.MODEL_GROUP_DUPLICATED_NAME
     message = "Duplicated ModelGroup Name"
+
+
+class FailedToCreateUser(APIError):
+    code = error_codes.USER_FAILED_TO_CREATE
+    message = "Failed to Create User"

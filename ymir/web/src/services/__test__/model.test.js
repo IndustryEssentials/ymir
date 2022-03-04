@@ -1,5 +1,6 @@
 import {
   getModels,
+  getModelVersions,
   batchModels,
   getModel,
   delModel,
@@ -11,9 +12,17 @@ import { product, products, requestExample } from './func'
 
 describe("service: models", () => {
   it("getModels -> success", () => {
-    const params = { name: 'testname', type: 1, start_time: 123942134, end_time: 134123434, offset: 0, limit: 20, sort_by_map: false, }
+    const project_id = 5342
+    const listParams = { offset: 0, limit: 20, }
+    const queryParams = { name: 'testname', offset: 0, limit: 20, }
     const expected = products(15)
-    requestExample(getModels, params, { items: expected, total: expected.length }, 'get')
+    requestExample(getModels, [project_id, listParams], { items: expected, total: expected.length }, 'get')
+    requestExample(getModels, [project_id, queryParams], { items: expected, total: expected.length }, 'get')
+  })
+  it("getModelVersions -> success", () => {
+    const gid = 5342
+    const expected = products(15)
+    requestExample(getModelVersions, gid, { items: expected, total: expected.length }, 'get')
   })
   it("batchModels -> success", () => {
     const params = [1, 2, 3]

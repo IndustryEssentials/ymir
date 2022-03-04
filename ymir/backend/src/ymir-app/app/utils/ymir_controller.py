@@ -3,7 +3,7 @@ import itertools
 import secrets
 import time
 from dataclasses import dataclass
-from typing import Dict, Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Union
 
 import grpc
 from fastapi.logger import logger
@@ -26,6 +26,7 @@ class ExtraRequestType(enum.IntEnum):
     kill = 500
     pull_image = 600
     get_gpu_info = 601
+    create_user = 602
 
 
 MERGE_STRATEGY_MAPPING = {
@@ -62,7 +63,7 @@ def gen_task_hash(user_id: int, project_id: int) -> str:
 class ControllerRequest:
     type: Union[TaskType, ExtraRequestType]
     user_id: int
-    project_id: int
+    project_id: int = 0
     task_id: Optional[str] = None
     args: Optional[Dict] = None
     req: Optional[mirsvrpb.GeneralReq] = None
@@ -81,20 +82,18 @@ class ControllerRequest:
         method_name = "prepare_" + self.type.name
         self.req = getattr(self, method_name)(request, self.args)
 
+    def prepare_create_user(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.USER_CREATE
+        return request
+
     def prepare_create_project(
         self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
+        # project training target labels
+        request.private_labels[:] = args["labels"]
         request.req_type = mirsvrpb.REPO_CREATE
-        return request
-
-    def prepare_get_task_info(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
-        req_get_task_info = mirsvrpb.ReqGetTaskInfo()
-        req_get_task_info.task_ids[:] = args["task_ids"]
-
-        request.req_type = mirsvrpb.TASK_INFO
-        request.req_get_task_info.CopyFrom(req_get_task_info)
         return request
 
     def prepare_filter(
@@ -231,7 +230,7 @@ class ControllerRequest:
 
         copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
-        copy_request.src_dataset_id = args["src_dataset_id"]
+        copy_request.src_dataset_id = args["src_resource_id"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeCopyData
@@ -286,6 +285,35 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_GPU_INFO_GET
         return request
 
+    def prepare_data_fusion(
+        self, request: mirsvrpb.GeneralReq, args: Dict
+    ) -> mirsvrpb.GeneralReq:
+        data_fusion_request = mirsvrpb.TaskReqFusion()
+        data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
+        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[
+            args["include_strategy"]
+        ]
+        if args.get("exclude_dataset"):
+            data_fusion_request.ex_dataset_ids[:] = args["exclude_dataset"]
+
+        if args.get("include_labels"):
+            data_fusion_request.in_class_ids[:] = args["include_classes"]
+        if args.get("exclude_labels"):
+            data_fusion_request.ex_class_ids[:] = args["exclude_classes"]
+
+        if args.get("sampling_count"):
+            data_fusion_request.count = args["sampling_count"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+
+        req_create_task.task_type = mirsvrpb.TaskTypeFusion
+        req_create_task.no_task_monitor = False
+        req_create_task.fusion.CopyFrom(data_fusion_request)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
+        return request
+
 
 class ControllerClient:
     def __init__(self, channel: str) -> None:
@@ -309,24 +337,15 @@ class ControllerClient:
         )
 
     def add_labels(self, user_id: int, new_labels: List, dry_run: bool) -> Dict:
-        # fixme
-        #  for task having nothing to do with project
-        #  is project_id still required?
-        project_id = 0
         req = ControllerRequest(
             ExtraRequestType.add_label,
             user_id,
-            project_id=project_id,
             args={"labels": new_labels, "dry_run": dry_run},
         )
         return self.send(req)
 
     def get_labels_of_user(self, user_id: int) -> List[str]:
-        # fixme
-        #  for task having nothing to do with project
-        #  is project_id still required?
-        project_id = 0
-        req = ControllerRequest(ExtraRequestType.get_label, user_id, project_id)
+        req = ControllerRequest(ExtraRequestType.get_label, user_id)
         resp = self.send(req)
         return list(resp["csv_labels"])
 
@@ -360,34 +379,40 @@ class ControllerClient:
         return resp
 
     def pull_docker_image(self, url: str, user_id: int) -> Dict:
-        # fixme
-        #  for task having nothing to do with project
-        #  is project_id still required?
-        project_id = 0
         req = ControllerRequest(
             ExtraRequestType.pull_image,
             user_id=user_id,
-            project_id=project_id,
             args={"url": url},
         )
         return self.send(req)
 
     def get_gpu_info(self, user_id: int) -> Dict[str, int]:
-        # fixme
-        #  for task having nothing to do with project
-        #  is project_id still required?
-        project_id = 0
         req = ControllerRequest(
             ExtraRequestType.get_gpu_info,
             user_id=user_id,
-            project_id=project_id,
         )
         resp = self.send(req)
         return {"gpu_count": resp["available_gpu_counts"]}
 
+    def create_user(self, user_id: int) -> Dict:
+        req = ControllerRequest(ExtraRequestType.create_user, user_id=user_id)
+        return self.send(req)
+
     def create_project(self, user_id: int, project_id: int) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.create_project, user_id=user_id, project_id=project_id
+        )
+        return self.send(req)
+
+    def import_dataset(
+        self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict
+    ) -> Dict:
+        req = ControllerRequest(
+            task_type,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_hash,
+            args=args,
         )
         return self.send(req)
 
@@ -399,16 +424,11 @@ class ControllerClient:
         docker_image: Optional[str],
         docker_config: Optional[str],
     ) -> Dict:
-        # fixme
-        #  for task having nothing to do with project
-        #  is project_id still required?
-        project_id = 0
         if None in (model_hash, docker_image, docker_config):
             raise ValueError("Missing model or docker image")
         req = ControllerRequest(
             ExtraRequestType.inference,
             user_id=user_id,
-            project_id=project_id,
             args={
                 "model_hash": model_hash,
                 "asset_dir": asset_dir,
