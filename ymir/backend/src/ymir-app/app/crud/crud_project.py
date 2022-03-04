@@ -19,9 +19,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         user_id: int,
     ) -> Project:
 
-        training_keywords = (
-            json.dumps(obj_in.training_keywords) if obj_in.training_keywords else ""
-        )
+        training_keywords = json.dumps(obj_in.training_keywords)
 
         db_obj = Project(
             user_id=user_id,
