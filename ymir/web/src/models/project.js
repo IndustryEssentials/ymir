@@ -39,15 +39,22 @@ export default {
         return projects
       }
     },
-    *getProject({ payload }, { call, put }) {
+    *getProject({ payload }, { select, call, put }) {
+      const id = payload
+      const cache = yield select(state => state.project.projects)
+      const cacheProject = cache[id]
+      if (cacheProject) {
+        return cacheProject
+      }
       const { code, result } = yield call(getProject, payload)
       if (code === 0) {
         const project = transferProject(result)
+        console.log('get from remote project: ', project)
         yield put({
-          type: "UPDATE_PROJECT",
+          type: "UPDATE_PROJECTS",
           payload: project,
         })
-        return result
+        return project
       }
     },
     *getInterations({ payload }, { call, put }) {
@@ -75,8 +82,8 @@ export default {
       }
     },
     *updateProject({ payload }, { call, put }) {
-      const { id, name } = payload
-      const { code, result } = yield call(updateProject, id, name)
+      const { id, ...params } = payload
+      const { code, result } = yield call(updateProject, id, params)
       if (code === 0) {
         return result
       }
@@ -107,9 +114,10 @@ export default {
       }
     },
     UPDATE_PROJECTS(state, { payload }) {
-      const projects = { ...state.project }
+      const projects = { ...state.projects }
       const project = payload
       projects[project.id] = project
+      console.log('project reducer: ', projects)
       return {
         ...state,
         projects,
