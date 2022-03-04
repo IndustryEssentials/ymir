@@ -320,7 +320,6 @@ class TestCreateDataFusion:
             "exclude_labels": [],
         }
 
-        print(j)
         r = client.post(
             f"{settings.API_V1_STR}/datasets/dataset_fusion",
             headers=normal_user_token_headers,
