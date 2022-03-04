@@ -285,7 +285,7 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_GPU_INFO_GET
         return request
 
-    def prepare_data_fusion(
+    def prepare_create_data_fusion(
         self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()
@@ -436,4 +436,18 @@ class ControllerClient:
                 "docker_config": docker_config,
             },
         )
+        return self.send(req)
+
+    def create_data_fusion(
+        self,
+        user_id: int,
+        project_id: int,
+        task_id: str,
+        task_parameters: Optional[Dict],
+    ) -> Dict:
+
+        req = ControllerRequest(
+            TaskType.data_fusion, user_id, project_id, task_id, args=task_parameters
+        )
+
         return self.send(req)

@@ -4,11 +4,11 @@ import random
 import tempfile
 from typing import Any, Dict, List, Optional
 from zipfile import BadZipFile
-
+from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-
+from app.utils.class_ids import get_keyword_name_to_id_mapping
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -18,6 +18,7 @@ from app.api.errors.errors import (
     FailedtoCreateDataset,
     FieldValidationFailed,
     NoDatasetPermission,
+    FailedtoCreateTask,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType
@@ -460,6 +461,75 @@ def get_asset_of_dataset(
     response_model=schemas.Dataset,
 )
 def create_dataset_fusion(
-    dataset_import: schemas.DatasetsFusionParameter, project_id: int
+    *,
+    db: Session = Depends(deps.get_db),
+    task_in: schemas.DatasetsFusionParameter,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
-    pass
+    """
+    Create task
+    """
+    logger.debug(
+        "[create task] create task with payload: %s", jsonable_encoder(task_in)
+    )
+    keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
+    task_id = gen_task_hash(current_user.id, task_in.project_id)
+    parameters = dict(
+        include_datasets=task_in["main_dataset_id"] + task_in["include_datasets"],
+        include_strategy=task_in["include_strategy"],
+        exclude_datasets=task_in["exclude_datasets"],
+        include_labels=[
+            keyword_name_to_id[label] for label in task_in["include_labels"]
+        ],
+        exclude_labels=[
+            keyword_name_to_id[label] for label in task_in["exclude_labels"]
+        ],
+        sampling_count=task_in["sampling_count"],
+    )
+
+    try:
+        resp = controller_client.create_data_fusion(
+            current_user.id,
+            task_in.project_id,
+            task_id,
+            parameters,
+        )
+        logger.info("[create task] controller response: %s", resp)
+    except ValueError:
+        # todo parse error message
+        raise FailedtoCreateTask()
+
+    task_info = schemas.TaskCreate()
+    # 1. create task
+    task = crud.task.create_task(
+        db, obj_in=task_info, task_hash=task_id, user_id=current_user.id
+    )
+
+    # 2.get dataset
+    main_dataset = crud.dataset.get_by_user_and_id(
+        db, user_id=current_user.id, id=task_in.main_dataset_id
+    )
+
+    # 3. get dataset_group
+    dataset_group = crud.dataset_group.get_by_user_and_id(
+        db, user_id=current_user.id, id=task_in.dataset_group_id
+    )
+
+    # todo unify name
+    name = f"{dataset_group.name}{main_dataset.version_num + 1}"
+    # 3. create dataset record
+    dataset_in = schemas.DatasetCreate(
+        name=name,
+        version_num=main_dataset.version_num + 1,
+        hash=task_id,
+        dataset_group_id=task_in.dataset_group_id,
+        project_id=task_in.project_id,
+        user_id=current_user.id,
+        task_id=task_id,
+    )
+    dataset = crud.dataset.create(db, obj_in=dataset_in)
+    logger.info("[create dataset] dataset record created: %s", dataset)
+
+    return {"result": task}

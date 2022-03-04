@@ -184,27 +184,3 @@ class TrainDataSet(BaseModel):
     training_dataset_name: str
     training_dataset_group: int
     training_dataset_version: int
-
-
-class MergeDataSet(BaseModel):
-    include_datasets: List[str]
-    include_strategy: Optional[MergeStrategy] = Field(
-        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
-    )
-    exclude_datasets: List[str]
-
-
-class FiterLabel(BaseModel):
-    include_labels: List[str]
-    exclude_labels: List[str]
-
-
-class DatasetsFusionParameter(BaseModel):
-    dataset_type: CreateDatasetType
-    training_dataset_group_name: Optional[str]
-    training_dataset_version: int
-    training_dataset_name: str
-
-    merge_dataset: Optional[MergeDataSet]
-    fiter_label: Optional[FiterLabel]
-    sampling_count: Optional[int]
