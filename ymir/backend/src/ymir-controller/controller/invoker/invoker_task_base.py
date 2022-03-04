@@ -168,6 +168,8 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def subtask_weights(cls) -> List:
+        # Subtasks are called in reversed order of index so the index 0 submask is last called,
+        # as a result, the weight list should also be organized in reversed index order.
         raise NotImplementedError
 
     @classmethod
