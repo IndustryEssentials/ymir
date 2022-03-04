@@ -11,7 +11,8 @@ class SamplingInvoker(BaseMirControllerInvoker):
                                          checker.Prerequisites.CHECK_USER_ID,
                                          checker.Prerequisites.CHECK_REPO_ID,
                                          checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
-                                         checker.Prerequisites.CHECK_DST_TASK_ID,
+                                         checker.Prerequisites.CHECK_TASK_ID,
+                                         checker.Prerequisites.CHECK_TASK_ID,
                                      ],
                                      mir_root=self._repo_root)
 
@@ -27,9 +28,9 @@ class SamplingInvoker(BaseMirControllerInvoker):
             '--root',
             self._repo_root,
             '--dst-rev',
-            revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id),
+            revs.join_tvt_branch_tid(branch_id=self._request.task_id, tid=self._request.task_id),
             '--src-revs',
-            revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.his_task_id),
+            revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.in_dataset_ids[0]),
             '-w',
             self._work_dir,
         ]
