@@ -1,17 +1,20 @@
 import enum
-from typing import Any
+from typing import Any, List
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-
+from app.constants.state import TaskState
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     ProjectNotFound,
     DuplicateProjectError,
+    FailedToCreateProject,
 )
-from app.utils.ymir_controller import ControllerClient
+from app.constants.state import ResultState
+from app.utils.class_ids import convert_keywords_to_classes
+from app.utils.ymir_controller import ControllerClient, gen_task_hash, ExtraRequestType
 
 router = APIRouter()
 
@@ -64,7 +67,7 @@ def create_project(
     current_user: models.User = Depends(deps.get_current_active_admin),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    background_tasks: BackgroundTasks,
+    labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Create project
@@ -73,14 +76,70 @@ def create_project(
         db, user_id=current_user.id, name=project_in.name
     ):
         raise DuplicateProjectError()
-    project = crud.project.create_with_user_id(
+
+    # 1.create project to get task_id for sending to controller
+    project = crud.project.create_project(
         db, user_id=current_user.id, obj_in=project_in
     )
 
-    # todo
-    # call controller
-    # create dataset_group info
-    # init one empty dataset
+    task_id = gen_task_hash(current_user.id, project.id)
+
+    training_classes = convert_keywords_to_classes(labels, project_in.training_keywords)
+
+    # 2.send to controller
+    try:
+        resp = controller_client.create_project(
+            user_id=current_user.id,
+            project_id=project.id,
+            task_id=task_id,
+            args={"training_classes": training_classes},
+        )
+        logger.info("[create task] controller response: %s", resp)
+    except ValueError:
+        crud.project.soft_remove(db, id=project.id)
+        raise FailedToCreateProject()
+
+    # 3.create task info
+    task_info = schemas.TaskCreate(
+        name=project_in.name,
+        type=ExtraRequestType.create_project,
+        project_id=project.id,
+    )
+    task = crud.task.create_task(
+        db,
+        obj_in=task_info,
+        task_hash=task_id,
+        user_id=current_user.id,
+        state=TaskState.done.value,
+        progress=100,
+    )
+
+    # 3.create dataset group to build dataset info
+    dataset_name = f"{project_in.name}_training_dataset"
+    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
+    dataset_group = crud.dataset_group.create_with_user_id(
+        db, user_id=current_user.id, obj_in=dataset_paras
+    )
+
+    # 4.create init dataset
+    dataset_in = schemas.DatasetCreate(
+        name=dataset_name,
+        version_num=0,
+        hash=task_id,
+        dataset_group_id=dataset_group.id,
+        project_id=project.id,
+        user_id=current_user.id,
+        result_state=ResultState.ready,
+        task_id=task.id,
+    )
+    crud.dataset.create(db, obj_in=dataset_in)
+
+    # 5.update project info
+    project = crud.project.update(
+        db,
+        db_obj=project,
+        obj_in=schemas.ProjectUpdate(training_dataset_group_id=dataset_group.id),
+    )
 
     logger.info("[create project] project record created: %s", project)
     return {"result": project}
@@ -102,7 +161,6 @@ def get_project(
     project = crud.project.get(db, id=project_id)
     if not project:
         raise ProjectNotFound()
-    # todo : get dataset name , get dataset count
     return {"result": project}
 
 

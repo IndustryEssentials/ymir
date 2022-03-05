@@ -26,8 +26,13 @@ class DuplicateTaskIDError(APIError):
 
 
 class LogFileError(APIError):
-    code = MonitorErrorCode.PERCENT_LOG_ERROR
+    code = MonitorErrorCode.PERCENT_LOG_FILE_ERROR
     message = "log file error"
+
+
+class LogWeightError(APIError):
+    code = MonitorErrorCode.PERCENT_LOG_WEIGHT_ERROR
+    message = "log weight error"
 
 
 def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:

@@ -1,6 +1,5 @@
 import json
 from typing import List, Optional
-
 from pydantic import BaseModel, Field, validator
 
 from app.constants.state import MiningStrategy, TrainingType
@@ -30,12 +29,6 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     training_keywords: List[str]
 
-    @validator("training_keywords")
-    def dumps_keywords(cls, v: List[str]) -> str:
-        # we don't care what's inside of keywords
-        # just dumps it as string and save to db
-        return json.dumps(v)
-
 
 # Properties that can be changed
 class ProjectUpdate(BaseModel):
@@ -46,8 +39,8 @@ class ProjectUpdate(BaseModel):
     mining_strategy: MiningStrategy = MiningStrategy.chunk
     chunk_size: Optional[int]
     training_dataset_group_id: int
-    mining_dataset_id: int
-    testing_dataset_id: int
+    mining_dataset_id: Optional[int]
+    testing_dataset_id: Optional[int]
 
 
 class ProjectInDBBase(

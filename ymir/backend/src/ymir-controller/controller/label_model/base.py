@@ -6,9 +6,8 @@ from typing import Any, Callable, Dict, List
 
 from requests.exceptions import ConnectionError
 
-from common_utils.percent_log_util import LogState
+from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
-from controller.utils import tasks_util
 from controller.utils.redis import rds
 from id_definition.error_codes import CTLResponseCode
 
@@ -19,22 +18,22 @@ def catch_label_task_error(f: Callable) -> Callable:
         try:
             _ret = f(*args, **kwargs)
         except ConnectionError as e:
-            tasks_util.write_task_progress(monitor_file=kwargs["monitor_file_path"],
-                                           tid=kwargs["task_id"],
-                                           percent=0.0,
-                                           state=LogState.ERROR,
-                                           error_code=CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR,
-                                           error_message=str(e),
-                                           msg=traceback.format_exc())
+            PercentLogHandler.write_percent_log(log_file=kwargs["monitor_file_path"],
+                                                tid=kwargs["task_id"],
+                                                percent=1.0,
+                                                state=LogState.ERROR,
+                                                error_code=CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR,
+                                                error_message=str(e),
+                                                msg=traceback.format_exc())
             return None
         except Exception as e:
-            tasks_util.write_task_progress(monitor_file=kwargs["monitor_file_path"],
-                                           tid=kwargs["task_id"],
-                                           percent=0.0,
-                                           state=LogState.ERROR,
-                                           error_code=CTLResponseCode.INVOKER_LABEL_TASK_UNKNOWN_ERROR,
-                                           error_message=str(e),
-                                           msg=traceback.format_exc())
+            PercentLogHandler.write_percent_log(log_file=kwargs["monitor_file_path"],
+                                                tid=kwargs["task_id"],
+                                                percent=1.0,
+                                                state=LogState.ERROR,
+                                                error_code=CTLResponseCode.INVOKER_LABEL_TASK_UNKNOWN_ERROR,
+                                                error_message=str(e),
+                                                msg=traceback.format_exc())
             return None
 
         return _ret
