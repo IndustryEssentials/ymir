@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import unittest
@@ -6,9 +7,9 @@ from unittest import mock
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from controller.utils.labels import LabelFileHandler
 from proto import backend_pb2
 import tests.utils as test_utils
-
 
 RET_ID = 'done'
 
@@ -47,6 +48,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         test_utils.check_commands()
         self._prepare_dirs()
         self._prepare_mir_repo()
+        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["person", "cat", "table"])
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -86,12 +88,43 @@ class TestInvokerTaskFusion(unittest.TestCase):
         req_create_task.fusion.in_dataset_ids.extend([self._guest_id1, self._guest_id2])
         req_create_task.fusion.merge_strategy = backend_pb2.MergeStrategy.HOST
         req_create_task.fusion.in_class_ids.extend([1, 3, 5])
-        req_create_task.fusion.ex_class_ids.extend([2, 4])
         req_create_task.fusion.count = 100
 
-        expected_merge_cmd = "mir merge "
-        expected_filter_cmd = "mir filter "
-        expected_sampling_cmd = "mir sampling"
+        work_dir_root = os.path.join(self._sandbox_root, "work_dir",
+                                     backend_pb2.TaskType.Name(backend_pb2.TaskTypeFusion), self._task_id)
+        expected_merge_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_2)
+        expected_filter_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_1)
+        expected_sampling_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_0)
+
+        expected_merge_cmd = f"mir merge --root {self._mir_repo_root}"
+        expected_merge_cmd += f" --dst-rev {self._sub_task_id_2}@{self._sub_task_id_2} -s host"
+        expected_merge_cmd += f" -w {expected_merge_work_dir}"
+        expected_merge_cmd += f" --src-revs {self._guest_id1}@{self._guest_id1};{self._guest_id2}"
+
+        expected_filter_cmd = f"mir filter --root {self._mir_repo_root}"
+        expected_filter_cmd += f" --dst-rev {self._sub_task_id_1}@{self._sub_task_id_1}"
+        expected_filter_cmd += f" --src-revs {self._sub_task_id_2}@{self._sub_task_id_2}"
+        expected_filter_cmd += f" -w {expected_filter_work_dir} -p person;cat;table"
+
+        expected_sampling_cmd = f"mir sampling --root {self._mir_repo_root}"
+        expected_sampling_cmd += f" --dst-rev {self._task_id}@{self._task_id}"
+        expected_sampling_cmd += f" --src-revs {self._sub_task_id_1}@{self._sub_task_id_1}"
+        expected_sampling_cmd += f" -w {expected_sampling_work_dir}"
+        expected_sampling_cmd += ' --count 100'
+
+        response = make_invoker_cmd_call(
+            invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
+            sandbox_root=self._sandbox_root,
+            assets_config={},
+            req_type=backend_pb2.TASK_CREATE,
+            user_id=self._user_name,
+            repo_id=self._mir_repo_name,
+            task_id=self._task_id,
+            req_create_task=req_create_task,
+            merge_strategy=backend_pb2.MergeStrategy.HOST,
+        )
+        logging.info(response)
+
         mock_run.assert_has_calls(calls=[
             mock.call(expected_merge_cmd.split(' '), capture_output=True, text=True),
             mock.call(expected_filter_cmd.split(' '), capture_output=True, text=True),
