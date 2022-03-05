@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
@@ -17,8 +17,8 @@ class TaskFusionInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def subtask_count(cls) -> int:
-        return 3
+    def subtask_weights(cls) -> List:
+        return [0.4, 0.3, 0.3]
 
     @classmethod
     def subtask_invoke_2(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
