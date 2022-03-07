@@ -56,6 +56,9 @@ class DatasetCreate(DatasetBase):
     task_id: int
     user_id: int
 
+    class Config:
+        use_enum_values = True
+
 
 # Properties that can be changed
 class DatasetUpdate(BaseModel):
