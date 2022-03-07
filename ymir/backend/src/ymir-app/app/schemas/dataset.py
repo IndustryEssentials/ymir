@@ -125,4 +125,4 @@ class DatasetsFusionParameter(BaseModel):
     include_labels: List[str]
     exclude_labels: List[str]
 
-    sampling_count: Optional[int]
+    sampling_count: int = 0

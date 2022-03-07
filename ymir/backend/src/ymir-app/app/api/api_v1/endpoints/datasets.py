@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-from app.utils.class_ids import get_keyword_name_to_id_mapping
+from app.utils.class_ids import convert_keywords_to_classes
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -112,7 +112,7 @@ def get_public_datasets(
 
 
 @router.post(
-    "/",
+    "/importing",
     response_model=schemas.DatasetOut,
 )
 def create_dataset(
@@ -456,7 +456,7 @@ def get_asset_of_dataset(
 
 
 @router.post(
-    "/dataset_fusion",
+    "/fusion",
     response_model=schemas.DatasetOut,
 )
 def create_dataset_fusion(
@@ -470,18 +470,18 @@ def create_dataset_fusion(
     """
     Create data fusion
     """
-    logger.debug(
+    logger.info(
         "[create task] create dataset fusion with payload: %s",
         jsonable_encoder(task_in),
     )
-    keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
     task_id = gen_task_hash(current_user.id, task_in.project_id)
+
     parameters = dict(
         include_datasets=[task_in.main_dataset_id] + task_in.include_datasets,
         include_strategy=task_in.include_strategy,
         exclude_datasets=task_in.exclude_datasets,
-        include_labels=[keyword_name_to_id[label] for label in task_in.include_labels],
-        exclude_labels=[keyword_name_to_id[label] for label in task_in.exclude_labels],
+        include_class_ids=convert_keywords_to_classes(labels, task_in.include_labels),
+        exclude_class_ids=convert_keywords_to_classes(labels, task_in.exclude_labels),
         sampling_count=task_in.sampling_count,
     )
     try:
@@ -495,7 +495,7 @@ def create_dataset_fusion(
     except ValueError:
         raise FailedtoCreateTask()
 
-    # todo, data fusion parameter is diffrence from other task, save
+    # TODO(chao): data fusion parameter is diffrence from other task, need save
     task_info = schemas.TaskCreate(
         name=task_id,
         type=TaskType.data_fusion,

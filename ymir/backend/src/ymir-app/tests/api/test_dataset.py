@@ -113,7 +113,7 @@ class TestCreateDataset:
             "strategy": 1,
         }
         r = client.post(
-            f"{settings.API_V1_STR}/datasets/",
+            f"{settings.API_V1_STR}/datasets/importing",
             headers=normal_user_token_headers,
             json=j,
         )
@@ -321,7 +321,7 @@ class TestCreateDataFusion:
         }
 
         r = client.post(
-            f"{settings.API_V1_STR}/datasets/dataset_fusion",
+            f"{settings.API_V1_STR}/datasets/fusion",
             headers=normal_user_token_headers,
             json=j,
         )
