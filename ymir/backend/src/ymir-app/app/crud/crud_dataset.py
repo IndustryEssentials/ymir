@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
+from app import schemas
 from app.crud.base import CRUDBase
 from app.constants.state import TaskState
 from app.models import Dataset
@@ -73,6 +74,50 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.commit()
         db.refresh(dataset)
         return dataset
+
+    def get_latest_version(self, db: Session, dataset_group_id: int) -> Optional[int]:
+        query = db.query(self.model)
+        latest_dataset_in_group = (
+            query.filter(self.model.dataset_group_id == dataset_group_id)
+            .order_by(desc(self.model.id))
+            .first()
+        )
+        if latest_dataset_in_group:
+            return latest_dataset_in_group.version_num
+        return None
+
+    def create_with_version(self, db: Session, obj_in: DatasetCreate) -> Dataset:
+        # fixme
+        #  add mutex lock to protect latest_version
+        latest_version = self.get_latest_version(db, obj_in.dataset_group_id)
+
+        db_obj = Dataset(
+            name=obj_in.name,
+            version_num=latest_version + 1 if latest_version else 0,
+            hash=obj_in.hash,
+            result_state=obj_in.result_state,
+            dataset_group_id=obj_in.dataset_group_id,
+            project_id=obj_in.project_id,
+            user_id=obj_in.user_id,
+            task_id=obj_in.task_id,
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
+    def create_as_task_result(
+        self, db: Session, task: schemas.TaskInternal, dest_group_id: int
+    ) -> Dataset:
+        dataset_in = DatasetCreate(
+            name=task.hash,
+            hash=task.hash,
+            dataset_group_id=dest_group_id,
+            project_id=task.project_id,
+            user_id=task.user_id,
+            task_id=task.id,
+        )
+        return self.create_with_version(db, obj_in=dataset_in)
 
 
 dataset = CRUDDataset(Dataset)

@@ -15,7 +15,6 @@ def test_create_dataset(db: Session) -> None:
     dataset_in = DatasetCreate(
         db=db,
         name=dataset_name,
-        version_num=randint(100, 200),
         hash=dataset_hash,
         type=1,
         user_id=1,
@@ -23,7 +22,7 @@ def test_create_dataset(db: Session) -> None:
         project_id=randint(1000, 2000),
         dataset_group_id=randint(1000, 2000),
     )
-    dataset = crud.dataset.create(db=db, obj_in=dataset_in)
+    dataset = crud.dataset.create_with_version(db=db, obj_in=dataset_in)
     assert dataset.hash == dataset_hash
     assert dataset.name == dataset_name
 
@@ -36,7 +35,6 @@ def test_get_dataset(db: Session) -> None:
     dataset_in = DatasetCreate(
         db=db,
         name=dataset_name,
-        version_num=randint(100, 200),
         hash=dataset_hash,
         type=1,
         user_id=1,
@@ -44,7 +42,7 @@ def test_get_dataset(db: Session) -> None:
         project_id=randint(1000, 2000),
         dataset_group_id=randint(1000, 2000),
     )
-    dataset = crud.dataset.create(db=db, obj_in=dataset_in)
+    dataset = crud.dataset.create_with_version(db=db, obj_in=dataset_in)
     stored_dataset = crud.dataset.get_by_hash(db=db, hash_=dataset_hash)
 
     assert dataset.hash == stored_dataset.hash
