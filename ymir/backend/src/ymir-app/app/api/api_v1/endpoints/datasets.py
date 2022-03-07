@@ -511,14 +511,7 @@ def create_dataset_fusion(
         db, user_id=current_user.id, id=task_in.main_dataset_id
     )
 
-    # 3. get dataset_group
-    dataset_group = crud.dataset_group.get_by_user_and_id(
-        db, user_id=current_user.id, id=task_in.dataset_group_id
-    )
-    # todo unify name
-    name = f"{dataset_group.name}_{main_dataset.version_num + 1}"  # type: ignore
     # 3. create dataset record
-
     dataset_in = schemas.DatasetCreate(
         name=task.hash,
         hash=task.hash,
