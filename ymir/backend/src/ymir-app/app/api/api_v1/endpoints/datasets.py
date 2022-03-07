@@ -112,7 +112,7 @@ def get_public_datasets(
 
 
 @router.post(
-    "/",
+    "/importing",
     response_model=schemas.DatasetOut,
 )
 def create_dataset(
@@ -456,7 +456,7 @@ def get_asset_of_dataset(
 
 
 @router.post(
-    "/dataset_fusion",
+    "/fusion",
     response_model=schemas.DatasetOut,
 )
 def create_dataset_fusion(
