@@ -8,6 +8,7 @@ from .dataset import (
     DatasetsOut,
     DatasetUpdate,
     ImportStrategy,
+    DatasetsFusionParameter,
 )
 from .graph import Graph, GraphOut
 from .image import (
@@ -61,7 +62,6 @@ from .task import (
     TaskTerminate,
     TaskUpdate,
     TaskUpdateStatus,
-    DatasetsFusionParameter,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (

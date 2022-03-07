@@ -64,7 +64,7 @@ def list_projects(
 def create_project(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     labels: List[str] = Depends(deps.get_personal_labels),
@@ -116,7 +116,9 @@ def create_project(
 
     # 3.create dataset group to build dataset info
     dataset_name = f"{project_in.name}_training_dataset"
-    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
+    dataset_paras = schemas.DatasetGroupCreate(
+        name=dataset_name, project_id=project.id, user_id=current_user.id
+    )
     dataset_group = crud.dataset_group.create_with_user_id(
         db, user_id=current_user.id, obj_in=dataset_paras
     )
