@@ -47,6 +47,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
         """ filter """
+        previous_subtask_id = subtask_id_dict[2]
         fusion_req = request.req_create_task.fusion
         filter_response = invoker_call.make_invoker_cmd_call(
             invoker=FilterBranchInvoker,
@@ -56,8 +57,8 @@ class TaskFusionInvoker(TaskBaseInvoker):
             repo_id=request.repo_id,
             task_id=subtask_id,
             dst_task_id=subtask_id,
-            his_task_id=subtask_id_dict[2],
-            in_dataset_ids=[subtask_id_dict[2]],
+            his_task_id=previous_subtask_id,
+            in_dataset_ids=[previous_subtask_id],
             in_class_ids=fusion_req.in_class_ids,
             ex_class_ids=fusion_req.ex_class_ids,
             work_dir=subtask_workdir,
@@ -69,6 +70,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
         """ sampling """
+        previous_subtask_id = subtask_id_dict[1]
         fusion_req = request.req_create_task.fusion
         sampling_response = invoker_call.make_invoker_cmd_call(
             invoker=SamplingInvoker,
@@ -77,7 +79,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=request.task_id,
-            in_dataset_ids=[subtask_id_dict[1]],
+            in_dataset_ids=[previous_subtask_id],
             sampling_count=fusion_req.count,
             sampling_rate=fusion_req.rate,
             work_dir=subtask_workdir,
