@@ -152,14 +152,13 @@ def create_dataset(
     # 3. create dataset record
     dataset_in = schemas.DatasetCreate(
         name=dataset_import.name,
-        version_num=dataset_import.version_num,
         hash=task_hash,
         dataset_group_id=dataset_import.dataset_group_id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
         task_id=task.id,
     )
-    dataset = crud.dataset.create(db, obj_in=dataset_in)
+    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
     logger.info("[create dataset] dataset record created: %s", dataset)
 
     # 4. run background task

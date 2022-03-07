@@ -47,5 +47,14 @@ class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
 
         return query.offset(offset).limit(limit).all(), query.count()
 
+    def get_from_training_dataset(
+        self, db: Session, training_dataset_id: int
+    ) -> Optional[ModelGroup]:
+        return (
+            db.query(self.model)
+            .filter(self.model.training_dataset_id == training_dataset_id)
+            .first()
+        )
+
 
 model_group = CRUDModelGroup(ModelGroup)

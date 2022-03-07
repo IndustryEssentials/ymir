@@ -12,7 +12,6 @@ def test_create_model(db: Session) -> None:
     model_in = ModelCreate(
         db=db,
         name=model_name,
-        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
@@ -20,7 +19,7 @@ def test_create_model(db: Session) -> None:
         model_group_id=randint(1000, 2000),
         project_id=randint(2001, 3000),
     )
-    model = crud.model.create(db=db, obj_in=model_in)
+    model = crud.model.create_with_version(db=db, obj_in=model_in)
     assert model.hash == model_hash
     assert model.name == model_name
 
@@ -31,7 +30,6 @@ def test_get_model(db: Session) -> None:
     model_in = ModelCreate(
         db=db,
         name=model_name,
-        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
@@ -39,7 +37,7 @@ def test_get_model(db: Session) -> None:
         model_group_id=randint(1000, 2000),
         project_id=randint(2001, 3000),
     )
-    model = crud.model.create(db=db, obj_in=model_in)
+    model = crud.model.create_with_version(db=db, obj_in=model_in)
     stored_model = crud.model.get(db=db, id=model.id)
 
     assert model.hash == stored_model.hash
@@ -52,7 +50,6 @@ def test_change_model_name(db: Session) -> None:
     model_in = ModelCreate(
         db=db,
         name=model_name,
-        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
@@ -60,7 +57,7 @@ def test_change_model_name(db: Session) -> None:
         model_group_id=randint(1000, 2000),
         project_id=randint(2001, 3000),
     )
-    model = crud.model.create(db=db, obj_in=model_in)
+    model = crud.model.create_with_version(db=db, obj_in=model_in)
     stored_model = crud.model.get(db=db, id=model.id)
 
     assert model.name == stored_model.name
@@ -78,7 +75,6 @@ def test_delete_model(db: Session):
     model_in = ModelCreate(
         db=db,
         name=model_name,
-        version_num=randint(100, 200),
         hash=model_hash,
         type=1,
         user_id=1,
@@ -86,7 +82,7 @@ def test_delete_model(db: Session):
         model_group_id=randint(1000, 2000),
         project_id=randint(2001, 3000),
     )
-    model = crud.model.create(db=db, obj_in=model_in)
+    model = crud.model.create_with_version(db=db, obj_in=model_in)
     stored_model = crud.model.get(db=db, id=model.id)
 
     assert model.name == stored_model.name
