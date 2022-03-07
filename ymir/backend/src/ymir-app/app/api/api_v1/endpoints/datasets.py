@@ -506,12 +506,7 @@ def create_dataset_fusion(
         db, obj_in=task_info, task_hash=task_id, user_id=current_user.id
     )
 
-    # 2.get dataset
-    main_dataset = crud.dataset.get_by_user_and_id(
-        db, user_id=current_user.id, id=task_in.main_dataset_id
-    )
-
-    # 3. create dataset record
+    # 2. create dataset record
     dataset_in = schemas.DatasetCreate(
         name=task.hash,
         hash=task.hash,
