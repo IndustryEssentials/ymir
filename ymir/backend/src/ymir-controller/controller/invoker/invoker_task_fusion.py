@@ -78,8 +78,8 @@ class TaskFusionInvoker(TaskBaseInvoker):
             repo_id=request.repo_id,
             task_id=request.task_id,
             in_dataset_ids=[subtask_id_dict[1]],
-            count=fusion_req.count,
-            rate=fusion_req.rate,
+            sampling_count=fusion_req.count,
+            sampling_rate=fusion_req.rate,
             work_dir=subtask_workdir,
         )
         return sampling_response

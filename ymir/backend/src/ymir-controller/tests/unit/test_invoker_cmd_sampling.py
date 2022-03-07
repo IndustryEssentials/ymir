@@ -78,8 +78,7 @@ class TestInvokerSampling(unittest.TestCase):
                                          his_task_id=self.in_dataset_ids[0],
                                          dst_task_id=self._task_id,
                                          in_dataset_ids=self.in_dataset_ids,
-                                         count=10,
-                                         rate=0)
+                                         sampling_count=10)
         self.assertEqual(response.code, 0)
         self.assertEqual(response.message, 'done')
 

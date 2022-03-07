@@ -12,7 +12,6 @@ class SamplingInvoker(BaseMirControllerInvoker):
                                          checker.Prerequisites.CHECK_REPO_ID,
                                          checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
                                          checker.Prerequisites.CHECK_TASK_ID,
-                                         checker.Prerequisites.CHECK_TASK_ID,
                                      ],
                                      mir_root=self._repo_root)
 
@@ -34,9 +33,9 @@ class SamplingInvoker(BaseMirControllerInvoker):
             '-w',
             self._work_dir,
         ]
-        if self._request.count:
-            command.extend(['--count', str(self._request.count)])
-        elif self._request.rate:
-            command.extend(['--rate', str(self._request.rate)])
+        if self._request.sampling_count:
+            command.extend(['--count', str(self._request.sampling_count)])
+        elif self._request.sampling_rate:
+            command.extend(['--rate', str(self._request.sampling_rate)])
 
         return utils.run_command(command)

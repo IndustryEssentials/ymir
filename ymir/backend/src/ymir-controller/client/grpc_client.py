@@ -145,7 +145,7 @@ def _build_task_labeling_req(args: Dict) -> backend_pb2.GeneralReq:
     return req_create_task
 
 
-def _build_task_sampling_req(args: Dict) -> backend_pb2.GeneralReq:
+def _build_task_fusion_req(args: Dict) -> backend_pb2.GeneralReq:
     fusion_request = backend_pb2.TaskReqFusion()
     fusion_request.merge_strategy = backend_pb2.MergeStrategy.HOST
     fusion_request.in_dataset_ids[:] = args['in_dataset_ids']
@@ -224,8 +224,9 @@ def get_parser() -> Any:
     common_group.add_argument("-t", "--tid", type=str, help="task id")
     common_group.add_argument("--model_hash", type=str, help="model hash")
     common_group.add_argument("--labels", type=str, help="labels to be added, seperated by comma.")
-    common_group.add_argument("--count", type=int, help="sampling count")
-    common_group.add_argument("--rate", type=float, help="sampling rate")
+    sampling_group = common_group.add_mutually_exclusive_group()
+    sampling_group.add_argument("--count", type=int, help="sampling count")
+    sampling_group.add_argument("--rate", type=float, help="sampling rate")
     common_group.add_argument("--in_dataset_ids", nargs="*", type=str)
 
     # CMD CALL
@@ -240,12 +241,11 @@ def get_parser() -> Any:
     parser_create_task = sub_parsers.add_parser("create_task", help="create a long-running task")
     parser_create_task.add_argument(
         "--task_type",
-        choices=["filter", "merge", "training", "mining", "importing", "labeling", "sampling"],
+        choices=["filter", "merge", "training", "mining", "importing", "labeling", "fusion"],
         type=str,
         help="task type")
     parser_create_task.add_argument("--in_class_ids", nargs="*", type=int)
     parser_create_task.add_argument("--ex_class_ids", nargs="*", type=int)
-    # parser_create_task.add_argument("--in_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--asset_dir", type=str)
     parser_create_task.add_argument("--annotation_dir", type=str)
