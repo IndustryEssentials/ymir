@@ -21,6 +21,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         obj_in: TaskCreate,
         task_hash: str,
         user_id: int,
+        state: int = TaskState.pending.value,
+        percent: float = 0,
     ) -> Task:
         config = obj_in.config
         if isinstance(config, dict):
@@ -32,8 +34,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             hash=task_hash,
             user_id=user_id,
             project_id=obj_in.project_id,
-            state=TaskState.pending.value,
-            progress=0,
+            state=state,
+            percent=percent,  # type: ignore
             parameters=obj_in.parameters.json() if obj_in.parameters else None,
         )
         db.add(db_obj)
@@ -79,11 +81,34 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db.refresh(task)
         return task
 
-    def update_progress(self, db: Session, *, task: Task, progress: int) -> Task:
-        task.progress = progress
+    def update_percent(self, db: Session, *, task: Task, percent: float) -> Task:
+        task.percent = percent  # type: ignore
         db.add(task)
         db.commit()
         db.refresh(task)
+        return task
+
+    def update_state_and_percent(
+        self,
+        db: Session,
+        *,
+        task: Task,
+        new_state: TaskState,
+        state_code: Optional[str] = None,
+        percent: Optional[float],
+    ) -> Task:
+        task.state = new_state.value
+        if percent is not None:
+            task.percent = percent  # type: ignore
+        if state_code is not None:
+            task.error_code = state_code
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+
+        # for task reached finale, update `duration` correspondingly
+        if task.state in FinalStates:
+            self.update_duration(db, task=task)
         return task
 
     def update_last_message_datetime(
