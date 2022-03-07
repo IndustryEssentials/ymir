@@ -64,7 +64,7 @@ def list_projects(
 def create_project(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     labels: List[str] = Depends(deps.get_personal_labels),
