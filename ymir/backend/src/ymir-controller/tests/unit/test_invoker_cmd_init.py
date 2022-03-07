@@ -9,6 +9,7 @@ from google.protobuf.json_format import MessageToDict, ParseDict
 import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from controller.utils.labels import LabelFileHandler
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -36,6 +37,7 @@ class TestInvokerInit(unittest.TestCase):
     def setUp(self):
         test_utils.check_commands()
         self._prepare_dirs()
+        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["person", "cat"])
         logging.info("preparing done.")
 
     def tearDown(self):
@@ -85,7 +87,7 @@ class TestInvokerInit(unittest.TestCase):
                                          user_id=self._user_name,
                                          task_id=self._task_id,
                                          repo_id=self._mir_repo_name,
-                                         private_labels=['person', 'cat'])
+                                         in_class_ids=[1, 3])
         print(MessageToDict(response))
 
         expected_cmd = f"mir init --root {os.path.join(self._user_root, self._mir_repo_name)}"
