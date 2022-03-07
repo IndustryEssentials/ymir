@@ -21,7 +21,6 @@ class ImportStrategy(enum.IntEnum):
 
 class DatasetBase(BaseModel):
     name: str = Field(description="Dataset Version Name")
-    version_num: int
     result_state: ResultState = ResultState.processing
     dataset_group_id: int
     project_id: int
@@ -33,6 +32,7 @@ class DatasetBase(BaseModel):
     keyword_count: Optional[int]
 
 
+# Properties required for a client to create a dataset
 class DatasetImport(DatasetBase):
     input_url: Optional[str] = Field(description="from url")
     input_dataset_id: Optional[int] = Field(description="from dataset of other user")
@@ -71,6 +71,7 @@ class DatasetInDBBase(
     IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase
 ):
     hash: str = Field(description="related task hash")
+    version_num: int = Field(description="version num from related dataset group")
     task_id: int
     user_id: int
     related_task: Optional[TaskInternal]

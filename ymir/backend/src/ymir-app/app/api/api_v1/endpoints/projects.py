@@ -111,7 +111,7 @@ def create_project(
         task_hash=task_id,
         user_id=current_user.id,
         state=TaskState.done.value,
-        progress=100,
+        percent=1,
     )
 
     # 3.create dataset group to build dataset info

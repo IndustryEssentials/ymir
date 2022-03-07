@@ -20,12 +20,11 @@ def create_dataset_record(
         "name": random_lower_string(),
         "hash": random_lower_string(),
         "result_state": state_,
-        "version_num": randint(1, 100),
         "user_id": user_id or randint(100, 200),
         "project_id": project_id or randint(201, 300),
         "dataset_group_id": dataset_group_id or randint(301, 400),
         "task_id": task_id or randint(401, 500),
     }
     in_ = schemas.DatasetCreate(**j)
-    record = crud.dataset.create(db, obj_in=in_)
+    record = crud.dataset.create_with_version(db, obj_in=in_)
     return record
