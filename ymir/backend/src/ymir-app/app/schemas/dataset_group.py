@@ -14,6 +14,7 @@ from app.schemas.dataset import Dataset
 class DatasetGroupBase(BaseModel):
     name: str = Field(description="Dataset Group Name")
     project_id: int
+    user_id: int
 
 
 class DatasetGroupCreate(DatasetGroupBase):
