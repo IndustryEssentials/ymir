@@ -32,6 +32,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         self._sub_task_id_2 = utils.sub_task_id(self._task_id, 2)
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
+        self._guest_id3 = 't000aaaabbbbbbzzzzzzzzzzzzzzz3'
 
         self._sandbox_root = test_utils.dir_test_root(self.id().split(".")[-3:])
         self._user_root = os.path.join(self._sandbox_root, self._user_name)
@@ -86,6 +87,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         req_create_task.no_task_monitor = True
 
         req_create_task.fusion.in_dataset_ids.extend([self._guest_id1, self._guest_id2])
+        req_create_task.fusion.ex_dataset_ids.extend([self._guest_id3])
         req_create_task.fusion.merge_strategy = backend_pb2.MergeStrategy.HOST
         req_create_task.fusion.in_class_ids.extend([1, 3, 5])
         req_create_task.fusion.count = 100
@@ -100,6 +102,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         expected_merge_cmd += f" --dst-rev {self._sub_task_id_2}@{self._sub_task_id_2} -s host"
         expected_merge_cmd += f" -w {expected_merge_work_dir}"
         expected_merge_cmd += f" --src-revs {self._guest_id1}@{self._guest_id1};{self._guest_id2}"
+        expected_merge_cmd += f" --ex-src-revs {self._guest_id3}"
 
         expected_filter_cmd = f"mir filter --root {self._mir_repo_root}"
         expected_filter_cmd += f" --dst-rev {self._sub_task_id_1}@{self._sub_task_id_1}"
