@@ -64,10 +64,10 @@ class CmdSampling(base.BaseCommand):
             sampled_assets_count = assets_count
 
         # sampling
+        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
         if sampled_assets_count < assets_count:
             sampled_asset_ids = random.sample(mir_metadatas.attributes.keys(), sampled_assets_count)
             # sampled_mir_metadatas and sampled_mir_annotations
-            mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
             image_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations
             sampled_mir_metadatas = mirpb.MirMetadatas()
             sampled_mir_annotations = mirpb.MirAnnotations()
@@ -79,7 +79,11 @@ class CmdSampling(base.BaseCommand):
         else:
             # if equals
             sampled_mir_metadatas = mir_metadatas
-            sampled_mir_annotations = mir_annotations
+            sampled_mir_annotations = mirpb.MirAnnotations()
+            sampled_mir_annotations.head_task_id = dst_typ_rev_tid.tid
+            sampled_mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(
+                mir_annotations.task_annotations[mir_annotations.head_task_id]
+            )
 
         # mir_tasks
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
