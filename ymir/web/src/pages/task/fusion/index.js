@@ -38,9 +38,8 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
   }, [])
 
   useEffect(() => {
-    console.log('project get datasets: ', datasets)
     getKeywords()
-    setDataset(datasets.find(ds => ds.id === id))
+    setDataset(datasets.find(ds => ds.id === Number(id)))
   }, [datasets])
 
   useEffect(() => {
@@ -138,11 +137,11 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
 
     return (
       <div className={s.panel}>
-        {hasHeader ? <Row className={s.header}>
-          <Col flex={1}>{label}</Col>
-          <Col onClick={() => setVisible(!visible)}>{visible ? <span><ArrowDownIcon /></span> : <span><ArrowRightIcon /></span>}</Col>
+        {hasHeader ? <Row className={s.header} onClick={() => setVisible(!visible)}>
+          <Col flex={1} className={s.title}>{label}</Col>
+          <Col className={s.foldBtn}>{visible ? <span><ArrowDownIcon /></span> : <span><ArrowRightIcon /></span>}</Col>
         </Row> : null}
-        <div className={s.content} hidden={!visible}>
+        <div className={s.content} hidden={hasHeader ? !visible : false}>
           {children}
         </div>
       </div>
@@ -190,7 +189,7 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
           <Panel label={t('task.fusion.header.merge')} show={true}>
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
               <Tip hidden={true}>
-                <Form.Item label={t('task.fusion.form.datasets.label')} name="include_datasets">
+                <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
                   {datasetSelect(excludeDatasets, onIncludeDatasetChange)}
                 </Form.Item>
               </Tip>
@@ -206,62 +205,49 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
                 </Form.Item>
               </Tip>
               <Tip hidden={true}>
-                <Form.Item label={t('task.fusion.form.datasets.label')} name="exclude_datasets">
+                <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
                   {datasetSelect(includeDatasets, onExcludeDatasetChange)}
                 </Form.Item>
               </Tip>
             </ConfigProvider>
           </Panel>
           <Panel label={t('task.fusion.header.filter')}>
-
-            <Tip hidden={true}>
-              <Form.Item label={t('dataset.column.keyword')} required style={{ zIndex: 2, position: 'relative' }}>
-                <p>{t('task.fusion.form.include.label')}</p>
-                <Tip content={t('tip.task.fusion.includelable')} span={1} formSpan={24}>
-                  <Form.Item
-                    labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-                    name='inc'
-                    help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
-                  >
-                    <Select
-                      mode='multiple'
-                      onChange={(value) => setSelectedKeywords(value)}
-                      showArrow
-                    >
-                      {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
-                        ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                        : null)}
-                    </Select>
-                  </Form.Item>
-                </Tip>
-                <p>{t('task.fusion.form.exclude.label')}</p>
-                <Tip content={t('tip.task.fusion.excludelable')} span={1} formSpan={24}>
-                  <Form.Item
-                    labelCol={{ span: 24, style: { fontWeight: 'normal', color: 'rgba(0, 0, 0, 0.65)' } }}
-                    name='exc'
-                    dependencies={['inc']}
-                    help={t('task.fusion.tip.keyword.required')}
-                    rules={[
-                      { validator: requireOne },
-                    ]}
-                  >
-                    <Select
-                      mode='multiple'
-                      onChange={(value) => setExcludeKeywords(value)}
-                      showArrow
-                    >
-                      {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
-                        ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-                        : null)}
-                    </Select>
-                  </Form.Item>
-                </Tip>
+            <Tip content={t('tip.task.fusion.includelable')}>
+              <Form.Item label={t('task.fusion.form.include.label')}
+                name='inc'
+                help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
+              >
+                <Select
+                  mode='multiple'
+                  onChange={(value) => setSelectedKeywords(value)}
+                  showArrow
+                >
+                  {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
+                    ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                    : null)}
+                </Select>
+              </Form.Item>
+            </Tip>
+            <Tip content={t('tip.task.fusion.excludelable')}>
+              <Form.Item
+                label={t('task.fusion.form.exclude.label')}
+                name='exc'
+              >
+                <Select
+                  mode='multiple'
+                  onChange={(value) => setExcludeKeywords(value)}
+                  showArrow
+                >
+                  {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
+                    ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                    : null)}
+                </Select>
               </Form.Item>
             </Tip>
           </Panel>
           <Panel label={t('task.fusion.header.sampling')}>
-            <Tip>
-              <Form.Item name='sampling_count'>
+            <Tip content={t('tip.task.fusion.sampling')}>
+              <Form.Item label={t('task.fusion.form.sampling')} name='sampling_count'>
                 <InputNumber step={1} min={0} style={{ width: '100%' }} />
               </Form.Item>
             </Tip>

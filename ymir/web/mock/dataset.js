@@ -1,5 +1,6 @@
 
-import mockjs, { Random } from 'mockjs'
+import mockjs from 'mockjs'
+import { random } from './keyword'
 import baseApi from './api.js'
 
 const item = {
@@ -13,7 +14,7 @@ const item = {
   "task_id": '@integer(1000, 9999)',
   "create_datetime": "@datetime",
   "id|+1": 10001,
-  "keywords": Random.keywords(2, 5),
+  "keywords": random.keywords(2, 5),
   "progress": '@integer(0,100)',
   "task_state|1": [1,2,3,4],
   "task_progress": '@integer(0,100)'

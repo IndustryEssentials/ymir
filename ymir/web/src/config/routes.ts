@@ -24,7 +24,7 @@ const Routes = [
         title: 'task.title',
       },
       {
-        path: "/home/task/fusion/:ids?",
+        path: "/home/task/fusion/:id?",
         name: "taskFilter",
         component: "@/pages/task/fusion/index",
         title: 'task.fusion.title',

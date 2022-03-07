@@ -86,19 +86,16 @@ const task = {
   "task.fusion.form.name.label": { cn: "任务名称", en: "Task Name", },
   "task.fusion.form.name.placeholder": { cn: "请输入任务名称", en: "Task Name, example \"task_0001\"", },
   "task.fusion.form.name.required": { cn: "请输入任务名称", en: "Please enter your task name", },
-  "task.fusion.form.datasets.label": { cn: "数据集", en: "Datasets", },
-  "task.fusion.form.datasets.required": { cn: "数据集不能为空，请选择数据集", en: "Datasets is required, please select dataset more than one", },
+  "task.fusion.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "task.fusion.form.datasets.placeholder": { cn: "请选择数据集", en: "Select/Fusion Datasets", },
 
   "task.fusion.form.fusion.datasets.placeholder": { cn: "请选择需要融合的数据集，可多选", en: "Please select the dataset to be fusioned, multi-selection support", },
-  "task.fusion.form.training.datasets.placeholder": { cn: "请选择用于训练的数据集，可多选", en: "Training set context: Please select the dataset to be used for training, multi-selection support", },
-  "task.fusion.form.test.datasets.placeholder": { cn: "请选择用于测试的数据集，可多选", en: "Please select the dataset to be used for testing, multi-selection support", },
-  "task.fusion.form.mining.datasets.placeholder": { cn: "请选择用于挖掘的数据集，可多选", en: "", },
   "task.fusion.form.exclude.datasets.placeholder": { cn: "请选择想要排除的数据，可多选", en: "Please select the dataset you want to exclude, multi-selection support", },
   
-  "task.fusion.form.include.label": { cn: "融合标签", en: "Keywords", },
+  "task.fusion.form.include.label": { cn: "筛选标签", en: "Filter Keywords", },
   "task.fusion.form.include.required": { cn: "请选择标签", en: "Please select keywords for fusion", },
   "task.fusion.form.exclude.label": { cn: "排除标签", en: "Exclude Keywords", },
+  "task.fusion.form.sampling": { cn: "采样数量", en: "Samples", },
   "task.train.form.valastest": { cn: "使用验证集作为测试集", en: "Use Validation Sets as Test Sets", },
   "task.train.form.trainsets.label": { cn: "训练集", en: "Train Sets", },
   "task.train.form.testsets.label": { cn: "测试集", en: "Test Sets", },
@@ -153,7 +150,7 @@ const task = {
   "task.label.form.plat.label": { cn: "标注平台账号", en: "Label Platform Account", },
   "task.label.form.plat.go": { cn: "到标注平台注册账号", en: "Label Platform", },
   "task.label.form.keep_anno.label": { cn: "保留原标注", en: "Keep Annotations", },
-  "task.filter.tip.keyword.required": { cn: "筛选标签和排除标签至少需要选择1个", en: "There should be more than 1 selected on filter keywords and exclude filter keywords", },
+  "task.fusion.tip.keyword.required": { cn: "筛选标签和排除标签至少需要选择1个", en: "There should be more than 1 selected on filter keywords and exclude filter keywords", },
   "task.train.fold": { cn: '收起参数配置', en: 'Fold', },
   "task.train.unfold": { cn: '展开参数配置', en: 'Unfold', },
   "task.train.parameter.add.label": { cn: '添加自定义参数', en: 'Add Custom Parameter', },
@@ -174,6 +171,11 @@ const task = {
   "task.train.target.invalid.inter": { cn: '训练目标必须是训练集和测试集的标签的交集', en: 'Training target classes must be intersection of training sets and test sets', },
   "task.train.target.invalid.model": { cn: '训练目标必须和模型训练目标一致', en: 'Training target classes must be as same as model\'s', },
   "task.detail.result.empty": { cn: '暂无结果', en: 'No Result', },
+  "task.fusion.header.merge": { cn: '数据集合并', en: 'Dataset Merge', },
+  "task.fusion.header.filter": { cn: '数据集筛选', en: 'Dataset Filter', },
+  "task.fusion.header.sampling": { cn: '数据集采样', en: 'Dataset Sampling', },
+  "task.fusion.form.merge.include.label": { cn: '合并数据集', en: 'Merge Datasets', },
+  "task.fusion.form.merge.exclude.label": { cn: '排除数据集', en: 'Exclude Datasets', },
 }
 
 export default task
