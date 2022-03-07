@@ -26,6 +26,8 @@ export function transferDatasetGroup (data: OriginDatasetGroup) {
 
 export function transferDataset (data: OriginDataset): Dataset {
   return {
+    projectId: data.project_id,
+    groupId: data.group_id,
     id: data.id,
     name: data.name,
     version: getInterationVersion(data.version),

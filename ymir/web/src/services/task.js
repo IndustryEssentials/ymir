@@ -103,11 +103,17 @@ export function updateTask(id, name) {
  * @returns 
  */
 export function createFusionTask({
-  project_id, dataset_group_id, main_dataset_id, include_datasets = [], include_strategy = [],
-  exclude_datasets = [], include_labels = [], exclude_labels = [], sampling_count,
+  project_id, group_id, dataset, include_datasets = [], strategy = 2,
+  exclude_datasets = [], include = [], exclude = [], samples,
 }) {
   return request.post('​/datasets​/dataset_fusion', {
-    project_id, dataset_group_id, main_dataset_id, include_datasets, include_strategy, exclude_datasets, include_labels, exclude_labels, sampling_count,
+    project_id, include_datasets, exclude_datasets,
+    dataset_group_id: group_id,
+    main_dataset_id: dataset,
+    include_strategy: strategy,
+    include_labels: include,
+    exclude_labels: exclude,
+    sampling_count: samples,
   })
 }
 

@@ -6,6 +6,8 @@ export interface DatasetGroup {
 }
 
 export interface Dataset {
+  projectId: number,
+  groupId: number,
   id: number,
   name: string,
   version: string,
@@ -26,6 +28,8 @@ export interface OriginDatasetGroup {
 }
 
 export interface OriginDataset {
+  project_id: number,
+  group_id: number,
   id: number,
   name: string,
   version: number,
