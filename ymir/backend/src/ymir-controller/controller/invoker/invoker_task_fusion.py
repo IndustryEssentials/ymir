@@ -79,6 +79,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=request.task_id,
+            his_task_id=previous_subtask_id,
             in_dataset_ids=[previous_subtask_id],
             sampling_count=fusion_req.count,
             sampling_rate=fusion_req.rate,

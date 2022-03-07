@@ -155,9 +155,9 @@ def _build_task_fusion_req(args: Dict) -> backend_pb2.GeneralReq:
         fusion_request.in_class_ids[:] = args['in_class_ids']
     if args.get('ex_class_ids', None):
         fusion_request.ex_class_ids[:] = args['ex_class_ids']
-    if args.get('count', 0):
+    if args.get('sampling_count', 0):
         fusion_request.count = args['sampling_count']
-    elif args.get('rate', 0.0):
+    elif args.get('sampling_rate', 0.0):
         fusion_request.rate = args['sampling_rate']
 
     req_create_task = backend_pb2.ReqCreateTask()

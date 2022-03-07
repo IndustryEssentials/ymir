@@ -29,7 +29,7 @@ class SamplingInvoker(BaseMirControllerInvoker):
             '--dst-rev',
             revs.join_tvt_branch_tid(branch_id=self._request.task_id, tid=self._request.task_id),
             '--src-revs',
-            revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.in_dataset_ids[0]),
+            revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.his_task_id),
             '-w',
             self._work_dir,
         ]
