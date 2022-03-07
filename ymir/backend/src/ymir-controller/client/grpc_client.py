@@ -57,8 +57,8 @@ def _build_cmd_sampling_req(args: Dict) -> backend_pb2.GeneralReq:
                                          repo_id=args["repo"],
                                          task_id=args["tid"],
                                          in_dataset_ids=args['in_dataset_ids'],
-                                         sampling_count=args['count'],
-                                         sampling_rate=args['rate'],
+                                         sampling_count=args['sampling_count'],
+                                         sampling_rate=args['sampling_rate'],
                                          req_type=backend_pb2.CMD_SAMPLING)
 
 
@@ -156,9 +156,9 @@ def _build_task_fusion_req(args: Dict) -> backend_pb2.GeneralReq:
     if args.get('ex_class_ids', None):
         fusion_request.ex_class_ids[:] = args['ex_class_ids']
     if args.get('count', 0):
-        fusion_request.count = args['count']
+        fusion_request.count = args['sampling_count']
     elif args.get('rate', 0.0):
-        fusion_request.rate = args['rate']
+        fusion_request.rate = args['sampling_rate']
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeFusion
@@ -224,9 +224,6 @@ def get_parser() -> Any:
     common_group.add_argument("-t", "--tid", type=str, help="task id")
     common_group.add_argument("--model_hash", type=str, help="model hash")
     common_group.add_argument("--labels", type=str, help="labels to be added, seperated by comma.")
-    sampling_group = common_group.add_mutually_exclusive_group()
-    sampling_group.add_argument("--count", type=int, help="sampling count")
-    sampling_group.add_argument("--rate", type=float, help="sampling rate")
 
     # CMD CALL
     parser_cmd_call = sub_parsers.add_parser("cmd_call", help="create sync cmd call")
@@ -235,6 +232,9 @@ def get_parser() -> Any:
                                  type=str,
                                  help="task type")
     parser_cmd_call.add_argument("--in_dataset_ids", nargs="*", type=str)
+    sampling_group = parser_cmd_call.add_mutually_exclusive_group()
+    sampling_group.add_argument("--sampling_count", type=int, help="sampling count")
+    sampling_group.add_argument("--sampling_rate", type=float, help="sampling rate")
     parser_cmd_call.set_defaults(func=call_cmd)
 
     # CREATE TASK
@@ -258,6 +258,9 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--executor_name", type=str, default='')
     parser_create_task.add_argument("--keep_annotation", action="store_true")
     parser_create_task.add_argument("--no_task_monitor", action="store_true")
+    sampling_group = parser_create_task.add_mutually_exclusive_group()
+    sampling_group.add_argument("--sampling_count", type=int, help="sampling count")
+    sampling_group.add_argument("--sampling_rate", type=float, help="sampling rate")
     parser_create_task.set_defaults(func=call_create_task)
 
     # GET TASK INFO
