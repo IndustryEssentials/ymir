@@ -480,8 +480,8 @@ def create_dataset_fusion(
         include_datasets=[task_in.main_dataset_id] + task_in.include_datasets,
         include_strategy=task_in.include_strategy,
         exclude_datasets=task_in.exclude_datasets,
-        include_labels=convert_keywords_to_classes(labels, task_in.include_labels),
-        exclude_labels=convert_keywords_to_classes(labels, task_in.exclude_labels),
+        include_class_ids=convert_keywords_to_classes(labels, task_in.include_labels),
+        exclude_class_ids=convert_keywords_to_classes(labels, task_in.exclude_labels),
         sampling_count=task_in.sampling_count,
     )
     try:
@@ -495,7 +495,7 @@ def create_dataset_fusion(
     except ValueError:
         raise FailedtoCreateTask()
 
-    # todo, data fusion parameter is diffrence from other task, save
+    # TODO(chao): data fusion parameter is diffrence from other task, need save
     task_info = schemas.TaskCreate(
         name=task_id,
         type=TaskType.data_fusion,

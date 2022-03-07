@@ -293,13 +293,13 @@ class ControllerRequest:
         data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[
             args["include_strategy"]
         ]
-        if args.get("exclude_dataset"):
-            data_fusion_request.ex_dataset_ids[:] = args["exclude_dataset"]
+        if args.get("exclude_datasets"):
+            data_fusion_request.ex_dataset_ids[:] = args["exclude_datasets"]
 
-        if args.get("include_labels"):
-            data_fusion_request.in_class_ids[:] = args["include_classes"]
-        if args.get("exclude_labels"):
-            data_fusion_request.ex_class_ids[:] = args["exclude_classes"]
+        if args.get("include_class_ids"):
+            data_fusion_request.in_class_ids[:] = args["include_class_ids"]
+        if args.get("exclude_class_ids"):
+            data_fusion_request.ex_class_ids[:] = args["exclude_class_ids"]
 
         if args.get("sampling_count"):
             data_fusion_request.count = args["sampling_count"]
