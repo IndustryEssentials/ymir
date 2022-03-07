@@ -303,6 +303,9 @@ class ControllerRequest:
 
         if args.get("sampling_count"):
             data_fusion_request.count = args["sampling_count"]
+        else:
+            # not sampling
+            data_fusion_request.rate = 1
 
         req_create_task = mirsvrpb.ReqCreateTask()
 
