@@ -138,22 +138,19 @@ def create_dataset(
     ):
         raise DuplicateDatasetError()
 
-    # 2. create task
-    task_hash = gen_task_hash(current_user.id, dataset_import.project_id)
-    task_in = schemas.TaskCreate(
-        name=task_hash,
-        type=dataset_import.import_type,
+    # 2. create placeholder task
+    task = crud.task.create_placeholder(
+        db,
+        type_=dataset_import.import_type,  # type: ignore
+        user_id=current_user.id,
         project_id=dataset_import.project_id,
     )
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_hash, user_id=current_user.id
-    )
-    logger.info("[create dataset] related task record created: %s", task)
+    logger.info("[create dataset] related task record created: %s", task.hash)
 
     # 3. create dataset record
     dataset_in = schemas.DatasetCreate(
         name=dataset_import.name,
-        hash=task_hash,
+        hash=task.hash,
         dataset_group_id=dataset_import.dataset_group_id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
@@ -169,7 +166,7 @@ def create_dataset(
         controller_client,
         dataset_import,
         current_user.id,
-        task_hash,
+        task.hash,
         dataset.id,
     )
 
@@ -186,8 +183,8 @@ def import_dataset_in_background(
 ) -> None:
     try:
         _import_dataset(db, controller_client, pre_dataset, user_id, task_hash)
-    except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound) as e:
-        logger.error("[create dataset] failed to import dataset: %s", e)
+    except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound):
+        logger.exception("[create dataset] failed to import dataset")
         crud.dataset.update_state(
             db, dataset_id=dataset_id, new_state=ResultState.error
         )
@@ -367,13 +364,17 @@ def get_assets_of_dataset(
 
     keyword_id = keyword_id or keyword_name_to_id.get(keyword)
 
-    viz_client.config(
+    viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
-        keyword_id_to_name=keyword_id_to_name,
     )
-    assets = viz_client.get_assets(keyword_id=keyword_id, limit=limit, offset=offset)
+    assets = viz_client.get_assets(
+        keyword_id=keyword_id,
+        limit=limit,
+        offset=offset,
+        class_ids_to_keywords=keyword_id_to_name,
+    )
     result = {
         "keywords": assets.keywords,
         "items": assets.items,
@@ -405,13 +406,17 @@ def get_random_asset_id_of_dataset(
 
     keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
     offset = get_random_asset_offset(dataset)
-    viz_client.config(
+    viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
-        keyword_id_to_name=keyword_id_to_name,
     )
-    assets = viz_client.get_assets(keyword_id=None, offset=offset, limit=1)
+    assets = viz_client.get_assets(
+        keyword_id=None,
+        offset=offset,
+        limit=1,
+        class_ids_to_keywords=keyword_id_to_name,
+    )
     if assets.total == 0:
         raise AssetNotFound()
     return {"result": assets.items[0]}
@@ -446,14 +451,15 @@ def get_asset_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    keyword_id_to_name = get_keyword_id_to_name_mapping(labels)
-    viz_client.config(
+    viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
-        keyword_id_to_name=keyword_id_to_name,
     )
-    asset = viz_client.get_asset(asset_id=asset_hash)
+    asset = viz_client.get_asset(
+        asset_id=asset_hash,
+        class_ids_to_keywords=get_keyword_id_to_name_mapping(labels),
+    )
     if not asset:
         raise AssetNotFound()
     return {"result": asset}
@@ -478,7 +484,7 @@ def create_dataset_fusion(
         "[create task] create dataset fusion with payload: %s",
         jsonable_encoder(task_in),
     )
-    task_id = gen_task_hash(current_user.id, task_in.project_id)
+    task_hash = gen_task_hash(current_user.id, task_in.project_id)
 
     parameters = dict(
         include_datasets=[task_in.main_dataset_id] + task_in.include_datasets,
@@ -492,23 +498,23 @@ def create_dataset_fusion(
         resp = controller_client.create_data_fusion(
             current_user.id,
             task_in.project_id,
-            task_id,
+            task_hash,
             parameters,
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
         raise FailedtoCreateTask()
 
-    # TODO(chao): data fusion parameter is diffrence from other task, need save
-    task_info = schemas.TaskCreate(
-        name=task_id,
-        type=TaskType.data_fusion,
-        project_id=task_in.project_id,
-    )
+    # TODO(chao): data fusion parameter is different from other task, need save
     # 1. create task
-    task = crud.task.create_task(
-        db, obj_in=task_info, task_hash=task_id, user_id=current_user.id
+    task = crud.task.create_placeholder(
+        db,
+        type_=TaskType.data_fusion,
+        user_id=current_user.id,
+        project_id=task_in.project_id,
+        hash_=task_hash,
     )
+    logger.info("[create dataset] related task record created: %s", task.hash)
 
     # 2. create dataset record
     dataset_in = schemas.DatasetCreate(
