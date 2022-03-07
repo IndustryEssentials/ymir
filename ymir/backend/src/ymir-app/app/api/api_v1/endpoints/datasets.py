@@ -470,7 +470,7 @@ def create_dataset_fusion(
     """
     Create data fusion
     """
-    logger.debug(
+    logger.info(
         "[create task] create dataset fusion with payload: %s",
         jsonable_encoder(task_in),
     )
