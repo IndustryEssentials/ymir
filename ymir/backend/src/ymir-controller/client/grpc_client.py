@@ -57,8 +57,8 @@ def _build_cmd_sampling_req(args: Dict) -> backend_pb2.GeneralReq:
                                          repo_id=args["repo"],
                                          task_id=args["tid"],
                                          in_dataset_ids=args['in_dataset_ids'],
-                                         count=args['count'],
-                                         rate=args['rate'],
+                                         sampling_count=args['count'],
+                                         sampling_rate=args['rate'],
                                          req_type=backend_pb2.CMD_SAMPLING)
 
 
@@ -227,15 +227,15 @@ def get_parser() -> Any:
     sampling_group = common_group.add_mutually_exclusive_group()
     sampling_group.add_argument("--count", type=int, help="sampling count")
     sampling_group.add_argument("--rate", type=float, help="sampling rate")
-    common_group.add_argument("--in_dataset_ids", nargs="*", type=str)
 
     # CMD CALL
-    parser_create_task = sub_parsers.add_parser("cmd_call", help="create sync cmd call")
-    parser_create_task.add_argument("--task_type",
-                                    choices=["create_repo", "add_labels", "get_labels", "sampling"],
-                                    type=str,
-                                    help="task type")
-    parser_create_task.set_defaults(func=call_cmd)
+    parser_cmd_call = sub_parsers.add_parser("cmd_call", help="create sync cmd call")
+    parser_cmd_call.add_argument("--task_type",
+                                 choices=["create_repo", "add_labels", "get_labels", "sampling"],
+                                 type=str,
+                                 help="task type")
+    parser_cmd_call.add_argument("--in_dataset_ids", nargs="*", type=str)
+    parser_cmd_call.set_defaults(func=call_cmd)
 
     # CREATE TASK
     parser_create_task = sub_parsers.add_parser("create_task", help="create a long-running task")
@@ -246,6 +246,7 @@ def get_parser() -> Any:
         help="task type")
     parser_create_task.add_argument("--in_class_ids", nargs="*", type=int)
     parser_create_task.add_argument("--ex_class_ids", nargs="*", type=int)
+    parser_create_task.add_argument("--in_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--asset_dir", type=str)
     parser_create_task.add_argument("--annotation_dir", type=str)
