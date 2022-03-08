@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ymir.backend;
 
+import "google/protobuf/timestamp.proto";
+
 /// assertion type: training, validation or test
 enum TvtType {
     TvtTypeUnknown = 0;
@@ -130,7 +132,7 @@ message GeneralResp {
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
-    repeated Label labels = 9;
+    LabelCollection label_collection = 9;
     RespCMDInference detection = 1001;
 
     reserved 1000;
@@ -251,12 +253,16 @@ message Rect {
     int32 h = 4;
 };
 
+message LabelCollection {
+    repeated Label labels = 1;
+}
+
 message Label {
     int32 id = 1;
     string name = 2;
     repeated string aliases = 3;
-    float created_timestamp = 4;
-    float modified_timestamp = 5;
+    google.protobuf.Timestamp created = 4;
+    google.protobuf.Timestamp modified = 5;
 }
 
 
