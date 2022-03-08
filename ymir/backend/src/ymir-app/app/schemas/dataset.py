@@ -46,9 +46,6 @@ class DatasetImport(DatasetBase):
     @validator("import_type", pre=True, always=True)
     def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
         if values.get("input_url") or values.get("input_path"):
-            from fastapi.logger import logger
-
-            logger.warning(f"88888888888888888 {type(TaskType.import_data)}")
             return TaskType.import_data
         elif values.get("input_dataset_id"):
             return TaskType.copy_data
