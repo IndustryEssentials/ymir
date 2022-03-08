@@ -254,7 +254,7 @@ message Rect {
 message Label {
     int32 id = 1;
     string name = 2;
-    repeated string alias = 3;
+    repeated string aliases = 3;
     float created_timestamp = 4;
     float modified_timestamp = 5;
 }
