@@ -24,7 +24,7 @@ class TestCmdExport(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__prepare_dirs()
-        self.__prepare_labels_csv()
+        test_utils.prepare_labels(mir_root=self._mir_root, names=['freshbee', 'type1', 'person', 'airplane,aeroplane'])
         self.__prepare_mir_repo()
         self.__prepare_assets()
         return super().setUp()
@@ -43,13 +43,7 @@ class TestCmdExport(unittest.TestCase):
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
-
-    def __prepare_labels_csv(self):
-        with open(class_ids.ids_file_path(self._mir_root), 'w') as f:
-            f.write('# commented lines\n')
-            f.write('0,,freshbee\n')
-            f.write('2,,person\n')
-            f.write('52,,airplane,aeroplane\n')
+        
 
     def __prepare_assets(self):
         '''
@@ -102,7 +96,7 @@ class TestCmdExport(unittest.TestCase):
                                     'w': 272,
                                     'h': 105
                                 },
-                                'class_id': 52,
+                                'class_id': 3,
                                 'score': 1,
                             }, {
                                 'index': 1,
@@ -112,7 +106,7 @@ class TestCmdExport(unittest.TestCase):
                                     'w': 65,
                                     'h': 36
                                 },
-                                'class_id': 52,
+                                'class_id': 3,
                                 'score': 1,
                             }, {
                                 'index': 2,
@@ -145,7 +139,7 @@ class TestCmdExport(unittest.TestCase):
                                     'w': 94,
                                     'h': 67
                                 },
-                                'class_id': 52,
+                                'class_id': 3,
                                 'score': 1,
                             }]
                         },
@@ -160,11 +154,11 @@ class TestCmdExport(unittest.TestCase):
         keywords_dict = {
             'keywords': {
                 '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'predifined_keyids': [2, 52],
+                    'predifined_keyids': [2, 3],
                     'customized_keywords': ['pascal']
                 },
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'predifined_keyids': [52],
+                    'predifined_keyids': [3],
                     'customized_keywords': ['pascal']
                 },
             }

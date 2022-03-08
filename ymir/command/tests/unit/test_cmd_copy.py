@@ -5,7 +5,7 @@ import unittest
 
 from mir.commands import copy
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, mir_storage, mir_storage_ops
+from mir.tools import mir_storage, mir_storage_ops
 from mir.tools.code import MirCode
 
 from tests import utils as test_utils
@@ -23,9 +23,9 @@ class TestCmdCopy(unittest.TestCase):
     def setUp(self) -> None:
         self.__prepare_dir()
         self.__prepare_src_mir()
-        self.__prepare_labels_csv(mir_root=self._src_mir_root, type_names=['a', 'b', 'c', 'd'])
+        test_utils.prepare_labels(mir_root=self._src_mir_root, names=['a', 'b', 'c', 'd'])
         self.__prepare_mir()
-        self.__prepare_labels_csv(mir_root=self._mir_root, type_names=['a', 'c1,c', 'b', 'e'])
+        test_utils.prepare_labels(mir_root=self._mir_root, names=['a', 'c1,c', 'b', 'e'])
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -42,11 +42,6 @@ class TestCmdCopy(unittest.TestCase):
     def __deprepare_dir(self):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
-
-    def __prepare_labels_csv(self, mir_root: str, type_names: List[str]):
-        with open(class_ids.ids_file_path(mir_root=mir_root), 'w') as f:
-            for idx, name in enumerate(type_names):
-                f.write(f"{idx},,{name}\n")
 
     def __prepare_mir(self):
         test_utils.mir_repo_init(self._mir_root)

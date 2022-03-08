@@ -64,7 +64,7 @@ class ClassIdManager(object):
                 # key: id, name, alias are used here
                 label_id: int = label['id']
                 label_name: str = label['name'].strip().lower()
-                label_aliases: List[str] = label.get('alias', [])
+                label_aliases: List[str] = label.get('aliases', [])
                 if not isinstance(label_aliases, list):
                     raise ClassIdManagerError(f"alias error for id: {label_id}, name: {label_name}")
 
