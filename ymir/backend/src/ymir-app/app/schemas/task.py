@@ -73,6 +73,9 @@ class TaskCreate(TaskBase):
         else:
             return v
 
+    class Config:
+        use_enum_values = True
+
 
 class TaskUpdate(BaseModel):
     name: str
