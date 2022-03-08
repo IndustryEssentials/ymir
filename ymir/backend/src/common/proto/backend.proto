@@ -91,7 +91,7 @@ message GeneralReq {
     // ancestor task id that initiates this task from.
     string his_task_id = 6;
     // dest branch id to store current task result.
-    string dst_task_id = 7;
+    string dst_dataset_id = 7;
     // branches you want to concat the data from
     repeated string in_dataset_ids = 8;
     // branches you want to exclude the data from
@@ -126,10 +126,11 @@ message GeneralResp {
     string req_task_id = 2;
     string message = 3;
     repeated string ext_strs = 4;
-    repeated string csv_labels = 5;
+    repeated string csv_labels = 5 [deprecated=true];
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
+    repeated Label labels = 9;
     RespCMDInference detection = 1001;
 
     reserved 1000;
@@ -249,6 +250,14 @@ message Rect {
     int32 w = 3;
     int32 h = 4;
 };
+
+message Label {
+    int32 id = 1;
+    string name = 2;
+    repeated string aliases = 3;
+    float created_timestamp = 4;
+    float modified_timestamp = 5;
+}
 
 
 service mir_controller_service {

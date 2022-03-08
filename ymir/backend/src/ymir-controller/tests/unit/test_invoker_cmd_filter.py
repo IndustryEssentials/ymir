@@ -79,7 +79,7 @@ class TestInvokerFilterBranch(unittest.TestCase):
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
                                          his_task_id=self.in_dataset_ids[0],
-                                         dst_task_id=self._task_id,
+                                         dst_dataset_id=self._task_id,
                                          in_dataset_ids=self.in_dataset_ids,
                                          in_class_ids=in_class_ids,
                                          ex_class_ids=ex_class_ids)

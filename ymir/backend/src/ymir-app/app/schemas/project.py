@@ -29,6 +29,9 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     training_keywords: List[str]
 
+    class Config:
+        use_enum_values = True
+
 
 # Properties that can be changed
 class ProjectUpdate(BaseModel):

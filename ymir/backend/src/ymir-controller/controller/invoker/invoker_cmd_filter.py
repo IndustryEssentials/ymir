@@ -11,7 +11,7 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
                                          checker.Prerequisites.CHECK_USER_ID,
                                          checker.Prerequisites.CHECK_REPO_ID,
                                          checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
-                                         checker.Prerequisites.CHECK_DST_TASK_ID,
+                                         checker.Prerequisites.CHECK_DST_DATASET_ID,
                                          checker.Prerequisites.CHECK_SINGLE_IN_DATASET_ID,
                                      ],
                                      mir_root=self._repo_root)
@@ -25,7 +25,7 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
         # invoke command
         filter_command = [
             utils.mir_executable(), 'filter', '--root', self._repo_root, '--dst-rev',
-            revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id), '--src-revs',
+            revs.join_tvt_branch_tid(branch_id=self._request.dst_dataset_id, tid=self._task_id), '--src-revs',
             revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.his_task_id), '-w',
             self._work_dir
         ]

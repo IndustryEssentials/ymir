@@ -92,7 +92,7 @@ class ControllerRequest:
         self, request: mirsvrpb.GeneralReq, args: Dict
     ) -> mirsvrpb.GeneralReq:
         # project training target labels
-        request.private_labels[:] = args["training_classes"]
+        request.in_class_ids[:] = args["training_classes"]
         request.req_type = mirsvrpb.REPO_CREATE
         return request
 
