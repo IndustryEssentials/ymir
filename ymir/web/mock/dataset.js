@@ -44,7 +44,7 @@ export default baseApi([
     }
   },
   {
-    url: 'dataset_groups/4001',
+    url: 'dataset_groups/40001',
     data: {
       result: list,
     }

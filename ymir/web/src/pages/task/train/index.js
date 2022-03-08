@@ -32,13 +32,14 @@ const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
 function Train({ getDatasets, createTrainTask, getSysInfo }) {
-  const { ids } = useParams()
-  const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
+  const pageParams = useParams()
+  const id = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image } = location.query
   const [allDs, setAllDs] = useState([])
   const [datasets, setDatasets] = useState([])
+  const [dataset, setDataset] = useState({})
   const [trainSets, setTrainSets] = useState([])
   const [validationSets, setValidationSets] = useState([])
   const [keywords, setKeywords] = useState([])
@@ -68,7 +69,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }, [])
 
   useEffect(async () => {
-    let result = await getDatasets({ limit: 100000 })
+    let result = await getDatasets()
     if (result?.items) {
       const ds = result.items.filter(dataset => TASKSTATES.FINISH === dataset.state)
       setAllDs(ds)
@@ -94,8 +95,9 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    setTrainSets(datasetIds)
-  }, [ids])
+    // todo get dataset by id
+    setDataset(datasets.find(ds => ds.id === id))
+  }, [datasets])
 
   useEffect(() => {
     const state = location.state
@@ -243,7 +245,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
-    train_sets: datasetIds,
+    train_sets: id,
     docker_image: image ? parseInt(image) : undefined,
     model: mid ? parseInt(mid) : undefined,
     train_type: getCheckedValue(TrainType()),
@@ -271,14 +273,14 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
             <Tip hidden={true}>
               <Form.Item
-                label={t('task.filter.form.name.label')}
+                label={t('task.common.dataset.name')}
                 name='name'
                 rules={[
-                  { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
+                  { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
                   { type: 'string', min: 2, max: 50 },
                 ]}
               >
-                <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
+                <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
               </Form.Item>
             </Tip>
 
@@ -294,14 +296,14 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 >
                   <Select
                     placeholder={t('task.filter.form.training.datasets.placeholder')}
-                    mode='multiple'
                     filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={trainSetChange}
+                    disabled={id}
                     showArrow
                   >
                     {datasets.map(item => validationSets.indexOf(item.id) < 0 ? (
                       <Option value={item.id} key={item.name}>
-                        {item.name}({item.asset_count})
+                        {item.name} {item.version}({item.asset_count})
                       </Option>
                     ) : null)}
                   </Select>
@@ -532,12 +534,17 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   )
 }
 
+const props = (state) => {
+  return {
+    datasets: state.dataset.allDatasets,
+  }
+}
+
 const dis = (dispatch) => {
   return {
-    getDatasets(payload) {
+    getDatasets() {
       return dispatch({
-        type: "dataset/getDatasets",
-        payload,
+        type: "dataset/getAllDatasets",
       })
     },
     getSysInfo() {
@@ -554,4 +561,4 @@ const dis = (dispatch) => {
   }
 }
 
-export default connect(null, dis)(Train)
+export default connect(props, dis)(Train)

@@ -84,8 +84,6 @@ const task = {
   "task.detail.error.title": { cn: "失败", en: "Failure", },
   "task.fusion.create.success.msg": { cn: "创建成功", en: "Create Task Success!", },
   "task.fusion.form.name.label": { cn: "任务名称", en: "Task Name", },
-  "task.fusion.form.name.placeholder": { cn: "请输入任务名称", en: "Task Name, example \"task_0001\"", },
-  "task.fusion.form.name.required": { cn: "请输入任务名称", en: "Please enter your task name", },
   "task.fusion.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "task.fusion.form.datasets.placeholder": { cn: "请选择数据集", en: "Select/Fusion Datasets", },
 
@@ -176,6 +174,9 @@ const task = {
   "task.fusion.header.sampling": { cn: '数据集采样', en: 'Dataset Sampling', },
   "task.fusion.form.merge.include.label": { cn: '合并数据集', en: 'Merge Datasets', },
   "task.fusion.form.merge.exclude.label": { cn: '排除数据集', en: 'Exclude Datasets', },
+  "task.common.dataset.name": { cn: '数据集名称', en: 'Dataset Name', },
+  "task.common.dataset.name.placeholder": { cn: "请输入数据集名称", en: "Please input dataset name", },
+  "task.common.dataset.name.required": { cn: "数据集名称为必填项", en: "Dataset name is required", },
 }
 
 export default task

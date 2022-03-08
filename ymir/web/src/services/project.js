@@ -39,18 +39,40 @@ export function delProject(id) {
  * create a project
  * @param {object} project
  * {
- * {string}    description
- * {number}    iteration_target
- * {array<string>}    keywords
- * {number}    map_target
- * {string}    name
- * {number}    training_dataset_count_target
- * {number}    type
+ *   {string}  name
+ *   {string}  [description]
+ *   {number}  strategy
+ *   {number}  [chunk_size]
+ *   {number}  type
+ *   {number}  [target_iteration]
+ *   {number}  [target_map]
+ *   {number}  [target_dataset]
+ *   {array<string>}  keywords
  * }
  * @returns
  */
-export function createProject(project) {
-  return request.post("/projects/", project)
+export function createProject({
+  name,
+  description,
+  strategy,
+  chunk_size,
+  type,
+  target_iteration,
+  target_map,
+  target_dataset,
+  keywords,
+}) {
+  return request.post("/projects/", {
+    name,
+    description,
+    mining_strategy: strategy,
+    chunk_size,
+    training_type: type,
+    iteration_target: target_iteration,
+    map_target: target_map,
+    training_dataset_count_target: target_dataset,
+    training_keywords: keywords,
+  })
 }
 
 /**

@@ -52,7 +52,6 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
   }, [datasets, includeDatasets])
 
   useEffect(() => {
-    console.log('all datasets project: ', allDatasets)
     setDatasets(allDatasets.filter(dataset => TASKSTATES.FINISH === dataset.state && dataset.keywords.length))
   }, [allDatasets])
 
@@ -83,7 +82,6 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
       : prev, [])
     ks = [...new Set(ks)]
     ks.sort()
-    console.log('project fusion keywords: ', ks, selectedDataset)
     setKeywords(ks)
   }
 

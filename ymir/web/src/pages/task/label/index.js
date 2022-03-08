@@ -130,11 +130,11 @@ function Label({ getDatasets, keywords, createLabelTask, getKeywords }) {
               label={t('task.filter.form.name.label')}
               name='name'
               rules={[
-                { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
+                { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
                 { type: 'string', min: 2, max: 50 },
               ]}
             >
-              <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
+              <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
             </Form.Item>
             </Tip>
             
