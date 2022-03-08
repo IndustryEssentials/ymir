@@ -136,14 +136,13 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     @classmethod
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
                     request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        subtask_id_dict: Dict[int, str] = {}
         subtask_weights = cls.subtask_weights()
+        previous_subtask_id = None
         # revsersed, to makesure the last subtask idx is 0.
         for subtask_idx in reversed(range(len(subtask_weights))):
             logging.info(f"processing subtask {subtask_idx}")
 
             subtask_id = utils.sub_task_id(request.task_id, subtask_idx)
-            subtask_id_dict[subtask_idx] = subtask_id
             subtask_work_dir = cls.subtask_work_dir(master_work_dir=working_dir, subtask_id=subtask_id)
 
             subtask_func_name = f"subtask_invoke_{subtask_idx}"
@@ -155,11 +154,13 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                 request=request,
                 subtask_id=subtask_id,
                 subtask_workdir=subtask_work_dir,
-                subtask_id_dict=subtask_id_dict,
+                previous_subtask_id=previous_subtask_id,
             )
             if ret.code != CTLResponseCode.CTR_OK:
                 logging.info(f"subtask failed: {subtask_func_name}\nret: {ret}")
                 return ret
+
+            previous_subtask_id = subtask_id
 
         return ret
 
@@ -175,17 +176,17 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     @classmethod
     def subtask_invoke_2(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         raise NotImplementedError
 
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         raise NotImplementedError
 
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         raise NotImplementedError
