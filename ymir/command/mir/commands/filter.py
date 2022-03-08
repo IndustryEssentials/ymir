@@ -70,10 +70,6 @@ class CmdFilter(base.BaseCommand):
         in_cks = in_cks.strip() if in_cks else ''
         ex_cks = ex_cks.strip() if ex_cks else ''
 
-        if not in_cis and not ex_cis and not in_cks and not ex_cks:
-            logging.error("invalid args: empty -p, -P, -c and -C")
-            return MirCode.RC_CMD_INVALID_ARGS
-
         if not src_revs:
             logging.error("invalid args: empty --src-revs")
             return MirCode.RC_CMD_INVALID_ARGS
