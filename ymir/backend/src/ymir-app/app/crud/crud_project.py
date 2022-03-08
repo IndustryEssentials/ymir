@@ -27,7 +27,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             iteration_target=obj_in.iteration_target,
             map_target=obj_in.map_target,  # type: ignore
             training_dataset_count_target=obj_in.training_dataset_count_target,
-            mining_strategy=obj_in.mining_strategy,
+            mining_strategy=obj_in.mining_strategy.value,
             chunk_size=obj_in.chunk_size,
             training_type=obj_in.training_type,
             training_keywords=training_keywords,

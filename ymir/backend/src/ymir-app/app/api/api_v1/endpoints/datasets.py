@@ -31,6 +31,7 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from app.utils.ymir_viz import VizClient
+from app.constants.state import ResultState
 
 router = APIRouter()
 
@@ -187,7 +188,10 @@ def import_dataset_in_background(
         _import_dataset(db, controller_client, pre_dataset, user_id, task_hash)
     except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound) as e:
         logger.error("[create dataset] failed to import dataset: %s", e)
-        crud.dataset.update_state(db, dataset_id=dataset_id, new_state=TaskState.error)
+        crud.dataset.update_state(
+            db, dataset_id=dataset_id, new_state=ResultState.error
+        )
+    crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.ready)
 
 
 def _import_dataset(

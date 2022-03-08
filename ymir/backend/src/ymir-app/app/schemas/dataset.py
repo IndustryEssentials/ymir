@@ -21,7 +21,7 @@ class ImportStrategy(enum.IntEnum):
 
 class DatasetBase(BaseModel):
     name: str = Field(description="Dataset Version Name")
-    result_state: ResultState = ResultState.processing
+    result_state: ResultState = ResultState.processing.value
     dataset_group_id: int
     project_id: int
     # task_id haven't created yet
@@ -30,6 +30,9 @@ class DatasetBase(BaseModel):
     ignored_keywords: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
+
+    class Config:
+        use_enum_values = True
 
 
 # Properties required for a client to create a dataset
@@ -43,6 +46,9 @@ class DatasetImport(DatasetBase):
     @validator("import_type", pre=True, always=True)
     def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
         if values.get("input_url") or values.get("input_path"):
+            from fastapi.logger import logger
+
+            logger.warning(f"88888888888888888 {type(TaskType.import_data)}")
             return TaskType.import_data
         elif values.get("input_dataset_id"):
             return TaskType.copy_data

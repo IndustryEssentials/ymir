@@ -416,6 +416,12 @@ class ControllerClient:
     def import_dataset(
         self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict
     ) -> Dict:
+        # convert int to enum to use ControllerRequest()
+        if task_type == TaskType.import_data:
+            task_type = TaskType.import_data
+        elif task_type == TaskType.copy_data:
+            task_type = TaskType.copy_data
+
         req = ControllerRequest(
             task_type,
             user_id=user_id,

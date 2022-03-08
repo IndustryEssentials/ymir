@@ -16,7 +16,7 @@ class ProjectBase(BaseModel):
     description: Optional[str]
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
-    chunk_size: Optional[int]
+    chunk_size: Optional[int] = 0
 
     training_type: TrainingType = TrainingType.object_detect
 
