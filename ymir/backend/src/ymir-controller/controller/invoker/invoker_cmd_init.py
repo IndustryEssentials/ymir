@@ -34,12 +34,12 @@ class InitInvoker(BaseMirControllerInvoker):
         os.link(label_file, link_dst_file)
 
         command = [utils.mir_executable(), 'init', '--root', self._repo_root]
-        if self._request.private_labels:
-            command.extend(['--project-class-names', ';'.join(self._request.private_labels)])
-        command.extend([
-            '--with-empty-rev',
-            revs.join_tvt_branch_tid(branch_id=self._request.task_id, tid=self._request.task_id)
-        ])
+        if self._request.in_class_ids:
+            command.extend(
+                ['--project-class-names', ';'.join(label_handler.get_main_labels_by_ids(self._request.in_class_ids))])
+        command.extend(
+            ['--with-empty-rev',
+             revs.join_tvt_branch_tid(branch_id=self._request.task_id, tid=self._request.task_id)])
 
         return utils.run_command(
             cmd=command,

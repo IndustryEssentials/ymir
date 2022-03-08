@@ -4,8 +4,8 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     Integer,
-    SmallInteger,
     String,
     Text,
 )
@@ -25,7 +25,7 @@ class Task(Base):
 
     parameters = Column(Text(settings.TEXT_LEN_LIMIT))
     config = Column(Text(settings.TEXT_LEN_LIMIT))
-    progress = Column(SmallInteger)
+    percent = Column(Float)
     duration = Column(Integer)
     error_code = Column(String(settings.DEFAULT_LIMIT))
 

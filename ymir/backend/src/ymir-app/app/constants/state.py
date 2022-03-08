@@ -29,6 +29,9 @@ class TaskType(IntEnum):
     merge = mirsvrpb.TaskType.TaskTypeMerge
     infer = mirsvrpb.TaskType.TaskTypeInfer
     data_fusion = mirsvrpb.TaskType.TaskTypeFusion
+    # fixme
+    #  create_project is not the type of TASK_CREATE, but empty dataset need a task
+    create_project = mirsvrpb.RequestType.REPO_CREATE
 
 
 class TaskState(IntEnum):
@@ -39,6 +42,11 @@ class TaskState(IntEnum):
     error = LogState.ERROR
     terminate = 100
     premature = 101  # terminate task while try to get result prematurely
+
+
+class ResultType(IntEnum):
+    dataset = 0
+    model = 1
 
 
 class ResultState(IntEnum):

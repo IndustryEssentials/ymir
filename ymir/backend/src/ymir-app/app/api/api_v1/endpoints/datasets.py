@@ -4,11 +4,11 @@ import random
 import tempfile
 from typing import Any, Dict, List, Optional
 from zipfile import BadZipFile
-
+from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-
+from app.utils.class_ids import convert_keywords_to_classes
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -18,6 +18,7 @@ from app.api.errors.errors import (
     FailedtoCreateDataset,
     FieldValidationFailed,
     NoDatasetPermission,
+    FailedtoCreateTask,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType
@@ -111,7 +112,7 @@ def get_public_datasets(
 
 
 @router.post(
-    "/",
+    "/importing",
     response_model=schemas.DatasetOut,
 )
 def create_dataset(
@@ -151,14 +152,13 @@ def create_dataset(
     # 3. create dataset record
     dataset_in = schemas.DatasetCreate(
         name=dataset_import.name,
-        version_num=dataset_import.version_num,
         hash=task_hash,
         dataset_group_id=dataset_import.dataset_group_id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
         task_id=task.id,
     )
-    dataset = crud.dataset.create(db, obj_in=dataset_in)
+    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
     logger.info("[create dataset] dataset record created: %s", dataset)
 
     # 4. run background task
@@ -456,10 +456,66 @@ def get_asset_of_dataset(
 
 
 @router.post(
-    "/dataset_fusion",
-    response_model=schemas.Dataset,
+    "/fusion",
+    response_model=schemas.DatasetOut,
 )
 def create_dataset_fusion(
-    dataset_import: schemas.DatasetsFusionParameter, project_id: int
+    *,
+    db: Session = Depends(deps.get_db),
+    task_in: schemas.DatasetsFusionParameter,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
-    pass
+    """
+    Create data fusion
+    """
+    logger.info(
+        "[create task] create dataset fusion with payload: %s",
+        jsonable_encoder(task_in),
+    )
+    task_id = gen_task_hash(current_user.id, task_in.project_id)
+
+    parameters = dict(
+        include_datasets=[task_in.main_dataset_id] + task_in.include_datasets,
+        include_strategy=task_in.include_strategy,
+        exclude_datasets=task_in.exclude_datasets,
+        include_class_ids=convert_keywords_to_classes(labels, task_in.include_labels),
+        exclude_class_ids=convert_keywords_to_classes(labels, task_in.exclude_labels),
+        sampling_count=task_in.sampling_count,
+    )
+    try:
+        resp = controller_client.create_data_fusion(
+            current_user.id,
+            task_in.project_id,
+            task_id,
+            parameters,
+        )
+        logger.info("[create task] controller response: %s", resp)
+    except ValueError:
+        raise FailedtoCreateTask()
+
+    # TODO(chao): data fusion parameter is diffrence from other task, need save
+    task_info = schemas.TaskCreate(
+        name=task_id,
+        type=TaskType.data_fusion,
+        project_id=task_in.project_id,
+    )
+    # 1. create task
+    task = crud.task.create_task(
+        db, obj_in=task_info, task_hash=task_id, user_id=current_user.id
+    )
+
+    # 2. create dataset record
+    dataset_in = schemas.DatasetCreate(
+        name=task.hash,
+        hash=task.hash,
+        dataset_group_id=task_in.dataset_group_id,
+        project_id=task.project_id,
+        user_id=task.user_id,
+        task_id=task.id,
+    )
+    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
+    logger.info("[create dataset] dataset record created: %s", dataset)
+
+    return {"result": dataset}

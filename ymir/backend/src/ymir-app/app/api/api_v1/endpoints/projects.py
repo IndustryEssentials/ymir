@@ -4,7 +4,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-from app.constants.state import TaskState
+from app.constants.state import TaskState, TaskType
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -14,7 +14,7 @@ from app.api.errors.errors import (
 )
 from app.constants.state import ResultState
 from app.utils.class_ids import convert_keywords_to_classes
-from app.utils.ymir_controller import ControllerClient, gen_task_hash, ExtraRequestType
+from app.utils.ymir_controller import ControllerClient, gen_task_hash
 
 router = APIRouter()
 
@@ -64,7 +64,7 @@ def list_projects(
 def create_project(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     labels: List[str] = Depends(deps.get_personal_labels),
@@ -102,7 +102,7 @@ def create_project(
     # 3.create task info
     task_info = schemas.TaskCreate(
         name=project_in.name,
-        type=ExtraRequestType.create_project,
+        type=TaskType.create_project,
         project_id=project.id,
     )
     task = crud.task.create_task(
@@ -111,12 +111,14 @@ def create_project(
         task_hash=task_id,
         user_id=current_user.id,
         state=TaskState.done.value,
-        progress=100,
+        percent=1,
     )
 
     # 3.create dataset group to build dataset info
     dataset_name = f"{project_in.name}_training_dataset"
-    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id)
+    dataset_paras = schemas.DatasetGroupCreate(
+        name=dataset_name, project_id=project.id, user_id=current_user.id
+    )
     dataset_group = crud.dataset_group.create_with_user_id(
         db, user_id=current_user.id, obj_in=dataset_paras
     )
@@ -124,7 +126,6 @@ def create_project(
     # 4.create init dataset
     dataset_in = schemas.DatasetCreate(
         name=dataset_name,
-        version_num=0,
         hash=task_id,
         dataset_group_id=dataset_group.id,
         project_id=project.id,
@@ -132,7 +133,7 @@ def create_project(
         result_state=ResultState.ready,
         task_id=task.id,
     )
-    crud.dataset.create(db, obj_in=dataset_in)
+    crud.dataset.create_with_version(db, obj_in=dataset_in)
 
     # 5.update project info
     project = crud.project.update(

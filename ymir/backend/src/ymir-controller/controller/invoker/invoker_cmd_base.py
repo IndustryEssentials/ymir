@@ -100,6 +100,7 @@ class BaseMirControllerInvoker(ABC):
                 backend_pb2.RequestType.CMD_FILTER,
                 backend_pb2.RequestType.CMD_MERGE,
                 backend_pb2.RequestType.CMD_INFERENCE,
+                backend_pb2.RequestType.CMD_SAMPLING,
         ]:
             return ''
 

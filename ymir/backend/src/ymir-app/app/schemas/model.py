@@ -20,7 +20,6 @@ def get_model_url(model_hash: str) -> str:
 class ModelBase(BaseModel):
     hash: str
     name: str
-    version_num: int
     map: Optional[float] = Field(description="Mean Average Precision")
     result_state: ResultState = ResultState.processing
     model_group_id: int
@@ -50,6 +49,7 @@ class ModelUpdate(BaseModel):
 
 
 class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):
+    version_num: int
     related_task: Optional[TaskInternal]
 
     class Config:
