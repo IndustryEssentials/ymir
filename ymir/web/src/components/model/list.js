@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, } from "antd"
+import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, } from "antd"
 import {
   SearchOutlined,
 } from "@ant-design/icons"
@@ -258,7 +258,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
 
   const renderGroups = (<>
     <div className={styles.groupList}>
-      {models.map(group => <div className={styles.groupItem} key={group.id}>
+      {models.length ? models.map(group => <div className={styles.groupItem} key={group.id}>
         <Row className={styles.groupTitle}>
           <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{ group.showVersions ? <ArrowDownIcon /> :<ArrowRightIcon />} </span>
             <span className={styles.groupName}>{group.name}</span></Col>
@@ -277,7 +277,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
             pagination={false}
           />
         </div>
-      </div>)}
+      </div>) : <Empty />}
     </div>
     <Pagination className={styles.pager} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
   </>)

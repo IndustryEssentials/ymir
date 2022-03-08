@@ -7,9 +7,15 @@ export enum states {
   INVALID = 3,
 }
 
+function getInterationVersion (version: number) {
+  return `V${version}`
+}
+
 export function transferDatasetGroup (data: OriginDatasetGroup) {
   const group: DatasetGroup = {
-    ...data,
+    id: data.id,
+    projectId: data.project_id,
+    name: data.name,
     createTime: format(data.create_datetime),
   }
   return group
@@ -18,14 +24,22 @@ export function transferDatasetGroup (data: OriginDatasetGroup) {
 export function transferDatasetVersion (data: OriginDatasetVersion): DatasetVersion {
   return {
     id: data.id,
+    groupId: data.dataset_group_id,
+    projectId: data.project_id,
     name: data.name,
-    version: data.version,
-    keywords: data.keywords,
+    version: data.version_num || 0,
+    versionName: getInterationVersion(data.version_num),
+    assetCount: data.asset_count || 0,
+    keywords: data.keywords || [],
+    keywordCount: data.keyword_count || 0,
+    ignoredKeywords: data.ignored_keywords || [],
+    hash: data.hash,
     state: data.state,
     createTime: format(data.create_datetime),
-    assetCount: data.asset_count,
+    updateTime: format(data.update_datetime),
     taskId: data.task_id,
     progress: data.progress,
-    taskState: data.taskState,
+    taskState: data.related_task.state,
+    taskType: data.related_task.type,
   }
 }

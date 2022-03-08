@@ -10,15 +10,6 @@ export enum Steps {
   trained = 5,
 }
 
-/**
- * get interation version name
- * @param version interation version
- * @returns 
- */
-export function getInterationVersion (version: number) {
-  return `V${version}`
-}
-
 export function transferProject(data: originProject) {
   const project : Project = {
     id: data.id,
