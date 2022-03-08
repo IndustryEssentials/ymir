@@ -4,7 +4,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-from app.constants.state import TaskState
+from app.constants.state import TaskState, TaskType
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -14,7 +14,7 @@ from app.api.errors.errors import (
 )
 from app.constants.state import ResultState
 from app.utils.class_ids import convert_keywords_to_classes
-from app.utils.ymir_controller import ControllerClient, gen_task_hash, ExtraRequestType
+from app.utils.ymir_controller import ControllerClient, gen_task_hash
 
 router = APIRouter()
 
@@ -102,7 +102,7 @@ def create_project(
     # 3.create task info
     task_info = schemas.TaskCreate(
         name=project_in.name,
-        type=ExtraRequestType.create_project,
+        type=TaskType.create_project,
         project_id=project.id,
     )
     task = crud.task.create_task(
@@ -126,7 +126,6 @@ def create_project(
     # 4.create init dataset
     dataset_in = schemas.DatasetCreate(
         name=dataset_name,
-        version_num=0,
         hash=task_id,
         dataset_group_id=dataset_group.id,
         project_id=project.id,
@@ -134,7 +133,7 @@ def create_project(
         result_state=ResultState.ready,
         task_id=task.id,
     )
-    crud.dataset.create(db, obj_in=dataset_in)
+    crud.dataset.create_with_version(db, obj_in=dataset_in)
 
     # 5.update project info
     project = crud.project.update(
