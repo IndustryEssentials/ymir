@@ -33,8 +33,7 @@ class ClassIdManagerError(BaseException):
 
 class ClassIdManager(object):
     """
-    a query tool for file `labels.csv`, which has following format in each line:
-        type id, preserved, main type name, alias 1, alias 2, ...
+    a query tool for label storage file
     """
     __slots__ = ("_file_path", "_type_name_id_dict", "_type_id_name_dict")
 

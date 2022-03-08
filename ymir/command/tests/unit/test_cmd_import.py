@@ -11,6 +11,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids
 from mir.tools.code import MirCode
 from tests import utils as test_utils
+import yaml
 
 
 class TestCmdImport(unittest.TestCase):
@@ -30,16 +31,17 @@ class TestCmdImport(unittest.TestCase):
     def setUp(self) -> None:
         test_utils.check_commands()
         self._prepare_dirs()
-        self._prepare_labels_csv(['cat', 'airplane,aeroplane', 'person'])
+        self._prepare_labels(['cat', 'airplane,aeroplane', 'person'])
         self._prepare_mir_repo()
 
         self._cur_path = os.getcwd()
         os.chdir(self._mir_repo_root)
 
     def tearDown(self) -> None:
-        if os.path.isdir(self._sandbox_root):
-            shutil.rmtree(self._sandbox_root)
-        os.chdir(self._cur_path)
+        # if os.path.isdir(self._sandbox_root):
+        #     shutil.rmtree(self._sandbox_root)
+        # os.chdir(self._cur_path)
+        pass
 
     def test_import_cmd_00(self):
         # normal
@@ -62,7 +64,7 @@ class TestCmdImport(unittest.TestCase):
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True)
 
         # not write person label
-        self._prepare_labels_csv(['cat', 'airplane,aeroplane'])
+        self._prepare_labels(['cat', 'airplane,aeroplane'])
 
         # ignore unknown types
         args.ignore_unknown_types = True
@@ -382,11 +384,20 @@ class TestCmdImport(unittest.TestCase):
         # prepare branch a
         test_utils.mir_repo_create_branch(self._mir_repo_root, 'a')
 
-    def _prepare_labels_csv(self, names: List[str]):
+    def _prepare_labels(self, names: List[str]):
+        labels = []
+        for idx, name in enumerate(names):
+            components = name.split(',')
+            label_name = components[0]
+            label_alias_list = components[1:]
+            if label_alias_list:
+                labels.append({'id': idx, 'name': label_name, 'alias': label_alias_list})
+            else:
+                labels.append({'id': idx, 'name': label_name})
+        obj = {'version': class_ids.EXPECTED_FILE_VERSION, 'labels': labels}
+
         with open(class_ids.ids_file_path(mir_root=self._mir_repo_root), 'w') as f:
-            f.write('# some comments')
-            for index, name in enumerate(names):
-                f.write(f"{index},,{name}\n")
+            yaml.safe_dump(obj, f)
 
 
 if __name__ == '__main__':

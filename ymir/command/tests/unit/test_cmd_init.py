@@ -18,7 +18,7 @@ class TestCmdInit(unittest.TestCase):
         if os.path.isdir(test_root):
             shutil.rmtree(test_root)
         os.makedirs(test_root)
-        # write labels.csv
+        # write label storage file
         with open(class_ids.ids_file_path(mir_root=test_root), 'w') as f:
             obj = {
                 'version': class_ids.EXPECTED_FILE_VERSION,
