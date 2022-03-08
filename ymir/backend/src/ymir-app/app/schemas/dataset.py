@@ -21,7 +21,7 @@ class ImportStrategy(enum.IntEnum):
 
 class DatasetBase(BaseModel):
     name: str = Field(description="Dataset Version Name")
-    result_state: ResultState = ResultState.processing.value
+    result_state: ResultState = ResultState.processing.value  # type: ignore
     dataset_group_id: int
     project_id: int
     # task_id haven't created yet

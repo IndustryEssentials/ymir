@@ -210,7 +210,7 @@ class TaskResult:
         if not dataset:
             raise DatasetNotFound()
         crud.dataset.update_state(
-            self.db, dataset_id=dataset.id, new_state=task_result.state
+            self.db, dataset_id=dataset.id, new_state=task_result.state  # type: ignore
         )
 
     def update_model_result(self, task_result: schemas.TaskUpdateStatus) -> None:
