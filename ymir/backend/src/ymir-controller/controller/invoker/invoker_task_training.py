@@ -35,7 +35,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
                          previous_subtask_id: str) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         in_dataset_ids = [
@@ -62,7 +61,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
                          previous_subtask_id: str) -> backend_pb2.GeneralResp:
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]

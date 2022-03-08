@@ -23,7 +23,6 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_2(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
                          previous_subtask_id: str) -> backend_pb2.GeneralResp:
         """ merge """
         fusion_req = request.req_create_task.fusion
@@ -47,7 +46,6 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
                          previous_subtask_id: str) -> backend_pb2.GeneralResp:
         """ filter """
         fusion_req = request.req_create_task.fusion
@@ -70,7 +68,6 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
                          previous_subtask_id: str) -> backend_pb2.GeneralResp:
         """ sampling """
         fusion_req = request.req_create_task.fusion
