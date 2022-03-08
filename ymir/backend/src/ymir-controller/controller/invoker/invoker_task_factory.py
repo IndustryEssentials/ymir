@@ -4,6 +4,7 @@ from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.invoker.invoker_task_copy import TaskCopyInvoker
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.invoker.invoker_task_filter import TaskFilterInvoker
+from controller.invoker.invoker_task_fusion import TaskFusionInvoker
 from controller.invoker.invoker_task_importing import TaskImportingInvoker
 from controller.invoker.invoker_task_labeling import TaskLabelingInvoker
 from controller.invoker.invoker_task_mining import TaskMiningInvoker
@@ -19,7 +20,8 @@ class CreateTaskInvokerFactory(BaseMirControllerInvoker):
         backend_pb2.TaskTypeImportData: TaskImportingInvoker,
         backend_pb2.TaskTypeMining: TaskMiningInvoker,
         backend_pb2.TaskTypeTraining: TaskTrainingInvoker,
-        backend_pb2.TaskTypeLabel: TaskLabelingInvoker
+        backend_pb2.TaskTypeLabel: TaskLabelingInvoker,
+        backend_pb2.TaskTypeFusion: TaskFusionInvoker,
     }
 
     def __new__(cls, request: backend_pb2.GeneralReq, *args, **kwargs) -> Any:  # type: ignore

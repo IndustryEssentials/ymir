@@ -52,6 +52,16 @@ def _build_cmd_get_labels_req(args: Dict) -> backend_pb2.GeneralReq:
                                          req_type=backend_pb2.CMD_LABEL_GET)
 
 
+def _build_cmd_sampling_req(args: Dict) -> backend_pb2.GeneralReq:
+    return invoker_call.make_cmd_request(user_id=args["user"],
+                                         repo_id=args["repo"],
+                                         task_id=args["tid"],
+                                         in_dataset_ids=args['in_dataset_ids'],
+                                         sampling_count=args['sampling_count'],
+                                         sampling_rate=args['sampling_rate'],
+                                         req_type=backend_pb2.CMD_SAMPLING)
+
+
 def call_cmd(client: ControllerClient, *, args: Any) -> Optional[str]:
     args = vars(args)
     req_name = "_build_cmd_{}_req".format(args['task_type'])
@@ -83,7 +93,7 @@ def _build_task_training_req(args: Dict) -> backend_pb2.GeneralReq:
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeTraining
-    req_create_task.no_task_monitor = True
+    req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.training.CopyFrom(train_task_req)
 
     return req_create_task
@@ -111,7 +121,7 @@ def _build_task_importing_req(args: Dict) -> backend_pb2.GeneralReq:
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeImportData
-    req_create_task.no_task_monitor = False
+    req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.importing.CopyFrom(importing_request)
 
     return req_create_task
@@ -129,8 +139,31 @@ def _build_task_labeling_req(args: Dict) -> backend_pb2.GeneralReq:
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeLabel
-    req_create_task.no_task_monitor = False
+    req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.labeling.CopyFrom(labeling_request)
+
+    return req_create_task
+
+
+def _build_task_fusion_req(args: Dict) -> backend_pb2.GeneralReq:
+    fusion_request = backend_pb2.TaskReqFusion()
+    fusion_request.merge_strategy = backend_pb2.MergeStrategy.HOST
+    fusion_request.in_dataset_ids[:] = args['in_dataset_ids']
+    if args.get('ex_dataset_ids', None):
+        fusion_request.ex_dataset_ids[:] = args['ex_dataset_ids']
+    if args.get('in_class_ids', None):
+        fusion_request.in_class_ids[:] = args['in_class_ids']
+    if args.get('ex_class_ids', None):
+        fusion_request.ex_class_ids[:] = args['ex_class_ids']
+    if args.get('sampling_count', 0):
+        fusion_request.count = args['sampling_count']
+    elif args.get('sampling_rate', 0.0):
+        fusion_request.rate = args['sampling_rate']
+
+    req_create_task = backend_pb2.ReqCreateTask()
+    req_create_task.task_type = backend_pb2.TaskTypeFusion
+    req_create_task.no_task_monitor = args['no_task_monitor']
+    req_create_task.fusion.CopyFrom(fusion_request)
 
     return req_create_task
 
@@ -193,19 +226,24 @@ def get_parser() -> Any:
     common_group.add_argument("--labels", type=str, help="labels to be added, seperated by comma.")
 
     # CMD CALL
-    parser_create_task = sub_parsers.add_parser("cmd_call", help="create sync cmd call")
-    parser_create_task.add_argument("--task_type",
-                                    choices=["create_repo", "add_labels", "get_labels"],
-                                    type=str,
-                                    help="task type")
-    parser_create_task.set_defaults(func=call_cmd)
+    parser_cmd_call = sub_parsers.add_parser("cmd_call", help="create sync cmd call")
+    parser_cmd_call.add_argument("--task_type",
+                                 choices=["create_repo", "add_labels", "get_labels", "sampling"],
+                                 type=str,
+                                 help="task type")
+    parser_cmd_call.add_argument("--in_dataset_ids", nargs="*", type=str)
+    sampling_group = parser_cmd_call.add_mutually_exclusive_group()
+    sampling_group.add_argument("--sampling_count", type=int, help="sampling count")
+    sampling_group.add_argument("--sampling_rate", type=float, help="sampling rate")
+    parser_cmd_call.set_defaults(func=call_cmd)
 
     # CREATE TASK
     parser_create_task = sub_parsers.add_parser("create_task", help="create a long-running task")
-    parser_create_task.add_argument("--task_type",
-                                    choices=["filter", "merge", "training", "mining", "importing", "labeling"],
-                                    type=str,
-                                    help="task type")
+    parser_create_task.add_argument(
+        "--task_type",
+        choices=["filter", "merge", "training", "mining", "importing", "labeling", "fusion"],
+        type=str,
+        help="task type")
     parser_create_task.add_argument("--in_class_ids", nargs="*", type=int)
     parser_create_task.add_argument("--ex_class_ids", nargs="*", type=int)
     parser_create_task.add_argument("--in_dataset_ids", nargs="*", type=str)
@@ -219,6 +257,10 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--executor_config", type=str, default='')
     parser_create_task.add_argument("--executor_name", type=str, default='')
     parser_create_task.add_argument("--keep_annotation", action="store_true")
+    parser_create_task.add_argument("--no_task_monitor", action="store_true")
+    sampling_group = parser_create_task.add_mutually_exclusive_group()
+    sampling_group.add_argument("--sampling_count", type=int, help="sampling count")
+    sampling_group.add_argument("--sampling_rate", type=float, help="sampling rate")
     parser_create_task.set_defaults(func=call_create_task)
 
     # GET TASK INFO

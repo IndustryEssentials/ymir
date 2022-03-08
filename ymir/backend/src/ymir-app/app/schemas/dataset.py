@@ -10,7 +10,7 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
-from app.schemas.task import TaskInternal
+from app.schemas.task import TaskInternal, MergeStrategy
 
 
 class ImportStrategy(enum.IntEnum):
@@ -55,6 +55,9 @@ class DatasetCreate(DatasetBase):
     hash: str = Field(description="related task hash")
     task_id: int
     user_id: int
+
+    class Config:
+        use_enum_values = True
 
 
 # Properties that can be changed
@@ -106,3 +109,20 @@ class DatasetsOut(Common):
 
 class DatasetPaginationOut(Common):
     result: DatasetPagination
+
+
+class DatasetsFusionParameter(BaseModel):
+    dataset_group_id: int
+    main_dataset_id: int
+    project_id: int
+
+    include_datasets: List[int]
+    include_strategy: Optional[MergeStrategy] = Field(
+        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
+    )
+    exclude_datasets: List[int]
+
+    include_labels: List[str]
+    exclude_labels: List[str]
+
+    sampling_count: int = 0
