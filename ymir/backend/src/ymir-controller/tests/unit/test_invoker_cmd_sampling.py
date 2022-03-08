@@ -23,7 +23,7 @@ class TestInvokerSampling(unittest.TestCase):
         self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz5'
-        self._dst_task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz4'
+        self._dst_dataset_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz4'
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
         self._guest_id3 = 't000aaaabbbbbbzzzzzzzzzzzzzzz3'
@@ -76,7 +76,7 @@ class TestInvokerSampling(unittest.TestCase):
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
                                          his_task_id=self.in_dataset_ids[0],
-                                         dst_task_id=self._task_id,
+                                         dst_dataset_id=self._task_id,
                                          in_dataset_ids=self.in_dataset_ids,
                                          sampling_count=10)
         self.assertEqual(response.code, 0)

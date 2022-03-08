@@ -26,7 +26,7 @@ class TestInvokerMerge(unittest.TestCase):
         self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz5'
-        self._dst_task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz4'
+        self._dst_dataset_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz4'
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
         self._guest_id3 = 't000aaaabbbbbbzzzzzzzzzzzzzzz3'
@@ -77,7 +77,7 @@ class TestInvokerMerge(unittest.TestCase):
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
                                          his_task_id=self._guest_id1,
-                                         dst_task_id=self._dst_task_id,
+                                         dst_dataset_id=self._dst_dataset_id,
                                          in_dataset_ids=[self._guest_id1, self._guest_id2],
                                          ex_dataset_ids=[self._guest_id3],
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'))
@@ -88,7 +88,7 @@ class TestInvokerMerge(unittest.TestCase):
         os.makedirs(working_dir, exist_ok=True)
 
         expected_cmd = ("mir merge --root {0} --dst-rev {1}@{2} -s host -w {3} "
-                        "--src-revs {4}@{4};{5} --ex-src-revs {6}".format(self._mir_repo_root, self._dst_task_id,
+                        "--src-revs {4}@{4};{5} --ex-src-revs {6}".format(self._mir_repo_root, self._dst_dataset_id,
                                                                           self._task_id, working_dir, self._guest_id1,
                                                                           self._guest_id2, self._guest_id3))
         mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
