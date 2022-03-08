@@ -15,7 +15,7 @@ class MergeInvoker(BaseMirControllerInvoker):
                                          checker.Prerequisites.CHECK_USER_ID,
                                          checker.Prerequisites.CHECK_REPO_ID,
                                          checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
-                                         checker.Prerequisites.CHECK_DST_TASK_ID,
+                                         checker.Prerequisites.CHECK_DST_DATASET_ID,
                                      ],
                                      mir_root=self._repo_root)
 
@@ -27,7 +27,7 @@ class MergeInvoker(BaseMirControllerInvoker):
 
         command = [
             utils.mir_executable(), 'merge', '--root', self._repo_root, '--dst-rev',
-            revs.join_tvt_branch_tid(branch_id=self._request.dst_task_id, tid=self._task_id), '-s',
+            revs.join_tvt_branch_tid(branch_id=self._request.dst_dataset_id, tid=self._task_id), '-s',
             backend_pb2.MergeStrategy.Name(self._request.merge_strategy).lower(), '-w', self._work_dir,
         ]
 
