@@ -21,7 +21,7 @@ class Prerequisites(IntEnum):
     CHECK_REPO_ROOT_EXIST = auto()
     CHECK_REPO_ROOT_NOT_EXIST = auto()
     CHECK_SINGLETON_OP = auto()
-    CHECK_DST_TASK_ID = auto()
+    CHECK_DST_DATASET_ID = auto()
     CHECK_GUEST_BRANCHES = auto()
     CHECK_COMMIT_MESSAGE = auto()
     CHECK_TASKINFO_IDS = auto()
@@ -80,8 +80,8 @@ def _check_singleton_op(request: backend_pb2.GeneralReq, mir_root: str) -> backe
     return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
 
-def _check_dst_task_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
-    task_id = request.dst_task_id
+def _check_dst_dataset_id(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
+    task_id = request.dst_dataset_id
     if not (task_id and utils.check_valid_input_string(task_id) and len(task_id) == task_id_proto.IDProto.ID_LENGTH):
         return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                            "invalid dst task {}, abort".format(task_id))
