@@ -33,7 +33,8 @@ class TaskExportingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         exporting_request = request.req_create_task.exporting
         asset_dir = exporting_request.asset_dir
         annotation_dir = exporting_request.annotation_dir
@@ -58,9 +59,9 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       work_dir: str,
                       keywords: List[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = [
-            utils.mir_executable(), 'export', '--root', repo_root,
-            '--media-location', media_location, '--asset-dir', asset_dir,
-            '--annotation-dir', annotation_dir, '--src-revs', dataset_id, '--format', annotation_format, '-w', work_dir
+            utils.mir_executable(), 'export', '--root', repo_root, '--media-location', media_location, '--asset-dir',
+            asset_dir, '--annotation-dir', annotation_dir, '--src-revs', f"{dataset_id}@{dataset_id}", '--format',
+            annotation_format, '-w', work_dir
         ]
         if keywords:
             exporting_cmd.append('--cis')

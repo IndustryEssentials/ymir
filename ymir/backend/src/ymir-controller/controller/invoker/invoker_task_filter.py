@@ -28,7 +28,8 @@ class TaskFilterInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         filter_request = request.req_create_task.filter
         in_dataset_ids = list(filter_request.in_dataset_ids)
         merge_response = invoker_call.make_invoker_cmd_call(
@@ -49,9 +50,10 @@ class TaskFilterInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         subtask_id_dict: Dict[int, str], previous_subtask_idx: int,
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         filter_request = request.req_create_task.filter
-        previous_subtask_idx = 1
+
         filter_response = invoker_call.make_invoker_cmd_call(
             invoker=FilterBranchInvoker,
             sandbox_root=sandbox_root,
@@ -59,7 +61,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=subtask_id,
-            his_task_id=subtask_id_dict[previous_subtask_idx],
+            his_task_id=previous_subtask_id,
             dst_dataset_id=request.task_id,
             in_dataset_ids=[request.task_id],
             in_class_ids=filter_request.in_class_ids,
