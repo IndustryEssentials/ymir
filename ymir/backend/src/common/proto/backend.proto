@@ -91,7 +91,7 @@ message GeneralReq {
     // ancestor task id that initiates this task from.
     string his_task_id = 6;
     // dest branch id to store current task result.
-    string dst_task_id = 7;
+    string dst_dataset_id = 7;
     // branches you want to concat the data from
     repeated string in_dataset_ids = 8;
     // branches you want to exclude the data from

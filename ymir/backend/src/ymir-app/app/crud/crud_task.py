@@ -29,7 +29,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             config = json.dumps(config)
         db_obj = Task(
             name=obj_in.name,
-            type=obj_in.type.value,
+            type=obj_in.type,
             config=config,
             hash=task_hash,
             user_id=user_id,
