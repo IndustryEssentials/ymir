@@ -43,7 +43,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
@@ -53,7 +53,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
             repo_id=request.repo_id,
             task_id=subtask_id,
             his_task_id=mining_request.in_dataset_ids[0],
-            dst_task_id=request.task_id,
+            dst_dataset_id=request.task_id,
             in_dataset_ids=mining_request.in_dataset_ids,
             ex_dataset_ids=mining_request.ex_dataset_ids,
             merge_strategy=request.merge_strategy,
@@ -64,14 +64,13 @@ class TaskMiningInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
         executor_instance = request.task_id
         models_location = assets_config["modelskvlocation"]
         media_location = assets_config["assetskvlocation"]
         mining_image = request.singleton_op
 
-        previous_subtask_idx = 1
         config_file = cls.gen_executor_config_path(subtask_workdir)
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
@@ -83,8 +82,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          media_location=media_location,
                                          top_k=mining_request.top_k,
                                          model_hash=request.model_hash,
-                                         his_rev=subtask_id_dict[previous_subtask_idx],
-                                         in_src_revs=request.task_id,
+                                         in_dataset_id=request.task_id,
+                                         his_task_id=previous_subtask_id,
                                          executor=mining_image,
                                          executor_instance=executor_instance,
                                          generate_annotations=mining_request.generate_annotations)
@@ -102,19 +101,18 @@ class TaskMiningInvoker(TaskBaseInvoker):
         media_location: str,
         top_k: int,
         model_hash: str,
-        his_rev: str,
-        in_src_revs: str,
+        in_dataset_id: str,
+        his_task_id: str,
         asset_cache_dir: str,
         executor: str,
         executor_instance: str,
         generate_annotations: bool,
     ) -> backend_pb2.GeneralResp:
         mining_cmd = [
-            utils.mir_executable(), 'mining', '--root', repo_root,
-            '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir, '--model-location',
-            model_location, '--media-location', media_location, '--model-hash', model_hash, '--src-revs',
-            f"{in_src_revs}@{his_rev}", '--cache', asset_cache_dir, '--config-file', config_file, '--executor',
-            executor, '--executor-instance', executor_instance
+            utils.mir_executable(), 'mining', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir,
+            '--model-location', model_location, '--media-location', media_location, '--model-hash', model_hash,
+            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--cache', asset_cache_dir, '--config-file', config_file,
+            '--executor', executor, '--executor-instance', executor_instance
         ]
         if top_k > 0:
             mining_cmd.append('--topk')

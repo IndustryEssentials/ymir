@@ -35,7 +35,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         in_dataset_ids = [
             revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
@@ -50,7 +50,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             repo_id=request.repo_id,
             task_id=subtask_id,
             his_task_id=train_request.in_dataset_types[0].dataset_id,
-            dst_task_id=request.task_id,
+            dst_dataset_id=request.task_id,
             in_dataset_ids=in_dataset_ids,
             merge_strategy=request.merge_strategy,
             work_dir=subtask_workdir,
@@ -61,7 +61,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op
@@ -70,7 +70,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
-        previous_subtask_idx = 1
         config_file = cls.gen_executor_config_path(subtask_workdir)
         executor_instance = request.task_id
         train_response = cls.training_cmd(
@@ -80,8 +79,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             media_location=media_location,
             task_id=subtask_id,
             work_dir=subtask_workdir,
-            his_rev=subtask_id_dict[previous_subtask_idx],
-            in_src_revs=request.task_id,
+            in_dataset_id=request.task_id,
+            his_task_id=previous_subtask_id,
             training_image=training_image,
             executor_instance=executor_instance,
             tensorboard=tensorboard_dir,
@@ -98,18 +97,17 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         media_location: str,
         task_id: str,
         work_dir: str,
-        his_rev: str,
-        in_src_revs: str,
+        in_dataset_id: str,
+        his_task_id: str,
         training_image: str,
         executor_instance: str,
         tensorboard: str,
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
-            utils.mir_executable(), 'train', '--root', repo_root,
-            '--dst-rev', f"{task_id}@{task_id}", '--model-location',
-            models_upload_location, '--media-location', media_location, '-w', work_dir, '--src-revs',
-            f"{in_src_revs}@{his_rev}", '--config-file', config_file, '--executor', training_image,
+            utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
+            '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
+            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--config-file', config_file, '--executor', training_image,
             '--executor-instance', executor_instance, '--tensorboard', tensorboard
         ]
         if model_hash:
