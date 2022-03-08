@@ -1,15 +1,30 @@
-import csv
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
+import yaml
+
+
+EXPECTED_FILE_VERSION = 1
 
 
 def ids_file_name() -> str:
-    return 'labels.csv'
+    return 'labels.yaml'
 
 
 def ids_file_path(mir_root: str) -> str:
-    file_path = os.path.join(mir_root, ids_file_name())
-    return file_path
+    file_dir = os.path.join(mir_root, '.mir')
+    os.makedirs(file_dir, exist_ok=True)
+    return os.path.join(file_dir, ids_file_name())
+
+
+def create_empty_if_not_exists(mir_root: str) -> None:
+    file_path = ids_file_path(mir_root=mir_root)
+    if os.path.isfile(file_path):
+        return
+
+    with open(file_path, 'w') as f:
+        file_obj = {'version': EXPECTED_FILE_VERSION, 'labels': []}
+        yaml.safe_dump(file_obj, f)
 
 
 class ClassIdManagerError(BaseException):
@@ -21,14 +36,14 @@ class ClassIdManager(object):
     a query tool for file `labels.csv`, which has following format in each line:
         type id, preserved, main type name, alias 1, alias 2, ...
     """
-    __slots__ = ("_csv_path", "_type_name_id_dict", "_type_id_name_dict")
+    __slots__ = ("_file_path", "_type_name_id_dict", "_type_id_name_dict")
 
     # life cycle
     def __init__(self, mir_root: str) -> None:
         super().__init__()
 
         # it will have value iff successfully loaded
-        self._csv_path = ''
+        self._file_path = ''
         # key: main type name or alias, value: (type id, None for main type name, or main name for alias)
         self._type_name_id_dict = {}  # type: Dict[str, Tuple[int, Optional[str]]]
         # key: type id, value: main type name
@@ -37,47 +52,46 @@ class ClassIdManager(object):
         self.__load(ids_file_path(mir_root=mir_root))
 
     # private: load and unload
-    def __load(self, csv_path: str) -> bool:
-        if not csv_path:
+    def __load(self, file_path: str) -> bool:
+        if not file_path:
             raise ClassIdManagerError('empty path received')
-        if self._csv_path:
-            raise ClassIdManagerError(f"already loaded from: {self._csv_path}")
+        if self._file_path:
+            raise ClassIdManagerError(f"already loaded from: {self._file_path}")
 
-        with open(csv_path, 'r', newline='') as f:
-            csv_reader = csv.reader(f)
-            for line_components in csv_reader:
-                if len(line_components) <= 2:
-                    continue  # empty lines also ignored here
-                if line_components[0].startswith('#'):
-                    continue
+        with open(file_path, 'r') as f:
+            file_obj = yaml.safe_load(f)
+            labels = file_obj.get('labels', [])
+            for label in labels:
+                # key: id, name, alias are used here
+                label_id: int = label['id']
+                label_name: str = label['name'].strip().lower()
+                label_aliases: List[str] = label.get('alias', [])
+                if not isinstance(label_aliases, list):
+                    raise ClassIdManagerError(f"alias error for id: {label_id}, name: {label_name}")
 
-                type_id = int(line_components[0])
+                label_aliases = [v.strip().lower() for v in label_aliases]
 
-                main_type_name = None
+                # self._type_name_id_dict
+                #   key: main label name
+                self._set_if_not_exists(k=label_name,
+                                        v=(label_id, None),
+                                        d=self._type_name_id_dict,
+                                        error_message_prefix='dumplicated name')
+                #   key: aliases
+                for label_alias in label_aliases:
+                    self._set_if_not_exists(k=label_alias,
+                                            v=(label_id, label_name),
+                                            d=self._type_name_id_dict,
+                                            error_message_prefix='dumplicated alias')
 
-                # for single line, parse type id, main type name, alias
-                for type_name_idx, type_name in enumerate(line_components[2:]):
-                    type_name = type_name.strip().lower()
+                # self._type_id_name_dict
+                self._set_if_not_exists(k=label_id,
+                                        v=label_name,
+                                        d=self._type_id_name_dict,
+                                        error_message_prefix='dumplicated id')
 
-                    # handle error situations
-                    if type_name in self._type_name_id_dict:
-                        previous_pair = self._type_name_id_dict[type_name]
-                        raise ClassIdManagerError("dumplicate type name: {}, previous: {}, now: {}".format(
-                            type_name, previous_pair[0], type_id))
-                    if not type_name:
-                        raise ClassIdManagerError("empty type name for type id: {}".format(type_id))
-
-                    if type_name_idx == 0:
-                        # if it's main type name
-                        main_type_name = type_name
-                        self._type_name_id_dict[main_type_name] = (type_id, None)
-                        self._type_id_name_dict[type_id] = main_type_name
-                    else:
-                        # if it's alias
-                        self._type_name_id_dict[type_name] = (type_id, main_type_name)
-
-        # save `self._csv_path` as a flag of successful loading
-        self._csv_path = csv_path
+        # save `self._file_path` as a flag of successful loading
+        self._file_path = file_path
         return True
 
     # public: general
@@ -94,8 +108,8 @@ class ClassIdManager(object):
         Returns:
             Tuple[int, Optional[str]]: (type id, main type name)
         """
-        name = name.strip()
-        if not self._csv_path:
+        name = name.strip().lower()
+        if not self._file_path:
             raise ClassIdManagerError("not loade")
         if not name:
             raise ClassIdManagerError("empty name")
@@ -144,7 +158,13 @@ class ClassIdManager(object):
         return len(self._type_id_name_dict)
 
     def has_name(self, name: str) -> bool:
-        return name in self._type_name_id_dict
+        return name.strip().lower() in self._type_name_id_dict
 
     def has_id(self, type_id: int) -> bool:
         return type_id in self._type_id_name_dict
+
+    @classmethod
+    def _set_if_not_exists(cls, k: Any, v: Any, d: dict, error_message_prefix: str) -> None:
+        if k in d:
+            raise ClassIdManagerError(f"{error_message_prefix}: {k}")
+        d[k] = v

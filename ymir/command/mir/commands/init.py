@@ -15,14 +15,6 @@ from mir.tools.errors import MirRuntimeError
 class CmdInit(base.BaseCommand):
     # private: misc
     @staticmethod
-    def __create_label_file_if_no_exists(mir_root: str) -> None:
-        # creates a new label file if not exists
-        label_file_path = class_ids.ids_file_path(mir_root=mir_root)
-        if not os.path.isfile(label_file_path):
-            with open(label_file_path, 'w') as f:
-                f.write('# type_id, preserved, main type name, alias...\n')
-
-    @staticmethod
     def __update_ignore(mir_root: str, git: CmdScm, ignored_items: List[str]) -> None:
         gitignore_file = os.path.join(mir_root, '.gitignore')
         with open(gitignore_file, 'a') as f:
@@ -67,10 +59,10 @@ class CmdInit(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        CmdInit.__create_label_file_if_no_exists(mir_root=mir_root)
+        class_ids.create_empty_if_not_exists(mir_root=mir_root)
 
         project_class_ids = class_ids.ClassIdManager(mir_root=mir_root).id_for_names(
-            project_class_names.strip().lower().split(';')) if project_class_names else []
+            project_class_names.split(';')) if project_class_names else []
         context.save(mir_root=mir_root, project_class_ids=project_class_ids)
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
@@ -80,7 +72,7 @@ class CmdInit(base.BaseCommand):
 
         CmdInit.__update_ignore(mir_root=mir_root,
                                 git=repo_git,
-                                ignored_items=['.mir_lock', class_ids.ids_file_name(), '.mir'])
+                                ignored_items=['.mir_lock', '.mir'])
         repo_git.commit(["-m", "first commit"])
 
         # creates an empty dataset if empty_rev provided

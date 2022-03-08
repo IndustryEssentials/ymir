@@ -19,19 +19,35 @@ class TestCmdInit(unittest.TestCase):
             shutil.rmtree(test_root)
         os.makedirs(test_root)
         # write labels.csv
-        with open(os.path.join(test_root, 'labels.csv'), 'w') as f:
-            f.write('0,,xbox\n1,,person\n2,,cat\n')
+        with open(class_ids.ids_file_path(mir_root=test_root), 'w') as f:
+            obj = {
+                'version': class_ids.EXPECTED_FILE_VERSION,
+                'labels': [
+                    {
+                        'id': 0,
+                        'name': 'xbox'
+                    },
+                    {
+                        'id': 1,
+                        'name': 'person'
+                    },
+                    {
+                        'id': 2,
+                        'name': 'cat'
+                    },
+                ]
+            }
+            yaml.safe_dump(obj, f)
 
         init.CmdInit.run_with_args(mir_root=test_root, project_class_names='cat;person', empty_rev='a@a')
 
         assert (os.path.isdir(os.path.join(test_root, ".git")))
         assert (os.path.isdir(os.path.join(test_root, ".dvc")))
-        assert os.path.isfile(os.path.join(test_root, class_ids.ids_file_name()))
+        assert os.path.isfile(class_ids.ids_file_path(mir_root=test_root))
         ignore_file_path = os.path.join(test_root, '.gitignore')
         assert os.path.isfile(ignore_file_path)
         with open(ignore_file_path, 'r') as f:
             lines = f.read().splitlines()
-        assert class_ids.ids_file_name() in lines
         assert '.mir' in lines
 
         # check project context file
