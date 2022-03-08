@@ -96,7 +96,7 @@ const Add = ({ keywords, datasets, projects, getProject, createProject, updatePr
   const renderSetSelect = (sets = []) => <Select showArrow
     placeholder={t('project.add.form.trainset.placeholder')}>
     {sets.map(set => (
-      <Option key={set.name} value={set.id}>{set.name}</Option>
+      <Select.Option key={set.name} value={set.id}>{set.name}</Select.Option>
     ))}
   </Select>
 
@@ -141,11 +141,11 @@ const Add = ({ keywords, datasets, projects, getProject, createProject, updatePr
                   placeholder={t('project.add.form.keyword.placeholder')} 
                   filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                   {keywords.map(keyword => (
-                    <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
                       <Row>
                         <Col flex={1}>{keyword.name}</Col>
                       </Row>
-                    </Option>
+                    </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -153,13 +153,13 @@ const Add = ({ keywords, datasets, projects, getProject, createProject, updatePr
             <Tip content={t('tip.project.add.target')}>
               <Form.Item label={t('project.add.form.target')}>
                 <div className={s.targetPanel}>
-                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='map_target'>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='target_map'>
                     <InputNumber min={0} max={100} step={1} formatter={value => `${value}%`} parser={value => value.replace('%', '')} style={{ width: '100%' }} placeholder={t('project.add.form.target.map.placeholder')} allowClear />
                   </Form.Item>
-                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.interations')} name='iteration_target'>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.interations')} name='target_iteration'>
                     <InputNumber min={1} step={1} placeholder={t('project.add.form.target.interations.placeholder')} style={{ width: '100%' }} allowClear />
                   </Form.Item>
-                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='training_dataset_count_target'>
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='target_dataset'>
                     <InputNumber min={1} step={1} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} allowClear />
                   </Form.Item>
                 </div>
