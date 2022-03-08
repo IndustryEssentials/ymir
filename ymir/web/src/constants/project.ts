@@ -27,17 +27,18 @@ export function transferProject(data: originProject) {
     trainSet: data.train_set,
     testSet: data.test_set,
     miningSet: data.mining_set,
-    setsAccount: data.set_account,
-    modelsAccount: data.models_account,
+    setCount: data.dataset_count,
+    modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
-    currentInteration: transferInteration(data.current_interation),
+    currentInteration: data.current_iteration_id,
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,
     targetMap: data.map_target,
     targetDataset: data.training_dataset_count_target,
     targetInteration: data.iteration_target,
+    updateTime: data.update_datetime,
   }
   return project
 }
