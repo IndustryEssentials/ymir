@@ -27,6 +27,7 @@ export default {
     },
     versions: {},
     model: {},
+    allModels: [],
   },
   effects: {
     *getModels({ payload }, { call, put }) {
@@ -54,6 +55,22 @@ export default {
           payload: vs,
         })
         return result.items
+      }
+    },
+    *queryModels({ payload }, { select, call, put }) {
+      const { code, result } = yield call(queryModels, payload)
+      if (code === 0) {
+        console.log('query datset: ', result)
+        return { items: result.items.map(ds => transferModel(ds)), total: result.total }
+      }
+    },
+    *queryAllModels({}, { select, call, put }) {
+      const dss = yield put.resolve({ type: 'queryModels', payload: { limit: 10000 }})
+      if (dss) {
+        yield put({
+          type: "UPDATE_ALL_MODELS",
+          payload: dss.items,
+        })
       }
     },
     *batchModels({ payload }, { call, put }) {
@@ -192,6 +209,12 @@ export default {
       return {
         ...state,
         versions: vs,
+      }
+    },
+    UPDATE_ALL_MODELS(state, { payload }) {
+      return {
+        ...state,
+        allModels: payload
       }
     },
     UPDATE_MODEL(state, { payload }) {

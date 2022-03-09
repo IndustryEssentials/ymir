@@ -177,6 +177,9 @@ const task = {
   "task.common.dataset.name": { cn: '数据集名称', en: 'Dataset Name', },
   "task.common.dataset.name.placeholder": { cn: "请输入数据集名称", en: "Please input dataset name", },
   "task.common.dataset.name.required": { cn: "数据集名称为必填项", en: "Dataset name is required", },
+  "task.train.form.training.datasets.placeholder": { cn: "请选择训练集", en: "Please select a training dataset", },
+  "task.train.form.datasets.required": { cn: "数据集为必选项", en: "Dataset is required", },
+  "task.train.form.test.datasets.placeholder": { cn: "请选择测试集", en: "Please select a test dataset", },
 }
 
 export default task

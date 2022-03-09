@@ -69,7 +69,9 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }, [])
 
   useEffect(async () => {
+    console.log('get datasets initial.')
     let result = await getDatasets()
+    console.log('result: ', result)
     if (result?.items) {
       const ds = result.items.filter(dataset => TASKSTATES.FINISH === dataset.state)
       setAllDs(ds)
@@ -291,11 +293,11 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                   required
                   name="train_sets"
                   rules={[
-                    { required: true, message: t('task.filter.form.datasets.required') },
+                    { required: true, message: t('task.train.form.datasets.required') },
                   ]}
                 >
                   <Select
-                    placeholder={t('task.filter.form.training.datasets.placeholder')}
+                    placeholder={t('task.train.form.training.datasets.placeholder')}
                     filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={trainSetChange}
                     disabled={id}
@@ -314,11 +316,11 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                   label={t('task.train.form.testsets.label')}
                   name="validation_sets"
                   rules={[
-                    { required: true, message: t('task.filter.form.datasets.required') },
+                    { required: true, message: t('task.train.form.datasets.required') },
                   ]}
                 >
                   <Select
-                    placeholder={t('task.filter.form.test.datasets.placeholder')}
+                    placeholder={t('task.train.form.test.datasets.placeholder')}
                     mode='multiple'
                     filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={validationSetChange}
