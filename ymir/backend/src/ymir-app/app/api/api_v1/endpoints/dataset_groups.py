@@ -53,7 +53,7 @@ def list_dataset_groups(
 def create_dataset_group(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
     obj_in: schemas.DatasetGroupCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
