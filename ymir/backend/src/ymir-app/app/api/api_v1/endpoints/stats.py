@@ -108,7 +108,7 @@ def get_tasks_count(
     start_at = end_at.replace(end_at.year - 1)
     stats = clickhouse.get_task_count(
         current_user.id,
-        precision=precision.value,
+        precision=str(precision),
         start_at=start_at,
         end_at=end_at,
         limit=limit,

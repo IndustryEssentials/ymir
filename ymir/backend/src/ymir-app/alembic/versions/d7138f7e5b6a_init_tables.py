@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: 735cf13309a1
+Revision ID: d7138f7e5b6a
 Revises:
-Create Date: 2022-03-04 17:21:30.568348
+Create Date: 2022-03-07 15:45:57.082694
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "735cf13309a1"
+revision = "d7138f7e5b6a"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -321,6 +321,7 @@ def upgrade():
         sa.Column("error_code", sa.String(length=20), nullable=True),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
+        sa.Column("is_terminated", sa.Boolean(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
         sa.Column("last_message_datetime", mysql.DATETIME(fsp=6), nullable=False),
         sa.Column("create_datetime", sa.DateTime(), nullable=False),

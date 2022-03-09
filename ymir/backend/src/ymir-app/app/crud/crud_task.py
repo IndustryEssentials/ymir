@@ -11,6 +11,7 @@ from app.constants.state import FinalStates, TaskState, TaskType
 from app.crud.base import CRUDBase
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskUpdate
+from app.utils.ymir_controller import gen_task_hash
 
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
@@ -21,22 +22,48 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         obj_in: TaskCreate,
         task_hash: str,
         user_id: int,
-        state: int = TaskState.pending.value,
+        state: int = int(TaskState.pending),
         percent: float = 0,
     ) -> Task:
-        config = obj_in.config
-        if isinstance(config, dict):
-            config = json.dumps(config)
         db_obj = Task(
             name=obj_in.name,
             type=obj_in.type,
-            config=config,
+            config=json.dumps(obj_in.config) if obj_in.config else None,
+            parameters=obj_in.parameters.json() if obj_in.parameters else None,
+            project_id=obj_in.project_id,
             hash=task_hash,
             user_id=user_id,
-            project_id=obj_in.project_id,
             state=state,
             percent=percent,  # type: ignore
-            parameters=obj_in.parameters.json() if obj_in.parameters else None,
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
+    def create_placeholder(
+        self,
+        db: Session,
+        type_: TaskType,
+        user_id: int,
+        project_id: int,
+        hash_: Optional[str] = None,
+    ) -> Task:
+        """
+        create a task as placeholder, required by:
+        - dataset import
+        - dataset fusion
+        - model import
+        """
+        task_hash = hash_ or gen_task_hash(user_id, project_id)
+        db_obj = Task(
+            name=task_hash,
+            type=type_,
+            project_id=project_id,
+            hash=task_hash,
+            user_id=user_id,
+            state=int(TaskState.done),
+            percent=1,  # type: ignore
         )
         db.add(db_obj)
         db.commit()
@@ -61,7 +88,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         new_state: TaskState,
         state_code: Optional[str] = None,
     ) -> Task:
-        task.state = new_state.value
+        task.state = int(new_state)
         if state_code is not None:
             task.error_code = state_code
         db.add(task)
@@ -97,7 +124,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         state_code: Optional[str] = None,
         percent: Optional[float],
     ) -> Task:
-        task.state = new_state.value
+        task.state = int(new_state)
         if percent is not None:
             task.percent = percent  # type: ignore
         if state_code is not None:
@@ -141,16 +168,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         if name:
             query = query.filter(self.model.name.like(f"%{name}%"))
         if type_:
-            query = query.filter(self.model.type == type_.value)
+            query = query.filter(self.model.type == int(type_))
         if state:
-            if state == TaskState.terminate:
-                query = query.filter(
-                    self.model.state.in_(
-                        [TaskState.terminate.value, TaskState.premature.value]
-                    )
-                )
-            else:
-                query = query.filter(self.model.state == state.value)
+            query = query.filter(self.model.state == int(state))
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
             _end_time = datetime.utcfromtimestamp(end_time)
@@ -167,6 +187,13 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         query = query.order_by(order_by_column)
 
         return query.offset(offset).limit(limit).all(), query.count()
+
+    def terminate(self, db: Session, task: Task) -> Task:
+        task.is_terminated = True
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        return task
 
 
 task = CRUDTask(Task)
