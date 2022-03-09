@@ -31,6 +31,10 @@ class DatasetBase(BaseModel):
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
+    class Config:
+        use_enum_values = True
+        validate_all = True
+
 
 # Properties required for a client to create a dataset
 class DatasetImport(DatasetBase):
@@ -92,6 +96,10 @@ class Dataset(DatasetInDBBase):
         #       values["keywords"] = parse_optional_json(values["keywords"])
         #       values["ignored_keywords"] = parse_optional_json(values["ignored_keywords"])
         return values
+
+    class Config:
+        use_enum_values = True
+        validate_all = True
 
 
 class DatasetPagination(BaseModel):
