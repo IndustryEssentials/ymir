@@ -1,14 +1,11 @@
 import { OriginDatasetGroup, DatasetGroup, OriginDatasetVersion, DatasetVersion } from "@/interface/dataset"
 import { format } from '@/utils/date'
+import { getInterationVersion } from "./project"
 
 export enum states {
   READY = 1,
   VALID = 2,
   INVALID = 3,
-}
-
-function getInterationVersion (version: number) {
-  return `V${version}`
 }
 
 export function transferDatasetGroup (data: OriginDatasetGroup) {
@@ -38,8 +35,10 @@ export function transferDatasetVersion (data: OriginDatasetVersion): DatasetVers
     createTime: format(data.create_datetime),
     updateTime: format(data.update_datetime),
     taskId: data.task_id,
-    progress: data.progress,
+    progress: data.related_task.percent || 0,
     taskState: data.related_task.state,
     taskType: data.related_task.type,
+    duration: data.related_task.duration,
+    taskName: data.related_task.name,
   }
 }

@@ -1,4 +1,5 @@
 
+import { Task } from './task'
 export interface DatasetGroup {
   id: number,
   name: string,
@@ -19,12 +20,14 @@ export interface DatasetVersion {
   createTime: string,
   updateTime: string,
   assetCount: number,
+  ignoredKeywords: Array<string>,
+  hash: string,
   taskId: number,
   progress: number,
   taskState: number,
   taskType: number,
-  ignoredKeywords: Array<string>,
-  hash: string,
+  duration: number,
+  taskName: string,
 }
 
 
@@ -47,29 +50,10 @@ export interface OriginDatasetVersion {
   state: number,
   asset_count: number,
   keyword_count: number,
-  progress: number,
   result_state: number,
   ignored_keywords: Array<string>,
   create_datetime: string,
   update_datetime: string,
   task_id: number,
   related_task: Task,
-}
-
-interface Task {
-  name: string,
-  type: number,
-  project_id: number,
-  is_deleted: number,
-  create_datetime: string,
-  update_datetime: string,
-  id: number,
-  hash: string,
-  state: number,
-  error_code: number,
-  duration: number,
-  percent: number,
-  parameters: object,
-  config: object,
-  result_type: number,
 }

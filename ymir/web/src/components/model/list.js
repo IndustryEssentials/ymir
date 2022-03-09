@@ -69,8 +69,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
   const columns = [
     {
       title: showTitle("model.column.name"),
-      key: "name",
-      dataIndex: "name",
+      dataIndex: "versionName",
       className: styles[`column_name`],
       render: (name, { id }) => (
         <Link to={`/home/model/detail/${id}`}>{name}</Link>
@@ -79,9 +78,8 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     },
     {
       title: showTitle("model.column.source"),
-      dataIndex: "source",
-      render: (type, { task_id, task_name }) => <TypeTag types={getModelImportTypes()} type={type} id={task_id} name={task_name} />,
-      ellipsis: true,
+      dataIndex: "taskType",
+      render: (type) => <TypeTag types={getModelImportTypes()} type={type} />,
     },
     {
       title: showTitle("model.column.target"),

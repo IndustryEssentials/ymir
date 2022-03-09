@@ -1,5 +1,6 @@
 import { OriginModelGroup, ModelGroup, OriginModelVersion, ModelVersion } from "@/interface/model"
 import { format } from '@/utils/date'
+import { getInterationVersion } from "./project"
 
 export enum states {
   READY = 1,
@@ -9,7 +10,9 @@ export enum states {
 
 export function transferModelGroup (data: OriginModelGroup) {
   const group: ModelGroup = {
-    ...data,
+    id: data.id,
+    name: data.name,
+    projectId: data.project_id,
     createTime: format(data.create_datetime),
   }
   return group
@@ -19,13 +22,20 @@ export function transferModelVersion (data: OriginModelVersion): ModelVersion {
   return {
     id: data.id,
     name: data.name,
-    version: data.version,
-    keywords: data.keywords,
-    state: data.state,
+    groupId: data.model_group_id,
+    projectId: data.project_id,
+    hash: data.hash,
+    version: data.version_num || 0,
+    versionName: getInterationVersion(data.version_num),
+    state: data.result_state,
+    map: data.map || 0,
+    url: data.url || '',
     createTime: format(data.create_datetime),
-    assetCount: data.asset_count,
-    taskId: data.task_id,
-    progress: data.progress,
-    taskState: data.taskState,
+    updateTime: format(data.update_datetime),
+    taskId: data.related_task.id,
+    progress: data.related_task.percent || 0,
+    taskType: data.related_task.type,
+    taskState: data.related_task.state,
+    taskName: data.related_task.name,
   }
 }
