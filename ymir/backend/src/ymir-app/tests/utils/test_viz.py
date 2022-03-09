@@ -39,7 +39,10 @@ class TestAssets:
             ],
             "class_ids_count": {},
             "ignored_labels": {"cat": 1},
-            "negative_info":  {'negative_images_cnt': 2, 'project_negative_images_cnt': 3},
+            "negative_info": {
+                "negative_images_cnt": 2,
+                "project_negative_images_cnt": 3,
+            },
             "total": random.randint(1000, 2000),
         }
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
@@ -79,7 +82,10 @@ class TestVizClient:
             ],
             "class_ids_count": {},
             "ignored_labels": {"cat": 1},
-            "negative_info": {'negative_images_cnt': 2, 'project_negative_images_cnt': 3},
+            "negative_info": {
+                "negative_images_cnt": 2,
+                "project_negative_images_cnt": 3,
+            },
             "total": random.randint(1000, 2000),
         }
         resp.json.return_value = {"result": res}
@@ -89,13 +95,12 @@ class TestVizClient:
         project_id = random.randint(1000, 2000)
         task_id = random_lower_string()
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
-        viz.config(
+        viz.initialize(
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
-            keyword_id_to_name=keyword_id_to_name,
         )
-        ret = viz.get_assets()
+        ret = viz.get_assets(class_ids_to_keywords=keyword_id_to_name)
         assert isinstance(ret, m.Assets)
         assert ret.total
         assert ret.items
@@ -129,13 +134,12 @@ class TestVizClient:
         task_id = random_lower_string()
         asset_id = random_lower_string()
         keyword_id_to_name = {i: random_lower_string() for i in range(100)}
-        viz.config(
+        viz.initialize(
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
-            keyword_id_to_name=keyword_id_to_name,
         )
-        ret = viz.get_asset(asset_id=asset_id)
+        ret = viz.get_asset(asset_id=asset_id, class_ids_to_keywords=keyword_id_to_name)
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id
 
@@ -155,7 +159,7 @@ class TestVizClient:
         user_id = random.randint(100, 200)
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
-        viz.config(user_id=user_id, project_id=project_id, branch_id=task_id)
+        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
         ret = viz.get_model()
         assert isinstance(ret, dict)
         assert ret["hash"] == res["model_id"]

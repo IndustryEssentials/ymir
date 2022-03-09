@@ -10,6 +10,27 @@ from app.schemas.model_group import ModelGroupCreate, ModelGroupUpdate
 
 
 class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
+    def create_model_group(
+        self,
+        db: Session,
+        *,
+        user_id: int,
+        project_id: int,
+        training_dataset_id: int,
+        name: Optional[str] = None,
+    ) -> ModelGroup:
+        name = name or f"model_group_{training_dataset_id}"
+        db_obj = ModelGroup(
+            name=name,
+            user_id=user_id,
+            project_id=project_id,
+            training_dataset_id=training_dataset_id,
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
     def get_multi_model_groups(
         self,
         db: Session,

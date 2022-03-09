@@ -56,7 +56,6 @@ def test_get_default_dataset_name():
 class TestNormalizeParameters:
     def test_normalize_task_parameters_succeed(self, mocker):
         mocker.patch.object(m, "crud")
-        mocker.patch.object(m, "group_keywords_by_dataset")
         params = {
             "keywords": "cat,dog,boy".split(","),
             "dataset_id": 1,
@@ -64,20 +63,12 @@ class TestNormalizeParameters:
             "name": random_lower_string(5),
             "else": None,
         }
-        keywords_mapping = {"cat": 1, "dog": 2, "boy": 3}
+        labels = ["1,cat", "2,dog", "3,boy"]
         params = m.schemas.TaskParameter(**params)
-        res = m.normalize_parameters(
-            mocker.Mock(), random_lower_string(5), params, keywords_mapping
-        )
+        res = m.normalize_parameters(mocker.Mock(), params, None, labels)
         assert res["class_ids"] == [1, 2, 3]
         assert "dataset_hash" in res
         assert "model_hash" in res
-
-    def test_normalize_task_parameters_skip(self, mocker):
-        assert (
-            m.normalize_parameters(mocker.Mock(), random_lower_string(5), None, {})
-            is None
-        )
 
 
 class TestListTasks:
