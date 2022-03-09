@@ -9,7 +9,7 @@ def make_cmd_request(user_id: str = None,
                      task_id: str = None,
                      singleton_op: str = None,
                      his_task_id: str = None,
-                     dst_task_id: str = None,
+                     dst_dataset_id: str = None,
                      in_dataset_ids: List[str] = None,
                      ex_dataset_ids: List[str] = None,
                      in_class_ids: List[int] = None,
@@ -40,8 +40,8 @@ def make_cmd_request(user_id: str = None,
         request.singleton_op = singleton_op
     if his_task_id is not None:
         request.his_task_id = his_task_id
-    if dst_task_id is not None:
-        request.dst_task_id = dst_task_id
+    if dst_dataset_id is not None:
+        request.dst_dataset_id = dst_dataset_id
     if in_dataset_ids:
         request.in_dataset_ids[:] = in_dataset_ids
     if ex_dataset_ids:
@@ -89,7 +89,7 @@ def make_invoker_cmd_call(invoker: Any,
                           executor_instance: str = None,
                           singleton_op: str = None,
                           his_task_id: str = None,
-                          dst_task_id: str = None,
+                          dst_dataset_id: str = None,
                           in_dataset_ids: List[str] = None,
                           ex_dataset_ids: List[str] = None,
                           in_class_ids: List[int] = None,
@@ -112,7 +112,7 @@ def make_invoker_cmd_call(invoker: Any,
                                task_id=task_id,
                                singleton_op=singleton_op,
                                his_task_id=his_task_id,
-                               dst_task_id=dst_task_id,
+                               dst_dataset_id=dst_dataset_id,
                                in_dataset_ids=in_dataset_ids,
                                ex_dataset_ids=ex_dataset_ids,
                                in_class_ids=in_class_ids,

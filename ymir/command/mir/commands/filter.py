@@ -135,11 +135,6 @@ class CmdFilter(base.BaseCommand):
                 asset_ids_set = match_func(asset_ids_set, mir_keywords, attr_name, ci_ck_conditions)
                 logging.info(f"assets count after {message}: {len(asset_ids_set)}")
 
-        if not asset_ids_set:
-            raise MirRuntimeError(
-                error_code=MirCode.RC_CMD_INVALID_ARGS,
-                error_message=f"matched nothing with pred: {in_cis}, excludes: {ex_cis}, please try another preds")
-
         matched_mir_metadatas = mirpb.MirMetadatas()
         matched_mir_annotations = mirpb.MirAnnotations()
         matched_mir_keywords = mirpb.MirKeywords()

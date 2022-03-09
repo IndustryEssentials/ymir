@@ -29,9 +29,7 @@ class TestUpdateImage:
         result = r.json()["result"]
         assert result["name"] == new_name
 
-    def test_update_image_failed_due_to_no_permission(
-        self, client: TestClient, normal_user_token_headers
-    ):
+    def test_update_image_failed_due_to_no_permission(self, client: TestClient, normal_user_token_headers):
         new_name = random_lower_string()
         r = client.patch(
             f"{settings.API_V1_STR}/images/1",
@@ -55,9 +53,7 @@ class TestGetImage:
 class TestCreateImage:
     def test_create_image_success(self, client: TestClient, admin_token_headers):
         j = {"url": random_lower_string(), "name": random_lower_string()}
-        r = client.post(
-            f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j
-        )
+        r = client.post(f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j)
         assert r.ok
         result = r.json()["result"]
         assert result["name"] == j["name"]
@@ -67,9 +63,7 @@ class TestCreateImage:
 class TestDeleteImage:
     def test_delete_a_image_success(self, client: TestClient, admin_token_headers):
         j = {"url": random_lower_string(), "name": random_lower_string()}
-        r = client.post(
-            f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j
-        )
+        r = client.post(f"{settings.API_V1_STR}/images/", headers=admin_token_headers, json=j)
         i = r.json()["result"]["id"]
 
         r = client.delete(
@@ -81,9 +75,7 @@ class TestDeleteImage:
 
 
 class TestCreateRelationship:
-    def test_create_image_relationship_success(
-        self, client: TestClient, admin_token_headers
-    ):
+    def test_create_image_relationship_success(self, client: TestClient, admin_token_headers):
         src_image_id = 1
         dest_image_ids = [2, 3]
         r = client.put(
@@ -99,9 +91,7 @@ class TestCreateRelationship:
 
 
 class TestGetRelationship:
-    def test_get_image_relationship_success(
-        self, client: TestClient, admin_token_headers
-    ):
+    def test_get_image_relationship_success(self, client: TestClient, admin_token_headers):
         src_image_id = 1
         dest_image_ids = [3]
         r = client.put(

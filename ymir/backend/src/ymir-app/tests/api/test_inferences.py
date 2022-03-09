@@ -16,9 +16,7 @@ from tests.utils.utils import random_lower_string, random_url
 
 
 class TestPostInference:
-    def test_call_inference_missing_model(
-        self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker
-    ):
+    def test_call_inference_missing_model(self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker):
         j = {
             "model_id": random.randint(1000, 2000),
             "docker_image": random_lower_string(),

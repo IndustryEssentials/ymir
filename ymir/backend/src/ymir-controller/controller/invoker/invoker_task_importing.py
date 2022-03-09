@@ -30,7 +30,7 @@ class TaskImportingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         importing_request = request.req_create_task.importing
 
         # Prepare media index-file

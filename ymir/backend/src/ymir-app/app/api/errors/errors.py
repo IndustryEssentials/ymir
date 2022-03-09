@@ -1,13 +1,14 @@
 from typing import Any, Dict, Optional, Union
 
-from app.config import settings
 from fastapi import HTTPException
 from fastapi.exceptions import RequestValidationError
-from id_definition.error_codes import APIErrorCode as error_codes
 from pydantic import ValidationError
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+
+from app.config import settings
+from id_definition.error_codes import APIErrorCode as error_codes
 
 
 async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
@@ -19,9 +20,7 @@ async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
             "code": error_codes.UNKNOWN_ERROR,
             "message": "Unknown Error",
         }
-    return JSONResponse(
-        detail, status_code=200 if settings.USE_200_EVERYWHERE else exc.status_code
-    )
+    return JSONResponse(detail, status_code=200 if settings.USE_200_EVERYWHERE else exc.status_code)
 
 
 async def http422_error_handler(
@@ -34,9 +33,7 @@ async def http422_error_handler(
             "message": "Invalid Request Format",
             "errors": exc.errors(),
         },
-        status_code=200
-        if settings.USE_200_EVERYWHERE
-        else HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=200 if settings.USE_200_EVERYWHERE else HTTP_422_UNPROCESSABLE_ENTITY,
     )
 
 
