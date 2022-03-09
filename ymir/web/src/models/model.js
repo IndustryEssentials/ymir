@@ -2,6 +2,7 @@ import {
   getModels, 
   getModelVersions,
   batchModels,
+  queryModels,
   getModel,
   delModel,
   createModel,
@@ -9,6 +10,8 @@ import {
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
+import { transferModel } from '@/constants/model'
+
 
 const initQuery = {
   name: "",
@@ -60,7 +63,6 @@ export default {
     *queryModels({ payload }, { select, call, put }) {
       const { code, result } = yield call(queryModels, payload)
       if (code === 0) {
-        console.log('query datset: ', result)
         return { items: result.items.map(ds => transferModel(ds)), total: result.total }
       }
     },

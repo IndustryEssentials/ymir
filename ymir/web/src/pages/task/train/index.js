@@ -31,13 +31,12 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ getDatasets, createTrainTask, getSysInfo }) {
+function Train({ allDatasets, getDatasets, createTrainTask, getSysInfo }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image } = location.query
-  const [allDs, setAllDs] = useState([])
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSets, setTrainSets] = useState([])
@@ -68,15 +67,16 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     fetchSysInfo()
   }, [])
 
-  useEffect(async () => {
-    console.log('get datasets initial.')
-    let result = await getDatasets()
-    console.log('result: ', result)
-    if (result?.items) {
-      const ds = result.items.filter(dataset => TASKSTATES.FINISH === dataset.state)
-      setAllDs(ds)
-      setDatasets(ds)
+  useEffect(() => {
+    const ds = allDatasets.filter(dataset => TASKSTATES.FINISH === dataset.state)
+    setDatasets(ds)
+    if (id) {
+      setDataset(allDatasets.find(ds => ds.id === id))
     }
+  }, [allDatasets])
+
+  useEffect(() => {
+    getDatasets()
   }, [])
 
   useEffect(() => {
@@ -95,11 +95,6 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
-
-  useEffect(() => {
-    // todo get dataset by id
-    setDataset(datasets.find(ds => ds.id === id))
-  }, [datasets])
 
   useEffect(() => {
     const state = location.state
@@ -388,7 +383,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                   label={t('task.mining.form.model.label')}
                   name="model"
                 >
-                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} keywords={selectedKeywords}
+                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={dataset.projectId} keywords={selectedKeywords}
                     onChange={modelChange} />
                 </Form.Item>
               </Tip>
@@ -538,7 +533,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
 
 const props = (state) => {
   return {
-    datasets: state.dataset.allDatasets,
+    allDatasets: state.dataset.allDatasets,
   }
 }
 

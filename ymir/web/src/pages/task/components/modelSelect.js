@@ -6,13 +6,17 @@ import t from '@/utils/t'
 import { percent } from '../../../utils/number'
 
 
-const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ...resProps }) => {
+const ModelSelect = ({ pid, value, allModels, keywords = [], onChange = () => { }, getModels, ...resProps }) => {
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
 
   useEffect(() => {
     fetchModels()
   }, [])
+
+  useEffect(() => {
+    setModels(allModels)
+  }, [allModels])
 
   useEffect(() => {
     if (options.length === 1) {
@@ -25,24 +29,19 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
   }, [models])
 
   useEffect(() => {
-    const same = models.filter(model => model.keywords.toString() === keywords.toString()) || []
-    const inter = models.filter(model => {
-      const kws = model.keywords
-      return kws.toString() !== keywords.toString() && kws.some(kw => keywords.includes(kw))
-    })
-    const diff = models.filter(model => model.keywords.every(kw => !keywords.includes(kw))) || []
-    setModels([...same, ...inter, ...diff])
+    if (allModels.length && keywords.length) {
+      const same = allModels.filter(model => model.keywords.toString() === keywords.toString()) || []
+      const inter = allModels.filter(model => {
+        const kws = model.keywords
+        return kws.toString() !== keywords.toString() && kws.some(kw => keywords.includes(kw))
+      })
+      const diff = allModels.filter(model => model.keywords.every(kw => !keywords.includes(kw))) || []
+      setModels([...same, ...inter, ...diff])
+    }
   }, [keywords])
 
   async function fetchModels() {
-    const params = {
-      offset: 0,
-      limit: 100000,
-    }
-    const result = await getModels(params)
-    if (result?.items) {
-      setModels(result.items)
-    }
+    await getModels(pid)
   }
 
   function generateOptions() {
@@ -65,14 +64,19 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
   )
 }
 
+const props = (state) => {
+  return {
+    models: state.model.allModels,
+  }
+}
 const actions = (dispatch) => {
   return {
-    getModels(payload) {
+    getModels(pid) {
       return dispatch({
-        type: 'model/getModels',
-        payload,
+        type: 'model/queryAllModels',
+        payload: pid,
       })
     }
   }
 }
-export default connect(null, actions)(ModelSelect)
+export default connect(props, actions)(ModelSelect)

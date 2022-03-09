@@ -71,8 +71,9 @@ export default {
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
       }
     },
-    *queryAllDatasets({}, { select, call, put }) {
-      const dss = yield put.resolve({ type: 'queryDatasets', payload: { limit: 10000 }})
+    *queryAllDatasets({ payload }, { select, call, put }) {
+      const pid = payload
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, limit: 10000 }})
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",
