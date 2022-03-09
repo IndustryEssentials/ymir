@@ -59,13 +59,9 @@ def create_model_group(
     """
     Create model group
     """
-    if crud.model_group.is_duplicated_name(
-        db, user_id=current_user.id, name=obj_in.name
-    ):
+    if crud.model_group.is_duplicated_name(db, user_id=current_user.id, name=obj_in.name):
         raise DuplicateModelGroupError()
-    model_group = crud.model_group.create_with_user_id(
-        db, user_id=current_user.id, obj_in=obj_in
-    )
+    model_group = crud.model_group.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create modelgroup] model group record created: %s", model_group)
     return {"result": model_group}
 
@@ -103,9 +99,7 @@ def update_model_group(
     """
     Change model group name
     """
-    model_group = crud.model_group.get_by_user_and_id(
-        db, user_id=current_user.id, id=group_id
-    )
+    model_group = crud.model_group.get_by_user_and_id(db, user_id=current_user.id, id=group_id)
     if not model_group:
         raise ModelGroupNotFound()
 

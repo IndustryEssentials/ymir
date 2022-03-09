@@ -26,13 +26,9 @@ class NodeType(str, Enum):
 def get_graph(
     db: Session = Depends(deps.get_db),
     graph_db: GraphClient = Depends(deps.get_graph_client_of_user),
-    type_: NodeType = Query(
-        ..., alias="type", description="type of Node, including model and dataset"
-    ),
+    type_: NodeType = Query(..., alias="type", description="type of Node, including model and dataset"),
     id_: int = Query(..., alias="id", description="model_id or dataset_id"),
-    max_hops: int = Query(
-        settings.MAX_HOPS, description="max distance from given node to target nodes"
-    ),
+    max_hops: int = Query(settings.MAX_HOPS, description="max distance from given node to target nodes"),
 ) -> Any:
     """
     Get history of dataset or model in Graph

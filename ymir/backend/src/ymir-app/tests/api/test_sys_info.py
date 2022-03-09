@@ -1,6 +1,5 @@
 from typing import Dict
 
-import pytest
 from fastapi.testclient import TestClient
 
 from app.config import settings
@@ -13,8 +12,6 @@ class TestSysInfo:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ) -> None:
-        r = client.get(
-            f"{settings.API_V1_STR}/sys_info", headers=normal_user_token_headers
-        )
+        r = client.get(f"{settings.API_V1_STR}/sys_info", headers=normal_user_token_headers)
         sys_info = r.json()["result"]
         assert sys_info["gpu_count"] == 233

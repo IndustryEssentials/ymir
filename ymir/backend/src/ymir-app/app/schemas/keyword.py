@@ -1,9 +1,9 @@
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
 
 from .common import Common
-from datetime import datetime
 
 
 class KeywordBase(BaseModel):

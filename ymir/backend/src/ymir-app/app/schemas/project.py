@@ -1,5 +1,6 @@
 import json
 from typing import List, Optional
+
 from pydantic import BaseModel, Field, validator
 
 from app.constants.state import MiningStrategy, TrainingType
@@ -47,9 +48,7 @@ class ProjectUpdate(BaseModel):
     testing_dataset_id: Optional[int]
 
 
-class ProjectInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase
-):
+class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
     class Config:
         orm_mode = True
 

@@ -127,14 +127,10 @@ def create_task(
         raise FailedtoCreateTask()
 
     # 4. create task record
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_hash, user_id=current_user.id
-    )
+    task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=current_user.id)
 
     # 5. create task result record (dataset or model)
-    task_result = TaskResult(
-        db=db, controller=controller_client, viz=viz_client, task_in_db=task
-    )
+    task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task)
     task_result.create(task_in.parameters.dataset_id)
 
     # 6. send metric to clickhouse
@@ -206,11 +202,7 @@ class TaskResult:
 
     @property
     def result_info(self) -> Dict:
-        return (
-            self.model_info
-            if self.result_type is ResultType.model
-            else self.dataset_info
-        )
+        return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
     def get_dest_group_id(self, dataset_id: int) -> int:
         if self.result_type is ResultType.dataset:
@@ -223,9 +215,7 @@ class TaskResult:
                 raise DatasetNotFound()
             return dataset.dataset_group_id
         else:
-            model_group = crud.model_group.get_from_training_dataset(
-                self.db, training_dataset_id=dataset_id
-            )
+            model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
             if not model_group:
                 model_group = crud.model_group.create_model_group(
                     self.db,
@@ -324,13 +314,7 @@ def parse_metrics(parameters: Dict) -> Dict:
         "include_train_datasets",
         "include_test_datasets",
     ]
-    dataset_ids = list(
-        {
-            dataset_id
-            for field in dataset_fields
-            for dataset_id in parameters.get(field) or []
-        }
-    )
+    dataset_ids = list({dataset_id for field in dataset_fields for dataset_id in parameters.get(field) or []})
     model_id = parameters.get("model_id")
     model_ids = [model_id] if model_id else []
     keywords = parameters.get("include_classes") or []
@@ -384,15 +368,11 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = convert_keywords_to_classes(
-            labels, parameters.keywords
-        )
+        normalized["class_ids"] = convert_keywords_to_classes(labels, parameters.keywords)
     return normalized
 
 
-def order_datasets_by_strategy(
-    objects: List[Any], strategy: Optional[MergeStrategy]
-) -> None:
+def order_datasets_by_strategy(objects: List[Any], strategy: Optional[MergeStrategy]) -> None:
     """
     change the order of datasets *in place*
     """
@@ -470,9 +450,7 @@ def update_task_name(
     """
     Update task name
     """
-    task = crud.task.get_by_user_and_name(
-        db, user_id=current_user.id, name=task_in.name
-    )
+    task = crud.task.get_by_user_and_name(db, user_id=current_user.id, name=task_in.name)
     if task:
         raise DuplicateTaskError()
 
@@ -504,9 +482,7 @@ def terminate_task(
     task = crud.task.get(db, id=task_id)
     if not task:
         raise TaskNotFound()
-    controller_client.terminate_task(
-        user_id=current_user.id, task_hash=task.hash, task_type=task.type
-    )
+    controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
     task = crud.task.terminate(db, task=task)
     if not terminate_info.fetch_result:
         # task that is terminated without result is in final terminate state
@@ -555,13 +531,9 @@ def update_task_status(
         raise ObsoleteTaskStatus()
 
     # 3. Update task and task_result(could be dataset or model)
-    task_result = TaskResult(
-        db=db, controller=controller_client, viz=viz_client, task_in_db=task_in_db
-    )
+    task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task_in_db)
     try:
-        task_in_db = task_result.update(
-            viz=viz_client, controller=controller_client, task_result=task_update
-        )
+        task_in_db = task_result.update(viz=viz_client, controller=controller_client, task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
@@ -571,9 +543,7 @@ def update_task_status(
     return {"result": task_in_db}
 
 
-def is_obsolete_message(
-    last_update_time: Union[float, int], msg_time: Union[float, int]
-) -> bool:
+def is_obsolete_message(last_update_time: Union[float, int], msg_time: Union[float, int]) -> bool:
     return last_update_time > msg_time
 
 
