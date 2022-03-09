@@ -21,7 +21,7 @@ class ImportStrategy(enum.IntEnum):
 
 class DatasetBase(BaseModel):
     name: str = Field(description="Dataset Version Name")
-    result_state: ResultState = ResultState.processing.value  # type: ignore
+    result_state: ResultState = ResultState.processing
     dataset_group_id: int
     project_id: int
     # task_id haven't created yet
@@ -33,6 +33,7 @@ class DatasetBase(BaseModel):
 
     class Config:
         use_enum_values = True
+        validate_all = True
 
 
 # Properties required for a client to create a dataset
@@ -95,6 +96,10 @@ class Dataset(DatasetInDBBase):
         #       values["keywords"] = parse_optional_json(values["keywords"])
         #       values["ignored_keywords"] = parse_optional_json(values["ignored_keywords"])
         return values
+
+    class Config:
+        use_enum_values = True
+        validate_all = True
 
 
 class DatasetPagination(BaseModel):

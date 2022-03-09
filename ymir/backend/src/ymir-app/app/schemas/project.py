@@ -31,6 +31,7 @@ class ProjectCreate(ProjectBase):
 
     class Config:
         use_enum_values = True
+        validate_all = True
 
 
 # Properties that can be changed

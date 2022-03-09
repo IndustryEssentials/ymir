@@ -18,7 +18,7 @@ def register_monitor_log(
         json=dict(
             task_id=task_id,
             user_id=user_id,
-            log_path_weights=log_paths_weights,
+            log_paths_weights=log_paths_weights,
             description=description,
         ),
         timeout=5,
