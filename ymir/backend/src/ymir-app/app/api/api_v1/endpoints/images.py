@@ -114,7 +114,7 @@ def import_docker_image(
     crud.docker_image.update_from_dict(
         db,
         docker_image_id=docker_image.id,
-        updates={"hash": hash_, "state": DockerImageState.done.value},
+        updates={"hash": hash_, "state": int(DockerImageState.done)},
     )
     logger.info(
         "[create image] docker image imported via controller: %s, added %d configs",

@@ -20,11 +20,19 @@ from app.api.errors.errors import (
     ObsoleteTaskStatus,
     TaskNotFound,
     DatasetNotFound,
-    ModelNotFound,
 )
-from app.constants.state import FinalStates, TaskState, TaskType, ResultType
+from app.constants.state import (
+    FinalStates,
+    TaskState,
+    TaskType,
+    ResultType,
+    ResultState,
+)
 from app.schemas.task import MergeStrategy
-from app.utils.class_ids import get_keyword_name_to_id_mapping
+from app.utils.class_ids import (
+    convert_keywords_to_classes,
+    get_keyword_id_to_name_mapping,
+)
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
@@ -32,10 +40,6 @@ from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 
 router = APIRouter()
-
-
-class NoDestGroup(Exception):
-    pass
 
 
 class SortField(enum.Enum):
@@ -90,17 +94,13 @@ def create_task(
     db: Session = Depends(deps.get_db),
     task_in: schemas.TaskCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
+    viz_client: VizClient = Depends(deps.get_viz_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     labels: List[str] = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Create task
-
-    Note that if you selected multiple datasets, use `strategy` to choose primary one:
-     - stop_upon_conflict = 1
-     - prefer_newest = 2
-     - prefer_oldest = 3
     """
     # 1. validation
     task_info = jsonable_encoder(task_in)
@@ -109,12 +109,7 @@ def create_task(
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    keyword_name_to_id = get_keyword_name_to_id_mapping(labels)
-    parameters = normalize_parameters(
-        db, task_in.name, task_in.parameters, keyword_name_to_id
-    )
-    if parameters and task_in.config:
-        parameters["docker_config"] = task_in.config
+    parameters = normalize_parameters(db, task_in.parameters, task_in.config, labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
@@ -137,14 +132,21 @@ def create_task(
     )
 
     # 5. create task result record (dataset or model)
-    task_result = TaskResult(db=db, task_in_db=task)
-    task_result.create(task_in.dest_group_id, task_in.parameters.dataset_id)  # type: ignore
+    task_result = TaskResult(
+        db=db, controller=controller_client, viz=viz_client, task_in_db=task
+    )
+    task_result.create(task_in.parameters.dataset_id)
 
     # 6. send metric to clickhouse
     try:
-        metrics = parse_metrics(task_in.parameters.dict() if task_in.parameters else {})
-        grouped_keywords = parameters.get("grouped_keywords", []) if parameters else []
-        write_clickhouse_metrics(clickhouse, task_info, metrics, grouped_keywords)
+        metrics = parse_metrics(task_in.parameters.dict())
+        write_clickhouse_metrics(
+            clickhouse,
+            task_info,
+            metrics,
+            task_in.parameters.dataset_id,
+            task_in.parameters.keywords or [],
+        )
     except FailedToConnectClickHouse:
         # write clickhouse metric shouldn't block create task process
         logger.exception(
@@ -156,47 +158,126 @@ def create_task(
 
 
 class TaskResult:
-    def __init__(self, db: Session, task_in_db: models.Task):
+    def __init__(
+        self,
+        db: Session,
+        controller: ControllerClient,
+        viz: VizClient,
+        task_in_db: models.Task,
+    ):
         self.db = db
         self.task_in_db = task_in_db
         self.task = schemas.TaskInternal.from_orm(task_in_db)
 
+        self.result_type = self.task.result_type
+        self.user_id = self.task.user_id
+        self.project_id = self.task.project_id
+        self.task_hash = self.task.hash
+        self.controller = controller
+
+        viz.initialize(
+            user_id=self.user_id,
+            project_id=self.project_id,
+            branch_id=self.task_hash,
+        )
+        self.viz = viz
+
+    @property
+    def labels(self) -> List[str]:
+        """
+        Lazy evaluate labels from controller
+        """
+        return self.controller.get_labels_of_user(self.user_id)
+
+    @property
+    def model_info(self) -> Dict:
+        return self.viz.get_model()
+
+    @property
+    def dataset_info(self) -> Dict:
+        class_ids_to_keywords = get_keyword_id_to_name_mapping(self.labels)
+        assets = self.viz.get_assets(class_ids_to_keywords=class_ids_to_keywords)
+        result = {
+            "keywords": list(assets.keywords.keys()),
+            "ignored_keywords": list(assets.ignored_keywords.keys()),
+            "asset_count": assets.total,
+        }
+        return result
+
+    @property
+    def result_info(self) -> Dict:
+        return (
+            self.model_info
+            if self.result_type is ResultType.model
+            else self.dataset_info
+        )
+
     def get_dest_group_id(self, dataset_id: int) -> int:
-        if self.task.result_type is ResultType.dataset:
+        if self.result_type is ResultType.dataset:
             dataset = crud.dataset.get(self.db, id=dataset_id)
             if not dataset:
-                raise NoDestGroup("Failed to predict dest dataset group id")
+                logger.error(
+                    "Failed to predict dest dataset_group_id from non-existing dataset(%s)",
+                    dataset_id,
+                )
+                raise DatasetNotFound()
             return dataset.dataset_group_id
         else:
             model_group = crud.model_group.get_from_training_dataset(
                 self.db, training_dataset_id=dataset_id
             )
             if not model_group:
-                raise NoDestGroup("Failed to predict dest model group id")
+                model_group = crud.model_group.create_model_group(
+                    self.db,
+                    user_id=self.user_id,
+                    project_id=self.project_id,
+                    training_dataset_id=dataset_id,
+                )
+                logger.info(
+                    "[create task] created model_group(%s) for dataset(%s)",
+                    model_group.id,
+                    dataset_id,
+                )
             return model_group.id
 
-    def create(self, dest_group_id: Optional[int], dataset_id: int) -> None:
-        dest_group_id = dest_group_id or self.get_dest_group_id(dataset_id)
-        if self.task.result_type is ResultType.dataset:
+    def create(self, dataset_id: int) -> None:
+        dest_group_id = self.get_dest_group_id(dataset_id)
+        if self.result_type is ResultType.dataset:
             logger.info("[create task] creating new dataset as task result")
             crud.dataset.create_as_task_result(self.db, self.task, dest_group_id)
-        elif self.task.result_type is ResultType.model:
+        elif self.result_type is ResultType.model:
             logger.info("[create task] creating new model as task result")
             crud.model.create_as_task_result(self.db, self.task, dest_group_id)
         else:
             logger.info("[create task] no task result record needed")
 
-    def update(self, task_result: schemas.TaskUpdateStatus) -> models.Task:
-        if self.task.result_type is ResultType.dataset:
-            self.update_dataset_result(task_result)
-        elif self.task.result_type is ResultType.model:
-            self.update_model_result(task_result)
-        else:
-            logger.info("[update task] no task result to update")
-
+    def update(
+        self,
+        viz: VizClient,
+        controller: ControllerClient,
+        task_result: schemas.TaskUpdateStatus,
+    ) -> models.Task:
         task_in_db = crud.task.get(self.db, id=self.task.id)
         if not task_in_db:
+            logger.error(
+                "[update task] could not find target task (%s) to update, ignore",
+                self.task.id,
+            )
             raise TaskNotFound()
+
+        if task_result.state in FinalStates:
+            logger.info(
+                "[update task] task reached final state(%s), handling result: %s",
+                task_result.state,
+                task_result,
+            )
+            self.update_task_result(task_result)
+
+        logger.info(
+            "[update task] updating task state %s and percent %s",
+            task_result.state,
+            task_result.percent,
+        )
         return crud.task.update_state_and_percent(
             self.db,
             task=task_in_db,
@@ -205,19 +286,33 @@ class TaskResult:
             percent=task_result.percent,
         )
 
-    def update_dataset_result(self, task_result: schemas.TaskUpdateStatus) -> None:
-        dataset = crud.dataset.get_by_task_id(self.db, task_id=self.task.id)
-        if not dataset:
-            raise DatasetNotFound()
-        crud.dataset.update_state(
-            self.db, dataset_id=dataset.id, new_state=task_result.state
-        )
+    def update_task_result(self, task_result: schemas.TaskUpdateStatus) -> None:
+        if self.result_type is ResultType.dataset:
+            crud_func = crud.dataset
+        elif self.result_type is ResultType.model:
+            crud_func = crud.model  # type: ignore
+        else:
+            logger.info("[update task] no task result to update")
+            return
 
-    def update_model_result(self, task_result: schemas.TaskUpdateStatus) -> None:
-        model = crud.model.get_by_task_id(self.db, task_id=self.task.id)
-        if not model:
-            raise ModelNotFound()
-        crud.model.update_state(self.db, model_id=model.id, new_state=task_result.state)
+        result_record = crud_func.get_by_task_id(self.db, task_id=self.task.id)
+        if not result_record:
+            logger.error("[update task] task result record not found, skip")
+            return
+
+        if task_result.state is TaskState.done:
+            crud_func.finish(
+                self.db,
+                result_record.id,
+                result_state=ResultState.ready,
+                result=self.result_info,
+            )
+        else:
+            crud_func.finish(
+                self.db,
+                result_record.id,
+                result_state=ResultState.error,
+            )
 
 
 def parse_metrics(parameters: Dict) -> Dict:
@@ -242,22 +337,12 @@ def parse_metrics(parameters: Dict) -> Dict:
     return {"dataset_ids": dataset_ids, "model_ids": model_ids, "keywords": keywords}
 
 
-def group_keywords_by_dataset(datasets: List[Dict], keywords: List[str]) -> List[Dict]:
-    keywords_set = set(keywords)
-    return [
-        {
-            "dataset_id": dataset["id"],
-            "keywords": set(dataset["keywords"]) & keywords_set,
-        }
-        for dataset in datasets
-    ]
-
-
 def write_clickhouse_metrics(
     clickhouse: YmirClickHouse,
     task_info: Dict,
     metrics: Dict,
-    grouped_keywords: List,
+    dataset_id: int,
+    keywords: List[str],
 ) -> None:
     clickhouse.save_task_parameter(
         dt=task_info["create_datetime"],
@@ -267,29 +352,31 @@ def write_clickhouse_metrics(
         type_=TaskType(task_info["type"]).name,
         **metrics,
     )
-    for dataset_keywords in grouped_keywords:
-        clickhouse.save_dataset_keyword(
-            dt=task_info["create_datetime"],
-            user_id=task_info["user_id"],
-            **dataset_keywords,
-        )
+    clickhouse.save_dataset_keyword(
+        dt=task_info["create_datetime"],
+        user_id=task_info["user_id"],
+        dataset_id=dataset_id,
+        keywords=keywords,
+    )
 
 
 def normalize_parameters(
     db: Session,
-    name: str,
-    parameters: Optional[schemas.TaskParameter],
-    keyword_name_to_id: Dict,
-) -> Optional[Dict]:
-    if not parameters:
-        return None
-    normalized = {}  # type: Dict[str, Any]
-    normalized["name"] = name
+    parameters: schemas.TaskParameter,
+    config: Optional[Dict],
+    labels: List[str],
+) -> Dict:
+    normalized = parameters.dict()  # type: Dict[str, Any]
+
+    # training, mining and inference task has docker_config
+    normalized["docker_config"] = config
 
     dataset = crud.dataset.get(db, id=parameters.dataset_id)
     if not dataset:
         raise DatasetNotFound()
     normalized["dataset_hash"] = dataset.hash
+    # label task uses dataset name as task name for LabelStudio
+    normalized["dataset_name"] = dataset.name
 
     if parameters.model_id:
         model = crud.model.get(db, id=parameters.model_id)
@@ -297,14 +384,8 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = [
-            keyword_name_to_id[keyword.strip()] for keyword in parameters.keywords
-        ]
-        # if keywords is provided, we have to figure out
-        # source dataset for each keyword
-        normalized["grouped_keywords"] = group_keywords_by_dataset(
-            [jsonable_encoder(dataset)],
-            parameters.keywords,
+        normalized["class_ids"] = convert_keywords_to_classes(
+            labels, parameters.keywords
         )
     return normalized
 
@@ -421,16 +502,15 @@ def terminate_task(
     otherwise, just set task state to terminated
     """
     task = crud.task.get(db, id=task_id)
-    if not (task and task.hash and task.type):
+    if not task:
         raise TaskNotFound()
     controller_client.terminate_task(
         user_id=current_user.id, task_hash=task.hash, task_type=task.type
     )
-
-    new_state = (
-        TaskState.premature if terminate_info.fetch_result else TaskState.terminate
-    )
-    task = crud.task.update_state(db, task=task, new_state=new_state)
+    task = crud.task.terminate(db, task=task)
+    if not terminate_info.fetch_result:
+        # task that is terminated without result is in final terminate state
+        task = crud.task.update_state(db, task=task, new_state=TaskState.terminate)
     return {"result": task}
 
 
@@ -475,9 +555,13 @@ def update_task_status(
         raise ObsoleteTaskStatus()
 
     # 3. Update task and task_result(could be dataset or model)
-    task_result = TaskResult(db=db, task_in_db=task_in_db)
+    task_result = TaskResult(
+        db=db, controller=controller_client, viz=viz_client, task_in_db=task_in_db
+    )
     try:
-        task_in_db = task_result.update(task_result=task_update)
+        task_in_db = task_result.update(
+            viz=viz_client, controller=controller_client, task_result=task_update
+        )
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()

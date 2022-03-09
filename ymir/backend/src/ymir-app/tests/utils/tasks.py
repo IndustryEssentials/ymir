@@ -18,6 +18,7 @@ def create_task(
         "name": random_lower_string(),
         "type": type_,
         "project_id": project_id or randint(100, 200),
+        "parameters": {"dataset_id": randint(100, 200)},
     }
     task_in = schemas.TaskCreate(**j)
     task = crud.task.create_task(

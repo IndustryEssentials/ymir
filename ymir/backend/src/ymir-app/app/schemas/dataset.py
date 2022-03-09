@@ -1,7 +1,8 @@
+import json
 import enum
-from typing import Any, List, Optional, Dict
+from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, validator
 
 from app.constants.state import ResultState, TaskType
 from app.schemas.common import (
@@ -30,6 +31,10 @@ class DatasetBase(BaseModel):
     ignored_keywords: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
+
+    class Config:
+        use_enum_values = True
+        validate_all = True
 
 
 # Properties required for a client to create a dataset
@@ -85,13 +90,25 @@ class DatasetInDBBase(
 
 # Properties to return to caller
 class Dataset(DatasetInDBBase):
+    keywords: Optional[str]
+    ignored_keywords: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @root_validator(pre=True)
-    def unpack_json(cls, values: Any) -> Dict:
-        #       values["keywords"] = parse_optional_json(values["keywords"])
-        #       values["ignored_keywords"] = parse_optional_json(values["ignored_keywords"])
-        return values
+    @validator("keywords")
+    def unpack_keywords(cls, v: Optional[str]) -> List[str]:
+        if v is None:
+            return []
+        return json.loads(v)
+
+    @validator("ignored_keywords")
+    def unpack_ignored_keywords(cls, v: Optional[str]) -> List[str]:
+        if v is None:
+            return []
+        return json.loads(v)
+
+    class Config:
+        use_enum_values = True
+        validate_all = True
 
 
 class DatasetPagination(BaseModel):

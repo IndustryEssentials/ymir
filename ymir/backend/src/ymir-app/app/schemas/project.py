@@ -16,7 +16,7 @@ class ProjectBase(BaseModel):
     description: Optional[str]
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
-    chunk_size: Optional[int]
+    chunk_size: Optional[int] = 0
 
     training_type: TrainingType = TrainingType.object_detect
 
@@ -31,6 +31,7 @@ class ProjectCreate(ProjectBase):
 
     class Config:
         use_enum_values = True
+        validate_all = True
 
 
 # Properties that can be changed

@@ -123,9 +123,7 @@ def get_controller_client() -> Generator:
 
 def get_viz_client() -> Generator:
     try:
-        client = ymir_viz.VizClient(
-            host=settings.VIZ_HOST,
-        )
+        client = ymir_viz.VizClient(host=settings.VIZ_HOST)
         yield client
     finally:
         client.close()
