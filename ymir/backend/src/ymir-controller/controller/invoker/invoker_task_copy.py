@@ -28,7 +28,7 @@ class TaskCopyInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         subtask_id_dict: Dict[int, str]) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
         copy_request = request.req_create_task.copy
         src_root = os.path.join(sandbox_root, copy_request.src_user_id, copy_request.src_repo_id)
         copy_response = cls.copying_cmd(repo_root=repo_root,
