@@ -82,20 +82,6 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
       render: (type) => <TypeTag types={getModelImportTypes()} type={type} />,
     },
     {
-      title: showTitle("model.column.target"),
-      dataIndex: "keywords",
-      render: (keywords) => {
-        const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
-        return <Tooltip placement='left' title={label}
-          color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
-          mouseEnterDelay={0.5}
-        >{label}</Tooltip>
-      },
-      ellipsis: {
-        showTitle: false,
-      },
-    },
-    {
       title: showTitle("model.column.map"),
       dataIndex: "map",
       render: map => <span title={map}>{percent(map)}</span>,
@@ -103,9 +89,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     },
     {
       title: showTitle("model.column.create_time"),
-      key: "create_datetime",
-      dataIndex: "create_datetime",
-      render: (datetime) => format(datetime),
+      dataIndex: "createTime",
       sorter: true,
       width: 200,
       align: 'center',
@@ -181,18 +165,6 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
         label: t("dataset.action.train"),
         onclick: () => history.push(`/home/task/train?mid=${id}`),
         icon: <TrainIcon />,
-      },
-      {
-        key: "history",
-        label: t("dataset.action.history"),
-        onclick: () => history.push(`/home/history/model/${id}`),
-        icon: <TreeIcon />,
-      },
-      {
-        key: "edit",
-        label: t("dataset.action.edit"),
-        onclick: () => edit(record),
-        icon: <EditIcon />,
       },
       {
         key: "del",
@@ -336,10 +308,10 @@ const actions = (dispatch) => {
         payload: { pid, query },
       })
     },
-    getVersions: (gid) => {
+    getVersions: (gid, force) => {
       return dispatch({
         type: 'model/getModelVersions',
-        payload: gid,
+        payload: { gid, force },
       })
     },
     delModel: (payload) => {
