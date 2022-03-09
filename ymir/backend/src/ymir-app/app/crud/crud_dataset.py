@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.crud.base import CRUDBase
-from app.constants.state import TaskState
+from app.constants.state import ResultState
 from app.models import Dataset
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
 
@@ -64,7 +64,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db: Session,
         *,
         dataset_id: int,
-        new_state: TaskState,
+        new_state: ResultState,
     ) -> Optional[Dataset]:
         dataset = self.get(db, id=dataset_id)
         if not dataset:

@@ -417,7 +417,7 @@ class ControllerClient:
         self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict
     ) -> Dict:
         req = ControllerRequest(
-            task_type,
+            TaskType(task_type),
             user_id=user_id,
             project_id=project_id,
             task_id=task_hash,
