@@ -17,6 +17,14 @@ from .dataset_group import (
     DatasetGroupPaginationOut,
 )
 from .graph import Graph, GraphOut
+from .image import (
+    DockerImage,
+    DockerImageCreate,
+    DockerImageOut,
+    DockerImagesOut,
+    DockerImageState,
+    DockerImageUpdate,
+)
 from .image_config import ImageConfigCreate, ImageConfigOut
 from .image_relationship import ImageRelationshipsCreate, ImageRelationshipsOut
 from .inference import InferenceCreate, InferenceOut
