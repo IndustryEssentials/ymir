@@ -1,6 +1,7 @@
 import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
 import { errorCode } from './func'
+import { format } from '@/utils/date'
 
 put.resolve = putResolve
 
@@ -82,19 +83,20 @@ describe("models: dataset", () => {
       type: "getDatasets",
       payload: {},
     }
+    const datetime = '2022-02-14T10:03:49'
     const origin = [1, 2, 3, 4].map(item => {
       return {
         id: item,
         project_id: 1000 + item,
         name: 'name' + item,
-        create_datetime: '2022-02-14T10:03:49',
+        create_datetime: datetime,
       }
     })
     const resp = [1, 2, 3, 4].map(item => ({
       id: item,
       projectId: 1000 + item,
       name: 'name' + item,
-      createTime: '2022-02-14 18:03:49',
+      createTime: format(datetime),
     }))
     const expected = { items: origin, total: origin.length }
 
