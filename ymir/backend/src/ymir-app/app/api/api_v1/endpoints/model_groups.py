@@ -52,7 +52,7 @@ def list_model_groups(
 def create_model_group(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
     obj_in: schemas.ModelGroupCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
@@ -94,7 +94,7 @@ def update_model_group(
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
     obj_update: schemas.ModelGroupUpdate,
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Change model group name
@@ -115,7 +115,7 @@ def delete_model_group(
     *,
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete model group
