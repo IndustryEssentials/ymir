@@ -74,7 +74,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             tasks_util.register_monitor_log(
                 task_id=task_id,
                 user_id=user_id,
-                log_paths_weights=sub_monitor_files_weights,
+                log_path_weights=sub_monitor_files_weights,
             )
         return
 
