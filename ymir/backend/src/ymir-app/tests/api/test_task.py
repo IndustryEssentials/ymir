@@ -47,10 +47,7 @@ def mock_clickhouse(mocker):
 def test_get_default_dataset_name():
     task_hash = random_lower_string(32)
     task_name = random_lower_string(10)
-    assert (
-        m.get_default_record_name(task_hash, task_name)
-        == task_name + "_" + task_hash[-6:]
-    )
+    assert m.get_default_record_name(task_hash, task_name) == task_name + "_" + task_hash[-6:]
 
 
 class TestNormalizeParameters:
@@ -83,9 +80,7 @@ class TestListTasks:
     ):
         for _ in range(3):
             create_task(db, user_id)
-        r = client.get(
-            f"{settings.API_V1_STR}/tasks/", headers=normal_user_token_headers
-        )
+        r = client.get(f"{settings.API_V1_STR}/tasks/", headers=normal_user_token_headers)
         items = r.json()["result"]["items"]
         total = r.json()["result"]["total"]
         assert len(items) == total != 0
@@ -103,9 +98,7 @@ class TestDeleteTask:
     ):
         task = create_task(db, user_id)
         task_id = task.id
-        r = client.delete(
-            f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers
-        )
+        r = client.delete(f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers)
         assert r.json()["result"]["is_deleted"]
 
 
@@ -145,18 +138,12 @@ class TestGetTask:
         name = task.name
         task_id = task.id
 
-        r = client.get(
-            f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers
-        )
+        r = client.get(f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers)
         assert r.json()["result"]["name"] == name
 
-    def test_get_single_task_not_found(
-        self, client: TestClient, normal_user_token_headers, mocker
-    ):
+    def test_get_single_task_not_found(self, client: TestClient, normal_user_token_headers, mocker):
         task_id = random.randint(100000, 900000)
-        r = client.get(
-            f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers
-        )
+        r = client.get(f"{settings.API_V1_STR}/tasks/{task_id}", headers=normal_user_token_headers)
         assert r.status_code == 404
 
 

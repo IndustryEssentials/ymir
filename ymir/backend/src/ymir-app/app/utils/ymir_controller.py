@@ -8,13 +8,13 @@ from typing import Any, Dict, Generator, List, Optional, Union
 import grpc
 from fastapi.logger import logger
 from google.protobuf import json_format  # type: ignore
-from id_definition.task_id import TaskId
-from proto import backend_pb2 as mirsvrpb
-from proto import backend_pb2_grpc as mir_grpc
 
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy
 from app.schemas.task import MergeStrategy
+from id_definition.task_id import TaskId
+from proto import backend_pb2 as mirsvrpb
+from proto import backend_pb2_grpc as mir_grpc
 
 
 class ExtraRequestType(enum.IntEnum):
@@ -82,23 +82,17 @@ class ControllerRequest:
         method_name = "prepare_" + self.type.name
         self.req = getattr(self, method_name)(request, self.args)
 
-    def prepare_create_user(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_create_user(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.USER_CREATE
         return request
 
-    def prepare_create_project(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_create_project(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         # project training target labels
         request.in_class_ids[:] = args["training_classes"]
         request.req_type = mirsvrpb.REPO_CREATE
         return request
 
-    def prepare_filter(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_filter(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         filter_request = mirsvrpb.TaskReqFilter()
         filter_request.in_dataset_ids[:] = args["include_datasets"]
         if args.get("include_classes"):
@@ -115,22 +109,16 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
-    def prepare_training(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         train_task_req = mirsvrpb.TaskReqTraining()
 
         datasets = itertools.chain(
-            gen_typed_datasets(
-                mirsvrpb.TvtTypeTraining, args.get("include_train_datasets", [])
-            ),
+            gen_typed_datasets(mirsvrpb.TvtTypeTraining, args.get("include_train_datasets", [])),
             gen_typed_datasets(
                 mirsvrpb.TvtTypeValidation,
                 args.get("include_validation_datasets", []),
             ),
-            gen_typed_datasets(
-                mirsvrpb.TvtTypeTest, args.get("include_test_datasets", [])
-            ),
+            gen_typed_datasets(mirsvrpb.TvtTypeTest, args.get("include_test_datasets", [])),
         )
         for dataset in datasets:
             train_task_req.in_dataset_types.append(dataset)
@@ -150,9 +138,7 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
-    def prepare_mining(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_mining(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k", None):
             mine_task_req.top_k = args["top_k"]
@@ -174,9 +160,7 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
-    def prepare_import_data(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_import_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         importing_request = mirsvrpb.TaskReqImporting()
         importing_request.asset_dir = args["asset_dir"]
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
@@ -196,9 +180,7 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
-    def prepare_label(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = args["name"]
         label_request.dataset_id = args["include_datasets"][0]
@@ -216,9 +198,7 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
-    def prepare_copy_data(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_copy_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         copy_request = mirsvrpb.TaskReqCopyData()
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy is ImportStrategy.ignore_unknown_annotations:
@@ -240,9 +220,7 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
-    def prepare_inference(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_inference(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_INFERENCE
         request.model_hash = args["model_hash"]
         request.asset_dir = args["asset_dir"]
@@ -250,49 +228,35 @@ class ControllerRequest:
         request.docker_image_config = args["docker_config"]
         return request
 
-    def prepare_add_label(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_add_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.check_only = args["dry_run"]
         request.req_type = mirsvrpb.CMD_LABEL_ADD
         request.private_labels[:] = args["labels"]
         return request
 
-    def prepare_get_label(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_get_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_LABEL_GET
         return request
 
-    def prepare_kill(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_kill(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_TERMINATE
         request.executor_instance = args["target_container"]
         request.terminated_task_type = args["task_type"]
         return request
 
-    def prepare_pull_image(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_pull_image(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_PULL_IMAGE
         request.singleton_op = args["url"]
         return request
 
-    def prepare_get_gpu_info(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_get_gpu_info(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_GPU_INFO_GET
         return request
 
-    def prepare_data_fusion(
-        self, request: mirsvrpb.GeneralReq, args: Dict
-    ) -> mirsvrpb.GeneralReq:
+    def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()
         data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
-        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[
-            args["include_strategy"]
-        ]
+        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[args["include_strategy"]]
         if args.get("exclude_datasets"):
             data_fusion_request.ex_dataset_ids[:] = args["exclude_datasets"]
 
@@ -360,9 +324,7 @@ class ControllerClient:
         task_type: TaskType,
         task_parameters: Optional[Dict],
     ) -> Dict:
-        req = ControllerRequest(
-            task_type, user_id, project_id, task_id, args=task_parameters
-        )
+        req = ControllerRequest(task_type, user_id, project_id, task_id, args=task_parameters)
         return self.send(req)
 
     def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:
@@ -401,9 +363,7 @@ class ControllerClient:
         req = ControllerRequest(ExtraRequestType.create_user, user_id=user_id)
         return self.send(req)
 
-    def create_project(
-        self, user_id: int, project_id: int, task_id: str, args: Dict
-    ) -> Dict:
+    def create_project(self, user_id: int, project_id: int, task_id: str, args: Dict) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.create_project,
             user_id=user_id,
@@ -413,9 +373,7 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def import_dataset(
-        self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict
-    ) -> Dict:
+    def import_dataset(self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict) -> Dict:
         req = ControllerRequest(
             TaskType(task_type),
             user_id=user_id,
@@ -455,8 +413,6 @@ class ControllerClient:
         task_parameters: Optional[Dict],
     ) -> Dict:
 
-        req = ControllerRequest(
-            TaskType.data_fusion, user_id, project_id, task_id, args=task_parameters
-        )
+        req = ControllerRequest(TaskType.data_fusion, user_id, project_id, task_id, args=task_parameters)
 
         return self.send(req)

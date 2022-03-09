@@ -15,8 +15,8 @@ class DateTimeModelMixin(BaseModel):
     @validator("create_datetime", "update_datetime", pre=True)
     def default_datetime(
         cls,
-        value: datetime,  # noqa: N805  # noqa: WPS110
-    ) -> datetime:
+        value: datetime,
+    ) -> datetime:  # noqa: N805  # noqa: WPS110
         return value or datetime.now()
 
 

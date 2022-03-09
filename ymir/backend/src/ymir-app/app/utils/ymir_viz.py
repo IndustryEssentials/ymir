@@ -3,10 +3,10 @@ from typing import Dict, List, Optional
 
 import requests
 from fastapi.logger import logger
-from id_definition.error_codes import VizErrorCode
 
 from app.api.errors.errors import ModelNotFound, ModelNotReady
 from app.config import settings
+from id_definition.error_codes import VizErrorCode
 
 
 @dataclass
@@ -18,9 +18,7 @@ class Asset:
     metadata: Dict
 
     @classmethod
-    def from_viz_res(
-        cls, asset_id: str, res: Dict, keyword_id_to_name: Dict[int, str]
-    ) -> "Asset":
+    def from_viz_res(cls, asset_id: str, res: Dict, keyword_id_to_name: Dict[int, str]) -> "Asset":
         annotations = [
             {
                 "box": annotation["box"],
@@ -28,9 +26,7 @@ class Asset:
             }
             for annotation in res["annotations"]
         ]
-        keywords = [
-            keyword_id_to_name.get(int(class_id)) for class_id in res["class_ids"]
-        ]
+        keywords = [keyword_id_to_name.get(int(class_id)) for class_id in res["class_ids"]]
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],

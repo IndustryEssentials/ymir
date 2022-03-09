@@ -19,9 +19,7 @@ class TestListModels:
     ):
         for _ in range(3):
             create_model(db, client, user_id)
-        r = client.get(
-            f"{settings.API_V1_STR}/models/", headers=normal_user_token_headers
-        )
+        r = client.get(f"{settings.API_V1_STR}/models/", headers=normal_user_token_headers)
         datasets = r.json()["result"]["items"]
         total = r.json()["result"]["total"]
         assert len(datasets) == total != 0
@@ -113,9 +111,7 @@ class TestDeleteModel:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        r = client.delete(
-            f"{settings.API_V1_STR}/models/233333", headers=normal_user_token_headers
-        )
+        r = client.delete(f"{settings.API_V1_STR}/models/233333", headers=normal_user_token_headers)
         assert r.status_code == 404
 
 
@@ -142,7 +138,5 @@ class TestGetModel:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        r = client.get(
-            f"{settings.API_V1_STR}/models/233333", headers=normal_user_token_headers
-        )
+        r = client.get(f"{settings.API_V1_STR}/models/233333", headers=normal_user_token_headers)
         assert r.status_code == 404

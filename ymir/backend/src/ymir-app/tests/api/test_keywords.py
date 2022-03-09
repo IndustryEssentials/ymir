@@ -1,5 +1,4 @@
-from typing import Dict, Generator
-from unittest.mock import Mock
+from typing import Dict
 
 from fastapi.testclient import TestClient
 
@@ -7,9 +6,7 @@ from app.config import settings
 
 
 class TestGetKeywords:
-    def test_get_keyword(
-        self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker
-    ):
+    def test_get_keyword(self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker):
         r = client.get(
             f"{settings.API_V1_STR}/keywords/",
             headers=normal_user_token_headers,
@@ -19,9 +16,7 @@ class TestGetKeywords:
 
 
 class TestCreateKeyword:
-    def test_create_keyword(
-        self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker
-    ):
+    def test_create_keyword(self, client: TestClient, normal_user_token_headers: Dict[str, str], mocker):
         j = {
             "keywords": [
                 {"name": "water", "aliases": ["shui"]},

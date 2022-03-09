@@ -7,9 +7,7 @@ from app.config import settings
 from tests.utils.utils import random_email, random_lower_string
 
 
-def test_get_users_normal_user_me(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
-) -> None:
+def test_get_users_normal_user_me(client: TestClient, normal_user_token_headers: Dict[str, str]) -> None:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()["result"]
     assert current_user
@@ -17,9 +15,7 @@ def test_get_users_normal_user_me(
     assert current_user["email"] == settings.EMAIL_TEST_USER
 
 
-def test_create_user_new_email(
-    client: TestClient, admin_token_headers: Dict, db: Session
-) -> None:
+def test_create_user_new_email(client: TestClient, admin_token_headers: Dict, db: Session) -> None:
     email = random_email()
     password = random_lower_string()
     data = {"email": email, "password": password}
@@ -35,9 +31,7 @@ def test_create_user_new_email(
 
 
 class TestActivateUser:
-    def test_activate_user(
-        self, client: TestClient, super_admin_token_headers: Dict, db: Session
-    ) -> None:
+    def test_activate_user(self, client: TestClient, super_admin_token_headers: Dict, db: Session) -> None:
         email = random_email()
         password = random_lower_string()
         data = {"email": email, "password": password}
