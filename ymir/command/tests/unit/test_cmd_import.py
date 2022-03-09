@@ -1,17 +1,14 @@
 import logging
 import os
 import shutil
-from typing import List
 import unittest
 
 from google.protobuf.json_format import MessageToDict
 
 from mir.commands.importing import CmdImport
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids
 from mir.tools.code import MirCode
 from tests import utils as test_utils
-import yaml
 
 
 class TestCmdImport(unittest.TestCase):
@@ -38,10 +35,9 @@ class TestCmdImport(unittest.TestCase):
         os.chdir(self._mir_repo_root)
 
     def tearDown(self) -> None:
-        # if os.path.isdir(self._sandbox_root):
-        #     shutil.rmtree(self._sandbox_root)
-        # os.chdir(self._cur_path)
-        pass
+        if os.path.isdir(self._sandbox_root):
+            shutil.rmtree(self._sandbox_root)
+        os.chdir(self._cur_path)
 
     def test_import_cmd_00(self):
         # normal

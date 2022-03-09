@@ -3,37 +3,49 @@ import logging
 import os
 from collections import Counter
 from pathlib import Path
+import time
 from typing import List, Iterable
 
 from controller.config import label_task as label_task_config
 
 
+EXPECTED_FILE_VERSION = 1
+
+
+def labels_file_name() -> str:
+    return 'labels.yaml'
+
+
+def labels_file_path(mir_root: str) -> str:
+    file_dir = os.path.join(mir_root, '.mir')
+    os.makedirs(file_dir, exist_ok=True)
+    return os.path.join(file_dir, labels_file_name())
+
+
 class LabelFileHandler:
     # csv file: type_id, reserve, main_label, alias_label_1, xxx
-    def __init__(self, label_file_dir: str) -> None:
-        self._label_file = os.path.join(label_file_dir, "labels.csv")
+    def __init__(self, mir_root: str) -> None:
+        self._label_file = labels_file_path(mir_root=mir_root)
 
+        # create if not exists
         label_file = Path(self._label_file)
         label_file.touch(exist_ok=True)
 
     def get_label_file_path(self) -> str:
         return self._label_file
 
-    def write_label_file(self, content: List[List[str]], add_preserve: bool = False, add_id: bool = False) -> None:
-        """write_label_file function
-        This function is used to store label content into a csv file.
+    def _write_label_file(self, content: List[List[str]]) -> None:
+        """
+        This function is used to dump all label content into a label storage file, old file contents will be lost
         Args:
-            content (List[List[str]]): content to be written, list of row of strings.
-            add_preserve(bool): add preserve position if True, used when raw content is passed in.
-            add_id: add id position if Ture, used for auto-generated ids.
+            content (List[List[str]]): ALL content to be written, list of row of strings
+                id, main name, aliases, ...
         """
         with open(self._label_file, "w", newline='') as f:
             writer = csv.writer(f)
             for idx, row in enumerate(content):
-                if add_id:
-                    row.insert(0, str(idx))
-                if add_preserve:
-                    row.insert(1, "")
+                row.insert(0, str(idx))
+                row.insert(1, "")
                 writer.writerow(row)
 
     def get_all_labels(self, with_reserve: bool = True, with_id: bool = True) -> List[List[str]]:
@@ -75,24 +87,30 @@ class LabelFileHandler:
         return all_labels
 
     def merge_labels(self, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
-        # check candidate_labels has no duplicate
+        # check `candidate_labels` has no duplicate
         candidate_labels_list = [x.lower().split(",") for x in candidate_labels]
         candidates_list = [x for row in candidate_labels_list for x in row]
         if len(candidates_list) != len(set(candidates_list)):
             logging.info(f"conflict candidate labels: {candidate_labels_list}")
             return candidate_labels_list
 
+        # [main name, alias 1, alias 2, ...]
         existed_labels_without_id = self.get_all_labels(with_reserve=False, with_id=False)
+        # key: main name, value: index
         existed_main_names_to_ids = {row[0]: idx for idx, row in enumerate(existed_labels_without_id)}
 
+        # for main names in `existed_main_names_to_ids`, update alias
+        # for new main names, add them to `candidate_labels_list_new`
         candidate_labels_list_new = []
         for candidate_list in candidate_labels_list:
-            if candidate_list[0] in existed_main_names_to_ids:  # update alias
-                idx = existed_main_names_to_ids[candidate_list[0]]
+            main_name = candidate_list[0]
+            if main_name in existed_main_names_to_ids:  # update alias
+                idx = existed_main_names_to_ids[main_name]
                 existed_labels_without_id[idx] = candidate_list
             else:  # new main_names
                 candidate_labels_list_new.append(candidate_list)
 
+        # get 
         existed_labels_list = [x for row in existed_labels_without_id for x in row]
         existed_labels_dups = set([k for k, v in Counter(existed_labels_list).items() if v > 1])
         if existed_labels_dups:
@@ -117,7 +135,7 @@ class LabelFileHandler:
         logging.info(f"conflict labels: {conflict_labels}")
 
         if not (check_only or conflict_labels):
-            self.write_label_file(existed_labels_without_id, add_preserve=True, add_id=True)
+            self._write_label_file(existed_labels_without_id)
         return conflict_labels
 
     def get_main_labels_by_ids(self, type_ids: Iterable) -> List[str]:

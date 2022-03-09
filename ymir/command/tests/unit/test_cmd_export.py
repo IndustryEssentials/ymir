@@ -43,7 +43,6 @@ class TestCmdExport(unittest.TestCase):
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
-        
 
     def __prepare_assets(self):
         '''

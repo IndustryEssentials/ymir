@@ -65,6 +65,7 @@ class TestMiningCmd(unittest.TestCase):
         os.mkdir(self._storage_root)
 
     def _prepare_config(self):
+        logging.info(f"current directory: {os.getcwd()}")
         shutil.copyfile('tests/assets/mining-template.yaml', self._config_file)
 
     def _prepare_mir_repo(self):
