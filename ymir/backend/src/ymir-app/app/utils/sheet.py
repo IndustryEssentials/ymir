@@ -25,9 +25,7 @@ class OnlineSheetAPI(abc.ABC):
         different online sheet api requires various request
         """
 
-    def send(
-        self, req: PreparedRequest, timeout: int = settings.SHARING_TIMEOUT
-    ) -> Response:
+    def send(self, req: PreparedRequest, timeout: int = settings.SHARING_TIMEOUT) -> Response:
         s = Session()
         resp = s.send(req, timeout=timeout)
         return resp
@@ -69,11 +67,7 @@ class WufooAPI(OnlineSheetAPI):
 
     def prepare_post_request(self, payload: Dict) -> PreparedRequest:
         headers = {"Authorization": self.token}
-        data = {
-            self._reversed_mapping[k]: v
-            for k, v in payload.items()
-            if k in self._reversed_mapping
-        }
+        data = {self._reversed_mapping[k]: v for k, v in payload.items() if k in self._reversed_mapping}
         req = Request("POST", self.url, headers=headers, data=data)
         return req.prepare()
 
@@ -87,7 +81,5 @@ class WufooAPI(OnlineSheetAPI):
         resp.raise_for_status()
         results = []
         for image_record in resp.json()["Entries"]:
-            results.append(
-                {self._field_mapping.get(k, k): v for k, v in image_record.items()}
-            )
+            results.append({self._field_mapping.get(k, k): v for k, v in image_record.items()})
         return results

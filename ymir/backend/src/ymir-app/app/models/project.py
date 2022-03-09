@@ -12,13 +12,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from app.models.dataset_group import DatasetGroup  # noqa
-from app.models.model_group import ModelGroup  # noqa
-from app.models.dataset import Dataset  # noqa
-from app.models.model import Model  # noqa
-from app.models.iteration import Iteration  # noqa
 from app.config import settings
 from app.db.base_class import Base
+from app.models.dataset import Dataset  # noqa
+from app.models.dataset_group import DatasetGroup  # noqa
+from app.models.iteration import Iteration  # noqa
+from app.models.model import Model  # noqa
+from app.models.model_group import ModelGroup  # noqa
 
 
 class Project(Base):

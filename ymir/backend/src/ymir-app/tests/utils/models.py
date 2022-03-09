@@ -10,9 +10,7 @@ from tests.utils.utils import random_lower_string
 
 def create_model(db: Session, client: TestClient, user_id: int) -> models.Model:
     project_id = randint(100, 200)
-    task = crud.task.create_placeholder(
-        db, type_=TaskType.training, user_id=user_id, project_id=project_id
-    )
+    task = crud.task.create_placeholder(db, type_=TaskType.training, user_id=user_id, project_id=project_id)
     model_in = schemas.ModelCreate(
         hash=random_lower_string(10),
         name=random_lower_string(6),

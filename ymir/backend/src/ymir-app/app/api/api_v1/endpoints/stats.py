@@ -26,9 +26,7 @@ def get_most_popular_datasets(
     """
     Get top datasets ordered by ref_count
     """
-    stats = clickhouse.get_popular_items(
-        current_user.id, column="dataset_ids", limit=limit
-    )
+    stats = clickhouse.get_popular_items(current_user.id, column="dataset_ids", limit=limit)
     return {"result": stats}
 
 
@@ -41,9 +39,7 @@ def get_most_popular_models(
     """
     Get top models ordered by ref_count
     """
-    stats = clickhouse.get_popular_items(
-        current_user.id, column="model_ids", limit=limit
-    )
+    stats = clickhouse.get_popular_items(current_user.id, column="model_ids", limit=limit)
     return {"result": stats}
 
 
@@ -69,17 +65,13 @@ def get_most_popular_keywords(
     """
     Get top keywords ordered by ref_count
     """
-    stats = clickhouse.get_popular_items(
-        current_user.id, column="keyword_ids", limit=limit
-    )
+    stats = clickhouse.get_popular_items(current_user.id, column="keyword_ids", limit=limit)
     return {"result": stats}
 
 
 @router.get("/keywords/recommend", response_model=schemas.StatsKeywordsRecommendOut)
 def recommend_keywords(
-    dataset_ids: str = Query(
-        ..., description="recommend keywords based on given datasets", example="1,2,3"
-    ),
+    dataset_ids: str = Query(..., description="recommend keywords based on given datasets", example="1,2,3"),
     limit: int = Query(10, description="limit the data point size"),
     current_user: models.User = Depends(deps.get_current_active_user),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
@@ -88,9 +80,7 @@ def recommend_keywords(
     Recommend top keywords based on datasets
     """
     dataset_ids_ = [int(id_) for id_ in dataset_ids.split(",")]
-    stats = clickhouse.get_recommend_keywords(
-        current_user.id, dataset_ids=dataset_ids_, limit=limit
-    )
+    stats = clickhouse.get_recommend_keywords(current_user.id, dataset_ids=dataset_ids_, limit=limit)
     return {"result": stats}
 
 

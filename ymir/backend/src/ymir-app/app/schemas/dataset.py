@@ -1,5 +1,5 @@
-import json
 import enum
+import json
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, validator
@@ -75,9 +75,7 @@ class DatasetUpdate(BaseModel):
     keyword_count: Optional[int]
 
 
-class DatasetInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase
-):
+class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase):
     hash: str = Field(description="related task hash")
     version_num: int = Field(description="version num from related dataset group")
     task_id: int
