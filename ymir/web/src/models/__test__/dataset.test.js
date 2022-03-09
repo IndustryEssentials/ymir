@@ -82,7 +82,21 @@ describe("models: dataset", () => {
       type: "getDatasets",
       payload: {},
     }
-    const expected = { items: [1, 2, , 3, 4], total: 4 }
+    const origin = [1, 2, 3, 4].map(item => {
+      return {
+        id: item,
+        project_id: 1000 + item,
+        name: 'name' + item,
+        create_datetime: '2022-02-14T10:03:49',
+      }
+    })
+    const resp = [1, 2, 3, 4].map(item => ({
+      id: item,
+      projectId: 1000 + item,
+      name: 'name' + item,
+      createTime: '2022-02-14 18:03:49',
+    }))
+    const expected = { items: origin, total: origin.length }
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -92,7 +106,7 @@ describe("models: dataset", () => {
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    equalObject({ items: resp, total: resp.length }, end.value)
     expect(end.done).toBe(true)
   })
   it("effects: getDataset", () => {
