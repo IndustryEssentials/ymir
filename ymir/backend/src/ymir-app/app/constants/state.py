@@ -41,7 +41,6 @@ class TaskState(IntEnum):
     done = LogState.DONE
     error = LogState.ERROR
     terminate = 100
-    premature = 101  # terminate task while try to get result prematurely
 
 
 class ResultType(IntEnum):
@@ -73,5 +72,5 @@ class TrainingType(IntEnum):
     object_detect = 1
 
 
-RunningStates = [TaskState.pending, TaskState.running, TaskState.premature]
+RunningStates = [TaskState.pending, TaskState.running]
 FinalStates = [TaskState.done, TaskState.error, TaskState.terminate]

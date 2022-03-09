@@ -32,6 +32,7 @@ class Task(Base):
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
 
+    is_terminated = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     last_message_datetime = Column(
         DATETIME(fsp=6), default=datetime.utcnow, nullable=False

@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
 from app.constants.state import TaskState, TaskType, ResultType
 from app.schemas.common import (
@@ -25,8 +25,10 @@ class TaskBase(BaseModel):
     type: TaskType
     project_id: int
 
+    class Config:
+        use_enum_values = True
 
-# all the parameter will be packed into Task.parmeters
+
 class TaskParameter(BaseModel):
     dataset_id: int
     keywords: Optional[List[str]]
@@ -52,15 +54,16 @@ class TaskParameter(BaseModel):
     # todo replace docker_image with docker_image_id
     docker_image_id: Optional[int]
 
+    @validator("keywords")
+    def normalize_keywords(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+        if v is None:
+            return v
+        return [keyword.strip() for keyword in v]
+
 
 class TaskCreate(TaskBase):
-    dest_group_id: Optional[int] = Field(
-        None, description="dataset group id or model group id to put task result"
-    )
-    parameters: Optional[TaskParameter] = Field(description="task specific parameters")
-    config: Optional[Union[str, Dict]] = Field(
-        description="docker runtime configuration"
-    )
+    parameters: TaskParameter = Field(description="task specific parameters")
+    config: Optional[Dict] = Field(description="docker runtime configuration")
 
     @validator("config")
     def dumps_config(
@@ -97,6 +100,8 @@ class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBa
 
     last_message_datetime: datetime = None  # type: ignore
 
+    is_terminated: bool = False
+
     @validator("last_message_datetime", pre=True)
     def default_datetime(
         cls,
@@ -113,6 +118,7 @@ class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBa
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
 
 class TaskInternal(TaskInDBBase):
@@ -143,16 +149,18 @@ class TaskInternal(TaskInDBBase):
         else:
             return None
 
+    class Config:
+        use_enum_values = True
+
 
 class Task(TaskInternal):
-    @validator("state")
-    def merge_state(cls, v: TaskState) -> TaskState:
-        """
-        Frontend doesn't differentiate premature and terminated
-        """
-        if v is TaskState.premature:
-            v = TaskState.terminate
-        return v
+    @root_validator
+    def ensure_terminate_state(cls, values: Any) -> Any:
+        # as long as a task is marked as terminated
+        # use terminate as external state
+        if values["is_terminated"]:
+            values["state"] = TaskState.terminate
+        return values
 
 
 class TaskTerminate(BaseModel):
