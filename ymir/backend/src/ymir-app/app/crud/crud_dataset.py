@@ -1,13 +1,14 @@
+import json
 from datetime import datetime
 from enum import IntEnum
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
+from app.constants.state import ResultState
 from app.crud.base import CRUDBase
-from app.constants.state import TaskState
 from app.models import Dataset
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
 
@@ -44,11 +45,11 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             )
 
         if name:
-            query = query.filter(Dataset.name.like(f"%{name}%"))
+            query = query.filter(self.model.name.like(f"%{name}%"))
         # todo
         #  filter by dataset type (task type)
         if state:
-            query = query.filter(Dataset.result_state == state.value)
+            query = query.filter(self.model.result_state == int(state))
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
@@ -64,12 +65,12 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db: Session,
         *,
         dataset_id: int,
-        new_state: TaskState,
+        new_state: ResultState,
     ) -> Optional[Dataset]:
         dataset = self.get(db, id=dataset_id)
         if not dataset:
             return dataset
-        dataset.result_state = new_state.value
+        dataset.result_state = int(new_state)
         db.add(dataset)
         db.commit()
         db.refresh(dataset)
@@ -78,9 +79,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
     def get_latest_version(self, db: Session, dataset_group_id: int) -> Optional[int]:
         query = db.query(self.model)
         latest_dataset_in_group = (
-            query.filter(self.model.dataset_group_id == dataset_group_id)
-            .order_by(desc(self.model.id))
-            .first()
+            query.filter(self.model.dataset_group_id == dataset_group_id).order_by(desc(self.model.id)).first()
         )
         if latest_dataset_in_group:
             return latest_dataset_in_group.version_num
@@ -106,9 +105,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.refresh(db_obj)
         return db_obj
 
-    def create_as_task_result(
-        self, db: Session, task: schemas.TaskInternal, dest_group_id: int
-    ) -> Dataset:
+    def create_as_task_result(self, db: Session, task: schemas.TaskInternal, dest_group_id: int) -> Dataset:
         dataset_in = DatasetCreate(
             name=task.hash,
             hash=task.hash,
@@ -118,6 +115,29 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             task_id=task.id,
         )
         return self.create_with_version(db, obj_in=dataset_in)
+
+    def finish(
+        self,
+        db: Session,
+        dataset_id: int,
+        result_state: ResultState = ResultState.ready,
+        result: Optional[Dict] = None,
+    ) -> Optional[Dataset]:
+        dataset = self.get(db, id=dataset_id)
+        if not dataset:
+            return dataset
+        dataset.result_state = int(result_state)
+
+        if result:
+            dataset.keywords = json.dumps(result["keywords"])
+            dataset.ignored_keywords = json.dumps(result["ignored_keywords"])
+            dataset.keyword_count = len(result["keywords"])
+            dataset.asset_count = result["asset_count"]
+
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+        return dataset
 
 
 dataset = CRUDDataset(Dataset)

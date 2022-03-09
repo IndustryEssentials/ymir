@@ -3,10 +3,10 @@ from typing import Dict, List, Optional
 
 import requests
 from fastapi.logger import logger
-from id_definition.error_codes import VizErrorCode
 
 from app.api.errors.errors import ModelNotFound, ModelNotReady
 from app.config import settings
+from id_definition.error_codes import VizErrorCode
 
 
 @dataclass
@@ -18,9 +18,7 @@ class Asset:
     metadata: Dict
 
     @classmethod
-    def from_viz_res(
-        cls, asset_id: str, res: Dict, keyword_id_to_name: Dict[int, str]
-    ) -> "Asset":
+    def from_viz_res(cls, asset_id: str, res: Dict, keyword_id_to_name: Dict[int, str]) -> "Asset":
         annotations = [
             {
                 "box": annotation["box"],
@@ -28,9 +26,7 @@ class Asset:
             }
             for annotation in res["annotations"]
         ]
-        keywords = [
-            keyword_id_to_name.get(int(class_id)) for class_id in res["class_ids"]
-        ]
+        keywords = [keyword_id_to_name.get(int(class_id)) for class_id in res["class_ids"]]
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -56,24 +52,24 @@ class Assets:
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, keyword_id_to_name: Dict) -> "Assets":
+    def from_viz_res(cls, res: Dict, class_ids_to_keywords: Dict) -> "Assets":
         assets = [
             {
                 "url": get_asset_url(asset["asset_id"]),
                 "hash": asset["asset_id"],
                 "keywords": [
-                    keyword_id_to_name[int(class_id)]
+                    class_ids_to_keywords[int(class_id)]
                     for class_id in asset["class_ids"]
-                    if int(class_id) in keyword_id_to_name
+                    if int(class_id) in class_ids_to_keywords
                 ],
             }
             for asset in res["elements"]
         ]
 
         keywords = {
-            keyword_id_to_name[int(class_id)]: count
+            class_ids_to_keywords[int(class_id)]: count
             for class_id, count in res["class_ids_count"].items()
-            if int(class_id) in keyword_id_to_name
+            if int(class_id) in class_ids_to_keywords
         }
         ignored_keywords = res["ignored_labels"]
         negative_info = res["negative_info"]
@@ -91,26 +87,23 @@ class Model:
 
 
 class VizClient:
-    def __init__(self, *, host: str):
+    def __init__(self, *, host: str = settings.VIZ_HOST):
         self.host = host
         self.session = requests.Session()
         self._user_id = None  # type: Optional[str]
         self._project_id = None  # type: Optional[str]
         self._branch_id = None  # type: Optional[str]
-        self._keyword_id_to_name = None  # type: Optional[Dict]
 
-    def config(
+    def initialize(
         self,
         *,
         user_id: int,
         project_id: int,
         branch_id: str,
-        keyword_id_to_name: Optional[Dict] = None,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
         self._branch_id = branch_id
-        self._keyword_id_to_name = keyword_id_to_name
 
     def get_assets(
         self,
@@ -118,6 +111,7 @@ class VizClient:
         keyword_id: Optional[int] = None,
         offset: int = 0,
         limit: int = 20,
+        class_ids_to_keywords: Dict,
     ) -> Assets:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets"  # noqa: E501
 
@@ -127,13 +121,13 @@ class VizClient:
             resp.raise_for_status()
         res = resp.json()["result"]
         logger.info("[viz] get_assets response: %s", res)
-        assert self._keyword_id_to_name is not None, "ymir_viz not configured"
-        return Assets.from_viz_res(res, self._keyword_id_to_name)
+        return Assets.from_viz_res(res, class_ids_to_keywords)
 
     def get_asset(
         self,
         *,
         asset_id: str,
+        class_ids_to_keywords: Dict,
     ) -> Optional[Dict]:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
 
@@ -141,8 +135,7 @@ class VizClient:
         if not resp.ok:
             return None
         res = resp.json()["result"]
-        assert self._keyword_id_to_name is not None, "ymir_viz not configured"
-        return asdict(Asset.from_viz_res(asset_id, res, self._keyword_id_to_name))
+        return asdict(Asset.from_viz_res(asset_id, res, class_ids_to_keywords))
 
     def get_model(self) -> Dict:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/models"  # noqa: E501

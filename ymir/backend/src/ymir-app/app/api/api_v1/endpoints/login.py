@@ -36,9 +36,7 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = crud.user.authenticate(
-        db, email=form_data.username, password=form_data.password
-    )
+    user = crud.user.authenticate(db, email=form_data.username, password=form_data.password)
     if not user:
         raise IncorrectEmailOrPassword()
     if not crud.user.is_active(user):
@@ -48,9 +46,7 @@ def login_access_token(
     # User can request specific roles
     # choose the role of highest rank yet within limit
     if form_data.scopes:
-        claimed_role = max(
-            getattr(schemas.UserRole, scope) for scope in form_data.scopes
-        )
+        claimed_role = max(getattr(schemas.UserRole, scope) for scope in form_data.scopes)
     else:
         claimed_role = highest_role
 
@@ -67,9 +63,7 @@ def login_access_token(
         "role": role.name,
     }
     payload = {
-        "access_token": security.create_access_token(
-            token_payload, expires_delta=access_token_expires
-        ),
+        "access_token": security.create_access_token(token_payload, expires_delta=access_token_expires),
         "token_type": "bearer",
     }
 
@@ -89,9 +83,7 @@ def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:
     if not user:
         raise UserNotFound()
     password_reset_token = security.generate_password_reset_token(email=email)
-    send_reset_password_email(
-        email_to=user.email, email=email, token=password_reset_token
-    )
+    send_reset_password_email(email_to=user.email, email=email, token=password_reset_token)
     return {"message": "Password recovery email sent"}
 
 

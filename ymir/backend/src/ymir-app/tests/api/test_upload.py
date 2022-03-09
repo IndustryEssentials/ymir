@@ -1,7 +1,5 @@
-import os
 from pathlib import Path
 from typing import Union
-from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 from pydantic import AnyHttpUrl, BaseModel

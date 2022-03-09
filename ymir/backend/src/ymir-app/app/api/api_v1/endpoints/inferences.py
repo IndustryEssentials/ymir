@@ -39,24 +39,18 @@ def call_inference(
         logger.error("Failed to find model id: %s", inference_in.model_id)
         raise ModelNotFound()
 
-    docker_image = crud.docker_image.get_inference_docker_image(
-        db, url=inference_in.docker_image
-    )
+    docker_image = crud.docker_image.get_inference_docker_image(db, url=inference_in.docker_image)
     if not docker_image:
         logger.error("Failed to find inference model")
         raise InvalidInferenceConfig()
 
     try:
-        asset_dir, filename_mapping = save_files(
-            inference_in.image_urls, settings.SHARED_DATA_DIR
-        )
+        asset_dir, filename_mapping = save_files(inference_in.image_urls, settings.SHARED_DATA_DIR)
     except FailedToDownload:
         logger.error("Failed to download user content: %s", inference_in.image_urls)
         raise FailedtoDownloadError()
 
-    inference_config = next(
-        filter(lambda x: x.type == DockerImageType.infer, docker_image.configs)
-    ).config
+    inference_config = next(filter(lambda x: x.type == DockerImageType.infer, docker_image.configs)).config
     try:
         resp = controller_client.call_inference(
             current_user.id,
@@ -71,9 +65,7 @@ def call_inference(
 
     result = {
         "model_id": inference_in.model_id,
-        "annotations": extract_inference_annotations(
-            resp, filename_mapping=filename_mapping
-        ),
+        "annotations": extract_inference_annotations(resp, filename_mapping=filename_mapping),
     }
     return {"result": result}
 

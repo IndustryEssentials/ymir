@@ -35,9 +35,5 @@ api_router.include_router(inferences.router, prefix="/inferences", tags=["infere
 api_router.include_router(roles.router, prefix="/roles", tags=["roles"])
 api_router.include_router(info.router, prefix="/sys_info", tags=["sys"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
-api_router.include_router(
-    dataset_groups.router, prefix="/dataset_groups", tags=["dataset_groups"]
-)
-api_router.include_router(
-    model_groups.router, prefix="/model_groups", tags=["model_groups"]
-)
+api_router.include_router(dataset_groups.router, prefix="/dataset_groups", tags=["dataset_groups"])
+api_router.include_router(model_groups.router, prefix="/model_groups", tags=["model_groups"])

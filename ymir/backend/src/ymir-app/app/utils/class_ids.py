@@ -14,9 +14,7 @@ def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
         yield ",".join(label)
 
 
-def labels_to_keywords(
-    labels: List[str], filter_f: Optional[Callable] = None, offset: int = 1
-) -> Iterator[Keyword]:
+def labels_to_keywords(labels: List[str], filter_f: Optional[Callable] = None, offset: int = 1) -> Iterator[Keyword]:
     """
     label: 0,dog,puppy,pup,canine
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
@@ -72,9 +70,7 @@ def flatten_labels(labels: List[str]) -> List[str]:
     return [name for label in list(labels) for name in label.split(",")]
 
 
-def convert_keywords_to_classes(
-    all_user_labels: List[str], keywords: List[str]
-) -> List[int]:
+def convert_keywords_to_classes(all_user_labels: List[str], keywords: List[str]) -> List[int]:
     keyword_name_to_id = get_keyword_name_to_id_mapping(all_user_labels)
 
     training_classes = [keyword_name_to_id[keyword] for keyword in keywords]

@@ -8,8 +8,4 @@ class DockerImageRelationship(Base):
     src_image_id = Column(Integer, primary_key=True, index=True, nullable=False)
     dest_image_id = Column(Integer, primary_key=True, index=True, nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint(
-            "src_image_id", "dest_image_id", name="unique_image_relationship"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("src_image_id", "dest_image_id", name="unique_image_relationship"),)

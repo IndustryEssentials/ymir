@@ -26,16 +26,11 @@ from app.utils.ymir_controller import ControllerClient
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/token",
-    scopes={
-        role.name: role.description
-        for role in [Roles.NORMAL, Roles.ADMIN, Roles.SUPER_ADMIN]
-    },
+    scopes={role.name: role.description for role in [Roles.NORMAL, Roles.ADMIN, Roles.SUPER_ADMIN]},
 )
 
 API_KEY_NAME = "api-key"  # use dash to compatible with Nginx
-api_key_header = APIKeyHeader(
-    name=API_KEY_NAME, scheme_name="API key header", auto_error=False
-)
+api_key_header = APIKeyHeader(name=API_KEY_NAME, scheme_name="API key header", auto_error=False)
 
 
 # Dependents
@@ -63,9 +58,7 @@ def get_current_user(
     token: str = Depends(reusable_oauth2),
 ) -> models.User:
     try:
-        payload = jwt.decode(
-            token, settings.APP_SECRET_KEY, algorithms=[security.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.APP_SECRET_KEY, algorithms=[security.ALGORITHM])
         token_data = schemas.TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         logger.exception("Invalid JWT token")
@@ -98,17 +91,13 @@ def get_current_active_user(
 
 
 def get_current_active_admin(
-    current_user: models.User = Security(
-        get_current_user, scopes=[Roles.ADMIN.name, Roles.SUPER_ADMIN.name]
-    ),
+    current_user: models.User = Security(get_current_user, scopes=[Roles.ADMIN.name, Roles.SUPER_ADMIN.name]),
 ) -> models.User:
     return current_user
 
 
 def get_current_active_super_admin(
-    current_user: models.User = Security(
-        get_current_user, scopes=[Roles.SUPER_ADMIN.name]
-    ),
+    current_user: models.User = Security(get_current_user, scopes=[Roles.SUPER_ADMIN.name]),
 ) -> models.User:
     return current_user
 
@@ -123,9 +112,7 @@ def get_controller_client() -> Generator:
 
 def get_viz_client() -> Generator:
     try:
-        client = ymir_viz.VizClient(
-            host=settings.VIZ_HOST,
-        )
+        client = ymir_viz.VizClient(host=settings.VIZ_HOST)
         yield client
     finally:
         client.close()
@@ -154,9 +141,7 @@ def get_cache(
     current_user: models.User = Depends(get_current_active_user),
 ) -> Generator:
     try:
-        cache_client = ymir_cache.CacheClient(
-            settings.BACKEND_REDIS_URL, current_user.id
-        )
+        cache_client = ymir_cache.CacheClient(settings.BACKEND_REDIS_URL, current_user.id)
         yield cache_client
     finally:
         cache_client.close()

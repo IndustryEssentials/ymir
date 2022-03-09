@@ -2,8 +2,8 @@ from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
-from app.constants.state import ResultState
 from app.config import settings
+from app.constants.state import ResultState
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
