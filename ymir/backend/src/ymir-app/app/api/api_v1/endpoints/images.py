@@ -76,9 +76,7 @@ def create_docker_image(
     docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
     logger.info("[create image] docker image record created: %s", docker_image)
 
-    background_tasks.add_task(
-        import_docker_image, db, controller_client, docker_image, current_user.id
-    )
+    background_tasks.add_task(import_docker_image, db, controller_client, docker_image, current_user.id)
     return {"result": docker_image}
 
 
@@ -96,9 +94,7 @@ def import_docker_image(
         resp = controller_client.pull_docker_image(docker_image.url, user_id)
     except ValueError:
         logger.exception("[create image] failed to import docker image via controller")
-        crud.docker_image.update_state(
-            db, docker_image=docker_image, state=DockerImageState.error
-        )
+        crud.docker_image.update_state(db, docker_image=docker_image, state=DockerImageState.error)
         return
 
     # add new config in docker_image_config tbl
@@ -114,7 +110,7 @@ def import_docker_image(
     crud.docker_image.update_from_dict(
         db,
         docker_image_id=docker_image.id,
-        updates={"hash": hash_, "state": DockerImageState.done.value},
+        updates={"hash": hash_, "state": int(DockerImageState.done)},
     )
     logger.info(
         "[create image] docker image imported via controller: %s, added %d configs",
@@ -191,9 +187,7 @@ def share_image(
         raise FailedtoShareDockerImage()
 
     # mark this image as shared
-    crud.docker_image.update_sharing_status(
-        db=db, docker_image=docker_image, is_shared=True
-    )
+    crud.docker_image.update_sharing_status(db=db, docker_image=docker_image, is_shared=True)
     return {"result": shared_image}
 
 
@@ -237,9 +231,7 @@ def update_docker_image(
     if not docker_image:
         raise DockerImageNotFound()
 
-    docker_image = crud.docker_image.update(
-        db, db_obj=docker_image, obj_in=docker_image_update
-    )
+    docker_image = crud.docker_image.update(db, db_obj=docker_image, obj_in=docker_image_update)
     return {"result": docker_image}
 
 
@@ -261,9 +253,7 @@ def delete_docker_image(
     if not docker_image:
         raise DockerImageNotFound()
 
-    having_relationships = crud.image_relationship.having_relationships(
-        db, image_id=docker_image_id
-    )
+    having_relationships = crud.image_relationship.having_relationships(db, image_id=docker_image_id)
     if having_relationships:
         raise DockerImageHavingRelationships()
 
@@ -305,7 +295,5 @@ def get_related_images(
     """
     Get all the related_images of given docker image
     """
-    relationships = crud.image_relationship.get_relationships_of_src_image(
-        db, src_image_id=docker_image_id
-    )
+    relationships = crud.image_relationship.get_relationships_of_src_image(db, src_image_id=docker_image_id)
     return {"result": relationships}

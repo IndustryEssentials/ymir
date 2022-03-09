@@ -8,13 +8,13 @@ from typing import Any, Dict, Generator, List, Optional, Union
 import grpc
 from fastapi.logger import logger
 from google.protobuf import json_format  # type: ignore
-from id_definition.task_id import TaskId
-from proto import backend_pb2 as mirsvrpb
-from proto import backend_pb2_grpc as mir_grpc
 
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy
 from app.schemas.task import MergeStrategy
+from id_definition.task_id import TaskId
+from proto import backend_pb2 as mirsvrpb
+from proto import backend_pb2_grpc as mir_grpc
 
 
 class ExtraRequestType(enum.IntEnum):

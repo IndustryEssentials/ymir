@@ -16,7 +16,6 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import TaskType
 from app.utils.files import save_file
-from app.utils.ymir_controller import gen_task_hash
 
 router = APIRouter()
 
@@ -86,9 +85,7 @@ def import_model(
 ) -> Any:
 
     # 1. validation
-    if crud.model.is_duplicated_name(
-        db, user_id=current_user.id, name=model_import.name
-    ):
+    if crud.model.is_duplicated_name(db, user_id=current_user.id, name=model_import.name):
         raise DuplicateModelError()
     if not settings.MODELS_PATH:
         # fixme
@@ -96,10 +93,13 @@ def import_model(
         raise InvalidConfiguration()
 
     # 2. create placeholder task
-    task = create_task_as_placeholder(
-        db, user_id=current_user.id, project_id=model_import.project_id
+    task = crud.task.create_placeholder(
+        db,
+        type_=TaskType.import_data,
+        user_id=current_user.id,
+        project_id=model_import.project_id,
     )
-    logger.info("[import model] related task created: %s", task)
+    logger.info("[import model] related task created: %s", task.hash)
 
     # 3. create model record
     model = create_model_record(db, model_import, task)
@@ -107,28 +107,11 @@ def import_model(
 
     # 4. run background task
     storage_path = settings.MODELS_PATH
-    background_tasks.add_task(
-        import_model_in_background, model_import.input_url, model.hash, storage_path
-    )
+    background_tasks.add_task(import_model_in_background, model_import.input_url, model.hash, storage_path)
     return {"result": model}
 
 
-def create_task_as_placeholder(
-    db: Session, *, user_id: int, project_id: int
-) -> models.Task:
-    task_hash = gen_task_hash(user_id, project_id)
-    task_in = schemas.TaskCreate(
-        name=task_hash, type=TaskType.import_data, project_id=project_id
-    )
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_hash, user_id=user_id
-    )
-    return task
-
-
-def create_model_record(
-    db: Session, model_import: schemas.ModelImport, task: models.Task
-) -> models.Model:
+def create_model_record(db: Session, model_import: schemas.ModelImport, task: models.Task) -> models.Model:
     """
     bind task info to model record
     """
@@ -143,9 +126,7 @@ def create_model_record(
     return crud.model.create(db, obj_in=schemas.ModelCreate(**model_info))
 
 
-def import_model_in_background(
-    model_url: str, model_hash: str, storage_path: str
-) -> None:
+def import_model_in_background(model_url: str, model_hash: str, storage_path: str) -> None:
     logger.info(
         "[import model] start importing model file from %s, save to %s",
         model_url,
@@ -215,9 +196,7 @@ def update_model_name(
     """
     Update model name
     """
-    model = crud.model.get_by_user_and_name(
-        db, user_id=current_user.id, name=model_in.name
-    )
+    model = crud.model.get_by_user_and_name(db, user_id=current_user.id, name=model_in.name)
     if model:
         raise DuplicateModelError()
 

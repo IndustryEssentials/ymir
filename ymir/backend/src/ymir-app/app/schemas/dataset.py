@@ -1,7 +1,8 @@
 import enum
-from typing import Any, List, Optional, Dict
+import json
+from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, validator
 
 from app.constants.state import ResultState, TaskType
 from app.schemas.common import (
@@ -74,9 +75,7 @@ class DatasetUpdate(BaseModel):
     keyword_count: Optional[int]
 
 
-class DatasetInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase
-):
+class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase):
     hash: str = Field(description="related task hash")
     version_num: int = Field(description="version num from related dataset group")
     task_id: int
@@ -89,13 +88,21 @@ class DatasetInDBBase(
 
 # Properties to return to caller
 class Dataset(DatasetInDBBase):
+    keywords: Optional[str]
+    ignored_keywords: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @root_validator(pre=True)
-    def unpack_json(cls, values: Any) -> Dict:
-        #       values["keywords"] = parse_optional_json(values["keywords"])
-        #       values["ignored_keywords"] = parse_optional_json(values["ignored_keywords"])
-        return values
+    @validator("keywords")
+    def unpack_keywords(cls, v: Optional[str]) -> List[str]:
+        if v is None:
+            return []
+        return json.loads(v)
+
+    @validator("ignored_keywords")
+    def unpack_ignored_keywords(cls, v: Optional[str]) -> List[str]:
+        if v is None:
+            return []
+        return json.loads(v)
 
     class Config:
         use_enum_values = True
