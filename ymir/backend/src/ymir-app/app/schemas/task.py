@@ -14,12 +14,6 @@ from app.schemas.common import (
 )
 
 
-class MergeStrategy(enum.IntEnum):
-    stop_upon_conflict = 1
-    prefer_newest = 2
-    prefer_oldest = 3
-
-
 class TaskBase(BaseModel):
     name: str
     type: TaskType
