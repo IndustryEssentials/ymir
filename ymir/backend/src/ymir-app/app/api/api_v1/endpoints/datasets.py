@@ -369,6 +369,7 @@ def get_assets_of_dataset(
         "keywords": assets.keywords,
         "items": assets.items,
         "total": assets.total,
+        "negative_info": assets.negative_info,
     }
     return {"result": result}
 
