@@ -1,43 +1,58 @@
 
+import { Task } from './task'
 export interface DatasetGroup {
   id: number,
   name: string,
+  projectId: number,
   createTime: string,
 }
 
 export interface Dataset {
-  projectId: number,
-  groupId: number,
   id: number,
+  groupId: number,
+  projectId: number,
   name: string,
-  version: string,
+  versionName: string,
+  version: number,
   keywords: Array<string>,
+  keywordCount: number,
   state: number,
   createTime: string,
+  updateTime: string,
   assetCount: number,
+  ignoredKeywords: Array<string>,
+  hash: string,
   taskId: number,
   progress: number,
   taskState: number,
+  taskType: number,
+  duration: number,
+  taskName: string,
 }
 
 
 export interface OriginDatasetGroup {
   id: number,
   name: string,
+  project_id: number,
   create_datetime: string,
 }
 
-export interface OriginDataset {
-  project_id: number,
-  group_id: number,
+export interface OriginDatasetVersion {
   id: number,
+  dataset_group_id: number,
+  project_id: number,
+  hash: string,
   name: string,
-  version: number,
+  version_num: number,
   keywords: Array<string>,
   state: number,
-  create_datetime: string,
   asset_count: number,
+  keyword_count: number,
+  result_state: number,
+  ignored_keywords: Array<string>,
+  create_datetime: string,
+  update_datetime: string,
   task_id: number,
-  progress: number,
-  taskState: number,
+  related_task: Task,
 }

@@ -41,9 +41,7 @@ class IterationUpdate(BaseModel):
     previous_training_dataset_id: int
 
 
-class IterationInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationBase
-):
+class IterationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationBase):
     class Config:
         orm_mode = True
 

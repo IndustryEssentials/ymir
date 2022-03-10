@@ -56,9 +56,9 @@ class CmdSampling(base.BaseCommand):
             sampled_assets_count = count
         else:
             sampled_assets_count = int(assets_count * rate)
-        if sampled_assets_count <= 0:
+        if sampled_assets_count < 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='sampled assets count is negative')
+                                  error_message=f"sampled assets count: {sampled_assets_count} is negative")
         if sampled_assets_count > assets_count:
             logging.warning(f"sampled assets count: {sampled_assets_count} > assets count: {assets_count}, select all")
             sampled_assets_count = assets_count

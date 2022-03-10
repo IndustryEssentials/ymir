@@ -41,9 +41,6 @@ export function delProject(id) {
  * {
  *   {string}  name
  *   {string}  [description]
- *   {number}  strategy
- *   {number}  [chunk_size]
- *   {number}  type
  *   {number}  [target_iteration]
  *   {number}  [target_map]
  *   {number}  [target_dataset]
@@ -54,9 +51,6 @@ export function delProject(id) {
 export function createProject({
   name,
   description,
-  strategy,
-  chunk_size,
-  type,
   target_iteration,
   target_map,
   target_dataset,
@@ -65,9 +59,7 @@ export function createProject({
   return request.post("/projects/", {
     name,
     description,
-    mining_strategy: strategy,
-    chunk_size,
-    training_type: type,
+    training_type: 1,
     iteration_target: target_iteration,
     map_target: target_map,
     training_dataset_count_target: target_dataset,

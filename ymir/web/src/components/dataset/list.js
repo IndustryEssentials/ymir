@@ -8,6 +8,7 @@ import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
 
 import { TASKSTATES } from '@/constants/task'
+import { states } from '@/constants/dataset'
 
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
@@ -44,13 +45,8 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }, [history.location])
 
   useEffect(() => {
-    // const forceUpdate = datasetList.items.some(dataset => dataset.forceUpdate)
-    // if (forceUpdate) {
-    //   getData()
-    // } else {
     setDatasets(datasetList.items)
     setTotal(datasetList.total)
-    // }
   }, [datasetList])
 
   useEffect(async () => {
@@ -82,22 +78,22 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     {
       title: showTitle("dataset.column.name"),
       key: "name",
-      dataIndex: "name",
+      dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, state }) => state === TASKSTATES.FINISH ? (
+      render: (name, { id, state }) => state === states.VALID ? (
         <Link to={`/home/dataset/detail/${id}`}>{name}</Link>
       ) : name,
       ellipsis: true,
     },
     {
       title: showTitle("dataset.column.source"),
-      dataIndex: "type",
-      render: (type, { task_id, task_name }) => <TypeTag type={type} id={task_id} name={task_name} />,
+      dataIndex: "taskType",
+      render: (type) => <TypeTag type={type} />,
       ellipsis: true,
     },
     {
       title: showTitle("dataset.column.asset_count"),
-      dataIndex: "asset_count",
+      dataIndex: "assetCount",
       render: (num) => humanize(num),
       width: 120,
     },
@@ -106,10 +102,10 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
       dataIndex: "keywords",
       render: (keywords) => {
         const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
-        return <Tooltip placement='left' title={label}
+        return <Tooltip title={label}
           color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
           mouseEnterDelay={0.5}
-        >{label}</Tooltip>
+        ><div>{label}</div></Tooltip>
       },
       ellipsis: {
         showTitle: false,
@@ -123,10 +119,8 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     },
     {
       title: showTitle("dataset.column.create_time"),
-      key: "create_datetime",
-      dataIndex: "create_datetime",
-      render: (datetime) => format(datetime),
-      sorter: true,
+      dataIndex: "createTime",
+      // sorter: true,
       width: 180,
     },
     {
@@ -293,7 +287,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     <div className={styles.groupList}>
       {datasets.map(group => <div className={styles.groupItem} key={group.id}>
         <Row className={styles.groupTitle}>
-          <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{ group.showVersions ? <ArrowDownIcon /> :<ArrowRightIcon />} </span>
+          <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
             <span className={styles.groupName}>{group.name}</span></Col>
           <Col><Space>
             <a onClick={edit} title={t('common.modify')}><EditIcon /></a>
@@ -377,10 +371,10 @@ const actions = (dispatch) => {
         payload: { pid, query },
       })
     },
-    getVersions: (gid) => {
+    getVersions: (gid, force = false) => {
       return dispatch({
-        type: 'dataset/getDatasetByGroup',
-        payload: gid,
+        type: 'dataset/getDatasetVersions',
+        payload: { gid, force },
       })
     },
     delDataset: (id) => {

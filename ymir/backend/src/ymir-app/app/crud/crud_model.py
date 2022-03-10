@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
-from app.crud.base import CRUDBase
 from app.constants.state import TaskState, ResultState
+from app.crud.base import CRUDBase
 from app.models import Model
 from app.schemas.model import ModelCreate, ModelUpdate
 
@@ -52,9 +52,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
     def get_latest_version(self, db: Session, model_group_id: int) -> Optional[int]:
         query = db.query(self.model)
         latest_model_in_group = (
-            query.filter(self.model.model_group_id == model_group_id)
-            .order_by(desc(self.model.id))
-            .first()
+            query.filter(self.model.model_group_id == model_group_id).order_by(desc(self.model.id)).first()
         )
         if latest_model_in_group:
             return latest_model_in_group.version_num
@@ -80,9 +78,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db.refresh(db_obj)
         return db_obj
 
-    def create_as_task_result(
-        self, db: Session, task: schemas.TaskInternal, dest_group_id: int
-    ) -> Model:
+    def create_as_task_result(self, db: Session, task: schemas.TaskInternal, dest_group_id: int) -> Model:
         model_in = ModelCreate(
             name=task.hash,
             hash=task.hash,
@@ -104,7 +100,28 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         model = self.get(db, id=model_id)
         if not model:
             return model
-        model.result_state = new_state.value
+        model.result_state = int(new_state)
+        db.add(model)
+        db.commit()
+        db.refresh(model)
+        return model
+
+    def finish(
+        self,
+        db: Session,
+        model_id: int,
+        result_state: ResultState = ResultState.ready,
+        result: Optional[Dict] = None,
+    ) -> Optional[Model]:
+        model = self.get(db, id=model_id)
+        if not model:
+            return model
+        model.result_state = int(result_state)
+
+        if result:
+            model.map = result["map"]
+            model.hash = result["hash"]
+
         db.add(model)
         db.commit()
         db.refresh(model)

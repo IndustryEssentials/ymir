@@ -1,5 +1,5 @@
-import { 
-  getModels, 
+import {
+  getModels,
   getModelVersions,
   batchModels,
   queryModels,
@@ -10,8 +10,7 @@ import {
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
-import { transferModel } from '@/constants/model'
-
+import { transferModelGroup, transferModelVersion } from '@/constants/model'
 
 const initQuery = {
   name: "",
@@ -37,27 +36,32 @@ export default {
       const { pid, query } = payload
       const { code, result } = yield call(getModels, pid, query)
       if (code === 0) {
+        const groups = result.items.map(item => transferModelGroup(item))
+        const models = { items: groups, total: result.total }
         yield put({
           type: "UPDATE_MODELS",
-          payload: result,
+          payload: models,
         })
-        return result
+        return models
       }
     },
     *getModelVersions({ payload }, { select, call, put }) {
-      const gid = payload
-      const versions = yield select(({ model }) => model.versions)
-      if (versions[gid]) {
-        return versions[gid]
+      const { gid, force } = payload
+      if (!force) {
+        const versions = yield select(({ model }) => model.versions)
+        if (versions[gid]) {
+          return versions[gid]
+        }
       }
       const { code, result } = yield call(getModelVersions, gid)
       if (code === 0) {
-        const vs = { id: gid, versions: result.items }
+        const ms = result.models.map(model => transferModelVersion(model))
+        const vs = { id: gid, versions: ms }
         yield put({
           type: "UPDATE_VERSIONS",
           payload: vs,
         })
-        return result.items
+        return ms
       }
     },
     *queryModels({ payload }, { select, call, put }) {
@@ -190,7 +194,7 @@ export default {
         }
       })
     },
-    *resetQuery({}, { put }) {
+    *resetQuery({ }, { put }) {
       yield put({
         type: 'UPDATE_QUERY',
         payload: initQuery,
@@ -206,7 +210,7 @@ export default {
     },
     UPDATE_VERSIONS(state, { payload }) {
       const { id, versions } = payload
-      const vs = state.versions 
+      const vs = state.versions
       vs[id] = versions
       return {
         ...state,

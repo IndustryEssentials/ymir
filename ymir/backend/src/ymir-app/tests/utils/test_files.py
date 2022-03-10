@@ -1,8 +1,5 @@
-import os
 from pathlib import Path
-from unittest.mock import patch
 
-from app.config import settings
 from app.utils import files as m
 from tests.utils.utils import random_url
 
@@ -14,9 +11,7 @@ class TestPreprocessingDataset:
 
         mocker.patch.object(m, "download_file", return_value=b"")
         mocker.patch.object(m, "decompress_zip", return_value=None)
-        mocker.patch.object(
-            m, "locate_dirs", return_value=iter([("images", ""), ("annotations", "")])
-        )
+        mocker.patch.object(m, "locate_dirs", return_value=iter([("images", ""), ("annotations", "")]))
         url = random_url()
         ret = m.prepare_dataset(url, output_dir)
         assert "images" in ret

@@ -115,7 +115,7 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
           <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.interation.current')}:</span><span className={s.titleContent}>{item?.currentInteration.currentStep}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.interation.current')}:</span><span className={s.titleContent}>{item?.currentInteration}</span></span>
         </Space>
       </Col>
       <Col>{more(item)}</Col>
@@ -124,11 +124,11 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
       <Row className={s.content} justify="center">
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>Datasets</div>
-          <div className={s.contentContent}>{item.setsAccount}</div>
+          <div className={s.contentContent}>{item.setCount}</div>
         </Col>
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>Models</div>
-          <div className={s.contentContent}>{item.modelsAccount}</div>
+          <div className={s.contentContent}>{item.modelCount}</div>
         </Col>
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>{t('project.train_set')}/{t('project.test_set')}/{t('project.mining_set')}</div>
@@ -136,7 +136,7 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
         </Col>
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>{t('project.interation.number')}</div>
-          <div className={s.contentContent}>{item?.currentInteration.version}</div>
+          <div className={s.contentContent}>{item?.currentInteration}</div>
         </Col>
       </Row>
       <Row>

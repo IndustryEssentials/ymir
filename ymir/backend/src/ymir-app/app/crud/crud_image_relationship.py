@@ -10,26 +10,14 @@ from app.schemas.image_relationship import (
 )
 
 
-class CRUDImageRelationship(
-    CRUDBase[DockerImageRelationship, ImageRelationshipCreate, ImageRelationshipUpdate]
-):
-    def get_relationships_of_src_image(
-        self, db: Session, *, src_image_id: int
-    ) -> List[DockerImageRelationship]:
-        return (
-            db.query(self.model).filter(self.model.src_image_id == src_image_id).all()
-        )
+class CRUDImageRelationship(CRUDBase[DockerImageRelationship, ImageRelationshipCreate, ImageRelationshipUpdate]):
+    def get_relationships_of_src_image(self, db: Session, *, src_image_id: int) -> List[DockerImageRelationship]:
+        return db.query(self.model).filter(self.model.src_image_id == src_image_id).all()
 
-    def get_relationships_of_dest_image(
-        self, db: Session, *, dest_image_id: int
-    ) -> List[DockerImageRelationship]:
-        return (
-            db.query(self.model).filter(self.model.dest_image_id == dest_image_id).all()
-        )
+    def get_relationships_of_dest_image(self, db: Session, *, dest_image_id: int) -> List[DockerImageRelationship]:
+        return db.query(self.model).filter(self.model.dest_image_id == dest_image_id).all()
 
-    def delete_relationships_of_src_image(
-        self, db: Session, *, src_image_id: int
-    ) -> None:
+    def delete_relationships_of_src_image(self, db: Session, *, src_image_id: int) -> None:
         """
         remove all relationships from src_image_id
         """
@@ -43,8 +31,7 @@ class CRUDImageRelationship(
         """
         self.delete_relationships_of_src_image(db, src_image_id=src_image_id)
         db_objs = [
-            self.model(src_image_id=src_image_id, dest_image_id=dest_image_id)
-            for dest_image_id in dest_image_ids
+            self.model(src_image_id=src_image_id, dest_image_id=dest_image_id) for dest_image_id in dest_image_ids
         ]
         db.bulk_save_objects(db_objs)
         db.commit()

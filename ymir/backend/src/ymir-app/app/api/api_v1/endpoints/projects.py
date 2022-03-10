@@ -4,7 +4,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-from app.constants.state import TaskState, TaskType
+
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -13,6 +13,7 @@ from app.api.errors.errors import (
     FailedToCreateProject,
 )
 from app.constants.state import ResultState
+from app.constants.state import TaskType
 from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 
@@ -72,15 +73,11 @@ def create_project(
     """
     Create project
     """
-    if crud.project.is_duplicated_name(
-        db, user_id=current_user.id, name=project_in.name
-    ):
+    if crud.project.is_duplicated_name(db, user_id=current_user.id, name=project_in.name):
         raise DuplicateProjectError()
 
     # 1.create project to get task_id for sending to controller
-    project = crud.project.create_project(
-        db, user_id=current_user.id, obj_in=project_in
-    )
+    project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
 
     task_id = gen_task_hash(current_user.id, project.id)
 
@@ -100,28 +97,14 @@ def create_project(
         raise FailedToCreateProject()
 
     # 3.create task info
-    task_info = schemas.TaskCreate(
-        name=project_in.name,
-        type=TaskType.create_project,
-        project_id=project.id,
-    )
-    task = crud.task.create_task(
-        db,
-        obj_in=task_info,
-        task_hash=task_id,
-        user_id=current_user.id,
-        state=TaskState.done.value,
-        percent=1,
+    task = crud.task.create_placeholder(
+        db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
     )
 
     # 3.create dataset group to build dataset info
     dataset_name = f"{project_in.name}_training_dataset"
-    dataset_paras = schemas.DatasetGroupCreate(
-        name=dataset_name, project_id=project.id, user_id=current_user.id
-    )
-    dataset_group = crud.dataset_group.create_with_user_id(
-        db, user_id=current_user.id, obj_in=dataset_paras
-    )
+    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
+    dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=dataset_paras)
 
     # 4.create init dataset
     dataset_in = schemas.DatasetCreate(
@@ -179,9 +162,7 @@ def update_project(
     """
     Setting up a project
     """
-    project = crud.project.get_by_user_and_id(
-        db, user_id=current_user.id, id=project_id
-    )
+    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
 

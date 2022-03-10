@@ -1,5 +1,6 @@
 import json
 from typing import List, Optional
+
 from pydantic import BaseModel, Field, validator
 
 from app.constants.state import MiningStrategy, TrainingType
@@ -16,7 +17,7 @@ class ProjectBase(BaseModel):
     description: Optional[str]
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
-    chunk_size: Optional[int]
+    chunk_size: Optional[int] = 0
 
     training_type: TrainingType = TrainingType.object_detect
 
@@ -31,6 +32,7 @@ class ProjectCreate(ProjectBase):
 
     class Config:
         use_enum_values = True
+        validate_all = True
 
 
 # Properties that can be changed
@@ -46,9 +48,7 @@ class ProjectUpdate(BaseModel):
     testing_dataset_id: Optional[int]
 
 
-class ProjectInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase
-):
+class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
     class Config:
         orm_mode = True
 

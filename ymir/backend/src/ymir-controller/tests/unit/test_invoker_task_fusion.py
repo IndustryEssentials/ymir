@@ -16,7 +16,7 @@ RET_ID = 'done'
 
 class TestInvokerTaskFusion(unittest.TestCase):
     # life cycle
-    def __init__(self, methodName: str = ...) -> None:
+    def __init__(self, methodName: str) -> None:
         # dir structure:
         # test_involer_CLSNAME_sandbox_root
         # ├── media_storage_root
@@ -99,19 +99,19 @@ class TestInvokerTaskFusion(unittest.TestCase):
         expected_sampling_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_0)
 
         expected_merge_cmd = f"mir merge --root {self._mir_repo_root}"
-        expected_merge_cmd += f" --dst-rev {self._sub_task_id_2}@{self._sub_task_id_2} -s host"
+        expected_merge_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_2} -s host"
         expected_merge_cmd += f" -w {expected_merge_work_dir}"
         expected_merge_cmd += f" --src-revs {self._guest_id1}@{self._guest_id1};{self._guest_id2}"
         expected_merge_cmd += f" --ex-src-revs {self._guest_id3}"
 
         expected_filter_cmd = f"mir filter --root {self._mir_repo_root}"
-        expected_filter_cmd += f" --dst-rev {self._sub_task_id_1}@{self._sub_task_id_1}"
-        expected_filter_cmd += f" --src-revs {self._sub_task_id_2}@{self._sub_task_id_2}"
+        expected_filter_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_1}"
+        expected_filter_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_2}"
         expected_filter_cmd += f" -w {expected_filter_work_dir} -p person;cat;table"
 
         expected_sampling_cmd = f"mir sampling --root {self._mir_repo_root}"
         expected_sampling_cmd += f" --dst-rev {self._task_id}@{self._task_id}"
-        expected_sampling_cmd += f" --src-revs {self._sub_task_id_1}@{self._sub_task_id_1}"
+        expected_sampling_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_1}"
         expected_sampling_cmd += f" -w {expected_sampling_work_dir}"
         expected_sampling_cmd += ' --count 100'
 
