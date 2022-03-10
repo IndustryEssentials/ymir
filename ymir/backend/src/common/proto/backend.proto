@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package ymir.backend;
 
-import "google/protobuf/timestamp.proto";
-
 /// assertion type: training, validation or test
 enum TvtType {
     TvtTypeUnknown = 0;
@@ -261,8 +259,8 @@ message Label {
     int32 id = 1;
     string name = 2;
     repeated string aliases = 3;
-    google.protobuf.Timestamp created = 4;
-    google.protobuf.Timestamp modified = 5;
+    float created = 4;
+    float modified = 5;
 }
 
 
