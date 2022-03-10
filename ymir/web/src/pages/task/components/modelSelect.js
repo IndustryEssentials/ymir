@@ -2,11 +2,10 @@ import { Col, Row, Select } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
-import t from '@/utils/t'
 import { percent } from '../../../utils/number'
 
 
-const ModelSelect = ({ pid, value, allModels, keywords = [], onChange = () => { }, getModels, ...resProps }) => {
+const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, ...resProps }) => {
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
 
@@ -28,29 +27,16 @@ const ModelSelect = ({ pid, value, allModels, keywords = [], onChange = () => { 
     generateOptions()
   }, [models])
 
-  useEffect(() => {
-    if (allModels.length && keywords.length) {
-      const same = allModels.filter(model => model.keywords.toString() === keywords.toString()) || []
-      const inter = allModels.filter(model => {
-        const kws = model.keywords
-        return kws.toString() !== keywords.toString() && kws.some(kw => keywords.includes(kw))
-      })
-      const diff = allModels.filter(model => model.keywords.every(kw => !keywords.includes(kw))) || []
-      setModels([...same, ...inter, ...diff])
-    }
-  }, [keywords])
-
-  async function fetchModels() {
-    await getModels(pid)
+  function fetchModels() {
+    getModels(pid)
   }
 
   function generateOptions() {
     const opts = models.map(model => {
       return {
         label: <Row gutter={10} wrap={false}>
-          <Col flex={1}>{model.name}</Col>
+          <Col flex={1}>{model.name} {model.versionName}</Col>
           <Col>mAP: <strong title={model.map}>{percent(model.map)}</strong></Col>
-          <Col>{t('model.column.target')}: {model.keywords.join(',')}</Col>
         </Row>,
         model,
         value: model.id,

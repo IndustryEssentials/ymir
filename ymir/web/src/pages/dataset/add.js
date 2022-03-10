@@ -248,7 +248,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 >
                   <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
                     {filterDataset().map(dataset => (
-                      <Option value={dataset.id} key={dataset.id}>{dataset.name} (Total: {dataset.asset_count})</Option>
+                      <Option value={dataset.id} key={dataset.id}>{dataset.name} (Total: {dataset.assetCount})</Option>
                     ))}
                   </Select>
                 </Form.Item>

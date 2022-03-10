@@ -117,62 +117,83 @@ export function createFusionTask({
   })
 }
 
-
+/**
+ * create label task
+ * @param {object} task {
+ * {number} projectId
+ * {string} name
+ * {number} datasetId
+ * {array<string>} labellers
+ * {boolean} keepAnnotations
+ * {string} doc
+ * } 
+ * @returns 
+ */
 export function createLabelTask({
+  projectId,
   name,
-  datasets,
-  label_members,
-  keywords,
-  with_labels,
-  keep_annotations,
+  datasetId,
+  labellers,
+  keepAnnotations,
   doc,
 }) {
   return createTask({
     name,
     type: TASKTYPES.LABEL,
+    project_id: projectId,
     parameters: {
-      with_labels,
-      include_datasets: [datasets],
-      labellers: label_members,
-      include_classes: keywords,
+      dataset_id: datasetId,
+      labellers,
       extra_url: doc,
-      keep_annotations,
-      with_labels,
+      keep_annotations: keepAnnotations,
     },
   })
 }
 
+/**
+ * create training task
+ * @param {object} task {
+ * {string} name
+ * {number} projectId
+ * {number} datasetId
+ * {number} testset
+ * {string} backbone
+ * {object} config
+ * {string} network
+ * {number} trainType
+ * {number} strategy
+ * {number} model
+ * {string} image
+ * } 
+ * @returns 
+ */
 export function createTrainTask({
   name,
-  train_sets,
-  validation_sets,
+  projectId,
+  datasetId,
+  testset,
   backbone,
-  hyperparameter,
   config,
   network,
-  keywords,
-  train_type,
+  trainType,
   strategy,
   model,
-  docker_image,
-  docker_image_id,
+  image,
 }) {
   return createTask({
     name,
+    project_id: projectId,
     type: TASKTYPES.TRAINING,
     config,
     parameters: {
       strategy,
-      include_train_datasets: train_sets,
-      include_validation_datasets: validation_sets,
-      include_classes: keywords,
+      dataset_id: datasetId,
+      validation_dataset_id: testset,
       backbone,
-      hyperparameter,
       network,
-      train_type,
+      train_type: trainType,
       model_id: model,
-      docker_image,
-      docker_image_id,
+      docker_image: image,
     }
   })
 }

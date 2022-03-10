@@ -1,4 +1,5 @@
 
+import { Project } from './project'
 import { Task } from './task'
 export interface DatasetGroup {
   id: number,
@@ -28,6 +29,7 @@ export interface Dataset {
   taskType: number,
   duration: number,
   taskName: string,
+  project?: Project,
 }
 
 

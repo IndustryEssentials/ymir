@@ -3,9 +3,9 @@ import { format } from '@/utils/date'
 import { getInterationVersion } from "./project"
 
 export enum states {
-  READY = 1,
-  VALID = 2,
-  INVALID = 3,
+  READY = 0,
+  VALID = 1,
+  INVALID = 2,
 }
 
 export function transferDatasetGroup (data: OriginDatasetGroup) {

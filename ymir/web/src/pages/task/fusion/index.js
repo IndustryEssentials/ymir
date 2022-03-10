@@ -17,7 +17,7 @@ import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
 
 const { Option } = Select
 
-function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
+function Fusion({ allDatasets, datasetCache, getDatasets, getDataset, createFusionTask, }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const history = useHistory()
@@ -40,19 +40,24 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
   }
 
   useEffect(() => {
-    fetchDatasets()
-  }, [])
+    dataset.projectId && getDatasets(dataset.projectId)
+  }, [dataset.projectId])
 
   useEffect(() => {
-    setDataset(datasets.find(ds => ds.id === id))
-  }, [datasets])
+    id && getDataset(id)
+  }, [id])
+
+  useEffect(() => {
+    const dst = datasetCache[id]
+    dst && setDataset(dst)
+  }, [datasetCache])
 
   useEffect(() => {
     getKeywords()
   }, [datasets, includeDatasets])
 
   useEffect(() => {
-    setDatasets(allDatasets.filter(dataset => TASKSTATES.FINISH === dataset.state && dataset.keywords.length))
+    setDatasets(allDatasets.filter(dataset => dataset.keywords.length))
   }, [allDatasets])
 
   useEffect(() => {
@@ -77,6 +82,7 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
 
   const getKeywords = () => {
     const selectedDataset = [id, ...includeDatasets]
+    console.log('get keyword datasets: ', selectedDataset, id, includeDatasets, datasets)
     let ks = datasets.reduce((prev, current) => selectedDataset.includes(current.id)
       ? prev.concat(current.keywords)
       : prev, [])
@@ -102,10 +108,6 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
 
   const onFinishFailed = (err) => {
     console.log("on finish failed: ", err)
-  }
-
-  async function fetchDatasets() {
-    await getDatasets()
   }
 
   function onIncludeDatasetChange(values) {
@@ -178,7 +180,7 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
         >
           <Panel hasHeader={false}>
             <Tip hidden={true}>
-              <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset?.name} {dataset?.version}</span></Form.Item>
+              <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
             </Tip>
           </Panel>
           <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
@@ -272,13 +274,21 @@ function Fusion({ allDatasets, getDatasets, createFusionTask, }) {
 const props = (state) => {
   return {
     allDatasets: state.dataset.allDatasets,
+    datasetCache: state.dataset.dataset,
   }
 }
 const mapDispatchToProps = (dispatch) => {
   return {
-    getDatasets() {
+    getDatasets(pid) {
       return dispatch({
         type: "dataset/queryAllDatasets",
+        payload: pid,
+      })
+    },
+    getDataset(id) {
+      return dispatch({
+        type: "dataset/getDataset",
+        payload: id,
       })
     },
     createFusionTask(payload) {

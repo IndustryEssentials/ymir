@@ -4,7 +4,7 @@ import {
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
-import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
 
 const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
 
@@ -43,11 +43,22 @@ export default {
     *getDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getDataset, payload)
       if (code === 0) {
+        const dataset = transferDataset(result)
+        
+        if (dataset.projectId) {
+          const presult = yield put.resolve({
+            type: 'project/getProject',
+            payload: dataset.projectId,
+          })
+          if (presult) {
+            dataset.project = presult
+          }
+        }
         yield put({
           type: "UPDATE_DATASET",
-          payload: result,
+          payload: dataset,
         })
-        return result
+        return dataset
       }
     },
     *getDatasetVersions({ payload }, { select, call, put }) {
@@ -72,13 +83,12 @@ export default {
     *queryDatasets({ payload }, { select, call, put }) {
       const { code, result } = yield call(queryDatasets, payload)
       if (code === 0) {
-        console.log('query datset: ', result)
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
       }
     },
     *queryAllDatasets({ payload }, { select, call, put }) {
       const pid = payload
-      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, limit: 10000 }})
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: states.VALID, limit: 10000 }})
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",
@@ -216,9 +226,11 @@ export default {
       }
     },
     UPDATE_DATASET(state, { payload }) {
+      const ds = payload
+      const dss = { ...state.dataset, [ds.id]: ds, }
       return {
         ...state,
-        dataset: payload
+        dataset: dss,
       }
     },
     UPDATE_ASSETS(state, { payload }) {

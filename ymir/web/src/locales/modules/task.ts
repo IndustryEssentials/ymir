@@ -83,7 +83,6 @@ const task = {
   "task.detail.label.download.btn": { cn: "下载标注描述文档", en: "Download Label Desc Doc", },
   "task.detail.error.title": { cn: "失败", en: "Failure", },
   "task.fusion.create.success.msg": { cn: "创建成功", en: "Create Task Success!", },
-  "task.fusion.form.name.label": { cn: "任务名称", en: "Task Name", },
   "task.fusion.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "task.fusion.form.datasets.placeholder": { cn: "请选择数据集", en: "Select/Fusion Datasets", },
 

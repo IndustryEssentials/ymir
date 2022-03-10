@@ -10,7 +10,7 @@ import {
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
-import { transferModelGroup, transferModelVersion } from '@/constants/model'
+import { transferModelGroup, transferModel, states, } from '@/constants/model'
 
 const initQuery = {
   name: "",
@@ -32,7 +32,7 @@ export default {
     allModels: [],
   },
   effects: {
-    *getModels({ payload }, { call, put }) {
+    *getModelGroups({ payload }, { call, put }) {
       const { pid, query } = payload
       const { code, result } = yield call(getModels, pid, query)
       if (code === 0) {
@@ -55,7 +55,7 @@ export default {
       }
       const { code, result } = yield call(getModelVersions, gid)
       if (code === 0) {
-        const ms = result.models.map(model => transferModelVersion(model))
+        const ms = result.models.map(model => transferModel(model))
         const vs = { id: gid, versions: ms }
         yield put({
           type: "UPDATE_VERSIONS",
@@ -70,8 +70,9 @@ export default {
         return { items: result.items.map(ds => transferModel(ds)), total: result.total }
       }
     },
-    *queryAllModels({}, { select, call, put }) {
-      const dss = yield put.resolve({ type: 'queryModels', payload: { limit: 10000 }})
+    *queryAllModels({ payload }, { select, call, put }) {
+      const pid = payload
+      const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VILID, limit: 10000 }})
       if (dss) {
         yield put({
           type: "UPDATE_ALL_MODELS",
