@@ -28,9 +28,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get(self, db: Session, id: Any) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.id == id).first()  # type: ignore
 
-    def get_by_user_and_id(
-        self, db: Session, *, user_id: int, id: Any
-    ) -> Optional[ModelType]:
+    def get_by_user_and_id(self, db: Session, *, user_id: int, id: Any) -> Optional[ModelType]:
         return (
             db.query(self.model)
             .filter(
@@ -44,9 +42,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_by_name(self, db: Session, name: str) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.name == name).first()  # type: ignore
 
-    def get_by_user_and_name(
-        self, db: Session, user_id: int, name: str
-    ) -> Optional[ModelType]:
+    def get_by_user_and_name(self, db: Session, user_id: int, name: str) -> Optional[ModelType]:
         return (
             db.query(self.model)
             .filter(
@@ -63,12 +59,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_by_task_id(self, db: Session, task_id: int) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.task_id == task_id).first()  # type: ignore
 
-    def get_multi(
-        self, db: Session, *, offset: int = 0, limit: int = settings.DEFAULT_LIMIT
-    ) -> List[ModelType]:
+    def get_multi(self, db: Session, *, offset: int = 0, limit: int = settings.DEFAULT_LIMIT) -> List[ModelType]:
         return db.query(self.model).offset(offset).limit(limit).all()
 
     def get_multi_by_ids(self, db: Session, *, ids: List[int]) -> List[ModelType]:
+        if len(ids) == 0:
+            return []
         return db.query(self.model).filter(self.model.id.in_(ids)).all()  # type: ignore
 
     def get_multi_by_user(self, db: Session, *, user_id: int) -> List[ModelType]:
@@ -89,9 +85,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    def create_with_user_id(
-        self, db: Session, *, user_id: int, obj_in: CreateSchemaType
-    ) -> ModelType:
+    def create_with_user_id(self, db: Session, *, user_id: int, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         obj_in_data["user_id"] = user_id
         db_obj = self.model(**obj_in_data)  # type: ignore
@@ -100,13 +94,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    def update(
-        self,
-        db: Session,
-        *,
-        db_obj: ModelType,
-        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
-    ) -> ModelType:
+    def update(self, db: Session, *, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]]) -> ModelType:
         obj_data = jsonable_encoder(db_obj)
         if isinstance(obj_in, dict):
             update_data = obj_in

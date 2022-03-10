@@ -59,9 +59,7 @@ async def swagger_ui_redirect() -> HTMLResponse:
 
 @app.on_event("startup")
 async def startup() -> None:
-    redis = aioredis.from_url(
-        settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True
-    )
+    redis = aioredis.from_url(settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
 
 
@@ -70,6 +68,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.add_exception_handler(HTTPException, errors.http_error_handler)
 app.add_exception_handler(RequestValidationError, errors.http422_error_handler)
 
+logging.basicConfig(level=logging.INFO)
 gunicorn_error_logger = logging.getLogger("gunicorn.error")
 gunicorn_logger = logging.getLogger("gunicorn")
 uvicorn_access_logger = logging.getLogger("uvicorn.access")

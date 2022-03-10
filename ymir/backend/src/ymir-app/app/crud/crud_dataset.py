@@ -7,8 +7,8 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
+from app.constants.state import ResultState
 from app.crud.base import CRUDBase
-from app.constants.state import TaskState, ResultState
 from app.models import Dataset
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
 
@@ -79,9 +79,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
     def get_latest_version(self, db: Session, dataset_group_id: int) -> Optional[int]:
         query = db.query(self.model)
         latest_dataset_in_group = (
-            query.filter(self.model.dataset_group_id == dataset_group_id)
-            .order_by(desc(self.model.id))
-            .first()
+            query.filter(self.model.dataset_group_id == dataset_group_id).order_by(desc(self.model.id)).first()
         )
         if latest_dataset_in_group:
             return latest_dataset_in_group.version_num
@@ -107,9 +105,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.refresh(db_obj)
         return db_obj
 
-    def create_as_task_result(
-        self, db: Session, task: schemas.TaskInternal, dest_group_id: int
-    ) -> Dataset:
+    def create_as_task_result(self, db: Session, task: schemas.TaskInternal, dest_group_id: int) -> Dataset:
         dataset_in = DatasetCreate(
             name=task.hash,
             hash=task.hash,

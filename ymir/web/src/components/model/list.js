@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, } from "antd"
+import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, } from "antd"
 import {
   SearchOutlined,
 } from "@ant-design/icons"
@@ -69,8 +69,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
   const columns = [
     {
       title: showTitle("model.column.name"),
-      key: "name",
-      dataIndex: "name",
+      dataIndex: "versionName",
       className: styles[`column_name`],
       render: (name, { id }) => (
         <Link to={`/home/model/detail/${id}`}>{name}</Link>
@@ -79,23 +78,8 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     },
     {
       title: showTitle("model.column.source"),
-      dataIndex: "source",
-      render: (type, { task_id, task_name }) => <TypeTag types={getModelImportTypes()} type={type} id={task_id} name={task_name} />,
-      ellipsis: true,
-    },
-    {
-      title: showTitle("model.column.target"),
-      dataIndex: "keywords",
-      render: (keywords) => {
-        const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
-        return <Tooltip placement='left' title={label}
-          color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
-          mouseEnterDelay={0.5}
-        >{label}</Tooltip>
-      },
-      ellipsis: {
-        showTitle: false,
-      },
+      dataIndex: "taskType",
+      render: (type) => <TypeTag types={getModelImportTypes()} type={type} />,
     },
     {
       title: showTitle("model.column.map"),
@@ -105,9 +89,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     },
     {
       title: showTitle("model.column.create_time"),
-      key: "create_datetime",
-      dataIndex: "create_datetime",
-      render: (datetime) => format(datetime),
+      dataIndex: "createTime",
       sorter: true,
       width: 200,
       align: 'center',
@@ -185,18 +167,6 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
         icon: <TrainIcon />,
       },
       {
-        key: "history",
-        label: t("dataset.action.history"),
-        onclick: () => history.push(`/home/history/model/${id}`),
-        icon: <TreeIcon />,
-      },
-      {
-        key: "edit",
-        label: t("dataset.action.edit"),
-        onclick: () => edit(record),
-        icon: <EditIcon />,
-      },
-      {
         key: "del",
         label: t("dataset.action.del"),
         onclick: () => del(id, name),
@@ -258,7 +228,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
 
   const renderGroups = (<>
     <div className={styles.groupList}>
-      {models.map(group => <div className={styles.groupItem} key={group.id}>
+      {models.length ? models.map(group => <div className={styles.groupItem} key={group.id}>
         <Row className={styles.groupTitle}>
           <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{ group.showVersions ? <ArrowDownIcon /> :<ArrowRightIcon />} </span>
             <span className={styles.groupName}>{group.name}</span></Col>
@@ -277,7 +247,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
             pagination={false}
           />
         </div>
-      </div>)}
+      </div>) : <Empty />}
     </div>
     <Pagination className={styles.pager} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
   </>)
@@ -338,10 +308,10 @@ const actions = (dispatch) => {
         payload: { pid, query },
       })
     },
-    getVersions: (gid) => {
+    getVersions: (gid, force) => {
       return dispatch({
         type: 'model/getModelVersions',
-        payload: gid,
+        payload: { gid, force },
       })
     },
     delModel: (payload) => {

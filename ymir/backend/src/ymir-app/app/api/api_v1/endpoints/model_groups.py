@@ -52,20 +52,16 @@ def list_model_groups(
 def create_model_group(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
     obj_in: schemas.ModelGroupCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
     Create model group
     """
-    if crud.model_group.is_duplicated_name(
-        db, user_id=current_user.id, name=obj_in.name
-    ):
+    if crud.model_group.is_duplicated_name(db, user_id=current_user.id, name=obj_in.name):
         raise DuplicateModelGroupError()
-    model_group = crud.model_group.create_with_user_id(
-        db, user_id=current_user.id, obj_in=obj_in
-    )
+    model_group = crud.model_group.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create modelgroup] model group record created: %s", model_group)
     return {"result": model_group}
 
@@ -98,14 +94,12 @@ def update_model_group(
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
     obj_update: schemas.ModelGroupUpdate,
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Change model group name
     """
-    model_group = crud.model_group.get_by_user_and_id(
-        db, user_id=current_user.id, id=group_id
-    )
+    model_group = crud.model_group.get_by_user_and_id(db, user_id=current_user.id, id=group_id)
     if not model_group:
         raise ModelGroupNotFound()
 
@@ -121,7 +115,7 @@ def delete_model_group(
     *,
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete model group

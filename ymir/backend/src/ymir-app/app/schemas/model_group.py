@@ -25,9 +25,7 @@ class ModelGroupUpdate(BaseModel):
     name: str
 
 
-class ModelGroupInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelGroupBase
-):
+class ModelGroupInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelGroupBase):
     models: List[Model]
 
     class Config:

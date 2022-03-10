@@ -9,9 +9,9 @@ from sqlalchemy.orm import Session
 from app.api.api_v1.api import datasets as m
 from app.api.errors.errors import DatasetNotFound
 from app.config import settings
-from tests.utils.utils import random_lower_string, random_url
-from tests.utils.datasets import create_dataset_record
 from tests.utils.dataset_groups import create_dataset_group_record
+from tests.utils.datasets import create_dataset_record
+from tests.utils.utils import random_lower_string, random_url
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -63,18 +63,14 @@ class TestListDatasets:
     ):
         for _ in range(3):
             create_dataset_record(db, user_id=user_id)
-        r = client.get(
-            f"{settings.API_V1_STR}/datasets/", headers=normal_user_token_headers
-        )
+        r = client.get(f"{settings.API_V1_STR}/datasets/", headers=normal_user_token_headers)
         datasets = r.json()["result"]["items"]
         total = r.json()["result"]["total"]
         assert len(datasets) == total != 0
 
 
 class TestBatchGetDatasets:
-    def test_list_datasets_not_found(
-        self, client: TestClient, normal_user_token_headers
-    ):
+    def test_list_datasets_not_found(self, client: TestClient, normal_user_token_headers):
         r = client.get(
             f"{settings.API_V1_STR}/datasets/batch",
             headers=normal_user_token_headers,
@@ -101,9 +97,7 @@ class TestBatchGetDatasets:
 
 
 class TestCreateDataset:
-    def test_create_dataset_succeed(
-        self, client: TestClient, normal_user_token_headers, mocker
-    ):
+    def test_create_dataset_succeed(self, client: TestClient, normal_user_token_headers, mocker):
         j = {
             "name": random_lower_string(),
             "version_num": random.randint(100, 200),
@@ -139,12 +133,8 @@ class TestDeleteDatasets:
         )
         assert r.json()["result"]["is_deleted"]
 
-    def test_delete_dataset_not_found(
-        self, client: TestClient, normal_user_token_headers, mocker
-    ):
-        r = client.delete(
-            f"{settings.API_V1_STR}/datasets/20000", headers=normal_user_token_headers
-        )
+    def test_delete_dataset_not_found(self, client: TestClient, normal_user_token_headers, mocker):
+        r = client.delete(f"{settings.API_V1_STR}/datasets/20000", headers=normal_user_token_headers)
         assert r.status_code == 404
 
 
@@ -170,9 +160,7 @@ class TestPatchDatasets:
         )
         assert r.json()["result"]["name"] == new_name != dataset_name
 
-    def test_update_dataset_name_not_found(
-        self, client: TestClient, normal_user_token_headers, mocker
-    ):
+    def test_update_dataset_name_not_found(self, client: TestClient, normal_user_token_headers, mocker):
         r = client.patch(
             f"{settings.API_V1_STR}/datasets/23333333",
             headers=normal_user_token_headers,
@@ -220,9 +208,7 @@ class TestGetAssets:
         assert r.status_code == 200
         assert r.json()["code"] == 0
 
-    def test_get_assets_of_dataset_not_found(
-        self, client: TestClient, normal_user_token_headers, mocker
-    ):
+    def test_get_assets_of_dataset_not_found(self, client: TestClient, normal_user_token_headers, mocker):
         r = client.get(
             f"{settings.API_V1_STR}/datasets/23333333/assets",
             headers=normal_user_token_headers,
@@ -231,9 +217,7 @@ class TestGetAssets:
 
 
 class TestGetAsset:
-    def test_get_asset_by_asset_hash_succeed(
-        self, client: TestClient, normal_user_token_headers, mocker
-    ):
+    def test_get_asset_by_asset_hash_succeed(self, client: TestClient, normal_user_token_headers, mocker):
         r = client.get(
             f"{settings.API_V1_STR}/datasets/23333333/assets/abc",
             headers=normal_user_token_headers,
@@ -277,9 +261,7 @@ class TestGetRandomAsset:
         assert r.status_code == 200
         assert r.json()["code"] == 0
 
-    def test_get_random_asset_not_found(
-        self, client: TestClient, normal_user_token_headers, mocker
-    ):
+    def test_get_random_asset_not_found(self, client: TestClient, normal_user_token_headers, mocker):
         r = client.get(
             f"{settings.API_V1_STR}/datasets/23333/assets/random",
             headers=normal_user_token_headers,
@@ -302,12 +284,8 @@ class TestCreateDataFusion:
         user_id: int,
         mocker,
     ):
-        dataset_group_obj = create_dataset_group_record(
-            db, project_id=1, user_id=user_id
-        )
-        dataset_obj = create_dataset_record(
-            db, user_id=user_id, dataset_group_id=dataset_group_obj.id
-        )
+        dataset_group_obj = create_dataset_group_record(db, project_id=1, user_id=user_id)
+        dataset_obj = create_dataset_record(db, user_id=user_id, dataset_group_id=dataset_group_obj.id)
 
         j = {
             "project_id": 1,

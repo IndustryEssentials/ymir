@@ -11,12 +11,13 @@ export interface Project {
   trainSet: Dataset,
   testSet: Dataset,
   miningSet: Dataset,
-  setsAccount: number,
-  modelsAccount: number,
+  setCount: number,
+  modelCount: number,
   miningStrategy: number,
   chunkSize?: number,
-  currentInteration?: Interation,
+  currentInteration?: number,
   createTime: string,
+  updateTime: string,
   description?: string,
 }
 
@@ -52,15 +53,17 @@ export interface originProject {
   train_set: Dataset,
   test_set: Dataset,
   mining_set: Dataset,
-  set_account: number,
-  models_account: number,
+  dataset_count: number,
+  model_count: number,
   mining_strategy: number,
-  chunk_size?: number,
+  chunk_size: number,
   current_interation?: originInteration,
   create_datetime: string,
-  description?: string 
+  update_datetime: string,
+  description: string 
   training_type: number,
   iteration_target: number,
   map_target: number,
   training_dataset_count_target: number,
+  current_iteration_id: number,
 }

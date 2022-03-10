@@ -41,9 +41,7 @@ def list_users(
     - declined = 3
     - deactivated = 4
     """
-    users, total = crud.user.get_multi_with_filter(
-        db, offset=offset, limit=limit, state=state
-    )
+    users, total = crud.user.get_multi_with_filter(db, offset=offset, limit=limit, state=state)
     return {"result": {"total": total, "items": users}}
 
 
@@ -68,9 +66,7 @@ def create_user(
     if user:
         raise DuplicateUserNameError()
 
-    user_in = schemas.UserCreate(
-        password=password, email=email, phone=phone, username=username
-    )
+    user_in = schemas.UserCreate(password=password, email=email, phone=phone, username=username)
     user = crud.user.create(db, obj_in=user_in)
 
     try:

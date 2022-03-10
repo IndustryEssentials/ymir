@@ -58,9 +58,7 @@ def host_file(file: Any) -> str:
     return urljoin(NGINX_PREFIX, str(target))
 
 
-def save_file_content(
-    url: Union[AnyHttpUrl, str], output_filename: Union[Path, str]
-) -> None:
+def save_file_content(url: Union[AnyHttpUrl, str], output_filename: Union[Path, str]) -> None:
     if urlparse(url).netloc:
         return download_file(url, output_filename)  # type: ignore
 
@@ -88,9 +86,7 @@ def download_file(url: AnyHttpUrl, output_filename: str) -> None:
             f.write(chunk)
 
 
-def decompress_zip(
-    zip_file_path: Union[str, Path], output_dir: Union[str, Path]
-) -> None:
+def decompress_zip(zip_file_path: Union[str, Path], output_dir: Union[str, Path]) -> None:
     with zipfile.ZipFile(str(zip_file_path), "r") as zip_ref:
         zip_ref.extractall(str(output_dir))
 
@@ -125,9 +121,7 @@ def save_file(
     return output_file
 
 
-def save_files(
-    urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Path]
-) -> Tuple[str, Dict]:
+def save_files(urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Path]) -> Tuple[str, Dict]:
     output_dir = mkdtemp(prefix="import_files_", dir=output_basedir)
     save_ = partial(save_file, output_dir=Path(output_dir))
     workers = min(MAX_WORKERS, len(urls))
@@ -150,9 +144,6 @@ def is_valid_import_path(src_path: Union[str, Path]) -> bool:
     if not (src_path.is_dir() and annotation_path.is_dir()):
         return False
     if not is_relative_to(annotation_path, settings.SHARED_DATA_DIR):
-        logger.error(
-            "import path (%s) not within shared_dir (%s)"
-            % (annotation_path, settings.SHARED_DATA_DIR)
-        )
+        logger.error("import path (%s) not within shared_dir (%s)" % (annotation_path, settings.SHARED_DATA_DIR))
         return False
     return True
