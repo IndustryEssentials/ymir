@@ -248,7 +248,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }
 
   const add = () => {
-    history.push('/home/dataset/add')
+    history.push(`/home/dataset/add/${pid}`)
   }
 
 

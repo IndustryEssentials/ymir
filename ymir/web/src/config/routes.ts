@@ -48,7 +48,7 @@ const Routes = [
         title: 'task.label.title',
       },
       {
-        path: "/home/dataset/add/:id?",
+        path: "/home/dataset/add/:pid",
         name: "datasetImport",
         component: "@/pages/dataset/add",
         title: "dataset.add.title",

@@ -49,7 +49,7 @@ export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
 }
 
 export function batchDatasets(ids) {
-  return request.get('datasets/batch', { params: { ids: ids.toString() }})
+  return request.get('datasets/batch', { params: { ids: ids.toString() } })
 }
 
 /**
@@ -89,22 +89,26 @@ export function delDataset(id) {
 }
 
 /**
- * create a dataset
+ * import a dataset into project
  * @param {object} dataset
  * {
- *   "name": "string",
- *   "hash": "string",
- *   "type": 1,
- *   "predicates": "string",
- *   "asset_count": 0,
- *   "keyword_count": 0,
- *   "user_id": 0,
- *   "task_id": 0
+ *   {string} name
+ *   {number} projectId
+ *   {string} url
+ *   {number} [datasetId]
+ *   {string} [inputPath]
+ *   {number} [strategy] default: 0
  * }
  * @returns
  */
-export function createDataset(dataset) {
-  return request.post("/datasets/", dataset)
+export function createDataset({ name, projectId, url, datasetId, path, strategy }) {
+  return request.post("/datasets/importing", {
+    name, strategy,
+    project_id: projectId,
+    input_url: url,
+    input_dataset_id: datasetId,
+    input_path: path,
+  })
 }
 
 export function updateDataset(id, name) {
