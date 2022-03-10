@@ -38,7 +38,7 @@ export interface OriginDatasetGroup {
   create_datetime: string,
 }
 
-export interface OriginDatasetVersion {
+export interface OriginDataset {
   id: number,
   dataset_group_id: number,
   project_id: number,

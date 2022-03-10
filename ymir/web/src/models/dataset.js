@@ -4,7 +4,7 @@ import {
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
-import { transferDatasetGroup, transferDatasetVersion } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 
 const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
 
@@ -60,7 +60,7 @@ export default {
       }
       const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
-        const vss = result.datasets.map(item => transferDatasetVersion(item))
+        const vss = result.datasets.map(item => transferDataset(item))
         const vs = { id: gid, versions: vss, }
         yield put({
           type: "UPDATE_VERSIONS",
