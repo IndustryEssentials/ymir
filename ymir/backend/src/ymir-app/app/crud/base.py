@@ -63,6 +63,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db.query(self.model).offset(offset).limit(limit).all()
 
     def get_multi_by_ids(self, db: Session, *, ids: List[int]) -> List[ModelType]:
+        if len(ids) == 0:
+            return []
         return db.query(self.model).filter(self.model.id.in_(ids)).all()  # type: ignore
 
     def get_multi_by_user(self, db: Session, *, user_id: int) -> List[ModelType]:

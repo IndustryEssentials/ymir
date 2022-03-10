@@ -44,7 +44,7 @@ def fake_viz_client() -> Generator:
             "keywords": [],
             "metadata": {},
         }
-        assets = Mock(total=1, items=[asset], keywords={})
+        assets = Mock(total=1, items=[asset], keywords={}, negative_info={})
         client.get_assets.return_value = assets
         client.get_asset.return_value = asset
         yield client

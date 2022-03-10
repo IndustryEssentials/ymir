@@ -1,5 +1,4 @@
 import enum
-from operator import attrgetter
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -28,7 +27,6 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
-from app.schemas.task import MergeStrategy
 from app.utils.class_ids import (
     convert_keywords_to_classes,
     get_keyword_id_to_name_mapping,
@@ -87,7 +85,7 @@ def list_tasks(
 
 @router.post(
     "/",
-    response_model=schemas.TaskPaginationOut,
+    response_model=schemas.TaskOut,
 )
 def create_task(
     *,
@@ -135,12 +133,11 @@ def create_task(
 
     # 6. send metric to clickhouse
     try:
-        metrics = parse_metrics(task_in.parameters.dict())
         write_clickhouse_metrics(
             clickhouse,
-            task_info,
-            metrics,
+            jsonable_encoder(task),
             task_in.parameters.dataset_id,
+            task_in.parameters.model_id,
             task_in.parameters.keywords or [],
         )
     except FailedToConnectClickHouse:
@@ -305,27 +302,11 @@ class TaskResult:
             )
 
 
-def parse_metrics(parameters: Dict) -> Dict:
-    if not parameters:
-        return {"dataset_ids": [], "model_ids": [], "keywords": []}
-    dataset_fields = [
-        "include_datasets",
-        "include_validation_datasets",
-        "include_train_datasets",
-        "include_test_datasets",
-    ]
-    dataset_ids = list({dataset_id for field in dataset_fields for dataset_id in parameters.get(field) or []})
-    model_id = parameters.get("model_id")
-    model_ids = [model_id] if model_id else []
-    keywords = parameters.get("include_classes") or []
-    return {"dataset_ids": dataset_ids, "model_ids": model_ids, "keywords": keywords}
-
-
 def write_clickhouse_metrics(
     clickhouse: YmirClickHouse,
     task_info: Dict,
-    metrics: Dict,
     dataset_id: int,
+    model_id: Optional[int],
     keywords: List[str],
 ) -> None:
     clickhouse.save_task_parameter(
@@ -334,7 +315,9 @@ def write_clickhouse_metrics(
         name=task_info["name"],
         hash_=task_info["hash"],
         type_=TaskType(task_info["type"]).name,
-        **metrics,
+        dataset_ids=[dataset_id],
+        model_ids=[model_id] if model_id else [],
+        keywords=keywords,
     )
     clickhouse.save_dataset_keyword(
         dt=task_info["create_datetime"],
@@ -357,10 +340,18 @@ def normalize_parameters(
 
     dataset = crud.dataset.get(db, id=parameters.dataset_id)
     if not dataset:
+        logger.error("[create task] main dataset(%s) not exists", parameters.dataset_id)
         raise DatasetNotFound()
     normalized["dataset_hash"] = dataset.hash
     # label task uses dataset name as task name for LabelStudio
     normalized["dataset_name"] = dataset.name
+
+    if parameters.validation_dataset_id:
+        validation_dataset = crud.dataset.get(db, id=parameters.validation_dataset_id)
+        if not validation_dataset:
+            logger.error("[create task] validation dataset(%s) not exists", parameters.validation_dataset_id)
+            raise DatasetNotFound()
+        normalized["validation_dataset_hash"] = validation_dataset.hash
 
     if parameters.model_id:
         model = crud.model.get(db, id=parameters.model_id)
@@ -370,20 +361,6 @@ def normalize_parameters(
     if parameters.keywords:
         normalized["class_ids"] = convert_keywords_to_classes(labels, parameters.keywords)
     return normalized
-
-
-def order_datasets_by_strategy(objects: List[Any], strategy: Optional[MergeStrategy]) -> None:
-    """
-    change the order of datasets *in place*
-    """
-    if not strategy:
-        return
-    if strategy is MergeStrategy.stop_upon_conflict:
-        return
-    return objects.sort(
-        key=attrgetter("update_datetime"),
-        reverse=strategy is MergeStrategy.prefer_newest,
-    )
 
 
 @router.delete(

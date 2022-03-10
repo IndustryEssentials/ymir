@@ -14,12 +14,6 @@ from app.schemas.common import (
 )
 
 
-class MergeStrategy(enum.IntEnum):
-    stop_upon_conflict = 1
-    prefer_newest = 2
-    prefer_oldest = 3
-
-
 class TaskBase(BaseModel):
     name: str
     type: TaskType
@@ -39,6 +33,7 @@ class TaskParameter(BaseModel):
     keep_annotations: Optional[bool]
 
     # training
+    validation_dataset_id: Optional[int]
     network: Optional[str]
     backbone: Optional[str]
     hyperparameter: Optional[str]
