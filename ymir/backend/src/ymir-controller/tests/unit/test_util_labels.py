@@ -152,3 +152,38 @@ class TestLabelFileHandler(unittest.TestCase):
         }]
         self.assertFalse(conflict_labels)
         self._check_result(expected=expected, actual=label_handler.get_all_labels())
+
+        # add label with head and tail spaces
+        candidate_labels = [' d ,dd , ddd, d d d']
+        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
+        expected = [{
+            labels.kLabelId: 0,
+            labels.kLabelName: 'a',
+            labels.kLabelAliases: ['aa'],
+            '_is_modified': True
+        }, {
+            labels.kLabelId: 1,
+            labels.kLabelName: 'h',
+            '_is_modified': True
+        }, {
+            labels.kLabelId: 2,
+            labels.kLabelName: 'z',
+            '_is_modified': False
+        }, {
+            labels.kLabelId: 3,
+            labels.kLabelName: 'x',
+            labels.kLabelAliases: ['xx', 'xxx'],
+            '_is_modified': False
+        }, {
+            labels.kLabelId: 4,
+            labels.kLabelName: 'c',
+            labels.kLabelAliases: ['cc', 'ccc'],
+            '_is_modified': False
+        }, {
+            labels.kLabelId: 5,
+            labels.kLabelName: 'd',
+            labels.kLabelAliases: ['dd', 'ddd', 'd d d'],
+            '_is_modified': False
+        }]
+        self.assertFalse(conflict_labels)
+        self._check_result(expected=expected, actual=label_handler.get_all_labels())
