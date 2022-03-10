@@ -164,9 +164,9 @@ class ControllerRequest:
         importing_request = mirsvrpb.TaskReqImporting()
         importing_request.asset_dir = args["asset_dir"]
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
-        if strategy is not ImportStrategy.no_annotations:
+        if strategy != ImportStrategy.no_annotations:
             importing_request.annotation_dir = args["annotation_dir"]
-        if strategy is ImportStrategy.ignore_unknown_annotations:
+        if strategy == ImportStrategy.ignore_unknown_annotations:
             importing_request.name_strategy_ignore = True
         else:
             importing_request.name_strategy_ignore = False
