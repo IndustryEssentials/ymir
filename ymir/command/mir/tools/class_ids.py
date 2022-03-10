@@ -1,6 +1,7 @@
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
+from pydantic import BaseModel
 import yaml
 
 
@@ -11,6 +12,19 @@ kLabels = 'labels'
 kLabelName = 'name'
 kLabelId = 'id'
 kLabelAliases = 'aliases'
+
+
+class _SingleLabel(BaseModel):
+    id: int
+    name: str
+    created: float = 0
+    modified: float = 0
+    aliases: List[str] = []
+
+
+class _LabelStorage(BaseModel):
+    version: int = 0
+    labels: List[_SingleLabel] = []
 
 
 def ids_file_name() -> str:
@@ -65,35 +79,33 @@ class ClassIdManager(object):
 
         with open(file_path, 'r') as f:
             file_obj = yaml.safe_load(f)
-            labels = file_obj.get(kLabels, [])
-            for label in labels:
-                # key: id, name, alias are used here
-                label_id: int = label[kLabelId]
-                label_name: str = label[kLabelName].strip().lower()
-                label_aliases: List[str] = label.get(kLabelAliases, [])
-                if not isinstance(label_aliases, list):
-                    raise ClassIdManagerError(f"alias error for id: {label_id}, name: {label_name}")
 
-                label_aliases = [v.strip().lower() for v in label_aliases]
+        label_storage = _LabelStorage(**file_obj)
+        if label_storage.version != EXPECTED_FILE_VERSION:
+            raise ClassIdManagerError(f"unexpected version: {label_storage.version}, needed {EXPECTED_FILE_VERSION}")
+        labels = label_storage.labels
+        for label in labels:
+            label_name: str = label.name.strip().lower()
+            label_aliases = [v.strip().lower() for v in label.aliases]
 
-                # self._type_name_id_dict
-                #   key: main label name
-                self._set_if_not_exists(k=label_name,
-                                        v=(label_id, None),
+            # self._type_name_id_dict
+            #   key: main label name
+            self._set_if_not_exists(k=label_name,
+                                    v=(label.id, None),
+                                    d=self._type_name_id_dict,
+                                    error_message_prefix='dumplicated name')
+            #   key: aliases
+            for label_alias in label_aliases:
+                self._set_if_not_exists(k=label_alias,
+                                        v=(label.id, label_name),
                                         d=self._type_name_id_dict,
-                                        error_message_prefix='dumplicated name')
-                #   key: aliases
-                for label_alias in label_aliases:
-                    self._set_if_not_exists(k=label_alias,
-                                            v=(label_id, label_name),
-                                            d=self._type_name_id_dict,
-                                            error_message_prefix='dumplicated alias')
+                                        error_message_prefix='dumplicated alias')
 
-                # self._type_id_name_dict
-                self._set_if_not_exists(k=label_id,
-                                        v=label_name,
-                                        d=self._type_id_name_dict,
-                                        error_message_prefix='dumplicated id')
+            # self._type_id_name_dict
+            self._set_if_not_exists(k=label.id,
+                                    v=label_name,
+                                    d=self._type_id_name_dict,
+                                    error_message_prefix='dumplicated id')
 
         # save `self._file_path` as a flag of successful loading
         self._file_path = file_path
