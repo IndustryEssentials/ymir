@@ -16,29 +16,6 @@ def test_gen_typed_datasets():
 
 
 class TestControllerRequest:
-    def test_filter(self):
-        task_type = m.TaskType.filter
-        user_id = random.randint(1000, 2000)
-        project_id = random.randint(1000, 2000)
-
-        include_datasets = [random_lower_string() for _ in range(10)]
-        include_classes = [random.randint(1, 80) for _ in range(10)]
-        exclude_classes = [random.randint(1, 80) for _ in range(10)]
-
-        ret = m.ControllerRequest(
-            task_type,
-            user_id,
-            project_id,
-            args={
-                "include_datasets": include_datasets,
-                "include_classes": include_classes,
-                "exclude_classes": exclude_classes,
-                "strategy": MergeStrategy.prefer_newest,
-            },
-        )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeFilter
-
     def test_training(self):
         task_type = m.TaskType.training
         user_id = random.randint(1000, 2000)
@@ -48,10 +25,9 @@ class TestControllerRequest:
             user_id,
             project_id,
             args={
-                "include_train_datasets": [],
-                "include_validation_datasets": [],
-                "include_test_datasets": [],
-                "include_classes": [],
+                "dataset_hash": random_lower_string(),
+                "validation_dataset_hash": random_lower_string(),
+                "class_ids": [],
                 "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
                 "docker_config": "{}",
@@ -69,10 +45,9 @@ class TestControllerRequest:
             user_id,
             project_id,
             args={
+                "dataset_hash": random_lower_string(),
                 "top_k": 1000,
                 "model_hash": random_lower_string(),
-                "include_datasets": [],
-                "ex_dataset_ids": [],
                 "generate_annotations": True,
                 "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
@@ -92,9 +67,10 @@ class TestControllerRequest:
             project_id,
             args={
                 "name": random_lower_string(),
-                "include_datasets": [random_lower_string()],
+                "dataset_hash": random_lower_string(),
+                "dataset_name": random_lower_string(),
                 "labellers": [],
-                "include_classes": [],
+                "class_ids": [1, 2],
                 "extra_url": random_url(),
                 "keep_annotations": True,
             },

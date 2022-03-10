@@ -33,6 +33,7 @@ class TaskParameter(BaseModel):
     keep_annotations: Optional[bool]
 
     # training
+    validation_dataset_id: Optional[int]
     network: Optional[str]
     backbone: Optional[str]
     hyperparameter: Optional[str]
