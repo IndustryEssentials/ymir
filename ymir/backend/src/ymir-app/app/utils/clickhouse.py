@@ -77,6 +77,9 @@ class YmirClickHouse:
         )
 
     def save_dataset_keyword(self, dt: datetime, user_id: int, dataset_id: int, keywords: List[str]) -> Any:
+        """
+        for keywords recommendation
+        """
         return self.execute("INSERT INTO dataset_keywords VALUES", [[dt, user_id, dataset_id, keywords]])
 
     def get_popular_items(self, user_id: int, column: str, limit: int = 10) -> Any:
