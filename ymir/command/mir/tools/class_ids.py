@@ -7,12 +7,6 @@ import yaml
 
 EXPECTED_FILE_VERSION = 1
 
-kVersion = 'version'
-kLabels = 'labels'
-kLabelName = 'name'
-kLabelId = 'id'
-kLabelAliases = 'aliases'
-
 
 class _SingleLabel(BaseModel):
     id: int
@@ -42,9 +36,9 @@ def create_empty_if_not_exists(mir_root: str) -> None:
     if os.path.isfile(file_path):
         return
 
+    label_storage = _LabelStorage(version=EXPECTED_FILE_VERSION)
     with open(file_path, 'w') as f:
-        file_obj = {kVersion: EXPECTED_FILE_VERSION, kLabels: []}
-        yaml.safe_dump(file_obj, f)
+        yaml.safe_dump(label_storage.dict(), f)
 
 
 class ClassIdManagerError(BaseException):

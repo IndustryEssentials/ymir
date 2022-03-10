@@ -39,8 +39,7 @@ class LabelFileHandler:
         self._label_file = labels_file_path(mir_root=mir_root)
 
         # create if not exists
-        label_file = Path(self._label_file)
-        label_file.touch(exist_ok=True)
+        Path(self._label_file).touch(exist_ok=True)
 
     def get_label_file_path(self) -> str:
         return self._label_file
@@ -150,13 +149,6 @@ class LabelFileHandler:
                 conflict_labels.append(candidate_list)
                 continue
 
-            # existed_labels.append({
-            #     kLabelId: len(existed_labels),
-            #     kLabelName: candidate_list[0],
-            #     kLabelAliases: candidate_list[1:],
-            #     kLabelCreated: current_timestamp,
-            #     kLabelModified: current_timestamp,
-            # })
             existed_labels.append(
                 SingleLabel(id=len(existed_labels),
                             name=candidate_list[0],
