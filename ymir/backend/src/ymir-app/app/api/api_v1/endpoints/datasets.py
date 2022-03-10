@@ -2,6 +2,7 @@ import enum
 import pathlib
 import random
 import tempfile
+from operator import attrgetter
 from typing import Any, Dict, List, Optional
 from zipfile import BadZipFile
 
@@ -24,6 +25,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import ResultState
 from app.constants.state import TaskState, TaskType
+from app.schemas.dataset import MergeStrategy
 from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
@@ -369,6 +371,7 @@ def get_assets_of_dataset(
         "keywords": assets.keywords,
         "items": assets.items,
         "total": assets.total,
+        "negative_info": assets.negative_info,
     }
     return {"result": result}
 
@@ -451,6 +454,31 @@ def get_asset_of_dataset(
     return {"result": asset}
 
 
+def fusion_normalize_parameters(
+    db: Session,
+    task_in: schemas.DatasetsFusionParameter,
+    all_labels: List,
+) -> Dict:
+    include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
+
+    include_datasets_info.sort(
+        key=attrgetter("update_datetime"),
+        reverse=(task_in.include_strategy == MergeStrategy.prefer_newest),
+    )
+
+    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
+    parameters = dict(
+        include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
+        include_strategy=task_in.include_strategy,
+        exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
+        include_class_ids=convert_keywords_to_classes(all_labels, task_in.include_labels),
+        exclude_class_ids=convert_keywords_to_classes(all_labels, task_in.exclude_labels),
+        sampling_count=task_in.sampling_count,
+    )
+
+    return parameters
+
+
 @router.post(
     "/fusion",
     response_model=schemas.DatasetOut,
@@ -472,14 +500,7 @@ def create_dataset_fusion(
     )
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
 
-    parameters = dict(
-        include_datasets=[task_in.main_dataset_id] + task_in.include_datasets,
-        include_strategy=task_in.include_strategy,
-        exclude_datasets=task_in.exclude_datasets,
-        include_class_ids=convert_keywords_to_classes(labels, task_in.include_labels),
-        exclude_class_ids=convert_keywords_to_classes(labels, task_in.exclude_labels),
-        sampling_count=task_in.sampling_count,
-    )
+    parameters = fusion_normalize_parameters(db, task_in, labels)
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,

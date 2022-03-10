@@ -2,6 +2,7 @@ import random
 
 import pytest
 
+from app.schemas.dataset import MergeStrategy
 from app.utils import ymir_controller as m
 from tests.utils.utils import random_lower_string, random_url
 
@@ -32,7 +33,7 @@ class TestControllerRequest:
                 "include_datasets": include_datasets,
                 "include_classes": include_classes,
                 "exclude_classes": exclude_classes,
-                "strategy": m.MergeStrategy.prefer_newest,
+                "strategy": MergeStrategy.prefer_newest,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
@@ -51,7 +52,7 @@ class TestControllerRequest:
                 "include_validation_datasets": [],
                 "include_test_datasets": [],
                 "include_classes": [],
-                "strategy": m.MergeStrategy.prefer_newest,
+                "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
                 "docker_config": "{}",
             },
@@ -73,7 +74,7 @@ class TestControllerRequest:
                 "include_datasets": [],
                 "ex_dataset_ids": [],
                 "generate_annotations": True,
-                "strategy": m.MergeStrategy.prefer_newest,
+                "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
                 "docker_config": "{}",
             },
