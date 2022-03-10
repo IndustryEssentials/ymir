@@ -9,7 +9,7 @@ import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, hash_utils
+from mir.tools import hash_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
