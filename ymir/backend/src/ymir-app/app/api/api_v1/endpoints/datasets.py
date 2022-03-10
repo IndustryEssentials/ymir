@@ -2,6 +2,7 @@ import enum
 import pathlib
 import random
 import tempfile
+from operator import attrgetter
 from typing import Any, Dict, List, Optional
 from zipfile import BadZipFile
 
@@ -34,6 +35,7 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from app.utils.ymir_viz import VizClient
+from app.schemas.dataset import MergeStrategy
 
 router = APIRouter()
 
@@ -452,12 +454,28 @@ def get_asset_of_dataset(
     return {"result": asset}
 
 
+def order_datasets_by_strategy(objects: List[Any], strategy: Optional[MergeStrategy]) -> None:
+    """
+    change the order of datasets *in place*
+    """
+    if not strategy:
+        return
+    if strategy == MergeStrategy.stop_upon_conflict:
+        return
+    objects.sort(
+        key=attrgetter("update_datetime"),
+        reverse=strategy is MergeStrategy.prefer_newest,
+    )
+
+
 def normalize_parameters(
     db: Session,
     task_in: schemas.DatasetsFusionParameter,
     all_labels: List,
 ) -> Dict:
     include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
+    order_datasets_by_strategy(include_datasets_info, task_in.include_strategy)
+
     exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
     parameters = dict(
         include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
