@@ -6,6 +6,12 @@ import yaml
 
 EXPECTED_FILE_VERSION = 1
 
+kVersion = 'version'
+kLabels = 'labels'
+kLabelName = 'name'
+kLabelId = 'id'
+kLabelAliases = 'aliases'
+
 
 def ids_file_name() -> str:
     return 'labels.yaml'
@@ -23,7 +29,7 @@ def create_empty_if_not_exists(mir_root: str) -> None:
         return
 
     with open(file_path, 'w') as f:
-        file_obj = {'version': EXPECTED_FILE_VERSION, 'labels': []}
+        file_obj = {kVersion: EXPECTED_FILE_VERSION, kLabels: []}
         yaml.safe_dump(file_obj, f)
 
 
@@ -59,12 +65,12 @@ class ClassIdManager(object):
 
         with open(file_path, 'r') as f:
             file_obj = yaml.safe_load(f)
-            labels = file_obj.get('labels', [])
+            labels = file_obj.get(kLabels, [])
             for label in labels:
                 # key: id, name, alias are used here
-                label_id: int = label['id']
-                label_name: str = label['name'].strip().lower()
-                label_aliases: List[str] = label.get('aliases', [])
+                label_id: int = label[kLabelId]
+                label_name: str = label[kLabelName].strip().lower()
+                label_aliases: List[str] = label.get(kLabelAliases, [])
                 if not isinstance(label_aliases, list):
                     raise ClassIdManagerError(f"alias error for id: {label_id}, name: {label_name}")
 
