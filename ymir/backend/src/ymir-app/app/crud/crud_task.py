@@ -58,7 +58,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         task_hash = hash_ or gen_task_hash(user_id, project_id)
         db_obj = Task(
             name=task_hash,
-            type=type_,
+            type=int(type_),
             project_id=project_id,
             hash=task_hash,
             user_id=user_id,

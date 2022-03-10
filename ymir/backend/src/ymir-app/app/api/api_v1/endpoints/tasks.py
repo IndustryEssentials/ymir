@@ -28,7 +28,7 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
-from app.schemas.task import MergeStrategy
+from app.schemas.dataset import MergeStrategy
 from app.utils.class_ids import (
     convert_keywords_to_classes,
     get_keyword_id_to_name_mapping,

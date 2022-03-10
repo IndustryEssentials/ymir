@@ -13,7 +13,7 @@ from app.api.errors.errors import (
     FailedToCreateProject,
 )
 from app.constants.state import ResultState
-from app.constants.state import TaskState, TaskType
+from app.constants.state import TaskType
 from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 
@@ -97,18 +97,8 @@ def create_project(
         raise FailedToCreateProject()
 
     # 3.create task info
-    task_info = schemas.TaskCreate(
-        name=project_in.name,
-        type=TaskType.create_project,
-        project_id=project.id,
-    )
-    task = crud.task.create_task(
-        db,
-        obj_in=task_info,
-        task_hash=task_id,
-        user_id=current_user.id,
-        state=TaskState.done.value,
-        percent=1,
+    task = crud.task.create_placeholder(
+        db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
     )
 
     # 3.create dataset group to build dataset info
