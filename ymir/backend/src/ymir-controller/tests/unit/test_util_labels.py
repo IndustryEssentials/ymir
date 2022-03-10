@@ -27,28 +27,27 @@ class TestLabelFileHandler(unittest.TestCase):
         return super().tearDown()
 
     # protected: check result
-    def _check_result(self, expected: List[dict], actual: List[dict]) -> None:
+    def _check_result(self, expected: List[dict], actual: List[labels.SingleLabel]) -> None:
         try:
             expected_length = len(expected)
             self.assertEqual(expected_length, len(actual))
             for idx in range(expected_length):
-                expected_label = expected[idx]
+                expected_label: labels.SingleLabel = expected[idx]['_label']
+                is_modified: bool = expected[idx]['_is_modified']
                 actual_label = actual[idx]
-                is_modified = expected_label['_is_modified']
 
-                self.assertEqual(expected_label[labels.kLabelId], actual_label[labels.kLabelId])
-                self.assertEqual(actual_label[labels.kLabelId], idx)
-                self.assertEqual(expected_label[labels.kLabelName], actual_label[labels.kLabelName])
-                self.assertEqual(expected_label.get(labels.kLabelAliases, []),
-                                 actual_label.get(labels.kLabelAliases, []))
+                self.assertEqual(expected_label.id, actual_label.id)
+                self.assertEqual(actual_label.id, idx)
+                self.assertEqual(expected_label.name, actual_label.name)
+                self.assertEqual(expected_label.aliases, actual_label.aliases)
 
-                self.assertGreater(actual_label[labels.kLabelCreated], 0)
+                self.assertGreater(actual_label.created, 0)
                 if is_modified:
                     # if modified, modified time >= created time
-                    self.assertGreater(actual_label[labels.kLabelModified], actual_label[labels.kLabelCreated])
+                    self.assertGreater(actual_label.modified, actual_label.created)
                 else:
                     # if new, they should be equal
-                    self.assertEqual(actual_label[labels.kLabelModified], actual_label[labels.kLabelCreated])
+                    self.assertEqual(actual_label.modified, actual_label.created)
         except AssertionError as e:
             logging.error(f"ground: {expected}")
             logging.error(f"actual: {actual}")
@@ -62,19 +61,14 @@ class TestLabelFileHandler(unittest.TestCase):
         candidate_labels = ['a,aa,aaa', 'h,hh,hhh', 'z']
         conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
         expected = [{
-            labels.kLabelId: 0,
-            labels.kLabelName: 'a',
-            labels.kLabelAliases: ['aa', 'aaa'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa', 'aaa']),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 1,
-            labels.kLabelName: 'h',
-            labels.kLabelAliases: ['hh', 'hhh'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=1, name='h', aliases=['hh', 'hhh']),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 2,
-            labels.kLabelName: 'z',
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=2, name='z'),
+            '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
         self._check_result(expected=expected, actual=label_handler.get_all_labels())
@@ -90,23 +84,17 @@ class TestLabelFileHandler(unittest.TestCase):
         candidate_labels = ["A,aa", "h", "x,xx,xxx"]
         conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
         expected = [{
-            labels.kLabelId: 0,
-            labels.kLabelName: 'a',
-            labels.kLabelAliases: ['aa'],
-            '_is_modified': True
+            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
+            '_is_modified': True,
         }, {
-            labels.kLabelId: 1,
-            labels.kLabelName: 'h',
-            '_is_modified': True
+            '_label': labels.SingleLabel(id=1, name='h'),
+            '_is_modified': True,
         }, {
-            labels.kLabelId: 2,
-            labels.kLabelName: 'z',
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=2, name='z'),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 3,
-            labels.kLabelName: 'x',
-            labels.kLabelAliases: ['xx', 'xxx'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
+            '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
         self._check_result(expected=expected, actual=label_handler.get_all_labels())
@@ -127,28 +115,20 @@ class TestLabelFileHandler(unittest.TestCase):
         candidate_labels = ['c,cc,ccc']
         conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
         expected = [{
-            labels.kLabelId: 0,
-            labels.kLabelName: 'a',
-            labels.kLabelAliases: ['aa'],
-            '_is_modified': True
+            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
+            '_is_modified': True,
         }, {
-            labels.kLabelId: 1,
-            labels.kLabelName: 'h',
-            '_is_modified': True
+            '_label': labels.SingleLabel(id=1, name='h'),
+            '_is_modified': True,
         }, {
-            labels.kLabelId: 2,
-            labels.kLabelName: 'z',
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=2, name='z'),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 3,
-            labels.kLabelName: 'x',
-            labels.kLabelAliases: ['xx', 'xxx'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 4,
-            labels.kLabelName: 'c',
-            labels.kLabelAliases: ['cc', 'ccc'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=4, name='c', aliases=['cc', 'ccc']),
+            '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
         self._check_result(expected=expected, actual=label_handler.get_all_labels())
@@ -157,33 +137,23 @@ class TestLabelFileHandler(unittest.TestCase):
         candidate_labels = [' d ,dd , ddd, d d d']
         conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
         expected = [{
-            labels.kLabelId: 0,
-            labels.kLabelName: 'a',
-            labels.kLabelAliases: ['aa'],
-            '_is_modified': True
+            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
+            '_is_modified': True,
         }, {
-            labels.kLabelId: 1,
-            labels.kLabelName: 'h',
-            '_is_modified': True
+            '_label': labels.SingleLabel(id=1, name='h'),
+            '_is_modified': True,
         }, {
-            labels.kLabelId: 2,
-            labels.kLabelName: 'z',
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=2, name='z'),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 3,
-            labels.kLabelName: 'x',
-            labels.kLabelAliases: ['xx', 'xxx'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 4,
-            labels.kLabelName: 'c',
-            labels.kLabelAliases: ['cc', 'ccc'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=4, name='c', aliases=['cc', 'ccc']),
+            '_is_modified': False,
         }, {
-            labels.kLabelId: 5,
-            labels.kLabelName: 'd',
-            labels.kLabelAliases: ['dd', 'ddd', 'd d d'],
-            '_is_modified': False
+            '_label': labels.SingleLabel(id=5, name='d', aliases=['dd', 'ddd', 'd d d']),
+            '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
         self._check_result(expected=expected, actual=label_handler.get_all_labels())

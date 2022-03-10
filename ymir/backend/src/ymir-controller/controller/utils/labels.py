@@ -4,18 +4,11 @@ import os
 import time
 from typing import Dict, List, Iterable, Set
 
+from pydantic import BaseModel
 import yaml
 
 
 EXPECTED_FILE_VERSION = 1
-
-kVersion = 'version'
-kLabels = 'labels'
-kLabelName = 'name'
-kLabelId = 'id'
-kLabelAliases = 'aliases'
-kLabelCreated = 'created'
-kLabelModified = 'modified'
 
 
 def labels_file_name() -> str:
@@ -26,6 +19,19 @@ def labels_file_path(mir_root: str) -> str:
     file_dir = os.path.join(mir_root, '.mir')
     os.makedirs(file_dir, exist_ok=True)
     return os.path.join(file_dir, labels_file_name())
+
+
+class SingleLabel(BaseModel):
+    id: int
+    name: str
+    created: float = 0
+    modified: float = 0
+    aliases: List[str] = []
+
+
+class _LabelStorage(BaseModel):
+    version: int
+    labels: List[SingleLabel] = []
 
 
 class LabelFileHandler:
@@ -39,17 +45,17 @@ class LabelFileHandler:
     def get_label_file_path(self) -> str:
         return self._label_file
 
-    def _write_label_file(self, all_labels: List[dict]) -> None:
+    def _write_label_file(self, all_labels: List[SingleLabel]) -> None:
         """
         dump all label content into a label storage file, old file contents will be lost
         Args:
             all_labels (List[dict]): all labels, for each element: id, name, aliases, created, modified
         """
-        obj = {kVersion: EXPECTED_FILE_VERSION, kLabels: all_labels}
+        label_storage = _LabelStorage(version=EXPECTED_FILE_VERSION, labels=all_labels)
         with open(self._label_file, 'w') as f:
-            yaml.safe_dump(obj, f)
+            yaml.safe_dump(label_storage.dict(), f)
 
-    def get_all_labels(self) -> List[dict]:
+    def get_all_labels(self) -> List[SingleLabel]:
         """
         get all labels from label storage file
 
@@ -68,39 +74,29 @@ class LabelFileHandler:
         """
         with open(self._label_file, 'r') as f:
             obj = yaml.safe_load(f)
-        # if empty file, returns default list
+        # if empty file, returns empty list
         if not obj:
             return []
 
-        version = obj.get(kVersion, 0)
-        if version != EXPECTED_FILE_VERSION:
-            raise ValueError(f"version mismatch: expected: {EXPECTED_FILE_VERSION} != actual: {version}")
-
-        labels: List[dict] = obj.get(kLabels, [])
-        result_labels: List[dict] = []
+        label_storage = _LabelStorage(**obj)
+        if label_storage.version != EXPECTED_FILE_VERSION:
+            raise ValueError(f"version mismatch: expected: {EXPECTED_FILE_VERSION} != actual: {label_storage.version}")
 
         label_names_set: Set[str] = set()  # use to check dumplicate label names
-        for label in labels:
+        for label in label_storage.labels:
             # use stripped lower case for each label
-            label_name = label[kLabelName].strip().lower()
-            label_aliases = [v.strip().lower() for v in label.get(kLabelAliases, [])]
+            label.name = label.name.strip().lower()
+            label.aliases = [v.strip().lower() for v in label.aliases]
 
             # check label name dumplicate and inline dumplicate
-            if label_name in label_names_set:
-                raise ValueError(f"dumplicated label name: {label_name}")
-            name_and_aliases = label_aliases + [label_name]
+            if label.name in label_names_set:
+                raise ValueError(f"dumplicated label name: {label.name}")
+            name_and_aliases = label.aliases + [label.name]
             if len(name_and_aliases) != len(set(name_and_aliases)):
                 raise ValueError(f"dumplicated inline label: {name_and_aliases}")
+            label_names_set.add(label.name)
 
-            # construct result
-            label[kLabelName] = label_name
-            if label_aliases:
-                label[kLabelAliases] = label_aliases
-
-            result_labels.append(label)
-            label_names_set.add(label_name)
-
-        return result_labels
+        return label_storage.labels
 
     def merge_labels(self, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
         # check `candidate_labels` has no duplicate
@@ -114,7 +110,7 @@ class LabelFileHandler:
         # all labels in storage file, for each element: id, name, aliases (optional), created, modified
         existed_labels = self.get_all_labels()
         # key: label name, value: idx
-        existed_main_names_to_ids: Dict[str, int] = {label[kLabelName]: idx for idx, label in enumerate(existed_labels)}
+        existed_main_names_to_ids: Dict[str, int] = {label.name: idx for idx, label in enumerate(existed_labels)}
 
         # for main names in `existed_main_names_to_ids`, update alias
         # for new main names, add them to `candidate_labels_list_new`
@@ -125,17 +121,17 @@ class LabelFileHandler:
                 idx = existed_main_names_to_ids[main_name]
                 # update `existed_labels`
                 label = existed_labels[idx]
-                label[kLabelName] = candidate_list[0]
-                label[kLabelAliases] = candidate_list[1:]
-                label[kLabelModified] = current_timestamp
+                label.name = candidate_list[0]
+                label.aliases = candidate_list[1:]
+                label.modified = current_timestamp
             else:  # new main_names
                 candidate_labels_list_new.append(candidate_list)
 
         # check dumplicate for `existed_labels_list`
         existed_labels_list = []
         for label in existed_labels:
-            existed_labels_list.append(label[kLabelName])
-            existed_labels_list.extend(label.get(kLabelAliases, []))
+            existed_labels_list.append(label.name)
+            existed_labels_list.extend(label.aliases)
         existed_labels_dups = set([k for k, v in Counter(existed_labels_list).items() if v > 1])
         if existed_labels_dups:
             conflict_labels = []
@@ -154,13 +150,19 @@ class LabelFileHandler:
                 conflict_labels.append(candidate_list)
                 continue
 
-            existed_labels.append({
-                kLabelId: len(existed_labels),
-                kLabelName: candidate_list[0],
-                kLabelAliases: candidate_list[1:],
-                kLabelCreated: current_timestamp,
-                kLabelModified: current_timestamp,
-            })
+            # existed_labels.append({
+            #     kLabelId: len(existed_labels),
+            #     kLabelName: candidate_list[0],
+            #     kLabelAliases: candidate_list[1:],
+            #     kLabelCreated: current_timestamp,
+            #     kLabelModified: current_timestamp,
+            # })
+            existed_labels.append(
+                SingleLabel(id=len(existed_labels),
+                            name=candidate_list[0],
+                            aliases=candidate_list[1:],
+                            created=current_timestamp,
+                            modified=current_timestamp))
             existed_labels_set.update(candidate_set)
 
         if not (check_only or conflict_labels):
@@ -169,4 +171,4 @@ class LabelFileHandler:
 
     def get_main_labels_by_ids(self, type_ids: Iterable) -> List[str]:
         all_labels = self.get_all_labels()
-        return [all_labels[int(idx)][kLabelName] for idx in type_ids]
+        return [all_labels[int(idx)].name for idx in type_ids]

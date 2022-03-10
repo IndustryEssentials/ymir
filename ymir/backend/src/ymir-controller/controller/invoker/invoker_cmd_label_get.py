@@ -16,11 +16,11 @@ class LabelGetInvoker(BaseMirControllerInvoker):
         )
 
     @staticmethod
-    def generate_response(all_labels: List[dict]) -> backend_pb2.GeneralResp:
+    def generate_response(all_labels: List[labels.SingleLabel]) -> backend_pb2.GeneralResp:
         response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         for label in all_labels:
             label_pb = backend_pb2.Label()
-            json_format.ParseDict(label, label_pb)
+            json_format.ParseDict(label.dict(), label_pb)
             response.label_collection.labels.append(label_pb)
 
         return response
