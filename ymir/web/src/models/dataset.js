@@ -12,6 +12,7 @@ import {
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
+import { transferDatasetGroup, transferDatasetVersion } from '@/constants/dataset'
 
 const initQuery = {
   name: "",
@@ -45,11 +46,13 @@ export default {
       const { pid, query } = payload
       const { code, result } = yield call(getDatasets, pid, query)
       if (code === 0) {
+      const groups = result.items.map(item => transferDatasetGroup(item))
+      const payload = { items: groups, total: result.total }
         yield put({
           type: "UPDATE_DATASETS",
-          payload: result,
+          payload,
         })
-        return result
+        return payload
       }
     },
     *batchDatasets({ payload }, { call, put }) {
@@ -69,19 +72,22 @@ export default {
       }
     },
     *getDatasetVersions({ payload }, { select, call, put }) {
-      const gid = payload
-      const versions = yield select(({ dataset }) => dataset.versions)
-      if (versions[gid]) {
-        return versions[gid]
+      const { gid, force } = payload
+      if (!force) {
+        const versions = yield select(({ dataset }) => dataset.versions)
+        if (versions[gid]) {
+          return versions[gid]
+        }
       }
       const { code, result } = yield call(getDatasetVersions, gid)
       if (code === 0) {
-        const vs = { id: gid, versions: result.items }
+        const vss = result.datasets.map(item => transferDatasetVersion(item))
+        const vs = { id: gid, versions: vss, }
         yield put({
           type: "UPDATE_VERSIONS",
           payload: vs,
         })
-        return result.items
+        return vs
       }
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
