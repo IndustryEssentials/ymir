@@ -25,6 +25,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import ResultState
 from app.constants.state import TaskState, TaskType
+from app.schemas.dataset import MergeStrategy
 from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
@@ -35,7 +36,6 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from app.utils.ymir_viz import VizClient
-from app.schemas.dataset import MergeStrategy
 
 router = APIRouter()
 
@@ -454,27 +454,17 @@ def get_asset_of_dataset(
     return {"result": asset}
 
 
-def order_datasets_by_strategy(objects: List[Any], strategy: Optional[MergeStrategy]) -> None:
-    """
-    change the order of datasets *in place*
-    """
-    if not strategy:
-        return
-    if strategy == MergeStrategy.stop_upon_conflict:
-        return
-    objects.sort(
-        key=attrgetter("update_datetime"),
-        reverse=strategy is MergeStrategy.prefer_newest,
-    )
-
-
-def normalize_parameters(
+def fusion_normalize_parameters(
     db: Session,
     task_in: schemas.DatasetsFusionParameter,
     all_labels: List,
 ) -> Dict:
     include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
-    order_datasets_by_strategy(include_datasets_info, task_in.include_strategy)
+
+    include_datasets_info.sort(
+        key=attrgetter("update_datetime"),
+        reverse=(task_in.include_strategy == MergeStrategy.prefer_newest),
+    )
 
     exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
     parameters = dict(
@@ -510,7 +500,7 @@ def create_dataset_fusion(
     )
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
 
-    parameters = normalize_parameters(db, task_in, labels)
+    parameters = fusion_normalize_parameters(db, task_in, labels)
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,
