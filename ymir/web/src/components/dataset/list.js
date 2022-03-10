@@ -294,6 +294,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
             <a onClick={del} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
+        {console.log('versions: ', versions[group.id])}
         <div className={styles.groupTable} hidden={!group.showVersions}>
           <Table
             dataSource={versions[group.id]}

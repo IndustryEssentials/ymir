@@ -72,7 +72,7 @@ describe("service: dataset", () => {
     requestExample(createDataset, datasets, null, 'post', 110104)
   })
   it("createDataset -> params validate failed", () => {
-    requestExample(createDataset, null, null, 'post', 1002)
+    requestExample(createDataset, {}, null, 'post', 1002)
   })
 
   it("updateDataset -> success", () => {

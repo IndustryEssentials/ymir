@@ -41,7 +41,7 @@ describe("models: dataset", () => {
       payload: expected,
     }
     const result = dataset.reducers.UPDATE_DATASET(state, action)
-    expect(result.dataset.id).toBe(expected.id)
+    expect(result.dataset[expected.id].id).toBe(expected.id)
   })
   it("reducers: UPDATE_ASSETS", () => {
     const state = {
@@ -115,19 +115,80 @@ describe("models: dataset", () => {
     const saga = dataset.effects.getDataset
     const creator = {
       type: "getDataset",
-      payload: {},
+      payload: { gid: 10002 },
     }
-    const expected = { id: 1001, name: 'dataset001' }
+    const send = {
+      "name": "p0001_training_dataset",
+      "result_state": 1,
+      "dataset_group_id": 1,
+      // "project_id": 1,
+      state: 1,
+      "keywords": [],
+      "ignored_keywords": [],
+      "asset_count": null,
+      "keyword_count": null,
+      "is_deleted": false,
+      "create_datetime": "2022-03-10T03:39:09",
+      "update_datetime": "2022-03-10T03:39:09",
+      "id": 1,
+      "hash": "t00000020000012afef21646883528",
+      "version_num": 0,
+      "task_id": 1,
+      "user_id": 2,
+      "related_task": {
+        "name": "t00000020000013277a01646883549",
+        "type": 105,
+        "project_id": 1,
+        "is_deleted": false,
+        "create_datetime": "2022-03-10T03:39:09",
+        "update_datetime": "2022-03-10T03:39:09",
+        "id": 1,
+        "hash": "t00000020000013277a01646883549",
+        "state": 3,
+        "error_code": null,
+        "duration": null,
+        "percent": 1,
+        "parameters": {},
+        "config": {},
+        "user_id": 2,
+        "last_message_datetime": "2022-03-10T03:39:09.033206",
+        "is_terminated": false,
+        "result_type": null
+      }
+    }
+
+    const expected = {
+      "id": 1,
+      "groupId": 1,
+      "projectId": undefined,
+      "name": "p0001_training_dataset",
+      "version": 0,
+      "versionName": "V0",
+      "assetCount": 0,
+      "keywords": [],
+      "keywordCount": 0,
+      "ignoredKeywords": [],
+      state: 1,
+      "hash": "t00000020000012afef21646883528",
+      "createTime": "2022-03-10 11:39:09",
+      "updateTime": "2022-03-10 11:39:09",
+      "taskId": 1,
+      "progress": 1,
+      "taskState": 3,
+      "taskType": 105,
+      "duration": null,
+      "taskName": "t00000020000013277a01646883549"
+    }
 
     const generator = saga(creator, { put, call })
     generator.next()
-    generator.next({
+    const calls = generator.next({
       code: 0,
-      result: expected,
+      result: send,
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: batchDatasets", () => {
