@@ -31,12 +31,13 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ allDatasets, getDatasets, createTrainTask, getSysInfo }) {
+function Train({ allDatasets, getDatasets, createTrainTask, getSysInfo, getProject }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image } = location.query
+  const [project, setProject] = useState({})
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSets, setTrainSets] = useState([])
@@ -68,10 +69,17 @@ function Train({ allDatasets, getDatasets, createTrainTask, getSysInfo }) {
   }, [])
 
   useEffect(() => {
+    if (dataset.projectId) {
+      fetchProject()
+    }
+  }, [dataset.projectId])
+
+  useEffect(() => {
     const ds = allDatasets.filter(dataset => TASKSTATES.FINISH === dataset.state)
     setDatasets(ds)
     if (id) {
-      setDataset(allDatasets.find(ds => ds.id === id))
+      const dst = allDatasets.find(ds => ds.id === id)
+      dst && setDataset(dst)
     }
   }, [allDatasets])
 
@@ -159,6 +167,14 @@ function Train({ allDatasets, getDatasets, createTrainTask, getSysInfo }) {
       return Promise.reject(t('task.validator.same.param'))
     } else {
       return Promise.resolve()
+    }
+  }
+
+  async function fetchProject(pid) {
+    const result = await getProject(pid)
+    console.log('fetch project: ', result)
+    if (result) {
+      setKeywords(result.keywords)
     }
   }
 
@@ -267,20 +283,6 @@ function Train({ allDatasets, getDatasets, createTrainTask, getSysInfo }) {
             colon={false}
             scrollToFirstError
           >
-
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.common.dataset.name')}
-                name='name'
-                rules={[
-                  { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
-                  { type: 'string', min: 2, max: 50 },
-                ]}
-              >
-                <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
-              </Form.Item>
-            </Tip>
-
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
               <Tip hidden={true}>
                 <Form.Item
@@ -330,19 +332,6 @@ function Train({ allDatasets, getDatasets, createTrainTask, getSysInfo }) {
                 </Form.Item>
               </Tip>
             </ConfigProvider>
-
-            <Tip hidden={true}>
-              <Form.Item name='strategy'
-                hidden={trainSets.length < 2 && validationSets.length < 2}
-                initialValue={2} label={t('task.train.form.repeatdata.label')}>
-                <Radio.Group options={[
-                  { value: 2, label: t('task.train.form.repeatdata.latest') },
-                  { value: 3, label: t('task.train.form.repeatdata.original') },
-                  { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                ]} />
-              </Form.Item>
-            </Tip>
-
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={![...trainSets, ...validationSets].length}>
                 <TripleRates
@@ -539,6 +528,12 @@ const props = (state) => {
 
 const dis = (dispatch) => {
   return {
+    getProject(pid) {
+      return dispatch({
+        type: "project/getProject",
+        payload: pid,
+      })
+    },
     getDatasets() {
       return dispatch({
         type: "dataset/getAllDatasets",

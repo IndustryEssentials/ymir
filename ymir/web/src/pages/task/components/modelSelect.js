@@ -66,7 +66,7 @@ const ModelSelect = ({ pid, value, allModels, keywords = [], onChange = () => { 
 
 const props = (state) => {
   return {
-    models: state.model.allModels,
+    allModels: state.model.allModels,
   }
 }
 const actions = (dispatch) => {
