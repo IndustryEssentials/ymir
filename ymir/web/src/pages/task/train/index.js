@@ -91,13 +91,12 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { validation_dataset_id, strategy, docker_image, model_id } = parameters
+      const { validation_dataset_id, strategy, docker_image, docker_image_id, model_id } = parameters
       form.setFieldsValue({
-        name: `${name}_${randomNumber()}`,
         testset: validation_dataset_id,
         gpu_count: config.gpu_count,
         model: model_id,
-        image: docker_image,
+        image: docker_image_id + ',' + docker_image,
         strategy,
       })
       setConfig(config)
@@ -157,15 +156,21 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
     if (gpuCount) {
       config['gpu_count'] = gpuCount
     }
+    const img = (form.getFieldValue('image') || '').split(',')
+    const imageId = Number(img[0])
+    const image = img[1]
     const params = {
       ...values,
-      name: values.name.trim(),
+      name: 'group_' + randomNumber(),
       projectId: dataset.projectId,
+      keywords: dataset.project.keywords,
+      image,
+      imageId,
       config,
     }
     const result = await createTrainTask(params)
     if (result) {
-      history.replace("/home/task")
+      history.replace(`/home/project/detail/${dataset.projectId}`)
     }
   }
 
