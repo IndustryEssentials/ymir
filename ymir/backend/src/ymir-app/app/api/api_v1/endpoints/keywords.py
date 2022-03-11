@@ -101,9 +101,7 @@ def update_keyword_aliases(
     return {"result": {"failed": failed}}
 
 
-def paginate(
-    items: List[Any], offset: int = 0, limit: Optional[int] = None
-) -> List[Any]:
+def paginate(items: List[Any], offset: int = 0, limit: Optional[int] = None) -> List[Any]:
     """
     Mimic the behavior of database query's offset-limit pagination
     """

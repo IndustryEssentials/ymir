@@ -1,5 +1,4 @@
 import enum
-from operator import attrgetter
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -28,7 +27,6 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
-from app.schemas.task import MergeStrategy
 from app.utils.class_ids import (
     convert_keywords_to_classes,
     get_keyword_id_to_name_mapping,
@@ -87,7 +85,7 @@ def list_tasks(
 
 @router.post(
     "/",
-    response_model=schemas.TaskPaginationOut,
+    response_model=schemas.TaskOut,
 )
 def create_task(
     *,
@@ -127,24 +125,19 @@ def create_task(
         raise FailedtoCreateTask()
 
     # 4. create task record
-    task = crud.task.create_task(
-        db, obj_in=task_in, task_hash=task_hash, user_id=current_user.id
-    )
+    task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=current_user.id)
 
     # 5. create task result record (dataset or model)
-    task_result = TaskResult(
-        db=db, controller=controller_client, viz=viz_client, task_in_db=task
-    )
+    task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task)
     task_result.create(task_in.parameters.dataset_id)
 
     # 6. send metric to clickhouse
     try:
-        metrics = parse_metrics(task_in.parameters.dict())
         write_clickhouse_metrics(
             clickhouse,
-            task_info,
-            metrics,
+            jsonable_encoder(task),
             task_in.parameters.dataset_id,
+            task_in.parameters.model_id,
             task_in.parameters.keywords or [],
         )
     except FailedToConnectClickHouse:
@@ -206,11 +199,7 @@ class TaskResult:
 
     @property
     def result_info(self) -> Dict:
-        return (
-            self.model_info
-            if self.result_type is ResultType.model
-            else self.dataset_info
-        )
+        return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
     def get_dest_group_id(self, dataset_id: int) -> int:
         if self.result_type is ResultType.dataset:
@@ -223,9 +212,7 @@ class TaskResult:
                 raise DatasetNotFound()
             return dataset.dataset_group_id
         else:
-            model_group = crud.model_group.get_from_training_dataset(
-                self.db, training_dataset_id=dataset_id
-            )
+            model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
             if not model_group:
                 model_group = crud.model_group.create_model_group(
                     self.db,
@@ -315,33 +302,11 @@ class TaskResult:
             )
 
 
-def parse_metrics(parameters: Dict) -> Dict:
-    if not parameters:
-        return {"dataset_ids": [], "model_ids": [], "keywords": []}
-    dataset_fields = [
-        "include_datasets",
-        "include_validation_datasets",
-        "include_train_datasets",
-        "include_test_datasets",
-    ]
-    dataset_ids = list(
-        {
-            dataset_id
-            for field in dataset_fields
-            for dataset_id in parameters.get(field) or []
-        }
-    )
-    model_id = parameters.get("model_id")
-    model_ids = [model_id] if model_id else []
-    keywords = parameters.get("include_classes") or []
-    return {"dataset_ids": dataset_ids, "model_ids": model_ids, "keywords": keywords}
-
-
 def write_clickhouse_metrics(
     clickhouse: YmirClickHouse,
     task_info: Dict,
-    metrics: Dict,
     dataset_id: int,
+    model_id: Optional[int],
     keywords: List[str],
 ) -> None:
     clickhouse.save_task_parameter(
@@ -350,7 +315,9 @@ def write_clickhouse_metrics(
         name=task_info["name"],
         hash_=task_info["hash"],
         type_=TaskType(task_info["type"]).name,
-        **metrics,
+        dataset_ids=[dataset_id],
+        model_ids=[model_id] if model_id else [],
+        keywords=keywords,
     )
     clickhouse.save_dataset_keyword(
         dt=task_info["create_datetime"],
@@ -373,10 +340,18 @@ def normalize_parameters(
 
     dataset = crud.dataset.get(db, id=parameters.dataset_id)
     if not dataset:
+        logger.error("[create task] main dataset(%s) not exists", parameters.dataset_id)
         raise DatasetNotFound()
     normalized["dataset_hash"] = dataset.hash
     # label task uses dataset name as task name for LabelStudio
     normalized["dataset_name"] = dataset.name
+
+    if parameters.validation_dataset_id:
+        validation_dataset = crud.dataset.get(db, id=parameters.validation_dataset_id)
+        if not validation_dataset:
+            logger.error("[create task] validation dataset(%s) not exists", parameters.validation_dataset_id)
+            raise DatasetNotFound()
+        normalized["validation_dataset_hash"] = validation_dataset.hash
 
     if parameters.model_id:
         model = crud.model.get(db, id=parameters.model_id)
@@ -384,26 +359,8 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = convert_keywords_to_classes(
-            labels, parameters.keywords
-        )
+        normalized["class_ids"] = convert_keywords_to_classes(labels, parameters.keywords)
     return normalized
-
-
-def order_datasets_by_strategy(
-    objects: List[Any], strategy: Optional[MergeStrategy]
-) -> None:
-    """
-    change the order of datasets *in place*
-    """
-    if not strategy:
-        return
-    if strategy is MergeStrategy.stop_upon_conflict:
-        return
-    return objects.sort(
-        key=attrgetter("update_datetime"),
-        reverse=strategy is MergeStrategy.prefer_newest,
-    )
 
 
 @router.delete(
@@ -470,9 +427,7 @@ def update_task_name(
     """
     Update task name
     """
-    task = crud.task.get_by_user_and_name(
-        db, user_id=current_user.id, name=task_in.name
-    )
+    task = crud.task.get_by_user_and_name(db, user_id=current_user.id, name=task_in.name)
     if task:
         raise DuplicateTaskError()
 
@@ -504,9 +459,7 @@ def terminate_task(
     task = crud.task.get(db, id=task_id)
     if not task:
         raise TaskNotFound()
-    controller_client.terminate_task(
-        user_id=current_user.id, task_hash=task.hash, task_type=task.type
-    )
+    controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
     task = crud.task.terminate(db, task=task)
     if not terminate_info.fetch_result:
         # task that is terminated without result is in final terminate state
@@ -555,13 +508,9 @@ def update_task_status(
         raise ObsoleteTaskStatus()
 
     # 3. Update task and task_result(could be dataset or model)
-    task_result = TaskResult(
-        db=db, controller=controller_client, viz=viz_client, task_in_db=task_in_db
-    )
+    task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task_in_db)
     try:
-        task_in_db = task_result.update(
-            viz=viz_client, controller=controller_client, task_result=task_update
-        )
+        task_in_db = task_result.update(viz=viz_client, controller=controller_client, task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
@@ -571,9 +520,7 @@ def update_task_status(
     return {"result": task_in_db}
 
 
-def is_obsolete_message(
-    last_update_time: Union[float, int], msg_time: Union[float, int]
-) -> bool:
+def is_obsolete_message(last_update_time: Union[float, int], msg_time: Union[float, int]) -> bool:
     return last_update_time > msg_time
 
 

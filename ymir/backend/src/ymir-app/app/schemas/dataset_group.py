@@ -25,9 +25,7 @@ class DatasetGroupUpdate(BaseModel):
     name: str
 
 
-class DatasetGroupInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetGroupBase
-):
+class DatasetGroupInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetGroupBase):
     datasets: List[Dataset]
 
     class Config:

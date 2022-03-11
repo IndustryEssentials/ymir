@@ -38,9 +38,7 @@ def terminate_tasks() -> None:
             # do not terminate task having whitelist type
             continue
         try:
-            controller.terminate_task(
-                user_id=user.id, task_hash=task.hash, task_type=task.type
-            )
+            controller.terminate_task(user_id=user.id, task_hash=task.hash, task_type=task.type)
         except Exception:
             # terminate legacy tasks shouldn't break start up process
             logger.info("Failed to terminate legacy task: %s", task.hash)

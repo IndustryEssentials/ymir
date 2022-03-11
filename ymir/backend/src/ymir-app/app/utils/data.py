@@ -1,5 +1,5 @@
-import json
 import itertools
+import json
 from operator import attrgetter
 from typing import Dict, List, Optional
 

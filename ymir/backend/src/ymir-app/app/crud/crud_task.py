@@ -58,7 +58,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         task_hash = hash_ or gen_task_hash(user_id, project_id)
         db_obj = Task(
             name=task_hash,
-            type=type_,
+            type=int(type_),
             project_id=project_id,
             hash=task_hash,
             user_id=user_id,
@@ -70,15 +70,11 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db.refresh(db_obj)
         return db_obj
 
-    def get_tasks_by_states(
-        self, db: Session, states: List[TaskState], including_deleted: bool = False
-    ) -> List[Task]:
+    def get_tasks_by_states(self, db: Session, states: List[TaskState], including_deleted: bool = False) -> List[Task]:
         query = db.query(self.model)
         if not including_deleted:
             query = query.filter(not_(self.model.is_deleted))
-        return query.filter(
-            self.model.state.in_([state.value for state in states])
-        ).all()
+        return query.filter(self.model.state.in_([state.value for state in states])).all()
 
     def update_state(
         self,
@@ -138,9 +134,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             self.update_duration(db, task=task)
         return task
 
-    def update_last_message_datetime(
-        self, db: Session, *, task: Task, dt: datetime
-    ) -> Task:
+    def update_last_message_datetime(self, db: Session, *, task: Task, dt: datetime) -> Task:
         task.last_message_datetime = dt
         db.add(task)
         db.commit()

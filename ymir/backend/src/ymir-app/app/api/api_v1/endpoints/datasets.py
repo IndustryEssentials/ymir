@@ -2,13 +2,15 @@ import enum
 import pathlib
 import random
 import tempfile
+from operator import attrgetter
 from typing import Any, Dict, List, Optional
 from zipfile import BadZipFile
-from fastapi.encoders import jsonable_encoder
+
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
+from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-from app.utils.class_ids import convert_keywords_to_classes
+
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -21,7 +23,10 @@ from app.api.errors.errors import (
     FailedtoCreateTask,
 )
 from app.config import settings
+from app.constants.state import ResultState
 from app.constants.state import TaskState, TaskType
+from app.schemas.dataset import MergeStrategy
+from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.class_ids import get_keyword_id_to_name_mapping
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.ymir_controller import (
@@ -31,7 +36,6 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from app.utils.ymir_viz import VizClient
-from app.constants.state import ResultState
 
 router = APIRouter()
 
@@ -133,9 +137,7 @@ def create_dataset(
     - stop_upon_unknown_annotations = 3
     """
     # 1. check if name is available
-    if crud.dataset.is_duplicated_name(
-        db, user_id=current_user.id, name=dataset_import.name
-    ):
+    if crud.dataset.is_duplicated_name(db, user_id=current_user.id, name=dataset_import.name):
         raise DuplicateDatasetError()
 
     # 2. create placeholder task
@@ -185,9 +187,7 @@ def import_dataset_in_background(
         _import_dataset(db, controller_client, pre_dataset, user_id, task_hash)
     except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound):
         logger.exception("[create dataset] failed to import dataset")
-        crud.dataset.update_state(
-            db, dataset_id=dataset_id, new_state=ResultState.error
-        )
+        crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
     crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.ready)
 
 
@@ -202,9 +202,7 @@ def _import_dataset(
     if dataset_import.input_url is not None:
         # Controller will read this directory later
         # so temp_dir will not be removed here
-        temp_dir = tempfile.mkdtemp(
-            prefix="import_dataset_", dir=settings.SHARED_DATA_DIR
-        )
+        temp_dir = tempfile.mkdtemp(prefix="import_dataset_", dir=settings.SHARED_DATA_DIR)
         paths = prepare_dataset(dataset_import.input_url, temp_dir)
         if "annotations" not in paths or "images" not in paths:
             raise FailedtoCreateDataset()
@@ -289,9 +287,7 @@ def get_dataset(
     """
     Get verbose information of specific dataset
     """
-    dataset = crud.dataset.get_by_user_and_id(
-        db, user_id=current_user.id, id=dataset_id
-    )
+    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
     return {"result": dataset}
@@ -315,9 +311,7 @@ def update_dataset_name(
     if not dataset_in.name:
         raise FieldValidationFailed()
 
-    dataset = crud.dataset.get_by_user_and_name(
-        db, user_id=current_user.id, name=dataset_in.name
-    )
+    dataset = crud.dataset.get_by_user_and_name(db, user_id=current_user.id, name=dataset_in.name)
     if dataset:
         raise DuplicateDatasetError()
 
@@ -348,9 +342,7 @@ def get_assets_of_dataset(
     Get asset list of specific dataset,
     pagination is supported by means of offset and limit
     """
-    dataset = crud.dataset.get_by_user_and_id(
-        db, user_id=current_user.id, id=dataset_id
-    )
+    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
 
@@ -379,6 +371,7 @@ def get_assets_of_dataset(
         "keywords": assets.keywords,
         "items": assets.items,
         "total": assets.total,
+        "negative_info": assets.negative_info,
     }
     return {"result": result}
 
@@ -398,9 +391,7 @@ def get_random_asset_id_of_dataset(
     """
     Get random asset from specific dataset
     """
-    dataset = crud.dataset.get_by_user_and_id(
-        db, user_id=current_user.id, id=dataset_id
-    )
+    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
 
@@ -445,9 +436,7 @@ def get_asset_of_dataset(
     """
     Get asset from specific dataset
     """
-    dataset = crud.dataset.get_by_user_and_id(
-        db, user_id=current_user.id, id=dataset_id
-    )
+    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
 
@@ -463,6 +452,31 @@ def get_asset_of_dataset(
     if not asset:
         raise AssetNotFound()
     return {"result": asset}
+
+
+def fusion_normalize_parameters(
+    db: Session,
+    task_in: schemas.DatasetsFusionParameter,
+    all_labels: List,
+) -> Dict:
+    include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
+
+    include_datasets_info.sort(
+        key=attrgetter("update_datetime"),
+        reverse=(task_in.include_strategy == MergeStrategy.prefer_newest),
+    )
+
+    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
+    parameters = dict(
+        include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
+        include_strategy=task_in.include_strategy,
+        exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
+        include_class_ids=convert_keywords_to_classes(all_labels, task_in.include_labels),
+        exclude_class_ids=convert_keywords_to_classes(all_labels, task_in.exclude_labels),
+        sampling_count=task_in.sampling_count,
+    )
+
+    return parameters
 
 
 @router.post(
@@ -486,14 +500,7 @@ def create_dataset_fusion(
     )
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
 
-    parameters = dict(
-        include_datasets=[task_in.main_dataset_id] + task_in.include_datasets,
-        include_strategy=task_in.include_strategy,
-        exclude_datasets=task_in.exclude_datasets,
-        include_class_ids=convert_keywords_to_classes(labels, task_in.include_labels),
-        exclude_class_ids=convert_keywords_to_classes(labels, task_in.exclude_labels),
-        sampling_count=task_in.sampling_count,
-    )
+    parameters = fusion_normalize_parameters(db, task_in, labels)
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,

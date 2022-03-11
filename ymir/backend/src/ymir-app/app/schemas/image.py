@@ -34,9 +34,7 @@ class DockerImageUpdate(BaseModel):
     is_shared: Optional[bool]
 
 
-class DockerImageInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DockerImageBase
-):
+class DockerImageInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DockerImageBase):
     hash: Optional[str]
     state: DockerImageState = DockerImageState.pending
     is_shared: Optional[bool]

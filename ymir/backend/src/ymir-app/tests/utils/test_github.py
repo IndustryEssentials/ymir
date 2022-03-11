@@ -1,5 +1,4 @@
 from app.utils import github as m
-from tests.utils.utils import random_lower_string
 
 tbl = """\
 # public_index.md

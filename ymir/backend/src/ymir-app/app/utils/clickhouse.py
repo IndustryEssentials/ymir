@@ -76,12 +76,11 @@ class YmirClickHouse:
             [[dt, user_id, id_, name, hash_, map_, keywords]],
         )
 
-    def save_dataset_keyword(
-        self, dt: datetime, user_id: int, dataset_id: int, keywords: List[str]
-    ) -> Any:
-        return self.execute(
-            "INSERT INTO dataset_keywords VALUES", [[dt, user_id, dataset_id, keywords]]
-        )
+    def save_dataset_keyword(self, dt: datetime, user_id: int, dataset_id: int, keywords: List[str]) -> Any:
+        """
+        for keywords recommendation
+        """
+        return self.execute("INSERT INTO dataset_keywords VALUES", [[dt, user_id, dataset_id, keywords]])
 
     def get_popular_items(self, user_id: int, column: str, limit: int = 10) -> Any:
         """
@@ -99,9 +98,7 @@ ORDER BY ref_count DESC
 LIMIT %(limit)s"""
         return self.execute(sql, {"user_id": user_id, "limit": limit})
 
-    def get_models_order_by_map(
-        self, user_id: int, keywords: Optional[List[str]] = None, limit: int = 10
-    ) -> Any:
+    def get_models_order_by_map(self, user_id: int, keywords: Optional[List[str]] = None, limit: int = 10) -> Any:
         """
         Get models of highest mAP score, partitioned by keywords
         """
@@ -126,14 +123,9 @@ FROM
 LIMIT %(limit)s"""
         records = self.execute(sql, {"user_id": user_id, "limit": limit})
         models = [ModelwithmAP.from_clickhouse(record) for record in records]
-        return {
-            keyword: [[m.model_id, m.mAP] for m in models_]
-            for keyword, models_ in groupby(models, "keyword")
-        }
+        return {keyword: [[m.model_id, m.mAP] for m in models_] for keyword, models_ in groupby(models, "keyword")}
 
-    def get_recommend_keywords(
-        self, user_id: int, dataset_ids: List[int], limit: int = 10
-    ) -> Any:
+    def get_recommend_keywords(self, user_id: int, dataset_ids: List[int], limit: int = 10) -> Any:
         sql = """\
 SELECT
     keyword_ids,
@@ -153,9 +145,7 @@ ARRAY JOIN keyword_ids
 GROUP BY keyword_ids
 ORDER BY ref_count DESC
 LIMIT %(limit)s"""
-        return self.execute(
-            sql, {"user_id": user_id, "dataset_ids": dataset_ids, "limit": limit}
-        )
+        return self.execute(sql, {"user_id": user_id, "dataset_ids": dataset_ids, "limit": limit})
 
     def get_task_count(
         self,
@@ -237,8 +227,6 @@ def prepare_task_count(records: List, limit: int) -> Dict:
     for dt, tasks in groupby([TaskCount.from_clickhouse(r) for r in records], "time"):
         times.append(dt)
         task_count = dict(defaults)
-        task_count.update(
-            {TaskType[task.type_].value: task.count for task in tasks if task.type_}
-        )
+        task_count.update({TaskType[task.type_].value: task.count for task in tasks if task.type_})
         stats.append(task_count)
     return {"task": stats[-limit:], "task_timestamps": times[-limit:]}

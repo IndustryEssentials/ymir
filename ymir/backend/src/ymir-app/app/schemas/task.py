@@ -14,12 +14,6 @@ from app.schemas.common import (
 )
 
 
-class MergeStrategy(enum.IntEnum):
-    stop_upon_conflict = 1
-    prefer_newest = 2
-    prefer_oldest = 3
-
-
 class TaskBase(BaseModel):
     name: str
     type: TaskType
@@ -39,6 +33,7 @@ class TaskParameter(BaseModel):
     keep_annotations: Optional[bool]
 
     # training
+    validation_dataset_id: Optional[int]
     network: Optional[str]
     backbone: Optional[str]
     hyperparameter: Optional[str]
@@ -66,9 +61,7 @@ class TaskCreate(TaskBase):
     config: Optional[Dict] = Field(description="docker runtime configuration")
 
     @validator("config")
-    def dumps_config(
-        cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]
-    ) -> Optional[str]:
+    def dumps_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
         # we don't care what's inside of config
         # just dumps it as string and save to db
         if isinstance(v, dict):
@@ -90,12 +83,8 @@ class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBa
     error_code: Optional[str]
     duration: Optional[int] = Field(0, description="task process time in seconds")
     percent: Optional[float] = Field(0, description="from 0 to 1")
-    parameters: Optional[str] = Field(
-        description="json dumped input parameters when creating task"
-    )
-    config: Optional[str] = Field(
-        description="json dumped docker runtime configuration"
-    )
+    parameters: Optional[str] = Field(description="json dumped input parameters when creating task")
+    config: Optional[str] = Field(description="json dumped docker runtime configuration")
     user_id: int = Field(description="task owner's user_id")
 
     last_message_datetime: datetime = None  # type: ignore
@@ -105,8 +94,8 @@ class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBa
     @validator("last_message_datetime", pre=True)
     def default_datetime(
         cls,
-        value: datetime,  # noqa: N805, WPS110
-    ) -> datetime:
+        value: datetime,
+    ) -> datetime:  # noqa: N805, WPS110
         return value or datetime.now()
 
     @validator("error_code")

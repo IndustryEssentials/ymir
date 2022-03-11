@@ -1,5 +1,5 @@
-import json
 import enum
+import json
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, validator
@@ -11,13 +11,19 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
-from app.schemas.task import TaskInternal, MergeStrategy
+from app.schemas.task import TaskInternal
 
 
 class ImportStrategy(enum.IntEnum):
     no_annotations = 1
     ignore_unknown_annotations = 2
     stop_upon_unknown_annotations = 3
+
+
+class MergeStrategy(enum.IntEnum):
+    stop_upon_conflict = 1
+    prefer_newest = 2
+    prefer_oldest = 3
 
 
 class DatasetBase(BaseModel):
@@ -75,9 +81,7 @@ class DatasetUpdate(BaseModel):
     keyword_count: Optional[int]
 
 
-class DatasetInDBBase(
-    IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase
-):
+class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase):
     hash: str = Field(description="related task hash")
     version_num: int = Field(description="version num from related dataset group")
     task_id: int
