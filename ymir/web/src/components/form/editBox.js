@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react"
 import { Modal, Form, Input } from "antd"
 import t from '@/utils/t'
-import { getTaskTypes } from '@/constants/query'
 
 const { useForm } = Form
 const EditBox = ({ children, record, max=50, action = () => { } }) => {
   const [editForm] = useForm()
   const [show, setShow] = useState(false)
   const { id, name, type, state } = record
-
-  const types = getTaskTypes()
 
   useEffect(() => {
     // console.log('use effect: ', record)

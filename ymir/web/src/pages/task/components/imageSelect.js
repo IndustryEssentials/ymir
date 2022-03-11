@@ -34,7 +34,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   const generateOption = image => ({
     label: image.name,
     image,
-    value: image.id + ',' + image.url,
+    value: image.url,
   })
 
   async function generateOptions(images) {

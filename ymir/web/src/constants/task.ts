@@ -6,8 +6,10 @@ export const TASKTYPES = Object.freeze({
   LABEL: 3,
   FILTER: 4,
   IMPORT: 5,
-  SHARE: 6,
-  PUBLIC: 7,
+  EXPORT: 6,
+  COPY: 7,
+  INFERENCE: 9,
+  FUSION: 11,
 })
 
 export const TASKSTATES = Object.freeze({
