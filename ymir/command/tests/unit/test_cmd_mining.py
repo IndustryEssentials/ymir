@@ -72,8 +72,6 @@ class TestMiningCmd(unittest.TestCase):
         # init repo
         logging.info(f"mir repo: {self._mir_repo_root}")
         test_utils.mir_repo_init(self._mir_repo_root)
-        # with open(os.path.join(self._mir_repo_root, 'labels.csv'), 'w') as f:
-        #     f.write('0,,person\n1,,cat\n')
         with open(class_ids.ids_file_path(mir_root=self._mir_repo_root), 'w') as f:
             obj = {
                 'version': class_ids.EXPECTED_FILE_VERSION,
