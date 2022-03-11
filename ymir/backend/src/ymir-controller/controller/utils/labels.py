@@ -83,13 +83,13 @@ class LabelFileHandler:
             label.name = label.name.strip().lower()
             label.aliases = [v.strip().lower() for v in label.aliases]
 
-            # check label name dumplicate and inline dumplicate
-            if label.name in label_names_set:
-                raise ValueError(f"dumplicated label name: {label.name}")
             name_and_aliases = label.aliases + [label.name]
             if len(name_and_aliases) != len(set(name_and_aliases)):
                 raise ValueError(f"dumplicated inline label: {name_and_aliases}")
-            label_names_set.add(label.name)
+            dumplicated = set.intersection(set(name_and_aliases), label_names_set)
+            if dumplicated:
+                raise ValueError(f"dumplicated: {dumplicated}")
+            label_names_set.update(name_and_aliases)
 
         return label_storage
 
