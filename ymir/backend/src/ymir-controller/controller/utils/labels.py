@@ -78,8 +78,10 @@ class LabelFileHandler:
             raise ValueError(f"version mismatch: expected: {EXPECTED_FILE_VERSION} != actual: {label_storage.version}")
 
         label_names_set: Set[str] = set()  # use to check dumplicate label names
-        for label in label_storage.labels:
+        for idx, label in enumerate(label_storage.labels):
             # use stripped lower case for each label
+            if label.id != idx:
+                raise ValueError(f"label id and idx mismatch: idx: {idx}, id: {label.id}")
             label.name = label.name.strip().lower()
             label.aliases = [v.strip().lower() for v in label.aliases]
 
