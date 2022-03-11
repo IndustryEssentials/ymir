@@ -118,6 +118,26 @@ describe("models: dataset", () => {
       payload: { gid: 10002 },
     }
     const createTime = "2022-03-10T03:39:09"
+    const task = {
+      "name": "t00000020000013277a01646883549",
+      "type": 105,
+      "project_id": 1,
+      "is_deleted": false,
+      "create_datetime": createTime,
+      "update_datetime": createTime,
+      "id": 1,
+      "hash": "t00000020000013277a01646883549",
+      "state": 3,
+      "error_code": null,
+      "duration": null,
+      "percent": 1,
+      "parameters": {},
+      "config": {},
+      "user_id": 2,
+      "last_message_datetime": "2022-03-10T03:39:09.033206",
+      "is_terminated": false,
+      "result_type": null
+    }
     const send = {
       "name": "p0001_training_dataset",
       "result_state": 1,
@@ -136,26 +156,7 @@ describe("models: dataset", () => {
       "version_num": 0,
       "task_id": 1,
       "user_id": 2,
-      "related_task": {
-        "name": "t00000020000013277a01646883549",
-        "type": 105,
-        "project_id": 1,
-        "is_deleted": false,
-        "create_datetime": createTime,
-        "update_datetime": createTime,
-        "id": 1,
-        "hash": "t00000020000013277a01646883549",
-        "state": 3,
-        "error_code": null,
-        "duration": null,
-        "percent": 1,
-        "parameters": {},
-        "config": {},
-        "user_id": 2,
-        "last_message_datetime": "2022-03-10T03:39:09.033206",
-        "is_terminated": false,
-        "result_type": null
-      }
+      "related_task": task,
     }
 
     const expected = {
@@ -178,7 +179,8 @@ describe("models: dataset", () => {
       "taskState": 3,
       "taskType": 105,
       "duration": null,
-      "taskName": "t00000020000013277a01646883549"
+      "taskName": "t00000020000013277a01646883549",
+      task,
     }
 
     const generator = saga(creator, { put, call })
