@@ -3,9 +3,9 @@ import logging
 from pathlib import Path
 import os
 import time
-from typing import Dict, List, Iterable, Set
+from typing import Dict, Iterable, List, Set
 
-from pydantic import BaseModel, validate_arguments, validator
+from pydantic import BaseModel, validator
 import yaml
 
 
@@ -48,6 +48,24 @@ class LabelStorage(BaseModel):
             raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
         return v
 
+    @validator('labels')
+    def _check_labels(cls, labels: List[SingleLabel]) -> List[SingleLabel]:
+        label_names_set: Set[str] = set()
+        for idx, label in enumerate(labels):
+            if label.id != -1 and label.id != idx:
+                raise ValueError(f"invalid label id: {label.id}, expected -1 or {idx}")
+
+            # all label names and aliases should have no dumplicate
+            name_and_aliases = label.aliases + [label.name]
+            name_and_aliases_set = set(name_and_aliases)
+            if len(name_and_aliases) != len(name_and_aliases_set):
+                raise ValueError(f"dumplicated inline label: {name_and_aliases}")
+            dumplicated = set.intersection(name_and_aliases_set, label_names_set)
+            if dumplicated:
+                raise ValueError(f"dumplicated: {dumplicated}")
+            label_names_set.update(name_and_aliases_set)
+        return labels
+
 
 class LabelFileHandler:
     def __init__(self, mir_root: str) -> None:
@@ -89,19 +107,9 @@ class LabelFileHandler:
 
         label_storage = LabelStorage(**obj)
 
-        label_names_set: Set[str] = set()  # use to check dumplicate label names
         for idx, label in enumerate(label_storage.labels):
             if label.id != idx:
                 raise ValueError(f"label id and idx mismatch: idx: {idx}, id: {label.id}")
-
-            name_and_aliases = label.aliases + [label.name]
-            name_and_aliases_set = set(name_and_aliases)
-            if len(name_and_aliases) != len(name_and_aliases_set):
-                raise ValueError(f"dumplicated inline label: {name_and_aliases}")
-            dumplicated = set.intersection(name_and_aliases_set, label_names_set)
-            if dumplicated:
-                raise ValueError(f"dumplicated: {dumplicated}")
-            label_names_set.update(name_and_aliases_set)
 
         return label_storage
 

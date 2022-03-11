@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, validator
 import yaml
@@ -35,6 +35,24 @@ class _LabelStorage(BaseModel):
         if v != EXPECTED_FILE_VERSION:
             raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
         return v
+
+    @validator('labels')
+    def _check_labels(cls, labels: List[_SingleLabel]) -> List[_SingleLabel]:
+        label_names_set: Set[str] = set()
+        for idx, label in enumerate(labels):
+            if label.id != -1 and label.id != idx:
+                raise ValueError(f"invalid label id: {label.id}, expected -1 or {idx}")
+
+            # all label names and aliases should have no dumplicate
+            name_and_aliases = label.aliases + [label.name]
+            name_and_aliases_set = set(name_and_aliases)
+            if len(name_and_aliases) != len(name_and_aliases_set):
+                raise ValueError(f"dumplicated inline label: {name_and_aliases}")
+            dumplicated = set.intersection(name_and_aliases_set, label_names_set)
+            if dumplicated:
+                raise ValueError(f"dumplicated: {dumplicated}")
+            label_names_set.update(name_and_aliases_set)
+        return labels
 
 
 def ids_file_name() -> str:
