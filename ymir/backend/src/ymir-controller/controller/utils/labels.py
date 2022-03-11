@@ -1,4 +1,5 @@
 from collections import Counter
+import logging
 from pathlib import Path
 import os
 import time
@@ -97,6 +98,7 @@ class LabelFileHandler:
         candidate_labels_list = [x.strip().lower().split(",") for x in candidate_labels]
         candidates_list = [x for row in candidate_labels_list for x in row]
         if len(candidates_list) != len(set(candidates_list)):
+            logging.error(f"conflict labels: {candidate_labels_list}")
             return candidate_labels_list
 
         current_timestamp = time.time()
@@ -132,6 +134,7 @@ class LabelFileHandler:
             for candidate_list in candidate_labels_list:
                 if set.intersection(set(candidate_list), existed_labels_dups):  # at least one label exist.
                     conflict_labels.append(candidate_list)
+            logging.error(f"conflict labels: {conflict_labels}")
             return conflict_labels
 
         existed_labels_set = set(existed_labels_list)
@@ -154,6 +157,8 @@ class LabelFileHandler:
 
         if not (check_only or conflict_labels):
             self._write_label_file(existed_labels)
+        if conflict_labels:
+            logging.error(f"conflict labels: {conflict_labels}")
         return conflict_labels
 
     def get_main_labels_by_ids(self, type_ids: Iterable) -> List[str]:
