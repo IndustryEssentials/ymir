@@ -131,8 +131,10 @@ export function createFusionTask({
  */
 export function createLabelTask({
   projectId,
+  groupId,
   name,
   datasetId,
+  keywords,
   labellers,
   keepAnnotations,
   doc,
@@ -142,7 +144,9 @@ export function createLabelTask({
     type: TASKTYPES.LABEL,
     project_id: projectId,
     parameters: {
+      dataset_group_id: groupId,
       dataset_id: datasetId,
+      keywords,
       labellers,
       extra_url: doc,
       keep_annotations: keepAnnotations,
