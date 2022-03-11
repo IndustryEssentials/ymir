@@ -71,14 +71,14 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
-        self._check_result(expected=expected, actual=label_handler.get_all_labels())
+        self._check_result(expected=expected, actual=label_handler.get_all_labels().labels)
 
         # a unchanged, m with a conflicted alias hh, so all merge is ignored
         # no change will made to storage file
         candidate_labels = ['a,aa,aaa', 'm,hh', 'zz']
         conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
         self.assertEqual([['m', 'hh']], conflict_labels)
-        self._check_result(expected=expected, actual=label_handler.get_all_labels())
+        self._check_result(expected=expected, actual=label_handler.get_all_labels().labels)
 
         # a: reset aliases, h: reset aliases, x: add new, z: unchanged
         candidate_labels = ["A,aa", "h", "x,xx,xxx"]
@@ -97,19 +97,19 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
-        self._check_result(expected=expected, actual=label_handler.get_all_labels())
+        self._check_result(expected=expected, actual=label_handler.get_all_labels().labels)
 
         # h: reset aliases with conflict, so all merge is ignored, storage file unchanged
         candidate_labels = ["h,a"]
         conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
         self.assertEqual([['h', 'a']], conflict_labels)
-        self._check_result(expected=expected, actual=label_handler.get_all_labels())
+        self._check_result(expected=expected, actual=label_handler.get_all_labels().labels)
 
         # checkonly, wants to add c
         candidate_labels = ['c,cc,ccc']
         conflict_labels = label_handler.merge_labels(candidate_labels, check_only=True)
         self.assertFalse(conflict_labels)
-        self._check_result(expected=expected, actual=label_handler.get_all_labels())
+        self._check_result(expected=expected, actual=label_handler.get_all_labels().labels)
 
         # add again
         candidate_labels = ['c,cc,ccc']
@@ -131,7 +131,7 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
-        self._check_result(expected=expected, actual=label_handler.get_all_labels())
+        self._check_result(expected=expected, actual=label_handler.get_all_labels().labels)
 
         # add label with head and tail spaces
         candidate_labels = [' d ,dd , ddd, d d d']
@@ -156,4 +156,4 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels)
-        self._check_result(expected=expected, actual=label_handler.get_all_labels())
+        self._check_result(expected=expected, actual=label_handler.get_all_labels().labels)

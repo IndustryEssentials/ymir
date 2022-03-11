@@ -30,7 +30,7 @@ class SingleLabel(BaseModel):
     aliases: List[str] = []
 
 
-class _LabelStorage(BaseModel):
+class LabelStorage(BaseModel):
     version: int
     labels: List[SingleLabel] = []
 
@@ -51,11 +51,11 @@ class LabelFileHandler:
         Args:
             all_labels (List[SingleLabel]): all labels
         """
-        label_storage = _LabelStorage(version=EXPECTED_FILE_VERSION, labels=all_labels)
+        label_storage = LabelStorage(version=EXPECTED_FILE_VERSION, labels=all_labels)
         with open(self._label_file, 'w') as f:
             yaml.safe_dump(label_storage.dict(), f)
 
-    def get_all_labels(self) -> List[SingleLabel]:
+    def get_all_labels(self) -> LabelStorage:
         """
         get all labels from label storage file
 
@@ -71,9 +71,9 @@ class LabelFileHandler:
             obj = yaml.safe_load(f)
         # if empty file, returns empty list
         if not obj:
-            return []
+            return LabelStorage(version=EXPECTED_FILE_VERSION)
 
-        label_storage = _LabelStorage(**obj)
+        label_storage = LabelStorage(**obj)
         if label_storage.version != EXPECTED_FILE_VERSION:
             raise ValueError(f"version mismatch: expected: {EXPECTED_FILE_VERSION} != actual: {label_storage.version}")
 
@@ -91,7 +91,7 @@ class LabelFileHandler:
                 raise ValueError(f"dumplicated inline label: {name_and_aliases}")
             label_names_set.add(label.name)
 
-        return label_storage.labels
+        return label_storage
 
     def merge_labels(self, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
         # check `candidate_labels` has no duplicate
@@ -104,7 +104,7 @@ class LabelFileHandler:
         current_timestamp = time.time()
 
         # all labels in storage file
-        existed_labels = self.get_all_labels()
+        existed_labels = self.get_all_labels().labels
         # key: label name, value: idx
         existed_main_names_to_ids: Dict[str, int] = {label.name: idx for idx, label in enumerate(existed_labels)}
 
@@ -162,5 +162,5 @@ class LabelFileHandler:
         return conflict_labels
 
     def get_main_labels_by_ids(self, type_ids: Iterable) -> List[str]:
-        all_labels = self.get_all_labels()
+        all_labels = self.get_all_labels().labels
         return [all_labels[int(idx)].name for idx in type_ids]

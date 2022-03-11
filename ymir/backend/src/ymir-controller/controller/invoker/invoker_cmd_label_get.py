@@ -32,6 +32,6 @@ class LabelGetInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         label_handler = labels.LabelFileHandler(self._user_root)
-        all_labels = label_handler.get_all_labels()
+        all_labels = label_handler.get_all_labels().labels
 
         return self.generate_response(all_labels)
