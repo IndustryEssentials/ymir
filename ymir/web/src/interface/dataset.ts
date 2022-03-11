@@ -1,4 +1,5 @@
 
+import { Project } from './project'
 import { Task } from './task'
 export interface DatasetGroup {
   id: number,
@@ -7,7 +8,7 @@ export interface DatasetGroup {
   createTime: string,
 }
 
-export interface DatasetVersion {
+export interface Dataset {
   id: number,
   groupId: number,
   projectId: number,
@@ -28,6 +29,7 @@ export interface DatasetVersion {
   taskType: number,
   duration: number,
   taskName: string,
+  project?: Project,
 }
 
 
@@ -38,8 +40,7 @@ export interface OriginDatasetGroup {
   create_datetime: string,
 }
 
-export interface OriginDatasetVersion {
-  version: number;
+export interface OriginDataset {
   id: number,
   dataset_group_id: number,
   project_id: number,

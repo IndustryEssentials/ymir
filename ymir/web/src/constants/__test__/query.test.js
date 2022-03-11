@@ -24,7 +24,7 @@ describe("constants: query", () => {
     match(taskTypes, 'train', TASKTYPES.TRAINING)
     match(taskTypes, 'mining', TASKTYPES.MINING)
     match(taskTypes, 'label', TASKTYPES.LABEL)
-    match(taskTypes, 'filter', TASKTYPES.FILTER)
+    match(taskTypes, 'fusion', TASKTYPES.FUSION)
   })
   it("have right task states", () => {
     const states = getTaskStates()
@@ -50,10 +50,10 @@ describe("constants: query", () => {
   it("have right dataset types", () => {
     const types = getDatasetTypes()
     match(types, 'all', "")
-    match(types, 'mining', 2)
-    match(types, 'label', 3)
-    match(types, 'filter', 4)
-    match(types, 'import', 5)
+    match(types, 'mining', TASKTYPES.MINING)
+    match(types, 'label', TASKTYPES.LABEL)
+    match(types, 'fusion', TASKTYPES.FUSION)
+    match(types, 'import', TASKTYPES.IMPORT)
   })
   it("have right image types", () => {
     const types = getImageTypes()

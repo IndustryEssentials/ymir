@@ -33,7 +33,7 @@ describe("models: model", () => {
     expect(result.model.id).toBe(expectedId)
   })
 
-  errorCode(model, 'getModels')
+  errorCode(model, 'getModelGroups')
   errorCode(model, 'batchModels')
   errorCode(model, 'getModel')
   errorCode(model, 'delModel')
@@ -43,10 +43,10 @@ describe("models: model", () => {
   errorCode(model, 'getModelsByRef', [])
   errorCode(model, 'getModelsByMap', {keywords: [], kmodels: {}})
 
-  it("effects: getModels", () => {
-    const saga = model.effects.getModels
+  it("effects: getModelGroups", () => {
+    const saga = model.effects.getModelGroups
     const creator = {
-      type: "getModels",
+      type: "getModelGroups",
       payload: {},
     }
     const expected = products(8)

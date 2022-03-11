@@ -15,7 +15,7 @@ const routeTitle = {
   "model.verify.title": { cn: `${SysName}-模型验证`, en: `${SysName} - Model Verify`, },
   "tasks.title": { cn: `${SysName}-任务列表`, en: `${SysName} - Task List`, },
   "task.title": { cn: `${SysName}-任务详情`, en: `${SysName} - Task Detail`, },
-  "task.filter.title": { cn: `${SysName}-新建筛选任务`, en: `${SysName} - Create Filter Task`, },
+  "task.fusion.title": { cn: `${SysName}-数据融合`, en: `${SysName} - Data Fusion`, },
   "task.train.title": { cn: `${SysName}-新建训练任务`, en: `${SysName} - Create Training Task`, },
   "task.mining.title": { cn: `${SysName}-新建挖掘任务`, en: `${SysName} - Create Mining Task`, },
   "task.label.title": { cn: `${SysName}-新建标注任务`, en: `${SysName} - Create Label Task`, },

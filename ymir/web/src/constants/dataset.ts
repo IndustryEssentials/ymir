@@ -1,11 +1,11 @@
-import { OriginDatasetGroup, DatasetGroup, OriginDatasetVersion, DatasetVersion } from "@/interface/dataset"
+import { OriginDatasetGroup, DatasetGroup, OriginDataset, Dataset } from "@/interface/dataset"
 import { format } from '@/utils/date'
 import { getInterationVersion } from "./project"
 
 export enum states {
-  READY = 1,
-  VALID = 2,
-  INVALID = 3,
+  READY = 0,
+  VALID = 1,
+  INVALID = 2,
 }
 
 export function transferDatasetGroup (data: OriginDatasetGroup) {
@@ -18,7 +18,7 @@ export function transferDatasetGroup (data: OriginDatasetGroup) {
   return group
 }
 
-export function transferDatasetVersion (data: OriginDatasetVersion): DatasetVersion {
+export function transferDataset (data: OriginDataset): Dataset {
   return {
     id: data.id,
     groupId: data.dataset_group_id,
