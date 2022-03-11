@@ -304,7 +304,7 @@ const actions = (dispatch) => {
   return {
     getModels: (pid, query) => {
       return dispatch({
-        type: 'model/getModels',
+        type: 'model/getModelGroups',
         payload: { pid, query },
       })
     },
