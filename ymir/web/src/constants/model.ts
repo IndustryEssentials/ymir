@@ -37,5 +37,6 @@ export function transferModel (data: OriginModelVersion): ModelVersion {
     taskType: data.related_task.type,
     taskState: data.related_task.state,
     taskName: data.related_task.name,
+    task: data.related_task,
   }
 }
