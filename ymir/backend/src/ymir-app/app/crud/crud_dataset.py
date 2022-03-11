@@ -20,6 +20,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         *,
         user_id: int,
         name: Optional[str] = None,
+        project_id: Optional[int] = None,
         type_: Optional[IntEnum] = None,
         state: Optional[IntEnum] = None,
         start_time: Optional[int] = None,
@@ -50,6 +51,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         #  filter by dataset type (task type)
         if state:
             query = query.filter(self.model.result_state == int(state))
+        if project_id:
+            query = query.filter(self.model.project_id == project_id)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
