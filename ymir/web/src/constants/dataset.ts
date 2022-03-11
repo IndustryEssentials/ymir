@@ -40,5 +40,6 @@ export function transferDataset (data: OriginDataset): Dataset {
     taskType: data.related_task.type,
     duration: data.related_task.duration,
     taskName: data.related_task.name,
+    task: data.related_task,
   }
 }

@@ -38,13 +38,12 @@ const renderRadio = (types) => {
   )
 }
 
-function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
-  const { ids } = useParams()
-  const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
+function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysInfo }) {
+  const pageParams = useParams()
+  const id = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image } = location.query
-  const [datasets, setDatasets] = useState([])
   const [models, setModels] = useState([])
   const [selectedSets, setSelectedSets] = useState([])
   const [excludeSets, setExcludeSets] = useState([])
@@ -78,16 +77,16 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    setSelectedSets(datasetIds)
-  }, [ids])
+    getDataset(id)
+  }, [id])
 
   useEffect(() => {
-    if (datasets.length) {
-      setTrainSetCount(datasets.reduce((prev, current) =>
-        selectedSets.indexOf(current.id) > -1 ? prev + current.asset_count : prev,
-        0) || 1)
-    }
-  }, [selectedSets, datasets])
+    datasetCache[id] && setDatasets(datasetCache[id])
+  }, [datasetCache[id]])
+
+  useEffect(() => {
+    dataset.projectId && getDatasets(dataset.projectId)
+  }, [dataset.projectId])
 
   useEffect(() => {
     const state = location.state
@@ -100,8 +99,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
       setTopk(!!top_k)
       form.setFieldsValue({
         name: `${name}_${randomNumber()}`,
-        datasets: sets,
-        exclude_sets: xsets,
+        datasetId: dataset_id,
         filter_strategy: !!top_k,
         inference: generate_annotations,
         model: model_id,
@@ -112,7 +110,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
       })
       setConfig(config)
       setSelectedSets(sets)
-      setExcludeSets(xsets)
+      // setExcludeSets(xsets)
       setHpVisible(true)
 
       history.replace({ state: {} })
@@ -157,15 +155,11 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
-    const img = (form.getFieldValue('docker_image') || '').split(',')
-    const docker_image_id = Number(img[0])
-    const docker_image = img[1]
     const params = {
       ...values,
       name: values.name.trim(),
       topk: values.filter_strategy ? values.topk : 0,
-      docker_image,
-      docker_image_id,
+      image,
       config,
     }
     const result = await createMiningTask(params)
@@ -182,28 +176,18 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     setSelectedSets(value)
   }
 
-  function excludeSetChange(value) {
-    setExcludeSets(value)
-  }
-
   function modelChange(id, model) {
     if (model) {
       setSelectedModel(model)
     }
   }
 
-  function getImageIdOfSelectedModel() {
-    const selectedModelId = form.getFieldValue('model')
-    const selectedModel = models.find(model => model.id === selectedModelId)
-    return selectedModel?.parameters?.docker_image_id
-  }
-
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_mining_' + randomNumber(),
     model: mid ? parseInt(mid) : undefined,
-    docker_image: image ? parseInt(image) : undefined,
-    datasets: datasetIds,
+    image: image ? parseInt(image) : undefined,
+    datasetId: id,
     algorithm: getCheckedValue(Algorithm()),
     topk: 0,
     gpu_count: 0,
@@ -244,58 +228,24 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
             <Form.Item
               label={t('task.filter.form.datasets.label')}
               required
-              name="datasets"
+              name="datasetId"
               rules={[
                 { required: true, message: t('task.filter.form.datasets.required') },
               ]}
             >
               <Select
                 placeholder={t('task.filter.form.mining.datasets.placeholder')}
-                mode='multiple'
                 filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                 onChange={setsChange}
                 showArrow
               >
-                {datasets.map(item => excludeSets.indexOf(item.id) < 0 ? (
+                {datasets.map(item =>
                   <Option value={item.id} key={item.name}>
                     {item.name}({item.asset_count})
-                  </Option>
-                ) : null)}
+                  </Option>)}
               </Select>
             </Form.Item>
             </Tip>
-            <Tip hidden={true}>
-              <Form.Item name='strategy'
-                hidden={selectedSets.length < 2}
-                initialValue={2} label={t('task.train.form.repeatdata.label')}>
-                <Radio.Group options={[
-                  { value: 2, label: t('task.train.form.repeatdata.latest') },
-                  { value: 3, label: t('task.train.form.repeatdata.original') },
-                  { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                ]} />
-              </Form.Item>
-            </Tip>
-
-              <Tip content={t('tip.task.filter.excludeset')}>
-                <Form.Item
-                  label={t('task.mining.form.excludeset.label')}
-                  name="exclude_sets"
-                >
-                  <Select
-                    placeholder={t('task.filter.form.exclude.datasets.placeholder')}
-                    mode='multiple'
-                    onChange={excludeSetChange}
-                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                    showArrow
-                  >
-                    {datasets.map(item => selectedSets.indexOf(item.id) < 0 ? (
-                      <Option value={item.id} key={item.name}>
-                        {item.name}({item.asset_count})
-                      </Option>
-                    ) : null)}
-                  </Select>
-                </Form.Item>
-              </Tip>
             </ConfigProvider>
 
 
@@ -314,10 +264,10 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
             </ConfigProvider>
 
             <Tip content={t('tip.task.mining.image')}>
-              <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
+              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={getImageIdOfSelectedModel()} type={TYPES.MINING} onChange={imageChange} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={selectedModel.task.parameters.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
@@ -469,6 +419,12 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   )
 }
 
+const props = (state) => {
+  return {
+    datasetCache: state.dataset.dataset,
+  }
+}
+
 const dis = (dispatch) => {
   return {
     getSysInfo() {
@@ -482,6 +438,12 @@ const dis = (dispatch) => {
         payload: pid,
       })
     },
+    getDataset(id) {
+      return dispatch({
+        type: "dataset/getDataset",
+        payload: id,
+      })
+    },
     createMiningTask(payload) {
       return dispatch({
         type: "task/createMiningTask",
@@ -491,4 +453,4 @@ const dis = (dispatch) => {
   }
 }
 
-export default connect(null, dis)(Mining)
+export default connect(props, dis)(Mining)

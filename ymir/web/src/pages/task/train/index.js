@@ -40,12 +40,9 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
   const [testSet, setTestSet] = useState(null)
-  const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [selectedModel, setSelectedModel] = useState(null)
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
-  const [selectedImage, setSelectedImage] = useState({})
   const [gpu_count, setGPU] = useState(0)
 
   const renderRadio = (types) => {
