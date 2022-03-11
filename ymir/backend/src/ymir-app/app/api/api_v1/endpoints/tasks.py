@@ -164,7 +164,7 @@ class TaskResult:
         self.task_in_db = task_in_db
         self.task = schemas.TaskInternal.from_orm(task_in_db)
 
-        self.result_type = ResultType(self.task.result_type) if self.task.result_type is not None else None
+        self.result_type = ResultType(self.task.result_type)
         self.user_id = self.task.user_id
         self.project_id = self.task.project_id
         self.task_hash = self.task.hash

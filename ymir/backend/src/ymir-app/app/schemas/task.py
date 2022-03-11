@@ -114,7 +114,7 @@ class TaskInternal(TaskInDBBase):
     parameters: Optional[str]
     config: Optional[str]
     state: TaskState
-    result_type: Optional[ResultType] = None
+    result_type: ResultType = ResultType.no_result
 
     @validator("parameters")
     def loads_parameters(cls, v: str) -> Dict[str, Any]:
@@ -136,7 +136,7 @@ class TaskInternal(TaskInDBBase):
         elif task_type in [TaskType.mining, TaskType.label, TaskType.import_data, TaskType.copy_data]:
             return ResultType.dataset
         else:
-            return None
+            return ResultType.no_result
 
     class Config:
         use_enum_values = True
