@@ -117,7 +117,7 @@ class ClassIdManager(object):
         super().__init__()
 
         # it will have value iff successfully loaded
-        self._file_path = ''
+        self._storage_file_path = ''
 
         self.__load(ids_file_path(mir_root=mir_root))
 
@@ -125,8 +125,8 @@ class ClassIdManager(object):
     def __load(self, file_path: str) -> bool:
         if not file_path:
             raise ClassIdManagerError('empty path received')
-        if self._file_path:
-            raise ClassIdManagerError(f"already loaded from: {self._file_path}")
+        if self._storage_file_path:
+            raise ClassIdManagerError(f"already loaded from: {self._storage_file_path}")
 
         with open(file_path, 'r') as f:
             file_obj = yaml.safe_load(f)
@@ -134,8 +134,8 @@ class ClassIdManager(object):
             file_obj = {}
 
         self._label_storage = _LabelStorage(**file_obj)
-        # save `self._file_path` as a flag of successful loading
-        self._file_path = file_path
+        # save `self._storage_file_path` as a flag of successful loading
+        self._storage_file_path = file_path
         return True
 
     # public: general
@@ -153,7 +153,7 @@ class ClassIdManager(object):
             Tuple[int, Optional[str]]: (type id, main type name)
         """
         name = name.strip().lower()
-        if not self._file_path:
+        if not self._storage_file_path:
             raise ClassIdManagerError("not loade")
         if not name:
             raise ClassIdManagerError("empty name")
