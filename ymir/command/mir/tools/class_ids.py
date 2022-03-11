@@ -27,7 +27,7 @@ class _SingleLabel(BaseModel):
 
 
 class _LabelStorage(BaseModel):
-    version: int = 0
+    version: int = EXPECTED_FILE_VERSION
     labels: List[_SingleLabel] = []
 
     @validator('version')
@@ -50,7 +50,7 @@ def create_empty_if_not_exists(mir_root: str) -> None:
     if os.path.isfile(file_path):
         return
 
-    label_storage = _LabelStorage(version=EXPECTED_FILE_VERSION)
+    label_storage = _LabelStorage()
     with open(file_path, 'w') as f:
         yaml.safe_dump(label_storage.dict(), f)
 

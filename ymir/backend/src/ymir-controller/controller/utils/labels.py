@@ -39,7 +39,7 @@ class SingleLabel(BaseModel):
 
 
 class LabelStorage(BaseModel):
-    version: int
+    version: int = EXPECTED_FILE_VERSION
     labels: List[SingleLabel] = []
 
     @validator('version')
@@ -65,7 +65,7 @@ class LabelFileHandler:
         Args:
             all_labels (List[SingleLabel]): all labels
         """
-        label_storage = LabelStorage(version=EXPECTED_FILE_VERSION, labels=all_labels)
+        label_storage = LabelStorage(labels=all_labels)
         with open(self._label_file, 'w') as f:
             yaml.safe_dump(label_storage.dict(), f)
 
@@ -85,7 +85,7 @@ class LabelFileHandler:
             obj = yaml.safe_load(f)
         # if empty file, returns empty list
         if not obj:
-            return LabelStorage(version=EXPECTED_FILE_VERSION)
+            return LabelStorage()
 
         label_storage = LabelStorage(**obj)
         if label_storage.version != EXPECTED_FILE_VERSION:
