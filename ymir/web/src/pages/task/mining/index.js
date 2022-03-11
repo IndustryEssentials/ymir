@@ -20,6 +20,7 @@ import EmptyStateDataset from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
+import ModelSelect from "../components/modelSelect"
 import ImageSelect from "../components/imageSelect"
 
 const { Option } = Select
@@ -59,7 +60,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
   }, [])
 
   useEffect(async () => {
-    let result = await getDatasets({ limit: 100000 })
+    let result = await getDatasets(pid)
     if (result) {
       setDatasets(result.items.filter(dataset => TASKSTATES.FINISH === dataset.state))
     }
@@ -185,6 +186,12 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
     setExcludeSets(value)
   }
 
+  function modelChange(id, model) {
+    if (model) {
+      setSelectedModel(model)
+    }
+  }
+
   function getImageIdOfSelectedModel() {
     const selectedModelId = form.getFieldValue('model')
     const selectedModel = models.find(model => model.id === selectedModelId)
@@ -301,17 +308,7 @@ function Mining({ getDatasets, getModels, createMiningTask, getSysInfo }) {
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
                 >
-                  <Select
-                    placeholder={t('task.mining.form.mining.model.required')}
-                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                    showArrow
-                  >
-                    {models.map(item => (
-                      <Option value={item.id} key={item.name}>
-                        {item.name}(id: {item.id})
-                      </Option>
-                    ))}
-                  </Select>
+                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={dataset.projectId} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -479,16 +476,10 @@ const dis = (dispatch) => {
         type: "common/getSysInfo",
       })
     },
-    getModels: (payload) => {
+    getDatasets(pid) {
       return dispatch({
-        type: 'model/getModels',
-        payload,
-      })
-    },
-    getDatasets(payload) {
-      return dispatch({
-        type: "dataset/getDatasets",
-        payload,
+        type: "dataset/queryAllDatasets",
+        payload: pid,
       })
     },
     createMiningTask(payload) {
