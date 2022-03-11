@@ -30,6 +30,7 @@ export interface Dataset {
   duration: number,
   taskName: string,
   project?: Project,
+  task?: Task,
 }
 
 

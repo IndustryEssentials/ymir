@@ -1,6 +1,6 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Card } from "antd"
-import { useParams } from "umi"
+import { useLocation, useParams } from "umi"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -16,12 +16,20 @@ const tabsTitle = [
 ]
 
 function ProjectDetail() {
+  const location = useLocation()
   const { id } = useParams()
   const [active, setActive] = useState(tabsTitle[0].key)
   const content = {
     'set': <Datasets pid={id} />,
     'model': <Models pid={id} />
   }
+  
+  useEffect(() => {
+    const locationHash = location.hash.replace(/^#/, '')
+    if (locationHash) {
+      setActive(locationHash)
+    }
+  }, [location.hash])
 
   return (
     <div className={styles.projectDetail}>
