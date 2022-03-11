@@ -146,6 +146,8 @@ def create_task(
             "[create task] failed to write task(%s) stats to clickhouse, continue anyway",
             task.hash,
         )
+    except KeyError:
+        logger.exception("[create task] failed to get metrics for task(%s), continue anyway", task.hash)
     logger.info("[create task] created task name: %s" % task_in.name)
     return {"result": task}
 
