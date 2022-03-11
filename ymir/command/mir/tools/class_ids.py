@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 import yaml
 
 from mir.tools import utils as mir_utils
@@ -17,10 +17,24 @@ class _SingleLabel(BaseModel):
     update_time: float = 0
     aliases: List[str] = []
 
+    @validator('name')
+    def _strip_and_lower_name(cls, v: str) -> str:
+        return v.strip().lower()
+
+    @validator('aliases', each_item=True)
+    def _strip_and_lower_alias(cls, v: str) -> str:
+        return v.strip().lower()
+
 
 class _LabelStorage(BaseModel):
     version: int = 0
     labels: List[_SingleLabel] = []
+
+    @validator('version')
+    def _check_version(cls, v: int) -> int:
+        if v != EXPECTED_FILE_VERSION:
+            raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
+        return v
 
 
 def ids_file_name() -> str:
@@ -79,25 +93,22 @@ class ClassIdManager(object):
             raise ClassIdManagerError(f"unexpected version: {label_storage.version}, needed {EXPECTED_FILE_VERSION}")
         labels = label_storage.labels
         for label in labels:
-            label_name: str = label.name.strip().lower()
-            label_aliases = [v.strip().lower() for v in label.aliases]
-
             # self._type_name_id_dict
             #   key: main label name
-            self._set_if_not_exists(k=label_name,
+            self._set_if_not_exists(k=label.name,
                                     v=(label.id, None),
                                     d=self._type_name_id_dict,
                                     error_message_prefix='dumplicated name')
             #   key: aliases
-            for label_alias in label_aliases:
+            for label_alias in label.aliases:
                 self._set_if_not_exists(k=label_alias,
-                                        v=(label.id, label_name),
+                                        v=(label.id, label.name),
                                         d=self._type_name_id_dict,
                                         error_message_prefix='dumplicated alias')
 
             # self._type_id_name_dict
             self._set_if_not_exists(k=label.id,
-                                    v=label_name,
+                                    v=label.name,
                                     d=self._type_id_name_dict,
                                     error_message_prefix='dumplicated id')
 

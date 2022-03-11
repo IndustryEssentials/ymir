@@ -5,7 +5,7 @@ import os
 import time
 from typing import Dict, List, Iterable, Set
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validate_arguments, validator
 import yaml
 
 
@@ -29,10 +29,24 @@ class SingleLabel(BaseModel):
     update_time: float = 0
     aliases: List[str] = []
 
+    @validator('name')
+    def _strip_and_lower_name(cls, v: str) -> str:
+        return v.strip().lower()
+
+    @validator('aliases', each_item=True)
+    def _strip_and_lower_alias(cls, v: str) -> str:
+        return v.strip().lower()
+
 
 class LabelStorage(BaseModel):
     version: int
     labels: List[SingleLabel] = []
+
+    @validator('version')
+    def _check_version(cls, v: int) -> int:
+        if v != EXPECTED_FILE_VERSION:
+            raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
+        return v
 
 
 class LabelFileHandler:
@@ -79,19 +93,17 @@ class LabelFileHandler:
 
         label_names_set: Set[str] = set()  # use to check dumplicate label names
         for idx, label in enumerate(label_storage.labels):
-            # use stripped lower case for each label
             if label.id != idx:
                 raise ValueError(f"label id and idx mismatch: idx: {idx}, id: {label.id}")
-            label.name = label.name.strip().lower()
-            label.aliases = [v.strip().lower() for v in label.aliases]
 
             name_and_aliases = label.aliases + [label.name]
-            if len(name_and_aliases) != len(set(name_and_aliases)):
+            name_and_aliases_set = set(name_and_aliases)
+            if len(name_and_aliases) != len(name_and_aliases_set):
                 raise ValueError(f"dumplicated inline label: {name_and_aliases}")
-            dumplicated = set.intersection(set(name_and_aliases), label_names_set)
+            dumplicated = set.intersection(name_and_aliases_set, label_names_set)
             if dumplicated:
                 raise ValueError(f"dumplicated: {dumplicated}")
-            label_names_set.update(name_and_aliases)
+            label_names_set.update(name_and_aliases_set)
 
         return label_storage
 
