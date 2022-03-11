@@ -59,10 +59,10 @@ class LabelStorage(BaseModel):
             name_and_aliases = label.aliases + [label.name]
             name_and_aliases_set = set(name_and_aliases)
             if len(name_and_aliases) != len(name_and_aliases_set):
-                raise ValueError(f"dumplicated inline label: {name_and_aliases}")
-            dumplicated = set.intersection(name_and_aliases_set, label_names_set)
-            if dumplicated:
-                raise ValueError(f"dumplicated: {dumplicated}")
+                raise ValueError(f"duplicated inline label: {name_and_aliases}")
+            duplicated = set.intersection(name_and_aliases_set, label_names_set)
+            if duplicated:
+                raise ValueError(f"duplicated: {duplicated}")
             label_names_set.update(name_and_aliases_set)
         return labels
 

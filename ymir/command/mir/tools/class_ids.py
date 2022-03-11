@@ -47,10 +47,10 @@ class _LabelStorage(BaseModel):
             name_and_aliases = label.aliases + [label.name]
             name_and_aliases_set = set(name_and_aliases)
             if len(name_and_aliases) != len(name_and_aliases_set):
-                raise ValueError(f"dumplicated inline label: {name_and_aliases}")
-            dumplicated = set.intersection(name_and_aliases_set, label_names_set)
-            if dumplicated:
-                raise ValueError(f"dumplicated: {dumplicated}")
+                raise ValueError(f"duplicated inline label: {name_and_aliases}")
+            duplicated = set.intersection(name_and_aliases_set, label_names_set)
+            if duplicated:
+                raise ValueError(f"duplicated: {duplicated}")
             label_names_set.update(name_and_aliases_set)
         return labels
 
@@ -116,19 +116,19 @@ class ClassIdManager(object):
             self._set_if_not_exists(k=label.name,
                                     v=(label.id, None),
                                     d=self._type_name_id_dict,
-                                    error_message_prefix='dumplicated name')
+                                    error_message_prefix='duplicated name')
             #   key: aliases
             for label_alias in label.aliases:
                 self._set_if_not_exists(k=label_alias,
                                         v=(label.id, label.name),
                                         d=self._type_name_id_dict,
-                                        error_message_prefix='dumplicated alias')
+                                        error_message_prefix='duplicated alias')
 
             # self._type_id_name_dict
             self._set_if_not_exists(k=label.id,
                                     v=label.name,
                                     d=self._type_id_name_dict,
-                                    error_message_prefix='dumplicated id')
+                                    error_message_prefix='duplicated id')
 
         # save `self._file_path` as a flag of successful loading
         self._file_path = file_path
