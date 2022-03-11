@@ -109,8 +109,7 @@ class ClassIdManager(object):
             file_obj = {}
 
         label_storage = _LabelStorage(**file_obj)
-        labels = label_storage.labels
-        for label in labels:
+        for label in label_storage.labels:
             # self._type_name_id_dict
             #   key: main label name
             self._set_if_not_exists(k=label.name,
