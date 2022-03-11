@@ -51,7 +51,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         #  filter by dataset type (task type)
         if state:
             query = query.filter(self.model.result_state == int(state))
-        if project_id:
+        if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
 
         order_by_column = getattr(self.model, order_by)
