@@ -178,3 +178,7 @@ class LabelFileHandler:
     def get_main_labels_by_ids(self, type_ids: Iterable) -> List[str]:
         all_labels = self.get_all_labels().labels
         return [all_labels[int(idx)].name for idx in type_ids]
+
+
+def merge_labels(mir_root: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
+    return LabelFileHandler(mir_root=mir_root).merge_labels(candidate_labels=candidate_labels, check_only=check_only)
