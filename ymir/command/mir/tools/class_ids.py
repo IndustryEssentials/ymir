@@ -28,9 +28,7 @@ def ids_file_name() -> str:
 
 
 def ids_file_path(mir_root: str) -> str:
-    file_dir = mir_utils.repo_dot_mir_path(mir_root=mir_root)
-    os.makedirs(file_dir, exist_ok=True)
-    return os.path.join(file_dir, ids_file_name())
+    return os.path.join(mir_utils.repo_dot_mir_path(mir_root=mir_root), ids_file_name())
 
 
 def create_empty_if_not_exists(mir_root: str) -> None:

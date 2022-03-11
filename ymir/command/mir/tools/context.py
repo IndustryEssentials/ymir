@@ -24,7 +24,6 @@ def load(mir_root: str) -> List[int]:
 
 def save(mir_root: str, project_class_ids: List[int]) -> None:
     context_file_path = context_file_path_from_mir_root(mir_root)
-    os.makedirs(os.path.dirname(context_file_path), exist_ok=True)
 
     with open(context_file_path, 'w') as f:
         yaml.safe_dump({'project': {'class_ids': project_class_ids}}, f)

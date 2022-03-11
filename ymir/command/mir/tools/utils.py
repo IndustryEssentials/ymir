@@ -262,4 +262,6 @@ def map_gpus_zero_index(gpu_id: str) -> str:
 
 
 def repo_dot_mir_path(mir_root: str) -> str:
-    return os.path.join(mir_root, '.mir')
+    dir = os.path.join(mir_root, '.mir')
+    os.makedirs(dir, exist_ok=True)
+    return dir
