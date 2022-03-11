@@ -38,16 +38,15 @@ const renderRadio = (types) => {
   )
 }
 
-function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysInfo }) {
+function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningTask, getSysInfo }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image } = location.query
-  const [models, setModels] = useState([])
+  const { pjid, mid, image } = location.query
+  const [pid, setPid] = useState(null)
+  const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
-  const [selectedSets, setSelectedSets] = useState([])
-  const [excludeSets, setExcludeSets] = useState([])
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [trainSetCount, setTrainSetCount] = useState(1)
@@ -59,19 +58,9 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
     fetchSysInfo()
   }, [])
 
-  useEffect(async () => {
-    let result = await getDatasets(pid)
-    if (result) {
-      setDatasets(result.items.filter(dataset => TASKSTATES.FINISH === dataset.state))
-    }
-  }, [])
-
-  useEffect(async () => {
-    let result = await getModels({ limit: 100000 })
-    if (result) {
-      setModels(result.items)
-    }
-  }, [])
+  useEffect(() => {
+    setPid(Number(pjid))
+  }, [pjid])
 
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
@@ -82,12 +71,16 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
   }, [id])
 
   useEffect(() => {
-    datasetCache[id] && setDatasets(datasetCache[id])
+    const cache = datasetCache[id]
+    if (cache) {
+      setDataset(cache)
+      setPid(cache.projectId)
+    }
   }, [datasetCache[id]])
 
   useEffect(() => {
-    dataset.projectId && getDatasets(dataset.projectId)
-  }, [dataset.projectId])
+    pid && getDatasets(pid)
+  }, [pid])
 
   useEffect(() => {
     const state = location.state
@@ -110,8 +103,6 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
         strategy,
       })
       setConfig(config)
-      setSelectedSets(sets)
-      // setExcludeSets(xsets)
       setHpVisible(true)
 
       history.replace({ state: {} })
@@ -156,16 +147,22 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
+    
+    const img = (form.getFieldValue('image') || '').split(',')
+    const imageId = Number(img[0])
+    const image = img[1]
     const params = {
       ...values,
       name: values.name.trim(),
       topk: values.filter_strategy ? values.topk : 0,
+      projectId: pid,
+      imageId,
       image,
       config,
     }
     const result = await createMiningTask(params)
     if (result) {
-      history.replace("/home/task")
+      history.replace(`/home/project/detail/${pid}`)
     }
   }
 
@@ -173,8 +170,8 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
     console.log("Failed:", errorInfo)
   }
 
-  function setsChange(value) {
-    setSelectedSets(value)
+  function setsChange(id) {
+    id && setDataset(datasets.find(ds => ds.id === id))
   }
 
   function modelChange(id, model) {
@@ -240,7 +237,7 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
               >
                 {datasets.map(item =>
                   <Option value={item.id} key={item.name}>
-                    {item.name}({item.asset_count})
+                    {item.name}(assets: {item.assetCount})
                   </Option>)}
               </Select>
             </Form.Item>
@@ -266,7 +263,7 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
               <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={selectedModel?.task.parameters.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
@@ -420,6 +417,7 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
 
 const props = (state) => {
   return {
+    datasets: state.dataset.allDatasets,
     datasetCache: state.dataset.dataset,
   }
 }

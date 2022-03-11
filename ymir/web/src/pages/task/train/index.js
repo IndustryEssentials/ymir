@@ -167,7 +167,7 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
     }
     const result = await createTrainTask(params)
     if (result) {
-      history.replace(`/home/project/detail/${dataset.projectId}`)
+      history.replace(`/home/project/detail/${dataset.projectId}#model`)
     }
   }
 

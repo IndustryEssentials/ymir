@@ -203,32 +203,32 @@ export function createTrainTask({
 }
 
 export function createMiningTask({
+  projectId,
+  datasetId,
   model,
   topk,
-  datasets,
-  exclude_sets,
   algorithm,
   config,
   strategy,
   inference,
   name,
-  docker_image,
-  docker_image_id,
+  image,
+  imageId,
 }) {
   return createTask({
     type: TASKTYPES.MINING,
+    project_id: projectId,
     name,
     config,
     parameters: {
       strategy,
       model_id: model,
-      include_datasets: datasets,
-      exclude_datasets: exclude_sets,
+      dataset_id: datasetId,
       mining_algorithm: algorithm,
       top_k: topk,
       generate_annotations: inference,
-      docker_image,
-      docker_image_id,
+      docker_image: image,
+      docker_image_id: imageId,
     }
   })
 }

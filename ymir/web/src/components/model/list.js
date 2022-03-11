@@ -165,7 +165,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
       {
         key: "mining",
         label: t("dataset.action.mining"),
-        onclick: () => history.push(`/home/task/mining?mid=${id}`),
+        onclick: () => history.push(`/home/task/mining?mid=${id}&pjid=${pid}`),
         icon: <VectorIcon />,
       },
       {
