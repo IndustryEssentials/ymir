@@ -120,7 +120,7 @@ class ControllerRequest:
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k", None):
             mine_task_req.top_k = args["top_k"]
-        mine_task_req.in_dataset_ids[:] = args["dataset_hash"]
+        mine_task_req.in_dataset_ids[:] = [args["dataset_hash"]]
         mine_task_req.generate_annotations = args["generate_annotations"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
