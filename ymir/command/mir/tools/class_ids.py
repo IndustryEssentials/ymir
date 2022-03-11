@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel
 import yaml
 
+from mir.tools import utils as mir_utils
+
 
 EXPECTED_FILE_VERSION = 1
 
@@ -26,7 +28,7 @@ def ids_file_name() -> str:
 
 
 def ids_file_path(mir_root: str) -> str:
-    file_dir = os.path.join(mir_root, '.mir')
+    file_dir = mir_utils.repo_dot_mir_path(mir_root=mir_root)
     os.makedirs(file_dir, exist_ok=True)
     return os.path.join(file_dir, ids_file_name())
 
