@@ -11,7 +11,7 @@ describe("models: task", () => {
   errorCode(task, 'getTask')
   errorCode(task, 'deleteTask')
   errorCode(task, 'updateTask')
-  errorCode(task, 'createFilterTask')
+  errorCode(task, 'createFusionTask')
   errorCode(task, 'createLabelTask')
   errorCode(task, 'createTrainTask')
   errorCode(task, 'createMiningTask')
@@ -42,10 +42,10 @@ describe("models: task", () => {
     expect(result.task.id).toBe(expectedId)
   })
 
-  it("effects: createFilterTask", () => {
-    const saga = task.effects.createFilterTask
+  it("effects: createFusionTask", () => {
+    const saga = task.effects.createFusionTask
     const creator = {
-      type: "createFilterTask",
+      type: "createFusionTask",
       payload: {},
     }
     const expected = "ok"

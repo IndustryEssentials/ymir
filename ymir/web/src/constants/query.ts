@@ -7,7 +7,7 @@ export const getTaskTypes = () => [
   { key: "train", value: TASKTYPES.TRAINING, label: t("task.type.train") },
   { key: "mining", value: TASKTYPES.MINING, label: t("task.type.mine") },
   { key: "label", value: TASKTYPES.LABEL, label: t("task.type.label") },
-  { key: "filter", value: TASKTYPES.FILTER, label: t("task.type.filter") },
+  { key: "fusion", value: TASKTYPES.FUSION, label: t("task.type.fusion") },
 ]
 
 export const getTaskStates = () => [
@@ -38,9 +38,8 @@ export const getDatasetTypes = () => [
   { key: "all", value: "", label: t("common.all") },
   { key: "mining", value: TASKTYPES.MINING, label: t("dataset.type.mine") },
   { key: "label", value: TASKTYPES.LABEL, label: t("dataset.type.label") },
-  { key: "filter", value: TASKTYPES.FILTER, label: t("dataset.type.filter") },
+  { key: "fusion", value: TASKTYPES.FUSION, label: t("dataset.type.fusion") },
   { key: "import", value: TASKTYPES.IMPORT, label: t("dataset.type.import") },
-  { key: "public_import", value: TASKTYPES.PUBLIC, label: t("dataset.type.import"), hidden: true },
 ]
 
 export const getImageTypes = () => [

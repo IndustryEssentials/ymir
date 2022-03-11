@@ -1,27 +1,23 @@
 
-import mockjs, { Random } from 'mockjs'
+import mockjs from 'mockjs'
+import { random } from './keyword'
 import baseApi from './api.js'
 
 const item = {
   "name": "@title(1,4)",
   "hash": "@string(32)",
   "type|1": [1,2,3,4,5],
-  "state|1": [1,2,3,4],
+  "state|1": [2,3],
+  'version|1': [1,2,3,4,5,6,7,8],
   "asset_count": '@integer(2,9999)',
-  "keyword_count": Random.integer(1,30),
-  "user_id": Random.integer(1, 200),
+  "keyword_count": '@integer(1,30)',
   "task_id": '@integer(1000, 9999)',
-  "is_deleted": false,
   "create_datetime": "@datetime",
-  "update_datetime": "@datetime",
   "id|+1": 10001,
-  "parameters": {},
-  "config": {},
-  "keywords": [],
-  "ignored_keywords": [],
-  "source": 5,
+  "group_id|+1": 40001,
+  "project_id": 30001,
+  "keywords": '@keywords(2, 5)',
   "progress": '@integer(0,100)',
-  "task_name": "@string(3,30)",
   "task_state|1": [1,2,3,4],
   "task_progress": '@integer(0,100)'
 }
@@ -33,7 +29,7 @@ const list = mockjs.mock({
 
 const groups = mockjs.mock({
   'items|1-20': [{
-    'id|+1': 4001,
+    'id|+1': 40001,
     name: '@title(1,5)',
     createTime: '@datetime',
   }],
@@ -48,7 +44,13 @@ export default baseApi([
     }
   },
   {
-    url: 'dataset_groups/4001',
+    url: 'dataset_groups/40001',
+    data: {
+      result: list,
+    }
+  },
+  {
+    url: 'datasets/',
     data: {
       result: list,
     }
@@ -56,7 +58,7 @@ export default baseApi([
   {
     url: 'datasets/10008',
     data: {
-      result: item,
+      result: mockjs.mock(item),
     }
   },
 ])

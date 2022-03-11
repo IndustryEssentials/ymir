@@ -48,7 +48,7 @@ function Sets({ count = 3, getHotDatasets, getDatasets }) {
       <h4 className={styles.boxItemTitle}>{set.name}</h4>
       <Row>
         <Col span={8} title={set.asset_count}>
-          <Statistic className={styles.boxItemTitleCount} title={t("portal.dataset.asset.count")} value={humanize(set.asset_count)} />
+          <Statistic className={styles.boxItemTitleCount} title={t("portal.dataset.asset.count")} value={humanize(set.assetCount)} />
         </Col>
         <Col span={8} title={set.keywords.length}>
           <Statistic className={styles.boxItemTitleCount} title={t("portal.dataset.keyword.count")} value={humanize(set.keywords.length)} />
