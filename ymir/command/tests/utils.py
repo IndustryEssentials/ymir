@@ -74,16 +74,11 @@ def remake_dirs(path: str):
 
 
 def prepare_labels(mir_root: str, names: List[str]):
-    labels = []
+    labels: List[class_ids._SingleLabel] = []
     for idx, name in enumerate(names):
         components = name.split(',')
-        label_name = components[0]
-        label_alias_list = components[1:]
-        if label_alias_list:
-            labels.append({'id': idx, 'name': label_name, 'aliases': label_alias_list})
-        else:
-            labels.append({'id': idx, 'name': label_name})
-    obj = {'version': class_ids.EXPECTED_FILE_VERSION, 'labels': labels}
+        labels.append(class_ids._SingleLabel(id=idx, name=components[0], aliases=components[1:]))
+    label_storage = class_ids._LabelStorage(labels=labels)
 
     with open(class_ids.ids_file_path(mir_root=mir_root), 'w') as f:
-        yaml.safe_dump(obj, f)
+        yaml.safe_dump(label_storage.dict(), f)

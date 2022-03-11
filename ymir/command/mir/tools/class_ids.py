@@ -89,8 +89,6 @@ class ClassIdManager(object):
             file_obj = yaml.safe_load(f)
 
         label_storage = _LabelStorage(**file_obj)
-        if label_storage.version != EXPECTED_FILE_VERSION:
-            raise ClassIdManagerError(f"unexpected version: {label_storage.version}, needed {EXPECTED_FILE_VERSION}")
         labels = label_storage.labels
         for label in labels:
             # self._type_name_id_dict

@@ -18,26 +18,7 @@ class TestCmdInit(unittest.TestCase):
         if os.path.isdir(test_root):
             shutil.rmtree(test_root)
         os.makedirs(test_root)
-        # write label storage file
-        with open(class_ids.ids_file_path(mir_root=test_root), 'w') as f:
-            obj = {
-                'version': class_ids.EXPECTED_FILE_VERSION,
-                'labels': [
-                    {
-                        'id': 0,
-                        'name': 'xbox'
-                    },
-                    {
-                        'id': 1,
-                        'name': 'person'
-                    },
-                    {
-                        'id': 2,
-                        'name': 'cat'
-                    },
-                ]
-            }
-            yaml.safe_dump(obj, f)
+        test_utils.prepare_labels(mir_root=test_root, names=['xbox', 'person', 'cat'])
 
         init.CmdInit.run_with_args(mir_root=test_root, project_class_names='cat;person', empty_rev='a@a')
 

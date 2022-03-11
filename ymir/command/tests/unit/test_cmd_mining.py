@@ -72,21 +72,7 @@ class TestMiningCmd(unittest.TestCase):
         # init repo
         logging.info(f"mir repo: {self._mir_repo_root}")
         test_utils.mir_repo_init(self._mir_repo_root)
-        with open(class_ids.ids_file_path(mir_root=self._mir_repo_root), 'w') as f:
-            obj = {
-                'version': class_ids.EXPECTED_FILE_VERSION,
-                'labels': [
-                    {
-                        'id': 0,
-                        'name': 'person'
-                    },
-                    {
-                        'id': 1,
-                        'name': 'cat'
-                    },
-                ]
-            }
-            yaml.safe_dump(obj, f)
+        test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['person', 'cat'])
         # prepare branch a
         test_utils.mir_repo_create_branch(self._mir_repo_root, "a")
         self._prepare_mir_repo_branch_mining()

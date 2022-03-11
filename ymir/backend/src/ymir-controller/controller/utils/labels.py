@@ -88,8 +88,6 @@ class LabelFileHandler:
             return LabelStorage()
 
         label_storage = LabelStorage(**obj)
-        if label_storage.version != EXPECTED_FILE_VERSION:
-            raise ValueError(f"version mismatch: expected: {EXPECTED_FILE_VERSION} != actual: {label_storage.version}")
 
         label_names_set: Set[str] = set()  # use to check dumplicate label names
         for idx, label in enumerate(label_storage.labels):
