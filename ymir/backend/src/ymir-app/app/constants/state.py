@@ -44,8 +44,9 @@ class TaskState(IntEnum):
 
 
 class ResultType(IntEnum):
-    dataset = 0
-    model = 1
+    no_result = 0
+    dataset = 1
+    model = 2
 
 
 class ResultState(IntEnum):

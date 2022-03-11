@@ -127,7 +127,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     const result = await createDataset(params)
     if (result) {
       message.success(t('dataset.add.success.msg'))
-      history.push('/home/dataset')
+      history.push(`/home/project/detail/${pid}`)
     }
   }
 

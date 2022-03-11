@@ -94,7 +94,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             name=obj_in.name,
             version_num=latest_version + 1 if latest_version else 0,
             hash=obj_in.hash,
-            result_state=obj_in.result_state,
+            result_state=int(obj_in.result_state),
             dataset_group_id=obj_in.dataset_group_id,
             project_id=obj_in.project_id,
             user_id=obj_in.user_id,

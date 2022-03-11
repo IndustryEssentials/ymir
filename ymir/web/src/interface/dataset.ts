@@ -49,7 +49,6 @@ export interface OriginDataset {
   name: string,
   version_num: number,
   keywords: Array<string>,
-  state: number,
   asset_count: number,
   keyword_count: number,
   result_state: number,

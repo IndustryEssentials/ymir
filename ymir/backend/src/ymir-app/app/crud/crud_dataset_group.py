@@ -10,6 +10,24 @@ from app.schemas.dataset_group import DatasetGroupCreate, DatasetGroupUpdate
 
 
 class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUpdate]):
+    def create_dataset_group(
+        self,
+        db: Session,
+        *,
+        user_id: int,
+        project_id: int,
+        name: str,
+    ) -> DatasetGroup:
+        db_obj = DatasetGroup(
+            name=name,
+            user_id=user_id,
+            project_id=project_id,
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
     def get_multi_dataset_groups(
         self,
         db: Session,
