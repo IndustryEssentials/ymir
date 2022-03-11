@@ -86,113 +86,153 @@ export function updateTask(id, name) {
   })
 }
 
-export function createFilterTask({
-  name,
-  datasets,
-  include = [],
-  exclude = [],
-  strategy,
+/**
+ * create fusion task
+ * @param {object} param0 
+ * {
+ * {number} project_id
+ * {number} dataset_group_id
+ * {number} main_dataset_id 
+ * {array<number>} [include_datasets]
+ * {number} [include_strategy]
+ * {array<number>} [exclude_datasets]
+ * {array<string>} [include_labels]
+ * {array<string>} [exclude_labels]
+ * {number} [sampling_count]
+ * }
+ * @returns 
+ */
+export function createFusionTask({
+  project_id, group_id, dataset, include_datasets = [], strategy = 2,
+  exclude_datasets = [], include = [], exclude = [], samples,
 }) {
-  return createTask({
-    type: TASKTYPES.FILTER,
-    name,
-    parameters: {
-      name,
-      strategy,
-      include_datasets: datasets,
-      include_classes: include,
-      exclude_classes: exclude,
-    },
+  return request.post('/datasets/fusion', {
+    project_id, include_datasets, exclude_datasets,
+    dataset_group_id: group_id,
+    main_dataset_id: dataset,
+    include_strategy: strategy,
+    include_labels: include,
+    exclude_labels: exclude,
+    sampling_count: samples,
   })
 }
 
-
+/**
+ * create label task
+ * @param {object} task {
+ * {number} projectId
+ * {string} name
+ * {number} datasetId
+ * {array<string>} labellers
+ * {boolean} keepAnnotations
+ * {string} doc
+ * } 
+ * @returns 
+ */
 export function createLabelTask({
+  projectId,
+  groupId,
   name,
-  datasets,
-  label_members,
+  datasetId,
   keywords,
-  with_labels,
-  keep_annotations,
+  labellers,
+  keepAnnotations,
   doc,
 }) {
   return createTask({
     name,
     type: TASKTYPES.LABEL,
+    project_id: projectId,
     parameters: {
-      with_labels,
-      include_datasets: [datasets],
-      labellers: label_members,
-      include_classes: keywords,
+      dataset_group_id: groupId,
+      dataset_id: datasetId,
+      keywords,
+      labellers,
       extra_url: doc,
-      keep_annotations,
-      with_labels,
+      keep_annotations: keepAnnotations,
     },
   })
 }
 
+/**
+ * create training task
+ * @param {object} task {
+ * {string} name
+ * {number} projectId
+ * {number} datasetId
+ * {number} testset
+ * {string} backbone
+ * {object} config
+ * {string} network
+ * {number} trainType
+ * {number} strategy
+ * {number} model
+ * {string} image
+ * } 
+ * @returns 
+ */
 export function createTrainTask({
   name,
-  train_sets,
-  validation_sets,
+  projectId,
+  datasetId,
+  keywords,
+  testset,
   backbone,
-  hyperparameter,
   config,
   network,
-  keywords,
-  train_type,
+  trainType,
   strategy,
   model,
-  docker_image,
-  docker_image_id,
+  image,
+  imageId,
 }) {
   return createTask({
     name,
+    project_id: projectId,
     type: TASKTYPES.TRAINING,
     config,
     parameters: {
       strategy,
-      include_train_datasets: train_sets,
-      include_validation_datasets: validation_sets,
-      include_classes: keywords,
+      dataset_id: datasetId,
+      validation_dataset_id: testset,
+      keywords,
       backbone,
-      hyperparameter,
       network,
-      train_type,
+      train_type: trainType,
       model_id: model,
-      docker_image,
-      docker_image_id,
+      docker_image: image,
+      docker_image_id: imageId,
     }
   })
 }
 
 export function createMiningTask({
+  projectId,
+  datasetId,
   model,
   topk,
-  datasets,
-  exclude_sets,
   algorithm,
   config,
   strategy,
   inference,
   name,
-  docker_image,
-  docker_image_id,
+  image,
+  imageId,
 }) {
   return createTask({
     type: TASKTYPES.MINING,
+    project_id: projectId,
     name,
     config,
     parameters: {
       strategy,
       model_id: model,
-      include_datasets: datasets,
-      exclude_datasets: exclude_sets,
+      dataset_id: datasetId,
       mining_algorithm: algorithm,
       top_k: topk,
       generate_annotations: inference,
-      docker_image,
-      docker_image_id,
+      docker_image: image,
+      docker_image_id: imageId,
     }
   })
 }

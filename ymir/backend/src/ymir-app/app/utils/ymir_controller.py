@@ -91,37 +91,15 @@ class ControllerRequest:
         request.req_type = mirsvrpb.REPO_CREATE
         return request
 
-    def prepare_filter(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        filter_request = mirsvrpb.TaskReqFilter()
-        filter_request.in_dataset_ids[:] = args["include_datasets"]
-        if args.get("include_classes"):
-            filter_request.in_class_ids[:] = args["include_classes"]
-        if args.get("exclude_classes"):
-            filter_request.ex_class_ids[:] = args["exclude_classes"]
-
-        req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mirsvrpb.TaskTypeFilter
-        req_create_task.filter.CopyFrom(filter_request)
-
-        request.req_type = mirsvrpb.TASK_CREATE
-        request.merge_strategy = MERGE_STRATEGY_MAPPING[args["strategy"]]
-        request.req_create_task.CopyFrom(req_create_task)
-        return request
-
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         train_task_req = mirsvrpb.TaskReqTraining()
-
         datasets = itertools.chain(
-            gen_typed_datasets(mirsvrpb.TvtTypeTraining, args.get("include_train_datasets", [])),
-            gen_typed_datasets(
-                mirsvrpb.TvtTypeValidation,
-                args.get("include_validation_datasets", []),
-            ),
-            gen_typed_datasets(mirsvrpb.TvtTypeTest, args.get("include_test_datasets", [])),
+            gen_typed_datasets(mirsvrpb.TvtTypeTraining, [args["dataset_hash"]]),
+            gen_typed_datasets(mirsvrpb.TvtTypeValidation, [args["validation_dataset_hash"]]),
         )
         for dataset in datasets:
             train_task_req.in_dataset_types.append(dataset)
-        train_task_req.in_class_ids[:] = args["include_classes"]
+        train_task_req.in_class_ids[:] = args["class_ids"]
         if "model_hash" in args:
             request.model_hash = args["model_hash"]
 
@@ -133,7 +111,8 @@ class ControllerRequest:
         request.req_type = mirsvrpb.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
-        request.merge_strategy = MERGE_STRATEGY_MAPPING[args["strategy"]]
+        # stop if training_dataset and validation_dataset share any assets
+        request.merge_strategy = mirsvrpb.STOP
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
@@ -141,10 +120,8 @@ class ControllerRequest:
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k", None):
             mine_task_req.top_k = args["top_k"]
-        mine_task_req.in_dataset_ids[:] = args["include_datasets"]
+        mine_task_req.in_dataset_ids[:] = [args["dataset_hash"]]
         mine_task_req.generate_annotations = args["generate_annotations"]
-        if "exclude_datasets" in args:
-            mine_task_req.ex_dataset_ids[:] = args["exclude_datasets"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeMining
@@ -152,7 +129,6 @@ class ControllerRequest:
         req_create_task.mining.CopyFrom(mine_task_req)
 
         request.req_type = mirsvrpb.TASK_CREATE
-        request.merge_strategy = MERGE_STRATEGY_MAPPING[args["strategy"]]
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
         request.model_hash = args["model_hash"]
@@ -181,10 +157,10 @@ class ControllerRequest:
 
     def prepare_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         label_request = mirsvrpb.TaskReqLabeling()
-        label_request.project_name = args["name"]
-        label_request.dataset_id = args["include_datasets"][0]
+        label_request.project_name = f"label_${args['dataset_name']}"
+        label_request.dataset_id = args["dataset_hash"]
         label_request.labeler_accounts[:] = args["labellers"]
-        label_request.in_class_ids[:] = args["include_classes"]
+        label_request.in_class_ids[:] = args["class_ids"]
         label_request.export_annotation = args["keep_annotations"]
         if args.get("extra_url"):
             label_request.expert_instruction_url = args["extra_url"]
@@ -323,7 +299,7 @@ class ControllerClient:
         task_type: TaskType,
         task_parameters: Optional[Dict],
     ) -> Dict:
-        req = ControllerRequest(task_type, user_id, project_id, task_id, args=task_parameters)
+        req = ControllerRequest(TaskType(task_type), user_id, project_id, task_id, args=task_parameters)
         return self.send(req)
 
     def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:

@@ -2,6 +2,7 @@ import {
   getModels,
   getModelVersions,
   batchModels,
+  queryModels,
   getModel,
   delModel,
   createModel,
@@ -9,7 +10,7 @@ import {
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
-import { transferModelGroup, transferModelVersion } from '@/constants/model'
+import { transferModelGroup, transferModel, states, } from '@/constants/model'
 
 const initQuery = {
   name: "",
@@ -28,9 +29,10 @@ export default {
     },
     versions: {},
     model: {},
+    allModels: [],
   },
   effects: {
-    *getModels({ payload }, { call, put }) {
+    *getModelGroups({ payload }, { call, put }) {
       const { pid, query } = payload
       const { code, result } = yield call(getModels, pid, query)
       if (code === 0) {
@@ -53,13 +55,29 @@ export default {
       }
       const { code, result } = yield call(getModelVersions, gid)
       if (code === 0) {
-        const ms = result.models.map(model => transferModelVersion(model))
+        const ms = result.models.map(model => transferModel(model))
         const vs = { id: gid, versions: ms }
         yield put({
           type: "UPDATE_VERSIONS",
           payload: vs,
         })
         return ms
+      }
+    },
+    *queryModels({ payload }, { select, call, put }) {
+      const { code, result } = yield call(queryModels, payload)
+      if (code === 0) {
+        return { items: result.items.map(ds => transferModel(ds)), total: result.total }
+      }
+    },
+    *queryAllModels({ payload }, { select, call, put }) {
+      const pid = payload
+      const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VILID, limit: 10000 }})
+      if (dss) {
+        yield put({
+          type: "UPDATE_ALL_MODELS",
+          payload: dss.items,
+        })
       }
     },
     *batchModels({ payload }, { call, put }) {
@@ -198,6 +216,12 @@ export default {
       return {
         ...state,
         versions: vs,
+      }
+    },
+    UPDATE_ALL_MODELS(state, { payload }) {
+      return {
+        ...state,
+        allModels: payload
       }
     },
     UPDATE_MODEL(state, { payload }) {

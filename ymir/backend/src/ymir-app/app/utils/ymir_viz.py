@@ -118,6 +118,7 @@ class VizClient:
         payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
+            logger.error("[viz] failed to get assets info: %s", resp.content)
             resp.raise_for_status()
         res = resp.json()["result"]
         logger.info("[viz] get_assets response: %s", res)
@@ -133,6 +134,7 @@ class VizClient:
 
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
+            logger.error("[viz] failed to get asset info: %s", resp.content)
             return None
         res = resp.json()["result"]
         return asdict(Asset.from_viz_res(asset_id, res, class_ids_to_keywords))
@@ -153,6 +155,7 @@ class VizClient:
         if resp.ok:
             return resp.json()["result"]
         elif resp.status_code == 400:
+            logger.error("[viz] failed to get model info: %s", resp.content)
             error_code = resp.json()["code"]
             if error_code == VizErrorCode.MODEL_NOT_EXISTS:
                 raise ModelNotFound()

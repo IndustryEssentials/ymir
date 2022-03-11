@@ -387,7 +387,7 @@ const actions = (dispatch) => {
   return {
     getModels: (payload) => {
       return dispatch({
-        type: 'model/getModels',
+        type: 'model/getModelGroups',
         payload,
       })
     },

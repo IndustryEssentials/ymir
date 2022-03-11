@@ -27,7 +27,7 @@ class MergeStrategy(enum.IntEnum):
 
 
 class DatasetBase(BaseModel):
-    name: str = Field(description="Dataset Version Name")
+    name: str = Field(description="Dataset Name")
     result_state: ResultState = ResultState.processing
     dataset_group_id: int
     project_id: int
@@ -44,7 +44,9 @@ class DatasetBase(BaseModel):
 
 
 # Properties required for a client to create a dataset
-class DatasetImport(DatasetBase):
+class DatasetImport(BaseModel):
+    dataset_group_name: str = Field(description="Dataset Group Name")
+    project_id: int
     input_url: Optional[str] = Field(description="from url")
     input_dataset_id: Optional[int] = Field(description="from dataset of other user")
     input_path: Optional[str] = Field(description="from path on ymir server")

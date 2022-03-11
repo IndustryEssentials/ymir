@@ -1,12 +1,21 @@
-import { OriginDatasetGroup, DatasetGroup, OriginDatasetVersion, DatasetVersion } from "@/interface/dataset"
+import { OriginDatasetGroup, DatasetGroup, OriginDataset, Dataset } from "@/interface/dataset"
 import { format } from '@/utils/date'
 import { getInterationVersion } from "./project"
 
 export enum states {
-  READY = 1,
-  VALID = 2,
-  INVALID = 3,
+  READY = 0,
+  VALID = 1,
+  INVALID = 2,
 }
+
+export const statesLabel = (state: states) => {
+  const maps = {
+    [states.READY]: 'dataset.state.ready',
+    [states.VALID]: 'dataset.state.valid',
+    [states.INVALID]: 'dataset.state.invalid',
+  }
+  return maps[state]
+} 
 
 export function transferDatasetGroup (data: OriginDatasetGroup) {
   const group: DatasetGroup = {
@@ -18,7 +27,7 @@ export function transferDatasetGroup (data: OriginDatasetGroup) {
   return group
 }
 
-export function transferDatasetVersion (data: OriginDatasetVersion): DatasetVersion {
+export function transferDataset (data: OriginDataset): Dataset {
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -31,7 +40,7 @@ export function transferDatasetVersion (data: OriginDatasetVersion): DatasetVers
     keywordCount: data.keyword_count || 0,
     ignoredKeywords: data.ignored_keywords || [],
     hash: data.hash,
-    state: data.state,
+    state: data.result_state,
     createTime: format(data.create_datetime),
     updateTime: format(data.update_datetime),
     taskId: data.task_id,
@@ -40,5 +49,6 @@ export function transferDatasetVersion (data: OriginDatasetVersion): DatasetVers
     taskType: data.related_task.type,
     duration: data.related_task.duration,
     taskName: data.related_task.name,
+    task: data.related_task,
   }
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag } from "antd"
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -23,7 +23,6 @@ import ImageSelect from "../components/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import ModelSelect from "../components/modelSelect"
-import RecommendKeywords from "@/components/common/recommendKeywords"
 
 const { Option } = Select
 
@@ -31,25 +30,20 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ getDatasets, createTrainTask, getSysInfo }) {
-  const { ids } = useParams()
-  const datasetIds = ids ? ids.split('|').map(id => parseInt(id)) : []
+function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSysInfo, getDataset, }) {
+  const pageParams = useParams()
+  const id = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image } = location.query
-  const [allDs, setAllDs] = useState([])
   const [datasets, setDatasets] = useState([])
-  const [trainSets, setTrainSets] = useState([])
-  const [validationSets, setValidationSets] = useState([])
-  const [keywords, setKeywords] = useState([])
-  const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [selectedModel, setSelectedModel] = useState(null)
+  const [dataset, setDataset] = useState({})
+  const [trainSet, setTrainSet] = useState(null)
+  const [testSet, setTestSet] = useState(null)
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
-  const [selectedImage, setSelectedImage] = useState({})
   const [gpu_count, setGPU] = useState(0)
-  const hpMaxSize = 30
 
   const renderRadio = (types) => {
     return (
@@ -67,90 +61,48 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     fetchSysInfo()
   }, [])
 
-  useEffect(async () => {
-    let result = await getDatasets({ limit: 100000 })
-    if (result?.items) {
-      const ds = result.items.filter(dataset => TASKSTATES.FINISH === dataset.state)
-      setAllDs(ds)
-      setDatasets(ds)
-    }
-  }, [])
+  useEffect(() => {
+    setDatasets(allDatasets)
+  }, [allDatasets])
 
   useEffect(() => {
-    let getKw = (sets) => {
-      let kw = datasets.reduce((prev, curr) => sets.indexOf(curr.id) >= 0 ? prev.concat(curr.keywords) : prev, [])
-      kw = [...new Set(kw)]
-      kw.sort()
-      return kw
-    }
-    const tkw = getKw(trainSets)
-    const vkw = getKw(validationSets)
-    const kws = tkw.filter(v => vkw.includes(v))
-    setKeywords(kws)
-  }, [trainSets, validationSets, datasets])
+    id && getDataset(id)
+    id && setTrainSet(id)
+  }, [id])
+
+  useEffect(() => {
+    const dst = datasetCache[id]
+    dst && setDataset(dst)
+  }, [datasetCache])
+
+  useEffect(() => {
+    dataset.projectId && getDatasets(dataset.projectId)
+  }, [dataset.projectId])
 
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
   useEffect(() => {
-    setTrainSets(datasetIds)
-  }, [ids])
-
-  useEffect(() => {
     const state = location.state
 
     if (state?.record) {
       const { parameters, name, config, } = state.record
-      const { include_classes, include_train_datasets, include_validation_datasets, strategy, docker_image_id, docker_image, model_id } = parameters
-      const tSets = include_train_datasets || []
-      const vSets = include_validation_datasets || []
+      const { validation_dataset_id, strategy, docker_image, docker_image_id, model_id } = parameters
       form.setFieldsValue({
-        name: `${name}_${randomNumber()}`,
-        train_sets: tSets,
-        validation_sets: vSets,
+        testset: validation_dataset_id,
         gpu_count: config.gpu_count,
-        // keywords: include_classes,
         model: model_id,
-        docker_image: docker_image_id + ',' + docker_image,
+        image: docker_image_id + ',' + docker_image,
         strategy,
       })
       setConfig(config)
-      setTrainSets(tSets)
-      setValidationSets(vSets)
+      setTestSet(validation_dataset_id)
       setHpVisible(true)
-      setSelectedKeywords(include_classes)
 
       history.replace({ state: {} })
     }
   }, [location.state])
-
-  useEffect(() => {
-    form.setFieldsValue({ keywords: selectedKeywords })
-    if (selectedModel) {
-      form.validateFields(['keywords'])
-    }
-  }, [selectedKeywords])
-
-  const validTrainTarget = async (_, value) => {
-    const kws = form.getFieldValue('keywords')
-    if (!(inArray(kws, getKwsFromDatasets(trainSets)) && inArray(kws, getKwsFromDatasets(validationSets)))) {
-      return Promise.reject(t('task.train.target.invalid.inter'))
-    }
-    if (selectedModel?.keywords && kws.toString() !== selectedModel?.keywords.toString()) {
-      return Promise.reject(t('task.train.target.invalid.model'))
-    }
-    
-    return Promise.resolve()
-  }
-
-  function getKwsFromDatasets(dss = []) {
-    return dss.reduce((prev, curr) => [...((datasets.find(ds => ds.id === curr) || {}).keywords || []), ...prev], [])
-  }
-
-  function inArray (items, arr) {
-    return items.every(item => arr.indexOf(item) > -1)
-  }
 
   async function validHyperparam(rule, value) {
 
@@ -171,19 +123,13 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   }
 
   function trainSetChange(value) {
-    setTrainSets(value)
+    setTrainSet(value)
   }
   function validationSetChange(value) {
-    setValidationSets(value)
-  }
-
-  function selectRecommendKeywords(keyword) {
-    const kws = [...new Set([...selectedKeywords, keyword])]
-    setSelectedKeywords(kws)
+    setTestSet(value)
   }
 
   function modelChange(value, model) {
-    model && setSelectedKeywords(model.keywords)
     setSelectedModel(model)
   }
 
@@ -207,22 +153,21 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
     if (gpuCount) {
       config['gpu_count'] = gpuCount
     }
-    const img = (form.getFieldValue('docker_image') || '').split(',')
-    const docker_image_id = Number(img[0])
-    const docker_image = img[1]
+    const img = (form.getFieldValue('image') || '').split(',')
+    const imageId = Number(img[0])
+    const image = img[1]
     const params = {
       ...values,
-      name: values.name.trim(),
-      docker_image,
-      docker_image_id,
+      name: 'group_' + randomNumber(),
+      projectId: dataset.projectId,
+      keywords: dataset.project.keywords,
+      image,
+      imageId,
       config,
-    }
-    if (selectedModel) {
-      params.keywords = selectedModel.keywords
     }
     const result = await createTrainTask(params)
     if (result) {
-      history.replace("/home/task")
+      history.replace(`/home/project/detail/${dataset.projectId}#model`)
     }
   }
 
@@ -243,10 +188,10 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
-    train_sets: datasetIds,
-    docker_image: image ? parseInt(image) : undefined,
+    datasetId: id,
+    image: image ? parseInt(image) : undefined,
     model: mid ? parseInt(mid) : undefined,
-    train_type: getCheckedValue(TrainType()),
+    trainType: getCheckedValue(TrainType()),
     network: getCheckedValue(FrameworkType()),
     backbone: getCheckedValue(Backbone()),
     gpu_count: 1,
@@ -268,130 +213,72 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             colon={false}
             scrollToFirstError
           >
-
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.filter.form.name.label')}
-                name='name'
-                rules={[
-                  { required: true, whitespace: true, message: t('task.filter.form.name.placeholder') },
-                  { type: 'string', min: 2, max: 50 },
-                ]}
-              >
-                <Input placeholder={t('task.filter.form.name.required')} autoComplete='off' allowClear />
-              </Form.Item>
-            </Tip>
-
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
               <Tip hidden={true}>
                 <Form.Item
                   label={t('task.train.form.trainsets.label')}
                   required
-                  name="train_sets"
+                  name="datasetId"
                   rules={[
-                    { required: true, message: t('task.filter.form.datasets.required') },
+                    { required: true, message: t('task.train.form.datasets.required') },
                   ]}
                 >
                   <Select
-                    placeholder={t('task.filter.form.training.datasets.placeholder')}
-                    mode='multiple'
+                    placeholder={t('task.train.form.training.datasets.placeholder')}
                     filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={trainSetChange}
+                    disabled={id}
                     showArrow
                   >
-                    {datasets.map(item => validationSets.indexOf(item.id) < 0 ? (
+                    {datasets.filter(ds => ds.id !== testSet).map(item => 
                       <Option value={item.id} key={item.name}>
-                        {item.name}({item.asset_count})
+                        {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>
-                    ) : null)}
+                    )}
                   </Select>
                 </Form.Item>
               </Tip>
               <Tip content={t('tip.task.filter.testsets')}>
                 <Form.Item
                   label={t('task.train.form.testsets.label')}
-                  name="validation_sets"
+                  name="testset"
                   rules={[
-                    { required: true, message: t('task.filter.form.datasets.required') },
+                    { required: true, message: t('task.train.form.datasets.required') },
                   ]}
                 >
                   <Select
-                    placeholder={t('task.filter.form.test.datasets.placeholder')}
-                    mode='multiple'
+                    placeholder={t('task.train.form.test.datasets.placeholder')}
                     filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={validationSetChange}
                     showArrow
                   >
-                    {datasets.map(item => trainSets.indexOf(item.id) < 0 ? (
+                    {datasets.filter(ds => ds.id !== trainSet).map(item => 
                       <Option value={item.id} key={item.name}>
-                        {item.name}({item.asset_count})
+                        {item.name}({item.assetCount})
                       </Option>
-                    ) : null)}
+                    )}
                   </Select>
                 </Form.Item>
               </Tip>
             </ConfigProvider>
-
-            <Tip hidden={true}>
-              <Form.Item name='strategy'
-                hidden={trainSets.length < 2 && validationSets.length < 2}
-                initialValue={2} label={t('task.train.form.repeatdata.label')}>
-                <Radio.Group options={[
-                  { value: 2, label: t('task.train.form.repeatdata.latest') },
-                  { value: 3, label: t('task.train.form.repeatdata.original') },
-                  { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                ]} />
-              </Form.Item>
-            </Tip>
-
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={![...trainSets, ...validationSets].length}>
-                <TripleRates
-                  data={datasets}
-                  parts={[
-                    { ids: trainSets, label: t('task.train.form.trainsets.label') },
-                    { ids: validationSets, label: t('task.train.form.testsets.label') },
-                  ]}
-                ></TripleRates>
-              </Form.Item>
-            </Tip>
-
             <Tip content={t('tip.task.filter.keywords')}>
-              <Form.Item
-                label={t('task.train.form.keywords.label')}
-                name="keywords"
-                dependencies={['model', 'train_sets', 'validation_sets']}
-                rules={[
-                  { required: true, message: t('task.train.form.keywords.required') },
-                  { validator: validTrainTarget },
-                ]}
-              >
-                <Select mode="multiple" showArrow
-                  placeholder={t('task.train.keywords.placeholder')} onChange={(value) => setSelectedKeywords(value)}>
-                  {keywords.map(keyword => (
-                    <Option key={keyword} value={keyword}>
-                      {keyword}
-                    </Option>
-                  ))}
-                </Select>
+              <Form.Item label={t('task.train.form.keywords.label')}>
+                {dataset?.project?.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
               </Form.Item>
             </Tip>
-            <Tip hidden={true}><Form.Item wrapperCol={{ offset: 8 }}><RecommendKeywords sets={trainSets} onSelect={selectRecommendKeywords} /></Form.Item></Tip>
-
             <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
               <Tip content={t('tip.task.train.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
                   name="model"
                 >
-                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} keywords={selectedKeywords}
-                    onChange={modelChange} />
+                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={dataset.projectId} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
 
             <Tip content={t('tip.task.train.image')}>
-              <Form.Item name='docker_image' label={t('task.train.form.image.label')} rules={[
+              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
                 { required: true, message: t('task.train.form.image.required') }
               ]}>
                 <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
@@ -401,7 +288,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
             <Tip hidden={true}>
               <Form.Item
                 label={t('task.train.form.traintype.label')}
-                name="train_type"
+                name="trainType"
               >
                 {renderRadio(TrainType())}
               </Form.Item>
@@ -514,7 +401,7 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
                     <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
-                      {t('task.filter.create')}
+                      {t('task.create')}
                     </Button>
                   </Form.Item>
                   <Form.Item name='backBtn' noStyle>
@@ -532,12 +419,25 @@ function Train({ getDatasets, createTrainTask, getSysInfo }) {
   )
 }
 
+const props = (state) => {
+  return {
+    allDatasets: state.dataset.allDatasets,
+    datasetCache: state.dataset.dataset,
+  }
+}
+
 const dis = (dispatch) => {
   return {
-    getDatasets(payload) {
+    getDatasets(pid) {
       return dispatch({
-        type: "dataset/getDatasets",
-        payload,
+        type: "dataset/queryAllDatasets",
+        payload: pid,
+      })
+    },
+    getDataset(id) {
+      return dispatch({
+        type: "dataset/getDataset",
+        payload: id,
       })
     },
     getSysInfo() {
@@ -554,4 +454,4 @@ const dis = (dispatch) => {
   }
 }
 
-export default connect(null, dis)(Train)
+export default connect(props, dis)(Train)

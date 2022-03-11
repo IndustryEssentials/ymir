@@ -135,14 +135,14 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   ]
 
   const actionMenus = (record) => {
-    const { id, name, state, keyword_count } = record
+    const { id, name, state, keywordCount } = record
     let actions = []
     const menus = [
       {
-        key: "filter",
-        label: t("dataset.action.filter"),
-        onclick: () => history.push(`/home/task/filter/${id}`),
-        hidden: () => !keyword_count,
+        key: "fusion",
+        label: t("dataset.action.fusion"),
+        onclick: () => history.push(`/home/task/fusion/${id}`),
+        hidden: () => !keywordCount,
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
       {
@@ -170,9 +170,9 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
       onclick: () => del(id, name),
       icon: <DeleteIcon />,
     }
-    if (isImported(state)) {
+    if (isValidDataset(state)) {
       actions = [...menus, delMenu]
-    } else if (isImportFail(state)) {
+    } else {
       actions = [delMenu]
     }
     return actions
@@ -248,7 +248,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }
 
   const add = () => {
-    history.push('/home/dataset/add')
+    history.push(`/home/dataset/add/${pid}`)
   }
 
 
@@ -275,6 +275,14 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
 
   function isImported(state) {
     return TASKSTATES.FINISH === state
+  }
+
+  function isValidDataset(state) {
+    return states.VALID === state
+  }
+
+  function isInvalidDataset(state) {
+    return states.VALID !== state
   }
 
   const addBtn = (
@@ -367,7 +375,7 @@ const actions = (dispatch) => {
   return {
     getDatasets: (pid, query) => {
       return dispatch({
-        type: 'dataset/getDatasets',
+        type: 'dataset/getDatasetGroups',
         payload: { pid, query },
       })
     },

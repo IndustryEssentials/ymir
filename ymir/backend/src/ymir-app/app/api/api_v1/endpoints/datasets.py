@@ -136,8 +136,8 @@ def create_dataset(
     - ignore_unknown_annotations = 2
     - stop_upon_unknown_annotations = 3
     """
-    # 1. check if name is available
-    if crud.dataset.is_duplicated_name(db, user_id=current_user.id, name=dataset_import.name):
+    # 1. check if dataset group name is available
+    if crud.dataset_group.is_duplicated_name(db, user_id=current_user.id, name=dataset_import.dataset_group_name):
         raise DuplicateDatasetError()
 
     # 2. create placeholder task
@@ -146,20 +146,31 @@ def create_dataset(
         type_=dataset_import.import_type,  # type: ignore
         user_id=current_user.id,
         project_id=dataset_import.project_id,
+        state_=TaskState.pending,
     )
-    logger.info("[create dataset] related task record created: %s", task.hash)
+    logger.info("[import dataset] related task record created: %s", task.hash)
 
     # 3. create dataset record
+    dataset_group = crud.dataset_group.create_dataset_group(
+        db,
+        name=dataset_import.dataset_group_name,
+        user_id=current_user.id,
+        project_id=dataset_import.project_id,
+    )
+    logger.info(
+        "[import dataset] created dataset_group(%s) for dataset",
+        dataset_group.id,
+    )
     dataset_in = schemas.DatasetCreate(
-        name=dataset_import.name,
+        name=f"{dataset_import.dataset_group_name}_initial",
         hash=task.hash,
-        dataset_group_id=dataset_import.dataset_group_id,
+        dataset_group_id=dataset_group.id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
         task_id=task.id,
     )
     dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
-    logger.info("[create dataset] dataset record created: %s", dataset)
+    logger.info("[import dataset] dataset record created: %s", dataset)
 
     # 4. run background task
     background_tasks.add_task(
@@ -171,7 +182,6 @@ def create_dataset(
         task.hash,
         dataset.id,
     )
-
     return {"result": dataset}
 
 
@@ -520,6 +530,7 @@ def create_dataset_fusion(
         user_id=current_user.id,
         project_id=task_in.project_id,
         hash_=task_hash,
+        state_=TaskState.pending,
     )
     logger.info("[create dataset] related task record created: %s", task.hash)
 

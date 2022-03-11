@@ -99,7 +99,7 @@ class TestBatchGetDatasets:
 class TestCreateDataset:
     def test_create_dataset_succeed(self, client: TestClient, normal_user_token_headers, mocker):
         j = {
-            "name": random_lower_string(),
+            "dataset_group_name": random_lower_string(),
             "version_num": random.randint(100, 200),
             "input_url": random_url(),
             "dataset_group_id": 1,

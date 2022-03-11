@@ -8,9 +8,11 @@ import {
 } from "@ant-design/icons"
 
 import { format } from "@/utils/date"
+import { states } from '@/constants/model'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 import { getTimes, getModelImportTypes } from '@/constants/query'
+import RenderProgress from "@/components/common/progress"
 import EditBox from "@/components/form/editBox"
 import { ShieldIcon, VectorIcon, TipsIcon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "@/components/common/icons"
 import Actions from "@/components/table/actions"
@@ -88,6 +90,12 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
       align: 'center',
     },
     {
+      title: showTitle('dataset.column.state'),
+      dataIndex: 'state',
+      render: (state, record) => RenderProgress(state, record, true),
+      // width: 60,
+    },
+    {
       title: showTitle("model.column.create_time"),
       dataIndex: "createTime",
       sorter: true,
@@ -139,8 +147,8 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
   }
 
   const actionMenus = (record) => {
-    const { id, name, url } = record
-    return [
+    const { id, name, url, state } = record
+    const actions = [
       {
         key: "verify",
         label: t("model.action.verify"),
@@ -157,7 +165,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
       {
         key: "mining",
         label: t("dataset.action.mining"),
-        onclick: () => history.push(`/home/task/mining?mid=${id}`),
+        onclick: () => history.push(`/home/task/mining?mid=${id}&pjid=${pid}`),
         icon: <VectorIcon />,
       },
       {
@@ -166,14 +174,16 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
         onclick: () => history.push(`/home/task/train?mid=${id}`),
         icon: <TrainIcon />,
       },
-      {
-        key: "del",
-        label: t("dataset.action.del"),
-        onclick: () => del(id, name),
-        className: styles.action_del,
-        icon: <DeleteIcon />,
-      },
+      
     ]
+    const delAction = {
+      key: "del",
+      label: t("dataset.action.del"),
+      onclick: () => del(id, name),
+      className: styles.action_del,
+      icon: <DeleteIcon />,
+    }
+    return isValidModel(state) ? [ ...actions, delAction] : [delAction]
   }
 
   const edit = (record) => {
@@ -224,6 +234,10 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
         }
       }, 1000)
     }
+  }
+
+  function isValidModel(state) {
+    return states.VALID === state
   }
 
   const renderGroups = (<>
@@ -304,7 +318,7 @@ const actions = (dispatch) => {
   return {
     getModels: (pid, query) => {
       return dispatch({
-        type: 'model/getModels',
+        type: 'model/getModelGroups',
         payload: { pid, query },
       })
     },
