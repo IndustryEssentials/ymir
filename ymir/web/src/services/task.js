@@ -106,7 +106,7 @@ export function createFusionTask({
   project_id, group_id, dataset, include_datasets = [], strategy = 2,
   exclude_datasets = [], include = [], exclude = [], samples,
 }) {
-  return request.post('​/datasets​/dataset_fusion', {
+  return request.post('/datasets/fusion', {
     project_id, include_datasets, exclude_datasets,
     dataset_group_id: group_id,
     main_dataset_id: dataset,

@@ -103,7 +103,7 @@ export function delDataset(id) {
  */
 export function createDataset({ name, projectId, url, datasetId, path, strategy }) {
   return request.post("/datasets/importing", {
-    name, strategy,
+    dataset_group_name: name, strategy,
     project_id: projectId,
     input_url: url,
     input_dataset_id: datasetId,

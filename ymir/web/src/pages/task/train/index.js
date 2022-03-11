@@ -159,7 +159,7 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
     }
     const params = {
       ...values,
-      name: values.name.trim(),
+      name: randomNumber(),
       projectId: dataset.projectId,
       config,
     }
