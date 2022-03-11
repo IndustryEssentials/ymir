@@ -146,6 +146,7 @@ def create_dataset(
         type_=dataset_import.import_type,  # type: ignore
         user_id=current_user.id,
         project_id=dataset_import.project_id,
+        state_=TaskState.running,
     )
     logger.info("[create dataset] related task record created: %s", task.hash)
 

@@ -128,12 +128,12 @@ class TaskInternal(TaskInDBBase):
             return {}
         return json.loads(v)
 
-    @validator("result_type", pre=True)
+    @validator("result_type", pre=True, always=True)
     def gen_result_type(cls, v: Any, values: Any) -> Optional[ResultType]:
         task_type = values["type"]
         if task_type in [TaskType.training]:
             return ResultType.model
-        elif task_type in [TaskType.mining, TaskType.label, TaskType.filter]:
+        elif task_type in [TaskType.mining, TaskType.label, TaskType.import_data, TaskType.copy_data]:
             return ResultType.dataset
         else:
             return None

@@ -141,7 +141,7 @@ def create_task(
             task_in.parameters.keywords or [],
         )
     except FailedToConnectClickHouse:
-        # write clickhouse metric shouldn't block create task process
+        # clickhouse metric shouldn't block create task process
         logger.exception(
             "[create task] failed to write task(%s) stats to clickhouse, continue anyway",
             task.hash,
@@ -162,7 +162,7 @@ class TaskResult:
         self.task_in_db = task_in_db
         self.task = schemas.TaskInternal.from_orm(task_in_db)
 
-        self.result_type = self.task.result_type
+        self.result_type = ResultType(self.task.result_type) if self.task.result_type is not None else None
         self.user_id = self.task.user_id
         self.project_id = self.task.project_id
         self.task_hash = self.task.hash
