@@ -110,7 +110,7 @@ class ClassIdManager(object):
     """
     a query tool for label storage file
     """
-    __slots__ = ("_file_path", "_label_storage")
+    __slots__ = ("_storage_file_path", "_label_storage")
 
     # life cycle
     def __init__(self, mir_root: str) -> None:
