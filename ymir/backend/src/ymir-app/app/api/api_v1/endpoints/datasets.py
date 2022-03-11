@@ -530,6 +530,7 @@ def create_dataset_fusion(
         user_id=current_user.id,
         project_id=task_in.project_id,
         hash_=task_hash,
+        state_=TaskState.pending,
     )
     logger.info("[create dataset] related task record created: %s", task.hash)
 
