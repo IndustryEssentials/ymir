@@ -3,7 +3,7 @@ import { getLocale, Link } from "umi"
 
 import { TASKSTATES } from "@/constants/task"
 import t from "@/utils/t"
-import StateTag from "../dataset/stateTag"
+import StateTag from "../task/stateTag"
 import { calTimeLeft } from "@/utils/date"
 import { InprogressIcon } from "./icons"
 
