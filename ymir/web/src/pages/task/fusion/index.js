@@ -95,6 +95,7 @@ function Fusion({ allDatasets, datasetCache, getDatasets, getDataset, createFusi
     const params = {
       ...values,
       project_id: dataset.projectId,
+      group_id: dataset.groupId,
       dataset: id,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
@@ -102,7 +103,7 @@ function Fusion({ allDatasets, datasetCache, getDatasets, getDataset, createFusi
     const result = await createFusionTask(params)
     if (result) {
       message.info(t('task.fusion.create.success.msg'))
-      history.replace('/home/task')
+      history.replace(`/home/project/detail/${dataset.projectId}`)
     }
   }
 

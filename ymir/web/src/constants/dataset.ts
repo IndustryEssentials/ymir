@@ -8,6 +8,15 @@ export enum states {
   INVALID = 2,
 }
 
+export const statesLabel = (state: states) => {
+  const maps = {
+    [states.READY]: 'dataset.state.ready',
+    [states.VALID]: 'dataset.state.valid',
+    [states.INVALID]: 'dataset.state.invalid',
+  }
+  return maps[state]
+} 
+
 export function transferDatasetGroup (data: OriginDatasetGroup) {
   const group: DatasetGroup = {
     id: data.id,
@@ -31,7 +40,7 @@ export function transferDataset (data: OriginDataset): Dataset {
     keywordCount: data.keyword_count || 0,
     ignoredKeywords: data.ignored_keywords || [],
     hash: data.hash,
-    state: data.state,
+    state: data.result_state,
     createTime: format(data.create_datetime),
     updateTime: format(data.update_datetime),
     taskId: data.task_id,
