@@ -135,14 +135,14 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   ]
 
   const actionMenus = (record) => {
-    const { id, name, state, keyword_count } = record
+    const { id, name, state, keywordCount } = record
     let actions = []
     const menus = [
       {
         key: "fusion",
         label: t("dataset.action.fusion"),
         onclick: () => history.push(`/home/task/fusion/${id}`),
-        hidden: () => !keyword_count,
+        hidden: () => !keywordCount,
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
       {
@@ -170,9 +170,9 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
       onclick: () => del(id, name),
       icon: <DeleteIcon />,
     }
-    if (isImported(state)) {
+    if (isValidDataset(state)) {
       actions = [...menus, delMenu]
-    } else if (isImportFail(state)) {
+    } else {
       actions = [delMenu]
     }
     return actions
@@ -277,6 +277,14 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     return TASKSTATES.FINISH === state
   }
 
+  function isValidDataset(state) {
+    return states.VALID === state
+  }
+
+  function isInvalidDataset(state) {
+    return states.VALID !== state
+  }
+
   const addBtn = (
     <Button type="primary" onClick={add}>
       <ImportIcon /> {t("dataset.import.label")}
@@ -294,7 +302,6 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
             <a onClick={del} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
-        {console.log('versions: ', versions[group.id])}
         <div className={styles.groupTable} hidden={!group.showVersions}>
           <Table
             dataSource={versions[group.id]}

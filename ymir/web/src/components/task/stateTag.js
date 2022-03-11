@@ -1,29 +1,27 @@
 import { Tag } from 'antd'
-import { TASKSTATES } from '@/constants/task'
-import { getTaskStates } from '@/constants/query'
+import t from '@/utils/t'
+import { states, statesLabel } from '@/constants/dataset'
 import s from './stateTag.less'
-import { InprogressIcon, SuccessIcon, FailIcon, StopIcon } from '@/components/common/icons'
+import { InprogressIcon, SuccessIcon, FailIcon, } from '@/components/common/icons'
 
-export default function StateTag({ state, size='normal', mode='all', iconStyle = {}, label = false, ...resProps }) {
-  const states = getTaskStates()
-  state = state || TASKSTATES.PENDING
+export default function StateTag({ state = states.READY, size='normal', mode='all', iconStyle = {}, ...resProps }) {
+  // const states = getTaskStates()
   const maps = {
-    [TASKSTATES.PENDING]: { icon: <InprogressIcon className={s.stateIcon} style={{...iconStyle, color: '#3BA0FF'}} />, },
-    [TASKSTATES.DOING]: { icon: <InprogressIcon className={s.stateIcon} style={iconStyle} />, color: 'warning' },
-    [TASKSTATES.FINISH]: { icon: <SuccessIcon className={s.stateIcon} style={iconStyle} />, color: 'success' },
-    [TASKSTATES.FAILURE]: { icon: <FailIcon className={s.stateIcon} style={iconStyle} />, color: 'error' },
-    [TASKSTATES.TERMINATED]: { icon: <StopIcon className={s.stateIcon} style={{iconStyle, color: 'rgba(0, 0, 0, 0.65)'}} />, },
+    [states.READY]: { icon: <InprogressIcon className={s.stateIcon} style={{...iconStyle, color: '#3BA0FF'}} />, },
+    [states.VALID]: { icon: <SuccessIcon className={s.stateIcon} style={iconStyle} />, color: 'success' },
+    [states.INVALID]: { icon: <FailIcon className={s.stateIcon} style={iconStyle} />, color: 'error' },
   }
-  const target = states.find(s => s.value === state)
-  return target ? (
+  const label = t(statesLabel(state))
+  const tag = maps[state]
+  return tag ? (
     <Tag
       className={`${s.state} ${s[mode]} ${s[size]}`}
       {...resProps}
-      color={maps[target.value].color}
-      title={target.label}
+      color={tag.color}
+      title={label}
     >
-      {maps[target.value].icon}
-      {mode !== 'icon' ? target.label : ''}
+      {tag.icon}
+      {mode !== 'icon' ? label : ''}
     </Tag>
   ) : null
 }

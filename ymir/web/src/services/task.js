@@ -106,7 +106,7 @@ export function createFusionTask({
   project_id, group_id, dataset, include_datasets = [], strategy = 2,
   exclude_datasets = [], include = [], exclude = [], samples,
 }) {
-  return request.post('​/datasets​/dataset_fusion', {
+  return request.post('/datasets/fusion', {
     project_id, include_datasets, exclude_datasets,
     dataset_group_id: group_id,
     main_dataset_id: dataset,
@@ -171,6 +171,7 @@ export function createTrainTask({
   name,
   projectId,
   datasetId,
+  keywords,
   testset,
   backbone,
   config,
@@ -179,6 +180,7 @@ export function createTrainTask({
   strategy,
   model,
   image,
+  imageId,
 }) {
   return createTask({
     name,
@@ -189,11 +191,13 @@ export function createTrainTask({
       strategy,
       dataset_id: datasetId,
       validation_dataset_id: testset,
+      keywords,
       backbone,
       network,
       train_type: trainType,
       model_id: model,
       docker_image: image,
+      docker_image_id: imageId,
     }
   })
 }
