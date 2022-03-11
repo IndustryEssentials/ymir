@@ -52,8 +52,8 @@ class LabelStorage(BaseModel):
     def _check_labels(cls, labels: List[SingleLabel]) -> List[SingleLabel]:
         label_names_set: Set[str] = set()
         for idx, label in enumerate(labels):
-            if label.id != -1 and label.id != idx:
-                raise ValueError(f"invalid label id: {label.id}, expected -1 or {idx}")
+            if label.id != idx:
+                raise ValueError(f"invalid label id: {label.id}, expected {idx}")
 
             # all label names and aliases should have no dumplicate
             name_and_aliases = label.aliases + [label.name]
@@ -101,15 +101,10 @@ class LabelFileHandler:
         """
         with open(self._label_file, 'r') as f:
             obj = yaml.safe_load(f)
-        # if empty file, returns empty list
-        if not obj:
-            return LabelStorage()
+        if obj is None:
+            obj = {}
 
         label_storage = LabelStorage(**obj)
-
-        for idx, label in enumerate(label_storage.labels):
-            if label.id != idx:
-                raise ValueError(f"label id and idx mismatch: idx: {idx}, id: {label.id}")
 
         return label_storage
 

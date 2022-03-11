@@ -40,8 +40,8 @@ class _LabelStorage(BaseModel):
     def _check_labels(cls, labels: List[_SingleLabel]) -> List[_SingleLabel]:
         label_names_set: Set[str] = set()
         for idx, label in enumerate(labels):
-            if label.id != -1 and label.id != idx:
-                raise ValueError(f"invalid label id: {label.id}, expected -1 or {idx}")
+            if label.id != idx:
+                raise ValueError(f"invalid label id: {label.id}, expected {idx}")
 
             # all label names and aliases should have no dumplicate
             name_and_aliases = label.aliases + [label.name]
@@ -105,6 +105,8 @@ class ClassIdManager(object):
 
         with open(file_path, 'r') as f:
             file_obj = yaml.safe_load(f)
+        if file_obj is None:
+            file_obj = {}
 
         label_storage = _LabelStorage(**file_obj)
         labels = label_storage.labels
