@@ -45,6 +45,7 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
   const location = useLocation()
   const { mid, image } = location.query
   const [models, setModels] = useState([])
+  const [selectedModel, setSelectedModel] = useState({})
   const [selectedSets, setSelectedSets] = useState([])
   const [excludeSets, setExcludeSets] = useState([])
   const [form] = Form.useForm()
@@ -177,9 +178,7 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
   }
 
   function modelChange(id, model) {
-    if (model) {
-      setSelectedModel(model)
-    }
+      model && setSelectedModel(model)
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -267,7 +266,7 @@ function Mining({ datasetCache, datasets, getDatasets, createMiningTask, getSysI
               <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.train.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={selectedModel.task.parameters.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={selectedModel?.task.parameters.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
