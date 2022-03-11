@@ -109,6 +109,8 @@ class LabelFileHandler:
         return label_storage
 
     def merge_labels(self, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
+        # TODO: too hard to read, make it simpler in another pr
+
         # check `candidate_labels` has no duplicate
         candidate_labels_list = [x.strip().lower().split(",") for x in candidate_labels]
         candidates_list = [x for row in candidate_labels_list for x in row]
