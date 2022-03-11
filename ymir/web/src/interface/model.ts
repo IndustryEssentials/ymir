@@ -1,3 +1,4 @@
+import { Project } from "./project";
 import { Task } from "./task";
 
 export interface ModelGroup {
@@ -25,6 +26,8 @@ export interface ModelVersion {
   taskType: number,
   taskState: number,
   taskName: string,
+  project?: Project,
+  task?: Task,
 }
 
 
