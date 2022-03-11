@@ -77,7 +77,7 @@ function Label({ datasets, getDataset, keywords, createLabelTask, getKeywords })
     }
     const result = await createLabelTask(params)
     if (result) {
-      history.replace("/home/task")
+      history.replace(`/home/project/detail/${dataset.projectId}`)
     }
   }
 
@@ -115,16 +115,16 @@ function Label({ datasets, getDataset, keywords, createLabelTask, getKeywords })
               <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName}</span></Form.Item>
             </Tip>
             <Tip hidden={true}>
-            <Form.Item
-              label={t('task.common.dataset.name')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
-                { type: 'string', min: 2, max: 50 },
-              ]}
-            >
-              <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
-            </Form.Item>
+              <Form.Item
+                label={t('task.common.dataset.name')}
+                name='name'
+                rules={[
+                  { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
+                  { type: 'string', min: 2, max: 50 },
+                ]}
+              >
+                <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
+              </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.labelmember')}>
               <Form.Item
@@ -175,8 +175,24 @@ function Label({ datasets, getDataset, keywords, createLabelTask, getKeywords })
 
 
             <Tip content={t('tip.task.filter.labeltarget')}>
-              <Form.Item label={t('task.label.form.target.label')}>
-                {dataset?.project?.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
+              <Form.Item
+                label={t('task.label.form.target.label')}
+                name="keywords"
+                rules={[
+                  { required: true, message: t('task.label.form.target.placeholder') }
+                ]}
+              >
+                <Select mode="multiple" showArrow
+                  placeholder={t('task.label.form.member.labeltarget')}
+                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+                  {keywords.map(keyword => (
+                    <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                      <Row>
+                        <Col flex={1}>{keyword.name}</Col>
+                      </Row>
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Tip>
             <Tip hidden={true}>
@@ -192,7 +208,7 @@ function Label({ datasets, getDataset, keywords, createLabelTask, getKeywords })
 
             <Tip hidden={true}>
               <Form.Item label={t('task.label.form.desc.label')} name='desc'>
-                <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc" 
+                <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc"
                   max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
               </Form.Item>
             </Tip>
