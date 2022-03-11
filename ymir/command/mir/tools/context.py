@@ -4,10 +4,11 @@ from typing import List
 import yaml
 
 from mir.tools import class_ids
+from mir.tools import utils as mir_utils
 
 
 def context_file_path_from_mir_root(mir_root: str) -> str:
-    return os.path.join(mir_root, '.mir', 'context.yaml')
+    return os.path.join(mir_utils.repo_dot_mir_path(mir_root=mir_root), 'context.yaml')
 
 
 # save and load
