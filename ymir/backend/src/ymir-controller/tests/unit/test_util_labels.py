@@ -41,13 +41,13 @@ class TestLabelFileHandler(unittest.TestCase):
                 self.assertEqual(expected_label.name, actual_label.name)
                 self.assertEqual(expected_label.aliases, actual_label.aliases)
 
-                self.assertGreater(actual_label.created, 0)
+                self.assertGreater(actual_label.create_time, 0)
                 if is_modified:
-                    # if modified, modified time >= created time
-                    self.assertGreater(actual_label.modified, actual_label.created)
+                    # if modified, update time >= create time
+                    self.assertGreater(actual_label.update_time, actual_label.create_time)
                 else:
                     # if new, they should be equal
-                    self.assertEqual(actual_label.modified, actual_label.created)
+                    self.assertEqual(actual_label.update_time, actual_label.create_time)
         except AssertionError as e:
             logging.error(f"ground: {expected}")
             logging.error(f"actual: {actual}")

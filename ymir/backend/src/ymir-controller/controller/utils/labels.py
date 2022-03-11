@@ -24,8 +24,8 @@ def labels_file_path(mir_root: str) -> str:
 class SingleLabel(BaseModel):
     id: int
     name: str
-    created: float = 0
-    modified: float = 0
+    create_time: float = 0
+    update_time: float = 0
     aliases: List[str] = []
 
 
@@ -48,7 +48,7 @@ class LabelFileHandler:
         """
         dump all label content into a label storage file, old file contents will be lost
         Args:
-            all_labels (List[dict]): all labels, for each element: id, name, aliases, created, modified
+            all_labels (List[SingleLabel]): all labels
         """
         label_storage = _LabelStorage(version=EXPECTED_FILE_VERSION, labels=all_labels)
         with open(self._label_file, 'w') as f:
@@ -59,12 +59,7 @@ class LabelFileHandler:
         get all labels from label storage file
 
         Returns:
-        List[dict]: all label infos, each element is dict with the following kvs:
-            id: label_id, int
-            name: main name, str
-            aliases: aliases list, list of str
-            created: created timestamp, float
-            modified: modified timestamp, float
+        List[SingleLabel]: all labels
 
         Raises:
             FileNotFoundError: if label storage file not found
@@ -106,7 +101,7 @@ class LabelFileHandler:
 
         current_timestamp = time.time()
 
-        # all labels in storage file, for each element: id, name, aliases (optional), created, modified
+        # all labels in storage file
         existed_labels = self.get_all_labels()
         # key: label name, value: idx
         existed_main_names_to_ids: Dict[str, int] = {label.name: idx for idx, label in enumerate(existed_labels)}
@@ -122,7 +117,7 @@ class LabelFileHandler:
                 label = existed_labels[idx]
                 label.name = candidate_list[0]
                 label.aliases = candidate_list[1:]
-                label.modified = current_timestamp
+                label.update_time = current_timestamp
             else:  # new main_names
                 candidate_labels_list_new.append(candidate_list)
 
@@ -153,8 +148,8 @@ class LabelFileHandler:
                 SingleLabel(id=len(existed_labels),
                             name=candidate_list[0],
                             aliases=candidate_list[1:],
-                            created=current_timestamp,
-                            modified=current_timestamp))
+                            create_time=current_timestamp,
+                            update_time=current_timestamp))
             existed_labels_set.update(candidate_set)
 
         if not (check_only or conflict_labels):

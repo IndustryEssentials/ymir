@@ -11,8 +11,8 @@ EXPECTED_FILE_VERSION = 1
 class _SingleLabel(BaseModel):
     id: int
     name: str
-    created: float = 0
-    modified: float = 0
+    create_time: float = 0
+    update_time: float = 0
     aliases: List[str] = []
 
 

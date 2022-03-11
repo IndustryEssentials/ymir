@@ -259,8 +259,8 @@ message Label {
     int32 id = 1;
     string name = 2;
     repeated string aliases = 3;
-    float created = 4;
-    float modified = 5;
+    float create_time = 4;
+    float update_time = 5;
 }
 
 
