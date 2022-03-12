@@ -40,6 +40,7 @@ export const getDatasetTypes = () => [
   { key: "label", value: TASKTYPES.LABEL, label: t("dataset.type.label") },
   { key: "fusion", value: TASKTYPES.FUSION, label: t("dataset.type.fusion") },
   { key: "import", value: TASKTYPES.IMPORT, label: t("dataset.type.import") },
+  { key: "empty", value: 105, label: '' },
 ]
 
 export const getImageTypes = () => [
