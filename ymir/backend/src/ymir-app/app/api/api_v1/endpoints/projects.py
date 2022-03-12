@@ -178,7 +178,7 @@ def delete_project(
     *,
     db: Session = Depends(deps.get_db),
     project_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete project
