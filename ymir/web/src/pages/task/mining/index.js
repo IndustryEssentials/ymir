@@ -221,15 +221,15 @@ function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningT
 
             <Tip hidden={true}>
             <Form.Item
-              label={t('task.train.form.trainsets.label')}
+              label={t('task.mining.form.dataset.label')}
               required
               name="datasetId"
               rules={[
-                { required: true, message: t('task.train.form.datasets.required') },
+                { required: true, message: t('task.mining.form.dataset.required') },
               ]}
             >
               <Select
-                placeholder={t('task.train.form.training.datasets.placeholder')}
+                placeholder={t('task.mining.form.dataset.placeholder')}
                 filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                 onChange={setsChange}
                 showArrow
