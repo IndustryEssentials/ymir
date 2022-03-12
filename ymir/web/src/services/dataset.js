@@ -81,10 +81,23 @@ export function getAsset(id, hash) {
  * @param {number} id
  * @returns
  */
-export function delDataset(id) {
+ export function delDataset(id) {
   return request({
     method: "delete",
     url: `/datasets/${id}`,
+  })
+}
+
+/**
+ * delete dataset
+ * @param {number} id
+ * @returns
+ */
+export function delDatasetGroup(id) {
+  console.log('group id: ', id)
+  return request({
+    method: "delete",
+    url: `/dataset_groups/${id}`,
   })
 }
 
