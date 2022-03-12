@@ -1,5 +1,5 @@
 import enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Tuple
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -19,6 +19,7 @@ from app.api.errors.errors import (
     ObsoleteTaskStatus,
     TaskNotFound,
     DatasetNotFound,
+    DatasetGroupNotFound,
 )
 from app.constants.state import (
     FinalStates,
@@ -203,7 +204,7 @@ class TaskResult:
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
-    def get_dest_group_id(self, dataset_id: int) -> int:
+    def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:
             dataset = crud.dataset.get(self.db, id=dataset_id)
             if not dataset:
@@ -212,7 +213,10 @@ class TaskResult:
                     dataset_id,
                 )
                 raise DatasetNotFound()
-            return dataset.dataset_group_id
+            dataset_group = crud.dataset_group.get(self.db, id=dataset.dataset_group_id)
+            if not dataset_group:
+                raise DatasetGroupNotFound()
+            return dataset_group.id, dataset_group.name
         else:
             model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
             if not model_group:
@@ -227,16 +231,16 @@ class TaskResult:
                     model_group.id,
                     dataset_id,
                 )
-            return model_group.id
+            return model_group.id, model_group.name
 
     def create(self, dataset_id: int) -> None:
-        dest_group_id = self.get_dest_group_id(dataset_id)
+        dest_group_id, dest_group_name = self.get_dest_group_info(dataset_id)
         if self.result_type is ResultType.dataset:
-            logger.info("[create task] creating new dataset as task result")
-            crud.dataset.create_as_task_result(self.db, self.task, dest_group_id)
+            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            logger.info("[create task] created new dataset(%s) as task result", dataset.name)
         elif self.result_type is ResultType.model:
-            logger.info("[create task] creating new model as task result")
-            crud.model.create_as_task_result(self.db, self.task, dest_group_id)
+            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            logger.info("[create task] created new model(%s) as task result", model.name)
         else:
             logger.info("[create task] no task result record needed")
 
