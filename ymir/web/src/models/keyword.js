@@ -18,7 +18,6 @@ export default {
     *getKeywords({ payload }, { call, put }) {
       const { code, result } = yield call(getKeywords, payload)
       if (code === 0) {
-        console.log('keywords: ', result)
         yield put({
           type: "UPDATE_KEYWORDS",
           payload: result,
