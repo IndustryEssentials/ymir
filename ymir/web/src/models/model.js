@@ -5,6 +5,7 @@ import {
   queryModels,
   getModel,
   delModel,
+  delModelGroup,
   createModel,
   updateModel,
   verify,
@@ -112,6 +113,12 @@ export default {
     },
     *delModel({ payload }, { call, put }) {
       const { code, result } = yield call(delModel, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *delModelGroup({ payload }, { call, put }) {
+      const { code, result } = yield call(delModelGroup, payload)
       if (code === 0) {
         return result
       }
