@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from google.protobuf import json_format
@@ -23,6 +24,7 @@ class LabelGetInvoker(BaseMirControllerInvoker):
             json_format.ParseDict(label.dict(), label_pb)
             response.label_collection.labels.append(label_pb)
 
+        logging.info(f"{response}")
         return response
 
     def invoke(self) -> backend_pb2.GeneralResp:
