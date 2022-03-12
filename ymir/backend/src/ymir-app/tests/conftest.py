@@ -22,8 +22,48 @@ def db() -> Generator:
 def fake_controller_client() -> Generator:
     try:
         client = Mock()
-        client.send.return_value = {"csv_labels": ["tabby", "kitten"]}
-        client.add_labels.return_value = {"csv_labels": ["tabby", "kitten"]}
+        # client.send.return_value = {"csv_labels": ["tabby", "kitten"]}
+
+        client.send.return_value = {
+            "label_collection": {
+                "labels": [
+                    {
+                        "name": "tabby",
+                        "aliases": [],
+                        "create_time": 1647075200.0,
+                        "update_time": 1647075200.0,
+                        "id": 0,
+                    },
+                    {
+                        "name": "kitten",
+                        "aliases": [],
+                        "create_time": 1647075200.0,
+                        "update_time": 1647075200.0,
+                        "id": 0,
+                    },
+                ]
+            }
+        }
+        client.add_labels.return_value = {
+            "label_collection": {
+                "labels": [
+                    {
+                        "name": "tabby",
+                        "aliases": [],
+                        "create_time": 1647075200.0,
+                        "update_time": 1647075200.0,
+                        "id": 0,
+                    },
+                    {
+                        "name": "kitten",
+                        "aliases": [],
+                        "create_time": 1647075200.0,
+                        "update_time": 1647075200.0,
+                        "id": 0,
+                    },
+                ]
+            }
+        }
         client.get_gpu_info.return_value = {"gpu_count": 233}
         client.pull_docker_image.return_value = {
             "hash_id": "hash_abcd",
@@ -69,7 +109,41 @@ def fake_graph_client() -> Generator:
 def fake_cache_client() -> Generator:
     try:
         client = Mock()
-        labels = ["0,cat,pussy", "1,dog,puppy"]
+        # labels = ["0,cat,pussy", "1,dog,puppy"]
+        labels = {
+            "id_to_name": {
+                0: {
+                    "name": "tabby",
+                    "aliases": [],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 0,
+                },
+                1: {
+                    "id": 1,
+                    "name": "kitten",
+                    "aliases": [],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+            "name_to_id": {
+                "tabby": {
+                    "name": "tabby",
+                    "aliases": [],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 0,
+                },
+                "kitten": {
+                    "id": 1,
+                    "name": "kitten",
+                    "aliases": [],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+        }
         client.get.return_value = json.dumps(labels)
         yield client
     finally:

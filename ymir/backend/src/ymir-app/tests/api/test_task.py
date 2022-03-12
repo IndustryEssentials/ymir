@@ -14,7 +14,42 @@ from tests.utils.utils import random_lower_string
 @pytest.fixture(scope="function")
 def mock_controller(mocker):
     c = mocker.Mock()
-    c.get_labels_of_user.return_value = ["0,cat", "1,dog,puppy"]
+    # c.get_labels_of_user.return_value = ["0,cat", "1,dog,puppy"]
+
+    c.get_labels_of_user.return_value = {
+        "name_to_id": {
+            0: {
+                "name": "cat",
+                "aliases": [],
+                "create_time": 1647075200.0,
+                "update_time": 1647075200.0,
+                "id": 0,
+            },
+            1: {
+                "id": 1,
+                "name": "dog",
+                "aliases": ["puppy"],
+                "create_time": 1647076200.0,
+                "update_time": 1647076400.0,
+            },
+        },
+        "id_to_name": {
+            "cat": {
+                "name": "cat",
+                "aliases": [],
+                "create_time": 1647075200.0,
+                "update_time": 1647075200.0,
+                "id": 0,
+            },
+            "dog": {
+                "id": 1,
+                "name": "dog",
+                "aliases": ["puppy"],
+                "create_time": 1647076200.0,
+                "update_time": 1647076400.0,
+            },
+        },
+    }
     return c
 
 
@@ -60,9 +95,57 @@ class TestNormalizeParameters:
             "name": random_lower_string(5),
             "else": None,
         }
-        labels = ["1,cat", "2,dog", "3,boy"]
+        # labels = ["1,cat", "2,dog", "3,boy"]
+        personal_labels = {
+            "id_to_name": {
+                1: {
+                    "name": "cat",
+                    "aliases": [],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 1,
+                },
+                2: {
+                    "id": 2,
+                    "name": "dog",
+                    "aliases": [],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+                3: {
+                    "id": 3,
+                    "name": "boy",
+                    "aliases": [],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+            "name_to_id": {
+                "cat": {
+                    "name": "cat",
+                    "aliases": [],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 1,
+                },
+                "dog": {
+                    "id": 2,
+                    "name": "dog",
+                    "aliases": [],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+                "boy": {
+                    "id": 3,
+                    "name": "boy",
+                    "aliases": [],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+        }
         params = m.schemas.TaskParameter(**params)
-        res = m.normalize_parameters(mocker.Mock(), params, None, labels)
+        res = m.normalize_parameters(mocker.Mock(), params, None, personal_labels)
         assert res["class_ids"] == [1, 2, 3]
         assert "dataset_hash" in res
         assert "model_hash" in res

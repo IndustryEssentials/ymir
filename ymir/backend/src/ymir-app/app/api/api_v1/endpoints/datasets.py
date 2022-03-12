@@ -357,8 +357,6 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    keyword_id = keyword_id or personal_labels["name_to_id"][keyword]["id"]
-
     viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,

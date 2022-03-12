@@ -95,8 +95,9 @@ def update_keyword_aliases(
     logger.info("[controller] response for update label: %s", resp)
 
     failed = []
-    for failed_label in resp["label_collection"]:
-        failed += [failed_label["name"]] + failed_label["aliases"]
+    if resp.get("label_collection"):
+        for failed_label in resp["label_collection"]["labels"]:
+            failed += [failed_label["name"]] + failed_label["aliases"]
 
     if not failed:
         # clean cached key when changes happen
