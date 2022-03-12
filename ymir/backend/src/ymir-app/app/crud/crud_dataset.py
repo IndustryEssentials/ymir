@@ -21,6 +21,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         user_id: int,
         name: Optional[str] = None,
         project_id: Optional[int] = None,
+        group_id: Optional[int] = None,
         type_: Optional[IntEnum] = None,
         state: Optional[IntEnum] = None,
         start_time: Optional[int] = None,
@@ -53,6 +54,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.result_state == int(state))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
+        if group_id is not None:
+            query = query.filter(self.model.dataset_group_id == group_id)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
@@ -88,11 +91,14 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             return latest_dataset_in_group.version_num
         return None
 
+    def next_available_version(self, db: Session, group_id: int) -> int:
+        latest_version = self.get_latest_version(db, group_id)
+        return latest_version + 1 if latest_version is not None else 1
+
     def create_with_version(self, db: Session, obj_in: DatasetCreate, dest_group_name: Optional[str] = None) -> Dataset:
         # fixme
         #  add mutex lock to protect latest_version
-        latest_version = self.get_latest_version(db, obj_in.dataset_group_id)
-        version_num = latest_version + 1 if latest_version is not None else 1
+        version_num = self.next_available_version(db, obj_in.dataset_group_id)
         if dest_group_name:
             name = f"{dest_group_name}_{version_num}"
         else:

@@ -20,6 +20,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         name: Optional[str],
         user_id: int,
         project_id: Optional[int] = None,
+        group_id: Optional[int] = None,
         state: Optional[IntEnum] = None,
         start_time: Optional[int],
         end_time: Optional[int],
@@ -51,6 +52,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
 
+        if group_id is not None:
+            query = query.filter(self.model.model_group_id == group_id)
+
         order_by_column = getattr(self.model, order_by)
         if is_desc:
             order_by_column = desc(order_by_column)
@@ -67,11 +71,14 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             return latest_model_in_group.version_num
         return None
 
+    def next_available_version(self, db: Session, model_group_id: int) -> int:
+        latest_version = self.get_latest_version(db, model_group_id)
+        return latest_version + 1 if latest_version is not None else 1
+
     def create_with_version(self, db: Session, obj_in: ModelCreate, dest_group_name: Optional[str] = None) -> Model:
         # fixme
         #  add mutex lock to protect latest_version
-        latest_version = self.get_latest_version(db, obj_in.model_group_id)
-        version_num = latest_version + 1 if latest_version is not None else 1
+        version_num = self.next_available_version(db, obj_in.model_group_id)
         if dest_group_name:
             name = f"{dest_group_name}_{version_num}"
         else:
