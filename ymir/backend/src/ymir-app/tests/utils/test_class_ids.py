@@ -31,9 +31,44 @@ def test_flatten_labels():
 
 class TestFindDuplicateLabels:
     def test_find_duplication_in_labels(self):
+        personal_labels = {
+            "id_to_name": {
+                1: {
+                    "name": "cat",
+                    "aliases": ["kitty"],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 1,
+                },
+                2: {
+                    "id": 2,
+                    "name": "dog",
+                    "aliases": ["puppy"],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+            "name_to_id": {
+                "cat": {
+                    "name": "cat",
+                    "aliases": ["kitty"],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 1,
+                },
+                "dog": {
+                    "id": 2,
+                    "name": "dog",
+                    "aliases": ["puppy"],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+        }
+
         assert (
             m.find_duplication_in_labels(
-                ["1,cat,kitty", "2,dog,puppy"],
+                personal_labels,
                 ["cat"],
             )
             == ["cat"]
@@ -41,7 +76,7 @@ class TestFindDuplicateLabels:
 
         assert (
             m.find_duplication_in_labels(
-                ["1,cat,kitty", "2,dog,puppy"],
+                personal_labels,
                 ["girl", "boy"],
             )
             == []
