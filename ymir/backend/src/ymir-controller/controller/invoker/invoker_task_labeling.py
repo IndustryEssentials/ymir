@@ -1,10 +1,11 @@
 import logging
+import os
 from typing import Dict, List
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.label_model import label_runner
 from controller.utils import utils
-from controller.utils.labels import LabelFileHandler
+from controller.utils import labels
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -23,8 +24,8 @@ class TaskLabelingInvoker(TaskBaseInvoker):
                          previous_subtask_id: str) -> backend_pb2.GeneralResp:
         labeling_request = request.req_create_task.labeling
         logging.info(f"labeling_request: {labeling_request}")
-        label_handler = LabelFileHandler(repo_root)
-        keywords = label_handler.get_main_labels_by_ids(labeling_request.in_class_ids)
+        label_file_dir = os.path.join(repo_root, '.mir')
+        keywords = labels.get_main_labels_by_ids(label_file_dir=label_file_dir, type_ids=labeling_request.in_class_ids)
         labeler_accounts = list(labeling_request.labeler_accounts)
         media_location = assets_config["assetskvlocation"]
 
