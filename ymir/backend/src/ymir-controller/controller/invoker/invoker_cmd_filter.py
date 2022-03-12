@@ -30,7 +30,7 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
             self._work_dir
         ]
 
-        label_handler = labels.LabelFileHandler(self._user_root)
+        label_handler = labels.LabelFileHandler(label_file_dir=self._user_root)
         if self._request.in_class_ids:
             filter_command.append('-p')
             filter_command.append(';'.join(label_handler.get_main_labels_by_ids(self._request.in_class_ids)))

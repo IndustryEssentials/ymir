@@ -31,7 +31,7 @@ class LabelGetInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        label_handler = labels.LabelFileHandler(self._user_root)
+        label_handler = labels.LabelFileHandler(label_file_dir=self._user_root)
         all_labels = label_handler.get_all_labels().labels
 
         return self.generate_response(all_labels)

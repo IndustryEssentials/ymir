@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Dict, List
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
@@ -23,7 +24,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
                          previous_subtask_id: str) -> backend_pb2.GeneralResp:
         labeling_request = request.req_create_task.labeling
         logging.info(f"labeling_request: {labeling_request}")
-        label_handler = LabelFileHandler(repo_root)
+        label_handler = LabelFileHandler(label_file_dir=os.path.join(repo_root, '.mir'))
         keywords = label_handler.get_main_labels_by_ids(labeling_request.in_class_ids)
         labeler_accounts = list(labeling_request.labeler_accounts)
         media_location = assets_config["assetskvlocation"]

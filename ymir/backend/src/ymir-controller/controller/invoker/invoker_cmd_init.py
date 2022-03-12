@@ -28,9 +28,9 @@ class InitInvoker(BaseMirControllerInvoker):
         repo_path = pathlib.Path(self._repo_root)
         repo_path.mkdir(parents=True, exist_ok=True)
 
-        label_handler = labels.LabelFileHandler(self._user_root)
+        label_handler = labels.LabelFileHandler(label_file_dir=self._user_root)
         label_file = label_handler.get_label_file_path()
-        link_dst_file = os.path.join(self._repo_root, os.path.basename(label_file))
+        link_dst_file = labels.labels_file_path(label_file_dir=os.path.join(self._repo_root, '.mir'))
         os.link(label_file, link_dst_file)
 
         command = [utils.mir_executable(), 'init', '--root', self._repo_root]

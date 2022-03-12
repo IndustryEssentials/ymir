@@ -55,7 +55,7 @@ class TestLabelFileHandler(unittest.TestCase):
 
     # public: test cases
     def test_merge(self):
-        label_handler = labels.LabelFileHandler(mir_root=self._test_root)
+        label_handler = labels.LabelFileHandler(label_file_dir=self._test_root)
 
         # case 0: add 3 new labels
         candidate_labels = ['a,aa,aaa', 'h,hh,hhh', 'z']

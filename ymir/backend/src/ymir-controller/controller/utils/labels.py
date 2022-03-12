@@ -8,7 +8,6 @@ from typing import Dict, Iterable, List, Set
 from pydantic import BaseModel, validator
 import yaml
 
-
 EXPECTED_FILE_VERSION = 1
 
 
@@ -16,10 +15,9 @@ def labels_file_name() -> str:
     return 'labels.yaml'
 
 
-def labels_file_path(mir_root: str) -> str:
-    file_dir = os.path.join(mir_root, '.mir')
-    os.makedirs(file_dir, exist_ok=True)
-    return os.path.join(file_dir, labels_file_name())
+def labels_file_path(label_file_dir: str) -> str:
+    os.makedirs(label_file_dir, exist_ok=True)
+    return os.path.join(label_file_dir, labels_file_name())
 
 
 class SingleLabel(BaseModel):
@@ -68,11 +66,13 @@ class LabelStorage(BaseModel):
 
 
 class LabelFileHandler:
-    def __init__(self, mir_root: str) -> None:
-        self._label_file = labels_file_path(mir_root=mir_root)
+    def __init__(self, label_file_dir: str) -> None:
+        self._label_file = labels_file_path(label_file_dir=label_file_dir)
 
         # create if not exists
+        logging.info(f"before: {self._label_file}: {os.path.isfile(self._label_file)}")
         Path(self._label_file).touch(exist_ok=True)
+        logging.info(f"after: {self._label_file}: {os.path.isfile(self._label_file)}")
 
     def get_label_file_path(self) -> str:
         return self._label_file
@@ -183,5 +183,6 @@ class LabelFileHandler:
         return [all_labels[int(idx)].name for idx in type_ids]
 
 
-def merge_labels(mir_root: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
-    return LabelFileHandler(mir_root=mir_root).merge_labels(candidate_labels=candidate_labels, check_only=check_only)
+def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
+    return LabelFileHandler(label_file_dir=label_file_dir).merge_labels(candidate_labels=candidate_labels,
+                                                                        check_only=check_only)

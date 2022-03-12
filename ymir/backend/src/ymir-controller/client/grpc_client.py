@@ -28,6 +28,12 @@ class ControllerClient:
         return resp
 
 
+def _build_cmd_create_user_req(args: Dict) -> backend_pb2.GeneralReq:
+    return invoker_call.make_cmd_request(user_id=args["user"],
+                                         task_id=args["tid"],
+                                         req_type=backend_pb2.USER_CREATE)
+
+
 def _build_cmd_create_repo_req(args: Dict) -> backend_pb2.GeneralReq:
     return invoker_call.make_cmd_request(user_id=args["user"],
                                          repo_id=args["repo"],
@@ -228,7 +234,7 @@ def get_parser() -> Any:
     # CMD CALL
     parser_cmd_call = sub_parsers.add_parser("cmd_call", help="create sync cmd call")
     parser_cmd_call.add_argument("--task_type",
-                                 choices=["create_repo", "add_labels", "get_labels", "sampling"],
+                                 choices=["create_user", "create_repo", "add_labels", "get_labels", "sampling"],
                                  type=str,
                                  help="task type")
     parser_cmd_call.add_argument("--in_dataset_ids", nargs="*", type=str)
