@@ -70,9 +70,7 @@ class LabelFileHandler:
         self._label_file = labels_file_path(label_file_dir=label_file_dir)
 
         # create if not exists
-        logging.info(f"before: {self._label_file}: {os.path.isfile(self._label_file)}")
         Path(self._label_file).touch(exist_ok=True)
-        logging.info(f"after: {self._label_file}: {os.path.isfile(self._label_file)}")
 
     def get_label_file_path(self) -> str:
         return self._label_file
