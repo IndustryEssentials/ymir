@@ -17,7 +17,7 @@ export function getModel(id) {
  * @returns 
  */
 export function getModelVersions(group_id) {
-  return request.get(`model_groups/${group_id}`)
+  return request.get(`model_groups/${group_id}`, { params: { group_id, is_desc: false, limit: 10000 }})
 }
 
 /**

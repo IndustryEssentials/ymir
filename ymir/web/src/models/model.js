@@ -56,7 +56,7 @@ export default {
       }
       const { code, result } = yield call(getModelVersions, gid)
       if (code === 0) {
-        const ms = result.models.map(model => transferModel(model))
+        const ms = result.items.map(model => transferModel(model))
         const vs = { id: gid, versions: ms }
         yield put({
           type: "UPDATE_VERSIONS",
