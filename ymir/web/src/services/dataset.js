@@ -16,7 +16,7 @@ export function getDataset(id) {
  * @returns 
  */
 export function getDatasetByGroup(group_id) {
-  return request.get(`datasets/`, { params: { group_id, is_desc: false, limit: 10000 }})
+  return request.get(`datasets/`, { params: { group_id, limit: 10000 }})
 }
 
 /**

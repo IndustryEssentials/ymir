@@ -156,7 +156,7 @@ const Routes = [
     routes: [
       {
         path: "/",
-        redirect: "/home/portal",
+        redirect: "/home/project",
       },
       {
         path: "/login",
