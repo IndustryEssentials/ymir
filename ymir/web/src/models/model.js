@@ -5,6 +5,7 @@ import {
   queryModels,
   getModel,
   delModel,
+  delModelGroup,
   createModel,
   updateModel,
   verify,
@@ -55,7 +56,7 @@ export default {
       }
       const { code, result } = yield call(getModelVersions, gid)
       if (code === 0) {
-        const ms = result.models.map(model => transferModel(model))
+        const ms = result.items.map(model => transferModel(model))
         const vs = { id: gid, versions: ms }
         yield put({
           type: "UPDATE_VERSIONS",
@@ -112,6 +113,12 @@ export default {
     },
     *delModel({ payload }, { call, put }) {
       const { code, result } = yield call(delModel, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *delModelGroup({ payload }, { call, put }) {
+      const { code, result } = yield call(delModelGroup, payload)
       if (code === 0) {
         return result
       }
