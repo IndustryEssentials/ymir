@@ -136,7 +136,6 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
   function imageChange(_, image = {}) {
     const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
-    setSelectedImage(image)
     setConfig(configObj.config)
   }
 
