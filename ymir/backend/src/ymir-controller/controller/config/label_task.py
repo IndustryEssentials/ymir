@@ -15,8 +15,5 @@ MONITOR_MAPPING_KEY = "monitor_mapping"
 LABEL_TASK_LOOP_SECONDS = int(env("LABEL_TASK_LOOP_SECONDS", 5 * 60))
 # end labelling model env
 
-# labels.csv
-LABEL_RESERVE_COLUMN = 1
-
 # get label studio tasks's slice number
 LABEL_PAGE_SIZE = 500

@@ -1,14 +1,12 @@
 import logging
 import os
 import shutil
-from typing import List
 import unittest
 
 from google.protobuf.json_format import MessageToDict
 
 from mir.commands.importing import CmdImport
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -30,7 +28,7 @@ class TestCmdImport(unittest.TestCase):
     def setUp(self) -> None:
         test_utils.check_commands()
         self._prepare_dirs()
-        self._prepare_labels_csv(['cat', 'airplane,aeroplane', 'person'])
+        test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['cat', 'airplane,aeroplane', 'person'])
         self._prepare_mir_repo()
 
         self._cur_path = os.getcwd()
@@ -62,7 +60,7 @@ class TestCmdImport(unittest.TestCase):
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True)
 
         # not write person label
-        self._prepare_labels_csv(['cat', 'airplane,aeroplane'])
+        test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['cat', 'airplane,aeroplane'])
 
         # ignore unknown types
         args.ignore_unknown_types = True
@@ -381,12 +379,6 @@ class TestCmdImport(unittest.TestCase):
         test_utils.mir_repo_init(self._mir_repo_root)
         # prepare branch a
         test_utils.mir_repo_create_branch(self._mir_repo_root, 'a')
-
-    def _prepare_labels_csv(self, names: List[str]):
-        with open(class_ids.ids_file_path(mir_root=self._mir_repo_root), 'w') as f:
-            f.write('# some comments')
-            for index, name in enumerate(names):
-                f.write(f"{index},,{name}\n")
 
 
 if __name__ == '__main__':

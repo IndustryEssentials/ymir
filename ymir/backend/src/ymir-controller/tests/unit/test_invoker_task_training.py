@@ -9,10 +9,9 @@ import yaml
 from google.protobuf.json_format import MessageToDict, ParseDict
 
 import tests.utils as test_utils
-from controller.utils import utils, gpu_utils
+from controller.utils import gpu_utils, labels, utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-from controller.utils.labels import LabelFileHandler
 from controller.utils.redis import rds
 from proto import backend_pb2
 
@@ -82,7 +81,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         rds.zremrangebyscore = mock.Mock()
         gpu_utils.GPUInfo.get_gpus_info = mock.Mock(return_value={'0': 0.99, '1': 0.9, '2': 0.89})
 
-        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["frisbee", "car"])
+        labels.get_main_labels_by_ids = mock.Mock(return_value=["frisbee", "car"])
 
         training_config = {
             'anchors': '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401',
