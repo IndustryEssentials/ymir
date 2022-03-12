@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
@@ -17,6 +17,8 @@ import EditBox from "@/components/form/editBox"
 import { ShieldIcon, VectorIcon, TipsIcon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "@/components/common/icons"
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
+import Del from "./del"
+import DelGroup from "./delGroup"
 import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
 
 const { confirm } = Modal
@@ -30,6 +32,8 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   let [lock, setLock] = useState(true)
+  const delRef = useRef(null)
+  const delGroupRef = useRef(null)
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -147,7 +151,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state } = record
+    const { id, name, url, state, versionName } = record
     const actions = [
       {
         key: "verify",
@@ -179,7 +183,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     const delAction = {
       key: "del",
       label: t("dataset.action.del"),
-      onclick: () => del(id, name),
+      onclick: () => del(id, `${name} ${versionName}`),
       className: styles.action_del,
       icon: <DeleteIcon />,
     }
@@ -190,22 +194,20 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     setCurrent({})
     setTimeout(() => setCurrent(record), 0)
   }
-
+  
+  const delGroup = (id, name) => {
+    delGroupRef.current.del(id, name)
+  }
   const del = (id, name) => {
-    confirm({
-      icon: <TipsIcon style={{ color: 'rgb(242, 99, 123)' }} />,
-      content: t("model.action.del.confirm.content", { name }),
-      onOk: async () => {
-        const result = await delModel(id)
-        if (result) {
-          setModels(models.filter((model) => model.id !== id))
-          setTotal(old => old - 1)
-          getData()
-        }
-      },
-      okText: t('task.action.del'),
-      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)', } }
-    })
+    delRef.current.del(id, name)
+  }
+  
+  const delOk = (id) => {
+    getVersions(id, true)
+  }
+
+  const delGroupOk = () => {
+    getData()
   }
 
 
@@ -248,7 +250,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
             <span className={styles.groupName}>{group.name}</span></Col>
           <Col><Space>
             <a onClick={edit} title={t('common.modify')}><EditIcon /></a>
-            <a onClick={del} title={t('common.del')}><DeleteIcon /></a>
+            <a onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
         <div className={styles.groupTable} hidden={!group.showVersions}>
@@ -301,6 +303,8 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
           {current.map}
         </Form.Item>
       </EditBox>
+      <DelGroup ref={delGroupRef} ok={delGroupOk} />
+      <Del ref={delRef} ok={delOk} />
     </div>
   )
 }

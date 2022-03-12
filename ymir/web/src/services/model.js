@@ -17,7 +17,7 @@ export function getModel(id) {
  * @returns 
  */
 export function getModelVersions(group_id) {
-  return request.get(`model_groups/${group_id}`)
+  return request.get(`model_groups/${group_id}`, { params: { group_id, is_desc: false, limit: 10000 }})
 }
 
 /**
@@ -60,14 +60,26 @@ export function batchModels(ids) {
 }
 
 /**
- * delete model
+ * delete model version
  * @param {number} id
  * @returns
  */
-export function delModel(id) {
+ export function delModel(id) {
   return request({
     method: "delete",
     url: `/models/${id}`,
+  })
+}
+
+/**
+ * delete model group
+ * @param {number} id
+ * @returns
+ */
+export function delModelGroup(id) {
+  return request({
+    method: "delete",
+    url: `/model_groups/${id}`,
   })
 }
 
