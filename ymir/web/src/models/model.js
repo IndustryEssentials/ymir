@@ -72,7 +72,7 @@ export default {
     },
     *queryAllModels({ payload }, { select, call, put }) {
       const pid = payload
-      const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VILID, limit: 10000 }})
+      const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VALID, limit: 10000 }})
       if (dss) {
         yield put({
           type: "UPDATE_ALL_MODELS",
