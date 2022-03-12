@@ -45,6 +45,7 @@ def list_models(
     name: str = Query(None, description="search by model's name"),
     state: ResultState = Query(None),
     project_id: int = Query(None),
+    group_id: int = Query(None),
     training_dataset_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
@@ -69,6 +70,7 @@ def list_models(
         db,
         user_id=current_user.id,
         project_id=project_id,
+        group_id=group_id,
         name=name,
         state=state,
         offset=offset,
@@ -148,7 +150,6 @@ def import_model_in_background(model_url: str, model_hash: str, storage_path: st
 @router.delete(
     "/{model_id}",
     response_model=schemas.ModelOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={
         400: {"description": "No permission"},
         404: {"description": "Model Not Found"},
