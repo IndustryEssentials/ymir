@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import IntEnum
 from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
@@ -16,8 +17,11 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         self,
         db: Session,
         *,
-        user_id: int,
         name: Optional[str],
+        user_id: int,
+        project_id: Optional[int] = None,
+        group_id: Optional[int] = None,
+        state: Optional[IntEnum] = None,
         start_time: Optional[int],
         end_time: Optional[int],
         offset: Optional[int],
@@ -42,6 +46,15 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             # basic fuzzy search
             query = query.filter(self.model.name.like(f"%{name}%"))
 
+        if state:
+            query = query.filter(self.model.result_state == int(state))
+
+        if project_id is not None:
+            query = query.filter(self.model.project_id == project_id)
+
+        if group_id is not None:
+            query = query.filter(self.model.model_group_id == group_id)
+
         order_by_column = getattr(self.model, order_by)
         if is_desc:
             order_by_column = desc(order_by_column)
@@ -58,27 +71,37 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             return latest_model_in_group.version_num
         return None
 
-    def create_with_version(self, db: Session, obj_in: ModelCreate) -> Model:
+    def next_available_version(self, db: Session, model_group_id: int) -> int:
+        latest_version = self.get_latest_version(db, model_group_id)
+        return latest_version + 1 if latest_version is not None else 1
+
+    def create_with_version(self, db: Session, obj_in: ModelCreate, dest_group_name: Optional[str] = None) -> Model:
         # fixme
         #  add mutex lock to protect latest_version
-        latest_version = self.get_latest_version(db, obj_in.model_group_id)
+        version_num = self.next_available_version(db, obj_in.model_group_id)
+        if dest_group_name:
+            name = f"{dest_group_name}_{version_num}"
+        else:
+            name = obj_in.name
 
         db_obj = Model(
-            name=obj_in.name,
-            version_num=latest_version + 1 if latest_version else 0,
+            name=name,
+            version_num=version_num,
             hash=obj_in.hash,
-            result_state=obj_in.result_state,
+            result_state=int(obj_in.result_state),
             model_group_id=obj_in.model_group_id,
             project_id=obj_in.project_id,
-            user_id=obj_in.user_id,  # type: ignore
-            task_id=obj_in.task_id,  # type: ignore
+            user_id=obj_in.user_id,
+            task_id=obj_in.task_id,
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         return db_obj
 
-    def create_as_task_result(self, db: Session, task: schemas.TaskInternal, dest_group_id: int) -> Model:
+    def create_as_task_result(
+        self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
+    ) -> Model:
         model_in = ModelCreate(
             name=task.hash,
             hash=task.hash,
@@ -88,7 +111,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             user_id=task.user_id,
             task_id=task.id,
         )
-        return self.create_with_version(db, obj_in=model_in)
+        return self.create_with_version(db, obj_in=model_in, dest_group_name=dest_group_name)
 
     def update_state(
         self,
@@ -126,6 +149,14 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db.commit()
         db.refresh(model)
         return model
+
+    def remove_group_resources(self, db: Session, *, group_id: int) -> List[Model]:
+        objs = db.query(self.model).filter(self.model.model_group_id == group_id).all()
+        for obj in objs:
+            obj.is_deleted = True
+        db.bulk_save_objects(objs)
+        db.commit()
+        return objs
 
 
 model = CRUDModel(Model)

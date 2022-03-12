@@ -21,6 +21,7 @@ from app.api.errors.errors import (
     FieldValidationFailed,
     NoDatasetPermission,
     FailedtoCreateTask,
+    DatasetGroupNotFound,
 )
 from app.config import settings
 from app.constants.state import ResultState
@@ -66,7 +67,9 @@ def list_datasets(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by dataset's name"),
     type_: TaskType = Query(None, alias="type", description="type of related task"),
-    state: TaskState = Query(None),
+    project_id: int = Query(None),
+    group_id: int = Query(None),
+    state: ResultState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
@@ -83,6 +86,8 @@ def list_datasets(
         db,
         user_id=current_user.id,
         name=name,
+        project_id=project_id,
+        group_id=group_id,
         type_=type_,
         state=state,
         offset=offset,
@@ -134,8 +139,8 @@ def create_dataset(
     - ignore_unknown_annotations = 2
     - stop_upon_unknown_annotations = 3
     """
-    # 1. check if name is available
-    if crud.dataset.is_duplicated_name(db, user_id=current_user.id, name=dataset_import.name):
+    # 1. check if dataset group name is available
+    if crud.dataset_group.is_duplicated_name(db, user_id=current_user.id, name=dataset_import.dataset_group_name):
         raise DuplicateDatasetError()
 
     # 2. create placeholder task
@@ -144,20 +149,31 @@ def create_dataset(
         type_=dataset_import.import_type,  # type: ignore
         user_id=current_user.id,
         project_id=dataset_import.project_id,
+        state_=TaskState.pending,
     )
-    logger.info("[create dataset] related task record created: %s", task.hash)
+    logger.info("[import dataset] related task record created: %s", task.hash)
 
     # 3. create dataset record
+    dataset_group = crud.dataset_group.create_dataset_group(
+        db,
+        name=dataset_import.dataset_group_name,
+        user_id=current_user.id,
+        project_id=dataset_import.project_id,
+    )
+    logger.info(
+        "[import dataset] created dataset_group(%s) for dataset",
+        dataset_group.id,
+    )
     dataset_in = schemas.DatasetCreate(
-        name=dataset_import.name,
+        name=f"{dataset_import.dataset_group_name}_initial",
         hash=task.hash,
-        dataset_group_id=dataset_import.dataset_group_id,
+        dataset_group_id=dataset_group.id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
         task_id=task.id,
     )
-    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
-    logger.info("[create dataset] dataset record created: %s", dataset)
+    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in, dest_group_name=dataset_group.name)
+    logger.info("[import dataset] dataset record created: %s", dataset.name)
 
     # 4. run background task
     background_tasks.add_task(
@@ -169,7 +185,6 @@ def create_dataset(
         task.hash,
         dataset.id,
     )
-
     return {"result": dataset}
 
 
@@ -246,7 +261,6 @@ def _import_dataset(
 @router.delete(
     "/{dataset_id}",
     response_model=schemas.DatasetOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={
         400: {"description": "No permission"},
         404: {"description": "Dataset Not Found"},
@@ -274,7 +288,6 @@ def delete_dataset(
 @router.get(
     "/{dataset_id}",
     response_model=schemas.DatasetOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={404: {"description": "Dataset Not Found"}},
 )
 def get_dataset(
@@ -509,10 +522,14 @@ def create_dataset_fusion(
         user_id=current_user.id,
         project_id=task_in.project_id,
         hash_=task_hash,
+        state_=TaskState.pending,
     )
     logger.info("[create dataset] related task record created: %s", task.hash)
 
     # 2. create dataset record
+    dataset_group = crud.dataset_group.get(db, id=task_in.dataset_group_id)
+    if not dataset_group:
+        raise DatasetGroupNotFound()
     dataset_in = schemas.DatasetCreate(
         name=task.hash,
         hash=task.hash,
@@ -521,7 +538,7 @@ def create_dataset_fusion(
         user_id=task.user_id,
         task_id=task.id,
     )
-    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
-    logger.info("[create dataset] dataset record created: %s", dataset)
+    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in, dest_group_name=dataset_group.name)
+    logger.info("[create dataset] dataset record created: %s", dataset.name)
 
     return {"result": dataset}

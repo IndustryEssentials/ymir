@@ -143,7 +143,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     <Col flex={1}>
       <Space>
         <strong>{dataset.name}</strong>
-        <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.asset_count })}</span>
+        <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
     <Col>

@@ -28,7 +28,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db_obj = Task(
             name=obj_in.name,
             type=obj_in.type,
-            config=json.dumps(obj_in.config) if obj_in.config else None,
+            config=obj_in.config if obj_in.config else None,
             parameters=obj_in.parameters.json() if obj_in.parameters else None,
             project_id=obj_in.project_id,
             hash=task_hash,
@@ -47,6 +47,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         type_: TaskType,
         user_id: int,
         project_id: int,
+        state_: TaskState = TaskState.done,
         hash_: Optional[str] = None,
     ) -> Task:
         """
@@ -62,7 +63,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             project_id=project_id,
             hash=task_hash,
             user_id=user_id,
-            state=int(TaskState.done),
+            state=int(state_),
             percent=1,  # type: ignore
         )
         db.add(db_obj)

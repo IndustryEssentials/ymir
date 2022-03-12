@@ -19,12 +19,12 @@ export function getUnixTimeStamp(date: string) {
   return moment(date).format("X")
 }
 
-export function calTimeLeft(progress: number, utcTime: string, locale: string) {
+export function calTimeLeft(progress: number, time: string, locale: string) {
   if (!progress) {
     return '...'
   }
   const endTime = Number(moment().format('x'))
-  const startTime = Number(moment.utc(utcTime).format('x'))
+  const startTime = Number(moment(time).format('x'))
   const result = Math.round((endTime - startTime) * (100 - progress) / progress)
   const temp = moment.duration(result).locale(locale)
   return temp.humanize({ s: 0 })

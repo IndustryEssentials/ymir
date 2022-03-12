@@ -261,7 +261,7 @@ function History({ getHistory, getDataset, getModel }) {
     return dataset.id ? (
       <Descriptions column={1} bordered contentStyle={{ padding: '20px 0 20px 10px', flexWrap: 'wrap' }} labelStyle={{ padding: '20px 0 20px 10px', width: '80px', justifyContent: 'flex-end' }}>
         <Item label={t('dataset.column.name')}>{dataset.name}</Item>
-        <Item label={t('dataset.column.asset_count')}>{dataset.asset_count}</Item>
+        <Item label={t('dataset.column.asset_count')}>{dataset.assetCount}</Item>
         <Item label={t('dataset.column.keyword')}>{dataset.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
         <Item label={t('dataset.column.create_time')}>{format(dataset.create_datetime)}</Item>
         <Item>

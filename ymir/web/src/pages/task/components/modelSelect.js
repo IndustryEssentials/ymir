@@ -2,17 +2,20 @@ import { Col, Row, Select } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
-import t from '@/utils/t'
 import { percent } from '../../../utils/number'
 
 
-const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ...resProps }) => {
+const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, ...resProps }) => {
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
 
   useEffect(() => {
     fetchModels()
   }, [])
+
+  useEffect(() => {
+    setModels(allModels)
+  }, [allModels])
 
   useEffect(() => {
     if (options.length === 1) {
@@ -24,34 +27,16 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
     generateOptions()
   }, [models])
 
-  useEffect(() => {
-    const same = models.filter(model => model.keywords.toString() === keywords.toString()) || []
-    const inter = models.filter(model => {
-      const kws = model.keywords
-      return kws.toString() !== keywords.toString() && kws.some(kw => keywords.includes(kw))
-    })
-    const diff = models.filter(model => model.keywords.every(kw => !keywords.includes(kw))) || []
-    setModels([...same, ...inter, ...diff])
-  }, [keywords])
-
-  async function fetchModels() {
-    const params = {
-      offset: 0,
-      limit: 100000,
-    }
-    const result = await getModels(params)
-    if (result?.items) {
-      setModels(result.items)
-    }
+  function fetchModels() {
+    getModels(pid)
   }
 
   function generateOptions() {
     const opts = models.map(model => {
       return {
         label: <Row gutter={10} wrap={false}>
-          <Col flex={1}>{model.name}</Col>
+          <Col flex={1}>{model.name} {model.versionName}</Col>
           <Col>mAP: <strong title={model.map}>{percent(model.map)}</strong></Col>
-          <Col>{t('model.column.target')}: {model.keywords.join(',')}</Col>
         </Row>,
         model,
         value: model.id,
@@ -65,14 +50,19 @@ const ModelSelect = ({ value, keywords = [], onChange = () => { }, getModels, ..
   )
 }
 
+const props = (state) => {
+  return {
+    allModels: state.model.allModels,
+  }
+}
 const actions = (dispatch) => {
   return {
-    getModels(payload) {
+    getModels(pid) {
       return dispatch({
-        type: 'model/getModels',
-        payload,
+        type: 'model/queryAllModels',
+        payload: pid,
       })
     }
   }
 }
-export default connect(null, actions)(ModelSelect)
+export default connect(props, actions)(ModelSelect)

@@ -1,6 +1,6 @@
 import {
   getDataset,
-  getDatasets,
+  getDatasetGroups,
   batchDatasets,
   getAssetsOfDataset,
   getAsset,
@@ -22,28 +22,28 @@ describe("service: dataset", () => {
     requestExample(getDataset, null, null, 'get', 1002)
   })
 
-  it("getDatasets -> success -> all filter conditions", () => {
+  it("getDatasetGroups -> success -> all filter conditions", () => {
     const pid = 25234
     const params = { name: 'searchname', limit: 20, offset: 0 }
     const expected = products(4)
 
-    requestExample(getDatasets, [pid, params], { items: expected, total: expected.length }, 'get')
+    requestExample(getDatasetGroups, [pid, params], { items: expected, total: expected.length }, 'get')
   })
 
-  it("getDatasets -> success -> filter name", () => {
+  it("getDatasetGroups -> success -> filter name", () => {
     const pid = 25235
     const params = { name: 'partofname' }
     const expected = products(2)
 
-    requestExample(getDatasets, [pid, params], { items: expected, total: expected.length }, 'get')
+    requestExample(getDatasetGroups, [pid, params], { items: expected, total: expected.length }, 'get')
   })
 
-  it("getDatasets -> success -> none filter conditions", () => {
+  it("getDatasetGroups -> success -> none filter conditions", () => {
     const pid = 25236
     const params = {}
     const expected = products(5)
 
-    requestExample(getDatasets, [pid, params], { items: expected, total: expected.length }, 'get')
+    requestExample(getDatasetGroups, [pid, params], { items: expected, total: expected.length }, 'get')
   })
 
   it("batchDatasets -> success", () => {
@@ -72,7 +72,7 @@ describe("service: dataset", () => {
     requestExample(createDataset, datasets, null, 'post', 110104)
   })
   it("createDataset -> params validate failed", () => {
-    requestExample(createDataset, null, null, 'post', 1002)
+    requestExample(createDataset, {}, null, 'post', 1002)
   })
 
   it("updateDataset -> success", () => {

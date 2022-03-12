@@ -28,7 +28,9 @@ const TYPES = Object.freeze({
 
 const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
   const history = useHistory()
-  const { id } = useParams()
+  const pageParams = useParams()
+  const pid = Number(pageParams.pid)
+  const { id } = history.location.query
   const types = [
     { id: TYPES.INTERNAL, label: t('dataset.add.types.internal') },
     // { id: TYPES.SHARE, label: t('dataset.add.types.share') },
@@ -117,14 +119,15 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     var params = {
       ...values,
       strategy,
+      projectId: pid,
     }
     if (currentType === TYPES.LOCAL && fileToken) {
-      params.input_url = fileToken
+      params.url = fileToken
     }
     const result = await createDataset(params)
     if (result) {
       message.success(t('dataset.add.success.msg'))
-      history.push('/home/dataset')
+      history.push(`/home/project/detail/${pid}`)
     }
   }
 
@@ -237,7 +240,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               <Tip content={t('tip.task.filter.datasets')}>
                 <Form.Item
                   label={t('dataset.add.form.internal.label')}
-                  name='input_dataset_id'
+                  name='datasetId'
                   initialValue={selectedDataset}
                   rules={isType(TYPES.INTERNAL) ? [
                     { required: true, message: t('dataset.add.form.internal.required') }
@@ -245,7 +248,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 >
                   <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
                     {filterDataset().map(dataset => (
-                      <Option value={dataset.id} key={dataset.id}>{dataset.name} (Total: {dataset.asset_count})</Option>
+                      <Option value={dataset.id} key={dataset.id}>{dataset.name} (Total: {dataset.assetCount})</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -307,21 +310,6 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                                   <Select.Option value={2}>{t('dataset.add.newkw.ignore')}</Select.Option>
                                 </Select>
                               </Form.Item>
-                              {/* <Form.Item
-                                {...field}
-                                dependencies={['new_keywords', field.name, 'type']}
-                                name={[field.name, 'key']}
-                                fieldKey={[field.fieldKey, 'key']}
-                                style={{ marginLeft: 10, width: 120, display: 'inline-block' }}
-                              >
-                                <Select
-                                  showSearch
-                                  onSearch={searchKeywords}
-                                  notFoundContent
-                                >
-                                  {currentKeywords.map(k => <Select.Option key={k.name} value={k.name}>{k.name}</Select.Option>)}
-                                </Select>
-                              </Form.Item> */}
                             </Col>
                           </Row>
                           </Col>
@@ -333,26 +321,11 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                   : t('dataset.add.newkeyword.empty')}
               </Form.Item>
               </Tip>
-
-
-            {isType(TYPES.SHARE) ? (
-              <Tip hidden={true}>
-              <Form.Item
-                label={t('dataset.add.form.share.label')}
-                name='input_dataset_id'
-                rules={[
-                  { required: true, message: t('dataset.add.form.share.required') }
-                ]}
-              >
-                <Input placeholder={t('dataset.add.form.share.placeholder')} allowClear />
-              </Form.Item>
-              </Tip>
-            ) : null}
             {isType(TYPES.NET) ? (
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.net.label')} required>
                 <Form.Item
-                  name='input_url'
+                  name='url'
                   noStyle
                   rules={[
                     { required: true, message: t('dataset.add.form.net.tip') },
@@ -370,7 +343,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.path.label')} required>
                 <Form.Item
-                  name='input_path'
+                  name='path'
                   noStyle
                   rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
                 >
@@ -397,7 +370,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
-                    {t('task.filter.create')}
+                    {t('task.create')}
                   </Button>
                 </Form.Item>
                 <Form.Item name='backBtn' noStyle>

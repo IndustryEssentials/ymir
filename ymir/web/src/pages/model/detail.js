@@ -32,7 +32,7 @@ function ModelDetail({ getModel }) {
       <Space>
         { sets.map(item => item ? <Link key={item.id} to={`/home/dataset/detail/${item.id}`}>{item.name}</Link> : null) }
         <span>
-          {t('dataset.detail.pager.total', { total: sets.reduce((prev, curr) => prev + curr.asset_count, 0) })}
+          {t('dataset.detail.pager.total', { total: sets.reduce((prev, curr) => prev + curr.assetCount, 0) })}
         </span>
       </Space>
     )

@@ -21,6 +21,8 @@ const keyword = {
   'keyword.multiadd.title': {en: "Add Multiple Keywords", cn: "批量添加标签", },
   'keyword.multiadd.kws.label': {en: "Keywords", cn: "标签", },
   'keyword.multiadd.label': {en: "Add Keywords", cn: "批量添加标签", },
+  'keyword.column.update_time': {en: "Update Time", cn: "更新时间", },
+  'keyword.column.create_time': {en: "Create Time", cn: "创建时间", },
   'keyword.multiadd.kws.placeholder': {
     en: 
 `Example: 

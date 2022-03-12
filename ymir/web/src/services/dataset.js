@@ -15,8 +15,8 @@ export function getDataset(id) {
  * @param {number} group_id 
  * @returns 
  */
-export function getDatasetVersions(group_id) {
-  return request.get(`dataset_groups/${group_id}`)
+export function getDatasetByGroup(group_id) {
+  return request.get(`datasets/`, { params: { group_id, is_desc: false, limit: 10000 }})
 }
 
 /**
@@ -44,12 +44,12 @@ export function queryDatasets({ project_id, type, state, name, offset = 0, limit
  * }
  * @returns 
  */
-export function getDatasets(project_id, { name, offset = 0, limit = 10 }) {
+export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
   return request.get("dataset_groups/", { params: { project_id, name, offset, limit } })
 }
 
 export function batchDatasets(ids) {
-  return request.get('datasets/batch', { params: { ids: ids.toString() }})
+  return request.get('datasets/batch', { params: { ids: ids.toString() } })
 }
 
 /**
@@ -81,7 +81,7 @@ export function getAsset(id, hash) {
  * @param {number} id
  * @returns
  */
-export function delDataset(id) {
+ export function delDataset(id) {
   return request({
     method: "delete",
     url: `/datasets/${id}`,
@@ -89,22 +89,39 @@ export function delDataset(id) {
 }
 
 /**
- * create a dataset
+ * delete dataset
+ * @param {number} id
+ * @returns
+ */
+export function delDatasetGroup(id) {
+  console.log('group id: ', id)
+  return request({
+    method: "delete",
+    url: `/dataset_groups/${id}`,
+  })
+}
+
+/**
+ * import a dataset into project
  * @param {object} dataset
  * {
- *   "name": "string",
- *   "hash": "string",
- *   "type": 1,
- *   "predicates": "string",
- *   "asset_count": 0,
- *   "keyword_count": 0,
- *   "user_id": 0,
- *   "task_id": 0
+ *   {string} name
+ *   {number} projectId
+ *   {string} url
+ *   {number} [datasetId]
+ *   {string} [inputPath]
+ *   {number} [strategy] default: 0
  * }
  * @returns
  */
-export function createDataset(dataset) {
-  return request.post("/datasets/", dataset)
+export function createDataset({ name, projectId, url, datasetId, path, strategy }) {
+  return request.post("/datasets/importing", {
+    dataset_group_name: name, strategy,
+    project_id: projectId,
+    input_url: url,
+    input_dataset_id: datasetId,
+    input_path: path,
+  })
 }
 
 export function updateDataset(id, name) {
