@@ -148,7 +148,6 @@ def import_model_in_background(model_url: str, model_hash: str, storage_path: st
 @router.delete(
     "/{model_id}",
     response_model=schemas.ModelOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={
         400: {"description": "No permission"},
         404: {"description": "Model Not Found"},

@@ -21,6 +21,7 @@ from app.api.errors.errors import (
     FieldValidationFailed,
     NoDatasetPermission,
     FailedtoCreateTask,
+    DatasetGroupNotFound,
 )
 from app.config import settings
 from app.constants.state import ResultState
@@ -171,8 +172,8 @@ def create_dataset(
         user_id=current_user.id,
         task_id=task.id,
     )
-    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
-    logger.info("[import dataset] dataset record created: %s", dataset)
+    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in, dest_group_name=dataset_group.name)
+    logger.info("[import dataset] dataset record created: %s", dataset.name)
 
     # 4. run background task
     background_tasks.add_task(
@@ -260,7 +261,6 @@ def _import_dataset(
 @router.delete(
     "/{dataset_id}",
     response_model=schemas.DatasetOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={
         400: {"description": "No permission"},
         404: {"description": "Dataset Not Found"},
@@ -288,7 +288,6 @@ def delete_dataset(
 @router.get(
     "/{dataset_id}",
     response_model=schemas.DatasetOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={404: {"description": "Dataset Not Found"}},
 )
 def get_dataset(
@@ -537,6 +536,9 @@ def create_dataset_fusion(
     logger.info("[create dataset] related task record created: %s", task.hash)
 
     # 2. create dataset record
+    dataset_group = crud.dataset_group.get(db, id=task_in.dataset_group_id)
+    if not dataset_group:
+        raise DatasetGroupNotFound()
     dataset_in = schemas.DatasetCreate(
         name=task.hash,
         hash=task.hash,
@@ -545,7 +547,7 @@ def create_dataset_fusion(
         user_id=task.user_id,
         task_id=task.id,
     )
-    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
-    logger.info("[create dataset] dataset record created: %s", dataset)
+    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in, dest_group_name=dataset_group.name)
+    logger.info("[create dataset] dataset record created: %s", dataset.name)
 
     return {"result": dataset}

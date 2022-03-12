@@ -41,7 +41,8 @@ class ModelImport(ModelBase):
 
 
 class ModelCreate(ModelBase):
-    pass
+    task_id: int
+    user_id: int
 
 
 class ModelUpdate(BaseModel):

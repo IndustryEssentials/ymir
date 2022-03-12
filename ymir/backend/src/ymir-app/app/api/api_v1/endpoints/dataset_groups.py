@@ -127,7 +127,5 @@ def delete_dataset_group(
         raise DatasetGroupNotFound()
 
     dataset_group = crud.dataset_group.soft_remove(db, id=group_id)
-
-    # todo
-    #  hide related datasets accordingly
+    crud.dataset.remove_group_resources(db, group_id=group_id)
     return {"result": dataset_group}

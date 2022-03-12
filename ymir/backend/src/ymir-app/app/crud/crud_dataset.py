@@ -88,14 +88,19 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             return latest_dataset_in_group.version_num
         return None
 
-    def create_with_version(self, db: Session, obj_in: DatasetCreate) -> Dataset:
+    def create_with_version(self, db: Session, obj_in: DatasetCreate, dest_group_name: Optional[str] = None) -> Dataset:
         # fixme
         #  add mutex lock to protect latest_version
         latest_version = self.get_latest_version(db, obj_in.dataset_group_id)
+        version_num = latest_version + 1 if latest_version is not None else 1
+        if dest_group_name:
+            name = f"{dest_group_name}_{version_num}"
+        else:
+            name = obj_in.name
 
         db_obj = Dataset(
-            name=obj_in.name,
-            version_num=latest_version + 1 if latest_version else 0,
+            name=name,
+            version_num=version_num,
             hash=obj_in.hash,
             result_state=int(obj_in.result_state),
             dataset_group_id=obj_in.dataset_group_id,
@@ -108,7 +113,9 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.refresh(db_obj)
         return db_obj
 
-    def create_as_task_result(self, db: Session, task: schemas.TaskInternal, dest_group_id: int) -> Dataset:
+    def create_as_task_result(
+        self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
+    ) -> Dataset:
         dataset_in = DatasetCreate(
             name=task.hash,
             hash=task.hash,
@@ -117,7 +124,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             user_id=task.user_id,
             task_id=task.id,
         )
-        return self.create_with_version(db, obj_in=dataset_in)
+        return self.create_with_version(db, obj_in=dataset_in, dest_group_name=dest_group_name)
 
     def finish(
         self,
@@ -141,6 +148,14 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.commit()
         db.refresh(dataset)
         return dataset
+
+    def remove_group_resources(self, db: Session, *, group_id: int) -> List[Dataset]:
+        objs = db.query(self.model).filter(self.model.dataset_group_id == group_id).all()
+        for obj in objs:
+            obj.is_deleted = True
+        db.bulk_save_objects(objs)
+        db.commit()
+        return objs
 
 
 dataset = CRUDDataset(Dataset)
