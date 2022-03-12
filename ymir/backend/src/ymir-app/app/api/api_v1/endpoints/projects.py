@@ -1,5 +1,5 @@
 import enum
-from typing import Any, List
+from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
@@ -14,7 +14,6 @@ from app.api.errors.errors import (
 )
 from app.constants.state import ResultState
 from app.constants.state import TaskType
-from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 
 router = APIRouter()
@@ -68,7 +67,7 @@ def create_project(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    labels: List[str] = Depends(deps.get_personal_labels),
+    personal_labels: Dict = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Create project
@@ -81,7 +80,7 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    training_classes = convert_keywords_to_classes(labels, project_in.training_keywords)
+    training_classes = [personal_labels["name_to_id"][keyword]["id"] for keyword in project_in.training_keywords]
 
     # 2.send to controller
     try:

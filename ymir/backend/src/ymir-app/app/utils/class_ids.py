@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Iterator, List, Optional
+from typing import Callable, Dict, Iterator, List, Optional, Set
 
 from app.schemas import Keyword
 
@@ -14,52 +14,29 @@ def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
         yield ",".join(label)
 
 
-def labels_to_keywords(labels: List[str], filter_f: Optional[Callable] = None, offset: int = 1) -> Iterator[Keyword]:
+def labels_to_keywords(personal_labels: Dict, filter_f: Optional[Callable] = None) -> Iterator[Keyword]:
     """
-    label: 0,dog,puppy,pup,canine
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     """
-    for label in labels:
-        partition = label.split(",")
-        offset_ = offset + 1
-        keyword = {"name": partition[offset], "aliases": partition[offset_:]}
+    for _, label_info in personal_labels["id_to_name"].items():
+        keyword = {"name": label_info["name"], "aliases": label_info["aliases"]}
         if filter_f is None or filter_f(keyword):
             yield Keyword(**keyword)
 
 
-def extract_names_from_keyword(keyword: Keyword) -> Iterator[str]:
-    yield keyword.name
-    if keyword.aliases:
-        yield from keyword.aliases
+def extract_names_from_labels(personal_labels: Dict) -> Set:
+    all_labels = set()
+    for _, label_info in personal_labels["id_to_name"].items():
+        all_labels.add(label_info["name"])
+        all_labels.add(label_info["aliases"])
+
+    return all_labels
 
 
-def extract_names_from_labels(labels: List[str]) -> Iterator[str]:
-    for keyword in labels_to_keywords(labels):
-        yield from extract_names_from_keyword(keyword)
-
-
-def find_duplication_in_labels(labels: List[str], new_labels: List[str]) -> List[str]:
-    names = set(extract_names_from_labels(labels))
+def find_duplication_in_labels(personal_labels: Dict, new_labels: List[str]) -> List[str]:
+    names = extract_names_from_labels(personal_labels)
     new_names = set(flatten_labels(new_labels))
     return list(names & new_names)
-
-
-def get_keyword_id_to_name_mapping(labels: List[str]) -> Dict:
-    mapping = {}
-    for label in labels:
-        partition = label.split(",")
-        idx, primary_name = int(partition[0]), partition[1]
-        mapping[idx] = primary_name
-    return mapping
-
-
-def get_keyword_name_to_id_mapping(labels: List[str]) -> Dict:
-    mapping = {}
-    for label in labels:
-        partition = label.split(",")
-        idx, primary_name = int(partition[0]), partition[1]
-        mapping[primary_name] = idx
-    return mapping
 
 
 def flatten_labels(labels: List[str]) -> List[str]:
@@ -68,10 +45,3 @@ def flatten_labels(labels: List[str]) -> List[str]:
     just split it as csv to get all the names
     """
     return [name for label in list(labels) for name in label.split(",")]
-
-
-def convert_keywords_to_classes(all_user_labels: List[str], keywords: List[str]) -> List[int]:
-    keyword_name_to_id = get_keyword_name_to_id_mapping(all_user_labels)
-
-    training_classes = [keyword_name_to_id[keyword] for keyword in keywords]
-    return training_classes

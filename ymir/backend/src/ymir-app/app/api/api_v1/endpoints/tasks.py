@@ -27,10 +27,6 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
-from app.utils.class_ids import (
-    convert_keywords_to_classes,
-    get_keyword_id_to_name_mapping,
-)
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
@@ -95,7 +91,7 @@ def create_task(
     viz_client: VizClient = Depends(deps.get_viz_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-    labels: List[str] = Depends(deps.get_personal_labels),
+    personal_labels: Dict = Depends(deps.get_personal_labels),
 ) -> Any:
     """
     Create task
@@ -107,7 +103,7 @@ def create_task(
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    parameters = normalize_parameters(db, task_in.parameters, task_in.config, labels)
+    parameters = normalize_parameters(db, task_in.parameters, task_in.config, personal_labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
@@ -176,7 +172,7 @@ class TaskResult:
         self.viz = viz
 
     @property
-    def labels(self) -> List[str]:
+    def personal_labels(self) -> Dict:
         """
         Lazy evaluate labels from controller
         """
@@ -188,8 +184,7 @@ class TaskResult:
 
     @property
     def dataset_info(self) -> Dict:
-        class_ids_to_keywords = get_keyword_id_to_name_mapping(self.labels)
-        assets = self.viz.get_assets(class_ids_to_keywords=class_ids_to_keywords)
+        assets = self.viz.get_assets(personal_labels=self.personal_labels)
         result = {
             "keywords": list(assets.keywords.keys()),
             "ignored_keywords": list(assets.ignored_keywords.keys()),
@@ -331,7 +326,7 @@ def normalize_parameters(
     db: Session,
     parameters: schemas.TaskParameter,
     config: Optional[Dict],
-    labels: List[str],
+    personal_labels: Dict,
 ) -> Dict:
     normalized = parameters.dict()  # type: Dict[str, Any]
 
@@ -359,7 +354,7 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = convert_keywords_to_classes(labels, parameters.keywords)
+        normalized["class_ids"] = [personal_labels["name_to_id"][keyword]["id"] for keyword in parameters.keywords]
     return normalized
 
 
