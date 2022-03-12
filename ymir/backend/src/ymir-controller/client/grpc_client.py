@@ -29,9 +29,7 @@ class ControllerClient:
 
 
 def _build_cmd_create_user_req(args: Dict) -> backend_pb2.GeneralReq:
-    return invoker_call.make_cmd_request(user_id=args["user"],
-                                         task_id=args["tid"],
-                                         req_type=backend_pb2.USER_CREATE)
+    return invoker_call.make_cmd_request(user_id=args["user"], task_id=args["tid"], req_type=backend_pb2.USER_CREATE)
 
 
 def _build_cmd_create_repo_req(args: Dict) -> backend_pb2.GeneralReq:
