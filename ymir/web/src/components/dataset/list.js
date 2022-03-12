@@ -142,7 +142,6 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
         key: "fusion",
         label: t("dataset.action.fusion"),
         onclick: () => history.push(`/home/task/fusion/${id}`),
-        hidden: () => !keywordCount,
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
       {
