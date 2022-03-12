@@ -1,12 +1,32 @@
 import random
 import time
+from typing import Dict
+
+import pytest
 
 from app.utils import ymir_viz as m
 from tests.utils.utils import random_lower_string
 
 
+@pytest.fixture(scope="module")
+def mock_user_labels() -> Dict:
+    id_to_name = dict()
+    for i in range(100):
+        id_to_name[i] = {
+            "name": random_lower_string(),
+            "aliases": [],
+            "create_time": 1647075200.0,
+            "update_time": 1647075200.0,
+            "id": i,
+        }
+
+    user_labels = {"id_to_name": id_to_name}
+
+    return user_labels
+
+
 class TestAsset:
-    def test_create_asset(self, mocker):
+    def test_create_asset(self, mock_user_labels, mocker):
         asset_id = random_lower_string()
         res = {
             "annotations": [
@@ -23,13 +43,13 @@ class TestAsset:
                 "timestamp": {"start": time.time()},
             },
         }
-        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
-        A = m.Asset.from_viz_res(asset_id, res, keyword_id_to_name=keyword_id_to_name)
+
+        A = m.Asset.from_viz_res(asset_id, res, user_labels=mock_user_labels)
         assert A.url == m.get_asset_url(asset_id)
 
 
 class TestAssets:
-    def test_assets(self):
+    def test_assets(self, mock_user_labels):
         res = {
             "elements": [
                 {
@@ -45,8 +65,7 @@ class TestAssets:
             },
             "total": random.randint(1000, 2000),
         }
-        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
-        AS = m.Assets.from_viz_res(res, keyword_id_to_name)
+        AS = m.Assets.from_viz_res(res, mock_user_labels)
         assert AS.total == res["total"]
 
 
@@ -68,7 +87,7 @@ class TestVizClient:
         assert viz.host == host
         assert viz.session
 
-    def test_get_assets(self, mocker):
+    def test_get_assets(self, mock_user_labels, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
         mock_session = mocker.Mock()
@@ -94,18 +113,17 @@ class TestVizClient:
         user_id = random.randint(1000, 2000)
         project_id = random.randint(1000, 2000)
         task_id = random_lower_string()
-        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
         viz.initialize(
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
         )
-        ret = viz.get_assets(class_ids_to_keywords=keyword_id_to_name)
+        ret = viz.get_assets(user_labels=mock_user_labels)
         assert isinstance(ret, m.Assets)
         assert ret.total
         assert ret.items
 
-    def test_get_asset(self, mocker):
+    def test_get_asset(self, mock_user_labels, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
         mock_session = mocker.Mock()
@@ -133,13 +151,12 @@ class TestVizClient:
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
         asset_id = random_lower_string()
-        keyword_id_to_name = {i: random_lower_string() for i in range(100)}
         viz.initialize(
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
         )
-        ret = viz.get_asset(asset_id=asset_id, class_ids_to_keywords=keyword_id_to_name)
+        ret = viz.get_asset(asset_id=asset_id, user_labels=mock_user_labels)
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id
 

@@ -17,7 +17,6 @@ from app.schemas import (
 from app.utils.cache import CacheClient
 from app.utils.class_ids import (
     find_duplication_in_labels,
-    flatten_labels,
     keywords_to_labels,
     labels_to_keywords,
 )
@@ -33,7 +32,7 @@ router = APIRouter()
 def get_keywords(
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    labels: List = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
     q: Optional[str] = Query(None, description="query keywords"),
     offset: int = Query(0),
     limit: Optional[int] = Query(None),
@@ -42,7 +41,7 @@ def get_keywords(
     Get keywords and aliases
     """
     filter_f = partial(filter_keyword, q) if q else None
-    items = list(labels_to_keywords(labels, filter_f))
+    items = list(labels_to_keywords(user_labels, filter_f))
     if settings.REVERSE_KEYWORDS_OUTPUT:
         items.reverse()
 
@@ -57,16 +56,16 @@ def create_keywords(
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
-    labels: List = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Batch create given keywords and aliases to keywords list
     """
     user_id = current_user.id
     new_labels = list(keywords_to_labels(keywords_input.keywords))
-    logger.info("old labels: %s\nnew labels: %s", labels, new_labels)
+    logger.info("old labels: %s\nnew labels: %s", user_labels, new_labels)
 
-    dups = find_duplication_in_labels(labels, new_labels)
+    dups = find_duplication_in_labels(user_labels, new_labels)
     if dups:
         return {"result": {"failed": dups}}
 
@@ -94,11 +93,16 @@ def update_keyword_aliases(
     labels = list(keywords_to_labels([updated_keyword]))
     resp = controller_client.add_labels(user_id, labels, False)
     logger.info("[controller] response for update label: %s", resp)
-    failed = flatten_labels(resp["csv_labels"])
-    if not failed:
+
+    conflict_labels = []
+    if resp.get("label_collection"):
+        for conflict_label in resp["label_collection"]["labels"]:
+            conflict_labels += [conflict_label["name"]] + conflict_label["aliases"]
+
+    if not conflict_labels:
         # clean cached key when changes happen
         cache.delete_personal_keywords()
-    return {"result": {"failed": failed}}
+    return {"result": {"failed": conflict_labels}}
 
 
 def paginate(items: List[Any], offset: int = 0, limit: Optional[int] = None) -> List[Any]:
