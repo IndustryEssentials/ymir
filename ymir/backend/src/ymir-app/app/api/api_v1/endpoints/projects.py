@@ -14,6 +14,7 @@ from app.api.errors.errors import (
 )
 from app.constants.state import ResultState
 from app.constants.state import TaskType
+from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 
 router = APIRouter()
@@ -80,7 +81,7 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    training_classes = [user_labels["name_to_id"][keyword]["id"] for keyword in project_in.training_keywords]
+    training_classes = convert_keywords_to_classes(user_labels, project_in.training_keywords)
 
     # 2.send to controller
     try:

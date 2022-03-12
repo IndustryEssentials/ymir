@@ -54,3 +54,7 @@ def flatten_labels(labels: List[str]) -> List[str]:
     just split it as csv to get all the names
     """
     return [name for label in list(labels) for name in label.split(",")]
+
+
+def convert_keywords_to_classes(user_labels: Dict, keywords: List[str]) -> List[int]:
+    return [user_labels["name_to_id"][keyword]["id"] for keyword in keywords]

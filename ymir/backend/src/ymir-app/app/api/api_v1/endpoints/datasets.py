@@ -27,6 +27,7 @@ from app.config import settings
 from app.constants.state import ResultState
 from app.constants.state import TaskState, TaskType
 from app.schemas.dataset import MergeStrategy
+from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -472,8 +473,8 @@ def fusion_normalize_parameters(
         include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
         include_strategy=task_in.include_strategy,
         exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
-        include_class_ids=[user_labels["name_to_id"][keyword]["id"] for keyword in task_in.include_labels],
-        exclude_class_ids=[user_labels["name_to_id"][keyword]["id"] for keyword in task_in.exclude_labels],
+        include_class_ids=convert_keywords_to_classes(user_labels, task_in.include_labels),
+        exclude_class_ids=convert_keywords_to_classes(user_labels, task_in.exclude_labels),
         sampling_count=task_in.sampling_count,
     )
 
