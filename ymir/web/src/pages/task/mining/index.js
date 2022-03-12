@@ -66,7 +66,7 @@ function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningT
   }, [seniorConfig])
 
   useEffect(() => {
-    getDataset(id)
+    id && getDataset(id)
   }, [id])
 
   useEffect(() => {
@@ -182,7 +182,7 @@ function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningT
     name: 'task_mining_' + randomNumber(),
     model: mid ? parseInt(mid) : undefined,
     image: image ? parseInt(image) : undefined,
-    datasetId: id,
+    datasetId: id || null,
     algorithm: getCheckedValue(Algorithm()),
     topk: 0,
     gpu_count: 0,
@@ -206,7 +206,7 @@ function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningT
           >
             <Tip hidden={true}>
             <Form.Item
-              label={t('task.filter.form.name.label')}
+              label={t('task.common.dataset.name')}
               name='name'
               rules={[
                 { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
@@ -221,15 +221,15 @@ function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningT
 
             <Tip hidden={true}>
             <Form.Item
-              label={t('task.filter.form.datasets.label')}
+              label={t('task.train.form.trainsets.label')}
               required
               name="datasetId"
               rules={[
-                { required: true, message: t('task.filter.form.datasets.required') },
+                { required: true, message: t('task.train.form.datasets.required') },
               ]}
             >
               <Select
-                placeholder={t('task.filter.form.mining.datasets.placeholder')}
+                placeholder={t('task.train.form.training.datasets.placeholder')}
                 filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                 onChange={setsChange}
                 showArrow
