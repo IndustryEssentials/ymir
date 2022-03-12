@@ -9,6 +9,7 @@ from google.protobuf.json_format import MessageToDict, ParseDict
 import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from controller.utils import labels
 from controller.utils.labels import LabelFileHandler
 from proto import backend_pb2
 
@@ -37,6 +38,7 @@ class TestInvokerInit(unittest.TestCase):
     def setUp(self):
         test_utils.check_commands()
         self._prepare_dirs()
+        labels.create_empty(self._user_root)
         LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["person", "cat"])
         logging.info("preparing done.")
 

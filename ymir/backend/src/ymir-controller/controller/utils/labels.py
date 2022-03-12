@@ -1,3 +1,4 @@
+from asyncore import file_dispatcher
 from collections import Counter
 import logging
 from pathlib import Path
@@ -68,9 +69,6 @@ class LabelStorage(BaseModel):
 class LabelFileHandler:
     def __init__(self, label_file_dir: str) -> None:
         self._label_file = labels_file_path(label_file_dir=label_file_dir)
-
-        # create if not exists
-        Path(self._label_file).touch(exist_ok=True)
 
     def get_label_file_path(self) -> str:
         return self._label_file
@@ -184,3 +182,16 @@ class LabelFileHandler:
 def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
     return LabelFileHandler(label_file_dir=label_file_dir).merge_labels(candidate_labels=candidate_labels,
                                                                         check_only=check_only)
+
+
+def get_all_labels(label_file_dir: str) -> LabelStorage:
+    return LabelFileHandler(label_file_dir=label_file_dir).get_all_labels()
+
+
+def create_empty(label_file_dir: str) -> None:
+    label_file = labels_file_path(label_file_dir)
+    if os.path.isfile(label_file):
+        raise FileExistsError(f"already exists: {label_file}")
+
+    with open(label_file, 'w') as f:
+        yaml.safe_dump(LabelStorage().dict(), f)
