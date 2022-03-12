@@ -126,7 +126,5 @@ def delete_model_group(
         raise ModelGroupNotFound()
 
     model_group = crud.model_group.soft_remove(db, id=group_id)
-
-    # todo
-    #  hide related models accordingly
+    crud.model.remove_group_resources(db, group_id=group_id)
     return {"result": model_group}
