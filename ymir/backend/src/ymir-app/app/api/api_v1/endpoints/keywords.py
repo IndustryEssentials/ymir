@@ -94,15 +94,15 @@ def update_keyword_aliases(
     resp = controller_client.add_labels(user_id, labels, False)
     logger.info("[controller] response for update label: %s", resp)
 
-    failed = []
+    conflict_labels = []
     if resp.get("label_collection"):
         for failed_label in resp["label_collection"]["labels"]:
-            failed += [failed_label["name"]] + failed_label["aliases"]
+            conflict_labels += [failed_label["name"]] + failed_label["aliases"]
 
-    if not failed:
+    if not conflict_labels:
         # clean cached key when changes happen
         cache.delete_personal_keywords()
-    return {"result": {"failed": failed}}
+    return {"result": {"failed": conflict_labels}}
 
 
 def paginate(items: List[Any], offset: int = 0, limit: Optional[int] = None) -> List[Any]:
