@@ -34,26 +34,15 @@ def labels_to_keywords(user_labels: Dict, filter_f: Optional[Callable] = None) -
             yield Keyword(**keyword)
 
 
-def extract_names_from_labels(user_labels: Dict) -> List:
-    all_labels = []
-    for _, label_info in user_labels["id_to_name"].items():
-        all_labels += [label_info["name"]] + label_info["aliases"]
-
-    return all_labels
-
-
 def find_duplication_in_labels(user_labels: Dict, new_labels: List[str]) -> List[str]:
-    names = set(extract_names_from_labels(user_labels))
-    new_names = set(flatten_labels(new_labels))
-    return list(names & new_names)
 
+    names = []
+    for _, label_info in user_labels["id_to_name"].items():
+        names += [label_info["name"]] + label_info["aliases"]
 
-def flatten_labels(labels: List[str]) -> List[str]:
-    """
-    labels from controller has no leading index,
-    just split it as csv to get all the names
-    """
-    return [name for label in list(labels) for name in label.split(",")]
+    new_names = [name for label in new_labels for name in label.split(",")]
+
+    return list(set(names) & set(new_names))
 
 
 def convert_keywords_to_classes(user_labels: Dict, keywords: List[str]) -> List[int]:

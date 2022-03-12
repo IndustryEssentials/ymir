@@ -20,15 +20,6 @@ class TestKeywordsToLabels:
             assert keywords[i].name == labels[i].split(",")[0]
 
 
-def test_flatten_labels():
-    assert m.flatten_labels(["cat,kitty", "dog,puppy"]) == [
-        "cat",
-        "kitty",
-        "dog",
-        "puppy",
-    ]
-
-
 class TestFindDuplicateLabels:
     def test_find_duplication_in_labels(self):
         user_labels = {
