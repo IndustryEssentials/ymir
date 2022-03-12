@@ -3,17 +3,18 @@ import json
 import os
 from pathlib import Path
 import shutil
-import tests.utils as test_utils
+from unittest import mock
 
 import pytest
 import requests
 
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.label_model import label_studio
+from controller.utils import labels
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-from controller.utils.labels import LabelFileHandler
 from proto import backend_pb2
+import tests.utils as test_utils
 
 
 @pytest.fixture()
@@ -22,7 +23,7 @@ def mock_many(mocker):
     mocker.patch("builtins.open", mocker.mock_open(read_data="data"))
     mocker.patch("os.listdir", return_value=[])
     mocker.patch.object(Path, "touch")
-    mocker.patch.object(LabelFileHandler, "get_main_labels_by_ids", return_value=["fake"])
+    labels.get_main_labels_by_ids = mock.Mock(return_value=["fake"])
 
 
 class TestTaskLabelingInvoker:

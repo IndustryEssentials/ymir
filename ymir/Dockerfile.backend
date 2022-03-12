@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 ARG PIP_SOURCE=https://pypi.org/simple
 
-ARG SERVER_MODE=prod
+ARG SERVER_MODE=dev
 
 RUN apt-get update \
   && apt-get install -y git \

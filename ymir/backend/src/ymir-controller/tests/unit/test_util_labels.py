@@ -56,11 +56,11 @@ class TestLabelFileHandler(unittest.TestCase):
 
     # public: test cases
     def test_merge(self):
-        label_handler = labels.LabelFileHandler(label_file_dir=self._test_root)
-
         # case 0: add 3 new labels
         candidate_labels = ['a,aa,aaa', 'h,hh,hhh', 'z']
-        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
+        conflict_labels = labels.merge_labels(label_file_dir=self._test_root,
+                                              candidate_labels=candidate_labels,
+                                              check_only=False)
         expected = [{
             '_label': labels.SingleLabel(id=0, name='a', aliases=['aa', 'aaa']),
             '_is_modified': False,
@@ -77,13 +77,17 @@ class TestLabelFileHandler(unittest.TestCase):
         # a unchanged, m with a conflicted alias hh, so all merge is ignored
         # no change will made to storage file
         candidate_labels = ['a,aa,aaa', 'm,hh', 'zz']
-        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
+        conflict_labels = labels.merge_labels(label_file_dir=self._test_root,
+                                              candidate_labels=candidate_labels,
+                                              check_only=False)
         self.assertEqual([['m', 'hh']], conflict_labels)
         self._check_result(expected=expected, actual=labels.get_all_labels(self._test_root).labels)
 
         # a: reset aliases, h: reset aliases, x: add new, z: unchanged
         candidate_labels = ["A,aa", "h", "x,xx,xxx"]
-        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
+        conflict_labels = labels.merge_labels(label_file_dir=self._test_root,
+                                              candidate_labels=candidate_labels,
+                                              check_only=False)
         expected = [{
             '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
             '_is_modified': True,
@@ -102,19 +106,25 @@ class TestLabelFileHandler(unittest.TestCase):
 
         # h: reset aliases with conflict, so all merge is ignored, storage file unchanged
         candidate_labels = ["h,a"]
-        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
+        conflict_labels = labels.merge_labels(label_file_dir=self._test_root,
+                                              candidate_labels=candidate_labels,
+                                              check_only=False)
         self.assertEqual([['h', 'a']], conflict_labels)
         self._check_result(expected=expected, actual=labels.get_all_labels(self._test_root).labels)
 
         # checkonly, wants to add c
         candidate_labels = ['c,cc,ccc']
-        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=True)
+        conflict_labels = labels.merge_labels(label_file_dir=self._test_root,
+                                              candidate_labels=candidate_labels,
+                                              check_only=True)
         self.assertFalse(conflict_labels)
         self._check_result(expected=expected, actual=labels.get_all_labels(self._test_root).labels)
 
         # add again
         candidate_labels = ['c,cc,ccc']
-        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
+        conflict_labels = labels.merge_labels(label_file_dir=self._test_root,
+                                              candidate_labels=candidate_labels,
+                                              check_only=False)
         expected = [{
             '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
             '_is_modified': True,
@@ -136,7 +146,9 @@ class TestLabelFileHandler(unittest.TestCase):
 
         # add label with head and tail spaces
         candidate_labels = [' d ,dd , ddd, d d d']
-        conflict_labels = label_handler.merge_labels(candidate_labels, check_only=False)
+        conflict_labels = labels.merge_labels(label_file_dir=self._test_root,
+                                              candidate_labels=candidate_labels,
+                                              check_only=False)
         expected = [{
             '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
             '_is_modified': True,

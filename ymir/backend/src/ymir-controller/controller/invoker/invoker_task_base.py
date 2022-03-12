@@ -89,8 +89,9 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                       output_config_file: str) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
         if in_class_ids:
-            label_handler = labels.LabelFileHandler(label_file_dir=os.path.join(repo_root, '.mir'))
-            executor_config["class_names"] = label_handler.get_main_labels_by_ids(in_class_ids)
+            label_file_dir = os.path.join(repo_root, '.mir')
+            executor_config["class_names"] = labels.get_main_labels_by_ids(label_file_dir=label_file_dir,
+                                                                           type_ids=in_class_ids)
         # when gpu_count > 0, use gpu model
         if executor_config["gpu_count"] > 0:
             gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(executor_config["gpu_count"], lock_gpu=True)
