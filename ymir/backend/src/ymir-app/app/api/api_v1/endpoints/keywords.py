@@ -96,8 +96,8 @@ def update_keyword_aliases(
 
     conflict_labels = []
     if resp.get("label_collection"):
-        for failed_label in resp["label_collection"]["labels"]:
-            conflict_labels += [failed_label["name"]] + failed_label["aliases"]
+        for conflict_label in resp["label_collection"]["labels"]:
+            conflict_labels += [conflict_label["name"]] + conflict_label["aliases"]
 
     if not conflict_labels:
         # clean cached key when changes happen
