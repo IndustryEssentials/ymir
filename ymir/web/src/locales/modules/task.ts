@@ -88,9 +88,9 @@ const task = {
 
   "task.fusion.form.fusion.datasets.placeholder": { cn: "请选择需要融合的数据集，可多选", en: "Please select the dataset to be fusioned, multi-selection support", },
   "task.fusion.form.exclude.datasets.placeholder": { cn: "请选择想要排除的数据，可多选", en: "Please select the dataset you want to exclude, multi-selection support", },
-  
-  "task.fusion.form.include.label": { cn: "筛选标签", en: "Filter Keywords", },
-  "task.fusion.form.include.required": { cn: "请选择标签", en: "Please select keywords for fusion", },
+
+  "task.fusion.form.include.label": { cn: "保留标签", en: "Keep Keywords", },
+  "task.fusion.form.include.required": { cn: "请选择标签，为空则保留全部", en: "Please select keywords, empty for keeping all", },
   "task.fusion.form.exclude.label": { cn: "排除标签", en: "Exclude Keywords", },
   "task.fusion.form.sampling": { cn: "采样数量", en: "Samples", },
   "task.train.form.valastest": { cn: "使用验证集作为测试集", en: "Use Validation Sets as Test Sets", },
@@ -125,6 +125,9 @@ const task = {
   "task.mining.form.strategy.label": { cn: "筛选策略", en: "Filter Strategy", },
   "task.mining.form.topk.label": { cn: "TOPK", en: "TOP K", },
   "task.label.form.type.newer": { cn: "未标注部分", en: "Unlabel", },
+  "task.mining.form.dataset.label": { cn: "挖掘集", en: "Mining Dataset", },
+  "task.mining.form.dataset.required": { cn: "挖掘集为必选项", en: "Mining dataset is required", },
+  "task.mining.form.dataset.placeholder": { cn: "请选择挖掘集", en: "Please select mining dataset", },
   "task.mining.form.label.label": { cn: "是否产生新标注", en: "With Annotations", },
   "task.mining.form.label.no": { cn: "否", en: "No", },
   "task.mining.form.label.yes": { cn: "是", en: "Yes", },
@@ -147,7 +150,7 @@ const task = {
   "task.label.form.plat.label": { cn: "标注平台账号", en: "Label Platform Account", },
   "task.label.form.plat.go": { cn: "到标注平台注册账号", en: "Label Platform", },
   "task.label.form.keep_anno.label": { cn: "保留原标注", en: "Keep Annotations", },
-  "task.fusion.tip.keyword.required": { cn: "筛选标签和排除标签至少需要选择1个", en: "There should be more than 1 selected on filter keywords and exclude filter keywords", },
+  "task.fusion.tip.keyword.required": { cn: "保留标签和排除标签至少需要选择1个", en: "There should be more than 1 selected on filter keywords and exclude filter keywords", },
   "task.train.fold": { cn: '收起参数配置', en: 'Fold', },
   "task.train.unfold": { cn: '展开参数配置', en: 'Unfold', },
   "task.train.parameter.add.label": { cn: '添加自定义参数', en: 'Add Custom Parameter', },

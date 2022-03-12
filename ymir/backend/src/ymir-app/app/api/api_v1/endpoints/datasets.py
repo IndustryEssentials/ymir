@@ -109,10 +109,11 @@ def get_public_datasets(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Get all the public datasets,
-    public datasets come from User 1
+    Get all the public datasets
+
+    public datasets come from User set by env (PUBLIC_DATASET_OWNER)
     """
-    datasets, total = crud.dataset.get_multi_by_user(
+    datasets, total = crud.dataset.get_multi_datasets(
         db,
         user_id=settings.PUBLIC_DATASET_OWNER,
     )
