@@ -290,6 +290,7 @@ class ControllerClient:
         req = ControllerRequest(ExtraRequestType.get_label, user_id)
         resp = self.send(req)
         # convert only once, save to cache
+        # {'name_to_id': {name: message  Label}, 'id_to_name': {'id': message  Label}}
         name_to_id = dict()
         id_to_name = dict()
         # if not set labels, lost the key label_collection

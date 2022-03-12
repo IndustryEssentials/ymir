@@ -94,9 +94,6 @@ def update_keyword_aliases(
     resp = controller_client.add_labels(user_id, labels, False)
     logger.info("[controller] response for update label: %s", resp)
 
-    # failed = resp["label_collection"]
-
-    # failed = flatten_labels(resp["csv_labels"])
     failed = []
     for failed_label in resp["label_collection"]:
         failed += [failed_label["name"]] + failed_label["aliases"]

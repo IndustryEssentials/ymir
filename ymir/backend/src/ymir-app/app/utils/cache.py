@@ -5,11 +5,7 @@ from redis import StrictRedis
 
 from app.config import settings
 
-CACHED_KEYS = [KEYWORDS_CACHE_KEY, KEYWORD_ID_TO_NAME_KEY, KEYWORD_NAME_TO_ID_KEY] = [
-    "keywords",
-    "keyword_id_name",
-    "keyword_name_id",
-]
+KEYWORDS_CACHE_KEY = "keywords"
 
 
 class CacheClient:
@@ -52,7 +48,7 @@ class CacheClient:
         pipe.execute()
 
     def delete_personal_keywords(self) -> None:
-        self.batch_delete(CACHED_KEYS)
+        self.delete(KEYWORDS_CACHE_KEY)
 
     def close(self) -> None:
         self.conn.close()
