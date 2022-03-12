@@ -30,7 +30,7 @@ const Routes = [
         title: 'task.fusion.title',
       },
       {
-        path: "/home/task/mining/:id",
+        path: "/home/task/mining/:id?",
         name: "taskMining",
         component: "@/pages/task/mining/index",
         title: 'task.mining.title',
