@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import IntEnum
 from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import and_, desc, not_
@@ -16,8 +17,10 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         self,
         db: Session,
         *,
-        user_id: int,
         name: Optional[str],
+        user_id: int,
+        project_id: Optional[int] = None,
+        state: Optional[IntEnum] = None,
         start_time: Optional[int],
         end_time: Optional[int],
         offset: Optional[int],
@@ -41,6 +44,12 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if name:
             # basic fuzzy search
             query = query.filter(self.model.name.like(f"%{name}%"))
+
+        if state:
+            query = query.filter(self.model.result_state == int(state))
+
+        if project_id is not None:
+            query = query.filter(self.model.project_id == project_id)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
