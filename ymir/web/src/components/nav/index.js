@@ -114,7 +114,6 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   )
 
   const renderMenu = (menus) => {
-    console.log('menus: ', menus)
     return menus.map((menu, i) => {
       if (menu.sub) {
         return (
