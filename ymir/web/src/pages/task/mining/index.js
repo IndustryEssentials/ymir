@@ -49,7 +49,6 @@ function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningT
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
-  const [trainSetCount, setTrainSetCount] = useState(1)
   const [hpVisible, setHpVisible] = useState(false)
   const [topk, setTopk] = useState(false)
   const [gpu_count, setGPU] = useState(0)
@@ -289,9 +288,9 @@ function Mining({ datasetCache, datasets, getDataset, getDatasets, createMiningT
                     <Radio value={false}>{t('common.all')}</Radio>
                     <Radio checked value={true}>{t('task.mining.form.topk.label')}</Radio>
                     <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
-                      { type: 'number', min: 1, max: trainSetCount - 1 || 1 }
+                      { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
                     ] : null}>
-                      <InputNumber style={{ width: 120 }} min={1} max={trainSetCount - 1} precision={0} disabled={!topk} />
+                      <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} disabled={!topk} />
                     </Form.Item>
                   </Radio.Group>
                 </Form.Item>
