@@ -14,7 +14,6 @@ from tests.utils.utils import random_lower_string
 @pytest.fixture(scope="function")
 def mock_controller(mocker):
     c = mocker.Mock()
-    # c.get_labels_of_user.return_value = ["0,cat", "1,dog,puppy"]
 
     c.get_labels_of_user.return_value = {
         "name_to_id": {
@@ -95,7 +94,6 @@ class TestNormalizeParameters:
             "name": random_lower_string(5),
             "else": None,
         }
-        # labels = ["1,cat", "2,dog", "3,boy"]
         user_labels = {
             "id_to_name": {
                 1: {

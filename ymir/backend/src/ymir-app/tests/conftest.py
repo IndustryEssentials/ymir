@@ -22,7 +22,6 @@ def db() -> Generator:
 def fake_controller_client() -> Generator:
     try:
         client = Mock()
-        # client.send.return_value = {"csv_labels": ["tabby", "kitten"]}
 
         client.send.return_value = {
             "label_collection": {
@@ -109,7 +108,6 @@ def fake_graph_client() -> Generator:
 def fake_cache_client() -> Generator:
     try:
         client = Mock()
-        # labels = ["0,cat,pussy", "1,dog,puppy"]
         labels = {
             "id_to_name": {
                 0: {
