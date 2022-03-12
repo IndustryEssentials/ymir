@@ -67,7 +67,7 @@ def create_project(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create project
@@ -80,7 +80,7 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    training_classes = [personal_labels["name_to_id"][keyword]["id"] for keyword in project_in.training_keywords]
+    training_classes = [user_labels["name_to_id"][keyword]["id"] for keyword in project_in.training_keywords]
 
     # 2.send to controller
     try:

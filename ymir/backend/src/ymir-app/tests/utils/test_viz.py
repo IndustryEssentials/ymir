@@ -9,7 +9,7 @@ from tests.utils.utils import random_lower_string
 
 
 @pytest.fixture(scope="module")
-def mock_personal_labels() -> Dict:
+def mock_user_labels() -> Dict:
     id_to_name = dict()
     for i in range(100):
         id_to_name[i] = {
@@ -20,13 +20,13 @@ def mock_personal_labels() -> Dict:
             "id": i,
         }
 
-    personal_labels = {"id_to_name": id_to_name}
+    user_labels = {"id_to_name": id_to_name}
 
-    return personal_labels
+    return user_labels
 
 
 class TestAsset:
-    def test_create_asset(self, mock_personal_labels, mocker):
+    def test_create_asset(self, mock_user_labels, mocker):
         asset_id = random_lower_string()
         res = {
             "annotations": [
@@ -44,12 +44,12 @@ class TestAsset:
             },
         }
 
-        A = m.Asset.from_viz_res(asset_id, res, personal_labels=mock_personal_labels)
+        A = m.Asset.from_viz_res(asset_id, res, user_labels=mock_user_labels)
         assert A.url == m.get_asset_url(asset_id)
 
 
 class TestAssets:
-    def test_assets(self, mock_personal_labels):
+    def test_assets(self, mock_user_labels):
         res = {
             "elements": [
                 {
@@ -65,7 +65,7 @@ class TestAssets:
             },
             "total": random.randint(1000, 2000),
         }
-        AS = m.Assets.from_viz_res(res, mock_personal_labels)
+        AS = m.Assets.from_viz_res(res, mock_user_labels)
         assert AS.total == res["total"]
 
 
@@ -87,7 +87,7 @@ class TestVizClient:
         assert viz.host == host
         assert viz.session
 
-    def test_get_assets(self, mock_personal_labels, mocker):
+    def test_get_assets(self, mock_user_labels, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
         mock_session = mocker.Mock()
@@ -118,12 +118,12 @@ class TestVizClient:
             project_id=project_id,
             branch_id=task_id,
         )
-        ret = viz.get_assets(personal_labels=mock_personal_labels)
+        ret = viz.get_assets(user_labels=mock_user_labels)
         assert isinstance(ret, m.Assets)
         assert ret.total
         assert ret.items
 
-    def test_get_asset(self, mock_personal_labels, mocker):
+    def test_get_asset(self, mock_user_labels, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
         mock_session = mocker.Mock()
@@ -156,7 +156,7 @@ class TestVizClient:
             project_id=project_id,
             branch_id=task_id,
         )
-        ret = viz.get_asset(asset_id=asset_id, personal_labels=mock_personal_labels)
+        ret = viz.get_asset(asset_id=asset_id, user_labels=mock_user_labels)
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id
 

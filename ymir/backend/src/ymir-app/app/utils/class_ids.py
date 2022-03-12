@@ -15,12 +15,12 @@ def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
         yield ",".join(label)
 
 
-def labels_to_keywords(personal_labels: Dict, filter_f: Optional[Callable] = None) -> Iterator[Keyword]:
+def labels_to_keywords(user_labels: Dict, filter_f: Optional[Callable] = None) -> Iterator[Keyword]:
     """
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     """
 
-    for _, label_info in personal_labels["id_to_name"].items():
+    for _, label_info in user_labels["id_to_name"].items():
         create_time = datetime.utcfromtimestamp(label_info["create_time"])
         update_time = datetime.utcfromtimestamp(label_info["update_time"])
 
@@ -34,16 +34,16 @@ def labels_to_keywords(personal_labels: Dict, filter_f: Optional[Callable] = Non
             yield Keyword(**keyword)
 
 
-def extract_names_from_labels(personal_labels: Dict) -> List:
+def extract_names_from_labels(user_labels: Dict) -> List:
     all_labels = []
-    for _, label_info in personal_labels["id_to_name"].items():
+    for _, label_info in user_labels["id_to_name"].items():
         all_labels += [label_info["name"]] + label_info["aliases"]
 
     return all_labels
 
 
-def find_duplication_in_labels(personal_labels: Dict, new_labels: List[str]) -> List[str]:
-    names = set(extract_names_from_labels(personal_labels))
+def find_duplication_in_labels(user_labels: Dict, new_labels: List[str]) -> List[str]:
+    names = set(extract_names_from_labels(user_labels))
     new_names = set(flatten_labels(new_labels))
     return list(names & new_names)
 

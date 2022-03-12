@@ -32,7 +32,7 @@ router = APIRouter()
 def get_keywords(
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
     q: Optional[str] = Query(None, description="query keywords"),
     offset: int = Query(0),
     limit: Optional[int] = Query(None),
@@ -41,7 +41,7 @@ def get_keywords(
     Get keywords and aliases
     """
     filter_f = partial(filter_keyword, q) if q else None
-    items = list(labels_to_keywords(personal_labels, filter_f))
+    items = list(labels_to_keywords(user_labels, filter_f))
     if settings.REVERSE_KEYWORDS_OUTPUT:
         items.reverse()
 
@@ -56,16 +56,16 @@ def create_keywords(
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Batch create given keywords and aliases to keywords list
     """
     user_id = current_user.id
     new_labels = list(keywords_to_labels(keywords_input.keywords))
-    logger.info("old labels: %s\nnew labels: %s", personal_labels, new_labels)
+    logger.info("old labels: %s\nnew labels: %s", user_labels, new_labels)
 
-    dups = find_duplication_in_labels(personal_labels, new_labels)
+    dups = find_duplication_in_labels(user_labels, new_labels)
     if dups:
         return {"result": {"failed": dups}}
 

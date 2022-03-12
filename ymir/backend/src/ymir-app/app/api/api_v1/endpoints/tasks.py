@@ -92,7 +92,7 @@ def create_task(
     viz_client: VizClient = Depends(deps.get_viz_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create task
@@ -104,7 +104,7 @@ def create_task(
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    parameters = normalize_parameters(db, task_in.parameters, task_in.config, personal_labels)
+    parameters = normalize_parameters(db, task_in.parameters, task_in.config, user_labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
@@ -175,7 +175,7 @@ class TaskResult:
         self.viz = viz
 
     @property
-    def personal_labels(self) -> Dict:
+    def user_labels(self) -> Dict:
         """
         Lazy evaluate labels from controller
         """
@@ -187,7 +187,7 @@ class TaskResult:
 
     @property
     def dataset_info(self) -> Dict:
-        assets = self.viz.get_assets(personal_labels=self.personal_labels)
+        assets = self.viz.get_assets(user_labels=self.user_labels)
         result = {
             "keywords": list(assets.keywords.keys()),
             "ignored_keywords": list(assets.ignored_keywords.keys()),
@@ -332,7 +332,7 @@ def normalize_parameters(
     db: Session,
     parameters: schemas.TaskParameter,
     config: Optional[Dict],
-    personal_labels: Dict,
+    user_labels: Dict,
 ) -> Dict:
     normalized = parameters.dict()  # type: Dict[str, Any]
 
@@ -360,7 +360,7 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = [personal_labels["name_to_id"][keyword]["id"] for keyword in parameters.keywords]
+        normalized["class_ids"] = [user_labels["name_to_id"][keyword]["id"] for keyword in parameters.keywords]
     return normalized
 
 

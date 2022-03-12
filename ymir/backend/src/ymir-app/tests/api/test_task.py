@@ -96,7 +96,7 @@ class TestNormalizeParameters:
             "else": None,
         }
         # labels = ["1,cat", "2,dog", "3,boy"]
-        personal_labels = {
+        user_labels = {
             "id_to_name": {
                 1: {
                     "name": "cat",
@@ -145,7 +145,7 @@ class TestNormalizeParameters:
             },
         }
         params = m.schemas.TaskParameter(**params)
-        res = m.normalize_parameters(mocker.Mock(), params, None, personal_labels)
+        res = m.normalize_parameters(mocker.Mock(), params, None, user_labels)
         assert res["class_ids"] == [1, 2, 3]
         assert "dataset_hash" in res
         assert "model_hash" in res

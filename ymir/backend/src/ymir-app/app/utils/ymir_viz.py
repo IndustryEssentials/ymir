@@ -18,15 +18,15 @@ class Asset:
     metadata: Dict
 
     @classmethod
-    def from_viz_res(cls, asset_id: str, res: Dict, personal_labels: Dict) -> "Asset":
+    def from_viz_res(cls, asset_id: str, res: Dict, user_labels: Dict) -> "Asset":
         annotations = [
             {
                 "box": annotation["box"],
-                "keyword": personal_labels["id_to_name"][annotation["class_id"]]["name"],
+                "keyword": user_labels["id_to_name"][annotation["class_id"]]["name"],
             }
             for annotation in res["annotations"]
         ]
-        keywords = [personal_labels["id_to_name"][class_id]["name"] for class_id in res["class_ids"]]
+        keywords = [user_labels["id_to_name"][class_id]["name"] for class_id in res["class_ids"]]
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -52,18 +52,18 @@ class Assets:
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, personal_labels: Dict) -> "Assets":
+    def from_viz_res(cls, res: Dict, user_labels: Dict) -> "Assets":
         assets = [
             {
                 "url": get_asset_url(asset["asset_id"]),
                 "hash": asset["asset_id"],
-                "keywords": [personal_labels["id_to_name"][int(class_id)]["name"] for class_id in asset["class_ids"]],
+                "keywords": [user_labels["id_to_name"][int(class_id)]["name"] for class_id in asset["class_ids"]],
             }
             for asset in res["elements"]
         ]
 
         keywords = {
-            personal_labels["id_to_name"][int(class_id)]["name"]: count
+            user_labels["id_to_name"][int(class_id)]["name"]: count
             for class_id, count in res["class_ids_count"].items()
         }
         ignored_keywords = res["ignored_labels"]
@@ -106,7 +106,7 @@ class VizClient:
         keyword_id: Optional[int] = None,
         offset: int = 0,
         limit: int = 20,
-        personal_labels: Dict,
+        user_labels: Dict,
     ) -> Assets:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets"  # noqa: E501
 
@@ -117,13 +117,13 @@ class VizClient:
             resp.raise_for_status()
         res = resp.json()["result"]
         logger.info("[viz] get_assets response: %s", res)
-        return Assets.from_viz_res(res, personal_labels)
+        return Assets.from_viz_res(res, user_labels)
 
     def get_asset(
         self,
         *,
         asset_id: str,
-        personal_labels: Dict,
+        user_labels: Dict,
     ) -> Optional[Dict]:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
 
@@ -132,7 +132,7 @@ class VizClient:
             logger.error("[viz] failed to get asset info: %s", resp.content)
             return None
         res = resp.json()["result"]
-        return asdict(Asset.from_viz_res(asset_id, res, personal_labels))
+        return asdict(Asset.from_viz_res(asset_id, res, user_labels))
 
     def get_model(self) -> Dict:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/models"  # noqa: E501

@@ -147,7 +147,7 @@ def get_cache(
         cache_client.close()
 
 
-def get_personal_labels(
+def get_user_labels(
     current_user: models.User = Depends(get_current_active_user),
     cache: ymir_cache.CacheClient = Depends(get_cache),
     controller_client: ControllerClient = Depends(get_controller_client),
@@ -159,10 +159,10 @@ def get_personal_labels(
         return json.loads(cached)
 
     logger.info("cache miss")
-    personal_labels = controller_client.get_labels_of_user(current_user.id)
+    user_labels = controller_client.get_labels_of_user(current_user.id)
 
-    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(personal_labels))
-    return personal_labels
+    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(user_labels))
+    return user_labels
 
 
 def get_clickhouse_client() -> Generator:

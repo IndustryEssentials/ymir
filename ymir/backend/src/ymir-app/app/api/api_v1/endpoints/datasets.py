@@ -348,7 +348,7 @@ def get_assets_of_dataset(
     keyword_id: Optional[int] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Get asset list of specific dataset,
@@ -367,7 +367,7 @@ def get_assets_of_dataset(
         keyword_id=keyword_id,
         limit=limit,
         offset=offset,
-        personal_labels=personal_labels,
+        user_labels=user_labels,
     )
     result = {
         "keywords": assets.keywords,
@@ -388,7 +388,7 @@ def get_random_asset_id_of_dataset(
     dataset_id: int = Path(..., example="12"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Get random asset from specific dataset
@@ -407,7 +407,7 @@ def get_random_asset_id_of_dataset(
         keyword_id=None,
         offset=offset,
         limit=1,
-        personal_labels=personal_labels,
+        user_labels=user_labels,
     )
     if assets.total == 0:
         raise AssetNotFound()
@@ -432,7 +432,7 @@ def get_asset_of_dataset(
     asset_hash: str = Path(..., description="in asset hash format"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Get asset from specific dataset
@@ -448,7 +448,7 @@ def get_asset_of_dataset(
     )
     asset = viz_client.get_asset(
         asset_id=asset_hash,
-        personal_labels=personal_labels,
+        user_labels=user_labels,
     )
     if not asset:
         raise AssetNotFound()
@@ -458,7 +458,7 @@ def get_asset_of_dataset(
 def fusion_normalize_parameters(
     db: Session,
     task_in: schemas.DatasetsFusionParameter,
-    personal_labels: Dict,
+    user_labels: Dict,
 ) -> Dict:
     include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
 
@@ -472,8 +472,8 @@ def fusion_normalize_parameters(
         include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
         include_strategy=task_in.include_strategy,
         exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
-        include_class_ids=[personal_labels["name_to_id"][keyword]["id"] for keyword in task_in.include_labels],
-        exclude_class_ids=[personal_labels["name_to_id"][keyword]["id"] for keyword in task_in.exclude_labels],
+        include_class_ids=[user_labels["name_to_id"][keyword]["id"] for keyword in task_in.include_labels],
+        exclude_class_ids=[user_labels["name_to_id"][keyword]["id"] for keyword in task_in.exclude_labels],
         sampling_count=task_in.sampling_count,
     )
 
@@ -490,7 +490,7 @@ def create_dataset_fusion(
     task_in: schemas.DatasetsFusionParameter,
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    personal_labels: Dict = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create data fusion
@@ -501,7 +501,7 @@ def create_dataset_fusion(
     )
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
 
-    parameters = fusion_normalize_parameters(db, task_in, personal_labels)
+    parameters = fusion_normalize_parameters(db, task_in, user_labels)
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,
