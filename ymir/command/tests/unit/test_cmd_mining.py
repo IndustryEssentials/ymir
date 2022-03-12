@@ -9,6 +9,7 @@ from google.protobuf.json_format import ParseDict
 import yaml
 
 from mir.commands.mining import CmdMining
+from mir.tools import class_ids
 from mir.tools.utils import ModelStorage
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
@@ -64,14 +65,14 @@ class TestMiningCmd(unittest.TestCase):
         os.mkdir(self._storage_root)
 
     def _prepare_config(self):
+        logging.info(f"current directory: {os.getcwd()}")
         shutil.copyfile('tests/assets/mining-template.yaml', self._config_file)
 
     def _prepare_mir_repo(self):
         # init repo
         logging.info(f"mir repo: {self._mir_repo_root}")
         test_utils.mir_repo_init(self._mir_repo_root)
-        with open(os.path.join(self._mir_repo_root, 'labels.csv'), 'w') as f:
-            f.write('0,,person\n1,,cat\n')
+        test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['person', 'cat'])
         # prepare branch a
         test_utils.mir_repo_create_branch(self._mir_repo_root, "a")
         self._prepare_mir_repo_branch_mining()

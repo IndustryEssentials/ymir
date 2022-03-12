@@ -6,11 +6,11 @@ from unittest import mock
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-import tests.utils as test_utils
+from controller.utils import labels
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-from controller.utils.labels import LabelFileHandler
 from proto import backend_pb2
+import tests.utils as test_utils
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
@@ -68,8 +68,7 @@ class TestInvokerFilterBranch(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["car", "person"])
-        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["car", "person"])
+        labels.get_main_labels_by_ids = mock.Mock(return_value=["car", "person"])
         in_class_ids = [1, 2]
         ex_class_ids = [3]
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_FILTER],

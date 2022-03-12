@@ -1,11 +1,14 @@
 import os
 import shutil
 import subprocess
-from typing import Type, List
+from typing import List, Type
+
+import yaml
 
 from mir.commands.init import CmdInit
 from mir.commands.checkout import CmdCheckout
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import class_ids
 from mir.tools.code import MirCode
 from mir.tools.mir_storage_ops import MirStorageOps
 
@@ -68,3 +71,14 @@ def remake_dirs(path: str):
     if os.path.isdir(path):
         shutil.rmtree(path)
     os.makedirs(path, exist_ok=True)
+
+
+def prepare_labels(mir_root: str, names: List[str]):
+    labels: List[class_ids._SingleLabel] = []
+    for idx, name in enumerate(names):
+        components = name.split(',')
+        labels.append(class_ids._SingleLabel(id=idx, name=components[0], aliases=components[1:]))
+    label_storage = class_ids._LabelStorage(labels=labels)
+
+    with open(class_ids.ids_file_path(mir_root=mir_root), 'w') as f:
+        yaml.safe_dump(label_storage.dict(), f)
