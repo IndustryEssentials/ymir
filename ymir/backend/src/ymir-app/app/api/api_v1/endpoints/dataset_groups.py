@@ -95,7 +95,7 @@ def update_dataset_group(
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
     obj_update: schemas.DatasetGroupUpdate,
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Change dataset group name
@@ -116,7 +116,7 @@ def delete_dataset_group(
     *,
     db: Session = Depends(deps.get_db),
     group_id: int = Path(...),
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Delete dataset group
