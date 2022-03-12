@@ -1,5 +1,5 @@
 import json
-from typing import Generator, List
+from typing import Generator, Dict
 
 from fastapi import Depends, Security
 from fastapi.logger import logger
@@ -147,11 +147,11 @@ def get_cache(
         cache_client.close()
 
 
-def get_personal_labels(
+def get_user_labels(
     current_user: models.User = Depends(get_current_active_user),
     cache: ymir_cache.CacheClient = Depends(get_cache),
     controller_client: ControllerClient = Depends(get_controller_client),
-) -> List:
+) -> Dict:
     # todo: make a cache wrapper
     cached = cache.get(ymir_cache.KEYWORDS_CACHE_KEY)
     if cached:
@@ -159,9 +159,10 @@ def get_personal_labels(
         return json.loads(cached)
 
     logger.info("cache miss")
-    csv_labels = controller_client.get_labels_of_user(current_user.id)
-    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(csv_labels))
-    return csv_labels
+    user_labels = controller_client.get_labels_of_user(current_user.id)
+
+    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(user_labels))
+    return user_labels
 
 
 def get_clickhouse_client() -> Generator:
