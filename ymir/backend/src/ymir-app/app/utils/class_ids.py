@@ -1,4 +1,5 @@
-from typing import Callable, Dict, Iterator, List, Optional, Set
+from datetime import datetime
+from typing import Callable, Dict, Iterator, List, Optional
 
 from app.schemas import Keyword
 
@@ -18,23 +19,31 @@ def labels_to_keywords(personal_labels: Dict, filter_f: Optional[Callable] = Non
     """
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     """
+
     for _, label_info in personal_labels["id_to_name"].items():
-        keyword = {"name": label_info["name"], "aliases": label_info["aliases"]}
+        create_time = datetime.utcfromtimestamp(label_info["create_time"])
+        update_time = datetime.utcfromtimestamp(label_info["update_time"])
+
+        keyword = {
+            "name": label_info["name"],
+            "aliases": label_info["aliases"],
+            "create_time": create_time,
+            "update_time": update_time,
+        }
         if filter_f is None or filter_f(keyword):
             yield Keyword(**keyword)
 
 
-def extract_names_from_labels(personal_labels: Dict) -> Set:
-    all_labels = set()
+def extract_names_from_labels(personal_labels: Dict) -> List:
+    all_labels = []
     for _, label_info in personal_labels["id_to_name"].items():
-        all_labels.add(label_info["name"])
-        all_labels.add(label_info["aliases"])
+        all_labels += [label_info["name"]] + label_info["aliases"]
 
     return all_labels
 
 
 def find_duplication_in_labels(personal_labels: Dict, new_labels: List[str]) -> List[str]:
-    names = extract_names_from_labels(personal_labels)
+    names = set(extract_names_from_labels(personal_labels))
     new_names = set(flatten_labels(new_labels))
     return list(names & new_names)
 

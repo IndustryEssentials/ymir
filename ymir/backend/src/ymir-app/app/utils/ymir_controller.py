@@ -120,7 +120,7 @@ class ControllerRequest:
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k", None):
             mine_task_req.top_k = args["top_k"]
-        mine_task_req.in_dataset_ids[:] = args["dataset_hash"]
+        mine_task_req.in_dataset_ids[:] = [args["dataset_hash"]]
         mine_task_req.generate_annotations = args["generate_annotations"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
@@ -290,13 +290,13 @@ class ControllerClient:
         req = ControllerRequest(ExtraRequestType.get_label, user_id)
         resp = self.send(req)
         # convert only once, save to cache
-        # person_labels is
         name_to_id = dict()
         id_to_name = dict()
-        for label_info in resp["label_collection"]:
-            name_to_id[label_info["id"]] = label_info
-            id_to_name[label_info["name"]] = label_info
-
+        # if not set labels, lost the key label_collection
+        if resp.get("label_collection"):
+            for label_info in resp["label_collection"]["labels"]:
+                name_to_id[label_info["id"]] = label_info
+                id_to_name[label_info["name"]] = label_info
         return dict(name_to_id=name_to_id, id_to_name=id_to_name)
 
     def create_task(
