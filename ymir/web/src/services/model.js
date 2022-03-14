@@ -103,7 +103,7 @@ export function createModel(model) {
 export function updateModel(id, name) {
   return request({
     method: "patch",
-    url: `/models/${id}`,
+    url: `/model_groups/${id}`,
     data: {
       name,
     },

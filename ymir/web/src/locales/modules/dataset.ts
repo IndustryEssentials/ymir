@@ -118,6 +118,8 @@ const dataset = {
   'dataset.import.public.include': { cn: '包含标签', en: 'Include', },
   'dataset.add.newkeyword.empty': { cn: '无新标签', en: 'None of new keywords', },
   'dataset.add.local.file.empty': { cn: '请上传本地文件', en: 'Please upload a zip file', },
+  'dataset.samples.negative': { cn: '负样本', en: 'Negative Samples', },
+  'dataset.train.form.samples': { cn: '样本比率', en: 'Samples Rates', },
 }
 
 export default dataset
