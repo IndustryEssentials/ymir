@@ -39,6 +39,7 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
             logging.error(message)
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, message)
 
+        task_id = request.task_id
         invoker_class = invoker_mapping.RequestTypeToInvoker[request.req_type]
         invoker = invoker_class(sandbox_root=self.sandbox_root,
                                 request=request,
@@ -47,8 +48,10 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
         try:
             invoker_result = invoker.server_invoke()
         except errors.MirCtrError as e:
+            logging.exception(f"task {task_id} error: {e}")
             return utils.make_general_response(e.error_code, e.error_message)
 
+        logging.info(f"task {task_id} result: {invoker_result}")
         if isinstance(invoker_result, backend_pb2.GeneralResp):
             return invoker_result
         return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,
