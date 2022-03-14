@@ -43,13 +43,13 @@ export const toFixed = (value: number, len: number) => {
   s += new Array(len + 1).join("0")
   const reg = new RegExp("^(-|\\+)?(\\d+(\\.\\d{0," + (len + 1) + "})?)\\d*$")
   const res = s.match(reg)
-  if (res) {
+  if (reg.test(s) && res) {
     let s = '0' + res[2]
     let pm = res[1] || ''
     let a = res[3].length
     let b = true
-    let tar = ''
     if (a == len + 2) {
+      let tar = ''
       let c = s.match(/\d/g)
       if (c) {
         const result = c.map(item => Number(item))
@@ -66,14 +66,14 @@ export const toFixed = (value: number, len: number) => {
         } else {
           tar = (c || []).join('')
         }
-        tar = tar.replace(new RegExp("(\\d+)(\\d{" + len + "})\\d$"), "$1.$2")
+        s = tar.replace(new RegExp("(\\d+)(\\d{" + len + "})\\d$"), "$1.$2")
       }
     }
 
-    if (b) tar = tar.substring(1)
-    return (pm + tar).replace(/\.$/, "")
+    if (b) s = s.substring(1)
+    return (pm + s).replace(/\.$/, "")
   }
-  return value + "";
+  return value + ""
 }
 
 export const percent = (num: number, keep = 2) => {

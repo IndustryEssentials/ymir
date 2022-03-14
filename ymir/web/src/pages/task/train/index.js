@@ -23,6 +23,7 @@ import ImageSelect from "../components/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import ModelSelect from "../components/modelSelect"
+import KeywordRates from "@/components/dataset/keywordRates"
 
 const { Option } = Select
 
@@ -174,6 +175,11 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
     console.log("Failed:", errorInfo)
   }
 
+  function getTrainSetTotal(setId) {
+    const ds = datasets.find(d => d.id === setId)
+    return ds ? ds.assetCount : 0
+  }
+
   function validateGPU(_, value) {
     const count = Number(value)
     const min = 1
@@ -260,6 +266,11 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
                 </Form.Item>
               </Tip>
             </ConfigProvider>
+            <Tip hidden={true}>
+              <Form.Item label={t('dataset.train.form.samples')}>
+                <KeywordRates id={trainSet} trainingKeywords={dataset?.project?.keywords} total={getTrainSetTotal(trainSet)}></KeywordRates>
+              </Form.Item>
+            </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item label={t('task.train.form.keywords.label')}>
                 {dataset?.project?.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
