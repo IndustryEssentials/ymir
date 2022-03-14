@@ -32,13 +32,17 @@ class StatsKeywordsRecommendOut(Common):
     result: List[Tuple[str, int]]
 
 
-class StatsTasksCount(BaseModel):
-    task: Optional[List[Dict[str, int]]]
-    task_timestamps: Optional[List]
+class StatsTimeBasedCount(BaseModel):
+    records: Optional[List[Dict[str, int]]]
+    timestamps: Optional[List]
 
 
 class StatsTasksCountOut(Common):
-    result: StatsTasksCount
+    result: StatsTimeBasedCount
+
+
+class StatsProjectsCountOut(Common):
+    result: StatsTimeBasedCount
 
 
 class StatsModelmAPsOut(Common):

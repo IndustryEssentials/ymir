@@ -84,21 +84,21 @@ def recommend_keywords(
     return {"result": stats}
 
 
-@router.get("/tasks/count", response_model=schemas.StatsTasksCountOut)
-def get_tasks_count(
+@router.get("/projects/count", response_model=schemas.StatsProjectsCountOut)
+def get_projects_count(
     precision: StatsPrecision = Query(..., description="day, week or month"),
     limit: int = Query(10, description="limit the data point size"),
     current_user: models.User = Depends(deps.get_current_active_user),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
-    Get tasks count grouped by task_type, divided by time ranges
+    Get projects count divided by time ranges
     """
     end_at = datetime.now()
     start_at = end_at.replace(end_at.year - 1)
-    stats = clickhouse.get_task_count(
+    stats = clickhouse.get_project_count(
         current_user.id,
-        precision=str(precision),
+        precision=precision.value,
         start_at=start_at,
         end_at=end_at,
         limit=limit,
