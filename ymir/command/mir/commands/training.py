@@ -210,6 +210,7 @@ class CmdTrain(base.BaseCommand):
         logging.debug("command train: %s", self.args)
 
         return CmdTrain.run_with_args(work_dir=self.args.work_dir,
+                                      media_cache=self.args.media_cache,
                                       model_upload_location=self.args.model_path,
                                       pretrained_model_hash=self.args.model_hash,
                                       src_revs=self.args.src_revs,
@@ -224,6 +225,7 @@ class CmdTrain(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
+                      media_cache: Optional[str],
                       model_upload_location: str,
                       pretrained_model_hash: str,
                       executor: str,
@@ -234,7 +236,6 @@ class CmdTrain(base.BaseCommand):
                       tensorboard_dir: str,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
-
         if not model_upload_location:
             logging.error("empty --model-location, abort")
             return MirCode.RC_CMD_INVALID_ARGS
@@ -338,8 +339,7 @@ class CmdTrain(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='project class ids mismatch')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='project class ids mismatch')
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
@@ -493,6 +493,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=False,
                                   help='model hash to be used')
     train_arg_parser.add_argument("-w", required=True, dest="work_dir", type=str, help="work place for training")
+    train_arg_parser.add_argument('--cache', required=False, dest='media_cache', type=str, help='media cache directory')
     train_arg_parser.add_argument("--executor",
                                   required=True,
                                   dest="executor",
