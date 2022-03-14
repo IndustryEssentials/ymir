@@ -63,8 +63,8 @@ CREATE TABLE dataset_keywords
     created_time DateTime,
     user_id Integer,
     project_id Integer,
-    dataset_id Integer,
     group_id Integer,
+    dataset_id Integer,
     keyword_ids Array(LowCardinality(String))
 )
 ENGINE = MergeTree()

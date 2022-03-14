@@ -7,6 +7,7 @@ from fastapi.logger import logger
 
 from app.api.errors.errors import FailedToConnectClickHouse
 from app.constants.state import TaskType, TrainingType
+from app.config import settings
 from app.utils.data import groupby
 
 
@@ -35,7 +36,7 @@ class TimeBasedCount:
 
 
 class YmirClickHouse:
-    def __init__(self, host: str):
+    def __init__(self, host: str = settings.CLICKHOUSE_URI):
         self.client = Client(host=host)
 
     def execute(self, query: str, params: Optional[Any] = None) -> Any:
