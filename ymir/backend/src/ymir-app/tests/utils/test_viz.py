@@ -12,7 +12,7 @@ from tests.utils.utils import random_lower_string
 def mock_user_labels() -> Dict:
     id_to_name = dict()
     for i in range(100):
-        id_to_name[i] = {
+        id_to_name[str(i)] = {
             "name": random_lower_string(),
             "aliases": [],
             "create_time": 1647075200.0,
