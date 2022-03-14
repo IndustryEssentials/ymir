@@ -785,6 +785,10 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 成功完成训练后，系统会输出模型的 id，用户可以根据这个 id 到 `--model-location` 位置找到对应的文件，它事实上是一个 tar 文件，可以直接使用 tar 命令解压，得到 params 和 json 格式的 mxnet 模型文件。
 
+*  在windows系统遇到部署、调试、运行问题如何解决？
+
+尚未在Windows服务器完备测试，暂时无法提供服务支持。
+
 ## 7.2 License
 
 YMIR开源项目符合Apache 2.0证书许可。查看 [LICENSE](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE) file for details.
