@@ -20,7 +20,7 @@ def run_command(cmd: List[str],
     logging.info(f"starting cmd: \n{' '.join(cmd)}\n")
     result = subprocess.run(cmd, capture_output=True, text=True)  # run and wait
     if result.returncode != 0:
-        logging.error(f"run cmd error:\n {result.stderr}")
+        logging.error(f"run cmd error:\n stderr: {result.stderr} \n stdout: {result.stdout}")
         return make_general_response(error_code, result.stderr)
 
     logging.info(f"run cmd succeed: \n {result.stdout}")
