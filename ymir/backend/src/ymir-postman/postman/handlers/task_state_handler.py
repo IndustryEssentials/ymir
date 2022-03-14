@@ -54,7 +54,7 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     # delay and retry
     if update_db_result.retry_tids:
         time.sleep(settings.RETRY_SECONDS)
-        ed.add_event(event_name=ed.event_name, event_topic=constants.EVENT_TOPIC_INNER, event_body='')
+        ed.add_event(event_name=ed._event_name, event_topic=constants.EVENT_TOPIC_INNER, event_body='')
 
 
 def _aggregate_msgs(mid_and_msgs: List[Tuple[str, dict]]) -> entities.TaskStateDict:
