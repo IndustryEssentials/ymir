@@ -68,7 +68,7 @@ from .stats import (
     StatsPopularDatasetsOut,
     StatsPopularKeywordsOut,
     StatsPopularModelsOut,
-    StatsTasksCountOut,
+    StatsProjectsCountOut,
 )
 from .sys_info import SysInfo, SysInfoOut
 from .task import (

@@ -184,7 +184,12 @@ class TaskResult:
 
     @property
     def model_info(self) -> Dict:
-        return self.viz.get_model()
+        result = self.viz.get_model()
+        try:
+            self.save_model_stats(result)
+        except FailedToConnectClickHouse:
+            logger.exception("Failed to write model stats to clickhouse, continue anyway")
+        return result
 
     @property
     def dataset_info(self) -> Dict:
@@ -199,6 +204,24 @@ class TaskResult:
     @property
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
+
+    def save_model_stats(self, result: Dict) -> None:
+        model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
+        if not model_in_db:
+            logger.warning("[update task] found no model to save model stats(%s)", result)
+            return
+        project_in_db = crud.project.get(self.db, id=self.project_id)
+        keywords = schemas.Project.from_orm(project_in_db).training_keywords
+        clickhouse = YmirClickHouse()
+        clickhouse.save_model_result(
+            model_in_db.create_datetime,
+            self.user_id,
+            model_in_db.id,
+            model_in_db.name,
+            result["hash"],
+            result["map"],
+            keywords,
+        )
 
     def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:
