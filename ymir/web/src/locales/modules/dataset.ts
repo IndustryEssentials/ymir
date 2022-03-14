@@ -43,7 +43,8 @@ const dataset = {
   "dataset.action.multi.train": { cn: "去训练", en: "Train With", },
   "dataset.action.multi.mine": { cn: "去挖掘", en: "Mining With", },
   "dataset.cancel.select": { cn: "取消选择", en: "Cancel Select", },
-  "dataset.action.del.confirm.content": { cn: "确认要删除数据集：{name}？", en: "Are you sure to remove this dataset:{name}?", },
+  "dataset.action.del.confirm.content": { cn: "确认要删除数据集版本：{name}？", en: "Are you sure to remove this dataset version:{name}?", },
+  "dataset.action.delgroup.confirm.content": { en: "Are you sure to remove this dataset:{name}, all of versions will be deleted.", cn: "确认要删除数据集：{name}？这个操作将删除此数据集下的所有版本", },
   "dataset.query.name.placeholder": { cn: "数据集名称", en: "Dataset Name", },
   "dataset.selected.label": { cn: "已选择 {len} 项，共计图片 {count} 张，", en: "{len} datasets selected，total {count} assets.", },
   "dataset.pager.total.label": { cn: "共 {total} 项", en: "Total {total} items", },
@@ -117,6 +118,8 @@ const dataset = {
   'dataset.import.public.include': { cn: '包含标签', en: 'Include', },
   'dataset.add.newkeyword.empty': { cn: '无新标签', en: 'None of new keywords', },
   'dataset.add.local.file.empty': { cn: '请上传本地文件', en: 'Please upload a zip file', },
+  'dataset.samples.negative': { cn: '负样本', en: 'Negative Samples', },
+  'dataset.train.form.samples': { cn: '样本比率', en: 'Samples Rates', },
 }
 
 export default dataset

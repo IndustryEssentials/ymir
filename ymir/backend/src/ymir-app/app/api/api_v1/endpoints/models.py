@@ -14,7 +14,7 @@ from app.api.errors.errors import (
     ModelNotFound,
 )
 from app.config import settings
-from app.constants.state import TaskType
+from app.constants.state import TaskType, ResultState
 from app.utils.files import save_file
 
 router = APIRouter()
@@ -43,6 +43,9 @@ class SortField(enum.Enum):
 def list_models(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by model's name"),
+    state: ResultState = Query(None),
+    project_id: int = Query(None),
+    group_id: int = Query(None),
     training_dataset_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
@@ -56,11 +59,20 @@ def list_models(
     Get list of models
 
     pagination is supported by means of offset and limit
+
+    filters:
+    - name
+    - state
+    - project_id
+    - start_time, end_time
     """
     models, total = crud.model.get_multi_models(
         db,
         user_id=current_user.id,
+        project_id=project_id,
+        group_id=group_id,
         name=name,
+        state=state,
         offset=offset,
         limit=limit,
         order_by=order_by.name,
@@ -138,7 +150,6 @@ def import_model_in_background(model_url: str, model_hash: str, storage_path: st
 @router.delete(
     "/{model_id}",
     response_model=schemas.ModelOut,
-    dependencies=[Depends(deps.get_current_active_user)],
     responses={
         400: {"description": "No permission"},
         404: {"description": "Model Not Found"},

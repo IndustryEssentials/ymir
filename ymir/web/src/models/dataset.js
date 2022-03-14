@@ -1,6 +1,6 @@
 import { 
   getDatasetGroups, getDatasetByGroup,  queryDatasets, getDataset, batchDatasets,
-  getAssetsOfDataset, getAsset, delDataset, createDataset, updateDataset, getInternalDataset,
+  getAssetsOfDataset, getAsset, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
@@ -71,7 +71,7 @@ export default {
       }
       const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
-        const vss = result.datasets.map(item => transferDataset(item))
+        const vss = result.items.map(item => transferDataset(item))
         const vs = { id: gid, versions: vss, }
         yield put({
           type: "UPDATE_VERSIONS",
@@ -96,6 +96,16 @@ export default {
         })
       }
     },
+    
+    *getKeywordRates({ payload }, { call, put }) {
+      const id = payload
+      const { code, result } = yield call(getAssetsOfDataset, { id, limit: 1 })
+      if (code === 0) {
+        const { total, keywords, negative_info } = result
+        const { negative_images_cnt, project_negative_images_cnt } = result.negative_info
+        return { keywords, total, negative: negative_images_cnt, negative_project: project_negative_images_cnt }
+      }
+    },
     *getAssetsOfDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getAssetsOfDataset, payload)
       if (code === 0) {
@@ -118,6 +128,12 @@ export default {
     },
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *delDatasetGroup({ payload }, { call, put }) {
+      const { code, result } = yield call(delDatasetGroup, payload)
       if (code === 0) {
         return result
       }

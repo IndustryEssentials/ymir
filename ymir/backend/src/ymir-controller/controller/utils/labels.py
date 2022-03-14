@@ -1,136 +1,185 @@
-import csv
-import logging
-import os
+from asyncore import file_dispatcher
 from collections import Counter
+import logging
 from pathlib import Path
-from typing import List, Iterable
+import os
+import time
+from typing import Dict, Iterable, List, Set
 
-from controller.config import label_task as label_task_config
+from pydantic import BaseModel, validator
+import yaml
 
 
-class LabelFileHandler:
-    # csv file: type_id, reserve, main_label, alias_label_1, xxx
-    def __init__(self, label_file_dir: str) -> None:
-        self._label_file = os.path.join(label_file_dir, "labels.csv")
+EXPECTED_FILE_VERSION = 1
 
-        label_file = Path(self._label_file)
-        label_file.touch(exist_ok=True)
 
-    def get_label_file_path(self) -> str:
-        return self._label_file
+class SingleLabel(BaseModel):
+    id: int
+    name: str
+    create_time: float = 0
+    update_time: float = 0
+    aliases: List[str] = []
 
-    def write_label_file(self, content: List[List[str]], add_preserve: bool = False, add_id: bool = False) -> None:
-        """write_label_file function
-        This function is used to store label content into a csv file.
-        Args:
-            content (List[List[str]]): content to be written, list of row of strings.
-            add_preserve(bool): add preserve position if True, used when raw content is passed in.
-            add_id: add id position if Ture, used for auto-generated ids.
-        """
-        with open(self._label_file, "w", newline='') as f:
-            writer = csv.writer(f)
-            for idx, row in enumerate(content):
-                if add_id:
-                    row.insert(0, str(idx))
-                if add_preserve:
-                    row.insert(1, "")
-                writer.writerow(row)
+    @validator('name')
+    def _strip_and_lower_name(cls, v: str) -> str:
+        return v.strip().lower()
 
-    def get_all_labels(self, with_reserve: bool = True, with_id: bool = True) -> List[List[str]]:
-        """
-        get all labels from labels.csv
+    @validator('aliases', each_item=True)
+    def _strip_and_lower_alias(cls, v: str) -> str:
+        return v.strip().lower()
 
-        Args:
-            with_reserve (bool): if true, returns preserve arg in each line
-            with_id: if true, returns type id (as str) in each line
 
-        Returns:
-            all labels, one element for each line
-            type_id (if with_id), preserved (if with_reserve), main name, alias...
-        """
-        all_labels, expected_id, = [], 0
-        labels_set, labels_cnt = set(), 0
-        with open(self._label_file, newline='') as f:
-            reader = csv.reader(f)
-            for record in reader:
-                cur_labels = [label.lower() for label in record]
-                assert len(cur_labels) >= 3
+class LabelStorage(BaseModel):
+    version: int = EXPECTED_FILE_VERSION
+    labels: List[SingleLabel] = []
 
-                # update and check unique count
-                labels_cnt += len(cur_labels) - 2  # remove id and preserve field
-                labels_set.update(cur_labels[2:])
-                assert labels_cnt == len(labels_set)  # no duplicate inline
+    @validator('version')
+    def _check_version(cls, v: int) -> int:
+        if v != EXPECTED_FILE_VERSION:
+            raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
+        return v
 
-                # check ids.
-                cur_id = int(cur_labels[0])
-                assert cur_id == expected_id
-                expected_id += 1
+    @validator('labels')
+    def _check_labels(cls, labels: List[SingleLabel]) -> List[SingleLabel]:
+        label_names_set: Set[str] = set()
+        for idx, label in enumerate(labels):
+            if label.id != idx:
+                raise ValueError(f"invalid label id: {label.id}, expected {idx}")
 
-                if not with_reserve:
-                    cur_labels.pop(label_task_config.LABEL_RESERVE_COLUMN)
-                if not with_id:
-                    cur_labels.pop(0)
-                all_labels.append(cur_labels)
+            # all label names and aliases should have no dumplicate
+            name_and_aliases = label.aliases + [label.name]
+            name_and_aliases_set = set(name_and_aliases)
+            if len(name_and_aliases) != len(name_and_aliases_set):
+                raise ValueError(f"duplicated inline label: {name_and_aliases}")
+            duplicated = set.intersection(name_and_aliases_set, label_names_set)
+            if duplicated:
+                raise ValueError(f"duplicated: {duplicated}")
+            label_names_set.update(name_and_aliases_set)
+        return labels
 
-        return all_labels
 
-    def merge_labels(self, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
-        # check candidate_labels has no duplicate
-        candidate_labels_list = [x.lower().split(",") for x in candidate_labels]
-        candidates_list = [x for row in candidate_labels_list for x in row]
-        if len(candidates_list) != len(set(candidates_list)):
-            logging.info(f"conflict candidate labels: {candidate_labels_list}")
-            return candidate_labels_list
+def labels_file_name() -> str:
+    return 'labels.yaml'
 
-        existed_labels_without_id = self.get_all_labels(with_reserve=False, with_id=False)
-        existed_main_names_to_ids = {row[0]: idx for idx, row in enumerate(existed_labels_without_id)}
 
-        candidate_labels_list_new = []
-        for candidate_list in candidate_labels_list:
-            if candidate_list[0] in existed_main_names_to_ids:  # update alias
-                idx = existed_main_names_to_ids[candidate_list[0]]
-                existed_labels_without_id[idx] = candidate_list
-            else:  # new main_names
-                candidate_labels_list_new.append(candidate_list)
+def labels_file_path(label_file_dir: str) -> str:
+    os.makedirs(label_file_dir, exist_ok=True)
+    return os.path.join(label_file_dir, labels_file_name())
 
-        existed_labels_list = [x for row in existed_labels_without_id for x in row]
-        existed_labels_dups = set([k for k, v in Counter(existed_labels_list).items() if v > 1])
-        if existed_labels_dups:
-            conflict_labels = []
-            for candidate_list in candidate_labels_list:
-                if set.intersection(set(candidate_list), existed_labels_dups):  # at least one label exist.
-                    conflict_labels.append(candidate_list)
-            return conflict_labels
 
-        existed_labels_set = set(existed_labels_list)
+def _write_label_file(label_file_dir: str, all_labels: List[SingleLabel]) -> None:
+    """
+    dump all label content into a label storage file, old file contents will be lost
+    Args:
+        all_labels (List[SingleLabel]): all labels
+    """
+    label_storage = LabelStorage(labels=all_labels)
+    with open(labels_file_path(label_file_dir), 'w') as f:
+        yaml.safe_dump(label_storage.dict(), f)
 
-        # insert new main_names.
+
+def get_all_labels(label_file_dir: str) -> LabelStorage:
+    """
+    get all labels from label storage file
+
+    Returns:
+    List[SingleLabel]: all labels
+
+    Raises:
+        FileNotFoundError: if label storage file not found
+        ValueError: if version mismatch
+        Error: if parse failed or other error occured
+    """
+    with open(labels_file_path(label_file_dir), 'r') as f:
+        obj = yaml.safe_load(f)
+    if obj is None:
+        obj = {}
+
+    label_storage = LabelStorage(**obj)
+
+    return label_storage
+
+
+def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
+    # TODO: too hard to read, make it simpler in another pr
+
+    # check `candidate_labels` has no duplicate
+    candidate_labels_list = [x.strip().lower().split(",") for x in candidate_labels]
+    candidates_list = [x for row in candidate_labels_list for x in row]
+    if len(candidates_list) != len(set(candidates_list)):
+        logging.error(f"conflict labels: {candidate_labels_list}")
+        return candidate_labels_list
+
+    current_timestamp = time.time()
+
+    # all labels in storage file
+    existed_labels = get_all_labels(label_file_dir=label_file_dir).labels
+    # key: label name, value: idx
+    existed_main_names_to_ids: Dict[str, int] = {label.name: idx for idx, label in enumerate(existed_labels)}
+
+    # for main names in `existed_main_names_to_ids`, update alias
+    # for new main names, add them to `candidate_labels_list_new`
+    candidate_labels_list_new: List[List[str]] = []
+    for candidate_list in candidate_labels_list:
+        main_name = candidate_list[0]
+        if main_name in existed_main_names_to_ids:  # update alias
+            idx = existed_main_names_to_ids[main_name]
+            # update `existed_labels`
+            label = existed_labels[idx]
+            label.name = candidate_list[0]
+            label.aliases = candidate_list[1:]
+            label.update_time = current_timestamp
+        else:  # new main_names
+            candidate_labels_list_new.append(candidate_list)
+
+    # check dumplicate for `existed_labels_list`
+    existed_labels_list = []
+    for label in existed_labels:
+        existed_labels_list.append(label.name)
+        existed_labels_list.extend(label.aliases)
+    existed_labels_dups = set([k for k, v in Counter(existed_labels_list).items() if v > 1])
+    if existed_labels_dups:
         conflict_labels = []
-        for candidate_list in candidate_labels_list_new:
-            candidate_set = set(candidate_list)
-            if set.intersection(candidate_set, existed_labels_set):  # at least one label exist.
+        for candidate_list in candidate_labels_list:
+            if set.intersection(set(candidate_list), existed_labels_dups):  # at least one label exist.
                 conflict_labels.append(candidate_list)
-                continue
-
-            existed_labels_without_id.append(candidate_list)
-            existed_labels_set.update(candidate_set)
-        logging.info(f"conflict labels: {conflict_labels}")
-
-        if not (check_only or conflict_labels):
-            self.write_label_file(existed_labels_without_id, add_preserve=True, add_id=True)
+        logging.error(f"conflict labels: {conflict_labels}")
         return conflict_labels
 
-    def get_main_labels_by_ids(self, type_ids: Iterable) -> List[str]:
-        with open(self._label_file, newline='') as f:
-            reader = csv.reader(f)
-            all_main_names = [one_row[2] for one_row in reader]
+    existed_labels_set = set(existed_labels_list)
 
-        main_names = []
-        for type_id in type_ids:
-            type_id = int(type_id)
-            if type_id >= len(all_main_names):
-                raise ValueError(f"get_main_labels_by_ids input type_ids error: {type_ids}")
-            else:
-                main_names.append(all_main_names[type_id])
+    # insert new main_names.
+    conflict_labels = []
+    for candidate_list in candidate_labels_list_new:
+        candidate_set = set(candidate_list)
+        if set.intersection(candidate_set, existed_labels_set):  # at least one label exist.
+            conflict_labels.append(candidate_list)
+            continue
 
-        return main_names
+        existed_labels.append(
+            SingleLabel(id=len(existed_labels),
+                        name=candidate_list[0],
+                        aliases=candidate_list[1:],
+                        create_time=current_timestamp,
+                        update_time=current_timestamp))
+        existed_labels_set.update(candidate_set)
+
+    if not (check_only or conflict_labels):
+        _write_label_file(label_file_dir, existed_labels)
+    if conflict_labels:
+        logging.error(f"conflict labels: {conflict_labels}")
+    return conflict_labels
+
+
+def get_main_labels_by_ids(label_file_dir: str, type_ids: Iterable) -> List[str]:
+    all_labels = get_all_labels(label_file_dir=label_file_dir).labels
+    return [all_labels[int(idx)].name for idx in type_ids]
+
+
+def create_empty(label_file_dir: str) -> None:
+    label_file = labels_file_path(label_file_dir)
+    if os.path.isfile(label_file):
+        raise FileExistsError(f"already exists: {label_file}")
+
+    with open(label_file, 'w') as f:
+        yaml.safe_dump(LabelStorage().dict(), f)

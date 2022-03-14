@@ -20,20 +20,46 @@ class TestKeywordsToLabels:
             assert keywords[i].name == labels[i].split(",")[0]
 
 
-def test_flatten_labels():
-    assert m.flatten_labels(["cat,kitty", "dog,puppy"]) == [
-        "cat",
-        "kitty",
-        "dog",
-        "puppy",
-    ]
-
-
 class TestFindDuplicateLabels:
     def test_find_duplication_in_labels(self):
+        user_labels = {
+            "id_to_name": {
+                1: {
+                    "name": "cat",
+                    "aliases": ["kitty"],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 1,
+                },
+                2: {
+                    "id": 2,
+                    "name": "dog",
+                    "aliases": ["puppy"],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+            "name_to_id": {
+                "cat": {
+                    "name": "cat",
+                    "aliases": ["kitty"],
+                    "create_time": 1647075200.0,
+                    "update_time": 1647075200.0,
+                    "id": 1,
+                },
+                "dog": {
+                    "id": 2,
+                    "name": "dog",
+                    "aliases": ["puppy"],
+                    "create_time": 1647076200.0,
+                    "update_time": 1647076400.0,
+                },
+            },
+        }
+
         assert (
             m.find_duplication_in_labels(
-                ["1,cat,kitty", "2,dog,puppy"],
+                user_labels,
                 ["cat"],
             )
             == ["cat"]
@@ -41,7 +67,7 @@ class TestFindDuplicateLabels:
 
         assert (
             m.find_duplication_in_labels(
-                ["1,cat,kitty", "2,dog,puppy"],
+                user_labels,
                 ["girl", "boy"],
             )
             == []

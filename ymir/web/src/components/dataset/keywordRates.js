@@ -1,58 +1,77 @@
 import { useState, useEffect } from "react"
-import { Row, Col, } from "antd"
+import { Row, Col, Progress, } from "antd"
+import { connect } from 'dva'
 import t from "@/utils/t"
 
-import style from "./tripleRates.less"
-import { percent } from "../../utils/number"
+import s from "./keywordRates.less"
+import { percent } from "@/utils/number"
 
 function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ total = 0, showAll = false, trainingKeywords = [], data = [] }) {
+function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
   const [list, setList] = useState([])
-  useEffect(() => {
-    if (data.length) {
-      const klist = data.map(({ label, count = 0}) => {
-        return {
 
-        }
-      })
+  useEffect(() => {
+    id && fetchRates()
+  }, [id])
+
+  async function fetchRates(){
+    const result = await getKeywordRates(id)
+    if (result) {
+      const { total, keywords, negative_project, negative } = result
+      const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywords)
+      const neg = trainingKeywords.length ? negative_project : negative
+      const klist = getKeywordList(keywords, filter, neg).map(item => ({
+        ...item,
+        percent: percent(item.count * 0.8 / total),
+        total,
+        color: randomColor(),
+      }))
+      setList(klist)
     }
-  }, [data])
-  useEffect(() => {
-    setTotal(0)
-    const sums = parts.map((part, index) => {
-      const sum = data.reduce((prev, curr) => part.ids.indexOf(curr.id) >= 0 ? prev + curr.asset_count : prev, 0)
-      setTotal(total => total + sum)
-      return {
-        ...part,
-        color: colors[index],
-        sum,
-      }
-    })
-    setCounts(sums)
-
-  }, [parts])
-
-  function format(num) {
-    return percent(num / total)
   }
 
-  return total ? (
-    <Row className={style.container} gutter={20}>
-      <Col className={style.progress} flex={1}>
-        <Row className={style.bg} wrap={false}>
-          {counts.map((part, index) => part.sum > 0 ? (
-            <Col className={style.part} flex={format(part.sum)} key={index} style={{ backgroundColor: part.color }} title={format(part.sum)}>
-              {part.label} {format(part.sum)}
-            </Col>
-          ) : null)}
-        </Row>
-      </Col>
-      <Col>{t('task.train.total.label', { total })}</Col>
-    </Row>
+  function getKeywordList(keywords, filterKeywords, negative ) {
+    const klist = filterKeywords.map(keyword => {
+      const count = keywords[keyword]
+      return {
+        keyword, count
+      }
+    })
+    klist.push({
+      keyword: t('dataset.samples.negative'),
+      count: negative,
+    })
+    return klist
+  }
+
+  function format({ percent = 0, keyword = '', count = 0, total }) {
+    return `${keyword} ${count}/${total} ${percent}`
+  }
+
+  return list.length ? (
+    <div className={s.rates}>
+      {list.map(item => (
+        <div key={item.keyword} className={s.rate}>
+          <span className={s.bar} style={{ width: item.percent, background: item.color }}>&nbsp;</span>
+          <span>{format(item)}</span>
+          </div>
+      ))}  
+    </div>
   ) : null
 }
 
-export default KeywordRates
+const actions = (dispatch) => {
+  return {
+    getKeywordRates(id) {
+      return dispatch({
+        type: 'dataset/getKeywordRates',
+        payload: id,
+      })
+    }
+  }
+}
+
+export default connect(null, actions)(KeywordRates)

@@ -28,7 +28,7 @@ class LogInvoker(BaseMirControllerInvoker):
 
         if response.code == 0 and response.message:
             message_lines = response.message.splitlines()
-            logging.info('message_lines: ', message_lines)
+            logging.info(f"message_lines: {message_lines}")
             log_components = []  # List[str]
             for line in message_lines:
                 if re.fullmatch(r"^commit +[0-9a-z]{40}$", line):

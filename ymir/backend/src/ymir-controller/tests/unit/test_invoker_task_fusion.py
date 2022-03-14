@@ -4,10 +4,9 @@ import shutil
 import unittest
 from unittest import mock
 
-from controller.utils import utils
+from controller.utils import labels, utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-from controller.utils.labels import LabelFileHandler
 from proto import backend_pb2
 import tests.utils as test_utils
 
@@ -49,7 +48,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         test_utils.check_commands()
         self._prepare_dirs()
         self._prepare_mir_repo()
-        LabelFileHandler.get_main_labels_by_ids = mock.Mock(return_value=["person", "cat", "table"])
+        labels.get_main_labels_by_ids = mock.Mock(return_value=["person", "cat", "table"])
         return super().setUp()
 
     def tearDown(self) -> None:

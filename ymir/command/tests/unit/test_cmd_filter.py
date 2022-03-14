@@ -22,7 +22,8 @@ class TestCmdFilter(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__prepare_dir(self._mir_root)
-        self.__prepare_labels_csv(self._mir_root)
+        test_utils.prepare_labels(mir_root=self._mir_root,
+                                  names=['frisbee', 'type1', 'person', 'type3', 'cat', 'chair'])
         self.__prepare_mir_repo(self._mir_root)
         return super().setUp()
 
@@ -39,15 +40,6 @@ class TestCmdFilter(unittest.TestCase):
     def __deprepare_dir(self, mir_root: str):
         if os.path.isdir(mir_root):
             shutil.rmtree(mir_root)
-
-    def __prepare_labels_csv(self, mir_root: str):
-        with open(class_ids.ids_file_path(mir_root), 'w') as f:
-            f.write('0,,frisbee\n')
-            f.write('1,,type1\n')
-            f.write('2,,person\n')
-            f.write('3,,type3\n')
-            f.write('4,,cat\n')
-            f.write('15,,chair\n')
 
     def __prepare_mir_repo(self, mir_root: str):
         test_utils.mir_repo_init(self._mir_root)

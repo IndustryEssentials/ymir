@@ -1,4 +1,4 @@
-import React, { useEffect, useState, version } from "react"
+import React, { useEffect, useRef, useState, version } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory, useLocation, useParams } from "umi"
@@ -22,6 +22,8 @@ import {
 } from "@/components/common/icons"
 import { humanize } from "@/utils/number"
 import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
+import Del from "./del"
+import DelGroup from "./delGroup"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -34,6 +36,8 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
+  const delRef = useRef(null)
+  const delGroupRef = useRef(null)
   let [lock, setLock] = useState(true)
 
   /** use effect must put on the top */
@@ -135,14 +139,13 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   ]
 
   const actionMenus = (record) => {
-    const { id, name, state, keywordCount } = record
+    const { id, name, state, versionName } = record
     let actions = []
     const menus = [
       {
         key: "fusion",
         label: t("dataset.action.fusion"),
         onclick: () => history.push(`/home/task/fusion/${id}`),
-        hidden: () => !keywordCount,
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
       {
@@ -167,7 +170,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     const delMenu = {
       key: "del",
       label: t("dataset.action.del"),
-      onclick: () => del(id, name),
+      onclick: () => del(id, `${name} ${versionName}`),
       icon: <DeleteIcon />,
     }
     if (isValidDataset(state)) {
@@ -210,23 +213,20 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     }))
   }
 
+  const delGroup = (id, name) => {
+    delGroupRef.current.del(id, name)
+  }
   const del = (id, name) => {
-    confirm({
-      icon: <TipsIcon style={{ color: 'rgb(242, 99, 123)' }} />,
-      content: t("dataset.action.del.confirm.content", { name }),
-      onOk: async () => {
-        const result = await delDataset(id)
-        if (result) {
-          setDatasets(datasets.filter((dataset) => dataset.id !== id))
-          setTotal(total => total - 1)
-          getData()
-        }
-      },
-      okText: t('task.action.del'),
-      okButtonProps: { style: { backgroundColor: 'rgb(242, 99, 123)', borderColor: 'rgb(242, 99, 123)', } }
-    })
+    delRef.current.del(id, name)
+  }
+  
+  const delOk = (id) => {
+    getVersions(id, true)
   }
 
+  const delGroupOk = () => {
+    getData()
+  }
 
   const edit = (record) => {
     setCurrent({})
@@ -265,24 +265,9 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     }
   }
 
-  function isImporting(state) {
-    return [TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(state) >= 0
-  }
-
-  function isImportFail(state) {
-    return TASKSTATES.FAILURE === state
-  }
-
-  function isImported(state) {
-    return TASKSTATES.FINISH === state
-  }
 
   function isValidDataset(state) {
     return states.VALID === state
-  }
-
-  function isInvalidDataset(state) {
-    return states.VALID !== state
   }
 
   const addBtn = (
@@ -298,8 +283,8 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
           <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
             <span className={styles.groupName}>{group.name}</span></Col>
           <Col><Space>
-            <a onClick={edit} title={t('common.modify')}><EditIcon /></a>
-            <a onClick={del} title={t('common.del')}><DeleteIcon /></a>
+            <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
+            <a onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
         <div className={styles.groupTable} hidden={!group.showVersions}>
@@ -358,6 +343,9 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
           <StateTag mode='text' state={current.state} />
         </Form.Item> : null}
       </EditBox>
+      <DelGroup ref={delGroupRef} ok={delGroupOk} />
+      <Del ref={delRef} ok={delOk} />
+
     </div>
   )
 }

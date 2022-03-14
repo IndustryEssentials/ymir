@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package ymir.backend;
 
-import "google/protobuf/timestamp.proto";
-
 /// assertion type: training, validation or test
 enum TvtType {
     TvtTypeUnknown = 0;
@@ -27,6 +25,7 @@ enum TaskType {
     TaskTypeSampling = 10;
     /// merge -> filter -> sampling
     TaskTypeFusion = 11;
+    TaskTypeImportModel = 12;
 };
 
 enum LabelFormat {
@@ -154,6 +153,7 @@ message ReqCreateTask {
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
     TaskReqFusion fusion = 109;
+    TaskReqModelImporting model_importing = 110;
 }
 
 message TaskReqFilter {
@@ -228,6 +228,10 @@ message TaskReqFusion {
     }
 }
 
+message TaskReqModelImporting {
+    string model_package_path = 1;
+}
+
 message RespCMDInference {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
@@ -261,8 +265,8 @@ message Label {
     int32 id = 1;
     string name = 2;
     repeated string aliases = 3;
-    google.protobuf.Timestamp created = 4;
-    google.protobuf.Timestamp modified = 5;
+    float create_time = 4;
+    float update_time = 5;
 }
 
 

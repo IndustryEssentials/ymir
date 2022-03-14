@@ -1,5 +1,5 @@
 import enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Tuple
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -19,6 +19,7 @@ from app.api.errors.errors import (
     ObsoleteTaskStatus,
     TaskNotFound,
     DatasetNotFound,
+    DatasetGroupNotFound,
 )
 from app.constants.state import (
     FinalStates,
@@ -27,10 +28,7 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
-from app.utils.class_ids import (
-    convert_keywords_to_classes,
-    get_keyword_id_to_name_mapping,
-)
+from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
@@ -95,7 +93,7 @@ def create_task(
     viz_client: VizClient = Depends(deps.get_viz_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-    labels: List[str] = Depends(deps.get_personal_labels),
+    user_labels: Dict = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create task
@@ -107,7 +105,7 @@ def create_task(
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    parameters = normalize_parameters(db, task_in.parameters, task_in.config, labels)
+    parameters = normalize_parameters(db, task_in.parameters, task_in.config, user_labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
@@ -178,7 +176,7 @@ class TaskResult:
         self.viz = viz
 
     @property
-    def labels(self) -> List[str]:
+    def user_labels(self) -> Dict:
         """
         Lazy evaluate labels from controller
         """
@@ -190,8 +188,7 @@ class TaskResult:
 
     @property
     def dataset_info(self) -> Dict:
-        class_ids_to_keywords = get_keyword_id_to_name_mapping(self.labels)
-        assets = self.viz.get_assets(class_ids_to_keywords=class_ids_to_keywords)
+        assets = self.viz.get_assets(user_labels=self.user_labels)
         result = {
             "keywords": list(assets.keywords.keys()),
             "ignored_keywords": list(assets.ignored_keywords.keys()),
@@ -203,7 +200,7 @@ class TaskResult:
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
-    def get_dest_group_id(self, dataset_id: int) -> int:
+    def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:
             dataset = crud.dataset.get(self.db, id=dataset_id)
             if not dataset:
@@ -212,7 +209,10 @@ class TaskResult:
                     dataset_id,
                 )
                 raise DatasetNotFound()
-            return dataset.dataset_group_id
+            dataset_group = crud.dataset_group.get(self.db, id=dataset.dataset_group_id)
+            if not dataset_group:
+                raise DatasetGroupNotFound()
+            return dataset_group.id, dataset_group.name
         else:
             model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
             if not model_group:
@@ -227,16 +227,16 @@ class TaskResult:
                     model_group.id,
                     dataset_id,
                 )
-            return model_group.id
+            return model_group.id, model_group.name
 
     def create(self, dataset_id: int) -> None:
-        dest_group_id = self.get_dest_group_id(dataset_id)
+        dest_group_id, dest_group_name = self.get_dest_group_info(dataset_id)
         if self.result_type is ResultType.dataset:
-            logger.info("[create task] creating new dataset as task result")
-            crud.dataset.create_as_task_result(self.db, self.task, dest_group_id)
+            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            logger.info("[create task] created new dataset(%s) as task result", dataset.name)
         elif self.result_type is ResultType.model:
-            logger.info("[create task] creating new model as task result")
-            crud.model.create_as_task_result(self.db, self.task, dest_group_id)
+            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            logger.info("[create task] created new model(%s) as task result", model.name)
         else:
             logger.info("[create task] no task result record needed")
 
@@ -333,7 +333,7 @@ def normalize_parameters(
     db: Session,
     parameters: schemas.TaskParameter,
     config: Optional[Dict],
-    labels: List[str],
+    user_labels: Dict,
 ) -> Dict:
     normalized = parameters.dict()  # type: Dict[str, Any]
 
@@ -361,7 +361,7 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = convert_keywords_to_classes(labels, parameters.keywords)
+        normalized["class_ids"] = convert_keywords_to_classes(user_labels, parameters.keywords)
     return normalized
 
 

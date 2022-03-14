@@ -286,10 +286,19 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def get_labels_of_user(self, user_id: int) -> List[str]:
+    def get_labels_of_user(self, user_id: int) -> Dict:
         req = ControllerRequest(ExtraRequestType.get_label, user_id)
         resp = self.send(req)
-        return list(resp["csv_labels"])
+        # convert only once, save to cache
+        # {'name_to_id': {name: message  Label}, 'id_to_name': {'id': message  Label}}
+        name_to_id = dict()
+        id_to_name = dict()
+        # if not set labels, lost the key label_collection
+        if resp.get("label_collection"):
+            for label_info in resp["label_collection"]["labels"]:
+                id_to_name[label_info["id"]] = label_info
+                name_to_id[label_info["name"]] = label_info
+        return dict(name_to_id=name_to_id, id_to_name=id_to_name)
 
     def create_task(
         self,

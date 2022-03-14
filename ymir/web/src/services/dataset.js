@@ -16,7 +16,7 @@ export function getDataset(id) {
  * @returns 
  */
 export function getDatasetByGroup(group_id) {
-  return request.get(`dataset_groups/${group_id}`)
+  return request.get(`datasets/`, { params: { group_id, limit: 10000 }})
 }
 
 /**
@@ -81,10 +81,22 @@ export function getAsset(id, hash) {
  * @param {number} id
  * @returns
  */
-export function delDataset(id) {
+ export function delDataset(id) {
   return request({
     method: "delete",
     url: `/datasets/${id}`,
+  })
+}
+
+/**
+ * delete dataset
+ * @param {number} id
+ * @returns
+ */
+export function delDatasetGroup(id) {
+  return request({
+    method: "delete",
+    url: `/dataset_groups/${id}`,
   })
 }
 
@@ -114,7 +126,7 @@ export function createDataset({ name, projectId, url, datasetId, path, strategy 
 export function updateDataset(id, name) {
   return request({
     method: "patch",
-    url: `/datasets/${id}`,
+    url: `/dataset_groups/${id}`,
     data: {
       name,
     },

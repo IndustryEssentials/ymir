@@ -1,15 +1,105 @@
-import csv
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+from pydantic import BaseModel, validator, root_validator
+import yaml
+
+from mir.tools import utils as mir_utils
+
+
+EXPECTED_FILE_VERSION = 1
+
+
+class _SingleLabel(BaseModel):
+    id: int
+    name: str
+    create_time: float = 0
+    update_time: float = 0
+    aliases: List[str] = []
+
+    @validator('name')
+    def _strip_and_lower_name(cls, v: str) -> str:
+        return v.strip().lower()
+
+    @validator('aliases', each_item=True)
+    def _strip_and_lower_alias(cls, v: str) -> str:
+        return v.strip().lower()
+
+
+class _LabelStorage(BaseModel):
+    version: int = EXPECTED_FILE_VERSION
+    labels: List[_SingleLabel] = []
+    _label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
+    _id_to_labels: Dict[int, str] = {}
+
+    @validator('version')
+    def _check_version(cls, v: int) -> int:
+        if v != EXPECTED_FILE_VERSION:
+            raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
+        return v
+
+    @validator('labels')
+    def _check_labels(cls, labels: List[_SingleLabel]) -> List[_SingleLabel]:
+        label_names_set: Set[str] = set()
+        for idx, label in enumerate(labels):
+            if label.id != idx:
+                raise ValueError(f"invalid label id: {label.id}, expected {idx}")
+
+            # all label names and aliases should have no dumplicate
+            name_and_aliases = label.aliases + [label.name]
+            name_and_aliases_set = set(name_and_aliases)
+            if len(name_and_aliases) != len(name_and_aliases_set):
+                raise ValueError(f"duplicated inline label: {name_and_aliases}")
+            duplicated = set.intersection(name_and_aliases_set, label_names_set)
+            if duplicated:
+                raise ValueError(f"duplicated: {duplicated}")
+            label_names_set.update(name_and_aliases_set)
+        return labels
+
+    @root_validator
+    def _generate_dicts(cls, values: dict) -> dict:
+        labels: List[_SingleLabel] = values.get('labels', [])
+        label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
+        id_to_labels: Dict[int, str] = {}
+        for label in labels:
+            _set_if_not_exists(k=label.name,
+                               v=(label.id, None),
+                               d=label_to_ids,
+                               error_message_prefix='duplicated name')
+            #   key: aliases
+            for label_alias in label.aliases:
+                _set_if_not_exists(k=label_alias,
+                                   v=(label.id, label.name),
+                                   d=label_to_ids,
+                                   error_message_prefix='duplicated alias')
+
+            # self._type_id_name_dict
+            _set_if_not_exists(k=label.id,
+                               v=label.name,
+                               d=id_to_labels,
+                               error_message_prefix='duplicated id')
+
+        values['_label_to_ids'] = label_to_ids
+        values['_id_to_labels'] = id_to_labels
+        return values
 
 
 def ids_file_name() -> str:
-    return 'labels.csv'
+    return 'labels.yaml'
 
 
 def ids_file_path(mir_root: str) -> str:
-    file_path = os.path.join(mir_root, ids_file_name())
-    return file_path
+    return os.path.join(mir_utils.repo_dot_mir_path(mir_root=mir_root), ids_file_name())
+
+
+def create_empty_if_not_exists(mir_root: str) -> None:
+    file_path = ids_file_path(mir_root=mir_root)
+    if os.path.isfile(file_path):
+        return
+
+    label_storage = _LabelStorage()
+    with open(file_path, 'w') as f:
+        yaml.safe_dump(label_storage.dict(), f)
 
 
 class ClassIdManagerError(BaseException):
@@ -18,66 +108,34 @@ class ClassIdManagerError(BaseException):
 
 class ClassIdManager(object):
     """
-    a query tool for file `labels.csv`, which has following format in each line:
-        type id, preserved, main type name, alias 1, alias 2, ...
+    a query tool for label storage file
     """
-    __slots__ = ("_csv_path", "_type_name_id_dict", "_type_id_name_dict")
+    __slots__ = ("_storage_file_path", "_label_storage")
 
     # life cycle
     def __init__(self, mir_root: str) -> None:
         super().__init__()
 
         # it will have value iff successfully loaded
-        self._csv_path = ''
-        # key: main type name or alias, value: (type id, None for main type name, or main name for alias)
-        self._type_name_id_dict = {}  # type: Dict[str, Tuple[int, Optional[str]]]
-        # key: type id, value: main type name
-        self._type_id_name_dict = {}  # type: Dict[int, str]
+        self._storage_file_path = ''
 
         self.__load(ids_file_path(mir_root=mir_root))
 
     # private: load and unload
-    def __load(self, csv_path: str) -> bool:
-        if not csv_path:
+    def __load(self, file_path: str) -> bool:
+        if not file_path:
             raise ClassIdManagerError('empty path received')
-        if self._csv_path:
-            raise ClassIdManagerError(f"already loaded from: {self._csv_path}")
+        if self._storage_file_path:
+            raise ClassIdManagerError(f"already loaded from: {self._storage_file_path}")
 
-        with open(csv_path, 'r', newline='') as f:
-            csv_reader = csv.reader(f)
-            for line_components in csv_reader:
-                if len(line_components) <= 2:
-                    continue  # empty lines also ignored here
-                if line_components[0].startswith('#'):
-                    continue
+        with open(file_path, 'r') as f:
+            file_obj = yaml.safe_load(f)
+        if file_obj is None:
+            file_obj = {}
 
-                type_id = int(line_components[0])
-
-                main_type_name = None
-
-                # for single line, parse type id, main type name, alias
-                for type_name_idx, type_name in enumerate(line_components[2:]):
-                    type_name = type_name.strip().lower()
-
-                    # handle error situations
-                    if type_name in self._type_name_id_dict:
-                        previous_pair = self._type_name_id_dict[type_name]
-                        raise ClassIdManagerError("dumplicate type name: {}, previous: {}, now: {}".format(
-                            type_name, previous_pair[0], type_id))
-                    if not type_name:
-                        raise ClassIdManagerError("empty type name for type id: {}".format(type_id))
-
-                    if type_name_idx == 0:
-                        # if it's main type name
-                        main_type_name = type_name
-                        self._type_name_id_dict[main_type_name] = (type_id, None)
-                        self._type_id_name_dict[type_id] = main_type_name
-                    else:
-                        # if it's alias
-                        self._type_name_id_dict[type_name] = (type_id, main_type_name)
-
-        # save `self._csv_path` as a flag of successful loading
-        self._csv_path = csv_path
+        self._label_storage = _LabelStorage(**file_obj)
+        # save `self._storage_file_path` as a flag of successful loading
+        self._storage_file_path = file_path
         return True
 
     # public: general
@@ -94,16 +152,16 @@ class ClassIdManager(object):
         Returns:
             Tuple[int, Optional[str]]: (type id, main type name)
         """
-        name = name.strip()
-        if not self._csv_path:
+        name = name.strip().lower()
+        if not self._storage_file_path:
             raise ClassIdManagerError("not loade")
         if not name:
             raise ClassIdManagerError("empty name")
 
-        if name not in self._type_name_id_dict:
+        if name not in self._label_storage._label_to_ids:
             raise ClassIdManagerError(f"not exists: {name}")
 
-        return self._type_name_id_dict[name]
+        return self._label_storage._label_to_ids[name]
 
     def main_name_for_id(self, type_id: int) -> Optional[str]:
         """
@@ -115,7 +173,7 @@ class ClassIdManager(object):
         Returns:
             Optional[str]: corresponding main type name, if not found, returns None
         """
-        return self._type_id_name_dict.get(type_id, None)
+        return self._label_storage._id_to_labels.get(type_id, None)
 
     def id_for_names(self, names: List[str]) -> List[int]:
         """
@@ -134,17 +192,23 @@ class ClassIdManager(object):
         Returns:
             List[str]: all main names, if not loaded, returns empty list
         """
-        return list(self._type_id_name_dict.values())
+        return list(self._label_storage._id_to_labels.values())
 
     def size(self) -> int:
         """
         Returns:
             int: size of all type ids and main names, if not loaded, returns 0
         """
-        return len(self._type_id_name_dict)
+        return len(self._label_storage._id_to_labels)
 
     def has_name(self, name: str) -> bool:
-        return name in self._type_name_id_dict
+        return name.strip().lower() in self._label_storage._label_to_ids
 
     def has_id(self, type_id: int) -> bool:
-        return type_id in self._type_id_name_dict
+        return type_id in self._label_storage._id_to_labels
+
+
+def _set_if_not_exists(k: Any, v: Any, d: dict, error_message_prefix: str) -> None:
+    if k in d:
+        raise ClassIdManagerError(f"{error_message_prefix}: {k}")
+    d[k] = v
