@@ -4,7 +4,8 @@ import shutil
 import unittest
 from unittest import mock
 
-from controller.utils import labels, utils
+from common_utils import labels
+from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from proto import backend_pb2

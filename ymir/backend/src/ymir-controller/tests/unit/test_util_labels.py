@@ -4,7 +4,7 @@ import shutil
 from typing import List
 import unittest
 
-from controller.utils import labels
+from common_utils import labels
 
 import tests.utils as test_utils
 

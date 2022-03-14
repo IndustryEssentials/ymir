@@ -2,10 +2,10 @@ import logging
 import os
 from typing import Dict, List
 
+from common_utils import labels
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.label_model import label_runner
 from controller.utils import utils
-from controller.utils import labels
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 

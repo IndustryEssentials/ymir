@@ -6,7 +6,7 @@ from unittest import mock
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-from controller.utils import labels
+from common_utils import labels
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from proto import backend_pb2
