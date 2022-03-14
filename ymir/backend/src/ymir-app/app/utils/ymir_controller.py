@@ -296,8 +296,8 @@ class ControllerClient:
         # if not set labels, lost the key label_collection
         if resp.get("label_collection"):
             for label_info in resp["label_collection"]["labels"]:
-                name_to_id[label_info["id"]] = label_info
-                id_to_name[label_info["name"]] = label_info
+                id_to_name[label_info["id"]] = label_info
+                name_to_id[label_info["name"]] = label_info
         return dict(name_to_id=name_to_id, id_to_name=id_to_name)
 
     def create_task(
