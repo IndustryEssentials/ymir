@@ -3,7 +3,7 @@ import { Row, Col, Progress, } from "antd"
 import t from "@/utils/t"
 
 import s from "./keywordRates.less"
-import { toFixed } from "@/utils/number"
+import { percent } from "@/utils/number"
 
 function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
@@ -24,7 +24,7 @@ function KeywordRates({ id, total = 0, showAll = false, trainingKeywords = [], d
       const neg = trainingKeywords.length ? negative_project : negative
       const klist = getKeywordList(keywords, filter, neg).map(item => ({
         ...item,
-        percent: Number(toFixed(item.count / total, 4)) * 100,
+        width: percent(item.count * 0.8 / total, 2),
         color: randomColor(),
       }))
       setList(klist)
@@ -45,17 +45,17 @@ function KeywordRates({ id, total = 0, showAll = false, trainingKeywords = [], d
     return klist
   }
 
-  function format(percent, item) {
-    return `${item.keyword} ${percent} %`
+  function format(percent = 0, keyword = '') {
+    return `${keyword} ${percent} %`
   }
 
   return total ? (
-    <div className={s.keywordRates}>
+    <div className={s.rates}>
       {list.map(item => (
-        <Row>
-          <Col>width</Col>
-          <Col flex={'20%'}>{format(item.percent, item)}</Col>
-          </Row>
+        <div className={s.rate}>
+          <span className={s.bar} style={{ width: item.width, color: item.color }}>&ngsp;</span>
+          <span>{format(item.percent, item)}</span>
+          </div>
       ))}  
     </div>
   ) : null
