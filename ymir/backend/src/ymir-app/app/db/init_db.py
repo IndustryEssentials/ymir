@@ -7,6 +7,7 @@ from app.config import settings
 from app.constants.role import Roles
 from app.db import base  # noqa: F401
 from app.utils.security import frontend_hash
+from app.utils.ymir_controller import ControllerClient
 
 
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
@@ -35,6 +36,10 @@ def init_db(db: Session) -> None:
         user = crud.user.create(db, obj_in=user_in)  # noqa: F841
         user = crud.user.activate(db, user=user)
         user = crud.user.update_role(db, user=user, role=schemas.UserRole.SUPER_ADMIN)
+
+        if settings.INIT_LABEL_FOR_FIRST_USER:
+            controller = ControllerClient(settings.GRPC_CHANNEL)
+            controller.create_user(user_id=user.id)
 
     docker_images = crud.docker_image.get_multi(db)
     if not docker_images and settings.RUNTIMES:

@@ -77,7 +77,7 @@ class Settings(BaseSettings):
     # Task Type To Survive Upon Start up
     #  default TaskTypeLabel = 3
     TASK_TYPES_WHITELIST: List[int] = [3]
-    INIT_SANDBOX_FOR_FIRST_USER: bool = True
+    INIT_LABEL_FOR_FIRST_USER: bool = True
     RETRY_INTERVAL_SECONDS: int = 15
 
     # Reverse keywords
