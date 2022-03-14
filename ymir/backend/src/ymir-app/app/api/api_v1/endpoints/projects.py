@@ -1,4 +1,5 @@
 import enum
+import json
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -11,11 +12,13 @@ from app.api.errors.errors import (
     ProjectNotFound,
     DuplicateProjectError,
     FailedToCreateProject,
+    FailedToConnectClickHouse,
 )
 from app.constants.state import ResultState
-from app.constants.state import TaskType
+from app.constants.state import TaskType, TrainingType
 from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.utils.clickhouse import YmirClickHouse
 
 router = APIRouter()
 
@@ -69,6 +72,7 @@ def create_project(
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: Dict = Depends(deps.get_user_labels),
+    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
     Create project
@@ -124,6 +128,22 @@ def create_project(
         db_obj=project,
         obj_in=schemas.ProjectUpdate(training_dataset_group_id=dataset_group.id),
     )
+
+    try:
+        clickhouse.save_project_parameter(
+            dt=project.create_datetime,
+            user_id=project.user_id,
+            id_=project.id,
+            name=project.name,
+            training_type=TrainingType(project.training_type).name,
+            training_keywords=json.loads(project.training_keywords),
+        )
+    except FailedToConnectClickHouse:
+        # clickhouse metric shouldn't block create task process
+        logger.exception(
+            "[create project metrics] failed to write project(%s) stats to clickhouse, continue anyway",
+            project.name,
+        )
 
     logger.info("[create project] project record created: %s", project)
     return {"result": project}

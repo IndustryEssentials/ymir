@@ -9,11 +9,26 @@ logger = logging.getLogger(__name__)
 
 CLICKHOUSE_URI = os.environ.get("CLICKHOUSE_URI", "clickhouse")
 
+project_table = """\
+CREATE TABLE project
+(
+    created_time DateTime,
+    user_id Integer,
+    id Integer,
+    name String,
+    training_type LowCardinality(String),
+    training_keywords Array(LowCardinality(String))
+)
+ENGINE = MergeTree()
+ORDER BY created_time;"""
+
+
 task_table = """\
 CREATE TABLE task_create
 (
     created_time DateTime,
     user_id Integer,
+    project_id Integer,
     name String,
     hash String,
     type LowCardinality(String),
@@ -30,6 +45,8 @@ CREATE TABLE model
 (
     created_time DateTime,
     user_id Integer,
+    project_id Integer,
+    group_id Integer,
     id Integer,
     name String,
     hash String,
@@ -45,6 +62,8 @@ CREATE TABLE dataset_keywords
 (
     created_time DateTime,
     user_id Integer,
+    project_id Integer,
+    group_id Integer,
     dataset_id Integer,
     keyword_ids Array(LowCardinality(String))
 )
@@ -52,7 +71,7 @@ ENGINE = MergeTree()
 ORDER BY created_time;"""
 
 
-clickhouse_tables = [task_table, model_table, keyword_table]
+clickhouse_tables = [project_table, task_table, model_table, keyword_table]
 
 
 def init() -> None:
