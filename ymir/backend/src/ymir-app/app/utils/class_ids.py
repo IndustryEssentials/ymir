@@ -44,3 +44,7 @@ def find_duplication_in_labels(user_labels: Dict, new_labels: List[str]) -> List
 
 def convert_keywords_to_classes(user_labels: Dict, keywords: List[str]) -> List[int]:
     return [user_labels["name_to_id"][keyword]["id"] for keyword in keywords]
+
+
+def convert_classes_to_keywords(user_labels: Dict, classes: List) -> List[str]:
+    return [user_labels["id_to_name"][str(class_id)]["name"] for class_id in classes]

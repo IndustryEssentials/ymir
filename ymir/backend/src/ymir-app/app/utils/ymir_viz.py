@@ -6,6 +6,7 @@ from fastapi.logger import logger
 
 from app.api.errors.errors import ModelNotFound, ModelNotReady
 from app.config import settings
+from app.utils.class_ids import convert_classes_to_keywords
 from id_definition.error_codes import VizErrorCode
 
 
@@ -26,7 +27,7 @@ class Asset:
             }
             for annotation in res["annotations"]
         ]
-        keywords = [user_labels["id_to_name"][str(class_id)]["name"] for class_id in res["class_ids"]]
+        keywords = convert_classes_to_keywords(user_labels, res["class_ids"])
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -57,7 +58,7 @@ class Assets:
             {
                 "url": get_asset_url(asset["asset_id"]),
                 "hash": asset["asset_id"],
-                "keywords": [user_labels["id_to_name"][str(class_id)]["name"] for class_id in asset["class_ids"]],
+                "keywords": convert_classes_to_keywords(user_labels, asset["class_ids"]),
             }
             for asset in res["elements"]
         ]
