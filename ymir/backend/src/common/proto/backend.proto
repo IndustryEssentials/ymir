@@ -25,6 +25,7 @@ enum TaskType {
     TaskTypeSampling = 10;
     /// merge -> filter -> sampling
     TaskTypeFusion = 11;
+    TaskTypeImportModel = 12;
 };
 
 enum LabelFormat {
@@ -152,6 +153,7 @@ message ReqCreateTask {
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
     TaskReqFusion fusion = 109;
+    TaskReqModelImporting model_importing = 110;
 }
 
 message TaskReqFilter {
@@ -224,6 +226,10 @@ message TaskReqFusion {
         int32 count = 6;
         float rate = 7;
     }
+}
+
+message TaskReqModelImporting {
+    string model_package_path = 1;
 }
 
 message RespCMDInference {
