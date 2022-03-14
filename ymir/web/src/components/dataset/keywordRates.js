@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Row, Col, Progress, } from "antd"
+import { connect } from 'dva'
 import t from "@/utils/t"
 
 import s from "./keywordRates.less"
@@ -9,7 +10,7 @@ function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ id, total = 0, showAll = false, trainingKeywords = [], data = [], getKeywordRates }) {
+function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
   const [list, setList] = useState([])
 
   useEffect(() => {
@@ -19,12 +20,13 @@ function KeywordRates({ id, total = 0, showAll = false, trainingKeywords = [], d
   async function fetchRates(){
     const result = await getKeywordRates(id)
     if (result) {
-      const { keywords, negative_project, negative } = result
+      const { total, keywords, negative_project, negative } = result
       const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywords)
       const neg = trainingKeywords.length ? negative_project : negative
       const klist = getKeywordList(keywords, filter, neg).map(item => ({
         ...item,
-        width: percent(item.count * 0.8 / total, 2),
+        percent: percent(item.count * 0.8 / total),
+        total,
         color: randomColor(),
       }))
       setList(klist)
@@ -39,22 +41,22 @@ function KeywordRates({ id, total = 0, showAll = false, trainingKeywords = [], d
       }
     })
     klist.push({
-      keyword: 'Negative Samples',
+      keyword: t('dataset.samples.negative'),
       count: negative,
     })
     return klist
   }
 
-  function format(percent = 0, keyword = '') {
-    return `${keyword} ${percent} %`
+  function format({ percent = 0, keyword = '', count = 0, total }) {
+    return `${keyword} ${count}/${total} ${percent}`
   }
 
-  return total ? (
+  return list.length ? (
     <div className={s.rates}>
       {list.map(item => (
-        <div className={s.rate}>
-          <span className={s.bar} style={{ width: item.width, color: item.color }}>&ngsp;</span>
-          <span>{format(item.percent, item)}</span>
+        <div key={item.keyword} className={s.rate}>
+          <span className={s.bar} style={{ width: item.percent, background: item.color }}>&nbsp;</span>
+          <span>{format(item)}</span>
           </div>
       ))}  
     </div>

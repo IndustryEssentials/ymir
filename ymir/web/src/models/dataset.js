@@ -101,9 +101,9 @@ export default {
       const id = payload
       const { code, result } = yield call(getAssetsOfDataset, { id, limit: 1 })
       if (code === 0) {
-        const list = result.keywords
+        const { total, keywords, negative_info } = result
         const { negative_images_cnt, project_negative_images_cnt } = result.negative_info
-        return { keywords: list, negative: negative_images_cnt, negative_project: project_negative_images_cnt }
+        return { keywords, total, negative: negative_images_cnt, negative_project: project_negative_images_cnt }
       }
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
