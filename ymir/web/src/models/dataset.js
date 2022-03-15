@@ -37,7 +37,8 @@ export default {
     *batchDatasets({ payload }, { call, put }) {
       const { code, result } = yield call(batchDatasets, payload)
       if (code === 0) {
-        return result
+        const datasets = result.map(ds => transferDataset(ds))
+        return datasets || []
       }
     },
     *getDataset({ payload }, { call, put }) {
