@@ -9,7 +9,6 @@ from google.protobuf.json_format import ParseDict
 import yaml
 
 from mir.commands.mining import CmdMining
-from mir.tools import class_ids
 from mir.tools.utils import ModelStorage
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
