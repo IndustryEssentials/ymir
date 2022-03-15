@@ -94,7 +94,6 @@ export function getAsset(id, hash) {
  * @returns
  */
 export function delDatasetGroup(id) {
-  console.log('group id: ', id)
   return request({
     method: "delete",
     url: `/dataset_groups/${id}`,
@@ -127,7 +126,7 @@ export function createDataset({ name, projectId, url, datasetId, path, strategy 
 export function updateDataset(id, name) {
   return request({
     method: "patch",
-    url: `/datasets/${id}`,
+    url: `/dataset_groups/${id}`,
     data: {
       name,
     },
