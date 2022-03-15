@@ -14,9 +14,7 @@ from postman import entities
 from postman.event_dispatcher import EventDispatcher
 from postman.settings import constants, settings
 
-
 uvicorn_logger = logging.getLogger("uvicorn")
-
 
 # main service and api implememtations
 app = FastAPI(title=constants.PROJECT_NAME)
@@ -52,5 +50,5 @@ def post_events_push(event_payloads: List[entities.EventPayload]) -> entities.Ev
     uvicorn_logger.info(f"/events/push: {event_payloads}")
 
     for payload in event_payloads:
-        asyncio.run(app.sio.emit(event=payload.event, data=payload.data, namespace=payload.namespace))
+        asyncio.run(app.sio.emit(event=payload.event, data=payload.data, namespace=payload.namespace))  # type: ignore
     return entities.EventResp(return_code=0, return_msg='done')
