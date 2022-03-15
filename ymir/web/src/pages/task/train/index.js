@@ -19,10 +19,10 @@ import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
-import ImageSelect from "../components/imageSelect"
+import ImageSelect from "@/components/form/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
-import ModelSelect from "../components/modelSelect"
+import ModelSelect from "@/components/form/modelSelect"
 import KeywordRates from "@/components/dataset/keywordRates"
 
 const { Option } = Select
