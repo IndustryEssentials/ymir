@@ -9,7 +9,6 @@ from google.protobuf import json_format
 from mir.commands import filter as cmd_filter
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import utils as mir_utils
-from mir.tools import class_ids
 from mir.tools.code import MirCode
 
 from tests import utils as test_utils

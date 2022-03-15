@@ -1,4 +1,3 @@
-from mmap import MAP_PRIVATE
 import os
 import shutil
 import unittest
