@@ -203,7 +203,6 @@ def import_dataset_in_background(
     except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound):
         logger.exception("[create dataset] failed to import dataset")
         crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
-    crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.ready)
 
 
 def _import_dataset(

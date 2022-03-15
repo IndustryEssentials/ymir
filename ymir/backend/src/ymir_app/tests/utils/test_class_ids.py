@@ -23,37 +23,19 @@ class TestKeywordsToLabels:
 class TestFindDuplicateLabels:
     def test_find_duplication_in_labels(self):
         user_labels = {
-            "id_to_name": {
-                1: {
-                    "name": "cat",
-                    "aliases": ["kitty"],
-                    "create_time": 1647075200.0,
-                    "update_time": 1647075200.0,
-                    "id": 1,
-                },
-                2: {
-                    "id": 2,
-                    "name": "dog",
-                    "aliases": ["puppy"],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
+            "cat": {
+                "name": "cat",
+                "aliases": ["kitty"],
+                "create_time": 1647075200.0,
+                "update_time": 1647075200.0,
+                "id": 1,
             },
-            "name_to_id": {
-                "cat": {
-                    "name": "cat",
-                    "aliases": ["kitty"],
-                    "create_time": 1647075200.0,
-                    "update_time": 1647075200.0,
-                    "id": 1,
-                },
-                "dog": {
-                    "id": 2,
-                    "name": "dog",
-                    "aliases": ["puppy"],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
+            "dog": {
+                "id": 2,
+                "name": "dog",
+                "aliases": ["puppy"],
+                "create_time": 1647076200.0,
+                "update_time": 1647076400.0,
             },
         }
 
