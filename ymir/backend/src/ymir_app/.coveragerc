@@ -1,0 +1,25 @@
+[run]
+omit =
+    src/ymir_app/app/backend_pre_start.py
+    src/ymir_app/app/initial_data.py
+    src/ymir_app/app/gunicorn_conf.py
+    src/ymir_app/app/db/*
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+    if settings.DEBUG
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
