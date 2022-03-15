@@ -50,4 +50,4 @@ def convert_classes_to_keywords(user_labels: Dict, classes: List) -> List[str]:
     dict_id_to_name = dict()
     for _, label_info in user_labels.items():
         dict_id_to_name[label_info["id"]] = label_info["name"]
-    return [dict_id_to_name[class_id] for class_id in classes]
+    return [dict_id_to_name[int(class_id)] for class_id in classes]
