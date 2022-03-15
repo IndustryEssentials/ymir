@@ -5,9 +5,10 @@ from typing import Dict, List
 
 import yaml
 
+from common_utils import labels
 from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import checker, errors, gpu_utils, labels, tasks_util, utils
+from controller.utils import checker, errors, gpu_utils, tasks_util, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
