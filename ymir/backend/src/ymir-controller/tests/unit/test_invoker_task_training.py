@@ -9,7 +9,8 @@ import yaml
 from google.protobuf.json_format import MessageToDict, ParseDict
 
 import tests.utils as test_utils
-from controller.utils import gpu_utils, labels, utils
+from common_utils import labels
+from controller.utils import gpu_utils, utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from controller.utils.redis import rds

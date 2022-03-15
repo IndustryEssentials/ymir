@@ -1,8 +1,9 @@
 import os
 import pathlib
 
+from common_utils import labels
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import checker, utils, labels, revs
+from controller.utils import checker, utils, revs
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
