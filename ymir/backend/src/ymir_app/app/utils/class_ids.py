@@ -47,7 +47,7 @@ def convert_keywords_to_classes(user_labels: Dict, keywords: List[str]) -> List[
 
 
 def convert_classes_to_keywords(user_labels: Dict, classes: List) -> List[str]:
-    id_to_labes = dict()
+    dict_id_to_name = dict()
     for _, label_info in user_labels.items():
-        id_to_labes[label_info["id"]] = label_info
-    return [id_to_labes[class_id]["name"] for class_id in classes]
+        dict_id_to_name[label_info["id"]] = label_info["name"]
+    return [dict_id_to_name[class_id] for class_id in classes]
