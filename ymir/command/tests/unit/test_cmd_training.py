@@ -9,7 +9,7 @@ import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils
+from mir.tools import hash_utils, utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -210,7 +210,9 @@ class TestCmdTraining(unittest.TestCase):
         return MirCode.RC_OK
 
     def __mock_process_model_storage(*args, **kwargs):
-        return ("xyz", 0.9)
+        return ("xyz", 0.9, mir_utils.ModelStorage(models=['a'],
+                                                   executor_config={'class_names': ['person', 'cat']},
+                                                   task_context={'producer': 'ymir'}))
 
     # public: test cases
     @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
