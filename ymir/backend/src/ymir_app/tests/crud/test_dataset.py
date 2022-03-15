@@ -10,8 +10,6 @@ from tests.utils.utils import random_hash, random_lower_string
 def test_create_dataset(db: Session) -> None:
     dataset_name = random_lower_string(10)
     dataset_hash = random_hash("dataset")
-    # commit_id = randint(1000, 9999)
-    # commit_hash = random_hash("commit")
     dataset_in = DatasetCreate(
         db=db,
         name=dataset_name,
@@ -30,8 +28,6 @@ def test_create_dataset(db: Session) -> None:
 def test_get_dataset(db: Session) -> None:
     dataset_name = random_lower_string(10)
     dataset_hash = random_hash("dataset")
-    # commit_id = randint(1000, 9999)
-    # commit_hash = random_hash("commit")
     dataset_in = DatasetCreate(
         db=db,
         name=dataset_name,
