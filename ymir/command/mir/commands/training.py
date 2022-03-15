@@ -30,7 +30,9 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     tar_path = os.path.join(out_root, "models.tar.gz")
     model_storage = _pack_models_and_config(model_paths=model_paths,
                                             executor_config=executor_config,
-                                            task_context=dict(**task_context, mAP=model_mAP, type='training'),
+                                            task_context=dict(**task_context,
+                                                              mAP=model_mAP,
+                                                              type=mirpb.TaskType.TaskTypeTraining),
                                             dest_path=tar_path)
     model_sha1 = hash_utils.sha1sum_for_file(tar_path)
 
@@ -117,10 +119,10 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                      task_type=mirpb.TaskType.TaskTypeTraining,
                                      task_id=dst_rev_tid.tid,
                                      message='training',
+                                     model_mAP=mAP,
+                                     model_hash=model_sha1,
                                      return_code=task_ret_code,
                                      return_msg=task_err_msg)
-    mir_tasks.tasks[mir_tasks.head_task_id].model.model_hash = model_sha1
-    mir_tasks.tasks[mir_tasks.head_task_id].model.mean_average_precision = mAP
     mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict() if model_storage else '')
     return mir_tasks
 

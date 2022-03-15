@@ -25,7 +25,8 @@ enum TaskType {
     TaskTypeSampling = 10;
     /// merge -> filter -> sampling
     TaskTypeFusion = 11;
-    TaskTypeImportModel = 12;
+    TaskTypeInit = 12;
+    TaskTypeImportModel = 13;
 };
 
 enum LabelFormat {

@@ -1,12 +1,17 @@
 import argparse
 import logging
+import os
+import shutil
+import tarfile
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, revs_parser
+from mir.tools import checker, context, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
+import yaml
 
 
 class CmdModelImport(base.BaseCommand):
@@ -17,17 +22,25 @@ class CmdModelImport(base.BaseCommand):
                                             dst_rev=self.args.dst_rev,
                                             src_revs='master',
                                             work_dir=self.args.work_dir,
-                                            package_path=self.args.package_path)
+                                            package_path=self.args.package_path,
+                                            model_location=self.args.model_location)
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, dst_rev: str, src_revs: str, work_dir: str, package_path: str) -> int:
+    def run_with_args(mir_root: str, dst_rev: str, src_revs: str, work_dir: str, package_path: str,
+                      model_location: str) -> int:
+        # check args
+        if not model_location:
+            logging.error('empty --model-location')
+            return MirCode.RC_CMD_INVALID_ARGS
+
         if not src_revs:
             logging.error('empty --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
         if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
+
         if not dst_rev:
             logging.error("empty --dst-rev")
             return MirCode.RC_CMD_INVALID_ARGS
@@ -35,10 +48,97 @@ class CmdModelImport(base.BaseCommand):
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
 
+        check_code = checker.check(mir_root,
+                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+        if check_code != MirCode.RC_OK:
+            return check_code
+
         if not package_path:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty package_path')
+        if not os.path.isfile(package_path):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"{package_path} is not file")
+
+        # unpack
+        extract_model_dir_path = os.path.join(work_dir, 'model')
+        model_storage = mir_utils.prepare_model(model_location=os.path.dirname(package_path),
+                                                model_hash=os.path.basename(package_path),
+                                                dst_model_path=extract_model_dir_path)
+
+        logging.info(f"importing model with storage: {model_storage}")
+
+        # check
+        _check_model(model_storage=model_storage, mir_root=mir_root)
+
+        # update model_storage and pack
+        model_storage.task_context['src-revs'] = src_revs
+        model_storage.task_context['dst_rev'] = dst_rev
+        model_storage.task_context['type'] = mirpb.TaskType.TaskTypeImportModel
+        model_hash = _pack_and_copy(model_storage=model_storage,
+                                    extract_model_dir_path=extract_model_dir_path,
+                                    model_location=model_location)
+        logging.info(f"model sha1: {model_hash}")
+
+        # update task and commit
+        mir_tasks = mirpb.MirTasks()
+        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
+                                         task_type=mirpb.TaskType.TaskTypeImportModel,
+                                         task_id=dst_typ_rev_tid.tid,
+                                         message='import model',
+                                         model_hash=model_hash,
+                                         model_mAP=float(model_storage.task_context['mAP']),
+                                         return_code=MirCode.RC_OK,
+                                         return_msg='')
+        mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict())
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                                      mir_branch=dst_typ_rev_tid.rev,
+                                                      task_id=dst_typ_rev_tid.tid,
+                                                      his_branch=src_typ_rev_tid.rev,
+                                                      mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
+                                                      commit_message=f"import model {model_hash}")
+
+        # cleanup
+        shutil.rmtree(extract_model_dir_path)
 
         return MirCode.RC_OK
+
+
+def _check_model(model_storage: mir_utils.ModelStorage, mir_root: str) -> int:
+    # check producer
+    producer = model_storage.task_context.get('producer', None)
+    if model_storage.task_context.get('producer', None) != 'ymir':
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"can not import model, invalid producer: {producer}")
+
+    # check class names
+    class_names = model_storage.class_names
+    if not context.check_class_names(mir_root=mir_root, current_class_names=class_names):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE, error_message='project class ids mismatch')
+
+    return MirCode.RC_OK
+
+
+def _pack_and_copy(model_storage: mir_utils.ModelStorage, extract_model_dir_path: str, model_location: str) -> str:
+    """
+    pack model, returns model hash of the new model package
+    """
+    ymir_info_file_name = 'ymir-info.yaml'
+    ymir_info_file_path = os.path.join(extract_model_dir_path, ymir_info_file_name)
+    with open(ymir_info_file_path, 'w') as f:
+        yaml.safe_dump(model_storage.as_dict(), f)
+
+    tar_file_path = os.path.join(extract_model_dir_path, 'model.tar.gz')
+    with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:
+        for model_name in model_storage.models:
+            model_path = os.path.join(extract_model_dir_path, model_name)
+            logging.info(f"    packing {model_path} -> {model_name}")
+            tar_gz_f.add(model_path, model_name)
+        logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
+        tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
+
+    model_hash = hash_utils.sha1sum_for_file(tar_file_path)
+    shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
+
+    return model_hash
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
@@ -56,5 +156,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       type=str,
                                       required=True,
                                       help="rev@tid: destination branch name and task id")
+    importing_arg_parser.add_argument("--model-location",
+                                      dest="model_location",
+                                      type=str,
+                                      required=True,
+                                      help="storage place (upload location) to store packed model")
     importing_arg_parser.add_argument('-w', dest='work_dir', type=str, required=True, help='working directory')
     importing_arg_parser.set_defaults(func=CmdModelImport)
