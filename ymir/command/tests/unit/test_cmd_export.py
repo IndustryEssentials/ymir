@@ -8,7 +8,7 @@ from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, data_exporter, hash_utils, mir_storage_ops
+from mir.tools import data_exporter, hash_utils, mir_storage_ops
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
