@@ -225,34 +225,33 @@ class TestTerminateTask:
 
 
 class TestUpdateTaskStatus:
-    # fixme
-    # def test_update_task_status_to_done(
-    #     self,
-    #     db: Session,
-    #     client: TestClient,
-    #     normal_user_token_headers,
-    #     api_key_headers,
-    #     mocker,
-    #     mock_controller,
-    #     user_id: int,
-    # ):
-    #     task = create_task(db, user_id)
-    #     task_hash = task.hash
-    #     last_message_datetime = task.last_message_datetime
+    def test_update_task_status_to_done(
+        self,
+        db: Session,
+        client: TestClient,
+        normal_user_token_headers,
+        api_key_headers,
+        mocker,
+        mock_controller,
+        user_id: int,
+    ):
+        task = create_task(db, user_id)
+        task_hash = task.hash
+        last_message_datetime = task.last_message_datetime
 
-    #     data = {
-    #         "hash": task_hash,
-    #         "state": m.TaskState.running,
-    #         "percent": 0.5,
-    #         "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) + 1,
-    #     }
-    #     r = client.post(
-    #         f"{settings.API_V1_STR}/tasks/status",
-    #         headers=api_key_headers,
-    #         json=data,
-    #     )
-    #     assert r.json()["result"]["state"] == m.TaskState.running.value
-    #     assert r.json()["result"]["progress"] == 50
+        data = {
+            "hash": task_hash,
+            "state": m.TaskState.running,
+            "percent": 0.5,
+            "timestamp": m.convert_datetime_to_timestamp(last_message_datetime) + 1,
+        }
+        r = client.post(
+            f"{settings.API_V1_STR}/tasks/status",
+            headers=api_key_headers,
+            json=data,
+        )
+        assert r.json()["result"]["state"] == m.TaskState.running.value
+        assert r.json()["result"]["percent"] == 0.5
 
     def test_update_task_status_skip_obsolete_msg(
         self,
