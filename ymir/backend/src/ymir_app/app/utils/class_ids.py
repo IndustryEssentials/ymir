@@ -19,7 +19,7 @@ def labels_to_keywords(user_labels: Dict, filter_f: Optional[Callable] = None) -
     """
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     """
-    for _, label_info in user_labels["id_to_name"].items():
+    for _, label_info in user_labels.items():
         create_time = datetime.utcfromtimestamp(label_info["create_time"])
         update_time = datetime.utcfromtimestamp(label_info["update_time"])
 
@@ -35,7 +35,7 @@ def labels_to_keywords(user_labels: Dict, filter_f: Optional[Callable] = None) -
 
 def find_duplication_in_labels(user_labels: Dict, new_labels: List[str]) -> List[str]:
     names = []
-    for _, label_info in user_labels["id_to_name"].items():
+    for _, label_info in user_labels.items():
         names += [label_info["name"]] + label_info["aliases"]
     new_names = [name for label in new_labels for name in label.split(",")]
 
@@ -43,8 +43,11 @@ def find_duplication_in_labels(user_labels: Dict, new_labels: List[str]) -> List
 
 
 def convert_keywords_to_classes(user_labels: Dict, keywords: List[str]) -> List[int]:
-    return [user_labels["name_to_id"][keyword]["id"] for keyword in keywords]
+    return [user_labels[keyword]["id"] for keyword in keywords]
 
 
 def convert_classes_to_keywords(user_labels: Dict, classes: List) -> List[str]:
-    return [user_labels["id_to_name"][str(class_id)]["name"] for class_id in classes]
+    id_to_labes = dict()
+    for _, label_info in user_labels.items():
+        id_to_labes[label_info["id"]] = label_info
+    return [id_to_labes[class_id]["name"] for class_id in classes]

@@ -10,17 +10,16 @@ from tests.utils.utils import random_lower_string
 
 @pytest.fixture(scope="module")
 def mock_user_labels() -> Dict:
-    id_to_name = dict()
+    user_labels = dict()
     for i in range(100):
-        id_to_name[str(i)] = {
-            "name": random_lower_string(),
+        name = random_lower_string()
+        user_labels[name] = {
+            "name": name,
             "aliases": [],
             "create_time": 1647075200.0,
             "update_time": 1647075200.0,
             "id": i,
         }
-
-    user_labels = {"id_to_name": id_to_name}
 
     return user_labels
 

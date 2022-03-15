@@ -23,7 +23,7 @@ class Asset:
         annotations = [
             {
                 "box": annotation["box"],
-                "keyword": user_labels["id_to_name"][str(annotation["class_id"])]["name"],
+                "keyword": convert_classes_to_keywords(user_labels, [annotation["class_id"]])[0],
             }
             for annotation in res["annotations"]
         ]
@@ -64,7 +64,7 @@ class Assets:
         ]
 
         keywords = {
-            user_labels["id_to_name"][str(class_id)]["name"]: count
+            convert_classes_to_keywords(user_labels, [class_id])[0]: count
             for class_id, count in res["class_ids_count"].items()
         }
         ignored_keywords = res["ignored_labels"]

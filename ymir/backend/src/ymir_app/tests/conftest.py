@@ -109,37 +109,19 @@ def fake_cache_client() -> Generator:
     try:
         client = Mock()
         labels = {
-            "id_to_name": {
-                0: {
-                    "name": "tabby",
-                    "aliases": [],
-                    "create_time": 1647075200.0,
-                    "update_time": 1647075200.0,
-                    "id": 0,
-                },
-                1: {
-                    "id": 1,
-                    "name": "kitten",
-                    "aliases": [],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
+            "tabby": {
+                "name": "tabby",
+                "aliases": [],
+                "create_time": 1647075200.0,
+                "update_time": 1647075200.0,
+                "id": 0,
             },
-            "name_to_id": {
-                "tabby": {
-                    "name": "tabby",
-                    "aliases": [],
-                    "create_time": 1647075200.0,
-                    "update_time": 1647075200.0,
-                    "id": 0,
-                },
-                "kitten": {
-                    "id": 1,
-                    "name": "kitten",
-                    "aliases": [],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
+            "kitten": {
+                "id": 1,
+                "name": "kitten",
+                "aliases": [],
+                "create_time": 1647076200.0,
+                "update_time": 1647076400.0,
             },
         }
         client.get.return_value = json.dumps(labels)

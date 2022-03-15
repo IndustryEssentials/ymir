@@ -16,37 +16,19 @@ def mock_controller(mocker):
     c = mocker.Mock()
 
     c.get_labels_of_user.return_value = {
-        "name_to_id": {
-            0: {
-                "name": "cat",
-                "aliases": [],
-                "create_time": 1647075200.0,
-                "update_time": 1647075200.0,
-                "id": 0,
-            },
-            1: {
-                "id": 1,
-                "name": "dog",
-                "aliases": ["puppy"],
-                "create_time": 1647076200.0,
-                "update_time": 1647076400.0,
-            },
+        "cat": {
+            "name": "cat",
+            "aliases": [],
+            "create_time": 1647075200.0,
+            "update_time": 1647075200.0,
+            "id": 0,
         },
-        "id_to_name": {
-            "cat": {
-                "name": "cat",
-                "aliases": [],
-                "create_time": 1647075200.0,
-                "update_time": 1647075200.0,
-                "id": 0,
-            },
-            "dog": {
-                "id": 1,
-                "name": "dog",
-                "aliases": ["puppy"],
-                "create_time": 1647076200.0,
-                "update_time": 1647076400.0,
-            },
+        "dog": {
+            "id": 1,
+            "name": "dog",
+            "aliases": ["puppy"],
+            "create_time": 1647076200.0,
+            "update_time": 1647076400.0,
         },
     }
     return c
@@ -95,51 +77,26 @@ class TestNormalizeParameters:
             "else": None,
         }
         user_labels = {
-            "id_to_name": {
-                1: {
-                    "name": "cat",
-                    "aliases": [],
-                    "create_time": 1647075200.0,
-                    "update_time": 1647075200.0,
-                    "id": 1,
-                },
-                2: {
-                    "id": 2,
-                    "name": "dog",
-                    "aliases": [],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
-                3: {
-                    "id": 3,
-                    "name": "boy",
-                    "aliases": [],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
+            "cat": {
+                "name": "cat",
+                "aliases": [],
+                "create_time": 1647075200.0,
+                "update_time": 1647075200.0,
+                "id": 1,
             },
-            "name_to_id": {
-                "cat": {
-                    "name": "cat",
-                    "aliases": [],
-                    "create_time": 1647075200.0,
-                    "update_time": 1647075200.0,
-                    "id": 1,
-                },
-                "dog": {
-                    "id": 2,
-                    "name": "dog",
-                    "aliases": [],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
-                "boy": {
-                    "id": 3,
-                    "name": "boy",
-                    "aliases": [],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
-                },
+            "dog": {
+                "id": 2,
+                "name": "dog",
+                "aliases": [],
+                "create_time": 1647076200.0,
+                "update_time": 1647076400.0,
+            },
+            "boy": {
+                "id": 3,
+                "name": "boy",
+                "aliases": [],
+                "create_time": 1647076200.0,
+                "update_time": 1647076400.0,
             },
         }
         params = m.schemas.TaskParameter(**params)
