@@ -181,9 +181,14 @@ class ModelStorage:
     executor_config: Dict[str, Any] = field(default_factory=dict)
     task_context: Dict[str, Any] = field(default_factory=dict)
     class_names: List[str] = field(init=False)
+    system_context: str = field(default_factory=str)
 
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
+        if 'system_context' in self.executor_config:
+            self.system_context = self.executor_config['system_context']
+            del self.executor_config['system_context']
+
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
