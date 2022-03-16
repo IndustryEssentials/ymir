@@ -212,7 +212,7 @@ class TestCmdTraining(unittest.TestCase):
     def __mock_process_model_storage(*args, **kwargs):
         return ("xyz", 0.9, mir_utils.ModelStorage(models=['a'],
                                                    executor_config={'class_names': ['person', 'cat']},
-                                                   task_context={'producer': 'ymir'}))
+                                                   task_context={mir_utils.PRODUCER_KEY: mir_utils.PRODUCER_NAME}))
 
     # public: test cases
     @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)

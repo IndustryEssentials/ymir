@@ -444,7 +444,8 @@ class CmdTrain(base.BaseCommand):
                                                                           'src_revs': src_revs,
                                                                           'dst_rev': dst_rev,
                                                                           'executor': executor,
-                                                                          'producer': 'ymir',
+                                                                          mir_utils.PRODUCER_KEY:
+                                                                          mir_utils.PRODUCER_NAME,
                                                                       })
 
         # update metadatas and task with finish state and model hash

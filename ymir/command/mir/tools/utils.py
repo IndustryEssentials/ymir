@@ -17,6 +17,10 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 
+PRODUCER_KEY = 'producer'
+PRODUCER_NAME = 'ymir'
+
+
 def time_it(f: Callable) -> Callable:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: Dict) -> Callable:

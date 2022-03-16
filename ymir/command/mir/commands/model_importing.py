@@ -98,8 +98,8 @@ class CmdModelImport(base.BaseCommand):
 
 def _check_model(model_storage: mir_utils.ModelStorage, mir_root: str) -> int:
     # check producer
-    producer = model_storage.task_context.get('producer', None)
-    if model_storage.task_context.get('producer', None) != 'ymir':
+    producer = model_storage.task_context.get(mir_utils.PRODUCER_KEY, None)
+    if producer != mir_utils.PRODUCER_NAME:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"can not import model, invalid producer: {producer}")
 

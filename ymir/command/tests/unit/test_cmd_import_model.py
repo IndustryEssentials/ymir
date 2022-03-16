@@ -54,7 +54,7 @@ class TestCmdImportModel(unittest.TestCase):
         model_storage = mir_utils.ModelStorage(models=['best.weights'],
                                                executor_config={'class_names': ['cat', 'person']},
                                                task_context={
-                                                   'producer': 'ymir',
+                                                   mir_utils.PRODUCER_KEY: mir_utils.PRODUCER_NAME,
                                                    'mAP': 0.5
                                                })
         with open(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'w') as f:
