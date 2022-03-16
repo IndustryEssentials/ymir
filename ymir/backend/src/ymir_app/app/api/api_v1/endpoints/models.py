@@ -171,9 +171,8 @@ def import_model_in_background(
     db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
 ) -> None:
     logger.info(
-        "[import model] start importing model file from %s, save to %s",
+        "[import model] start importing model file from %s",
         model_import,
-        # storage_path,
     )
     parameters = {}  # type: Dict[str, Any]
     if model_import.import_type == TaskType.copy_model:
@@ -199,8 +198,7 @@ def import_model_in_background(
             parameters,
         )
     except ValueError as e:
-        # todo parse error message
-        logger.exception("[create dataset] controller error: %s", e)
+        logger.exception("[import model] controller error: %s", e)
         raise FailedtoImportModel()
 
 
