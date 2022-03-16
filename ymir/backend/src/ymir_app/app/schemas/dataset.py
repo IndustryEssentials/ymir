@@ -49,6 +49,7 @@ class DatasetImport(BaseModel):
     project_id: int
     input_url: Optional[str] = Field(description="from url")
     input_dataset_id: Optional[int] = Field(description="from dataset of other user")
+    input_dataset_name: Optional[str] = Field(description="name for source dataset")
     input_path: Optional[str] = Field(description="from path on ymir server")
     strategy: ImportStrategy = Field(description="strategy about importing annotations")
     import_type: Optional[TaskType]
@@ -98,6 +99,7 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
 class Dataset(DatasetInDBBase):
     keywords: Optional[str]
     ignored_keywords: Optional[str]
+    source: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
     @validator("keywords")

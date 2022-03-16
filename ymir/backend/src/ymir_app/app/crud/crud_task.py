@@ -48,6 +48,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         project_id: int,
         state_: TaskState = TaskState.done,
         hash_: Optional[str] = None,
+        parameters: Optional[str] = None,
     ) -> Task:
         """
         create a task as placeholder, required by:
@@ -64,6 +65,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             user_id=user_id,
             state=int(state_),
             percent=1,  # type: ignore
+            parameters=parameters,
         )
         db.add(db_obj)
         db.commit()
