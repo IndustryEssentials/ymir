@@ -313,3 +313,13 @@ class DuplicateModelGroupError(DuplicateError):
 class FailedToCreateUser(APIError):
     code = error_codes.USER_FAILED_TO_CREATE
     message = "Failed to Create User"
+
+
+class FailedToCreateIteration(APIError):
+    code = error_codes.ITERATION_FAILED_TO_CREATE
+    message = "Failed to Create Project"
+
+
+class IterationNotFound(NotFound):
+    code = error_codes.ITERATION_NOT_FOUND
+    message = "Project Not Found"
