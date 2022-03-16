@@ -313,3 +313,8 @@ class DuplicateModelGroupError(DuplicateError):
 class FailedToCreateUser(APIError):
     code = error_codes.USER_FAILED_TO_CREATE
     message = "Failed to Create User"
+
+
+class FailedtoImportModel(APIError):
+    code = error_codes.FAILED_TO_IMPORT_MODEL
+    message = "Failed to Import Model"

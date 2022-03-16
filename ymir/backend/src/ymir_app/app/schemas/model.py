@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field, root_validator
-
+from pydantic import BaseModel, Field, root_validator, validator
+from app.constants.state import TaskType
 from app.config import settings
 from app.constants.state import ResultState
 from app.schemas.common import (
@@ -29,15 +29,20 @@ class ModelBase(BaseModel):
 
 
 class ModelImport(ModelBase):
-    input_url: Optional[str] = Field(description="from url")
+    project_id: int
     input_model_id: Optional[int] = Field(description="from model of other user")
+    input_path: Optional[str] = Field(description="from path on ymir server")
+    import_type: Optional[TaskType]
+    description: Optional[str]
 
-    @root_validator
-    def check_input_source(cls, values: Any) -> Any:
-        fields = ("input_url", "input_model_id")
-        if all(values.get(i) is None for i in fields):
+    @validator("import_type", pre=True, always=True)
+    def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
+        if values.get("input_model_id"):
+            return TaskType.copy_model
+        elif values.get("input_path"):
+            return TaskType.import_model
+        else:
             raise ValueError("Missing input source")
-        return values
 
 
 class ModelCreate(ModelBase):

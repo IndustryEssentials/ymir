@@ -256,6 +256,34 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
+    def prepare_model_importing(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        model_importing = mirsvrpb.TaskReqModelImporting()
+        model_importing.model_package_path = args["model_package_path"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mirsvrpb.TaskReqModelImporting
+        req_create_task.no_task_monitor = False
+        req_create_task.model_importing.CopyFrom(model_importing)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
+
+        return request
+
+    def prepare_copy_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        copy_request = mirsvrpb.TaskReqCopyData()
+
+        copy_request.src_repo_id = args["src_repo_id"]
+        copy_request.src_dataset_id = args["src_resource_id"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mirsvrpb.TaskTypeCopyData
+        req_create_task.copy.CopyFrom(copy_request)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
+        return request
+
 
 class ControllerClient:
     def __init__(self, channel: str) -> None:
@@ -395,4 +423,14 @@ class ControllerClient:
     ) -> Dict:
         req = ControllerRequest(TaskType.data_fusion, user_id, project_id, task_id, args=task_parameters)
 
+        return self.send(req)
+
+    def import_model(self, user_id: int, project_id: int, task_id: str, task_type: Any, args: Dict) -> Dict:
+        req = ControllerRequest(
+            TaskType(task_type),
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args=args,
+        )
         return self.send(req)

@@ -1,5 +1,5 @@
 import enum
-from typing import Any
+from typing import Dict, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -12,10 +12,12 @@ from app.api.errors.errors import (
     DuplicateModelError,
     InvalidConfiguration,
     ModelNotFound,
+    DuplicateModelGroupError,
+    FailedtoImportModel,
 )
 from app.config import settings
 from app.constants.state import TaskType, ResultState
-from app.utils.files import save_file
+from app.utils.ymir_controller import gen_repo_hash, ControllerClient
 
 router = APIRouter()
 
@@ -93,12 +95,14 @@ def import_model(
     db: Session = Depends(deps.get_db),
     model_import: schemas.ModelImport,
     current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
 
-    # 1. validation
-    if crud.model.is_duplicated_name(db, user_id=current_user.id, name=model_import.name):
-        raise DuplicateModelError()
+    # 1. validation model group name
+    if crud.model_group.is_duplicated_name(db, user_id=current_user.id, name=model_import.name):
+        raise DuplicateModelGroupError()
+
     if not settings.MODELS_PATH:
         # fixme
         #  adhoc put model file to underlying storage directly
@@ -107,19 +111,44 @@ def import_model(
     # 2. create placeholder task
     task = crud.task.create_placeholder(
         db,
-        type_=TaskType.import_data,
+        type_=model_import.import_type,
         user_id=current_user.id,
         project_id=model_import.project_id,
     )
     logger.info("[import model] related task created: %s", task.hash)
 
-    # 3. create model record
-    model = create_model_record(db, model_import, task)
+    # 3. create model group
+    model_group_in = schemas.DatasetGroupCreate(
+        name=model_import.name,
+        project_id=model_import.project_id,
+        user_id=current_user.id,
+        description=model_import.description,
+    )
+    model_group = crud.model_group.create_with_user_id(db, user_id=current_user.id, obj_in=model_group_in)
+
+    # 4. create model record
+    model_in = schemas.ModelCreate(
+        name=task.hash,
+        hash=task.hash,
+        result_state=ResultState.processing,
+        model_group_id=model_group.id,
+        project_id=model_import.project_id,
+        user_id=current_user.id,
+        task_id=task.id,
+    )
+    model = crud.model.create_with_version(db, obj_in=model_in, dest_group_name=model_import.name)
     logger.info("[import model] model record created: %s", model)
 
     # 4. run background task
     storage_path = settings.MODELS_PATH
-    background_tasks.add_task(import_model_in_background, model_import.input_url, model.hash, storage_path)
+    background_tasks.add_task(
+        import_model_in_background,
+        db,
+        controller_client,
+        model_import,
+        current_user.id,
+        model.hash,
+    )
     return {"result": model}
 
 
@@ -138,13 +167,41 @@ def create_model_record(db: Session, model_import: schemas.ModelImport, task: mo
     return crud.model.create(db, obj_in=schemas.ModelCreate(**model_info))
 
 
-def import_model_in_background(model_url: str, model_hash: str, storage_path: str) -> None:
+def import_model_in_background(
+    db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
+) -> None:
     logger.info(
         "[import model] start importing model file from %s, save to %s",
-        model_url,
-        storage_path,
+        model_import,
+        # storage_path,
     )
-    save_file(model_url, storage_path, model_hash)
+    parameters = {}  # type: Dict[str, Any]
+    if model_import.import_type == TaskType.copy_model:
+        dataset = crud.model.get(db, id=model_import.input_model_id)
+        if not dataset:
+            raise ModelNotFound()
+        parameters = {
+            "src_repo_id": gen_repo_hash(dataset.project_id),
+            "src_resource_id": dataset.hash,
+        }
+
+    elif model_import.import_type == TaskType.import_model:
+        parameters = {
+            "model_package_path": str(model_import.input_path),
+        }
+
+    try:
+        controller_client.import_model(
+            user_id,
+            model_import.project_id,
+            task_hash,
+            model_import.import_type,
+            parameters,
+        )
+    except ValueError as e:
+        # todo parse error message
+        logger.exception("[create dataset] controller error: %s", e)
+        raise FailedtoImportModel()
 
 
 @router.delete(
