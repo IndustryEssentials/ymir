@@ -117,6 +117,7 @@ message GeneralReq {
         int32 sampling_count = 22;
         float sampling_rate = 23;
     }
+    string task_parameters = 24;
     ReqCreateTask req_create_task = 1001;
 
     reserved 1002;
@@ -132,7 +133,6 @@ message GeneralResp {
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
-    string task_parameters = 10;
     RespCMDInference detection = 1001;
 
     reserved 1000;
