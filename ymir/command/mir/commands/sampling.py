@@ -23,14 +23,9 @@ class CmdSampling(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, work_dir: str, src_revs: str, dst_rev: str, count: int, rate: float) -> int:
-        if not src_revs:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: --src-revs')
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
         if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: --src-revs')
-
-        if not dst_rev:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: --dst-rev')
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: --dst-rev')

@@ -30,7 +30,7 @@ class TaskModelImportingInvoker(TaskBaseInvoker):
         model_importing_request = request.req_create_task.model_importing
         model_package_path = model_importing_request.model_package_path
 
-        logging.info(f"repo root: {repo_root}, mpp: {model_package_path}")
+        logging.info(f"importing model, repo root: {repo_root}, model package path: {model_package_path}")
 
         model_importing_response = cls.model_importing_cmd(repo_root=repo_root,
                                                            model_package_path=model_package_path,

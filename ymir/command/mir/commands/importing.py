@@ -40,17 +40,11 @@ class CmdImport(base.BaseCommand):
         if anno_abs and not os.path.isdir(anno_abs):
             logging.error(f"annotations dir invalid: {anno_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if not dst_rev:
-            logging.error("empty --dst-rev")
-            return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
         if not dataset_name:
             dataset_name = dst_typ_rev_tid.tid
-        if not src_revs:
-            logging.error('empty --src-revs')
-            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='import',

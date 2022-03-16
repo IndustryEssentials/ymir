@@ -4,6 +4,8 @@ import os
 import shutil
 import tarfile
 
+import yaml
+
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, context, hash_utils, mir_storage_ops, revs_parser
@@ -11,7 +13,6 @@ from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
-import yaml
 
 
 class CmdModelImport(base.BaseCommand):
@@ -34,16 +35,10 @@ class CmdModelImport(base.BaseCommand):
             logging.error('empty --model-location')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        if not src_revs:
-            logging.error('empty --src-revs')
-            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
         if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
 
-        if not dst_rev:
-            logging.error("empty --dst-rev")
-            return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
@@ -53,10 +48,9 @@ class CmdModelImport(base.BaseCommand):
         if check_code != MirCode.RC_OK:
             return check_code
 
-        if not package_path:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty package_path')
-        if not os.path.isfile(package_path):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"{package_path} is not file")
+        if not package_path or not os.path.isfile(package_path):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"model package: {package_path} is not file")
 
         # unpack
         extract_model_dir_path = os.path.join(work_dir, 'model')

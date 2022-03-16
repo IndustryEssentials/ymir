@@ -243,9 +243,6 @@ class CmdTrain(base.BaseCommand):
         if not model_upload_location:
             logging.error("empty --model-location, abort")
             return MirCode.RC_CMD_INVALID_ARGS
-        if not src_revs:
-            logging.error('empty --src-revs, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
         if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS

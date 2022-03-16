@@ -70,16 +70,10 @@ class CmdFilter(base.BaseCommand):
         in_cks = in_cks.strip() if in_cks else ''
         ex_cks = ex_cks.strip() if ex_cks else ''
 
-        if not src_revs:
-            logging.error("invalid args: empty --src-revs")
-            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
         if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
 
-        if not dst_rev:
-            logging.error("invalid args: --dst-rev")
-            return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
         if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS

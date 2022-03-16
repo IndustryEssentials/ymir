@@ -287,9 +287,6 @@ class CmdMerge(base.BaseCommand):
     @command_run_in_out
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str,
                       work_dir: str) -> int:
-        if not src_revs or not dst_rev:
-            logging.error("empty --src-revs or --dst-rev")
-            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         if checker.check_src_revs(src_typ_rev_tids) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS

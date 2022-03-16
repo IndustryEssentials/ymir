@@ -88,9 +88,6 @@ class CmdMining(base.BaseCommand):
             logging.error('model_hash is required.')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        if not src_revs or not dst_rev:
-            logging.error('invalid --src-revs or --dst-rev; abort')
-            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
         if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
             return MirCode.RC_CMD_INVALID_ARGS
