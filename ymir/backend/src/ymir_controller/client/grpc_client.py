@@ -176,7 +176,7 @@ def _build_task_import_model_req(args: Dict) -> backend_pb2.GeneralReq:
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeImportModel
     req_create_task.no_task_monitor = args['no_task_monitor']
-    req_create_task.model_importing.model_package_path = ''
+    req_create_task.model_importing.model_package_path = args['model_package_path']
 
     return req_create_task
 

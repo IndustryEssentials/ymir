@@ -30,19 +30,21 @@ class TaskModelImportingInvoker(TaskBaseInvoker):
         model_importing_request = request.req_create_task.model_importing
         model_package_path = model_importing_request.model_package_path
 
+        logging.info(f"repo root: {repo_root}, mpp: {model_package_path}")
+
         model_importing_response = cls.model_importing_cmd(repo_root=repo_root,
                                                            model_package_path=model_package_path,
                                                            task_id=subtask_id,
                                                            work_dir=subtask_workdir,
                                                            model_location=assets_config["modelsuploadlocation"])
-        
+
         return model_importing_response
 
     @classmethod
-    def model_importing_cmd(repo_root: str, model_package_path: str, task_id: str, work_dir: str,
+    def model_importing_cmd(cls, repo_root: str, model_package_path: str, task_id: str, work_dir: str,
                             model_location: str) -> backend_pb2.GeneralResp:
         cmd = [
-            utils.mir_executable(), 'import-model', '--root', repo_root, '--model-package', model_package_path, '-w',
-            work_dir, '--dst-rev', f"{task_id}@{task_id}", '--model-location', model_location
+            utils.mir_executable(), 'import-model', '--root', repo_root, '--package-path', model_package_path,
+            '-w', work_dir, '--dst-rev', f"{task_id}@{task_id}", '--model-location', model_location
         ]
         return utils.run_command(cmd)
