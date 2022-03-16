@@ -146,12 +146,19 @@ def create_dataset(
         raise DuplicateDatasetError()
 
     # 2. create placeholder task
+    if dataset_import.input_dataset_id:
+        # user has no access to other's datasets
+        # save source dataset name beforehand
+        src_dataset = crud.dataset.get(db, id=dataset_import.input_dataset_id)
+        if src_dataset:
+            dataset_import.input_dataset_name = src_dataset.name
     task = crud.task.create_placeholder(
         db,
         type_=dataset_import.import_type,  # type: ignore
         user_id=current_user.id,
         project_id=dataset_import.project_id,
         state_=TaskState.pending,
+        parameters=dataset_import.json(),
     )
     logger.info("[import dataset] related task record created: %s", task.hash)
 
@@ -522,6 +529,7 @@ def create_dataset_fusion(
         project_id=task_in.project_id,
         hash_=task_hash,
         state_=TaskState.pending,
+        parameters=task_in.json(),
     )
     logger.info("[create dataset] related task record created: %s", task.hash)
 
