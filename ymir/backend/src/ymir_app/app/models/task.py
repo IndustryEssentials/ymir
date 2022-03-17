@@ -31,6 +31,7 @@ class Task(Base):
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
+    iteration_id = Column(Integer, index=True)
 
     is_terminated = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)

@@ -20,7 +20,6 @@ class IterationBase(BaseModel):
     label_output_dataset_id: Optional[int]
     training_input_dataset_id: Optional[int]
     training_output_model_id: Optional[int]
-    previous_training_dataset_id: int
     user_id: int
     project_id: int
 
