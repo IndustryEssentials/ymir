@@ -127,8 +127,6 @@ def import_model(
         name=model_import.name,
         project_id=model_import.project_id,
         description=model_import.description,
-        # change table Nullable
-        training_dataset_id=1,
     )
     model_group = crud.model_group.create_with_user_id(db, user_id=current_user.id, obj_in=model_group_in)
 
