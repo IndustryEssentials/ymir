@@ -5,7 +5,7 @@ import t from "@/utils/t"
 export const getTaskTypes = () => [
   { key: "all", value: "", label: t("common.all") },
   { key: "train", value: TASKTYPES.TRAINING, label: t("task.type.train") },
-  { key: "mining", value: TASKTYPES.MINING, label: t("task.type.mine") },
+  { key: "mining", value: TASKTYPES.MINING, label: t("task.type.mining") },
   { key: "label", value: TASKTYPES.LABEL, label: t("task.type.label") },
   { key: "fusion", value: TASKTYPES.FUSION, label: t("task.type.fusion") },
 ]

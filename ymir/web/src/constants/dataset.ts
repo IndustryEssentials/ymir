@@ -1,5 +1,6 @@
+import { getLocale } from "umi"
 import { OriginDatasetGroup, DatasetGroup, OriginDataset, Dataset } from "@/interface/dataset"
-import { format } from '@/utils/date'
+import { calDuration, format } from '@/utils/date'
 import { getInterationVersion } from "./project"
 
 export enum states {
@@ -48,6 +49,7 @@ export function transferDataset (data: OriginDataset): Dataset {
     taskState: data.related_task.state,
     taskType: data.related_task.type,
     duration: data.related_task.duration,
+    durationLabel: calDuration(data.related_task.duration, getLocale()),
     taskName: data.related_task.name,
     task: data.related_task,
   }

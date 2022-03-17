@@ -178,7 +178,7 @@ function Keyword({ getKeywords }) {
   )
 
   return (
-    <div className={styles.model}>
+    <div className={styles.keyword}>
       <Breadcrumbs />
 
       <Space className={styles.actions}>

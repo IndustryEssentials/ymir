@@ -10,6 +10,7 @@ export const TASKTYPES = Object.freeze({
   COPY: 7,
   INFERENCE: 9,
   FUSION: 11,
+  SYS: 105,
 })
 
 export const TASKSTATES = Object.freeze({
@@ -26,14 +27,14 @@ export const isFinalState = (state: number) => {
 }
 
 export const getTaskTypeLabel = (type: number) => {
-
-  const labels = {
-    [TASKTYPES.TRAINING]: t('task.type.train'),
-    [TASKTYPES.MINING]: t('task.type.mine'),
-    [TASKTYPES.LABEL]: t('task.type.label'),
-    [TASKTYPES.FILTER]: t('task.type.filter'),
-    [TASKTYPES.IMPORT]: t('task.type.import'),
-  }
-
-  return labels[type]
+  return {
+    [TASKTYPES.TRAINING]: 'task.type.train',
+    [TASKTYPES.MINING]: 'task.type.mining',
+    [TASKTYPES.LABEL]: 'task.type.label',
+    [TASKTYPES.FUSION]: 'task.type.fusion',
+    [TASKTYPES.COPY]: 'task.type.copy',
+    [TASKTYPES.INFERENCE]: 'task.type.inference',
+    [TASKTYPES.IMPORT]: 'task.type.import',
+    [TASKTYPES.SYS]: 'task.type.sys',
+  }[type]
 }
