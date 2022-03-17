@@ -66,6 +66,9 @@ class CmdModelImport(base.BaseCommand):
                                                     model_location=model_location)
         logging.info(f"model sha1: {model_hash}")
 
+        # remove tmp files
+        shutil.rmtree(extract_model_dir_path)
+
         # update task and commit
         mir_tasks = mirpb.MirTasks()
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
@@ -83,9 +86,6 @@ class CmdModelImport(base.BaseCommand):
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
                                                       commit_message=f"import model {model_hash}")
-
-        # cleanup
-        shutil.rmtree(extract_model_dir_path)
 
         return MirCode.RC_OK
 
