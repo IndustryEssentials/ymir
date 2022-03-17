@@ -1,0 +1,6 @@
+[run]
+omit =
+    src/ymir_viz/src/swagger_models/*
+    src/ymir_viz/src/swagger/*
+    src/ymir_viz/src/type_util.py
+    src/ymir_viz/src/util.py
