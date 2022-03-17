@@ -149,6 +149,6 @@ def is_valid_import_path(src_path: Union[str, Path]) -> bool:
     return True
 
 
-def prepare_model(tmp_model_path: str, output_dir: Union[str, Path]) -> None:
-    file_path = Path(NGINX_DATA_PATH) / tmp_model_path
+def copy_upload_file(input_model_path: str, output_dir: Union[str, Path]) -> None:
+    file_path = Path(NGINX_DATA_PATH) / input_model_path
     shutil.copy(file_path, output_dir)

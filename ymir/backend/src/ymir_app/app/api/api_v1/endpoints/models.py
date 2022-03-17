@@ -18,7 +18,7 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskType, ResultState
-from app.utils.files import prepare_model
+from app.utils.files import copy_upload_file
 from app.utils.ymir_controller import gen_repo_hash, ControllerClient
 
 router = APIRouter()
@@ -171,21 +171,22 @@ def import_model_in_background(
         "[import model] start importing model file from %s",
         model_import,
     )
-    parameters = {}  # type: Dict[str, Any]
+    # parameters = {}  # type: # Dict[str, Any]
+    parameters: Dict[str, Any] = {}
     if model_import.import_type == TaskType.copy_model:
-        dataset = crud.model.get(db, id=model_import.input_model_id)
-        if not dataset:
+        model = crud.model.get(db, id=model_import.input_model_id)
+        if not model:
             raise ModelNotFound()
         parameters = {
-            "src_repo_id": gen_repo_hash(dataset.project_id),
-            "src_resource_id": dataset.hash,
+            "src_repo_id": gen_repo_hash(model.project_id),
+            "src_resource_id": model.hash,
         }
 
-    elif model_import.import_type == TaskType.import_model and model_import.input_url is not None:
+    elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
         temp_model_path = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
-        prepare_model(model_import.input_url, temp_model_path)
+        copy_upload_file(model_import.input_model_path, temp_model_path)
         parameters = {
-            "model_package_path": os.path.join(temp_model_path, os.path.basename(model_import.input_url)),
+            "model_package_path": os.path.join(temp_model_path, os.path.basename(model_import.input_model_path)),
         }
 
     try:
