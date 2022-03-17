@@ -17,7 +17,7 @@ import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
 
 const { Option } = Select
 
-function Fusion({ allDatasets, datasetCache, getDatasets, getDataset, createFusionTask, }) {
+function Fusion({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const history = useHistory()
@@ -40,11 +40,11 @@ function Fusion({ allDatasets, datasetCache, getDatasets, getDataset, createFusi
   }
 
   useEffect(() => {
-    dataset.projectId && getDatasets(dataset.projectId)
+    dataset.projectId && props.getDatasets(dataset.projectId)
   }, [dataset.projectId])
 
   useEffect(() => {
-    id && getDataset(id)
+    id && props.getDataset(id)
   }, [id])
 
   useEffect(() => {
@@ -100,9 +100,10 @@ function Fusion({ allDatasets, datasetCache, getDatasets, getDataset, createFusi
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
     }
-    const result = await createFusionTask(params)
+    const result = await props.createFusionTask(params)
     if (result) {
       message.info(t('task.fusion.create.success.msg'))
+      props.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}`)
     }
   }
@@ -291,6 +292,9 @@ const mapDispatchToProps = (dispatch) => {
         type: "dataset/getDataset",
         payload: id,
       })
+    },
+    clearCache() {
+      return dispatch({ type: "dataset/clearCache", })
     },
     createFusionTask(payload) {
       return dispatch({

@@ -17,7 +17,7 @@ const LabelTypes = () => [
   { id: "all", label: t('task.label.form.type.all') },
 ]
 
-function Label({ datasets, getDataset, keywords, createLabelTask, getKeywords }) {
+function Label({ datasets, keywords, ...props }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const history = useHistory()
@@ -28,11 +28,11 @@ function Label({ datasets, getDataset, keywords, createLabelTask, getKeywords })
 
 
   useEffect(() => {
-    id && getDataset(id)
+    id && props.getDataset(id)
   }, [id])
 
   useEffect(() => {
-    getKeywords({ limit: 100000 })
+    props.getKeywords({ limit: 100000 })
   }, [])
 
   useEffect(() => {
@@ -75,8 +75,9 @@ function Label({ datasets, getDataset, keywords, createLabelTask, getKeywords })
       labellers: emails,
       doc,
     }
-    const result = await createLabelTask(params)
+    const result = await props.createLabelTask(params)
     if (result) {
+      await props.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}`)
     }
   }
@@ -249,6 +250,9 @@ const dis = (dispatch) => {
         type: "task/createLabelTask",
         payload,
       })
+    },
+    clearCache() {
+      return dispatch({ type: "dataset/clearCache", })
     },
     getKeywords(payload) {
       return dispatch({
