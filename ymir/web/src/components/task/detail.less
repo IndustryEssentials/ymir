@@ -14,7 +14,14 @@
   }
 }
 .title {
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 10px;
-  font-weight: bold;
+  line-height: 18px;
+  &::before {
+    content: ' ';
+    display: inline-block;
+    width: 6px;
+    height: 18px;
+    background-color: #36CBCB;
+    vertical-align: bottom;
+    margin-right: 10px;
+  }
 }
