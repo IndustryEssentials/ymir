@@ -168,7 +168,7 @@ def upgrade() -> None:
     op.create_table(
         "model",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("hash", sa.String(length=100), nullable=True),
+        sa.Column("hash", sa.String(length=100), nullable=False),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("version_num", sa.Integer(), nullable=False),
         sa.Column("result_state", sa.SmallInteger(), nullable=False),

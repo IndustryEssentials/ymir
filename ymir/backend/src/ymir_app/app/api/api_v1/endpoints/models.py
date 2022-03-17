@@ -127,7 +127,6 @@ def import_model(
     # 4. create model record
     model_in = schemas.ModelCreate(
         name=task.hash,
-        hash=task.hash,
         result_state=ResultState.processing,
         model_group_id=model_group.id,
         project_id=model_import.project_id,
@@ -175,11 +174,13 @@ def import_model_in_background(
     parameters: Dict[str, Any] = {}
     if model_import.import_type == TaskType.copy_model:
         model = crud.model.get(db, id=model_import.input_model_id)
+        task = crud.task.get(db, id=model.task_id)
+
         if not model:
             raise ModelNotFound()
         parameters = {
             "src_repo_id": gen_repo_hash(model.project_id),
-            "src_resource_id": model.hash,
+            "src_resource_id": task.hash,
         }
 
     elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:

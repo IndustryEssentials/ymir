@@ -19,7 +19,7 @@ def get_model_url(model_hash: str) -> str:
 
 class ModelBase(BaseModel):
     hash: str
-    name: str
+    name: Optional[str]
     map: Optional[float] = Field(description="Mean Average Precision")
     result_state: ResultState = ResultState.processing
     model_group_id: int

@@ -29,7 +29,7 @@ class TaskType(IntEnum):
     merge = mirsvrpb.TaskType.TaskTypeMerge
     infer = mirsvrpb.TaskType.TaskTypeInfer
     data_fusion = mirsvrpb.TaskType.TaskTypeFusion
-    copy_model = mirsvrpb.TaskType.TaskTypeCopyData
+    copy_model = mirsvrpb.TaskType.TaskTypeCopyModel
     import_model = mirsvrpb.TaskType.TaskTypeImportModel
 
     # fixme

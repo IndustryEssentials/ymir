@@ -175,16 +175,15 @@ class ControllerRequest:
 
     def prepare_copy_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         copy_request = mirsvrpb.TaskReqCopyData()
-        strategy = args.get("strategy")
-        if strategy == ImportStrategy.ignore_unknown_annotations:
+        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
+        if strategy is ImportStrategy.ignore_unknown_annotations:
             copy_request.name_strategy_ignore = True
-            copy_request.src_user_id = args["src_user_id"]
-        elif strategy == ImportStrategy.stop_upon_unknown_annotations:
+        elif strategy is ImportStrategy.stop_upon_unknown_annotations:
             copy_request.name_strategy_ignore = False
-            copy_request.src_user_id = args["src_user_id"]
         else:
-            logger.info("task is copy model")
+            raise ValueError("not supported strategy: %s" % strategy.name)
 
+        copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
         copy_request.src_dataset_id = args["src_resource_id"]
 
@@ -269,6 +268,20 @@ class ControllerRequest:
         request.req_type = mirsvrpb.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
 
+        return request
+
+    def prepare_copy_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        copy_request = mirsvrpb.TaskReqCopyData()
+
+        copy_request.src_repo_id = args["src_repo_id"]
+        copy_request.src_dataset_id = args["src_resource_id"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mirsvrpb.TaskTypeCopyModel
+        req_create_task.copy.CopyFrom(copy_request)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
         return request
 
 
