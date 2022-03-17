@@ -281,7 +281,7 @@ class ControllerClient:
         self.channel.close()
 
     def send(self, req: mirsvrpb.GeneralReq) -> Dict:
-        logger.warning("[controller] request: %s", req.req)
+        logger.info("[controller] request: %s", req.req)
         resp = self.stub.data_manage_request(req.req)
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")

@@ -1,6 +1,6 @@
 import enum
-import tempfile
 import os
+import tempfile
 from typing import Dict, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -19,8 +19,8 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskType, ResultState
-from app.utils.ymir_controller import gen_repo_hash, ControllerClient
 from app.utils.files import prepare_model
+from app.utils.ymir_controller import gen_repo_hash, ControllerClient
 
 router = APIRouter()
 
