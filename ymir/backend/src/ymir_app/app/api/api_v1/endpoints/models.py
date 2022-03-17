@@ -15,6 +15,7 @@ from app.api.errors.errors import (
     ModelNotFound,
     DuplicateModelGroupError,
     FailedtoImportModel,
+    TaskNotFound,
 )
 from app.config import settings
 from app.constants.state import TaskType, ResultState
@@ -102,14 +103,14 @@ def import_model(
 ) -> Any:
 
     # 1. validation model group name
-    if crud.model_group.is_duplicated_name(db, user_id=current_user.id, name=model_import.name):
+    if crud.model_group.is_duplicated_name(db=db, user_id=current_user.id, name=model_import.name):
         raise DuplicateModelGroupError()
 
     # 2. create placeholder task
     if model_import.import_type is None:
         raise FailedtoImportModel
     task = crud.task.create_placeholder(
-        db,
+        db=db,
         type_=model_import.import_type,
         user_id=current_user.id,
         project_id=model_import.project_id,
@@ -122,18 +123,19 @@ def import_model(
         project_id=model_import.project_id,
         description=model_import.description,
     )
-    model_group = crud.model_group.create_with_user_id(db, user_id=current_user.id, obj_in=model_group_in)
+    model_group = crud.model_group.create_with_user_id(db=db, user_id=current_user.id, obj_in=model_group_in)
 
     # 4. create model record
     model_in = schemas.ModelCreate(
         name=task.hash,
+        hash=None,
         result_state=ResultState.processing,
         model_group_id=model_group.id,
         project_id=model_import.project_id,
         user_id=current_user.id,
         task_id=task.id,
     )
-    model = crud.model.create_with_version(db, obj_in=model_in, dest_group_name=model_import.name)
+    model = crud.model.create_with_version(db=db, obj_in=model_in, dest_group_name=model_import.name)
     logger.info("[import model] model record created: %s", model)
 
     # 5. run background task
@@ -170,19 +172,19 @@ def import_model_in_background(
         "[import model] start importing model file from %s",
         model_import,
     )
-    # parameters = {}  # type: # Dict[str, Any]
     parameters: Dict[str, Any] = {}
     if model_import.import_type == TaskType.copy_model:
-        model = crud.model.get(db, id=model_import.input_model_id)
-        task = crud.task.get(db, id=model.task_id)
-
-        if not model:
+        # get the task.hash from input_model
+        model_obj = crud.model.get(db, id=model_import.input_model_id)
+        if model_obj is None:
             raise ModelNotFound()
+        task_obj = crud.task.get(db, id=model_obj.task_id)
+        if task_obj is None:
+            raise TaskNotFound()
         parameters = {
-            "src_repo_id": gen_repo_hash(model.project_id),
-            "src_resource_id": task.hash,
+            "src_repo_id": gen_repo_hash(model_obj.project_id),
+            "src_resource_id": task_obj.hash,
         }
-
     elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
         temp_model_path = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
         copy_upload_file(model_import.input_model_path, temp_model_path)
@@ -201,7 +203,6 @@ def import_model_in_background(
     except ValueError as e:
         logger.exception("[import model] controller error: %s", e)
         raise FailedtoImportModel()
-
     # update model info when get model ready status from postman
 
 

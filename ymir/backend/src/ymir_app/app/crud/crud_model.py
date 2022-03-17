@@ -82,7 +82,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if dest_group_name:
             name = f"{dest_group_name}_{version_num}"
         else:
-            name = obj_in.name
+            name = obj_in.name  # type: ignore
 
         db_obj = Model(
             name=name,
