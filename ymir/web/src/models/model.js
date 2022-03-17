@@ -210,8 +210,8 @@ export default {
         payload: initQuery,
       })
     },
-    clearCache({}, { put }) {
-      yield put({ type: 'CLEAR_ALL' })
+    *clearCache({}, { put }) {
+      yield put({ type: 'CLEAR_ALL', })
     },
   },
   reducers: {
@@ -249,7 +249,7 @@ export default {
       }
     },
     CLEAR_ALL() {
-      return initState
+      return { ...initState }
     },
   },
 }

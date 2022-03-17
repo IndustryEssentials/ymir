@@ -21,7 +21,7 @@ const initState = {
 
 export default {
   namespace: "dataset",
-  state: initState,
+  state: { ...initState },
   effects: {
     *getDatasetGroups({ payload }, { call, put }) {
       const { pid, query } = payload
@@ -221,8 +221,8 @@ export default {
         payload: initQuery,
       })
     },
-    clearCache({ payload }, { put }) {
-      yield put({ type: 'CLEAR_ALL' })
+    *clearCache({}, { put }) {
+      yield put({ type: 'CLEAR_ALL', })
     },
   },
   reducers: {
@@ -280,7 +280,7 @@ export default {
       }
     },
     CLEAR_ALL() {
-      return initState
+      return { ...initState }
     },
   },
 }
