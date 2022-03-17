@@ -2,11 +2,10 @@ import enum
 import logging
 import os
 import sys
-from typing import Callable, List, Union
+from typing import Callable, List
 
 from mir.tools import class_ids, mir_repo_utils
 from mir.tools.code import MirCode
-from mir.tools.revs_parser import TypRevTid
 
 
 @enum.unique
