@@ -142,7 +142,7 @@ def import_model_in_background(model_url: str, model_hash: str, storage_path: st
     logger.info(
         "[import model] start importing model file from %s, save to %s",
         model_url,
-        storage_path
+        storage_path,
     )
     save_file(model_url, storage_path, model_hash)
 
