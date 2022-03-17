@@ -288,11 +288,7 @@ class CmdMerge(base.BaseCommand):
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str,
                       work_dir: str) -> int:
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
-        if checker.check_src_revs(src_typ_rev_tids) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
@@ -317,11 +313,8 @@ class CmdMerge(base.BaseCommand):
             if ret != MirCode.RC_OK:
                 return ret
 
-        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs)
+        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
         for typ_rev_tid in ex_typ_rev_tids:
-            if checker.check_src_revs(typ_rev_tid) != MirCode.RC_OK:
-                return MirCode.RC_CMD_INVALID_ARGS
-
             ret = _exclude_from_mir(host_mir_metadatas=host_mir_metadatas,
                                     host_mir_annotations=host_mir_annotations,
                                     host_mir_keywords=host_mir_keywords,

@@ -34,13 +34,8 @@ class CmdModelImport(base.BaseCommand):
             logging.error('empty --model-location')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
-
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         check_code = checker.check(mir_root,
                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])

@@ -70,13 +70,8 @@ class CmdFilter(base.BaseCommand):
         in_cks = in_cks.strip() if in_cks else ''
         ex_cks = ex_cks.strip() if ex_cks else ''
 
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
-
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='filter',
                                                monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),

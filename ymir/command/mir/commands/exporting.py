@@ -44,9 +44,7 @@ class CmdExport(base.BaseCommand):
             logging.error(f"invalid --format: {format}")
             return MirCode.RC_CMD_INVALID_ARGS
 
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='export',
                                                monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
@@ -93,8 +91,8 @@ class CmdExport(base.BaseCommand):
 
     @staticmethod
     def _commit(mir_root: str, src_revs: str, dst_rev: str) -> None:
-        src_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
+        src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         task = mirpb.Task()
         task.return_code = MirCode.RC_OK

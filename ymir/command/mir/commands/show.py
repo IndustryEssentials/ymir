@@ -19,9 +19,7 @@ class CmdShow(base.BaseCommand):
     @classmethod
     def run_with_args(cls, mir_root: str, src_revs: str, verbose: bool) -> int:
         # check args
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         check_code = checker.check(mir_root,
                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if check_code != MirCode.RC_OK:
