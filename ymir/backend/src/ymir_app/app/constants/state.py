@@ -30,7 +30,8 @@ class TaskType(IntEnum):
     infer = mirsvrpb.TaskType.TaskTypeInfer
     data_fusion = mirsvrpb.TaskType.TaskTypeFusion
     copy_model = mirsvrpb.TaskType.TaskTypeCopyData
-    import_model = mirsvrpb.TaskType.TaskReqModelImporting
+    import_model = mirsvrpb.TaskType.TaskTypeImportModel
+
     # fixme
     #  create_project is not the type of TASK_CREATE, but empty dataset need a task
     create_project = mirsvrpb.RequestType.REPO_CREATE

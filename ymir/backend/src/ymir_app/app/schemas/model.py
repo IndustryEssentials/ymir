@@ -28,10 +28,11 @@ class ModelBase(BaseModel):
     user_id: Optional[int]
 
 
-class ModelImport(ModelBase):
+class ModelImport(BaseModel):
     project_id: int
+    name: str = Field(description="Model Group Name")
+    input_url: Optional[str] = Field(description="from uploaded file url")
     input_model_id: Optional[int] = Field(description="from model of other user")
-    input_path: Optional[str] = Field(description="from path on ymir server")
     import_type: Optional[TaskType]
     description: Optional[str]
 
@@ -39,7 +40,7 @@ class ModelImport(ModelBase):
     def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
         if values.get("input_model_id"):
             return TaskType.copy_model
-        elif values.get("input_path"):
+        elif values.get("input_url"):
             return TaskType.import_model
         else:
             raise ValueError("Missing input source")

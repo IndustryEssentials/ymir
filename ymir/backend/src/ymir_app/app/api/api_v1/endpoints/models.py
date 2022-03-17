@@ -1,4 +1,5 @@
 import enum
+import tempfile
 from typing import Dict, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -18,6 +19,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import TaskType, ResultState
 from app.utils.ymir_controller import gen_repo_hash, ControllerClient
+from app.utils.files import prepare_model
 
 router = APIRouter()
 
@@ -185,8 +187,11 @@ def import_model_in_background(
         }
 
     elif model_import.import_type == TaskType.import_model:
+        temp_model_path = tempfile.mkdtemp(prefix="import_dataset_", dir=settings.SHARED_DATA_DIR)
+        prepare_model(model_import.input_url, temp_model_path)
+
         parameters = {
-            "model_package_path": str(model_import.input_path),
+            "model_package_path": temp_model_path,
         }
 
     try:
