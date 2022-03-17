@@ -13,8 +13,12 @@ from PIL import Image, UnidentifiedImageError
 import yaml
 
 from mir import scm
+from mir.tools import hash_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+
+PRODUCER_KEY = 'producer'
+PRODUCER_NAME = 'ymir'
 
 
 def time_it(f: Callable) -> Callable:
@@ -254,6 +258,35 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
                                  task_context=ymir_info_dict.get('task_context', {}))
 
     return model_storage
+
+
+def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model_location: str) -> str:
+    """
+    pack model, returns model hash of the new model package
+    """
+    logging.info(f"packing models {model_dir_path} -> {model_location}")
+
+    ymir_info_file_name = 'ymir-info.yaml'
+    ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
+    with open(ymir_info_file_path, 'w') as f:
+        yaml.safe_dump(model_storage.as_dict(), f)
+
+    tar_file_path = os.path.join(model_dir_path, 'model.tar.gz')
+    with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:
+        for model_name in model_storage.models:
+            model_path = os.path.join(model_dir_path, model_name)
+            logging.info(f"    packing {model_path} -> {model_name}")
+            tar_gz_f.add(model_path, model_name)
+        logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
+        tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
+
+    model_hash = hash_utils.sha1sum_for_file(tar_file_path)
+    shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
+    os.remove(tar_file_path)
+
+    logging.info(f"pack success, model hash: {model_hash}")
+
+    return model_hash
 
 
 def map_gpus_zero_index(gpu_id: str) -> str:
