@@ -333,7 +333,9 @@ class ControllerClient:
         task_type: TaskType,
         task_parameters: Optional[Dict],
     ) -> Dict:
-        req = ControllerRequest(TaskType(task_type), user_id, project_id, task_id, args=task_parameters)
+        req = ControllerRequest(
+            type=TaskType(task_type), user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters
+        )
         return self.send(req)
 
     def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:
@@ -341,7 +343,7 @@ class ControllerClient:
         project_id = TaskId.from_task_id(task_hash).repo_id
 
         req = ControllerRequest(
-            ExtraRequestType.kill,
+            type=ExtraRequestType.kill,
             user_id=user_id,
             project_id=project_id,
             args={
@@ -354,7 +356,7 @@ class ControllerClient:
 
     def pull_docker_image(self, url: str, user_id: int) -> Dict:
         req = ControllerRequest(
-            ExtraRequestType.pull_image,
+            type=ExtraRequestType.pull_image,
             user_id=user_id,
             args={"url": url},
         )
@@ -362,19 +364,19 @@ class ControllerClient:
 
     def get_gpu_info(self, user_id: int) -> Dict[str, int]:
         req = ControllerRequest(
-            ExtraRequestType.get_gpu_info,
+            type=ExtraRequestType.get_gpu_info,
             user_id=user_id,
         )
         resp = self.send(req)
         return {"gpu_count": resp["available_gpu_counts"]}
 
     def create_user(self, user_id: int) -> Dict:
-        req = ControllerRequest(ExtraRequestType.create_user, user_id=user_id)
+        req = ControllerRequest(type=ExtraRequestType.create_user, user_id=user_id)
         return self.send(req)
 
     def create_project(self, user_id: int, project_id: int, task_id: str, args: Dict) -> Dict:
         req = ControllerRequest(
-            ExtraRequestType.create_project,
+            type=ExtraRequestType.create_project,
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,
@@ -384,7 +386,7 @@ class ControllerClient:
 
     def import_dataset(self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict) -> Dict:
         req = ControllerRequest(
-            TaskType(task_type),
+            type=TaskType(task_type),
             user_id=user_id,
             project_id=project_id,
             task_id=task_hash,
@@ -403,7 +405,7 @@ class ControllerClient:
         if None in (model_hash, docker_image, docker_config):
             raise ValueError("Missing model or docker image")
         req = ControllerRequest(
-            ExtraRequestType.inference,
+            type=ExtraRequestType.inference,
             user_id=user_id,
             args={
                 "model_hash": model_hash,
@@ -421,13 +423,15 @@ class ControllerClient:
         task_id: str,
         task_parameters: Optional[Dict],
     ) -> Dict:
-        req = ControllerRequest(TaskType.data_fusion, user_id, project_id, task_id, args=task_parameters)
+        req = ControllerRequest(
+            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters
+        )
 
         return self.send(req)
 
     def import_model(self, user_id: int, project_id: int, task_id: str, task_type: Any, args: Dict) -> Dict:
         req = ControllerRequest(
-            task_type,
+            type=task_type,
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,

@@ -192,11 +192,11 @@ def import_model_in_background(
 
     try:
         controller_client.import_model(
-            user_id,
-            model_import.project_id,
-            task_hash,
-            model_import.import_type,
-            parameters,
+            user_id=user_id,
+            project_id=model_import.project_id,
+            task_id=task_hash,
+            task_type=model_import.import_type,
+            args=parameters,
         )
     except ValueError as e:
         logger.exception("[import model] controller error: %s", e)
