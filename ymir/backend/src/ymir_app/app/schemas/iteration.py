@@ -32,7 +32,7 @@ class IterationCreate(IterationBase):
 
 # Properties that can be changed
 class IterationUpdate(BaseModel):
-    current_stage: Optional[IterationStage]
+    current_stage: IterationStage
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]
