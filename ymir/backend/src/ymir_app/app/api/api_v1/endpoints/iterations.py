@@ -58,7 +58,7 @@ def get_iteration(
     "/{iteration_id}",
     response_model=schemas.IterationOut,
 )
-def update_dataset_group(
+def update_iteration_stage(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
@@ -66,7 +66,7 @@ def update_dataset_group(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Change iteration stage
+    Change iteration stage and update iteration context when necessary
 
     available stages:
     - prepare_mining = 0
@@ -79,5 +79,8 @@ def update_dataset_group(
     if not iteration:
         raise IterationNotFound()
 
+    # todo
+    #  update iteration context:
+    #   set mining_input, mining_output, etc
     iteration = crud.iteration.update(db, db_obj=iteration, obj_in=obj_update)
     return {"result": iteration}
