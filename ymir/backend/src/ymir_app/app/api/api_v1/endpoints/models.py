@@ -112,6 +112,8 @@ def import_model(
         raise InvalidConfiguration()
 
     # 2. create placeholder task
+    if model_import.import_type is None:
+        raise FailedtoImportModel
     task = crud.task.create_placeholder(
         db,
         type_=model_import.import_type,
@@ -144,7 +146,6 @@ def import_model(
     logger.info("[import model] model record created: %s", model)
 
     # 5. run background task
-    storage_path = settings.MODELS_PATH
     background_tasks.add_task(
         import_model_in_background,
         db,
@@ -188,7 +189,7 @@ def import_model_in_background(
             "src_resource_id": dataset.hash,
         }
 
-    elif model_import.import_type == TaskType.import_model:
+    elif model_import.import_type == TaskType.import_model and model_import.input_url is not None:
         temp_model_path = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
         prepare_model(model_import.input_url, temp_model_path)
         parameters = {
