@@ -201,6 +201,8 @@ def import_model_in_background(
         logger.exception("[import model] controller error: %s", e)
         raise FailedtoImportModel()
 
+    # update model info when get model ready status from postman
+
 
 @router.delete(
     "/{model_id}",
