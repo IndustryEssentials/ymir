@@ -22,23 +22,25 @@ from mir.tools.errors import MirRuntimeError
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
                            task_context: dict) -> Tuple[str, float, Optional[mir_utils.ModelStorage]]:
-    model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
+    """
+    find and save models
+    Returns:
+        model hash, model mAP and ModelStorage
+    """
+    out_model_dir = os.path.join(out_root, "models")
+    model_paths, model_mAP = _find_models(out_model_dir)
     if not model_paths:
         # if have no models
         return '', model_mAP, None
 
-    tar_path = os.path.join(out_root, "models.tar.gz")
-    model_storage = _pack_models_and_config(model_paths=model_paths,
-                                            executor_config=executor_config,
-                                            task_context=dict(**task_context,
-                                                              mAP=model_mAP,
-                                                              type=mirpb.TaskType.TaskTypeTraining),
-                                            dest_path=tar_path)
-    model_sha1 = hash_utils.sha1sum_for_file(tar_path)
-
-    dest_path = os.path.join(model_upload_location, model_sha1)
-    _upload_model_pack(tar_path, dest_path)
-    os.remove(tar_path)
+    model_storage = mir_utils.ModelStorage(executor_config=executor_config,
+                                           task_context=dict(**task_context,
+                                                             mAP=model_mAP,
+                                                             type=mirpb.TaskType.TaskTypeTraining),
+                                           models=[os.path.basename(model_path) for model_path in model_paths])
+    model_sha1 = mir_utils.pack_and_copy_models(model_storage=model_storage,
+                                                model_dir_path=out_model_dir,
+                                                model_location=model_upload_location)
 
     return model_sha1, model_mAP, model_storage
 
@@ -67,31 +69,6 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
         return [], 0.0
 
     return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
-
-
-def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict,
-                            dest_path: str) -> mir_utils.ModelStorage:
-    if not model_paths or not dest_path:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid model_paths or dest_path')
-
-    logging.info(f"packing models to {dest_path}")
-    model_storage = mir_utils.ModelStorage(executor_config=executor_config,
-                                           task_context=task_context,
-                                           models=[os.path.basename(model_path) for model_path in model_paths])
-    ymir_info_file_name = 'ymir-info.yaml'
-    ymir_info_file_path = os.path.join(os.path.dirname(dest_path), ymir_info_file_name)
-    with open(ymir_info_file_path, 'w') as f:
-        f.write(yaml.dump(model_storage.as_dict()))
-
-    with tarfile.open(dest_path, "w:gz") as dest_tar_gz:
-        for model_path in model_paths:
-            logging.info(f"    packing {model_path} -> {os.path.basename(model_path)}")
-            dest_tar_gz.add(model_path, os.path.basename(model_path))
-
-        # pack ymir-info.yaml
-        logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
-        dest_tar_gz.add(ymir_info_file_path, ymir_info_file_name)
-    return model_storage
 
 
 def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
