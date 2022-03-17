@@ -2,11 +2,10 @@ import enum
 import logging
 import os
 import sys
-from typing import Callable, List, Union
+from typing import Callable, List
 
 from mir.tools import class_ids, mir_repo_utils
 from mir.tools.code import MirCode
-from mir.tools.revs_parser import TypRevTid
 
 
 @enum.unique
@@ -94,32 +93,3 @@ def _check_have_labels(mir_root: str) -> int:
 def _check_have_no_labels(mir_root: str) -> int:
     have_labels = os.path.isfile(class_ids.ids_file_path(mir_root))
     return MirCode.RC_OK if not have_labels else MirCode.RC_CMD_INVALID_MIR_REPO
-
-
-def check_src_revs(revs: Union[List[TypRevTid], TypRevTid]) -> int:
-    if isinstance(revs, list):
-        if len(revs) == 0:
-            logging.error('invalid args: empty --src-revs')
-            return MirCode.RC_CMD_INVALID_ARGS
-        for rev in revs:
-            result = check_src_revs(rev)
-            if result != MirCode.RC_OK:
-                return result
-    elif isinstance(revs, TypRevTid):
-        if not revs.rev:
-            logging.error(f"invalid args: no rev in --src-revs: {revs}")
-            return MirCode.RC_CMD_INVALID_ARGS
-    else:
-        return MirCode.RC_CMD_INVALID_ARGS
-
-    return MirCode.RC_OK
-
-
-def check_dst_rev(dst_typ_rev_tid: TypRevTid) -> int:
-    if not dst_typ_rev_tid.rev:
-        logging.error(f"invalid args: no rev in --dst-rev: {dst_typ_rev_tid}")
-        return MirCode.RC_CMD_INVALID_ARGS
-    if not dst_typ_rev_tid.tid:
-        logging.error(f"invalid args: no tid in --dst-rev: {dst_typ_rev_tid}")
-        return MirCode.RC_CMD_INVALID_ARGS
-    return MirCode.RC_OK

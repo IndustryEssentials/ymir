@@ -32,7 +32,8 @@ class TypRevTid:
 def parse_arg_revs(src_revs: str) -> List[TypRevTid]:
     typ_rev_tids: List[TypRevTid] = []
     if not src_revs:
-        return typ_rev_tids
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='empty src or dst revs')
 
     comments = src_revs.split(";")
     for single_src_rev in comments:
@@ -43,11 +44,16 @@ def parse_arg_revs(src_revs: str) -> List[TypRevTid]:
     return typ_rev_tids
 
 
-def parse_single_arg_rev(src_rev: str) -> TypRevTid:
+def parse_single_arg_rev(src_rev: str, need_tid: bool) -> TypRevTid:
     if ";" in src_rev:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"src_rev: {src_rev} is not single")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"src or dst rev not single: {src_rev}")
 
-    return __parse_single_arg_rev(src_rev)
+    typ_rev_tid = __parse_single_arg_rev(src_rev)
+    if need_tid and not typ_rev_tid.tid:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"src or dst rev have no tid: {src_rev}")
+    return typ_rev_tid
 
 
 def join_rev_tid(rev: str, tid: str) -> str:
@@ -59,7 +65,8 @@ def __parse_single_arg_rev(src_rev: str) -> TypRevTid:
     typ_rev_tid = TypRevTid()
 
     if not src_rev:
-        return typ_rev_tid
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='empty src or dst rev')
 
     # parse typ and rev_and_tid
     contents = src_rev.split(':')
@@ -86,8 +93,11 @@ def __parse_single_arg_rev(src_rev: str) -> TypRevTid:
         typ_rev_tid.rev = contents[0]
         typ_rev_tid.tid = contents[1]
 
+    if not typ_rev_tid.rev:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"src or dst rev have no rev: {src_rev}")
     if typ_rev_tid.typ and typ_rev_tid.typ not in {"tr", "va", "te"}:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"invalid typ in typ:rev@tid: {src_rev}")
+                              error_message=f"invalid typ in src or dst rev: {src_rev}")
 
     return typ_rev_tid

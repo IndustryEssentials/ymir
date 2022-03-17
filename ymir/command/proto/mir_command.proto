@@ -36,7 +36,10 @@ enum TaskType {
     TaskTypeMerge = 8;
     TaskTypeInfer = 9;
     TaskTypeSampling = 10;
+    /// used by ymir_controller
+    TaskTypeFusion = 11;
     TaskTypeInit = 12;
+    TaskTypeImportModel = 13;
 };
 
 enum TaskState {
