@@ -12,7 +12,6 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateModelError,
-    InvalidConfiguration,
     ModelNotFound,
     DuplicateModelGroupError,
     FailedtoImportModel,
@@ -105,11 +104,6 @@ def import_model(
     # 1. validation model group name
     if crud.model_group.is_duplicated_name(db, user_id=current_user.id, name=model_import.name):
         raise DuplicateModelGroupError()
-
-    if not settings.MODELS_PATH:
-        # fixme
-        #  adhoc put model file to underlying storage directly
-        raise InvalidConfiguration()
 
     # 2. create placeholder task
     if model_import.import_type is None:
