@@ -47,9 +47,12 @@ class ProjectUpdate(BaseModel):
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     description: Optional[str]
+    initial_model_id: Optional[int]
 
 
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
+    initial_model_id: Optional[int]
+
     class Config:
         orm_mode = True
 
