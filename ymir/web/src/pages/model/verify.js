@@ -12,8 +12,8 @@ import { TYPES } from '@/constants/image'
 import styles from './verify.less'
 import { NavDatasetIcon, EqualizerIcon } from '@/components/common/icons'
 import ImgDef from '@/assets/img_def.png'
-import ImageSelect from "../task/components/imageSelect"
-import { percent } from "../../utils/number"
+import ImageSelect from "@/components/form/imageSelect"
+import { percent } from "@/utils/number"
 
 const { CheckableTag } = Tag
 

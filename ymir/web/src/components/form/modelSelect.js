@@ -2,7 +2,7 @@ import { Col, Row, Select } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
-import { percent } from '../../../utils/number'
+import { percent } from '@/utils/number'
 
 
 const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, ...resProps }) => {
