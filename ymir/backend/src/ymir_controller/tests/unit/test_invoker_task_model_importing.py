@@ -86,7 +86,7 @@ class TestInvokerTaskModelImporting(unittest.TestCase):
                                      backend_pb2.TaskType.Name(backend_pb2.TaskTypeImportModel), self._task_id)
         working_dir_0 = os.path.join(work_dir_root, 'sub_task', self._task_id)
         expected_cmd = [
-            'mir', 'import-model', '--root', self._mir_repo_root, '--package-path', self._model_package_path, '-w',
+            'mir', 'models', '--root', self._mir_repo_root, '--package-path', self._model_package_path, '-w',
             working_dir_0, '--dst-rev', f"{self._task_id}@{self._task_id}", '--model-location', self._storage_root
         ]
         # mock_run.assert_called_once_with(expected_cmd, capture_output=True, text=True)

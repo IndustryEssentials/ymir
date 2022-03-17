@@ -42,7 +42,7 @@ class TaskModelImportingInvoker(TaskBaseInvoker):
     def model_importing_cmd(cls, repo_root: str, model_package_path: str, task_id: str, work_dir: str,
                             model_location: str) -> backend_pb2.GeneralResp:
         cmd = [
-            utils.mir_executable(), 'import-model', '--root', repo_root, '--package-path', model_package_path,
+            utils.mir_executable(), 'models', '--root', repo_root, '--package-path', model_package_path,
             '-w', work_dir, '--dst-rev', f"{task_id}@{task_id}", '--model-location', model_location
         ]
         return utils.run_command(cmd)
