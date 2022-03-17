@@ -172,6 +172,15 @@ def _build_task_fusion_req(args: Dict) -> backend_pb2.GeneralReq:
     return req_create_task
 
 
+def _build_task_import_model_req(args: Dict) -> backend_pb2.GeneralReq:
+    req_create_task = backend_pb2.ReqCreateTask()
+    req_create_task.task_type = backend_pb2.TaskTypeImportModel
+    req_create_task.no_task_monitor = args['no_task_monitor']
+    req_create_task.model_importing.model_package_path = args['model_package_path']
+
+    return req_create_task
+
+
 def _get_executor_config(args: Any) -> str:
     executor_config = ''
     if args['executor_config']:
@@ -246,7 +255,7 @@ def get_parser() -> Any:
     parser_create_task = sub_parsers.add_parser("create_task", help="create a long-running task")
     parser_create_task.add_argument(
         "--task_type",
-        choices=["filter", "merge", "training", "mining", "importing", "labeling", "fusion"],
+        choices=["filter", "merge", "training", "mining", "importing", "labeling", "fusion", "import_model"],
         type=str,
         help="task type")
     parser_create_task.add_argument("--in_class_ids", nargs="*", type=int)
@@ -255,6 +264,7 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--asset_dir", type=str)
     parser_create_task.add_argument("--annotation_dir", type=str)
+    parser_create_task.add_argument("--model_package_path", type=str)
     parser_create_task.add_argument("--top_k", type=int)
     parser_create_task.add_argument("--expert_instruction_url", type=str)
     parser_create_task.add_argument("--labeler_accounts", nargs="*", type=str)
