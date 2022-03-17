@@ -25,7 +25,7 @@ const { Item } = Descriptions
 function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const history = useHistory()
   const id = task.id
-  const [datasetNames, setDatasetNames] = useState({})
+  const [datasets, setDatasets] = useState({})
   const [model, setModel] = useState({})
 
   useEffect(() => {
@@ -35,15 +35,22 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
 
   async function fetchDatasets() {
     const pa = task.parameters || {}
-    const ids = (pa ? [pa.dataset_id, pa.validation_dataset_id]
-      : [pa.dataset_id]).filter(d => d)
+    const inds = pa.include_datasets || []
+    const exds = pa.exclude_datasets || []
+    const ids = [
+      pa.dataset_id,
+      pa.validation_dataset_id,
+      pa.main_dataset_id,
+      ...inds,
+      ...exds,
+    ].filter((d) => d)
     if (!ids.length) {
       return
     }
     const dss = await batchDatasets(ids)
     const names = {}
     dss.forEach((ds) => (names[ds.id] = ds))
-    setDatasetNames(names)
+    setDatasets(names)
   }
 
   async function fetchModel(id) {
@@ -59,11 +66,11 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   }
 
   function renderDatasetName(id) {
-    const ds = datasetNames[id]
-    const name = ds ? `${ds.name} ${ds.versionName}` : ''
+    const ds = datasets[id]
+    const name = ds ? `${ds.name} ${ds.versionName}` : id
     return (
       <Link key={id} to={`/home/dataset/detail/${id}`}>
-        {name || id}
+        {name}
       </Link>
     )
   }
@@ -82,6 +89,20 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     ))
   }
 
+  function renderDatasetSource(id) {
+    return <Item label={t("task.origin.dataset")}>{renderDatasetName(id)}</Item>
+  }
+
+  function renderImportSource(pa = {}) {
+    return <Item label={t("task.origin.dataset")}>{pa.input_url || pa.input_path || pa.input_group_name }</Item>
+  }
+
+  function renderCreateTime(time) {
+    return (
+      <Item label={t("task.detail.label.create_time")}>{format(time)}</Item>
+    )
+  }
+
   function renderTypes() {
     const maps = {
       [TASKTYPES.TRAINING]: renderTraining,
@@ -97,7 +118,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
 
   const renderTraining = () => (
     <>
-      {console.log(task, "task")}
+      {renderDatasetSource(task?.parameters.dataset_id)}
+      {renderCreateTime(task.create_datetime)}
       <Item label={t("task.train.form.trainsets.label")}>
         {renderDatasetName(task.parameters.dataset_id)}
       </Item>
@@ -140,6 +162,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   )
   const renderMining = () => (
     <>
+      {renderDatasetSource(task?.parameters.dataset_id)}
+      {renderCreateTime(task.create_datetime)}
       <Item label={t("task.mining.form.model.label")}>
         <Link to={`/home/model/detail/${task.parameters.model_id}`}>
           {model?.name || task.parameters.model_id}
@@ -166,6 +190,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   )
   const renderLabel = () => (
     <>
+      {renderDatasetSource(task?.parameters.dataset_id)}
+      {renderCreateTime(task.create_datetime)}
       <Item label={t("task.label.form.member")}>
         {task.parameters.labellers.map((m) => (
           <Tag key={m}>{m}</Tag>
@@ -190,13 +216,39 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   )
   const renderImport = () => (
     <>
+      {renderImportSource(task?.parameters)}
+      {renderCreateTime(task.create_datetime)}
       <Item label={t("dataset.column.ignored_keyword")}>
         <IgnoreKeywords keywords={ignore} />
       </Item>
     </>
   )
   const renderInference = () => <></>
-  const renderFusion = () => <></>
+  const renderFusion = () => (
+    <>
+      {renderDatasetSource(task?.parameters?.main_dataset_id)}
+      {renderCreateTime(task.create_datetime)}
+      <Item label={t("task.detail.include_datasets.label")}>
+        {renderDatasetNames(task?.parameters?.include_datasets)}
+      </Item>
+      <Item label={t("task.detail.exclude_datasets.label")}>
+        {renderDatasetNames(task?.parameters?.exclude_datasets)}
+      </Item>
+      <Item label={t("task.detail.include_labels.label")}>
+        {task.parameters?.include_labels?.map((keyword) => (
+          <Tag key={keyword}>{keyword}</Tag>
+        ))}
+      </Item>
+      <Item label={t("task.detail.exclude_labels.label")}>
+        {task.parameters?.exclude_labels?.map((keyword) => (
+          <Tag key={keyword}>{keyword}</Tag>
+        ))}
+      </Item>
+      <Item label={t("task.detail.samples.label")} span={2}>
+        {task?.parameters?.sampling_count}
+      </Item>
+    </>
+  )
 
   return (
     <div className={s.taskDetail}>
@@ -207,12 +259,6 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
         title={<div className={s.title}>{t("dataset.column.source")}</div>}
         className={s.infoTable}
       >
-        <Item label={t("task.origin.dataset")}>
-          {renderDatasetName(task?.parameters?.dataset_id)}
-        </Item>
-        <Item label={t("task.detail.label.create_time")}>
-          {format(task.create_datetime)}
-        </Item>
         {task.id ? renderTypes() : null}
       </Descriptions>
     </div>

@@ -25,7 +25,7 @@ const TYPES = Object.freeze({
 })
 
 
-const Add = ({ props }) => {
+const Add = (props) => {
   const history = useHistory()
   const pageParams = useParams()
   const pid = Number(pageParams.pid)

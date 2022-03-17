@@ -17,7 +17,7 @@ const labelStyle = {
   justifyContent: "flex-end",
 }
 
-function TaskProgress({ state, task = {}, progress = 0, duration = '' }) {
+function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
   const terminateRef = useRef(null)
 
   function terminate(task) {
@@ -29,37 +29,41 @@ function TaskProgress({ state, task = {}, progress = 0, duration = '' }) {
   }
 
   return (
-    <Descriptions
-      bordered
-      labelStyle={labelStyle}
-      title={<div className={s.title}>{t("task.detail.state.title")}</div>}
-      className={s.infoTable}
-    >
-      <Item label={t("task.detail.state.current")}>
-        <Row>
-          <Col>
-            <StateTag state={state} />
-            {state === states.VALID ? t('task.column.duration') + ': ' + duration : null}
-          </Col>
-          <Col flex={1}>
-            {task.state === TASKSTATES.DOING ? (
-              <Progress
-                strokeColor={"#FAD337"}
-                percent={toFixed(progress * 100, 2)}
-              />
-            ) : null}
-          </Col>
-          {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ? (
+    <div className={s.taskDetail}>
+      <Descriptions
+        bordered
+        labelStyle={labelStyle}
+        title={<div className={s.title}>{t("task.detail.state.title")}</div>}
+        className={s.infoTable}
+      >
+        <Item label={t("task.detail.state.current")}>
+          <Row>
             <Col>
-              <Button onClick={() => terminate(task)}>
-                {t("task.action.terminate")}
-              </Button>
+              <StateTag state={state} />
+              {state === states.VALID
+                ? t("task.column.duration") + ": " + duration
+                : null}
             </Col>
-          ) : null}
-        </Row>
-      </Item>
-      <Terminate ref={terminateRef} ok={terminateOk} />
-    </Descriptions>
+            <Col flex={1}>
+              {task.state === TASKSTATES.DOING ? (
+                <Progress
+                  strokeColor={"#FAD337"}
+                  percent={toFixed(progress * 100, 2)}
+                />
+              ) : null}
+            </Col>
+            {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ? (
+              <Col>
+                <Button onClick={() => terminate(task)}>
+                  {t("task.action.terminate")}
+                </Button>
+              </Col>
+            ) : null}
+          </Row>
+        </Item>
+        <Terminate ref={terminateRef} ok={terminateOk} />
+      </Descriptions>
+    </div>
   )
 }
 
