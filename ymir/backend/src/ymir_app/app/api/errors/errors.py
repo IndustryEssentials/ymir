@@ -318,3 +318,13 @@ class FailedToCreateUser(APIError):
 class FailedtoImportModel(APIError):
     code = error_codes.FAILED_TO_IMPORT_MODEL
     message = "Failed to Import Model"
+
+
+class FailedToCreateIteration(APIError):
+    code = error_codes.ITERATION_FAILED_TO_CREATE
+    message = "Failed to Create Project"
+
+
+class IterationNotFound(NotFound):
+    code = error_codes.ITERATION_NOT_FOUND
+    message = "Project Not Found"
