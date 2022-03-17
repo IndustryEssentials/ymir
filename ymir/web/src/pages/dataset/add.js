@@ -10,7 +10,6 @@ import { randomNumber } from '@/utils/number'
 import s from './add.less'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import { TipsIcon } from '@/components/common/icons'
-import options from '@antv/graphin/lib/layout/utils/options'
 import { getKeywords } from '../../services/keyword'
 import Tip from "@/components/form/tip"
 
@@ -26,7 +25,7 @@ const TYPES = Object.freeze({
 })
 
 
-const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
+const Add = ({ props }) => {
   const history = useHistory()
   const pageParams = useParams()
   const pid = Number(pageParams.pid)
@@ -64,7 +63,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     // form.resetFields()
     // initState()
     if (!publicDataset.length) {
-      const result = await getInternalDataset()
+      const result = await props.getInternalDataset()
       if (result) {
         setPublicDataset(result.items)
       }
@@ -111,7 +110,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     const kws = form.getFieldValue('new_keywords')
     if (kws && kws.length && kStrategy === 1 && isType(TYPES.INTERNAL)) {
       const addKwParams = kws.filter(k => k.type === 0).map(k => ({ name: k.name }))
-      const kResult = await updateKeywords({ keywords: addKwParams })
+      const kResult = await props.updateKeywords({ keywords: addKwParams })
       if (!kResult) {
         return message.error(t('keyword.add.failure'))
       }
@@ -124,9 +123,10 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     if (currentType === TYPES.LOCAL && fileToken) {
       params.url = fileToken
     }
-    const result = await createDataset(params)
+    const result = await props.createDataset(params)
     if (result) {
       message.success(t('dataset.add.success.msg'))
+      props.clearCache()
       history.push(`/home/project/detail/${pid}`)
     }
   }
@@ -147,7 +147,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
   async function renderKeywords() {
     const kws = getSelectedDatasetKeywords()
     // const kws = ['cat', 'catty', 'dog', 'tree', 'people']
-    const result = await updateKeywords({ keywords: kws.map(k => ({ name: k })), dry_run: true })
+    const result = await props.updateKeywords({ keywords: kws.map(k => ({ name: k })), dry_run: true })
     if (result) {
       const repeated = result.failed || []
       const unique = kws.filter(k => repeated.indexOf(k) < 0).map(k => ({ name: k, type: 0 }))
@@ -402,6 +402,9 @@ const actions = (dispatch) => {
         type: 'dataset/createDataset',
         payload,
       })
+    },
+    clearCache() {
+      return dispatch({ type: "dataset/clearCache", })
     },
     updateKeywords: (payload) => {
       return dispatch({

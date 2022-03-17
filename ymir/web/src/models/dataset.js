@@ -8,18 +8,20 @@ import { transferDatasetGroup, transferDataset, states } from '@/constants/datas
 
 const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
 
+const initState = {
+  query: initQuery,
+  datasets: { items: [], total: 0, },
+  versions: {},
+  dataset: {},
+  assets: { items: [], total: 0, },
+  asset: { annotations: [], },
+  allDatasets: [],
+  publicDatasets: [],
+}
+
 export default {
   namespace: "dataset",
-  state: {
-    query: initQuery,
-    datasets: { items: [], total: 0, },
-    versions: {},
-    dataset: {},
-    assets: { items: [], total: 0, },
-    asset: { annotations: [], },
-    allDatasets: [],
-    publicDatasets: [],
-  },
+  state: initState,
   effects: {
     *getDatasetGroups({ payload }, { call, put }) {
       const { pid, query } = payload
@@ -219,6 +221,9 @@ export default {
         payload: initQuery,
       })
     },
+    clearCache({ payload }, { put }) {
+      yield put({ type: 'CLEAR_ALL' })
+    },
   },
   reducers: {
     UPDATE_DATASETS(state, { payload }) {
@@ -273,6 +278,9 @@ export default {
         ...state,
         query: payload,
       }
+    },
+    CLEAR_ALL() {
+      return initState
     },
   },
 }

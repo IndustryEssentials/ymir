@@ -20,18 +20,20 @@ const initQuery = {
   limit: 20,
 }
 
+const initState = {
+  query: initQuery,
+  models: {
+    items: [],
+    total: 0,
+  },
+  versions: {},
+  model: {},
+  allModels: [],
+}
+
 export default {
   namespace: "model",
-  state: {
-    query: initQuery,
-    models: {
-      items: [],
-      total: 0,
-    },
-    versions: {},
-    model: {},
-    allModels: [],
-  },
+  state: initState,
   effects: {
     *getModelGroups({ payload }, { call, put }) {
       const { pid, query } = payload
@@ -208,6 +210,9 @@ export default {
         payload: initQuery,
       })
     },
+    clearCache({}, { put }) {
+      yield put({ type: 'CLEAR_ALL' })
+    },
   },
   reducers: {
     UPDATE_MODELS(state, { payload }) {
@@ -242,6 +247,9 @@ export default {
         ...state,
         query: payload,
       }
+    },
+    CLEAR_ALL() {
+      return initState
     },
   },
 }
