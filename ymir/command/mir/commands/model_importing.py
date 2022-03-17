@@ -2,13 +2,12 @@ import argparse
 import logging
 import os
 import shutil
-import tarfile
 
 import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, context, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, context, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
