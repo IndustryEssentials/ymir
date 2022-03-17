@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.crud.base import CRUDBase
 from app.models import Project
 from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.api.errors.errors import ProjectNotFound
 
 
 class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
@@ -90,6 +91,12 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         db.commit()
         db.refresh(project)
         return project
+
+    def update_resources(self, db: Session, *, project_id: int, project_update: ProjectUpdate) -> Project:
+        project = self.get(db, id=project_id)
+        if not project:
+            raise ProjectNotFound()
+        return self.update(db, db_obj=project, obj_in=project_update)
 
 
 project = CRUDProject(Project)
