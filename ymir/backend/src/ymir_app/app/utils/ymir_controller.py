@@ -413,9 +413,6 @@ class ControllerClient:
         return self.send(req)
 
     def import_model(self, user_id: int, project_id: int, task_id: str, task_type: Any, args: Dict) -> Dict:
-
-        logger.warning(task_type)
-        logger.warning(type(task_type))
         req = ControllerRequest(
             task_type,
             user_id=user_id,
