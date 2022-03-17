@@ -4,7 +4,6 @@ import os
 import shutil
 import subprocess
 from subprocess import CalledProcessError
-import tarfile
 import traceback
 from typing import Any, List, Optional, Set, Tuple
 
@@ -12,7 +11,7 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, context, data_exporter, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, context, data_exporter, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
