@@ -4,7 +4,6 @@ import os
 import shutil
 import subprocess
 from subprocess import CalledProcessError
-import tarfile
 import traceback
 from typing import Any, List, Optional, Set, Tuple
 
@@ -12,7 +11,7 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, context, data_exporter, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, context, data_exporter, mir_storage_ops, revs_parser
 from mir.tools import utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
@@ -21,24 +20,28 @@ from mir.tools.errors import MirRuntimeError
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> Tuple[str, float]:
-    model_paths, model_mAP = _find_models(os.path.join(out_root, "models"))
+                           task_context: dict) -> Tuple[str, float, Optional[mir_utils.ModelStorage]]:
+    """
+    find and save models
+    Returns:
+        model hash, model mAP and ModelStorage
+    """
+    out_model_dir = os.path.join(out_root, "models")
+    model_paths, model_mAP = _find_models(out_model_dir)
     if not model_paths:
         # if have no models
-        return '', model_mAP
+        return '', model_mAP, None
 
-    tar_path = os.path.join(out_root, "models.tar.gz")
-    _pack_models_and_config(model_paths=model_paths,
-                            executor_config=executor_config,
-                            task_context=dict(**task_context, mAP=model_mAP, type='training'),
-                            dest_path=tar_path)
-    model_sha1 = hash_utils.sha1sum_for_file(tar_path)
+    model_storage = mir_utils.ModelStorage(executor_config=executor_config,
+                                           task_context=dict(**task_context,
+                                                             mAP=model_mAP,
+                                                             type=mirpb.TaskType.TaskTypeTraining),
+                                           models=[os.path.basename(model_path) for model_path in model_paths])
+    model_sha1 = mir_utils.pack_and_copy_models(model_storage=model_storage,
+                                                model_dir_path=out_model_dir,
+                                                model_location=model_upload_location)
 
-    dest_path = os.path.join(model_upload_location, model_sha1)
-    _upload_model_pack(tar_path, dest_path)
-    os.remove(tar_path)
-
-    return model_sha1, model_mAP
+    return model_sha1, model_mAP, model_storage
 
 
 def _find_models(model_root: str) -> Tuple[List[str], float]:
@@ -67,30 +70,6 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
     return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
 
 
-def _pack_models_and_config(model_paths: List[str], executor_config: dict, task_context: dict, dest_path: str) -> bool:
-    if not model_paths or not dest_path:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid model_paths or dest_path')
-
-    logging.info(f"packing models to {dest_path}")
-    model_storage = mir_utils.ModelStorage(executor_config=executor_config,
-                                           task_context=task_context,
-                                           models=[os.path.basename(model_path) for model_path in model_paths])
-    ymir_info_file_name = 'ymir-info.yaml'
-    ymir_info_file_path = os.path.join(os.path.dirname(dest_path), ymir_info_file_name)
-    with open(ymir_info_file_path, 'w') as f:
-        f.write(yaml.dump(model_storage.as_dict()))
-
-    with tarfile.open(dest_path, "w:gz") as dest_tar_gz:
-        for model_path in model_paths:
-            logging.info(f"    packing {model_path} -> {os.path.basename(model_path)}")
-            dest_tar_gz.add(model_path, os.path.basename(model_path))
-
-        # pack ymir-info.yaml
-        logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
-        dest_tar_gz.add(ymir_info_file_path, ymir_info_file_name)
-    return True
-
-
 def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
     if not model_pack_path or not dest_path:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -101,7 +80,8 @@ def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
 
 
 def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
-                      model_sha1: str, mAP: float, task_ret_code: int, task_err_msg: str) -> mirpb.MirTasks:
+                      model_sha1: str, mAP: float, model_storage: Optional[mir_utils.ModelStorage], task_ret_code: int,
+                      task_err_msg: str) -> mirpb.MirTasks:
     """
     add a new mir single task into mir_tasks from branch base_branch, and save it to a new branch: dst_branch
     """
@@ -115,10 +95,11 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                      task_type=mirpb.TaskType.TaskTypeTraining,
                                      task_id=dst_rev_tid.tid,
                                      message='training',
+                                     model_mAP=mAP,
+                                     model_hash=model_sha1,
                                      return_code=task_ret_code,
                                      return_msg=task_err_msg)
-    mir_tasks.tasks[mir_tasks.head_task_id].model.model_hash = model_sha1
-    mir_tasks.tasks[mir_tasks.head_task_id].model.mean_average_precision = mAP
+    mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict() if model_storage else '')
     return mir_tasks
 
 
@@ -238,15 +219,8 @@ class CmdTrain(base.BaseCommand):
         if not model_upload_location:
             logging.error("empty --model-location, abort")
             return MirCode.RC_CMD_INVALID_ARGS
-        if not src_revs:
-            logging.error('empty --src-revs, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         if not work_dir:
             logging.error("empty work_dir, abort")
             return MirCode.RC_CMD_INVALID_ARGS
@@ -338,8 +312,7 @@ class CmdTrain(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='project class ids mismatch')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='project class ids mismatch')
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
@@ -436,14 +409,16 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info("saving models")
-        model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
-                                                       model_upload_location=model_upload_location,
-                                                       executor_config=executor_config,
-                                                       task_context={
-                                                           'src_revs': src_revs,
-                                                           'dst_rev': dst_rev,
-                                                           'executor': executor
-                                                       })
+        model_sha1, model_mAP, model_storage = _process_model_storage(out_root=work_dir_out,
+                                                                      model_upload_location=model_upload_location,
+                                                                      executor_config=executor_config,
+                                                                      task_context={
+                                                                          'src_revs': src_revs,
+                                                                          'dst_rev': dst_rev,
+                                                                          'executor': executor,
+                                                                          mir_utils.PRODUCER_KEY:
+                                                                          mir_utils.PRODUCER_NAME,
+                                                                      })
 
         # update metadatas and task with finish state and model hash
         mir_tasks = _update_mir_tasks(mir_root=mir_root,
@@ -451,6 +426,7 @@ class CmdTrain(base.BaseCommand):
                                       dst_rev_tid=dst_typ_rev_tid,
                                       model_sha1=model_sha1,
                                       mAP=model_mAP,
+                                      model_storage=model_storage,
                                       task_ret_code=task_code,
                                       task_err_msg=task_error_msg)
 

@@ -9,7 +9,6 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.scm.cmd import CmdScm
 from mir.tools import checker, class_ids, context, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.errors import MirRuntimeError
 
 
 class CmdInit(base.BaseCommand):
@@ -27,10 +26,7 @@ class CmdInit(base.BaseCommand):
         if not empty_rev:
             return
 
-        dst_rev_tid = revs_parser.parse_single_arg_rev(empty_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid=dst_rev_tid) != MirCode.RC_OK:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"invalid empty_rev: {empty_rev}")
+        dst_rev_tid = revs_parser.parse_single_arg_rev(empty_rev, need_tid=True)
 
         mir_metadatas = mirpb.MirMetadatas()
         mir_annotations = mirpb.MirAnnotations()

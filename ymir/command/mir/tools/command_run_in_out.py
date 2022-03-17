@@ -13,7 +13,7 @@ from mir.protos import mir_command_pb2 as mirpb
 
 # private: monitor.txt logger
 def _get_task_name(dst_rev: str) -> str:
-    return revs_parser.parse_single_arg_rev(dst_rev).tid if dst_rev else 'default_task'
+    return revs_parser.parse_single_arg_rev(dst_rev, need_tid=True).tid if dst_rev else 'default_task'
 
 
 @utils.time_it
@@ -29,7 +29,7 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                               needs_new_commit=False)
 
     src_typ_rev_tid = revs_parser.parse_arg_revs(src_revs)[0]
-    dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
+    dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
     if predefined_mir_tasks:
         mir_tasks = predefined_mir_tasks
     else:
