@@ -83,9 +83,12 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         self,
         db: Session,
         *,
-        project: Project,
+        project_id: int,
         iteration_id: int,
     ) -> Project:
+        project = self.get(db, id=project_id)
+        if not project:
+            raise ProjectNotFound()
         project.current_iteration_id = iteration_id
         db.add(project)
         db.commit()

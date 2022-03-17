@@ -6,10 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import (
-    ProjectNotFound,
-    IterationNotFound,
-)
+from app.api.errors.errors import IterationNotFound
 
 router = APIRouter()
 
@@ -26,11 +23,7 @@ def create_iteration(
     """
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create iteration] iteration record created: %s", iteration)
-    project = crud.project.get(db, id=obj_in.project_id)
-    if not project:
-        logger.error("Project(%s) not found", obj_in.project_id)
-        raise ProjectNotFound()
-    crud.project.update_current_iteration(db, project=project, iteration_id=iteration.id)
+    crud.project.update_current_iteration(db, project_id=obj_in.project_id, iteration_id=iteration.id)
     return {"result": iteration}
 
 
