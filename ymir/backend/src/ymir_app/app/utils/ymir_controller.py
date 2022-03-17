@@ -175,15 +175,16 @@ class ControllerRequest:
 
     def prepare_copy_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         copy_request = mirsvrpb.TaskReqCopyData()
-        strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
-        if strategy is ImportStrategy.ignore_unknown_annotations:
+        strategy = args.get("strategy")
+        if strategy == ImportStrategy.ignore_unknown_annotations:
             copy_request.name_strategy_ignore = True
-        elif strategy is ImportStrategy.stop_upon_unknown_annotations:
+            copy_request.src_user_id = args["src_user_id"]
+        elif strategy == ImportStrategy.stop_upon_unknown_annotations:
             copy_request.name_strategy_ignore = False
+            copy_request.src_user_id = args["src_user_id"]
         else:
-            raise ValueError("not supported strategy: %s" % strategy.name)
+            logger.info("task is copy model")
 
-        copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
         copy_request.src_dataset_id = args["src_resource_id"]
 
@@ -256,32 +257,18 @@ class ControllerRequest:
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
-    def prepare_model_importing(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+    def prepare_import_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         model_importing = mirsvrpb.TaskReqModelImporting()
         model_importing.model_package_path = args["model_package_path"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mirsvrpb.TaskReqModelImporting
+        req_create_task.task_type = mirsvrpb.TaskTypeImportModel
         req_create_task.no_task_monitor = False
         req_create_task.model_importing.CopyFrom(model_importing)
 
         request.req_type = mirsvrpb.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
 
-        return request
-
-    def prepare_copy_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        copy_request = mirsvrpb.TaskReqCopyData()
-
-        copy_request.src_repo_id = args["src_repo_id"]
-        copy_request.src_dataset_id = args["src_resource_id"]
-
-        req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mirsvrpb.TaskTypeCopyData
-        req_create_task.copy.CopyFrom(copy_request)
-
-        request.req_type = mirsvrpb.TASK_CREATE
-        request.req_create_task.CopyFrom(req_create_task)
         return request
 
 
@@ -294,7 +281,7 @@ class ControllerClient:
         self.channel.close()
 
     def send(self, req: mirsvrpb.GeneralReq) -> Dict:
-        logger.info("[controller] request: %s", req.req)
+        logger.warning("[controller] request: %s", req.req)
         resp = self.stub.data_manage_request(req.req)
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
@@ -426,8 +413,11 @@ class ControllerClient:
         return self.send(req)
 
     def import_model(self, user_id: int, project_id: int, task_id: str, task_type: Any, args: Dict) -> Dict:
+
+        logger.warning(task_type)
+        logger.warning(type(task_type))
         req = ControllerRequest(
-            TaskType(task_type),
+            task_type,
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,

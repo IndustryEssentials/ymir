@@ -1,5 +1,6 @@
 import enum
 import tempfile
+import os
 from typing import Dict, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -120,11 +121,12 @@ def import_model(
     logger.info("[import model] related task created: %s", task.hash)
 
     # 3. create model group
-    model_group_in = schemas.DatasetGroupCreate(
+    model_group_in = schemas.ModelGroupCreate(
         name=model_import.name,
         project_id=model_import.project_id,
-        user_id=current_user.id,
         description=model_import.description,
+        # change table Nullable
+        training_dataset_id=1,
     )
     model_group = crud.model_group.create_with_user_id(db, user_id=current_user.id, obj_in=model_group_in)
 
@@ -141,7 +143,7 @@ def import_model(
     model = crud.model.create_with_version(db, obj_in=model_in, dest_group_name=model_import.name)
     logger.info("[import model] model record created: %s", model)
 
-    # 4. run background task
+    # 5. run background task
     storage_path = settings.MODELS_PATH
     background_tasks.add_task(
         import_model_in_background,
@@ -187,11 +189,10 @@ def import_model_in_background(
         }
 
     elif model_import.import_type == TaskType.import_model:
-        temp_model_path = tempfile.mkdtemp(prefix="import_dataset_", dir=settings.SHARED_DATA_DIR)
+        temp_model_path = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
         prepare_model(model_import.input_url, temp_model_path)
-
         parameters = {
-            "model_package_path": temp_model_path,
+            "model_package_path": os.path.join(temp_model_path, os.path.basename(model_import.input_url)),
         }
 
     try:

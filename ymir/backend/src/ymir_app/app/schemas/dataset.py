@@ -51,7 +51,7 @@ class DatasetImport(BaseModel):
     input_dataset_id: Optional[int] = Field(description="from dataset of other user")
     input_dataset_name: Optional[str] = Field(description="name for source dataset")
     input_path: Optional[str] = Field(description="from path on ymir server")
-    strategy: ImportStrategy = Field(description="strategy about importing annotations")
+    strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
     import_type: Optional[TaskType]
 
     @validator("import_type", pre=True, always=True)
