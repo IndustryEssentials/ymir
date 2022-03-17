@@ -78,5 +78,18 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             return query.offset(offset).limit(limit).all(), query.count()
         return query.all(), query.count()
 
+    def update_current_iteration(
+        self,
+        db: Session,
+        *,
+        project: Project,
+        iteration_id: int,
+    ) -> Project:
+        project.current_iteration_id = iteration_id
+        db.add(project)
+        db.commit()
+        db.refresh(project)
+        return project
+
 
 project = CRUDProject(Project)
