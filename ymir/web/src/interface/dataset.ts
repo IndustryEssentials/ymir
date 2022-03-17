@@ -28,6 +28,7 @@ export interface Dataset {
   taskState: number,
   taskType: number,
   duration: number,
+  durationLabel?: string,
   taskName: string,
   project?: Project,
   task?: Task,

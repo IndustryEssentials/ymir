@@ -18,14 +18,14 @@ function IgnoreKeywords({ keywords = [], addKeywords }) {
     }
   }
   return (
-    <Row>
+    <Row wrap={false}>
       <Col flex={1}>
         {keywords.map((keyword) => (
           <Tag key={keyword}>{keyword}</Tag>
         ))}
       </Col>
       <Col>
-        {keywords.length ? <Button onClick={() => addIgnoreKeywords()}>{t("dataset.add.label_strategy.add")}</Button> : null }
+        {keywords.length ? <Button type="primary" onClick={() => addIgnoreKeywords()}>{t("dataset.add.label_strategy.add")}</Button> : null }
       </Col>
     </Row>
   )

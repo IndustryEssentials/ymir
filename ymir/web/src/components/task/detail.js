@@ -16,11 +16,8 @@ import t from "@/utils/t"
 import { format } from "@/utils/date"
 import { getTensorboardLink } from "@/services/common"
 import Terminate from "./terminate"
-import { TASKSTATES, TASKTYPES } from "@/constants/task"
-import StateTag from "@/components/task/stateTag"
+import { TASKTYPES } from "@/constants/task"
 import s from "./detail.less"
-import { FileHistoryIcon, SearchEyeIcon } from "@/components/common/icons"
-import { toFixed } from "@/utils/number"
 import IgnoreKeywords from "../common/ignoreKeywords"
 
 const { Item } = Descriptions
@@ -30,31 +27,19 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const id = task.id
   const [datasetNames, setDatasetNames] = useState({})
   const [model, setModel] = useState({})
-  const terminateRef = useRef(null)
 
   useEffect(() => {
     task.id && fetchDatasets()
     task?.parameters?.model_id && fetchModel(task.parameters.model_id)
   }, [task.id])
 
-  function terminate(task) {
-    terminateRef.current.confirm(task)
-  }
-
-  function terminateOk() {
-    // todo notice parent component for refresh page state
-  }
-
-  function isType(type) {
-    return type === task.type
-  }
-
   async function fetchDatasets() {
     const pa = task.parameters || {}
-    const ids =
-      pa && pa.validation_dataset_id
-        ? [pa.dataset_id, pa.validation_dataset_id]
-        : [pa.dataset_id]
+    const ids = (pa ? [pa.dataset_id, pa.validation_dataset_id]
+      : [pa.dataset_id]).filter(d => d)
+    if (!ids.length) {
+      return
+    }
     const dss = await batchDatasets(ids)
     const names = {}
     dss.forEach((ds) => (names[ds.id] = ds))
@@ -216,47 +201,10 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   return (
     <div className={s.taskDetail}>
       <Descriptions
-        bordered
-        labelStyle={labelStyle}
-        title={
-          <div className={s.title}>
-            {t("task.detail.state.title")}
-          </div>
-        }
-        className={s.infoTable}
-      >
-        <Item label={t("task.detail.state.current")}>
-          <Row>
-            <Col>
-              <StateTag state={task.state} />
-            </Col>
-            <Col flex={1}>
-              {task.state === TASKSTATES.DOING ? (
-                <Progress
-                  strokeColor={"#FAD337"}
-                  percent={toFixed(task.percent, 2)}
-                />
-              ) : null}
-            </Col>
-            {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ? (
-              <Col>
-                <Button onClick={() => terminate(task)}>
-                  {t("task.action.terminate")}
-                </Button>
-              </Col>
-            ) : null}
-          </Row>
-        </Item>
-      </Descriptions>
-      <Descriptions
         column={2}
         bordered
         labelStyle={labelStyle}
-        title={
-          <div className={s.title}>
-            {t("dataset.column.source")}
-          </div>
-        }
+        title={<div className={s.title}>{t("dataset.column.source")}</div>}
         className={s.infoTable}
       >
         <Item label={t("task.origin.dataset")}>
@@ -267,7 +215,6 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
         </Item>
         {task.id ? renderTypes() : null}
       </Descriptions>
-      <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }
