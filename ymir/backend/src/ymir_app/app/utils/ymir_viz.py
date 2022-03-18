@@ -76,10 +76,13 @@ class Assets:
 class Model:
     hash: str
     map: float
+    task_parameters: str
+    task_config: str
 
     @classmethod
     def from_viz_res(cls, res: Dict) -> "Model":
-        return cls(res["model_id"], res["model_mAP"])
+        # TODO(chao): get task_parameters, config from viz later
+        return cls(res["model_id"], res["model_mAP"], res["task_parameters"], res["task_config"])
 
 
 class VizClient:

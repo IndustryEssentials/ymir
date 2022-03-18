@@ -105,17 +105,18 @@ def create_task(
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    parameters = normalize_parameters(db, task_in.parameters, task_in.config, user_labels)
+    args = normalize_parameters(db, task_in.parameters, task_in.config, user_labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
     try:
         resp = controller_client.create_task(
-            current_user.id,
-            task_in.project_id,
-            task_hash,
-            task_in.type,
-            parameters,
+            user_id=current_user.id,
+            project_id=task_in.project_id,
+            task_id=task_hash,
+            task_type=task_in.type,
+            args=args,
+            task_parameters=task_in.parameters.json() if task_in.parameters else None,
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
@@ -204,6 +205,20 @@ class TaskResult:
     @property
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
+
+    def update_model_task_info(self, result: Dict) -> None:
+        task_in_db = crud.task.get_by_user_and_id(self.db, id=self.task.id, user_id=self.user_id)
+        if not task_in_db:
+            logger.warning("[update task] found no related task (%s)", result)
+            return
+        # not update task info if already record parameters
+        if not task_in_db.parameters:
+            crud.task.update_parameters_and_config(
+                self.db,
+                task=task_in_db,
+                parameters=result["task_parameters"],
+                config=result["task_config"],
+            )
 
     def save_model_stats(self, result: Dict) -> None:
         model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
