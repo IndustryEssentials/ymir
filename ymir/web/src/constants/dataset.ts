@@ -1,7 +1,7 @@
 import { getLocale } from "umi"
 import { OriginDatasetGroup, DatasetGroup, OriginDataset, Dataset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
-import { getInterationVersion } from "./project"
+import { getIterationVersion } from "./project"
 
 export enum states {
   READY = 0,
@@ -35,7 +35,7 @@ export function transferDataset (data: OriginDataset): Dataset {
     projectId: data.project_id,
     name: data.name,
     version: data.version_num || 0,
-    versionName: getInterationVersion(data.version_num),
+    versionName: getIterationVersion(data.version_num),
     assetCount: data.asset_count || 0,
     keywords: data.keywords || [],
     keywordCount: data.keyword_count || 0,

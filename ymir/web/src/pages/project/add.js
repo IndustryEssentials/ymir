@@ -39,12 +39,12 @@ const Add = ({ keywords, datasets, projects, getProject, createProject, updatePr
   }, [project])
 
   function initForm(project = {}) {
-    const { name, targetMap, targetDataset, targetInteration, description } = project
+    const { name, targetMap, targetDataset, targetIteration, description } = project
     if (name) {
       form.setFieldsValue({
         name, keywords, description,
         map_target: targetMap,
-        iteration_target: targetInteration,
+        iteration_target: targetIteration,
         training_dataset_count_target: targetDataset,
       })
     }
@@ -156,8 +156,8 @@ const Add = ({ keywords, datasets, projects, getProject, createProject, updatePr
                   <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='target_map'>
                     <InputNumber min={0} max={100} step={1} formatter={value => `${value}%`} parser={value => value.replace('%', '')} style={{ width: '100%' }} placeholder={t('project.add.form.target.map.placeholder')} allowClear />
                   </Form.Item>
-                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.interations')} name='target_iteration'>
-                    <InputNumber min={1} step={1} placeholder={t('project.add.form.target.interations.placeholder')} style={{ width: '100%' }} allowClear />
+                  <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.iterations')} name='target_iteration'>
+                    <InputNumber min={1} step={1} placeholder={t('project.add.form.target.iterations.placeholder')} style={{ width: '100%' }} allowClear />
                   </Form.Item>
                   <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='target_dataset'>
                     <InputNumber min={1} step={1} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} allowClear />
@@ -174,8 +174,8 @@ const Add = ({ keywords, datasets, projects, getProject, createProject, updatePr
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
               </Form.Item>
             </Tip>
-            <div className={s.interationSettings} hidden={true}>
-              <h3>{t('project.interation.settings.title')}</h3>
+            <div className={s.iterationSettings} hidden={true}>
+              <h3>{t('project.iteration.settings.title')}</h3>
               <Tip content={t('tip.project.add.trainset')}>
                 <Form.Item
                   label={t('project.add.form.keyword.label')}

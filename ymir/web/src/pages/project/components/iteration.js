@@ -1,9 +1,9 @@
 import { Row, Col } from "antd"
 import { connect } from "dva"
 
-import s from "./interation.less"
+import s from "./iteration.less"
 
-function Interation({}) {
+function Iteration({}) {
   const Num = ({ num, state }) => {
     return <div>{num}</div>
   }
@@ -36,4 +36,4 @@ const actions = (dispacth) => {
   return {}
 }
 
-export default connect(props, actions)(Interation)
+export default connect(props, actions)(Iteration)

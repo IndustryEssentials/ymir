@@ -1,4 +1,4 @@
-import { Project, originProject, originInteration, Interation, } from "@/interface/project"
+import { Project, originProject, originIteration, Iteration, } from "@/interface/project"
 import { format } from '@/utils/date'
 
 export enum Steps {
@@ -10,7 +10,7 @@ export enum Steps {
   trained = 5,
 }
 
-export function getInterationVersion (version: number) {
+export function getIterationVersion (version: number) {
   return `V${version}`
 }
 
@@ -26,23 +26,23 @@ export function transferProject(data: originProject) {
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
-    currentInteration: data.current_iteration_id,
+    currentIteration: data.current_iteration_id,
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,
     targetMap: data.map_target,
     targetDataset: data.training_dataset_count_target,
-    targetInteration: data.iteration_target,
+    targetIteration: data.iteration_target,
     updateTime: data.update_datetime,
   }
   return project
 }
 
-export function transferIteration (data: originInteration | undefined) {
+export function transferIteration (data: originIteration | undefined) {
   if (!data) {
     return
   }
-  const interation : Interation = {
+  const iteration : Iteration = {
     id: data.id,
     name: data.name,
     version: data.version,
@@ -55,5 +55,5 @@ export function transferIteration (data: originInteration | undefined) {
     model: data.model,
     
   }
-  return interation
+  return iteration
 }

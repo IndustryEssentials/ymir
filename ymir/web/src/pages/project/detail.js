@@ -4,7 +4,7 @@ import { useLocation, useParams } from "umi"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
-import Interation from './components/interation'
+import Iteration from './components/iteration'
 import Datasets from '@/components/dataset/list'
 import Models from '@/components/model/list'
 
@@ -34,7 +34,7 @@ function ProjectDetail() {
   return (
     <div className={styles.projectDetail}>
       <Breadcrumbs />
-      <Interation id={id} />
+      <Iteration id={id} />
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} 
         style={{ margin: '-20px -5vw 0', background: 'transparent'}}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px'}}

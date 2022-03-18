@@ -7,7 +7,7 @@ export interface Project {
   keywords: Array<string>,
   targetMap: number,
   targetDataset: number,
-  targetInteration: number,
+  targetIteration: number,
   trainSet: Dataset,
   testSet: Dataset,
   miningSet: Dataset,
@@ -15,13 +15,13 @@ export interface Project {
   modelCount: number,
   miningStrategy: number,
   chunkSize?: number,
-  currentInteration?: number,
+  currentIteration?: number,
   createTime: string,
   updateTime: string,
   description?: string,
 }
 
-export interface Interation {
+export interface Iteration {
   id: number,
   name: string,
   version: number,
@@ -33,7 +33,7 @@ export interface Interation {
   labelSet?: Dataset,
   model?: number,
 }
-export interface originInteration {
+export interface originIteration {
   id: number,
   name: string,
   version: number,
@@ -57,7 +57,7 @@ export interface originProject {
   model_count: number,
   mining_strategy: number,
   chunk_size: number,
-  current_interation?: originInteration,
+  current_iteration?: originIteration,
   create_datetime: string,
   update_datetime: string,
   description: string 

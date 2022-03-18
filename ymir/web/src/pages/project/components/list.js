@@ -115,7 +115,7 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
           <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.interation.current')}:</span><span className={s.titleContent}>{item?.currentInteration}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item?.currentIteration}</span></span>
         </Space>
       </Col>
       <Col>{more(item)}</Col>
@@ -135,8 +135,8 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
           <div className={s.sets}>{item.trainSet}/{item.testSet}/{item.miningSet}</div>
         </Col>
         <Col span={6} className={s.stats}>
-          <div className={s.contentLabel}>{t('project.interation.number')}</div>
-          <div className={s.contentContent}>{item?.currentInteration}</div>
+          <div className={s.contentLabel}>{t('project.iteration.number')}</div>
+          <div className={s.contentContent}>{item?.currentIteration}</div>
         </Col>
       </Row>
       <Row>
