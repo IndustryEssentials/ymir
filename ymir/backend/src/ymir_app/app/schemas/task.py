@@ -131,7 +131,7 @@ class TaskInternal(TaskInDBBase):
     @validator("result_type", pre=True, always=True)
     def gen_result_type(cls, v: Any, values: Any) -> Optional[ResultType]:
         task_type = values["type"]
-        if task_type in [TaskType.training]:
+        if task_type in [TaskType.training, TaskType.copy_model, TaskType.import_model]:
             return ResultType.model
         elif task_type in [
             TaskType.mining,
