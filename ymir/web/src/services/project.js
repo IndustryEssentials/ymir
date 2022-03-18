@@ -10,10 +10,6 @@ export function getProject(id) {
   return request.get(`projects/${id}`)
 }
 
-export function getInterations(id) {
-  return request.get(`projects/${id}/interations`)
-}
-
 /**
  * @param {*} params
  * { name, offset = 0, limit = 10 }

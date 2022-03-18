@@ -38,7 +38,7 @@ export function transferProject(data: originProject) {
   return project
 }
 
-export function transferInteration (data: originInteration | undefined) {
+export function transferIteration (data: originInteration | undefined) {
   if (!data) {
     return
   }

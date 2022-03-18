@@ -1,12 +1,11 @@
 import {
   getProjects,
   getProject,
-  getInterations,
   delProject,
   createProject,
   updateProject,
 } from "@/services/project"
-import { transferProject, transferInteration } from '@/constants/project'
+import { transferProject } from '@/constants/project'
 
 const initQuery = {
   name: "",
@@ -55,18 +54,6 @@ export default {
           payload: project,
         })
         return project
-      }
-    },
-    *getInterations({ payload }, { call, put }) {
-      const projectId = payload
-      const { code, result } = yield call(getInterations, projectId)
-      if (code === 0) {
-        const interations = transferInteration()
-        yield put({
-          type: "UPDATE_INTERATIONS",
-          payload: { id: projectId, interations },
-        })
-        return result
       }
     },
     *delProject({ payload }, { call, put }) {
@@ -118,20 +105,6 @@ export default {
       const project = payload
       projects[project.id] = project
       console.log('project reducer: ', projects)
-      return {
-        ...state,
-        projects,
-      }
-    },
-    UPDATE_INTERATIONS(state, { payload }) {
-      const projects = { ...state.projects }
-      const project = projects[id]
-      const { id, interations } = payload
-      project = {
-        ...project,
-        interations,
-      }
-      projects[id] = project
       return {
         ...state,
         projects,
