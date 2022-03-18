@@ -523,6 +523,7 @@ class Task(google.protobuf.message.Message):
     RETURN_MSG_FIELD_NUMBER: builtins.int
     ARGS_FIELD_NUMBER: builtins.int
     ANCESTOR_TASK_ID_FIELD_NUMBER: builtins.int
+    SYSTEM_CONTEXT_FIELD_NUMBER: builtins.int
     type: global___TaskType.V = ...
     name: typing.Text = ...
     """/ user defined task name"""
@@ -552,6 +553,7 @@ class Task(google.protobuf.message.Message):
     """/ serialization result of arguments of this task, in yaml format"""
 
     ancestor_task_id: typing.Text = ...
+    system_context: typing.Text = ...
     def __init__(self,
         *,
         type : global___TaskType.V = ...,
@@ -565,9 +567,10 @@ class Task(google.protobuf.message.Message):
         return_msg : typing.Text = ...,
         args : typing.Text = ...,
         ancestor_task_id : typing.Text = ...,
+        system_context : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ancestor_task_id",b"ancestor_task_id","args",b"args","base_task_id",b"base_task_id","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ancestor_task_id",b"ancestor_task_id","args",b"args","base_task_id",b"base_task_id","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","system_context",b"system_context","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):

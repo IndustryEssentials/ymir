@@ -79,6 +79,7 @@ class CmdModelImport(base.BaseCommand):
                                          return_code=MirCode.RC_OK,
                                          return_msg='')
         mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict())
+        mir_tasks.tasks[mir_tasks.head_task_id].system_context = model_storage.system_context
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,

@@ -98,8 +98,9 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                      model_mAP=mAP,
                                      model_hash=model_sha1,
                                      return_code=task_ret_code,
-                                     return_msg=task_err_msg)
-    mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict() if model_storage else '')
+                                     return_msg=task_err_msg,
+                                     args=(yaml.safe_dump(model_storage.as_dict()) if model_storage else ''),
+                                     system_context=(model_storage.system_context if model_storage else ''))
     return mir_tasks
 
 

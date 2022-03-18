@@ -116,6 +116,7 @@ class CmdCopy(base.BaseCommand):
         task.timestamp = int(datetime.datetime.now().timestamp())
         task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
         task.args = mir_tasks.tasks[orig_head_task_id].args
+        task.system_context = mir_tasks.tasks[orig_head_task_id].system_context
         task.unknown_types.clear()
         for type_name, count in unknown_types.items():
             task.unknown_types[type_name] = count
