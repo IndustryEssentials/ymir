@@ -147,7 +147,6 @@ message ReqCreateTask {
     TaskType task_type = 1;
     float sampling_rate = 2;
     bool no_task_monitor = 3;
-    string task_parameters = 4;
 
     TaskReqFilter filter = 101 [deprecated=true];
     TaskReqTraining training = 102;
