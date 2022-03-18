@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import IterationNotFound
+from app.utils.iteration_fsm import IterationFSM
 
 router = APIRouter()
 
@@ -80,7 +81,7 @@ def update_iteration_stage(
         raise IterationNotFound()
 
     # todo
-    #  update iteration context:
-    #   set mining_input, mining_output, etc
+    fsm = IterationFSM()
+
     iteration = crud.iteration.update(db, db_obj=iteration, obj_in=obj_update)
     return {"result": iteration}
