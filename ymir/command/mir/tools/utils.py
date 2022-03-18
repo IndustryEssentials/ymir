@@ -192,7 +192,6 @@ class ModelStorage:
 
         if 'system_context' in self.executor_config:
             self.system_context = self.executor_config['system_context']
-            del self.executor_config['system_context']
 
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
