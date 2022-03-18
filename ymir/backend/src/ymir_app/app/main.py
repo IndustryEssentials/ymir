@@ -25,9 +25,7 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
-app.mount("/static",
-          StaticFiles(directory="/Users/phoenix/Code/scalable-ai/ymir/ymir/backend/src/ymir_app/static"),
-          name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if settings.SENTRY_DSN:
     sentry_sdk.init(dsn=settings.SENTRY_DSN)
