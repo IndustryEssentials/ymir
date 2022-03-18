@@ -81,7 +81,6 @@ class Model:
 
     @classmethod
     def from_viz_res(cls, res: Dict) -> "Model":
-        # TODO(chao): get task_parameters, config from viz later
         return cls(res["model_id"], res["model_mAP"], res["task_parameters"], res["task_config"])
 
 
