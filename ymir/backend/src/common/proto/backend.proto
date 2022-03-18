@@ -26,6 +26,7 @@ enum TaskType {
     /// merge -> filter -> sampling
     TaskTypeFusion = 11;
     TaskTypeImportModel = 13;
+    TaskTypeCopyModel = 14;
 
     reserved 12;
 };
