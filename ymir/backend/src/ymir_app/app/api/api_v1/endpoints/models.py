@@ -16,6 +16,7 @@ from app.api.errors.errors import (
     DuplicateModelGroupError,
     FailedtoImportModel,
     TaskNotFound,
+    FieldValidationFailed,
 )
 from app.config import settings
 from app.constants.state import TaskType, ResultState
@@ -192,6 +193,8 @@ def import_model_in_background(
         parameters = {
             "model_package_path": os.path.join(temp_model_path, os.path.basename(model_import.input_model_path)),
         }
+    else:
+        raise FieldValidationFailed()
 
     try:
         controller_client.import_model(
