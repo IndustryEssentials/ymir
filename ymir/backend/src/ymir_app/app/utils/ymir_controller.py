@@ -329,7 +329,11 @@ class ControllerClient:
         task_parameters: Optional[Dict],
     ) -> Dict:
         req = ControllerRequest(
-            type=TaskType(task_type), user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters
+            type=TaskType(task_type),
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args=task_parameters,
         )
         return self.send(req)
 
