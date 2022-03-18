@@ -188,6 +188,7 @@ class TaskResult:
         result = self.viz.get_model()
         try:
             self.save_model_stats(result)
+            self.update_model_related_task_info(result)
         except FailedToConnectClickHouse:
             logger.exception("Failed to write model stats to clickhouse, continue anyway")
         return result
@@ -206,7 +207,7 @@ class TaskResult:
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
-    def update_model_task_info(self, result: Dict) -> None:
+    def update_model_related_task_info(self, result: Dict) -> None:
         task_in_db = crud.task.get_by_user_and_id(self.db, id=self.task.id, user_id=self.user_id)
         if not task_in_db:
             logger.warning("[update task] found no related task (%s)", result)
