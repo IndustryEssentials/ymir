@@ -4,7 +4,7 @@ const task = {
   "task.detail.title": { cn: "任务详情", en: "Task Detail", },
   "task.asset.title": { cn: "数据详情", en: "Task Assets", },
   "task.type.train": { cn: "训练", en: "Train", },
-  "task.type.mine": { cn: "挖掘", en: "Mining", },
+  "task.type.mining": { cn: "挖掘", en: "Mining", },
   "task.type.label": { cn: "标注", en: "Label", },
   "task.type.fusion": { cn: "融合", en: "Fusion", },
   "task.type.import": { cn: "导入", en: "Import", },
@@ -182,6 +182,12 @@ const task = {
   "task.train.form.training.datasets.placeholder": { cn: "请选择训练集", en: "Please select a training dataset", },
   "task.train.form.datasets.required": { cn: "数据集为必选项", en: "Dataset is required", },
   "task.train.form.test.datasets.placeholder": { cn: "请选择测试集", en: "Please select a test dataset", },
+  "task.origin.dataset": { cn: "来源数据集", en: "Original Dataset", },
+  "task.detail.include_datasets.label": { cn: "合并数据集", en: "Merge Datasets", },
+  "task.detail.exclude_datasets.label": { cn: "排除数据集", en: "Exclude Datasets", },
+  "task.detail.include_labels.label": { cn: "保留标签", en: "Include Keywords", },
+  "task.detail.exclude_labels.label": { cn: "排除标签", en: "Exclude Keywords", },
+  "task.detail.samples.label": { cn: "采样数", en: "Sampling Count", },
 }
 
 export default task

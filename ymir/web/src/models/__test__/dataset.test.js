@@ -3,6 +3,14 @@ import { put, putResolve, call, select } from "redux-saga/effects"
 import { errorCode } from './func'
 import { format } from '@/utils/date'
 
+jest.mock('umi', () => {
+  return {
+    getLocale() {
+      return 'en-US'
+    }
+  }
+})
+
 put.resolve = putResolve
 
 function equalObject(obj1, obj2) {
@@ -179,6 +187,7 @@ describe("models: dataset", () => {
       "taskState": 3,
       "taskType": 105,
       "duration": null,
+      "durationLabel": "",
       "taskName": "t00000020000013277a01646883549",
       task,
     }
@@ -198,18 +207,125 @@ describe("models: dataset", () => {
     const saga = dataset.effects.batchDatasets
     const creator = {
       type: "batchDatasets",
-      payload: { ids: '1,2,3,4' },
+      payload: { ids: '1,2' },
     }
-    const expected = [1, 2, 3, 4]
+    const createTime = "2022-03-10T03:39:09"
+    const task = {
+      "name": "t00000020000013277a01646883549",
+      "type": 105,
+      "project_id": 1,
+      "is_deleted": false,
+      "create_datetime": createTime,
+      "update_datetime": createTime,
+      "id": 1,
+      "hash": "t00000020000013277a01646883549",
+      "state": 3,
+      "error_code": null,
+      "duration": null,
+      "percent": 1,
+      "parameters": {},
+      "config": {},
+      "user_id": 2,
+      "last_message_datetime": "2022-03-10T03:39:09.033206",
+      "is_terminated": false,
+      "result_type": null
+    }
+    const expected = [{
+      "id": 1,
+      "groupId": 1,
+      "projectId": undefined,
+      "name": "p0001_training_dataset",
+      "version": 0,
+      "versionName": "V0",
+      "assetCount": 0,
+      "keywords": [],
+      "keywordCount": 0,
+      "ignoredKeywords": [],
+      state: 1,
+      "hash": "t00000020000012afef21646883528",
+      "createTime": format(createTime),
+      "updateTime": format(createTime),
+      "taskId": 1,
+      "progress": 1,
+      "taskState": 3,
+      "taskType": 105,
+      "duration": null,
+      "durationLabel": "",
+      "taskName": "t00000020000013277a01646883549",
+      task,
+    }, {
+      "id": 2,
+      "groupId": 1,
+      "projectId": undefined,
+      "name": "p0001_training_dataset",
+      "version": 0,
+      "versionName": "V0",
+      "assetCount": 0,
+      "keywords": [],
+      "keywordCount": 0,
+      "ignoredKeywords": [],
+      state: 1,
+      "hash": "t00000020000012afef21646883528",
+      "createTime": format(createTime),
+      "updateTime": format(createTime),
+      "taskId": 1,
+      "progress": 1,
+      "taskState": 3,
+      "taskType": 105,
+      "duration": null,
+      "durationLabel": "",
+      "taskName": "t00000020000013277a01646883549",
+      task,
+    }]
+
+    const send = [{
+      "name": "p0001_training_dataset",
+      "result_state": 1,
+      "dataset_group_id": 1,
+      // "project_id": 1,
+      state: 1,
+      "keywords": [],
+      "ignored_keywords": [],
+      "asset_count": null,
+      "keyword_count": null,
+      "is_deleted": false,
+      "create_datetime": createTime,
+      "update_datetime": createTime,
+      "id": 1,
+      "hash": "t00000020000012afef21646883528",
+      "version_num": 0,
+      "task_id": 1,
+      "user_id": 2,
+      "related_task": task,
+    }, {
+      "name": "p0001_training_dataset",
+      "result_state": 1,
+      "dataset_group_id": 1,
+      // "project_id": 1,
+      state: 1,
+      "keywords": [],
+      "ignored_keywords": [],
+      "asset_count": null,
+      "keyword_count": null,
+      "is_deleted": false,
+      "create_datetime": createTime,
+      "update_datetime": createTime,
+      "id": 2,
+      "hash": "t00000020000012afef21646883528",
+      "version_num": 0,
+      "task_id": 1,
+      "user_id": 2,
+      "related_task": task,
+    }]
 
     const generator = saga(creator, { put, call })
     generator.next()
     const end = generator.next({
       code: 0,
-      result: expected,
+      result: send,
     })
 
-    equalObject(expected, end.value)
+    expect(expected).toEqual(end.value)
     expect(end.done).toBe(true)
   })
   it("effects: getAssetsOfDataset", () => {
