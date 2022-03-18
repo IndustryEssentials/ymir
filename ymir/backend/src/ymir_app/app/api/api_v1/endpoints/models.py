@@ -1,6 +1,5 @@
 import enum
 import os
-import tempfile
 from typing import Dict, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -18,7 +17,6 @@ from app.api.errors.errors import (
     TaskNotFound,
     FieldValidationFailed,
 )
-from app.config import settings
 from app.constants.state import TaskType, ResultState
 from app.utils.files import NGINX_DATA_PATH
 from app.utils.ymir_controller import gen_repo_hash, ControllerClient
@@ -187,7 +185,6 @@ def import_model_in_background(
             "src_resource_id": task_obj.hash,
         }
     elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
-        temp_model_path = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
         # TODO(chao): remove model file after importing
         parameters = {
             "model_package_path": os.path.join(NGINX_DATA_PATH, model_import.input_model_path),
