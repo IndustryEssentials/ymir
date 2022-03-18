@@ -73,10 +73,14 @@ class TestModel:
         res = {
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
+            "task_parameters": "mock_task_parameters",
+            "task_config": "mock_task_config",
         }
         M = m.Model.from_viz_res(res)
         assert M.hash == res["model_id"]
         assert M.map == res["model_mAP"]
+        assert M.task_parameters == res["task_parameters"]
+        assert M.task_config == res["task_config"]
 
 
 class TestVizClient:
@@ -167,6 +171,8 @@ class TestVizClient:
         res = {
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
+            "task_parameters": "mock_task_parameters",
+            "task_config": "mock_task_config",
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -180,6 +186,8 @@ class TestVizClient:
         assert isinstance(ret, dict)
         assert ret["hash"] == res["model_id"]
         assert ret["map"] == res["model_mAP"]
+        assert ret["task_parameters"] == res["task_parameters"]
+        assert ret["task_config"] == res["task_config"]
 
     def test_close(self, mocker):
         host = random_lower_string()
