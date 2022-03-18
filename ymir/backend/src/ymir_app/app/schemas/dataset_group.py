@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -15,6 +15,7 @@ class DatasetGroupBase(BaseModel):
     name: str = Field(description="Dataset Group Name")
     project_id: int
     user_id: int
+    description: Optional[str]
 
 
 class DatasetGroupCreate(DatasetGroupBase):
