@@ -269,11 +269,14 @@ class ControllerRequest:
         copy_request = mirsvrpb.TaskReqCopyData()
         copy_request.src_repo_id = args["src_repo_id"]
         copy_request.src_dataset_id = args["src_resource_id"]
+
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeCopyModel
         req_create_task.copy.CopyFrom(copy_request)
+
         request.req_type = mirsvrpb.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
+
         return request
 
 
