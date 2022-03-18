@@ -1,4 +1,5 @@
 from app.utils import class_ids as m
+from common_utils.labels import UserLabels
 from tests.utils.utils import random_lower_string
 
 
@@ -22,22 +23,22 @@ class TestKeywordsToLabels:
 
 class TestFindDuplicateLabels:
     def test_find_duplication_in_labels(self):
-        user_labels = {
-            "cat": {
+        user_labels = UserLabels.parse_obj(dict(labels=[
+            {
                 "name": "cat",
                 "aliases": ["kitty"],
                 "create_time": 1647075200.0,
                 "update_time": 1647075200.0,
-                "id": 1,
+                "id": 0,
             },
-            "dog": {
-                "id": 2,
+            {
+                "id": 1,
                 "name": "dog",
                 "aliases": ["puppy"],
                 "create_time": 1647076200.0,
                 "update_time": 1647076400.0,
             },
-        }
+        ]))
 
         assert (
             m.find_duplication_in_labels(

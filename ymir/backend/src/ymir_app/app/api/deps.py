@@ -1,5 +1,4 @@
-import json
-from typing import Generator, Dict
+from typing import Generator
 
 from fastapi import Depends, Security
 from fastapi.logger import logger
@@ -8,6 +7,7 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from common_utils.labels import UserLabels
 from app import crud, models, schemas
 from app.api.errors.errors import (
     InactiveUser,
@@ -148,20 +148,20 @@ def get_cache(
 
 
 def get_user_labels(
-    current_user: models.User = Depends(get_current_active_user),
-    cache: ymir_cache.CacheClient = Depends(get_cache),
-    controller_client: ControllerClient = Depends(get_controller_client),
-) -> Dict:
+        current_user: models.User = Depends(get_current_active_user),
+        cache: ymir_cache.CacheClient = Depends(get_cache),
+        controller_client: ControllerClient = Depends(get_controller_client),
+) -> UserLabels:
     # todo: make a cache wrapper
     cached = cache.get(ymir_cache.KEYWORDS_CACHE_KEY)
     if cached:
         logger.info("cache hit")
-        return json.loads(cached)
+        return UserLabels.parse_raw(cached)
 
     logger.info("cache miss")
     user_labels = controller_client.get_labels_of_user(current_user.id)
 
-    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(user_labels))
+    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, user_labels.json())
     return user_labels
 
 

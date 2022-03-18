@@ -21,6 +21,7 @@ from app.utils.class_ids import (
     labels_to_keywords,
 )
 from app.utils.ymir_controller import ControllerClient
+from common_utils.labels import UserLabels
 
 router = APIRouter()
 
@@ -56,7 +57,7 @@ def create_keywords(
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
-    user_labels: Dict = Depends(deps.get_user_labels),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Batch create given keywords and aliases to keywords list

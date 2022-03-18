@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Callable, Dict, Iterator, List, Optional
+from typing import Callable, Iterator, List, Optional
 
 from app.schemas import Keyword
+from common_utils.labels import UserLabels
 
 
 def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
@@ -15,39 +16,33 @@ def keywords_to_labels(keywords: List[Keyword]) -> Iterator[str]:
         yield ",".join(label)
 
 
-def labels_to_keywords(user_labels: Dict, filter_f: Optional[Callable] = None) -> Iterator[Keyword]:
+def labels_to_keywords(user_labels: UserLabels, filter_f: Optional[Callable] = None) -> Iterator[Keyword]:
     """
     keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     """
-    for _, label_info in user_labels.items():
-        create_time = datetime.utcfromtimestamp(label_info["create_time"])
-        update_time = datetime.utcfromtimestamp(label_info["update_time"])
-
+    for label in user_labels.labels:
         keyword = {
-            "name": label_info["name"],
-            "aliases": label_info["aliases"],
-            "create_time": create_time,
-            "update_time": update_time,
+            "name": label.name,
+            "aliases": label.aliases,
+            "create_time": datetime.utcfromtimestamp(label.create_time),
+            "update_time": datetime.utcfromtimestamp(label.update_time),
         }
         if filter_f is None or filter_f(keyword):
             yield Keyword(**keyword)
 
 
-def find_duplication_in_labels(user_labels: Dict, new_labels: List[str]) -> List[str]:
+def find_duplication_in_labels(user_labels: UserLabels, new_labels: List[str]) -> List[str]:
     names = []
-    for _, label_info in user_labels.items():
-        names += [label_info["name"]] + label_info["aliases"]
+    for label in user_labels.labels:
+        names += [label.name] + label.aliases
     new_names = [name for label in new_labels for name in label.split(",")]
 
     return list(set(names) & set(new_names))
 
 
-def convert_keywords_to_classes(user_labels: Dict, keywords: List[str]) -> List[int]:
-    return [user_labels[keyword]["id"] for keyword in keywords]
+def convert_keywords_to_classes(user_labels: UserLabels, keywords: List[str]) -> List[int]:
+    return [user_labels.name_to_id[keyword] for keyword in keywords]
 
 
-def convert_classes_to_keywords(user_labels: Dict, classes: List) -> List[str]:
-    dict_id_to_name = dict()
-    for _, label_info in user_labels.items():
-        dict_id_to_name[label_info["id"]] = label_info["name"]
-    return [dict_id_to_name[int(class_id)] for class_id in classes]
+def convert_classes_to_keywords(user_labels: UserLabels, classes: List[int]) -> List[str]:
+    return [user_labels.id_to_name[class_id] for class_id in classes]

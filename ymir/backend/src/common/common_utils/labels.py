@@ -2,7 +2,7 @@ from collections import Counter
 import logging
 import os
 import time
-from typing import Dict, Iterable, List, Set
+from typing import Any, Dict, Iterable, List, Set
 
 from pydantic import BaseModel, validator
 import yaml
@@ -54,6 +54,20 @@ class LabelStorage(BaseModel):
                 raise ValueError(f"duplicated: {duplicated}")
             label_names_set.update(name_and_aliases_set)
         return labels
+
+
+class UserLabels(LabelStorage):
+    id_to_name: Dict[int, str] = {}
+    name_to_id: Dict[str, int] = {}
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        for label in self.labels:
+            self.id_to_name[label.id] = label.name
+            self.name_to_id[label.name] = label.id
+
+    class Config:
+        fields = {'labels': {'include': True}}
 
 
 def labels_file_name() -> str:

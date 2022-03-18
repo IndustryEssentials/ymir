@@ -11,6 +11,7 @@ from google.protobuf import json_format  # type: ignore
 
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
+from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
@@ -309,16 +310,13 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def get_labels_of_user(self, user_id: int) -> Dict:
+    def get_labels_of_user(self, user_id: int) -> UserLabels:
         req = ControllerRequest(ExtraRequestType.get_label, user_id)
         resp = self.send(req)
-        # {name: message  Label}
-        user_labels = dict()
         # if not set labels, lost the key label_collection
-        if resp.get("label_collection"):
-            for label_info in resp["label_collection"]["labels"]:
-                user_labels[label_info["name"]] = label_info
-        return user_labels
+        if not resp.get("label_collection"):
+            raise ValueError(f"Missing labels for user {user_id}")
+        return UserLabels.parse_obj(dict(labels=resp["label_collection"]["labels"]))
 
     def create_task(
         self,

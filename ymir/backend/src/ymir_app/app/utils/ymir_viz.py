@@ -7,6 +7,7 @@ from fastapi.logger import logger
 from app.api.errors.errors import ModelNotFound, ModelNotReady
 from app.config import settings
 from app.utils.class_ids import convert_classes_to_keywords
+from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode
 
 
@@ -19,7 +20,7 @@ class Asset:
     metadata: Dict
 
     @classmethod
-    def from_viz_res(cls, asset_id: str, res: Dict, user_labels: Dict) -> "Asset":
+    def from_viz_res(cls, asset_id: str, res: Dict, user_labels: UserLabels) -> "Asset":
         annotations = [
             {
                 "box": annotation["box"],
@@ -53,7 +54,7 @@ class Assets:
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: Dict) -> "Assets":
+    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Assets":
         assets = [
             {
                 "url": get_asset_url(asset["asset_id"]),
@@ -107,7 +108,7 @@ class VizClient:
         keyword_id: Optional[int] = None,
         offset: int = 0,
         limit: int = 20,
-        user_labels: Dict,
+        user_labels: UserLabels,
     ) -> Assets:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets"  # noqa: E501
 
@@ -124,7 +125,7 @@ class VizClient:
         self,
         *,
         asset_id: str,
-        user_labels: Dict,
+        user_labels: UserLabels,
     ) -> Optional[Dict]:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
 
