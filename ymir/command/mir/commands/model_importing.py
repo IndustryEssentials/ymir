@@ -64,7 +64,6 @@ class CmdModelImport(base.BaseCommand):
         model_hash = mir_utils.pack_and_copy_models(model_storage=model_storage,
                                                     model_dir_path=extract_model_dir_path,
                                                     model_location=model_location)
-        logging.info(f"model sha1: {model_hash}")
 
         # remove tmp files
         shutil.rmtree(extract_model_dir_path)

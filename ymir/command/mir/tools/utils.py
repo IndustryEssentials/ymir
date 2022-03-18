@@ -189,6 +189,7 @@ class ModelStorage:
 
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
+
         if 'system_context' in self.executor_config:
             self.system_context = self.executor_config['system_context']
             del self.executor_config['system_context']
@@ -260,7 +261,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
         ymir_info_dict = yaml.safe_load(f.read())
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
                                  executor_config=ymir_info_dict.get('executor_config', {}),
-                                 task_context=ymir_info_dict.get('task_context', {}))
+                                 task_context=ymir_info_dict.get('task_context', {}),
+                                 system_context=ymir_info_dict.get('system_context', ''))
 
     return model_storage
 
