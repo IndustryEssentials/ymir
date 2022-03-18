@@ -20,7 +20,7 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskType, ResultState
-from app.utils.files import copy_upload_file
+from app.utils.files import NGINX_DATA_PATH
 from app.utils.ymir_controller import gen_repo_hash, ControllerClient
 
 router = APIRouter()
@@ -189,9 +189,8 @@ def import_model_in_background(
     elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
         temp_model_path = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
         # TODO(chao): remove model file after importing
-        copy_upload_file(model_import.input_model_path, temp_model_path)
         parameters = {
-            "model_package_path": os.path.join(temp_model_path, os.path.basename(model_import.input_model_path)),
+            "model_package_path": os.path.join(NGINX_DATA_PATH, model_import.input_model_path),
         }
     else:
         raise FieldValidationFailed()
