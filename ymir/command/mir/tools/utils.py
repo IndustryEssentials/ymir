@@ -17,8 +17,10 @@ from mir.tools import hash_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
+
 PRODUCER_KEY = 'producer'
 PRODUCER_NAME = 'ymir'
+SYSTEM_CONTEXT_KEY = 'system_context'
 
 
 def time_it(f: Callable) -> Callable:
@@ -190,8 +192,8 @@ class ModelStorage:
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
 
-        if 'system_context' in self.executor_config:
-            self.system_context = self.executor_config['system_context']
+        if SYSTEM_CONTEXT_KEY in self.executor_config:
+            self.system_context = self.executor_config[SYSTEM_CONTEXT_KEY]
 
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
@@ -261,7 +263,7 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
                                  executor_config=ymir_info_dict.get('executor_config', {}),
                                  task_context=ymir_info_dict.get('task_context', {}),
-                                 system_context=ymir_info_dict.get('system_context', ''))
+                                 system_context=ymir_info_dict.get(SYSTEM_CONTEXT_KEY, ''))
 
     return model_storage
 
