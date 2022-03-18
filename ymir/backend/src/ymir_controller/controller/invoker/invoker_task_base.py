@@ -104,6 +104,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         # task parameters
         if task_parameters:
             executor_config['system_context'] = task_parameters
+
         with open(output_config_file, "w") as f:
             yaml.dump(executor_config, f)
 
