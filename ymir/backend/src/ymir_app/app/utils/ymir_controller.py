@@ -105,7 +105,6 @@ class ControllerRequest:
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeTraining
-        req_create_task.no_task_monitor = False
         req_create_task.training.CopyFrom(train_task_req)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -125,7 +124,6 @@ class ControllerRequest:
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeMining
-        req_create_task.no_task_monitor = False
         req_create_task.mining.CopyFrom(mine_task_req)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -148,7 +146,6 @@ class ControllerRequest:
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportData
-        req_create_task.no_task_monitor = False
         req_create_task.importing.CopyFrom(importing_request)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -249,7 +246,6 @@ class ControllerRequest:
         req_create_task = mirsvrpb.ReqCreateTask()
 
         req_create_task.task_type = mirsvrpb.TaskTypeFusion
-        req_create_task.no_task_monitor = False
         req_create_task.fusion.CopyFrom(data_fusion_request)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -262,7 +258,6 @@ class ControllerRequest:
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportModel
-        req_create_task.no_task_monitor = False
         req_create_task.model_importing.CopyFrom(model_importing)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -272,14 +267,11 @@ class ControllerRequest:
 
     def prepare_copy_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         copy_request = mirsvrpb.TaskReqCopyData()
-
         copy_request.src_repo_id = args["src_repo_id"]
         copy_request.src_dataset_id = args["src_resource_id"]
-
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeCopyModel
         req_create_task.copy.CopyFrom(copy_request)
-
         request.req_type = mirsvrpb.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
         return request

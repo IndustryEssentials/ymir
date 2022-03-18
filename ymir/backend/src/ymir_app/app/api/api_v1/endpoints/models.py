@@ -187,6 +187,7 @@ def import_model_in_background(
         }
     elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
         temp_model_path = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
+        # TODO(chao): remove model file after importing
         copy_upload_file(model_import.input_model_path, temp_model_path)
         parameters = {
             "model_package_path": os.path.join(temp_model_path, os.path.basename(model_import.input_model_path)),
