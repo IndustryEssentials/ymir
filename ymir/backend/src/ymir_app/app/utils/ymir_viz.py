@@ -27,7 +27,7 @@ class Asset:
             }
             for annotation in res["annotations"]
         ]
-        keywords = user_labels.get_main_names(res["class_ids"])
+        keywords = user_labels.get_main_names(class_ids=res["class_ids"])
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -57,7 +57,7 @@ class Assets:
         assets = [{
             "url": get_asset_url(asset["asset_id"]),
             "hash": asset["asset_id"],
-            "keywords": user_labels.get_main_names(asset["class_ids"]),
+            "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
         } for asset in res["elements"]]
 
         keywords = {user_labels.get_main_name([class_id]): count for class_id, count in res["class_ids_count"].items()}

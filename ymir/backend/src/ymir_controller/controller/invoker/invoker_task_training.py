@@ -1,6 +1,7 @@
 import os
 from typing import Dict, List
 
+from common_utils.labels import UserLabels
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import invoker_call, revs, utils
@@ -17,10 +18,10 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         # store executor config in task_0 work_dir
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
+        class_names = self._user_labels.get_main_names(class_ids=train_request.in_class_ids)
         gpu_lock_ret = self.gen_executor_config_lock_gpus(
-            repo_root=self._repo_root,
             req_executor_config=request.docker_image_config,
-            in_class_ids=train_request.in_class_ids,
+            class_names=class_names,
             output_config_file=output_config_file,
         )
         if not gpu_lock_ret:
@@ -35,7 +36,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
         in_dataset_ids = [
             revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
@@ -61,7 +62,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op

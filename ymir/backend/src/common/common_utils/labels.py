@@ -2,7 +2,7 @@ from collections import Counter
 from datetime import datetime
 import logging
 import os
-from typing import Any, Dict, Iterable, Iterator, List, Set
+from typing import Any, Dict, Iterator, List, Set
 
 from pydantic import BaseModel, validator
 import yaml
@@ -118,49 +118,30 @@ class UserLabels(LabelStorage):
         return list(set(self.name_aliases_to_id.keys()) & new_set)
 
 
-def labels_file_name() -> str:
+def default_labels_file_name() -> str:
     return 'labels.yaml'
 
 
-def labels_file_path(label_file_dir: str) -> str:
-    os.makedirs(label_file_dir, exist_ok=True)
-    return os.path.join(label_file_dir, labels_file_name())
-
-
-def _write_label_file(label_file_dir: str, all_labels: List[SingleLabel]) -> None:
-    """
-    dump all label content into a label storage file, old file contents will be lost
-    Args:
-        all_labels (List[SingleLabel]): all labels
-    """
-    label_storage = LabelStorage(labels=all_labels)
-    with open(labels_file_path(label_file_dir), 'w') as f:
-        yaml.safe_dump(label_storage.dict(), f)
-
-
-def get_all_labels(label_file_dir: str) -> LabelStorage:
+def get_storage_labels(label_storage_file: str) -> LabelStorage:
     """
     get all labels from label storage file
 
     Returns:
-    List[SingleLabel]: all labels
+    LabelStorage: all labels
 
     Raises:
         FileNotFoundError: if label storage file not found
         ValueError: if version mismatch
         Error: if parse failed or other error occured
     """
-    with open(labels_file_path(label_file_dir), 'r') as f:
-        obj = yaml.safe_load(f)
-    if obj is None:
-        obj = {}
-
-    label_storage = LabelStorage(**obj)
-
-    return label_storage
+    obj = {}
+    if os.path.isfile(label_storage_file):
+        with open(label_storage_file, 'r') as f:
+            obj = yaml.safe_load(f)
+    return LabelStorage(**obj)
 
 
-def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
+def merge_labels(label_storage_file: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
     # TODO: too hard to read, make it simpler in another pr
 
     # check `candidate_labels` has no duplicate
@@ -173,7 +154,7 @@ def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: b
     current_time = datetime.now()
 
     # all labels in storage file
-    existed_labels = get_all_labels(label_file_dir=label_file_dir).labels
+    existed_labels = get_storage_labels(label_storage_file=label_storage_file).labels
     # key: label name, value: idx
     existed_main_names_to_ids: Dict[str, int] = {label.name: idx for idx, label in enumerate(existed_labels)}
 
@@ -225,21 +206,17 @@ def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: b
         existed_labels_set.update(candidate_set)
 
     if not (check_only or conflict_labels):
-        _write_label_file(label_file_dir, existed_labels)
+        label_storage = LabelStorage(labels=existed_labels)
+        with open(label_storage_file, 'w') as f:
+            yaml.safe_dump(label_storage.dict(), f)
     if conflict_labels:
         logging.error(f"conflict labels: {conflict_labels}")
     return conflict_labels
 
 
-def get_main_labels_by_ids(label_file_dir: str, type_ids: Iterable) -> List[str]:
-    all_labels = get_all_labels(label_file_dir=label_file_dir).labels
-    return [all_labels[int(idx)].name for idx in type_ids]
+def create_empty(label_storage_file: str) -> None:
+    if os.path.isfile(label_storage_file):
+        raise FileExistsError(f"already exists: {label_storage_file}")
 
-
-def create_empty(label_file_dir: str) -> None:
-    label_file = labels_file_path(label_file_dir)
-    if os.path.isfile(label_file):
-        raise FileExistsError(f"already exists: {label_file}")
-
-    with open(label_file, 'w') as f:
+    with open(label_storage_file, 'w') as f:
         yaml.safe_dump(LabelStorage().dict(), f)

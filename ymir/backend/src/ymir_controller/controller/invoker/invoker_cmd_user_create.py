@@ -26,6 +26,6 @@ class UserCreateInvoker(BaseMirControllerInvoker):
         # create user root
         pathlib.Path(self._user_root).mkdir(parents=True, exist_ok=True)
         # create label file
-        labels.create_empty(label_file_dir=self._user_root)
+        labels.create_empty(label_storage_file=self._label_storage_file)
 
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message='')

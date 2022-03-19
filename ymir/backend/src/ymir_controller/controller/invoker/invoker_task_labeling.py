@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Dict, List
 
 from common_utils import labels
@@ -21,11 +20,10 @@ class TaskLabelingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: labels.UserLabels) -> backend_pb2.GeneralResp:
         labeling_request = request.req_create_task.labeling
         logging.info(f"labeling_request: {labeling_request}")
-        label_file_dir = os.path.join(repo_root, '.mir')
-        keywords = labels.get_main_labels_by_ids(label_file_dir=label_file_dir, type_ids=labeling_request.in_class_ids)
+        keywords = user_labels.get_main_names(class_ids=labeling_request.in_class_ids)
         labeler_accounts = list(labeling_request.labeler_accounts)
         media_location = assets_config["assetskvlocation"]
 
