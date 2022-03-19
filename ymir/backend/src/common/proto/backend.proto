@@ -121,6 +121,7 @@ message GeneralReq {
         float sampling_rate = 23;
     }
     string task_parameters = 24;
+    LabelCollection label_collection = 25;
     ReqCreateTask req_create_task = 1001;
 
     reserved 1002;
