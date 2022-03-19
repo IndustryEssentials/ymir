@@ -79,9 +79,8 @@ class CmdModelImport(base.BaseCommand):
                                          return_code=MirCode.RC_OK,
                                          return_msg='')
         mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict())
-        task_parameters = model_storage.task_context.get(mir_utils.TASK_CONTEXT_PARAMETERS_KEY, '')
-        if task_parameters:
-            mir_tasks.tasks[mir_tasks.head_task_id].task_parameters = task_parameters
+        mir_tasks.tasks[mir_tasks.head_task_id].task_parameters = model_storage.task_context.get(
+            mir_utils.TASK_CONTEXT_PARAMETERS_KEY, '')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,
