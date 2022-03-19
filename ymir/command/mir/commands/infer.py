@@ -126,13 +126,14 @@ class CmdInfer(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                                   error_message=f"empty class names in model: {model_hash}")
 
-        config = prepare_config_file(config_file=config_file,
-                                     dst_config_file=work_config_file,
-                                     class_names=class_names,
-                                     task_id=task_id,
-                                     model_params_path=[os.path.join('/in/model', name) for name in model_names],
-                                     run_infer=run_infer,
-                                     run_mining=run_mining)
+        executor_config = prepare_config_file(
+            config_file=config_file,
+            dst_config_file=work_config_file,
+            class_names=class_names,
+            task_id=task_id,
+            model_params_path=[os.path.join('/in/model', name) for name in model_names],
+            run_infer=run_infer,
+            run_mining=run_mining)
 
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
@@ -143,7 +144,7 @@ class CmdInfer(base.BaseCommand):
                        executor_instance=executor_instance,
                        shm_size=shm_size,
                        task_type=task_id,
-                       gpu_id=config.get('gpu_id', ''))
+                       gpu_id=executor_config.get('gpu_id', ''))
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
