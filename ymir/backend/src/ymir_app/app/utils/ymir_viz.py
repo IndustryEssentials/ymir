@@ -23,11 +23,11 @@ class Asset:
         annotations = [
             {
                 "box": annotation["box"],
-                "keyword": user_labels.get_keyword(annotation["class_id"]),
+                "keyword": user_labels.get_main_name(annotation["class_id"]),
             }
             for annotation in res["annotations"]
         ]
-        keywords = user_labels.get_keywords(res["class_ids"])
+        keywords = user_labels.get_main_names(res["class_ids"])
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -57,10 +57,10 @@ class Assets:
         assets = [{
             "url": get_asset_url(asset["asset_id"]),
             "hash": asset["asset_id"],
-            "keywords": user_labels.get_keywords(asset["class_ids"]),
+            "keywords": user_labels.get_main_names(asset["class_ids"]),
         } for asset in res["elements"]]
 
-        keywords = {user_labels.get_keyword([class_id]): count for class_id, count in res["class_ids_count"].items()}
+        keywords = {user_labels.get_main_name([class_id]): count for class_id, count in res["class_ids_count"].items()}
         ignored_keywords = res["ignored_labels"]
         negative_info = res["negative_info"]
         return cls(res["total"], assets, keywords, ignored_keywords, negative_info)

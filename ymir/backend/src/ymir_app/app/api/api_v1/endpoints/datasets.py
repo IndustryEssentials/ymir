@@ -50,6 +50,7 @@ def batch_get_datasets(
 ) -> Any:
     ids = [int(i) for i in dataset_ids.split(",")]
     datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    print(datasets)
     if not datasets:
         raise DatasetNotFound()
     return {"result": datasets}
@@ -479,8 +480,8 @@ def fusion_normalize_parameters(
         include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
         include_strategy=task_in.include_strategy,
         exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
-        include_class_ids=user_labels.get_class_ids(task_in.include_labels),
-        exclude_class_ids=user_labels.get_class_ids(task_in.exclude_labels),
+        include_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.include_labels),
+        exclude_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.exclude_labels),
         sampling_count=task_in.sampling_count,
     )
 

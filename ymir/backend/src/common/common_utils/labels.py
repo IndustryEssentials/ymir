@@ -1,21 +1,20 @@
 from collections import Counter
+from datetime import datetime
 import logging
 import os
-import time
-from typing import Any, Dict, Iterable, List, Set
+from typing import Any, Dict, Iterable, Iterator, List, Set
 
 from pydantic import BaseModel, validator
 import yaml
-
 
 EXPECTED_FILE_VERSION = 1
 
 
 class SingleLabel(BaseModel):
-    id: int
+    id: int = -1
     name: str
-    create_time: float = 0
-    update_time: float = 0
+    create_time: datetime = datetime(year=2022, month=1, day=1)
+    update_time: datetime = datetime(year=2022, month=1, day=1)
     aliases: List[str] = []
 
     @validator('name')
@@ -41,6 +40,8 @@ class LabelStorage(BaseModel):
     def _check_labels(cls, labels: List[SingleLabel]) -> List[SingleLabel]:
         label_names_set: Set[str] = set()
         for idx, label in enumerate(labels):
+            if label.id < 0:
+                label.id = idx
             if label.id != idx:
                 raise ValueError(f"invalid label id: {label.id}, expected {idx}")
 
@@ -59,27 +60,62 @@ class LabelStorage(BaseModel):
 class UserLabels(LabelStorage):
     id_to_name: Dict[int, str] = {}
     name_to_id: Dict[str, int] = {}
+    name_aliases_to_id: Dict[str, int] = {}
 
     def __init__(self, **data: Any):
         super().__init__(**data)
         for label in self.labels:
             self.id_to_name[label.id] = label.name
             self.name_to_id[label.name] = label.id
+            self.name_aliases_to_id[label.name] = label.id
+            for alias in label.aliases:
+                self.name_aliases_to_id[alias] = label.id
 
     class Config:
         fields = {'labels': {'include': True}}
 
-    def get_class_id(self, keyword: str):
-        return self.name_to_id[keyword]
+    def get_class_id(self, name_or_aliaes: str):
+        return self.name_aliases_to_id[name_or_aliaes]
 
-    def get_class_ids(self, keywords: List[str]):
-        return [self.name_to_id[keyword] for keyword in keywords]
+    def get_class_ids(self, names_or_aliases: List[str]):
+        return [self.name_aliases_to_id[name_or_aliaes] for name_or_aliaes in names_or_aliases]
 
-    def get_keyword(self, class_id: int):
+    def get_main_name(self, class_id: int):
         return self.id_to_name[class_id]
 
-    def get_keywords(self, class_ids: List[int]):
+    def get_main_names(self, class_ids: List[int]):
         return [self.id_to_name[class_id] for class_id in class_ids]
+
+    # keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
+    def filter_labels(
+        self,
+        required_name_aliaes: List[str] = None,
+        required_ids: List[int] = None,
+    ) -> Iterator[SingleLabel]:
+        if required_name_aliaes and required_ids:
+            raise ValueError("required_name_alias and required_ids cannot be both set.")
+        if required_name_aliaes:
+            required_ids = self.get_class_ids(names_or_aliases=required_name_aliaes)
+
+        for label in self.labels:
+            if required_ids is not None and label.id not in required_ids:
+                continue
+
+            yield label
+
+    # label: dog,puppy,pup,canine
+    def to_csvs(self) -> Iterator[str]:
+        for label in self.labels:
+            yield ','.join([label.name, *label.aliases])
+
+    def find_dups(self, new_labels: Any) -> List[str]:
+        if type(new_labels) is str:
+            new_set = set([new_labels])
+        elif type(new_labels) is list:
+            new_set = set(new_labels)
+        else:
+            new_set = set(new_labels.name_aliases_to_id.keys())
+        return list(set(self.name_aliases_to_id.keys()) & new_set)
 
 
 def labels_file_name() -> str:
@@ -134,7 +170,7 @@ def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: b
         logging.error(f"conflict labels: {candidate_labels_list}")
         return candidate_labels_list
 
-    current_timestamp = time.time()
+    current_time = datetime.now()
 
     # all labels in storage file
     existed_labels = get_all_labels(label_file_dir=label_file_dir).labels
@@ -152,7 +188,7 @@ def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: b
             label = existed_labels[idx]
             label.name = candidate_list[0]
             label.aliases = candidate_list[1:]
-            label.update_time = current_timestamp
+            label.update_time = current_time
         else:  # new main_names
             candidate_labels_list_new.append(candidate_list)
 
@@ -184,8 +220,8 @@ def merge_labels(label_file_dir: str, candidate_labels: List[str], check_only: b
             SingleLabel(id=len(existed_labels),
                         name=candidate_list[0],
                         aliases=candidate_list[1:],
-                        create_time=current_timestamp,
-                        update_time=current_timestamp))
+                        create_time=current_time,
+                        update_time=current_time))
         existed_labels_set.update(candidate_set)
 
     if not (check_only or conflict_labels):

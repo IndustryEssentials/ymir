@@ -204,7 +204,7 @@ class ControllerRequest:
     def prepare_add_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.check_only = args["dry_run"]
         request.req_type = mirsvrpb.CMD_LABEL_ADD
-        request.private_labels[:] = args["labels"]
+        request.private_labels[:] = list(args["labels"].to_csvs())
         return request
 
     def prepare_get_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
@@ -302,7 +302,7 @@ class ControllerClient:
             including_default_value_fields=True,
         )
 
-    def add_labels(self, user_id: int, new_labels: List, dry_run: bool) -> Dict:
+    def add_labels(self, user_id: int, new_labels: UserLabels, dry_run: bool) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.add_label,
             user_id,

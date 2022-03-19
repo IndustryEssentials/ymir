@@ -85,7 +85,7 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    training_classes = user_labels.get_class_ids(project_in.training_keywords)
+    training_classes = user_labels.get_class_ids(names_or_aliases=project_in.training_keywords)
 
     # 2.send to controller
     try:

@@ -384,7 +384,7 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = user_labels.get_class_ids(parameters.keywords)
+        normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
     return normalized
 
 
