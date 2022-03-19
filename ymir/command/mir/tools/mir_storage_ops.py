@@ -241,7 +241,7 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
                      return_code: int = 0,
                      return_msg: str = '',
                      args: str = '',
-                     system_context: str = '') -> None:
+                     task_parameters: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message
@@ -256,7 +256,7 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
     task.return_code = return_code
     task.return_msg = return_msg
     task.args = args
-    task.system_context = system_context
+    task.task_parameters = task_parameters
 
     task.ancestor_task_id = mir_tasks.head_task_id
     mir_tasks.tasks[task.task_id].CopyFrom(task)

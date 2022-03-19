@@ -101,12 +101,12 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
 
             executor_config["gpu_id"] = gpu_ids
 
-        # task parameters
+        config = {'executor_config': executor_config}
         if task_parameters:
-            executor_config['system_context'] = task_parameters
+            config['task_context'] = {'task_parameters': task_parameters}
 
         with open(output_config_file, "w") as f:
-            yaml.dump(executor_config, f)
+            yaml.dump(config, f)
 
         return True
 

@@ -20,7 +20,9 @@ from mir.tools.errors import MirRuntimeError
 
 PRODUCER_KEY = 'producer'
 PRODUCER_NAME = 'ymir'
-SYSTEM_CONTEXT_KEY = 'system_context'
+EXECUTOR_CONFIG_KEY = 'executor_config'
+TASK_CONTEXT_KEY = 'task_context'
+TASK_CONTEXT_PARAMETERS_KEY = 'task_parameters'
 
 
 def time_it(f: Callable) -> Callable:
@@ -187,13 +189,9 @@ class ModelStorage:
     executor_config: Dict[str, Any] = field(default_factory=dict)
     task_context: Dict[str, Any] = field(default_factory=dict)
     class_names: List[str] = field(init=False)
-    system_context: str = field(default_factory=str)
 
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
-
-        if SYSTEM_CONTEXT_KEY in self.executor_config:
-            self.system_context = self.executor_config[SYSTEM_CONTEXT_KEY]
 
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
@@ -261,9 +259,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     with open(os.path.join(dest_root, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
-                                 executor_config=ymir_info_dict.get('executor_config', {}),
-                                 task_context=ymir_info_dict.get('task_context', {}),
-                                 system_context=ymir_info_dict.get(SYSTEM_CONTEXT_KEY, ''))
+                                 executor_config=ymir_info_dict.get(EXECUTOR_CONFIG_KEY, {}),
+                                 task_context=ymir_info_dict.get(TASK_CONTEXT_KEY, {}))
 
     return model_storage
 

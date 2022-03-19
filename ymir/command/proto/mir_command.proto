@@ -173,7 +173,7 @@ message Task {
     /// serialization result of arguments of this task, in yaml format
     string args = 100;
     string ancestor_task_id = 101;
-    string system_context = 102;
+    string task_parameters = 102;
 };
 
 message ModelMeta {
