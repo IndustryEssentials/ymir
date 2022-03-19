@@ -19,14 +19,8 @@ class LabelAddInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
-        conflict_rows = labels.merge_labels(label_file_dir=self._user_root,
-                                            candidate_labels=self._request.label_collection,
-                                            check_only=self._request.check_only)
-        for row in conflict_rows:
-            label = backend_pb2.Label()
-            label.id = -1
-            label.name = row[0]
-            label.aliases.extend(row[1:])
-            response.label_collection.labels.append(label)
-
+        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
+                                              new_labels=labels.parse_labels_from_proto(self._request.label_collection),
+                                              check_only=self._request.check_only)
+        response.label_collection.CopyFrom(conflict_labels.to_proto())
         return response

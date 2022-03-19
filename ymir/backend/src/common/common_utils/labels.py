@@ -1,4 +1,3 @@
-from collections import Counter
 from datetime import datetime
 import logging
 import os
@@ -126,6 +125,47 @@ class UserLabels(LabelStorage):
         return label_collection
 
 
+def merge_labels(label_storage_file: str,
+                 new_labels: UserLabels,
+                 check_only: bool = False) -> UserLabels:
+    current_labels = UserLabels(labels=get_storage_labels(label_storage_file).labels)
+    current_time = datetime.now()
+
+    conflict_labels = []
+    for label in new_labels.labels:
+        new_label = SingleLabel.parse_obj(label.dict())
+        idx = current_labels.name_to_id.get(label.name, None)
+
+        # in case any alias is in other labels.
+        conflict_alias = []
+        for alias in label.aliases:
+            alias_idx = current_labels.name_aliases_to_id.get(alias, idx)
+            if alias_idx != idx:
+                conflict_alias.append(alias)
+        if conflict_alias:
+            new_label.id = -1
+            conflict_labels.append(new_label)
+            continue
+
+        new_label.update_time = current_time
+        if idx is not None:  # update alias.
+            new_label.id = idx
+            current_labels.labels[idx] = new_label
+        else:  # insert new record.
+            new_label.id = len(current_labels.labels)
+            new_label.create_time = current_time
+            current_labels.labels.append(new_label)
+
+    if not (check_only or conflict_labels):
+        label_storage = LabelStorage(labels=current_labels.labels)
+        with open(label_storage_file, 'w') as f:
+            yaml.safe_dump(label_storage.dict(), f)
+
+    logging.info(f"conflict labels: {conflict_labels}")
+    print(f"conflict_labels: {conflict_labels}")
+    return UserLabels(labels=conflict_labels)
+
+
 def parse_labels_from_proto(label_collection: backend_pb2.LabelCollection) -> UserLabels:
     label_dict = json_format.MessageToDict(label_collection,
                                            preserving_proto_field_name=True,
@@ -158,79 +198,6 @@ def get_storage_labels(label_storage_file: str) -> LabelStorage:
         with open(label_storage_file, 'r') as f:
             obj = yaml.safe_load(f)
     return LabelStorage(**obj)
-
-
-def merge_labels(label_storage_file: str, candidate_labels: List[str], check_only: bool = False) -> List[List[str]]:
-    # TODO: too hard to read, make it simpler in another pr
-
-    # check `candidate_labels` has no duplicate
-    candidate_labels_list = [x.strip().lower().split(",") for x in candidate_labels]
-    candidates_list = [x for row in candidate_labels_list for x in row]
-    if len(candidates_list) != len(set(candidates_list)):
-        logging.error(f"conflict labels: {candidate_labels_list}")
-        return candidate_labels_list
-
-    current_time = datetime.now()
-
-    # all labels in storage file
-    existed_labels = get_storage_labels(label_storage_file=label_storage_file).labels
-    # key: label name, value: idx
-    existed_main_names_to_ids: Dict[str, int] = {label.name: idx for idx, label in enumerate(existed_labels)}
-
-    # for main names in `existed_main_names_to_ids`, update alias
-    # for new main names, add them to `candidate_labels_list_new`
-    candidate_labels_list_new: List[List[str]] = []
-    for candidate_list in candidate_labels_list:
-        main_name = candidate_list[0]
-        if main_name in existed_main_names_to_ids:  # update alias
-            idx = existed_main_names_to_ids[main_name]
-            # update `existed_labels`
-            label = existed_labels[idx]
-            label.name = candidate_list[0]
-            label.aliases = candidate_list[1:]
-            label.update_time = current_time
-        else:  # new main_names
-            candidate_labels_list_new.append(candidate_list)
-
-    # check dumplicate for `existed_labels_list`
-    existed_labels_list = []
-    for label in existed_labels:
-        existed_labels_list.append(label.name)
-        existed_labels_list.extend(label.aliases)
-    existed_labels_dups = set([k for k, v in Counter(existed_labels_list).items() if v > 1])
-    if existed_labels_dups:
-        conflict_labels = []
-        for candidate_list in candidate_labels_list:
-            if set.intersection(set(candidate_list), existed_labels_dups):  # at least one label exist.
-                conflict_labels.append(candidate_list)
-        logging.error(f"conflict labels: {conflict_labels}")
-        return conflict_labels
-
-    existed_labels_set = set(existed_labels_list)
-
-    # insert new main_names.
-    conflict_labels = []
-    for candidate_list in candidate_labels_list_new:
-        candidate_set = set(candidate_list)
-        if set.intersection(candidate_set, existed_labels_set):  # at least one label exist.
-            conflict_labels.append(candidate_list)
-            continue
-
-        existed_labels.append(
-            SingleLabel(id=len(existed_labels),
-                        name=candidate_list[0],
-                        aliases=candidate_list[1:],
-                        create_time=current_time,
-                        update_time=current_time))
-        existed_labels_set.update(candidate_set)
-
-    if not (check_only or conflict_labels):
-        label_storage = LabelStorage(labels=existed_labels)
-        with open(label_storage_file, 'w') as f:
-            yaml.safe_dump(label_storage.dict(), f)
-    if conflict_labels:
-        logging.error(f"conflict labels: {conflict_labels}")
-    return conflict_labels
 
 
 def create_empty(label_storage_file: str) -> None:
