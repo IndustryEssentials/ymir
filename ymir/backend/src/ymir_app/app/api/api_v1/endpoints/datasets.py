@@ -50,7 +50,6 @@ def batch_get_datasets(
 ) -> Any:
     ids = [int(i) for i in dataset_ids.split(",")]
     datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
-    print(datasets)
     if not datasets:
         raise DatasetNotFound()
     return {"result": datasets}
