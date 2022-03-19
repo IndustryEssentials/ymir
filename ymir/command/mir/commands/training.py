@@ -87,7 +87,7 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
     """
     logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
 
-    task_parameters = model_storage.task_context.get(mir_utils.TASK_CONTEXT_PARAMETERS_KEY, '')
+    task_parameters = model_storage.task_context.get(mir_utils.TASK_CONTEXT_PARAMETERS_KEY, '') if model_storage else ''
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                           mir_branch=src_rev_tid.rev,
                                                                           mir_task_id=src_rev_tid.tid,
@@ -247,8 +247,7 @@ class CmdTrain(base.BaseCommand):
         if not isinstance(task_parameters, str):
             raise MirRuntimeError(
                 error_code=MirCode.RC_CMD_INVALID_ARGS,
-                error_message=
-                f"invalid {mir_utils.TASK_CONTEXT_KEY} - {mir_utils.TASK_CONTEXT_PARAMETERS_KEY} in config: {config}")
+                error_message=f"invalid {mir_utils.TASK_CONTEXT_PARAMETERS_KEY} in config: {config}")
         if mir_utils.EXECUTOR_CONFIG_KEY not in config:
             raise MirRuntimeError(
                 error_code=MirCode.RC_CMD_INVALID_ARGS,
