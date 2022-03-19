@@ -38,11 +38,3 @@ def find_duplication_in_labels(user_labels: UserLabels, new_labels: List[str]) -
     new_names = [name for label in new_labels for name in label.split(",")]
 
     return list(set(names) & set(new_names))
-
-
-def convert_keywords_to_classes(user_labels: UserLabels, keywords: List[str]) -> List[int]:
-    return [user_labels.name_to_id[keyword] for keyword in keywords]
-
-
-def convert_classes_to_keywords(user_labels: UserLabels, classes: List[int]) -> List[str]:
-    return [user_labels.id_to_name[class_id] for class_id in classes]

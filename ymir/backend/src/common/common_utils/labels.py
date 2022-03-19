@@ -69,6 +69,18 @@ class UserLabels(LabelStorage):
     class Config:
         fields = {'labels': {'include': True}}
 
+    def get_class_id(self, keyword: str):
+        return self.name_to_id[keyword]
+
+    def get_class_ids(self, keywords: List[str]):
+        return [self.name_to_id[keyword] for keyword in keywords]
+
+    def get_keyword(self, class_id: int):
+        return self.id_to_name[class_id]
+
+    def get_keywords(self, class_ids: List[int]):
+        return [self.id_to_name[class_id] for class_id in class_ids]
+
 
 def labels_file_name() -> str:
     return 'labels.yaml'

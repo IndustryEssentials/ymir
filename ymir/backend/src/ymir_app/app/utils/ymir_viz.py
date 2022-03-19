@@ -6,7 +6,6 @@ from fastapi.logger import logger
 
 from app.api.errors.errors import ModelNotFound, ModelNotReady
 from app.config import settings
-from app.utils.class_ids import convert_classes_to_keywords
 from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode
 
@@ -24,11 +23,11 @@ class Asset:
         annotations = [
             {
                 "box": annotation["box"],
-                "keyword": convert_classes_to_keywords(user_labels, [annotation["class_id"]])[0],
+                "keyword": user_labels.get_keyword(annotation["class_id"]),
             }
             for annotation in res["annotations"]
         ]
-        keywords = convert_classes_to_keywords(user_labels, res["class_ids"])
+        keywords = user_labels.get_keywords(res["class_ids"])
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -55,19 +54,13 @@ class Assets:
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Assets":
-        assets = [
-            {
-                "url": get_asset_url(asset["asset_id"]),
-                "hash": asset["asset_id"],
-                "keywords": convert_classes_to_keywords(user_labels, asset["class_ids"]),
-            }
-            for asset in res["elements"]
-        ]
+        assets = [{
+            "url": get_asset_url(asset["asset_id"]),
+            "hash": asset["asset_id"],
+            "keywords": user_labels.get_keywords(asset["class_ids"]),
+        } for asset in res["elements"]]
 
-        keywords = {
-            convert_classes_to_keywords(user_labels, [class_id])[0]: count
-            for class_id, count in res["class_ids_count"].items()
-        }
+        keywords = {user_labels.get_keyword([class_id]): count for class_id, count in res["class_ids_count"].items()}
         ignored_keywords = res["ignored_labels"]
         negative_info = res["negative_info"]
         return cls(res["total"], assets, keywords, ignored_keywords, negative_info)

@@ -16,7 +16,6 @@ from app.api.errors.errors import (
 )
 from app.constants.state import ResultState
 from app.constants.state import TaskType, TrainingType
-from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.clickhouse import YmirClickHouse
 from common_utils.labels import UserLabels
@@ -86,7 +85,7 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    training_classes = convert_keywords_to_classes(user_labels, project_in.training_keywords)
+    training_classes = user_labels.get_class_ids(project_in.training_keywords)
 
     # 2.send to controller
     try:

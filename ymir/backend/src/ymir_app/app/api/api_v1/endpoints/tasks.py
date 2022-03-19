@@ -28,7 +28,6 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
-from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
@@ -385,7 +384,7 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = convert_keywords_to_classes(user_labels, parameters.keywords)
+        normalized["class_ids"] = user_labels.get_class_ids(parameters.keywords)
     return normalized
 
 
