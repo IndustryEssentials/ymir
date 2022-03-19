@@ -4,8 +4,11 @@ import logging
 import os
 from typing import Any, Dict, Iterator, List, Set
 
+from google.protobuf import json_format
 from pydantic import BaseModel, validator
 import yaml
+
+from proto import backend_pb2
 
 EXPECTED_FILE_VERSION = 1
 
@@ -103,11 +106,6 @@ class UserLabels(LabelStorage):
 
             yield label
 
-    # label: dog,puppy,pup,canine
-    def to_csvs(self) -> Iterator[str]:
-        for label in self.labels:
-            yield ','.join([label.name, *label.aliases])
-
     def find_dups(self, new_labels: Any) -> List[str]:
         if type(new_labels) is str:
             new_set = set([new_labels])
@@ -116,6 +114,27 @@ class UserLabels(LabelStorage):
         else:
             new_set = set(new_labels.name_aliases_to_id.keys())
         return list(set(self.name_aliases_to_id.keys()) & new_set)
+
+    def to_proto(self) -> backend_pb2.LabelCollection:
+        label_dict = self.dict()
+        for label in label_dict.get("labels", []):
+            label["create_time"] = datetime.timestamp(label["create_time"])
+            label["update_time"] = datetime.timestamp(label["update_time"])
+
+        label_collection = backend_pb2.LabelCollection()
+        json_format.ParseDict(label_dict, label_collection, ignore_unknown_fields=False)
+        return label_collection
+
+
+def parse_labels_from_proto(label_collection: backend_pb2.LabelCollection) -> UserLabels:
+    label_dict = json_format.MessageToDict(label_collection,
+                                           preserving_proto_field_name=True,
+                                           use_integers_for_enums=True)
+    for label in label_dict.get("labels", []):
+        label["create_time"] = datetime.fromtimestamp(label["create_time"])
+        label["update_time"] = datetime.fromtimestamp(label["update_time"])
+
+    return UserLabels.parse_obj(label_dict)
 
 
 def default_labels_file_name() -> str:

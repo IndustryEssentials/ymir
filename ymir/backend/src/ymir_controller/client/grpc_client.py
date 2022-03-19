@@ -40,12 +40,19 @@ def _build_cmd_create_repo_req(args: Dict) -> backend_pb2.GeneralReq:
 
 
 def _build_cmd_add_labels_req(args: Dict) -> backend_pb2.GeneralReq:
-    if "labels" not in args:
-        raise RuntimeError("private_labels not set.")
+    label_list = args["labels"].split(';')
+
+    label = backend_pb2.Label()
+    label.id = -1
+    label.name = label_list[0]
+    label.aliases.extend(label_list[1:])
+
+    label_collection = backend_pb2.LabelCollection()
+    label_collection.labels.append(label)
     return invoker_call.make_cmd_request(user_id=args["user"],
                                          repo_id=args["repo"],
                                          task_id=args["tid"],
-                                         private_labels=args["labels"].split(';'),
+                                         label_collection=label_collection,
                                          req_type=backend_pb2.CMD_LABEL_ADD)
 
 

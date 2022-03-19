@@ -9,15 +9,6 @@ def create_label():
     })
 
 
-class TestKeywordsToLabels:
-    def test_labels_to_csvs(self):
-        labels = UserLabels.parse_obj(dict(labels=[create_label() for i in range(3)]))
-        csvs = list(labels.to_csvs())
-
-        for i in range(3):
-            assert labels.labels[i].name == csvs[i].split(",")[0]
-
-
 class TestFindDuplicateLabels:
     def test_find_duplication_in_labels(self):
         user_labels = UserLabels.parse_obj(

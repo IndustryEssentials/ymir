@@ -20,7 +20,7 @@ class LabelAddInvoker(BaseMirControllerInvoker):
 
         response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         conflict_rows = labels.merge_labels(label_file_dir=self._user_root,
-                                            candidate_labels=self._request.private_labels,
+                                            candidate_labels=self._request.label_collection,
                                             check_only=self._request.check_only)
         for row in conflict_rows:
             label = backend_pb2.Label()
