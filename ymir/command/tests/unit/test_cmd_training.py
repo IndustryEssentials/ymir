@@ -9,7 +9,7 @@ import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils, utils as mir_utils
+from mir.tools import hash_utils, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -198,7 +198,7 @@ class TestCmdTraining(unittest.TestCase):
             executor_config = yaml.safe_load(f.read())
         executor_config['class_names'] = ['airplane']
         executor_config['gpu_id'] = '0'
-        config = {mir_utils.EXECUTOR_CONFIG_KEY: executor_config}
+        config = {mir_settings.EXECUTOR_CONFIG_KEY: executor_config}
         with open(self._config_file, 'w') as f:
             yaml.dump(config, f)
 
@@ -211,9 +211,10 @@ class TestCmdTraining(unittest.TestCase):
         return MirCode.RC_OK
 
     def __mock_process_model_storage(*args, **kwargs):
-        return ("xyz", 0.9, mir_utils.ModelStorage(models=['a'],
-                                                   executor_config={'class_names': ['person', 'cat']},
-                                                   task_context={mir_utils.PRODUCER_KEY: mir_utils.PRODUCER_NAME}))
+        return ("xyz", 0.9,
+                mir_utils.ModelStorage(models=['a'],
+                                       executor_config={'class_names': ['person', 'cat']},
+                                       task_context={mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME}))
 
     # public: test cases
     @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)

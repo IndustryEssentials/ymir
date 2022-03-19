@@ -12,7 +12,7 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, context, data_exporter, mir_storage_ops, revs_parser
-from mir.tools import utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -87,7 +87,8 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
     """
     logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
 
-    task_parameters = model_storage.task_context.get(mir_utils.TASK_CONTEXT_PARAMETERS_KEY, '') if model_storage else ''
+    task_parameters = model_storage.task_context.get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY,
+                                                     '') if model_storage else ''
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                           mir_branch=src_rev_tid.rev,
                                                                           mir_task_id=src_rev_tid.tid,
@@ -187,7 +188,7 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
 
 
 def _get_task_parameters(config: dict) -> str:
-    return config.get(mir_utils.TASK_CONTEXT_KEY, {}).get(mir_utils.TASK_CONTEXT_PARAMETERS_KEY, '')
+    return config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
 
 
 class CmdTrain(base.BaseCommand):
@@ -247,13 +248,13 @@ class CmdTrain(base.BaseCommand):
         if not isinstance(task_parameters, str):
             raise MirRuntimeError(
                 error_code=MirCode.RC_CMD_INVALID_ARGS,
-                error_message=f"invalid {mir_utils.TASK_CONTEXT_PARAMETERS_KEY} in config: {config}")
-        if mir_utils.EXECUTOR_CONFIG_KEY not in config:
+                error_message=f"invalid {mir_settings.TASK_CONTEXT_PARAMETERS_KEY} in config: {config}")
+        if mir_settings.EXECUTOR_CONFIG_KEY not in config:
             raise MirRuntimeError(
                 error_code=MirCode.RC_CMD_INVALID_ARGS,
-                error_message=f"invalid config file: {config_file}, needs: {mir_utils.EXECUTOR_CONFIG_KEY}")
+                error_message=f"invalid config file: {config_file}, needs: {mir_settings.EXECUTOR_CONFIG_KEY}")
 
-        executor_config = config[mir_utils.EXECUTOR_CONFIG_KEY]
+        executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
 
         if 'class_names' not in executor_config:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -428,8 +429,8 @@ class CmdTrain(base.BaseCommand):
             'src_revs': src_revs,
             'dst_rev': dst_rev,
             'executor': executor,
-            mir_utils.PRODUCER_KEY: mir_utils.PRODUCER_NAME,
-            mir_utils.TASK_CONTEXT_PARAMETERS_KEY: task_parameters
+            mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
+            mir_settings.TASK_CONTEXT_PARAMETERS_KEY: task_parameters
         }
 
         # save model

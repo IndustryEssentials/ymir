@@ -9,7 +9,7 @@ from typing import Any, Tuple, Optional
 import yaml
 
 from mir.commands import base
-from mir.tools import utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -261,7 +261,7 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
     with open(config_file, 'r') as f:
         config = yaml.safe_load(f)
 
-    orig_executor_config = config[mir_utils.EXECUTOR_CONFIG_KEY]
+    orig_executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
 
     for k, v in kwargs.items():
         orig_executor_config[k] = v

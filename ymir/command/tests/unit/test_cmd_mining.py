@@ -9,7 +9,7 @@ from google.protobuf.json_format import ParseDict
 import yaml
 
 from mir.commands.mining import CmdMining
-from mir.tools import utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
 
@@ -67,7 +67,7 @@ class TestMiningCmd(unittest.TestCase):
         with open('tests/assets/mining-template.yaml', 'r') as f:
             config = yaml.safe_load(f)
         with open(self._config_file, 'w') as f:
-            yaml.safe_dump({mir_utils.EXECUTOR_CONFIG_KEY: config}, f)
+            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: config}, f)
 
     def _prepare_mir_repo(self):
         # init repo

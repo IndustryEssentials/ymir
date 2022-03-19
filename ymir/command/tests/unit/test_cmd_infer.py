@@ -7,7 +7,7 @@ from unittest import mock
 import yaml
 
 from mir.commands.infer import CmdInfer
-from mir.tools import utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -87,7 +87,7 @@ class TestCmdInfer(unittest.TestCase):
         with open(os.path.join(test_assets_root, 'infer-template.yaml'), 'r') as f:
             executor_config = yaml.safe_load(f)
         with open(self._config_file, 'w') as f:
-            yaml.safe_dump({mir_utils.EXECUTOR_CONFIG_KEY: executor_config}, f)
+            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config}, f)
 
     @staticmethod
     def _test_assets_root() -> str:

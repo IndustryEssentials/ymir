@@ -13,16 +13,9 @@ from PIL import Image, UnidentifiedImageError
 import yaml
 
 from mir import scm
-from mir.tools import hash_utils
+from mir.tools import hash_utils, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-
-
-PRODUCER_KEY = 'producer'
-PRODUCER_NAME = 'ymir'
-EXECUTOR_CONFIG_KEY = 'executor_config'
-TASK_CONTEXT_KEY = 'task_context'
-TASK_CONTEXT_PARAMETERS_KEY = 'task_parameters'
 
 
 def time_it(f: Callable) -> Callable:
@@ -259,8 +252,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     with open(os.path.join(dest_root, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
-                                 executor_config=ymir_info_dict.get(EXECUTOR_CONFIG_KEY, {}),
-                                 task_context=ymir_info_dict.get(TASK_CONTEXT_KEY, {}))
+                                 executor_config=ymir_info_dict.get(mir_settings.EXECUTOR_CONFIG_KEY, {}),
+                                 task_context=ymir_info_dict.get(mir_settings.TASK_CONTEXT_KEY, {}))
 
     return model_storage
 
