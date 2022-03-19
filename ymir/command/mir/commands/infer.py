@@ -268,7 +268,7 @@ def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -
 
     executor_config = orig_executor_config.copy()
     executor_config['gpu_id'] = mir_utils.map_gpus_zero_index(config.get('gpu_id', ''))
-    logging.info(f"executor config: {executor_config}")
+    logging.info(f"container config: {executor_config}")
 
     with open(dst_config_file, 'w') as f:
         yaml.dump(executor_config, f)
