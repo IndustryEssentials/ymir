@@ -258,19 +258,21 @@ def _get_max_boxes(config_file: str) -> int:
 # public: general
 def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -> dict:
     with open(config_file, 'r') as f:
-        infer_config = yaml.safe_load(f)
+        config = yaml.safe_load(f)
+
+    orig_executor_config = config[mir_utils.EXECUTOR_CONFIG_KEY]
 
     for k, v in kwargs.items():
-        infer_config[k] = v
+        orig_executor_config[k] = v
 
-    container_config = infer_config.copy()
-    container_config['gpu_id'] = mir_utils.map_gpus_zero_index(infer_config.get('gpu_id', ''))
-    logging.info(f"container config: {container_config}")
+    executor_config = orig_executor_config.copy()
+    executor_config['gpu_id'] = mir_utils.map_gpus_zero_index(config.get('gpu_id', ''))
+    logging.info(f"executor config: {executor_config}")
 
     with open(dst_config_file, 'w') as f:
-        yaml.dump(container_config, f)
+        yaml.dump(executor_config, f)
 
-    return infer_config
+    return orig_executor_config
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,

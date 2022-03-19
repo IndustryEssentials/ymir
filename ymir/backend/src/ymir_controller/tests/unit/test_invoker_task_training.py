@@ -153,7 +153,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_config["class_names"] = ["frisbee", "car"]
         training_config["gpu_id"] = '1'
-        self.assertDictEqual(training_config, config)
+        self.assertDictEqual({'executor_config': training_config}, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
 

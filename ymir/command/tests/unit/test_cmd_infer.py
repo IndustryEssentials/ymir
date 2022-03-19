@@ -3,11 +3,11 @@ import shutil
 import tarfile
 import unittest
 from unittest import mock
-from mir.tools.utils import ModelStorage
 
 import yaml
 
 from mir.commands.infer import CmdInfer
+from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -68,9 +68,9 @@ class TestCmdInfer(unittest.TestCase):
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
         training_config['class_names'] = ['person', 'cat']
 
-        model_storage = ModelStorage(models=['model.params', 'model.json'],
-                                     executor_config=training_config,
-                                     task_context={'src_revs': 'master', 'dst_rev': 'a'})
+        model_storage = mir_utils.ModelStorage(models=['model.params', 'model.json'],
+                                               executor_config=training_config,
+                                               task_context={'src_revs': 'master', 'dst_rev': 'a'})
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
             yaml.dump(model_storage.as_dict(), f)
@@ -83,7 +83,11 @@ class TestCmdInfer(unittest.TestCase):
 
     def _prepare_config_file(self):
         test_assets_root = TestCmdInfer._test_assets_root()
-        shutil.copyfile(src=os.path.join(test_assets_root, 'infer-template.yaml'), dst=self._config_file)
+        # shutil.copyfile(src=os.path.join(test_assets_root, 'infer-template.yaml'), dst=self._config_file)
+        with open(os.path.join(test_assets_root, 'infer-template.yaml'), 'r') as f:
+            executor_config = yaml.safe_load(f)
+        with open(self._config_file, 'w') as f:
+            yaml.safe_dump({mir_utils.EXECUTOR_CONFIG_KEY: executor_config}, f)
 
     @staticmethod
     def _test_assets_root() -> str:

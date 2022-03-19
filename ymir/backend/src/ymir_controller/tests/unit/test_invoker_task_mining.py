@@ -135,7 +135,7 @@ class TestInvokerTaskMining(unittest.TestCase):
         output_config = os.path.join(working_dir_0, 'task_config.yaml')
         with open(output_config, "r") as f:
             config = yaml.safe_load(f)
-        self.assertDictEqual(mining_config, config)
+        self.assertDictEqual({'executor_config': mining_config}, config)
 
         asset_cache_dir = os.path.join(self._user_root, 'mining_assset_cache')
         mining_cmd = ("mir mining --root {0} --dst-rev {1}@{1} -w {2} --model-location {3} --media-location {3} "
