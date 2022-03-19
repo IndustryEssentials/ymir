@@ -195,9 +195,10 @@ class TestCmdTraining(unittest.TestCase):
 
         shutil.copyfile('tests/assets/training-template.yaml', self._config_file)
         with open(self._config_file, 'r') as f:
-            config = yaml.safe_load(f.read())
-        config['class_names'] = ['airplane']
-        config['gpu_id'] = '0'
+            executor_config = yaml.safe_load(f.read())
+        executor_config['class_names'] = ['airplane']
+        executor_config['gpu_id'] = '0'
+        config = {mir_utils.EXECUTOR_CONFIG_KEY: executor_config}
         with open(self._config_file, 'w') as f:
             yaml.dump(config, f)
 
