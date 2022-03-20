@@ -150,6 +150,7 @@ def merge_labels(label_storage_file: str,
         new_label.update_time = current_time
         if idx is not None:  # update alias.
             new_label.id = idx
+            new_label.create_time = current_labels.labels[idx].create_time
             current_labels.labels[idx] = new_label
         else:  # insert new record.
             new_label.id = len(current_labels.labels)

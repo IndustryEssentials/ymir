@@ -54,10 +54,16 @@ def create_keywords(
     """
     Batch create given keywords and aliases to keywords list
     """
+    new_user_labels = UserLabels(labels=keywords_input.keywords)
+    dups = user_labels.find_dups(new_user_labels)
+    if dups:
+        logger.info(f"find dups in new_user_labels {new_user_labels}")
+        return {"result": {"failed": dups}}
+
     return process_update_labels(
         user_id=current_user.id,
         user_labels=user_labels,
-        new_labels=keywords_input.keywords,
+        new_user_labels=new_user_labels,
         dry_run=keywords_input.dry_run,
         controller_client=controller_client,
         cache=cache,
@@ -78,10 +84,11 @@ def update_keyword_aliases(
         user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     updated_label = SingleLabel(name=keyword, aliases=aliases_in.aliases)
+    new_user_labels = UserLabels(labels=[updated_label])
     return process_update_labels(
         user_id=current_user.id,
         user_labels=user_labels,
-        new_labels=[updated_label],
+        new_user_labels=new_user_labels,
         dry_run=False,
         controller_client=controller_client,
         cache=cache,
@@ -99,17 +106,12 @@ def paginate(items: List[Any], offset: int = 0, limit: Optional[int] = None) -> 
 def process_update_labels(
     user_id: int,
     user_labels: UserLabels,
-    new_labels: List[SingleLabel],
+    new_user_labels: UserLabels,
     dry_run: bool,
     controller_client: ControllerClient,
     cache: CacheClient,
 ) -> Dict:
-    new_user_labels = UserLabels(labels=new_labels)
     logger.info(f"old labels: {user_labels.json()}\nnew labels: {new_user_labels.json()}")
-    dups = user_labels.find_dups(new_user_labels)
-    if dups:
-        return {"result": {"failed": dups}}
-
     resp = controller_client.add_labels(user_id, new_user_labels, dry_run)
     logger.info(f"[controller] response for update label: {resp}")
 
