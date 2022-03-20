@@ -129,17 +129,15 @@ class CmdInfer(base.BaseCommand):
         with open(config_file, 'r') as f:
             config = yaml.safe_load(f)
 
-        prepare_config_file(
-            config=config,
-            dst_config_file=work_config_file,
-            class_names=class_names,
-            task_id=task_id,
-            model_params_path=[os.path.join('/in/model', name) for name in model_names],
-            run_infer=run_infer,
-            run_mining=run_mining)
+        prepare_config_file(config=config,
+                            dst_config_file=work_config_file,
+                            class_names=class_names,
+                            task_id=task_id,
+                            model_params_path=[os.path.join('/in/model', name) for name in model_names],
+                            run_infer=run_infer,
+                            run_mining=run_mining)
 
-        available_gpu_id: str = config.get(mir_settings.TASK_CONTEXT_KEY,
-                                                           {}).get('available_gpu_id', '')
+        available_gpu_id: str = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
 
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
