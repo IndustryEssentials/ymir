@@ -126,14 +126,20 @@ class CmdInfer(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                                   error_message=f"empty class names in model: {model_hash}")
 
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+
         executor_config = prepare_config_file(
-            config_file=config_file,
+            config=config,
             dst_config_file=work_config_file,
             class_names=class_names,
             task_id=task_id,
             model_params_path=[os.path.join('/in/model', name) for name in model_names],
             run_infer=run_infer,
             run_mining=run_mining)
+
+        available_gpu_id_from_controller: str = config.get(mir_settings.TASK_CONTEXT_KEY,
+                                                           {}).get('available_gpu_id', '')
 
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
@@ -144,7 +150,7 @@ class CmdInfer(base.BaseCommand):
                        executor_instance=executor_instance,
                        shm_size=shm_size,
                        task_type=task_id,
-                       gpu_id=executor_config.get('gpu_id', ''))
+                       gpu_id=available_gpu_id_from_controller)
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
@@ -257,23 +263,25 @@ def _get_max_boxes(config_file: str) -> int:
 
 # might used both by mining and infer
 # public: general
-def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -> dict:
-    with open(config_file, 'r') as f:
-        config = yaml.safe_load(f)
-
-    orig_executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
+def prepare_config_file(config: str, dst_config_file: str, **kwargs: Any) -> dict:
+    executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
+    task_context = config.get(mir_settings.TASK_CONTEXT_KEY, {})
+    available_gpu_id_from_controller: str = task_context.get('available_gpu_id', '')
 
     for k, v in kwargs.items():
-        orig_executor_config[k] = v
+        executor_config[k] = v
 
-    executor_config = orig_executor_config.copy()
-    executor_config['gpu_id'] = mir_utils.map_gpus_zero_index(orig_executor_config.get('gpu_id', ''))
+    if available_gpu_id_from_controller:
+        # if call from controller, set gpu_id according to available_gpu_id
+        executor_config['gpu_id'] = mir_utils.map_gpus_zero_index(available_gpu_id_from_controller)
+    # if call from command, there's no available_gpu_id, do nothing
+
     logging.info(f"container config: {executor_config}")
 
     with open(dst_config_file, 'w') as f:
         yaml.dump(executor_config, f)
 
-    return orig_executor_config
+    return executor_config
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,

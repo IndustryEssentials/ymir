@@ -152,8 +152,9 @@ class TestInvokerTaskTraining(unittest.TestCase):
             config = yaml.safe_load(f)
 
         training_config["class_names"] = ["frisbee", "car"]
-        training_config["gpu_id"] = '1'
-        self.assertDictEqual({'executor_config': training_config}, config)
+        expected_config = {'executor_config': training_config, 'task_context': {'available_gpu_id': '1'}}
+        logging.info(f"xxx config: {config}")  # for test
+        self.assertDictEqual(expected_config, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
 

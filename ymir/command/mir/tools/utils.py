@@ -288,7 +288,10 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
 
 
 def map_gpus_zero_index(gpu_id: str) -> str:
-    gpu_count = len(gpu_id.split(',')) if gpu_id else 0
+    if gpu_id == '-1' or not gpu_id:
+        return ''
+
+    gpu_count = len(gpu_id.split(','))
     return ','.join([str(i) for i in range(gpu_count)])
 
 

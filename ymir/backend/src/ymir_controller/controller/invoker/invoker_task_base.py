@@ -89,6 +89,8 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     def gen_executor_config_lock_gpus(repo_root: str, req_executor_config: str, in_class_ids: List,
                                       task_parameters: str, output_config_file: str) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
+        task_context = {}
+
         if in_class_ids:
             label_file_dir = os.path.join(repo_root, '.mir')
             executor_config["class_names"] = labels.get_main_labels_by_ids(label_file_dir=label_file_dir,
@@ -99,11 +101,14 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             if not gpu_ids:
                 return False
 
-            executor_config["gpu_id"] = gpu_ids
+            task_context["available_gpu_id"] = gpu_ids
+        else:
+            task_context["available_gpu_id"] = '-1'
 
-        config = {'executor_config': executor_config}
         if task_parameters:
-            config['task_context'] = {'task_parameters': task_parameters}
+            task_context['task_parameters'] = task_parameters
+
+        config = {'executor_config': executor_config, 'task_context': task_context}
 
         with open(output_config_file, "w") as f:
             yaml.dump(config, f)
