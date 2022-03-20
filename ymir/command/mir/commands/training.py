@@ -254,13 +254,10 @@ class CmdTrain(base.BaseCommand):
 
         executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
 
-        if 'class_names' not in executor_config:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"no class_names in config file: {config_file}")
-        class_names = executor_config['class_names']
+        class_names = executor_config.get('class_names', [])
         if not class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"empty class_names in config file: {config_file}")
+                                  error_message=f"no class_names in config file: {config_file}")
         if len(set(class_names)) != len(class_names):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"dumplicate class names in class_names: {class_names}")
