@@ -392,7 +392,7 @@ class CmdTrain(base.BaseCommand):
                                  index_prefix='/in/test')
 
         logging.info("starting train docker container")
-        
+
         available_gpu_id_from_controller = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
 
         # generate configs
