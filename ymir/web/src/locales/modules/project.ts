@@ -41,6 +41,17 @@ const project = {
   'project.add.form.desc': { en: 'Description', cn: '备注', },
   'project.update.submit': { en: 'Update Project', cn: '设置项目', },
   'project.add.submit': { en: 'Create Project', cn: '创建项目', },
+  'project.iteration.stage.ready': { en: '', cn: '准备挖掘数据', },
+  'project.iteration.stage.mining': { en: '', cn: '数据挖掘', },
+  'project.iteration.stage.label': { en: '', cn: '数据标注', },
+  'project.iteration.stage.merge': { en: '', cn: '更新训练集', },
+  'project.iteration.stage.training': { en: '', cn: '模型训练', },
+  'project.iteration.stage.next': { en: '', cn: '开启下一轮迭代', },
+  'project.iteration.stage.ready.react': { en: 'Create Project', cn: '重新处理', },
+  'project.iteration.stage.mining.react': { en: 'Create Project', cn: '重新挖掘', },
+  'project.iteration.stage.label.react': { en: 'Create Project', cn: '重新标注', },
+  'project.iteration.stage.merge.react': { en: 'Create Project', cn: '重新更新', },
+  'project.iteration.stage.training.react': { en: 'Create Project', cn: '重新训练', },
 }
 
 export default project

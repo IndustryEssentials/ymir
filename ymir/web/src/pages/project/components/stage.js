@@ -1,24 +1,38 @@
-import { Button, Col, Row } from "antd"
+import { Button, Col, Row, Space } from "antd"
 import { connect } from "dva"
 
-function Stage({}) {
+import t from '@/utils/t'
+import { states } from '@/constants/dataset'
+import s from './iteration.less'
+
+const stageStates = {
+  [states.READY]: 'project.stage.state.ready',
+  [states.VALID]: 'project.stage.state.valid',
+  [states.INVALID]: 'project.stage.state.invalid',
+}
+
+function Stage({ stage, end = false }) {
+  console.log('stage: ', stage, end)
+  
+  function skip() {}
   return (
     <div className={s.stage}>
-    <Row>
-      <Col flex={'80px'}>1</Col>
-      <Col>
-        <Space>
-          <Button>step</Button> <Button>reAct</Button>
-        </Space>
-      </Col>
-      <Col flex={1}>line</Col>
-    </Row>
-    <Row>
-      <Col flex={'80px'}>&nbsp;</Col>
-      <Col flex={1}>
-        state, <span onClick={}>skip</span>
-      </Col>
-    </Row>
+      <Row className={s.row} align='middle'>
+        <Col flex={"30px"}><span className={s.num}>{stage.id}</span></Col>
+        <Col>
+          <Space>
+            <Button className={s.act} type='primary'>{t(stage.act)}</Button> 
+            {stage.react ? <Button className={s.react}>{t(stage.react)}</Button> : null }
+          </Space>
+        </Col>
+        <Col className={s.lineContainer} hidden={end} flex={1}><span className={s.line}></span></Col>
+      </Row>
+      <Row className={s.row}>
+        <Col flex={"30px"}>&nbsp;</Col>
+        <Col className={s.state} flex={1}>
+          state, <span className={s.skip} onClick={() => skip()}>skip</span>
+        </Col>
+      </Row>
     </div>
   )
 }

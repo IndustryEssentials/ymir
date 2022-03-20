@@ -1,5 +1,3 @@
-import t from '@/utils/t'
-
 export const TASKTYPES = Object.freeze({
   TRAINING: 1,
   MINING: 2,
