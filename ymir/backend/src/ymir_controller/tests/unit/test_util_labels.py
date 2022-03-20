@@ -106,7 +106,8 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected, actual=labels.get_storage_labels(self._label_storage_file).labels)
+        self._check_result(expected=expected,
+                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
 
         # a unchanged, m with a conflicted alias hh, so all merge is ignored
         # no change will made to storage file
@@ -128,7 +129,8 @@ class TestLabelFileHandler(unittest.TestCase):
                                               check_only=False)
         conflict_labels_expected = labels.UserLabels.parse_obj({'labels': [{'name': 'm', 'aliases': ['hh']}]})
         self.assertDictEqual(conflict_labels_expected.dict(), conflict_labels.dict())
-        self._check_result(expected=expected, actual=labels.get_storage_labels(self._label_storage_file).labels)
+        self._check_result(expected=expected,
+                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
 
         # a: reset aliases, h: reset aliases, x: add new, z: unchanged
         candidate_labels_3 = labels.UserLabels.parse_obj({
@@ -161,7 +163,8 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected, actual=labels.get_storage_labels(self._label_storage_file).labels)
+        self._check_result(expected=expected,
+                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
 
         # h: reset aliases with conflict, so all merge is ignored, storage file unchanged
         # candidate_labels = ["h,a"]
@@ -171,7 +174,8 @@ class TestLabelFileHandler(unittest.TestCase):
                                               check_only=False)
         conflict_labels_expected = labels.UserLabels.parse_obj({'labels': [{'name': 'h', 'aliases': ['a']}]})
         self.assertDictEqual(conflict_labels_expected.dict(), conflict_labels.dict())
-        self._check_result(expected=expected, actual=labels.get_storage_labels(self._label_storage_file).labels)
+        self._check_result(expected=expected,
+                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
 
         # checkonly, wants to add c
         # candidate_labels = ['c,cc,ccc']
@@ -180,7 +184,8 @@ class TestLabelFileHandler(unittest.TestCase):
                                               new_labels=candidate_labels_5,
                                               check_only=True)
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected, actual=labels.get_storage_labels(self._label_storage_file).labels)
+        self._check_result(expected=expected,
+                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
 
         # add again
         # candidate_labels = ['c,cc,ccc']
@@ -205,7 +210,8 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected, actual=labels.get_storage_labels(self._label_storage_file).labels)
+        self._check_result(expected=expected,
+                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
 
         # add label with head and tail spaces
         candidate_labels_7 = labels.UserLabels.parse_obj(
@@ -237,4 +243,5 @@ class TestLabelFileHandler(unittest.TestCase):
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected, actual=labels.get_storage_labels(self._label_storage_file).labels)
+        self._check_result(expected=expected,
+                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)

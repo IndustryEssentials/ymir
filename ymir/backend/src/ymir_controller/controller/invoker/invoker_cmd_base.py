@@ -46,7 +46,7 @@ class BaseMirControllerInvoker(ABC):
             self._user_id = user_id
             self._user_root = os.path.join(sandbox_root, user_id)
             self._label_storage_file = os.path.join(self._user_root, labels.default_labels_file_name())
-            self._user_labels = labels.UserLabels(labels=labels.get_storage_labels(self._label_storage_file).labels)
+            self._user_labels = labels.get_user_labels_from_storage(self._label_storage_file)
 
         # check repo_id
         repo_id = request.repo_id

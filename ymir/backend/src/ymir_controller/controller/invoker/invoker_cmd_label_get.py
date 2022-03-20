@@ -1,4 +1,3 @@
-from common_utils import labels
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import utils, checker
 from id_definition.error_codes import CTLResponseCode
@@ -18,9 +17,6 @@ class LabelGetInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        all_labels = labels.UserLabels(labels=labels.get_storage_labels(
-            label_storage_file=self._label_storage_file).labels)
-
         response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
-        response.label_collection.CopyFrom(all_labels.to_proto())
+        response.label_collection.CopyFrom(self._user_labels.to_proto())
         return response

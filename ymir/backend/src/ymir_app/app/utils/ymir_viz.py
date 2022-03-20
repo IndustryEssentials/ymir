@@ -23,7 +23,7 @@ class Asset:
         annotations = [
             {
                 "box": annotation["box"],
-                "keyword": user_labels.get_main_name(annotation["class_id"]),
+                "keyword": user_labels.get_main_names(annotation["class_id"]),
             }
             for annotation in res["annotations"]
         ]
@@ -60,7 +60,7 @@ class Assets:
             "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
         } for asset in res["elements"]]
 
-        keywords = {user_labels.get_main_name([class_id]): count for class_id, count in res["class_ids_count"].items()}
+        keywords = {user_labels.get_main_names([class_id]): count for class_id, count in res["class_ids_count"].items()}
         ignored_keywords = res["ignored_labels"]
         negative_info = res["negative_info"]
         return cls(res["total"], assets, keywords, ignored_keywords, negative_info)

@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 import os
-from typing import Any, Dict, Iterator, List, Set
+from typing import Any, Dict, Iterator, List, Set, Union
 
 from google.protobuf import json_format
 from pydantic import BaseModel, validator
@@ -76,17 +76,21 @@ class UserLabels(LabelStorage):
     class Config:
         fields = {'labels': {'include': True}}
 
-    def get_class_id(self, name_or_aliaes: str):
-        return self.name_aliases_to_id[name_or_aliaes]
+    def get_class_ids(self, names_or_aliases: Union[str, List[str]]):
+        if type(names_or_aliases) is str:
+            return self.name_aliases_to_id[names_or_aliases]
+        elif type(names_or_aliases) is list:
+            return [self.name_aliases_to_id[name_or_aliaes] for name_or_aliaes in names_or_aliases]
+        else:
+            raise ValueError(f"unsupported type: {type(names_or_aliases)}")
 
-    def get_class_ids(self, names_or_aliases: List[str]):
-        return [self.name_aliases_to_id[name_or_aliaes] for name_or_aliaes in names_or_aliases]
-
-    def get_main_name(self, class_id: int):
-        return self.id_to_name[class_id]
-
-    def get_main_names(self, class_ids: List[int]):
-        return [self.id_to_name[class_id] for class_id in class_ids]
+    def get_main_names(self, class_ids: Union[int, List[int]]):
+        if type(class_ids) is int:
+            return self.id_to_name[class_ids]
+        elif type(class_ids) is list:
+            return [self.id_to_name[class_id] for class_id in class_ids]
+        else:
+            raise ValueError(f"unsupported type: {type(class_ids)}")
 
     # keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     def filter_labels(
@@ -100,17 +104,15 @@ class UserLabels(LabelStorage):
             required_ids = self.get_class_ids(names_or_aliases=required_name_aliaes)
 
         for label in self.labels:
-            if required_ids is not None and label.id not in required_ids:
-                continue
-
-            yield label
+            if required_ids is None or label.id in required_ids:
+                yield label
 
     def find_dups(self, new_labels: Any) -> List[str]:
         if type(new_labels) is str:
             new_set = set([new_labels])
         elif type(new_labels) is list:
             new_set = set(new_labels)
-        else:
+        else:  # Type of UserLabels.
             new_set = set(new_labels.name_aliases_to_id.keys())
         return list(set(self.name_aliases_to_id.keys()) & new_set)
 
@@ -128,7 +130,7 @@ class UserLabels(LabelStorage):
 def merge_labels(label_storage_file: str,
                  new_labels: UserLabels,
                  check_only: bool = False) -> UserLabels:
-    current_labels = UserLabels(labels=get_storage_labels(label_storage_file).labels)
+    current_labels = get_user_labels_from_storage(label_storage_file)
     current_time = datetime.now()
 
     conflict_labels = []
@@ -182,12 +184,12 @@ def default_labels_file_name() -> str:
     return 'labels.yaml'
 
 
-def get_storage_labels(label_storage_file: str) -> LabelStorage:
+def get_user_labels_from_storage(label_storage_file: str) -> UserLabels:
     """
     get all labels from label storage file
 
     Returns:
-    LabelStorage: all labels
+    UserLabels: all labels
 
     Raises:
         FileNotFoundError: if label storage file not found
@@ -198,7 +200,7 @@ def get_storage_labels(label_storage_file: str) -> LabelStorage:
     if os.path.isfile(label_storage_file):
         with open(label_storage_file, 'r') as f:
             obj = yaml.safe_load(f)
-    return LabelStorage(**obj)
+    return UserLabels(labels=LabelStorage(**obj).labels)
 
 
 def create_empty(label_storage_file: str) -> None:
