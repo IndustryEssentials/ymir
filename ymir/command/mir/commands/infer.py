@@ -129,7 +129,7 @@ class CmdInfer(base.BaseCommand):
         with open(config_file, 'r') as f:
             config = yaml.safe_load(f)
 
-        executor_config = prepare_config_file(
+        prepare_config_file(
             config=config,
             dst_config_file=work_config_file,
             class_names=class_names,
@@ -263,7 +263,7 @@ def _get_max_boxes(config_file: str) -> int:
 
 # might used both by mining and infer
 # public: general
-def prepare_config_file(config: str, dst_config_file: str, **kwargs: Any) -> dict:
+def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> None:
     executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
     task_context = config.get(mir_settings.TASK_CONTEXT_KEY, {})
     available_gpu_id_from_controller: str = task_context.get('available_gpu_id', '')
@@ -280,8 +280,6 @@ def prepare_config_file(config: str, dst_config_file: str, **kwargs: Any) -> dic
 
     with open(dst_config_file, 'w') as f:
         yaml.dump(executor_config, f)
-
-    return executor_config
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
