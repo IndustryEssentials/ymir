@@ -135,7 +135,8 @@ class TestInvokerTaskMining(unittest.TestCase):
         output_config = os.path.join(working_dir_0, 'task_config.yaml')
         with open(output_config, "r") as f:
             config = yaml.safe_load(f)
-        expected_config = {'executor_config': mining_config, 'task_context': {'available_gpu_id': '-1'}}
+        mining_config['gpu_id'] = ''
+        expected_config = {'executor_config': mining_config, 'task_context': {'available_gpu_id': ''}}
         self.assertDictEqual(expected_config, config)
 
         asset_cache_dir = os.path.join(self._user_root, 'mining_assset_cache')

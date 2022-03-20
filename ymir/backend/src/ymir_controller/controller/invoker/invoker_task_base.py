@@ -96,14 +96,17 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             executor_config["class_names"] = labels.get_main_labels_by_ids(label_file_dir=label_file_dir,
                                                                            type_ids=in_class_ids)
         # when gpu_count > 0, use gpu model
-        if executor_config["gpu_count"] > 0:
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(executor_config["gpu_count"], lock_gpu=True)
+        gpu_count = executor_config["gpu_count"]
+        if gpu_count > 0:
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
             if not gpu_ids:
                 return False
 
             task_context["available_gpu_id"] = gpu_ids
+            executor_config['gpu_id'] = ','.join([str(i) for i in range(gpu_count)])
         else:
-            task_context["available_gpu_id"] = '-1'
+            task_context["available_gpu_id"] = ''
+            executor_config['gpu_id'] = ''
 
         if task_parameters:
             task_context['task_parameters'] = task_parameters

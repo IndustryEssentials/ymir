@@ -138,7 +138,7 @@ class CmdInfer(base.BaseCommand):
             run_infer=run_infer,
             run_mining=run_mining)
 
-        available_gpu_id_from_controller: str = config.get(mir_settings.TASK_CONTEXT_KEY,
+        available_gpu_id: str = config.get(mir_settings.TASK_CONTEXT_KEY,
                                                            {}).get('available_gpu_id', '')
 
         run_docker_cmd(asset_path=media_path,
@@ -150,7 +150,7 @@ class CmdInfer(base.BaseCommand):
                        executor_instance=executor_instance,
                        shm_size=shm_size,
                        task_type=task_id,
-                       gpu_id=available_gpu_id_from_controller)
+                       gpu_id=available_gpu_id)
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
@@ -265,16 +265,9 @@ def _get_max_boxes(config_file: str) -> int:
 # public: general
 def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> None:
     executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
-    task_context = config.get(mir_settings.TASK_CONTEXT_KEY, {})
-    available_gpu_id_from_controller: str = task_context.get('available_gpu_id', '')
 
     for k, v in kwargs.items():
         executor_config[k] = v
-
-    if available_gpu_id_from_controller:
-        # if call from controller, set gpu_id according to available_gpu_id
-        executor_config['gpu_id'] = mir_utils.map_gpus_zero_index(available_gpu_id_from_controller)
-    # if call from command, there's no available_gpu_id, do nothing
 
     logging.info(f"container config: {executor_config}")
 

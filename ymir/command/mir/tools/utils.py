@@ -287,14 +287,6 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     return model_hash
 
 
-def map_gpus_zero_index(gpu_id: str) -> str:
-    if gpu_id == '-1' or not gpu_id:
-        return ''
-
-    gpu_count = len(gpu_id.split(','))
-    return ','.join([str(i) for i in range(gpu_count)])
-
-
 def repo_dot_mir_path(mir_root: str) -> str:
     dir = os.path.join(mir_root, '.mir')
     os.makedirs(dir, exist_ok=True)

@@ -132,17 +132,12 @@ def _run_train_cmd(cmd: List[str], out_log_path: str) -> int:
 
 # private: pre process
 def _generate_config(executor_config: Any, out_config_path: str, task_id: str,
-                     pretrained_model_params: List[str], available_gpu_id: str) -> dict:
+                     pretrained_model_params: List[str]) -> dict:
     executor_config["task_id"] = task_id
     if pretrained_model_params:
         executor_config['pretrained_model_params'] = pretrained_model_params
     elif 'pretrained_model_params' in executor_config:
         del executor_config['pretrained_model_params']
-
-    if available_gpu_id:
-        # if call from controller, set gpu_id according to available_gpu_id
-        executor_config['gpu_id'] = mir_utils.map_gpus_zero_index(available_gpu_id)
-    # if call from command, there's no available_gpu_id, do nothing
 
     logging.info("container config: {}".format(executor_config))
 
@@ -393,7 +388,7 @@ class CmdTrain(base.BaseCommand):
 
         logging.info("starting train docker container")
 
-        available_gpu_id_from_controller = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
+        available_gpu_id = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
@@ -401,8 +396,7 @@ class CmdTrain(base.BaseCommand):
             executor_config=executor_config,
             out_config_path=out_config_path,
             task_id=task_id,
-            pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names],
-            available_gpu_id=available_gpu_id_from_controller)
+            pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
 
         # start train docker and wait
         path_binds = []
@@ -413,8 +407,8 @@ class CmdTrain(base.BaseCommand):
 
         cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={shm_size}"]
         cmd.extend(path_binds)
-        if available_gpu_id_from_controller:
-            cmd.extend(['--gpus', f"\"device={available_gpu_id_from_controller}\""])
+        if available_gpu_id:
+            cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
         cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
         cmd.extend(['--name', f"{executor_instance}"])
         cmd.append(executor)
