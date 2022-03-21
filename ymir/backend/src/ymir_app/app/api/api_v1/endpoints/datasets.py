@@ -10,7 +10,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
-
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -24,8 +23,7 @@ from app.api.errors.errors import (
     DatasetGroupNotFound,
 )
 from app.config import settings
-from app.constants.state import ResultState
-from app.constants.state import TaskState, TaskType
+from app.constants.state import TaskState, TaskType, MiningStrategy, ResultState
 from app.schemas.dataset import MergeStrategy
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.ymir_controller import (
@@ -467,6 +465,15 @@ def fusion_normalize_parameters(
     task_in: schemas.DatasetsFusionParameter,
     user_labels: UserLabels,
 ) -> Dict:
+    # in the iteration
+    if task_in.iteration_id is not None:
+        if task_in.exclude_last_result and task_in.mining_strategy == MiningStrategy.chunk:
+            iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
+            added_exclude_datasets = [one_iteration.mining_input_dataset_id for one_iteration in iterations]
+        elif task_in.exclude_last_result and task_in.mining_strategy == MiningStrategy.dedup:
+            iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
+            added_exclude_datasets = [one_iteration.mining_output_dataset_id for one_iteration in iterations]
+
     include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
 
     include_datasets_info.sort(
@@ -474,7 +481,7 @@ def fusion_normalize_parameters(
         reverse=(task_in.include_strategy == MergeStrategy.prefer_newest),
     )
 
-    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
+    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets) + added_exclude_datasets
     parameters = dict(
         include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
         include_strategy=task_in.include_strategy,

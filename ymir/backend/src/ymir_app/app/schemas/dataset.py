@@ -141,8 +141,7 @@ class DatasetsFusionParameter(BaseModel):
     project_id: int
     mining_strategy: MiningStrategy = MiningStrategy.customize
     iteration_id: Optional[int]
-    exclude_chunk_result: bool = True
-    # iteration_stage: Optional[IterationStage]
+    exclude_last_result: bool = True
 
     include_datasets: List[int]
     include_strategy: Optional[MergeStrategy] = Field(
