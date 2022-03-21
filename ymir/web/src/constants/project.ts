@@ -1,7 +1,7 @@
 import { Project, originProject, originIteration, Iteration, } from "@/interface/project"
 import { format } from '@/utils/date'
 
-export enum Steps {
+export enum Stages {
   beforeMining = 0,
   mining = 1,
   labelling = 2,
@@ -10,12 +10,24 @@ export enum Steps {
   trained = 5,
 }
 
-export function getIterationVersion (version: number) {
+export const StageList = () => {
+  const arr = [
+    Stages.beforeMining,
+    Stages.mining,
+    Stages.labelling,
+    Stages.merging,
+    Stages.training,
+    Stages.trained,
+  ]
+  return singleList(arr)
+}
+
+export function getIterationVersion(version: number) {
   return `V${version}`
 }
 
 export function transferProject(data: originProject) {
-  const project : Project = {
+  const project: Project = {
     id: data.id,
     name: data.name,
     keywords: data.training_keywords,
@@ -38,11 +50,11 @@ export function transferProject(data: originProject) {
   return project
 }
 
-export function transferIteration (data: originIteration | undefined) {
+export function transferIteration(data: originIteration | undefined) {
   if (!data) {
     return
   }
-  const iteration : Iteration = {
+  const iteration: Iteration = {
     id: data.id,
     name: data.name,
     version: data.version,
@@ -53,7 +65,16 @@ export function transferIteration (data: originIteration | undefined) {
     labelSet: data.label_set,
     miningSet: data.mining_set,
     model: data.model,
-    
   }
   return iteration
+}
+
+function singleList(arr: Array<number>) {
+  return arr.reduce((prev, item, index) => ({
+    ...prev,
+    [item]: {
+      value: item,
+      next: arr[index + 1] ? arr[index + 1] : null,
+    }
+  }), {})
 }

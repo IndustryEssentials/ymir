@@ -36,3 +36,12 @@ export const getTaskTypeLabel = (type: number) => {
     [TASKTYPES.SYS]: 'task.type.sys',
   }[type]
 }
+export const getTaskStateLabel = (state: number) => {
+  return {
+    [TASKSTATES.PENDING]: 'task.state.pending',
+    [TASKSTATES.DOING]: 'task.state.doing',
+    [TASKSTATES.FINISH]: 'task.state.finish',
+    [TASKSTATES.FAILURE]: 'task.state.failure',
+    [TASKSTATES.TERMINATED]: 'task.state.terminated',
+  }[state]
+}

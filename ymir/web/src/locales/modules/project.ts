@@ -52,6 +52,7 @@ const project = {
   'project.iteration.stage.label.react': { en: 'Create Project', cn: '重新标注', },
   'project.iteration.stage.merge.react': { en: 'Create Project', cn: '重新更新', },
   'project.iteration.stage.training.react': { en: 'Create Project', cn: '重新训练', },
+  'project.stage.state.pending': { en: 'Pending', cn: '未完成', },
 }
 
 export default project
