@@ -112,8 +112,10 @@ class UserLabels(LabelStorage):
             new_set = {new_labels}
         elif type(new_labels) is list:
             new_set = set(new_labels)
-        else:  # Type of UserLabels.
+        elif type(new_labels) is type(self):
             new_set = set(new_labels.name_aliases_to_id.keys())
+        else:
+            raise ValueError(f"unsupported type: {type(new_labels)}")
         return list(set(self.name_aliases_to_id.keys()) & new_set)
 
     def to_proto(self) -> backend_pb2.LabelCollection:
