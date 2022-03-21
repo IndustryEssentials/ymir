@@ -1,6 +1,9 @@
+import logging
 import os
 import shutil
+from typing import Type
 import unittest
+import zlib
 
 import google.protobuf.json_format as pb_format
 
@@ -28,10 +31,10 @@ class TestExodus(unittest.TestCase):
 
     # public: test cases
     def test_open_normal_cases(self):
-        self._test_open_normal_cases("metadatas.mir", "a")
-        self._test_open_normal_cases("tasks.mir", "a")
-        self._test_open_normal_cases("annotations.mir", "a")
-        self._test_open_normal_cases("keywords.mir", "a")
+        self._test_open_normal_cases("metadatas.mir", "a", mirpb.MirMetadatas)
+        self._test_open_normal_cases("tasks.mir", "a", mirpb.MirTasks)
+        self._test_open_normal_cases("annotations.mir", "a", mirpb.MirAnnotations)
+        self._test_open_normal_cases("keywords.mir", "a", mirpb.MirKeywords)
 
     def test_open_abnormal_cases(self):
         # wrong branches
@@ -47,11 +50,15 @@ class TestExodus(unittest.TestCase):
         self._test_open_abnormal_cases(None, None, MirCode.RC_CMD_INVALID_ARGS)
 
     # protected: test cases
-    def _test_open_normal_cases(self, file_name: str, branch: str):
+    def _test_open_normal_cases(self, file_name: str, branch: str, pb_class: Type):
         with exodus.open_mir(mir_root=self._mir_root, file_name=file_name, rev=branch, mode="rb") as f:
             self.assertIsNotNone(f)
-            contents = f.read()
+            contents = zlib.decompress(f.read())
             self.assertNotEqual(len(contents), 0)
+            logging.info(f"contents: {contents}")
+            logging.info(f"file: {file_name}, pb class: {pb_class}")
+            pb_instance = pb_class()
+            pb_instance.ParseFromString(contents)
 
     def _test_open_abnormal_cases(self, file_name: str, branch: str, expected_code: int):
         actual_exception = None
