@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import IterationNotFound
+from app.api.errors.errors import IterationNotFound, FailedToUpdateIterationStage
+from app.constants.state import IterationStage
 from app.utils.iteration_fsm import IterationFSM
 
 router = APIRouter()
@@ -63,7 +64,7 @@ def update_iteration_stage(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
-    obj_update: schemas.IterationUpdate,
+    next_stage: schemas.IterationNextStage,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -80,8 +81,9 @@ def update_iteration_stage(
     if not iteration:
         raise IterationNotFound()
 
-    # todo
-    IterationFSM()
-
-    iteration = crud.iteration.update(db, db_obj=iteration, obj_in=obj_update)
+    fsm = IterationFSM(db, iteration.id, IterationStage(iteration.current_stage))
+    if not fsm.verify_stage(next_stage.stage):
+        logger.error("Refused to change iteration stage from %s to %s", iteration.current_stage, next_stage.stage)
+        raise FailedToUpdateIterationStage()
+    fsm.proceed(next_stage.result_id)
     return {"result": iteration}

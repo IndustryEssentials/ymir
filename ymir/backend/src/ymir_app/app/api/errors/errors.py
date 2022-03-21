@@ -322,9 +322,14 @@ class FailedtoImportModel(APIError):
 
 class FailedToCreateIteration(APIError):
     code = error_codes.ITERATION_FAILED_TO_CREATE
-    message = "Failed to Create Project"
+    message = "Failed to Create Iteration"
 
 
 class IterationNotFound(NotFound):
     code = error_codes.ITERATION_NOT_FOUND
-    message = "Project Not Found"
+    message = "Iteration Not Found"
+
+
+class FailedToUpdateIterationStage(APIError):
+    code = error_codes.ITERATION_COULD_NOT_UPDATE_STAGE
+    message = "Failed to Update Iteration Stage"
