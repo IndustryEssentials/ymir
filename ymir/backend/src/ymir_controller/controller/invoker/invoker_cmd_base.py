@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from google.protobuf import json_format
 
+from common_utils import labels
 from controller.utils import checker, errors, metrics, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
@@ -44,6 +45,8 @@ class BaseMirControllerInvoker(ABC):
         if user_id:
             self._user_id = user_id
             self._user_root = os.path.join(sandbox_root, user_id)
+            self._label_storage_file = os.path.join(self._user_root, labels.default_labels_file_name())
+            self._user_labels = labels.get_user_labels_from_storage(self._label_storage_file)
 
         # check repo_id
         repo_id = request.repo_id

@@ -27,7 +27,6 @@ from app.config import settings
 from app.constants.state import ResultState
 from app.constants.state import TaskState, TaskType
 from app.schemas.dataset import MergeStrategy
-from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -36,6 +35,7 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from app.utils.ymir_viz import VizClient
+from common_utils.labels import UserLabels
 
 router = APIRouter()
 
@@ -355,7 +355,7 @@ def get_assets_of_dataset(
     keyword_id: Optional[int] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: Dict = Depends(deps.get_user_labels),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Get asset list of specific dataset,
@@ -395,7 +395,7 @@ def get_random_asset_id_of_dataset(
     dataset_id: int = Path(..., example="12"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: Dict = Depends(deps.get_user_labels),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Get random asset from specific dataset
@@ -439,7 +439,7 @@ def get_asset_of_dataset(
     asset_hash: str = Path(..., description="in asset hash format"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: Dict = Depends(deps.get_user_labels),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Get asset from specific dataset
@@ -465,7 +465,7 @@ def get_asset_of_dataset(
 def fusion_normalize_parameters(
     db: Session,
     task_in: schemas.DatasetsFusionParameter,
-    user_labels: Dict,
+    user_labels: UserLabels,
 ) -> Dict:
     include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
 
@@ -479,8 +479,8 @@ def fusion_normalize_parameters(
         include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
         include_strategy=task_in.include_strategy,
         exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
-        include_class_ids=convert_keywords_to_classes(user_labels, task_in.include_labels),
-        exclude_class_ids=convert_keywords_to_classes(user_labels, task_in.exclude_labels),
+        include_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.include_labels),
+        exclude_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.exclude_labels),
         sampling_count=task_in.sampling_count,
     )
 
@@ -497,7 +497,7 @@ def create_dataset_fusion(
     task_in: schemas.DatasetsFusionParameter,
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    user_labels: Dict = Depends(deps.get_user_labels),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create data fusion

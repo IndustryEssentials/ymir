@@ -1,5 +1,4 @@
-import json
-from typing import Generator, Dict
+from typing import Generator
 
 from fastapi import Depends, Security
 from fastapi.logger import logger
@@ -23,6 +22,7 @@ from app.utils import graph, security, ymir_controller, ymir_viz
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import ControllerClient
+from common_utils.labels import UserLabels
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/token",
@@ -148,20 +148,20 @@ def get_cache(
 
 
 def get_user_labels(
-    current_user: models.User = Depends(get_current_active_user),
-    cache: ymir_cache.CacheClient = Depends(get_cache),
-    controller_client: ControllerClient = Depends(get_controller_client),
-) -> Dict:
+        current_user: models.User = Depends(get_current_active_user),
+        cache: ymir_cache.CacheClient = Depends(get_cache),
+        controller_client: ControllerClient = Depends(get_controller_client),
+) -> UserLabels:
     # todo: make a cache wrapper
     cached = cache.get(ymir_cache.KEYWORDS_CACHE_KEY)
     if cached:
         logger.info("cache hit")
-        return json.loads(cached)
+        return UserLabels.parse_raw(cached)
 
     logger.info("cache miss")
     user_labels = controller_client.get_labels_of_user(current_user.id)
 
-    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, json.dumps(user_labels))
+    cache.set(ymir_cache.KEYWORDS_CACHE_KEY, user_labels.json())
     return user_labels
 
 

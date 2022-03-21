@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, List
+from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
@@ -28,7 +29,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         filter_request = request.req_create_task.filter
         in_dataset_ids = list(filter_request.in_dataset_ids)
         merge_response = invoker_call.make_invoker_cmd_call(
@@ -49,7 +50,7 @@ class TaskFilterInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         filter_request = request.req_create_task.filter
 
         filter_response = invoker_call.make_invoker_cmd_call(

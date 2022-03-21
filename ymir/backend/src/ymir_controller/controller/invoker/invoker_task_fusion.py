@@ -1,4 +1,5 @@
 from typing import Dict, List
+from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
@@ -23,7 +24,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_2(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         """ merge """
         fusion_req = request.req_create_task.fusion
         in_dataset_ids = list(fusion_req.in_dataset_ids)
@@ -46,7 +47,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         """ filter """
         fusion_req = request.req_create_task.fusion
         filter_response = invoker_call.make_invoker_cmd_call(
@@ -68,7 +69,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         """ sampling """
         fusion_req = request.req_create_task.fusion
         sampling_response = invoker_call.make_invoker_cmd_call(
