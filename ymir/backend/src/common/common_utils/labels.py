@@ -109,7 +109,7 @@ class UserLabels(LabelStorage):
 
     def find_dups(self, new_labels: Any) -> List[str]:
         if type(new_labels) is str:
-            new_set = set([new_labels])
+            new_set = {new_labels}
         elif type(new_labels) is list:
             new_set = set(new_labels)
         else:  # Type of UserLabels.
@@ -165,7 +165,6 @@ def merge_labels(label_storage_file: str,
             yaml.safe_dump(label_storage.dict(), f)
 
     logging.info(f"conflict labels: {conflict_labels}")
-    print(f"conflict_labels: {conflict_labels}")
     return UserLabels(labels=conflict_labels)
 
 

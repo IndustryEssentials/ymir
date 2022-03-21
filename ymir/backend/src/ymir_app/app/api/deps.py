@@ -7,7 +7,6 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from common_utils.labels import UserLabels
 from app import crud, models, schemas
 from app.api.errors.errors import (
     InactiveUser,
@@ -23,6 +22,7 @@ from app.utils import graph, security, ymir_controller, ymir_viz
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import ControllerClient
+from common_utils.labels import UserLabels
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/token",
