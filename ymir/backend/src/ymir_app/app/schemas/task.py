@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import TaskState, TaskType, ResultType
+from app.constants.state import TaskState, TaskType, ResultType, IterationStage
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -18,6 +18,8 @@ class TaskBase(BaseModel):
     name: str
     type: TaskType
     project_id: int
+    iteration_id: Optional[int]
+    iteration_stage: Optional[IterationStage]
 
     class Config:
         use_enum_values = True

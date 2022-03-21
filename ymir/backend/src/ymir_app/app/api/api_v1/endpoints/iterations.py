@@ -81,7 +81,7 @@ def update_iteration_stage(
         raise IterationNotFound()
 
     # todo
-    fsm = IterationFSM()
+    IterationFSM()
 
     iteration = crud.iteration.update(db, db_obj=iteration, obj_in=obj_update)
     return {"result": iteration}

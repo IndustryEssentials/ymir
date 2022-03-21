@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: b0d54b7ca052
+Revision ID: a51b91b06cc7
 Revises:
-Create Date: 2022-03-18 14:05:17.818171
+Create Date: 2022-03-21 10:47:28.615789
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "b0d54b7ca052"
+revision = "a51b91b06cc7"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -230,6 +230,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
         sa.Column("iteration_id", sa.Integer(), nullable=True),
+        sa.Column("iteration_stage", sa.Integer(), nullable=True),
         sa.Column("is_terminated", sa.Boolean(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
         sa.Column("last_message_datetime", mysql.DATETIME(fsp=6), nullable=False),
@@ -240,6 +241,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_task_hash"), "task", ["hash"], unique=False)
     op.create_index(op.f("ix_task_id"), "task", ["id"], unique=False)
     op.create_index(op.f("ix_task_iteration_id"), "task", ["iteration_id"], unique=False)
+    op.create_index(op.f("ix_task_iteration_stage"), "task", ["iteration_stage"], unique=False)
     op.create_index(op.f("ix_task_name"), "task", ["name"], unique=False)
     op.create_index(op.f("ix_task_project_id"), "task", ["project_id"], unique=False)
     op.create_index(op.f("ix_task_state"), "task", ["state"], unique=False)
@@ -284,6 +286,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_task_state"), table_name="task")
     op.drop_index(op.f("ix_task_project_id"), table_name="task")
     op.drop_index(op.f("ix_task_name"), table_name="task")
+    op.drop_index(op.f("ix_task_iteration_stage"), table_name="task")
     op.drop_index(op.f("ix_task_iteration_id"), table_name="task")
     op.drop_index(op.f("ix_task_id"), table_name="task")
     op.drop_index(op.f("ix_task_hash"), table_name="task")
