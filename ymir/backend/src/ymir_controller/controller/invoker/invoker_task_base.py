@@ -86,19 +86,35 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         return os.path.join(work_dir, "task_config.yaml")
 
     @staticmethod
-    def gen_executor_config_lock_gpus(req_executor_config: str, class_names: List, output_config_file: str) -> bool:
+    def gen_executor_config_lock_gpus(repo_root: str, req_executor_config: str, in_class_ids: List,
+                                      task_parameters: str, output_config_file: str) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
-        if class_names:
-            executor_config["class_names"] = class_names
+        task_context = {}
+
+        if in_class_ids:
+            label_file_dir = os.path.join(repo_root, '.mir')
+            executor_config["class_names"] = labels.get_main_labels_by_ids(label_file_dir=label_file_dir,
+                                                                           type_ids=in_class_ids)
         # when gpu_count > 0, use gpu model
-        if executor_config["gpu_count"] > 0:
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(executor_config["gpu_count"], lock_gpu=True)
+        gpu_count = executor_config["gpu_count"]
+        if gpu_count > 0:
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
             if not gpu_ids:
                 return False
 
-            executor_config["gpu_id"] = gpu_ids
+            task_context["available_gpu_id"] = gpu_ids
+            executor_config['gpu_id'] = ','.join([str(i) for i in range(gpu_count)])
+        else:
+            task_context["available_gpu_id"] = ''
+            executor_config['gpu_id'] = ''
+
+        if task_parameters:
+            task_context['task_parameters'] = task_parameters
+
+        config = {'executor_config': executor_config, 'task_context': task_context}
+
         with open(output_config_file, "w") as f:
-            yaml.dump(executor_config, f)
+            yaml.dump(config, f)
 
         return True
 
