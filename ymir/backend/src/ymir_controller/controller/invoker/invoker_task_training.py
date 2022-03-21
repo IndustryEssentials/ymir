@@ -21,6 +21,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             repo_root=self._repo_root,
             req_executor_config=request.docker_image_config,
             in_class_ids=train_request.in_class_ids,
+            task_parameters=request.task_parameters,
             output_config_file=output_config_file,
         )
         if not gpu_lock_ret:
