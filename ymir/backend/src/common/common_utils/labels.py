@@ -4,7 +4,7 @@ import os
 from typing import Any, Dict, Iterator, List, Set, Union
 
 from google.protobuf import json_format
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, root_validator, validator
 import yaml
 
 from proto import backend_pb2
@@ -64,14 +64,15 @@ class UserLabels(LabelStorage):
     name_to_id: Dict[str, int] = {}
     name_aliases_to_id: Dict[str, int] = {}
 
-    def __init__(self, **data: Any):
-        super().__init__(**data)
-        for label in self.labels:
-            self.id_to_name[label.id] = label.name
-            self.name_to_id[label.name] = label.id
-            self.name_aliases_to_id[label.name] = label.id
+    @root_validator()
+    def fill_lookup_tables(cls, values: Any):
+        for label in values["labels"]:
+            values["id_to_name"][label.id] = label.name
+            ["name_to_id"][label.name] = label.id
+            ["name_aliases_to_id"][label.name] = label.id
             for alias in label.aliases:
-                self.name_aliases_to_id[alias] = label.id
+                ["name_aliases_to_id"][alias] = label.id
+        return values
 
     class Config:
         fields = {'labels': {'include': True}}
