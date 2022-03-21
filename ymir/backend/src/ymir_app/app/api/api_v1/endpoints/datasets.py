@@ -469,10 +469,18 @@ def fusion_normalize_parameters(
     if task_in.iteration_id is not None:
         if task_in.exclude_last_result and task_in.mining_strategy == MiningStrategy.chunk:
             iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
-            added_exclude_datasets = [one_iteration.mining_input_dataset_id for one_iteration in iterations]
+            task_in.exclude_datasets += [
+                one_iteration.mining_input_dataset_id
+                for one_iteration in iterations
+                if one_iteration.mining_input_dataset_id
+            ]
         elif task_in.exclude_last_result and task_in.mining_strategy == MiningStrategy.dedup:
             iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
-            added_exclude_datasets = [one_iteration.mining_output_dataset_id for one_iteration in iterations]
+            task_in.exclude_datasets += [
+                one_iteration.mining_output_dataset_id
+                for one_iteration in iterations
+                if one_iteration.mining_output_dataset_id
+            ]
 
     include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
 
@@ -481,7 +489,7 @@ def fusion_normalize_parameters(
         reverse=(task_in.include_strategy == MergeStrategy.prefer_newest),
     )
 
-    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets) + added_exclude_datasets
+    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
     parameters = dict(
         include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
         include_strategy=task_in.include_strategy,
