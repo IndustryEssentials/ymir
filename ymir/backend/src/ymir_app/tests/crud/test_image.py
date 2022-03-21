@@ -28,6 +28,7 @@ class TestListImages:
         image = crud.docker_image.get_multi(db=db, limit=1)[0]
         crud.docker_image.update_state(db=db, docker_image=image, state=DockerImageState.error)
         images, count = crud.docker_image.get_multi_with_filter(db=db, state=DockerImageState.error)
+        crud.docker_image.update_state(db=db, docker_image=image, state=DockerImageState.done)
         assert images == [image]
         assert count == 1
 
@@ -57,4 +58,5 @@ class TestGetInferenceImages:
         crud.image_config.create(db, obj_in=image_config_in)
 
         fetched_image = crud.docker_image.get_inference_docker_image(db, url=url)
+        assert fetched_image is not None
         assert created_image.hash == fetched_image.hash

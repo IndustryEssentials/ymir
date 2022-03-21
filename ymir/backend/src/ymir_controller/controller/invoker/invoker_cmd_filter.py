@@ -1,4 +1,3 @@
-from common_utils import labels
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, revs, utils
 from id_definition.error_codes import CTLResponseCode
@@ -33,10 +32,8 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
 
         if self._request.in_class_ids:
             filter_command.append('-p')
-            filter_command.append(';'.join(
-                labels.get_main_labels_by_ids(label_file_dir=self._user_root, type_ids=self._request.in_class_ids)))
+            filter_command.append(';'.join(self._user_labels.get_main_names(class_ids=self._request.in_class_ids)))
         if self._request.ex_class_ids:
             filter_command.append('-P')
-            filter_command.append(';'.join(
-                labels.get_main_labels_by_ids(label_file_dir=self._user_root, type_ids=self._request.ex_class_ids)))
+            filter_command.append(';'.join(self._user_labels.get_main_names(class_ids=self._request.ex_class_ids)))
         return utils.run_command(filter_command)

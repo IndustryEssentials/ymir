@@ -47,7 +47,7 @@ class CacheClient:
             pipe.delete(redis_key)
         pipe.execute()
 
-    def delete_personal_keywords(self) -> None:
+    def delete_personal_keywords_cache(self) -> None:
         self.delete(KEYWORDS_CACHE_KEY)
 
     def close(self) -> None:

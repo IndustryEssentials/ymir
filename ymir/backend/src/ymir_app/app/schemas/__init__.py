@@ -30,7 +30,6 @@ from .image_relationship import ImageRelationshipsCreate, ImageRelationshipsOut
 from .inference import InferenceCreate, InferenceOut
 from .iteration import IterationsOut, IterationOut, IterationCreate, IterationUpdate
 from .keyword import (
-    Keyword,
     KeywordOut,
     KeywordsCreate,
     KeywordsCreateOut,
