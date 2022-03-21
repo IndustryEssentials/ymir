@@ -466,16 +466,15 @@ def fusion_normalize_parameters(
     user_labels: UserLabels,
 ) -> Dict:
     # in the iteration
-    if task_in.iteration_id is not None:
-        if task_in.exclude_last_result and task_in.mining_strategy == MiningStrategy.chunk:
-            iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
+    if task_in.iteration_id is not None and task_in.exclude_last_result:
+        iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
+        if task_in.mining_strategy == MiningStrategy.chunk:
             task_in.exclude_datasets += [
                 one_iteration.mining_input_dataset_id
                 for one_iteration in iterations
                 if one_iteration.mining_input_dataset_id
             ]
-        elif task_in.exclude_last_result and task_in.mining_strategy == MiningStrategy.dedup:
-            iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
+        elif task_in.mining_strategy == MiningStrategy.dedup:
             task_in.exclude_datasets += [
                 one_iteration.mining_output_dataset_id
                 for one_iteration in iterations
