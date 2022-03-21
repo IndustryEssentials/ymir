@@ -23,7 +23,7 @@ class Asset:
         annotations = [
             {
                 "box": annotation["box"],
-                "keyword": user_labels.get_main_names(annotation["class_id"]),
+                "keyword": user_labels.get_main_names(annotation["class_id"])[0],
             }
             for annotation in res["annotations"]
         ]
@@ -57,7 +57,7 @@ class Assets:
         assets = [{
             "url": get_asset_url(asset["asset_id"]),
             "hash": asset["asset_id"],
-            "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
+            "keywords": user_labels.get_main_names(class_ids=asset["class_ids"])[0],
         } for asset in res["elements"]]
 
         keywords = {user_labels.get_main_names([class_id]): count for class_id, count in res["class_ids_count"].items()}

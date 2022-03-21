@@ -76,17 +76,17 @@ class UserLabels(LabelStorage):
     class Config:
         fields = {'labels': {'include': True}}
 
-    def get_class_ids(self, names_or_aliases: Union[str, List[str]]):
+    def get_class_ids(self, names_or_aliases: Union[str, List[str]]) -> List[int]:
         if type(names_or_aliases) is str:
-            return self.name_aliases_to_id[names_or_aliases]
+            return [self.name_aliases_to_id[names_or_aliases]]
         elif type(names_or_aliases) is list:
             return [self.name_aliases_to_id[name_or_aliaes] for name_or_aliaes in names_or_aliases]
         else:
             raise ValueError(f"unsupported type: {type(names_or_aliases)}")
 
-    def get_main_names(self, class_ids: Union[int, List[int]]):
+    def get_main_names(self, class_ids: Union[int, List[int]]) -> List[str]:
         if type(class_ids) is int:
-            return self.id_to_name[class_ids]
+            return [self.id_to_name[class_ids]]
         elif type(class_ids) is list:
             return [self.id_to_name[class_id] for class_id in class_ids]
         else:
