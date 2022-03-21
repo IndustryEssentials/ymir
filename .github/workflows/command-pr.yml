@@ -27,7 +27,6 @@ jobs:
       working-directory: ymir/command
     - name: mypy
       run: |
-        mypy --install-types
         mypy mir
       working-directory: ymir/command
     - name: flake8
