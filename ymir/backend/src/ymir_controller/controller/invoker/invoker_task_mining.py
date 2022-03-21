@@ -29,7 +29,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         gpu_lock_ret = self.gen_executor_config_lock_gpus(
             req_executor_config=request.docker_image_config,
             task_parameters=request.task_parameters,
-            in_class_ids=[],
+            class_names=[],
             output_config_file=output_config_file,
         )
         if not gpu_lock_ret:
