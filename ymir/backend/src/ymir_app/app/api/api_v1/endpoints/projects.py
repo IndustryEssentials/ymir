@@ -1,6 +1,6 @@
 import enum
 import json
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
@@ -16,9 +16,9 @@ from app.api.errors.errors import (
 )
 from app.constants.state import ResultState
 from app.constants.state import TaskType, TrainingType
-from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.clickhouse import YmirClickHouse
+from common_utils.labels import UserLabels
 
 router = APIRouter()
 
@@ -71,7 +71,7 @@ def create_project(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    user_labels: Dict = Depends(deps.get_user_labels),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
@@ -85,7 +85,7 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    training_classes = convert_keywords_to_classes(user_labels, project_in.training_keywords)
+    training_classes = user_labels.get_class_ids(names_or_aliases=project_in.training_keywords)
 
     # 2.send to controller
     try:

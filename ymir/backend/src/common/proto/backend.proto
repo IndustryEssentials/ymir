@@ -109,9 +109,6 @@ message GeneralReq {
     string model_hash = 14;
     string asset_dir = 15;
     string docker_image_config = 16;
-    // init repo: project labels (training target)
-    // add labels: labels you want to add
-    repeated string private_labels = 17;
     bool check_only=18;
     string executor_instance = 19;
     MergeStrategy merge_strategy = 20;
@@ -124,7 +121,7 @@ message GeneralReq {
     LabelCollection label_collection = 25;
     ReqCreateTask req_create_task = 1001;
 
-    reserved 1002;
+    reserved 17, 1002;
 }
 
 message GeneralResp {
@@ -132,14 +129,13 @@ message GeneralResp {
     string req_task_id = 2;
     string message = 3;
     repeated string ext_strs = 4;
-    repeated string csv_labels = 5 [deprecated=true];
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     RespCMDInference detection = 1001;
 
-    reserved 1000;
+    reserved 5, 1000;
 }
 
 // base args for create task request
@@ -334,7 +330,6 @@ service mir_controller_service {
         Args:
             GeneralReq.user: user name for this sandbox
             GeneralReq.repo: repo name
-            GeneralReq.private_labels: project class names (training target)
         Returns:
             0: success
             errors when:

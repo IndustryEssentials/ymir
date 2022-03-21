@@ -5,7 +5,7 @@ from typing import Dict, List
 
 import yaml
 
-from common_utils import labels
+from common_utils.labels import UserLabels
 from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, errors, gpu_utils, tasks_util, utils
@@ -86,15 +86,14 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         return os.path.join(work_dir, "task_config.yaml")
 
     @staticmethod
-    def gen_executor_config_lock_gpus(repo_root: str, req_executor_config: str, in_class_ids: List,
-                                      task_parameters: str, output_config_file: str) -> bool:
+    def gen_executor_config_lock_gpus(req_executor_config: str, class_names: List, task_parameters: str,
+                                      output_config_file: str) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
         task_context = {}
 
-        if in_class_ids:
-            label_file_dir = os.path.join(repo_root, '.mir')
-            executor_config["class_names"] = labels.get_main_labels_by_ids(label_file_dir=label_file_dir,
-                                                                           type_ids=in_class_ids)
+        if class_names:
+            executor_config["class_names"] = class_names
+
         # when gpu_count > 0, use gpu model
         gpu_count = executor_config["gpu_count"]
         if gpu_count > 0:
@@ -136,6 +135,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                           self._repo_root,
                                           self._assets_config,
                                           self._work_dir,
+                                          self._user_labels,
                                           self._request,
                                       ),
                                       daemon=True)
@@ -146,11 +146,12 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                     repo_root=self._repo_root,
                                     assets_config=self._assets_config,
                                     working_dir=self._work_dir,
+                                    user_labels=self._user_labels,
                                     request=self._request)
 
     @classmethod
     def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
-                    request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+                    user_labels: UserLabels, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         subtask_weights = cls.subtask_weights()
         previous_subtask_id = None
         # revsersed, to makesure the last subtask idx is 0.
@@ -170,6 +171,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                 subtask_id=subtask_id,
                 subtask_workdir=subtask_work_dir,
                 previous_subtask_id=previous_subtask_id,
+                user_labels=user_labels,
             )
             if ret.code != CTLResponseCode.CTR_OK:
                 logging.info(f"subtask failed: {subtask_func_name}\nret: {ret}")
@@ -191,17 +193,17 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     @classmethod
     def subtask_invoke_2(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         raise NotImplementedError
 
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         raise NotImplementedError
 
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         raise NotImplementedError

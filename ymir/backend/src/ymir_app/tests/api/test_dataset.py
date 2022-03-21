@@ -74,7 +74,7 @@ class TestBatchGetDatasets:
         r = client.get(
             f"{settings.API_V1_STR}/datasets/batch",
             headers=normal_user_token_headers,
-            params={"ids": "100,200,300"},
+            params={"ids": "1000,2000,3000"},
         )
         assert r.status_code == 404
 

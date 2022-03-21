@@ -6,7 +6,7 @@ from fastapi.logger import logger
 
 from app.api.errors.errors import ModelNotFound, ModelNotReady
 from app.config import settings
-from app.utils.class_ids import convert_classes_to_keywords
+from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode
 
 
@@ -19,15 +19,15 @@ class Asset:
     metadata: Dict
 
     @classmethod
-    def from_viz_res(cls, asset_id: str, res: Dict, user_labels: Dict) -> "Asset":
+    def from_viz_res(cls, asset_id: str, res: Dict, user_labels: UserLabels) -> "Asset":
         annotations = [
             {
                 "box": annotation["box"],
-                "keyword": convert_classes_to_keywords(user_labels, [annotation["class_id"]])[0],
+                "keyword": user_labels.get_main_names(annotation["class_id"])[0],
             }
             for annotation in res["annotations"]
         ]
-        keywords = convert_classes_to_keywords(user_labels, res["class_ids"])
+        keywords = user_labels.get_main_names(class_ids=res["class_ids"])
         keywords = list(filter(None, keywords))
         metadata = {
             "height": res["metadata"]["height"],
@@ -53,20 +53,14 @@ class Assets:
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: Dict) -> "Assets":
-        assets = [
-            {
-                "url": get_asset_url(asset["asset_id"]),
-                "hash": asset["asset_id"],
-                "keywords": convert_classes_to_keywords(user_labels, asset["class_ids"]),
-            }
-            for asset in res["elements"]
-        ]
+    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Assets":
+        assets = [{
+            "url": get_asset_url(asset["asset_id"]),
+            "hash": asset["asset_id"],
+            "keywords": user_labels.get_main_names(class_ids=asset["class_ids"])[0],
+        } for asset in res["elements"]]
 
-        keywords = {
-            convert_classes_to_keywords(user_labels, [class_id])[0]: count
-            for class_id, count in res["class_ids_count"].items()
-        }
+        keywords = {user_labels.get_main_names([class_id]): count for class_id, count in res["class_ids_count"].items()}
         ignored_keywords = res["ignored_labels"]
         negative_info = res["negative_info"]
         return cls(res["total"], assets, keywords, ignored_keywords, negative_info)
@@ -109,7 +103,7 @@ class VizClient:
         keyword_id: Optional[int] = None,
         offset: int = 0,
         limit: int = 20,
-        user_labels: Dict,
+        user_labels: UserLabels,
     ) -> Assets:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets"  # noqa: E501
 
@@ -126,7 +120,7 @@ class VizClient:
         self,
         *,
         asset_id: str,
-        user_labels: Dict,
+        user_labels: UserLabels,
     ) -> Optional[Dict]:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
 
