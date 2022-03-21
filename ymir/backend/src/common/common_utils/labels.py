@@ -202,7 +202,7 @@ def get_user_labels_from_storage(label_storage_file: str) -> UserLabels:
     if os.path.isfile(label_storage_file):
         with open(label_storage_file, 'r') as f:
             obj = yaml.safe_load(f)
-    return UserLabels(labels=LabelStorage(**obj).labels)
+    return UserLabels(**obj)
 
 
 def create_empty(label_storage_file: str) -> None:
