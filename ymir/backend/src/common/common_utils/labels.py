@@ -122,8 +122,8 @@ class UserLabels(LabelStorage):
     def to_proto(self) -> backend_pb2.LabelCollection:
         label_dict = self.dict()
         for label in label_dict.get("labels", []):
-            label["create_time"] = datetime.timestamp(label["create_time"])
-            label["update_time"] = datetime.timestamp(label["update_time"])
+            label["create_time"] = str(label["create_time"])
+            label["update_time"] = str(label["update_time"])
 
         label_collection = backend_pb2.LabelCollection()
         json_format.ParseDict(label_dict, label_collection, ignore_unknown_fields=False)
@@ -175,9 +175,6 @@ def parse_labels_from_proto(label_collection: backend_pb2.LabelCollection) -> Us
     label_dict = json_format.MessageToDict(label_collection,
                                            preserving_proto_field_name=True,
                                            use_integers_for_enums=True)
-    for label in label_dict.get("labels", []):
-        label["create_time"] = datetime.fromtimestamp(label["create_time"])
-        label["update_time"] = datetime.fromtimestamp(label["update_time"])
 
     return UserLabels.parse_obj(label_dict)
 
