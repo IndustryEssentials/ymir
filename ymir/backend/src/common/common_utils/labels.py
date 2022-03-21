@@ -68,10 +68,10 @@ class UserLabels(LabelStorage):
     def fill_lookup_tables(cls, values: Any):
         for label in values["labels"]:
             values["id_to_name"][label.id] = label.name
-            ["name_to_id"][label.name] = label.id
-            ["name_aliases_to_id"][label.name] = label.id
+            values["name_to_id"][label.name] = label.id
+            values["name_aliases_to_id"][label.name] = label.id
             for alias in label.aliases:
-                ["name_aliases_to_id"][alias] = label.id
+                values["name_aliases_to_id"][alias] = label.id
         return values
 
     class Config:
