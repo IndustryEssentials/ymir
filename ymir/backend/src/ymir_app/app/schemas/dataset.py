@@ -3,8 +3,7 @@ import json
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, validator
-
-from app.constants.state import ResultState, TaskType
+from app.constants.state import ResultState, TaskType, MiningStrategy
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -140,6 +139,10 @@ class DatasetsFusionParameter(BaseModel):
     dataset_group_id: int
     main_dataset_id: int
     project_id: int
+    mining_strategy: MiningStrategy = MiningStrategy.customize
+    iteration_id: Optional[int]
+    exclude_chunk_result: bool = True
+    # iteration_stage: Optional[IterationStage]
 
     include_datasets: List[int]
     include_strategy: Optional[MergeStrategy] = Field(
