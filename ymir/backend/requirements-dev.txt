@@ -7,10 +7,10 @@ mypy==0.910
 pre-commit==2.13.0
 pytest-cov==2.12.1
 pytest-mock==3.6.1
-pytest-xdist
+pytest-xdist==2.5.0
 pytest==6.2.4
-redislite
+redislite>=6.0.0
 sqlalchemy-stubs==0.4
 tox==3.24.0
-types-protobuf
-types-PyYAML
+types-protobuf==3.18.2
+types-PyYAML==6.0.1

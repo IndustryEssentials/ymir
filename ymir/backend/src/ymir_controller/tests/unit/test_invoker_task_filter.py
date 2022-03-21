@@ -74,7 +74,7 @@ class TestInvokerTaskFilter(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        labels.get_main_labels_by_ids = mock.Mock(return_value=["frisbee", "car"])
+        labels.UserLabels.get_main_names = mock.Mock(return_value=["frisbee", "car"])
         filter_request = backend_pb2.TaskReqFilter()
         filter_request.in_dataset_ids[:] = [self._guest_id1, self._guest_id2]
         filter_request.in_class_ids[:] = [0, 1]

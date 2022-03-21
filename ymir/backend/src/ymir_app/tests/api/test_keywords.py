@@ -30,7 +30,7 @@ class TestCreateKeyword:
             json=j,
         )
         res = r.json()
-        assert res["result"]["failed"] == []
+        assert sorted(res["result"]["failed"]) == ['kitten', 'tabby']
 
 
 class TestUpdateKeyword:
@@ -43,7 +43,7 @@ class TestUpdateKeyword:
         r = client.patch(
             f"{settings.API_V1_STR}/keywords/cat",
             headers=normal_user_token_headers,
-            json={"aliases": ["tabby", "kitten"]},
+            json={"aliases": ["kitten", "tabby"]},
         )
         res = r.json()
-        assert res["result"]["failed"] == ["tabby", "kitten"]
+        assert sorted(res["result"]["failed"]) == ["kitten", "tabby"]
