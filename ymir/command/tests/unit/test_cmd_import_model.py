@@ -6,7 +6,7 @@ import unittest
 import yaml
 
 from mir.commands.model_importing import CmdModelImport
-from mir.tools import mir_storage_ops, utils as mir_utils
+from mir.tools import mir_storage_ops, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -54,7 +54,7 @@ class TestCmdImportModel(unittest.TestCase):
         model_storage = mir_utils.ModelStorage(models=['best.weights'],
                                                executor_config={'class_names': ['cat', 'person']},
                                                task_context={
-                                                   mir_utils.PRODUCER_KEY: mir_utils.PRODUCER_NAME,
+                                                   mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
                                                    'mAP': 0.5
                                                })
         with open(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'w') as f:

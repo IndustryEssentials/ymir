@@ -8,7 +8,7 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, context, mir_storage_ops, revs_parser
-from mir.tools import utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -64,7 +64,6 @@ class CmdModelImport(base.BaseCommand):
         model_hash = mir_utils.pack_and_copy_models(model_storage=model_storage,
                                                     model_dir_path=extract_model_dir_path,
                                                     model_location=model_location)
-        logging.info(f"model sha1: {model_hash}")
 
         # remove tmp files
         shutil.rmtree(extract_model_dir_path)
@@ -80,6 +79,8 @@ class CmdModelImport(base.BaseCommand):
                                          return_code=MirCode.RC_OK,
                                          return_msg='')
         mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict())
+        mir_tasks.tasks[mir_tasks.head_task_id].task_parameters = model_storage.task_context.get(
+            mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,
@@ -92,8 +93,8 @@ class CmdModelImport(base.BaseCommand):
 
 def _check_model(model_storage: mir_utils.ModelStorage, mir_root: str) -> int:
     # check producer
-    producer = model_storage.task_context.get(mir_utils.PRODUCER_KEY, None)
-    if producer != mir_utils.PRODUCER_NAME:
+    producer = model_storage.task_context.get(mir_settings.PRODUCER_KEY, None)
+    if producer != mir_settings.PRODUCER_NAME:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"can not import model, invalid producer: {producer}")
 

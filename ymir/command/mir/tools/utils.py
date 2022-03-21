@@ -13,12 +13,9 @@ from PIL import Image, UnidentifiedImageError
 import yaml
 
 from mir import scm
-from mir.tools import hash_utils
+from mir.tools import hash_utils, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-
-PRODUCER_KEY = 'producer'
-PRODUCER_NAME = 'ymir'
 
 
 def time_it(f: Callable) -> Callable:
@@ -188,6 +185,7 @@ class ModelStorage:
 
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
+
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -254,8 +252,8 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     with open(os.path.join(dest_root, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
-                                 executor_config=ymir_info_dict.get('executor_config', {}),
-                                 task_context=ymir_info_dict.get('task_context', {}))
+                                 executor_config=ymir_info_dict.get(mir_settings.EXECUTOR_CONFIG_KEY, {}),
+                                 task_context=ymir_info_dict.get(mir_settings.TASK_CONTEXT_KEY, {}))
 
     return model_storage
 
@@ -287,11 +285,6 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     logging.info(f"pack success, model hash: {model_hash}")
 
     return model_hash
-
-
-def map_gpus_zero_index(gpu_id: str) -> str:
-    gpu_count = len(gpu_id.split(',')) if gpu_id else 0
-    return ','.join([str(i) for i in range(gpu_count)])
 
 
 def repo_dot_mir_path(mir_root: str) -> str:
