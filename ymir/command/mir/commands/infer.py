@@ -9,7 +9,7 @@ from typing import Any, Tuple, Optional
 import yaml
 
 from mir.commands import base
-from mir.tools import utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -126,13 +126,18 @@ class CmdInfer(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                                   error_message=f"empty class names in model: {model_hash}")
 
-        config = prepare_config_file(config_file=config_file,
-                                     dst_config_file=work_config_file,
-                                     class_names=class_names,
-                                     task_id=task_id,
-                                     model_params_path=[os.path.join('/in/model', name) for name in model_names],
-                                     run_infer=run_infer,
-                                     run_mining=run_mining)
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+
+        prepare_config_file(config=config,
+                            dst_config_file=work_config_file,
+                            class_names=class_names,
+                            task_id=task_id,
+                            model_params_path=[os.path.join('/in/model', name) for name in model_names],
+                            run_infer=run_infer,
+                            run_mining=run_mining)
+
+        available_gpu_id: str = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
 
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
@@ -143,7 +148,7 @@ class CmdInfer(base.BaseCommand):
                        executor_instance=executor_instance,
                        shm_size=shm_size,
                        task_type=task_id,
-                       gpu_id=config.get('gpu_id', ''))
+                       gpu_id=available_gpu_id)
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
@@ -256,21 +261,16 @@ def _get_max_boxes(config_file: str) -> int:
 
 # might used both by mining and infer
 # public: general
-def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -> dict:
-    with open(config_file, 'r') as f:
-        infer_config = yaml.safe_load(f)
+def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> None:
+    executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
 
     for k, v in kwargs.items():
-        infer_config[k] = v
+        executor_config[k] = v
 
-    container_config = infer_config.copy()
-    container_config['gpu_id'] = mir_utils.map_gpus_zero_index(infer_config.get('gpu_id', ''))
-    logging.info(f"container config: {container_config}")
+    logging.info(f"container config: {executor_config}")
 
     with open(dst_config_file, 'w') as f:
-        yaml.dump(container_config, f)
-
-    return infer_config
+        yaml.dump(executor_config, f)
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,

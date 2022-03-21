@@ -26,7 +26,8 @@ def make_cmd_request(user_id: str = None,
                      docker_image_config: str = None,
                      terminated_task_type: str = None,
                      sampling_count: int = None,
-                     sampling_rate: float = None) -> backend_pb2.GeneralReq:
+                     sampling_rate: float = None,
+                     task_parameters: str = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -76,6 +77,8 @@ def make_cmd_request(user_id: str = None,
         request.sampling_count = sampling_count
     if sampling_rate:
         request.sampling_rate = sampling_rate
+    if task_parameters:
+        request.task_parameters = task_parameters
     return request
 
 
