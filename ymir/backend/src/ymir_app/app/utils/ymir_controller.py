@@ -11,6 +11,7 @@ from google.protobuf import json_format  # type: ignore
 
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
+from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
@@ -105,7 +106,6 @@ class ControllerRequest:
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeTraining
-        req_create_task.no_task_monitor = False
         req_create_task.training.CopyFrom(train_task_req)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -125,7 +125,6 @@ class ControllerRequest:
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeMining
-        req_create_task.no_task_monitor = False
         req_create_task.mining.CopyFrom(mine_task_req)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -148,7 +147,6 @@ class ControllerRequest:
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportData
-        req_create_task.no_task_monitor = False
         req_create_task.importing.CopyFrom(importing_request)
 
         request.req_type = mirsvrpb.TASK_CREATE
@@ -206,7 +204,7 @@ class ControllerRequest:
     def prepare_add_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.check_only = args["dry_run"]
         request.req_type = mirsvrpb.CMD_LABEL_ADD
-        request.private_labels[:] = args["labels"]
+        request.label_collection.CopyFrom(args["labels"].to_proto())
         return request
 
     def prepare_get_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
@@ -249,11 +247,37 @@ class ControllerRequest:
         req_create_task = mirsvrpb.ReqCreateTask()
 
         req_create_task.task_type = mirsvrpb.TaskTypeFusion
-        req_create_task.no_task_monitor = False
         req_create_task.fusion.CopyFrom(data_fusion_request)
 
         request.req_type = mirsvrpb.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
+        return request
+
+    def prepare_import_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        model_importing = mirsvrpb.TaskReqModelImporting()
+        model_importing.model_package_path = args["model_package_path"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mirsvrpb.TaskTypeImportModel
+        req_create_task.model_importing.CopyFrom(model_importing)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
+
+        return request
+
+    def prepare_copy_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        copy_request = mirsvrpb.TaskReqCopyData()
+        copy_request.src_repo_id = args["src_repo_id"]
+        copy_request.src_dataset_id = args["src_resource_id"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mirsvrpb.TaskTypeCopyModel
+        req_create_task.copy.CopyFrom(copy_request)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
+
         return request
 
 
@@ -278,7 +302,7 @@ class ControllerClient:
             including_default_value_fields=True,
         )
 
-    def add_labels(self, user_id: int, new_labels: List, dry_run: bool) -> Dict:
+    def add_labels(self, user_id: int, new_labels: UserLabels, dry_run: bool) -> Dict:
         req = ControllerRequest(
             ExtraRequestType.add_label,
             user_id,
@@ -286,16 +310,13 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def get_labels_of_user(self, user_id: int) -> Dict:
+    def get_labels_of_user(self, user_id: int) -> UserLabels:
         req = ControllerRequest(ExtraRequestType.get_label, user_id)
         resp = self.send(req)
-        # {name: message  Label}
-        user_labels = dict()
         # if not set labels, lost the key label_collection
-        if resp.get("label_collection"):
-            for label_info in resp["label_collection"]["labels"]:
-                user_labels[label_info["name"]] = label_info
-        return user_labels
+        if not resp.get("label_collection"):
+            raise ValueError(f"Missing labels for user {user_id}")
+        return UserLabels.parse_obj(dict(labels=resp["label_collection"]["labels"]))
 
     def create_task(
         self,
@@ -305,7 +326,13 @@ class ControllerClient:
         task_type: TaskType,
         task_parameters: Optional[Dict],
     ) -> Dict:
-        req = ControllerRequest(TaskType(task_type), user_id, project_id, task_id, args=task_parameters)
+        req = ControllerRequest(
+            type=TaskType(task_type),
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args=task_parameters,
+        )
         return self.send(req)
 
     def terminate_task(self, user_id: int, task_hash: str, task_type: int) -> Dict:
@@ -313,7 +340,7 @@ class ControllerClient:
         project_id = TaskId.from_task_id(task_hash).repo_id
 
         req = ControllerRequest(
-            ExtraRequestType.kill,
+            type=ExtraRequestType.kill,
             user_id=user_id,
             project_id=project_id,
             args={
@@ -326,7 +353,7 @@ class ControllerClient:
 
     def pull_docker_image(self, url: str, user_id: int) -> Dict:
         req = ControllerRequest(
-            ExtraRequestType.pull_image,
+            type=ExtraRequestType.pull_image,
             user_id=user_id,
             args={"url": url},
         )
@@ -334,19 +361,19 @@ class ControllerClient:
 
     def get_gpu_info(self, user_id: int) -> Dict[str, int]:
         req = ControllerRequest(
-            ExtraRequestType.get_gpu_info,
+            type=ExtraRequestType.get_gpu_info,
             user_id=user_id,
         )
         resp = self.send(req)
         return {"gpu_count": resp["available_gpu_counts"]}
 
     def create_user(self, user_id: int) -> Dict:
-        req = ControllerRequest(ExtraRequestType.create_user, user_id=user_id)
+        req = ControllerRequest(type=ExtraRequestType.create_user, user_id=user_id)
         return self.send(req)
 
     def create_project(self, user_id: int, project_id: int, task_id: str, args: Dict) -> Dict:
         req = ControllerRequest(
-            ExtraRequestType.create_project,
+            type=ExtraRequestType.create_project,
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,
@@ -356,7 +383,7 @@ class ControllerClient:
 
     def import_dataset(self, user_id: int, project_id: int, task_hash: str, task_type: Any, args: Dict) -> Dict:
         req = ControllerRequest(
-            TaskType(task_type),
+            type=TaskType(task_type),
             user_id=user_id,
             project_id=project_id,
             task_id=task_hash,
@@ -375,7 +402,7 @@ class ControllerClient:
         if None in (model_hash, docker_image, docker_config):
             raise ValueError("Missing model or docker image")
         req = ControllerRequest(
-            ExtraRequestType.inference,
+            type=ExtraRequestType.inference,
             user_id=user_id,
             args={
                 "model_hash": model_hash,
@@ -393,6 +420,18 @@ class ControllerClient:
         task_id: str,
         task_parameters: Optional[Dict],
     ) -> Dict:
-        req = ControllerRequest(TaskType.data_fusion, user_id, project_id, task_id, args=task_parameters)
+        req = ControllerRequest(
+            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters
+        )
 
+        return self.send(req)
+
+    def import_model(self, user_id: int, project_id: int, task_id: str, task_type: Any, args: Dict) -> Dict:
+        req = ControllerRequest(
+            type=task_type,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args=args,
+        )
         return self.send(req)

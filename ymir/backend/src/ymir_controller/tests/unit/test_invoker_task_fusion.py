@@ -49,7 +49,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         test_utils.check_commands()
         self._prepare_dirs()
         self._prepare_mir_repo()
-        labels.get_main_labels_by_ids = mock.Mock(return_value=["person", "cat", "table"])
+        labels.UserLabels.get_main_names = mock.Mock(return_value=["person", "cat", "table"])
         return super().setUp()
 
     def tearDown(self) -> None:

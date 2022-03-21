@@ -123,6 +123,7 @@ def command_run_in_out(f: Callable) -> Callable:
                                        state_content=state_message,
                                        trace_message=trace_message)
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
+        logging.info(f"trace: {trace_message}")
         raise exc
 
     return wrapper

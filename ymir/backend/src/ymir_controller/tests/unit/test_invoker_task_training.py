@@ -82,7 +82,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         rds.zremrangebyscore = mock.Mock()
         gpu_utils.GPUInfo.get_gpus_info = mock.Mock(return_value={'0': 0.99, '1': 0.9, '2': 0.89})
 
-        labels.get_main_labels_by_ids = mock.Mock(return_value=["frisbee", "car"])
+        labels.UserLabels.get_main_names = mock.Mock(return_value=["frisbee", "car"])
 
         training_config = {
             'anchors': '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401',
@@ -152,8 +152,10 @@ class TestInvokerTaskTraining(unittest.TestCase):
             config = yaml.safe_load(f)
 
         training_config["class_names"] = ["frisbee", "car"]
-        training_config["gpu_id"] = '1'
-        self.assertDictEqual(training_config, config)
+        training_config['gpu_id'] = '0'
+        expected_config = {'executor_config': training_config, 'task_context': {'available_gpu_id': '1'}}
+        logging.info(f"xxx config: {config}")  # for test
+        self.assertDictEqual(expected_config, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
 

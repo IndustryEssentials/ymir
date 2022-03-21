@@ -1,5 +1,6 @@
 import enum
-from typing import Any
+import os
+from typing import Dict, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -10,12 +11,15 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateModelError,
-    InvalidConfiguration,
     ModelNotFound,
+    DuplicateModelGroupError,
+    FailedtoImportModel,
+    TaskNotFound,
+    FieldValidationFailed,
 )
-from app.config import settings
 from app.constants.state import TaskType, ResultState
-from app.utils.files import save_file
+from app.utils.files import NGINX_DATA_PATH
+from app.utils.ymir_controller import gen_repo_hash, ControllerClient
 
 router = APIRouter()
 
@@ -93,33 +97,55 @@ def import_model(
     db: Session = Depends(deps.get_db),
     model_import: schemas.ModelImport,
     current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
 ) -> Any:
 
-    # 1. validation
-    if crud.model.is_duplicated_name(db, user_id=current_user.id, name=model_import.name):
-        raise DuplicateModelError()
-    if not settings.MODELS_PATH:
-        # fixme
-        #  adhoc put model file to underlying storage directly
-        raise InvalidConfiguration()
+    # 1. validation model group name
+    if crud.model_group.is_duplicated_name(db=db, user_id=current_user.id, name=model_import.name):
+        raise DuplicateModelGroupError()
 
     # 2. create placeholder task
+    if model_import.import_type is None:
+        raise FailedtoImportModel
     task = crud.task.create_placeholder(
-        db,
-        type_=TaskType.import_data,
+        db=db,
+        type_=model_import.import_type,
         user_id=current_user.id,
         project_id=model_import.project_id,
     )
     logger.info("[import model] related task created: %s", task.hash)
 
-    # 3. create model record
-    model = create_model_record(db, model_import, task)
+    # 3. create model group
+    model_group_in = schemas.ModelGroupCreate(
+        name=model_import.name,
+        project_id=model_import.project_id,
+        description=model_import.description,
+    )
+    model_group = crud.model_group.create_with_user_id(db=db, user_id=current_user.id, obj_in=model_group_in)
+
+    # 4. create model record
+    model_in = schemas.ModelCreate(
+        name=task.hash,
+        hash=None,
+        result_state=ResultState.processing,
+        model_group_id=model_group.id,
+        project_id=model_import.project_id,
+        user_id=current_user.id,
+        task_id=task.id,
+    )
+    model = crud.model.create_with_version(db=db, obj_in=model_in, dest_group_name=model_import.name)
     logger.info("[import model] model record created: %s", model)
 
-    # 4. run background task
-    storage_path = settings.MODELS_PATH
-    background_tasks.add_task(import_model_in_background, model_import.input_url, model.hash, storage_path)
+    # 5. run background task
+    background_tasks.add_task(
+        import_model_in_background,
+        db,
+        controller_client,
+        model_import,
+        current_user.id,
+        model.hash,
+    )
     return {"result": model}
 
 
@@ -138,13 +164,46 @@ def create_model_record(db: Session, model_import: schemas.ModelImport, task: mo
     return crud.model.create(db, obj_in=schemas.ModelCreate(**model_info))
 
 
-def import_model_in_background(model_url: str, model_hash: str, storage_path: str) -> None:
+def import_model_in_background(
+    db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
+) -> None:
     logger.info(
-        "[import model] start importing model file from %s, save to %s",
-        model_url,
-        storage_path,
+        "[import model] start importing model file from %s",
+        model_import,
     )
-    save_file(model_url, storage_path, model_hash)
+    parameters: Dict[str, Any] = {}
+    if model_import.import_type == TaskType.copy_model:
+        # get the task.hash from input_model
+        model_obj = crud.model.get(db, id=model_import.input_model_id)
+        if model_obj is None:
+            raise ModelNotFound()
+        task_obj = crud.task.get(db, id=model_obj.task_id)
+        if task_obj is None:
+            raise TaskNotFound()
+        parameters = {
+            "src_repo_id": gen_repo_hash(model_obj.project_id),
+            "src_resource_id": task_obj.hash,
+        }
+    elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
+        # TODO(chao): remove model file after importing
+        parameters = {
+            "model_package_path": os.path.join(NGINX_DATA_PATH, model_import.input_model_path),
+        }
+    else:
+        raise FieldValidationFailed()
+
+    try:
+        controller_client.import_model(
+            user_id=user_id,
+            project_id=model_import.project_id,
+            task_id=task_hash,
+            task_type=model_import.import_type,
+            args=parameters,
+        )
+    except ValueError as e:
+        logger.exception("[import model] controller error: %s", e)
+        raise FailedtoImportModel()
+    # update model info when get model ready status from postman
 
 
 @router.delete(

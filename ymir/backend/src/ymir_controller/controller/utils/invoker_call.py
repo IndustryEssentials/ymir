@@ -14,7 +14,7 @@ def make_cmd_request(user_id: str = None,
                      ex_dataset_ids: List[str] = None,
                      in_class_ids: List[int] = None,
                      ex_class_ids: List[int] = None,
-                     private_labels: List[str] = None,
+                     label_collection: backend_pb2.LabelCollection = None,
                      asset_dir: str = None,
                      model_config: str = None,
                      model_hash: str = None,
@@ -26,7 +26,8 @@ def make_cmd_request(user_id: str = None,
                      docker_image_config: str = None,
                      terminated_task_type: str = None,
                      sampling_count: int = None,
-                     sampling_rate: float = None) -> backend_pb2.GeneralReq:
+                     sampling_rate: float = None,
+                     task_parameters: str = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -50,8 +51,8 @@ def make_cmd_request(user_id: str = None,
         request.in_class_ids[:] = in_class_ids
     if ex_class_ids:
         request.ex_class_ids[:] = ex_class_ids
-    if private_labels:
-        request.private_labels[:] = private_labels
+    if label_collection:
+        request.label_collection.CopyFrom(label_collection)
     if force is not None:
         request.force = force
     if commit_message is not None:
@@ -76,6 +77,8 @@ def make_cmd_request(user_id: str = None,
         request.sampling_count = sampling_count
     if sampling_rate:
         request.sampling_rate = sampling_rate
+    if task_parameters:
+        request.task_parameters = task_parameters
     return request
 
 
@@ -94,7 +97,7 @@ def make_invoker_cmd_call(invoker: Any,
                           ex_dataset_ids: List[str] = None,
                           in_class_ids: List[int] = None,
                           ex_class_ids: List[int] = None,
-                          private_labels: List[str] = None,
+                          label_collection: backend_pb2.LabelCollection = None,
                           force: bool = None,
                           commit_message: str = None,
                           req_create_task: backend_pb2.ReqCreateTask = None,
@@ -117,7 +120,7 @@ def make_invoker_cmd_call(invoker: Any,
                                ex_dataset_ids=ex_dataset_ids,
                                in_class_ids=in_class_ids,
                                ex_class_ids=ex_class_ids,
-                               private_labels=private_labels,
+                               label_collection=label_collection,
                                force=force,
                                commit_message=commit_message,
                                req_create_task=req_create_task,

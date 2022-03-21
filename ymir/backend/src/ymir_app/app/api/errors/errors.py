@@ -315,6 +315,11 @@ class FailedToCreateUser(APIError):
     message = "Failed to Create User"
 
 
+class FailedtoImportModel(APIError):
+    code = error_codes.FAILED_TO_IMPORT_MODEL
+    message = "Failed to Import Model"
+
+
 class FailedToCreateIteration(APIError):
     code = error_codes.ITERATION_FAILED_TO_CREATE
     message = "Failed to Create Project"

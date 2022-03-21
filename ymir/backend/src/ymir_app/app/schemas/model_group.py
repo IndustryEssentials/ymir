@@ -18,7 +18,7 @@ class ModelGroupBase(BaseModel):
 
 
 class ModelGroupCreate(ModelGroupBase):
-    pass
+    description: Optional[str]
 
 
 class ModelGroupUpdate(BaseModel):

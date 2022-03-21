@@ -114,8 +114,10 @@ class CmdCopy(base.BaseCommand):
         task.name = f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}"
         task.task_id = dst_typ_rev_tid.tid
         task.timestamp = int(datetime.datetime.now().timestamp())
-        if mir_tasks.tasks[orig_head_task_id].type == mirpb.TaskTypeTraining:
-            task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
+        # TODO: don't put model, dataset result and task together
+        task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
+        task.args = mir_tasks.tasks[orig_head_task_id].args
+        task.task_parameters = mir_tasks.tasks[orig_head_task_id].task_parameters
         task.unknown_types.clear()
         for type_name, count in unknown_types.items():
             task.unknown_types[type_name] = count

@@ -40,12 +40,19 @@ def _build_cmd_create_repo_req(args: Dict) -> backend_pb2.GeneralReq:
 
 
 def _build_cmd_add_labels_req(args: Dict) -> backend_pb2.GeneralReq:
-    if "labels" not in args:
-        raise RuntimeError("private_labels not set.")
+    label_list = args["labels"].split(';')
+
+    label = backend_pb2.Label()
+    label.id = -1
+    label.name = label_list[0]
+    label.aliases.extend(label_list[1:])
+
+    label_collection = backend_pb2.LabelCollection()
+    label_collection.labels.append(label)
     return invoker_call.make_cmd_request(user_id=args["user"],
                                          repo_id=args["repo"],
                                          task_id=args["tid"],
-                                         private_labels=args["labels"].split(';'),
+                                         label_collection=label_collection,
                                          req_type=backend_pb2.CMD_LABEL_ADD)
 
 
@@ -122,6 +129,7 @@ def _build_task_importing_req(args: Dict) -> backend_pb2.GeneralReq:
     importing_request = backend_pb2.TaskReqImporting()
     importing_request.asset_dir = args['asset_dir']
     importing_request.annotation_dir = args['annotation_dir']
+    importing_request.name_strategy_ignore = args['name_strategy_ignore']
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeImportData
@@ -203,7 +211,8 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
                                         executor_instance=args['tid'],
                                         merge_strategy=1,
                                         docker_image_config=_get_executor_config(args),
-                                        singleton_op=args['executor_name'])
+                                        singleton_op=args['executor_name'],
+                                        task_parameters=args['task_parameters'])
     logging.info(json_format.MessageToDict(req, preserving_proto_field_name=True, use_integers_for_enums=True))
     return client.process_req(req)
 
@@ -264,6 +273,7 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--asset_dir", type=str)
     parser_create_task.add_argument("--annotation_dir", type=str)
+    parser_create_task.add_argument("--name_strategy_ignore", action="store_true")
     parser_create_task.add_argument("--model_package_path", type=str)
     parser_create_task.add_argument("--top_k", type=int)
     parser_create_task.add_argument("--expert_instruction_url", type=str)
@@ -276,12 +286,8 @@ def get_parser() -> Any:
     sampling_group = parser_create_task.add_mutually_exclusive_group()
     sampling_group.add_argument("--sampling_count", type=int, help="sampling count")
     sampling_group.add_argument("--sampling_rate", type=float, help="sampling rate")
+    parser_create_task.add_argument("--task_parameters", type=str, default='')
     parser_create_task.set_defaults(func=call_create_task)
-
-    # # GET TASK INFO
-    # parser_get_task_info = sub_parsers.add_parser("get_task_info", help="checkout the status of given tasks")
-    # parser_get_task_info.add_argument("--task_ids", nargs="+", help="task ids")
-    # parser_get_task_info.set_defaults(func=call_check_task_status)
 
     return parser
 

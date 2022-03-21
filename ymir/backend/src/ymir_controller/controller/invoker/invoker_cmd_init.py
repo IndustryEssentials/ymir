@@ -29,15 +29,16 @@ class InitInvoker(BaseMirControllerInvoker):
         repo_path = pathlib.Path(self._repo_root)
         repo_path.mkdir(parents=True, exist_ok=True)
 
-        label_file = labels.labels_file_path(label_file_dir=self._user_root)
-        link_dst_file = labels.labels_file_path(label_file_dir=os.path.join(self._repo_root, '.mir'))
-        os.link(label_file, link_dst_file)
+        link_dst_dir = os.path.join(self._repo_root, '.mir')
+        os.makedirs(link_dst_dir, exist_ok=True)
+        link_dst_file = os.path.join(link_dst_dir, labels.default_labels_file_name())
+        os.link(self._label_storage_file, link_dst_file)
 
         command = [utils.mir_executable(), 'init', '--root', self._repo_root]
         if self._request.in_class_ids:
             command.extend([
-                '--project-class-names', ';'.join(
-                    labels.get_main_labels_by_ids(label_file_dir=self._user_root, type_ids=self._request.in_class_ids))
+                '--project-class-names',
+                ';'.join(self._user_labels.get_main_names(class_ids=self._request.in_class_ids))
             ])
         command.extend(
             ['--with-empty-rev',
