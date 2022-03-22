@@ -266,8 +266,8 @@ message Label {
     int32 id = 1;
     string name = 2;
     repeated string aliases = 3;
-    float create_time = 4;
-    float update_time = 5;
+    string create_time = 4;  // RFC 3339 date strings
+    string update_time = 5;  // RFC 3339 date strings
 }
 
 
