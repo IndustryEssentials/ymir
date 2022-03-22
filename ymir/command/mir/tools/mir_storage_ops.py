@@ -199,7 +199,8 @@ class MirStorageOps():
                                                       use_integers_for_enums=True,
                                                       including_default_value_fields=True)
         single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task.task_parameters
-        single_model_dict['executor_config'] = yaml.safe_load(task.args).get('executor_config', {})
+        single_model_dict[mir_settings.EXECUTOR_CONFIG_KEY] = yaml.safe_load(task.args).get(
+            mir_settings.EXECUTOR_CONFIG_KEY, {})
         return single_model_dict
 
     @classmethod
