@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from mir import scm
 
-from mir.tools import settings as mir_settings
+from mir.tools import mir_storage, settings as mir_settings
 
 
 def find_extra_items(mir_root: str) -> List[str]:
@@ -12,7 +12,7 @@ def find_extra_items(mir_root: str) -> List[str]:
     find all extra items not in mir_settings.MIR_FILES_LIST
     """
     items = os.listdir(path=mir_root)
-    return list(set(items) - set(mir_settings.MIR_FILES) - set(mir_settings.MIR_ASSOCIATED_FILES))
+    return list(set(items) - set(mir_storage.get_all_mir_paths()) - set(mir_settings.MIR_ASSOCIATED_FILES))
 
 
 def mir_check_repo_git_dirty(mir_root: str = ".") -> bool:
