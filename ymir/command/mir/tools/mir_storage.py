@@ -3,6 +3,9 @@ from typing import Any, List
 from mir.protos import mir_command_pb2 as mirpb
 
 
+MIR_ASSOCIATED_FILES = ['.git', '.mir', '.gitignore', '.mir_lock']
+
+
 def mir_type(mir_storage: 'mirpb.MirStorage.V') -> Any:
     MIR_TYPE = {
         mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas,

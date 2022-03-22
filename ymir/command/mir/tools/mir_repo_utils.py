@@ -1,46 +1,27 @@
-import json
 import logging
 import os
-from typing import Optional
+from typing import List, Optional
 
 from mir import scm
+
 from mir.tools import mir_storage
 
 
-def mir_check_repo_dvc_dirty(mir_root: str = ".") -> bool:
-    names = [name for name in mir_storage.get_all_mir_paths() if os.path.isfile(os.path.join(mir_root, name))]
-    if names:
-        dvc_cmd_args = ["--show-json", "--targets"]
-        dvc_cmd_args.extend(names)
-        dvc_scm = scm.Scm(mir_root, scm_executable="dvc")
-        dvc_result = dvc_scm.diff(dvc_cmd_args)
-        json_object = json.loads(dvc_result)
-
-        keys = ['added', 'deleted', 'modified', 'renamed', 'not in cache']
-        dvc_dirty = False
-        for key in keys:
-            dirty_value = json_object.get(key, None)
-            if dirty_value:
-                logging.info(f"{key}: {dirty_value}")
-                dvc_dirty = True
-
-        return dvc_dirty
-    else:
-        # if no mir files in this mir repo, it's clean
-        return False
+def find_extra_items(mir_root: str) -> List[str]:
+    """
+    find all extra items not in mir_settings.MIR_FILES_LIST
+    """
+    items = os.listdir(path=mir_root)
+    return list(set(items) - set(mir_storage.get_all_mir_paths()) - set(mir_storage.MIR_ASSOCIATED_FILES))
 
 
 def mir_check_repo_git_dirty(mir_root: str = ".") -> bool:
     git_scm = scm.Scm(mir_root, scm_executable="git")
     git_result = git_scm.status("-s")  # if clean, returns nothing
     if (git_result or len(git_result) > 0):
-        logging.info(f"{git_result}")
+        logging.info(f"git result: \n{git_result}")
         return True
     return False  # clean
-
-
-def mir_check_repo_dirty(mir_root: str = '.') -> bool:
-    return mir_check_repo_dvc_dirty(mir_root) or mir_check_repo_git_dirty(mir_root)
 
 
 def mir_check_branch_exists(mir_root: str, branch: str) -> bool:
