@@ -4,7 +4,7 @@ import os
 
 from mir import scm
 from mir.commands import base
-from mir.tools import checker
+from mir.tools import checker, settings as mir_settings
 from mir.tools.code import MirCode
 
 
@@ -18,7 +18,7 @@ class CmdCommit(base.BaseCommand):
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
 
-        for f in ["metadatas.mir", "annotations.mir", "keywords.mir", "tasks.mir", "context.mir"]:
+        for f in mir_settings.MIR_FILES:
             if os.path.isfile(os.path.join(mir_root, f)):
                 repo_git.add(f)
 
