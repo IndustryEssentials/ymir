@@ -31,6 +31,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             chunk_size=obj_in.chunk_size,
             training_type=obj_in.training_type,
             training_keywords=training_keywords,
+            description=obj_in.description,
         )
         db.add(db_obj)
         db.commit()
