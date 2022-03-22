@@ -62,9 +62,7 @@ class CmdInit(base.BaseCommand):
         context.save(mir_root=mir_root, project_class_ids=project_class_ids)
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
-        repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
         repo_git.init()
-        repo_dvc.init()
 
         CmdInit.__update_ignore(mir_root=mir_root,
                                 git=repo_git,

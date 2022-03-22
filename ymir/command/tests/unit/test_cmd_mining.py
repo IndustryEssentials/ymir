@@ -16,7 +16,7 @@ import tests.utils as test_utils
 
 class TestMiningCmd(unittest.TestCase):
     _USER_NAME = "test_user"
-    _MIR_REPO_NAME = "ymir-dvc-test"
+    _MIR_REPO_NAME = "mir-test-repo"
     _STORAGE_NAME = "monitor_storage_root"
 
     # lifecycle
@@ -25,7 +25,7 @@ class TestMiningCmd(unittest.TestCase):
         # test_invoker_mining_sandbox_root
         # ├── monitor_storage_root
         # └── test_user
-        #     └── ymir-dvc-test
+        #     └── mir-test-repo
         super().__init__(methodName=methodName)
         self._sandbox_root = test_utils.dir_test_root(self.id().split(".")[-3:])
         self._user_root = os.path.join(self._sandbox_root, self._USER_NAME)
