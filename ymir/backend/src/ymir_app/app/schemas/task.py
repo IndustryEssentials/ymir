@@ -17,8 +17,6 @@ class TaskBase(BaseModel):
     name: str
     type: TaskType
     project_id: int
-    iteration_id: Optional[int]
-    iteration_stage: Optional[IterationStage]
 
     class Config:
         use_enum_values = True
@@ -58,6 +56,8 @@ class TaskParameter(BaseModel):
 
 
 class TaskCreate(TaskBase):
+    iteration_id: Optional[int]
+    iteration_stage: Optional[IterationStage]
     parameters: TaskParameter = Field(description="task specific parameters")
     config: Optional[Dict] = Field(description="docker runtime configuration")
 
