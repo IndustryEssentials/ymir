@@ -194,13 +194,12 @@ class MirStorageOps():
         if not task.model.model_hash:
             raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no model")
 
-        task_parameters = task.task_parameters
         single_model_dict = json_format.MessageToDict(task.model,
                                                       preserving_proto_field_name=True,
                                                       use_integers_for_enums=True,
                                                       including_default_value_fields=True)
-        single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task_parameters
-        single_model_dict['task_config'] = yaml.safe_load(task.args).get('executor_config', {})
+        single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task.task_parameters
+        single_model_dict['executor_config'] = yaml.safe_load(task.args).get('executor_config', {})
         return single_model_dict
 
     @classmethod
