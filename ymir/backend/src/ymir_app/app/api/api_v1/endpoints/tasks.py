@@ -105,7 +105,7 @@ def create_task(
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    parameters = normalize_parameters(db, task_in.parameters, task_in.config, user_labels)
+    parameters = normalize_parameters(db, task_in.parameters, task_in.docker_image_config, user_labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
@@ -355,13 +355,13 @@ def write_clickhouse_metrics(
 def normalize_parameters(
     db: Session,
     parameters: schemas.TaskParameter,
-    config: Optional[Dict],
+    docker_image_config: Optional[Dict],
     user_labels: UserLabels,
 ) -> Dict:
     normalized = parameters.dict()  # type: Dict[str, Any]
 
     # training, mining and inference task has docker_config
-    normalized["docker_config"] = config
+    normalized["docker_config"] = docker_image_config
 
     dataset = crud.dataset.get(db, id=parameters.dataset_id)
     if not dataset:
