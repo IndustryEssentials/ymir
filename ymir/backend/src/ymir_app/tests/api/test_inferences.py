@@ -21,6 +21,7 @@ class TestPostInference:
             "model_id": random.randint(1000, 2000),
             "docker_image": random_lower_string(),
             "image_urls": [random_url()],
+            "config": {"mock_config": "mock_config"},
         }
         r = client.post(
             f"{settings.API_V1_STR}/inferences/",
@@ -42,6 +43,7 @@ class TestPostInference:
             "model_id": model.id,
             "docker_image": random_lower_string(),
             "image_urls": [random_url()],
+            "config": {"mock_config": "mock_config"},
         }
         r = client.post(
             f"{settings.API_V1_STR}/inferences/",
@@ -64,6 +66,7 @@ class TestPostInference:
             "model_id": model.id,
             "docker_image": image.url,
             "image_urls": [random_url()],
+            "config": {"mock_config": "mock_config"},
         }
         r = client.post(
             f"{settings.API_V1_STR}/inferences/",
