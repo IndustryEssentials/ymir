@@ -206,20 +206,20 @@ class TaskResult:
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
-    def update_model_related_task_info(self, result: Dict) -> None:
+    def update_model_related_task_info(self) -> None:
         if self.result_type is not ResultType.model:
             return
         task_in_db = crud.task.get_by_user_and_id(self.db, id=self.task.id, user_id=self.user_id)
         if not task_in_db:
-            logger.warning("[update task] found no related task (%s)", result)
+            logger.warning("[update task] found no related task (%s)", self.result_info)
             return
         # not update task info if already record parameters
         if not task_in_db.parameters:
             crud.task.update_parameters_and_config(
                 self.db,
                 task=task_in_db,
-                parameters=result["task_parameters"],
-                config=result["executor_config"],
+                parameters=self.result_info["task_parameters"],
+                config=self.result_info["executor_config"],
             )
 
     def save_model_stats(self, result: Dict) -> None:
@@ -301,7 +301,7 @@ class TaskResult:
                 task_result,
             )
             self.update_task_result(task_result)
-            self.update_model_related_task_info(self.result_info)
+            self.update_model_related_task_info()
 
         logger.info(
             "[update task] updating task state %s and percent %s",
