@@ -7,7 +7,12 @@ class TestModelController:
         repo_id = "repo_id"
         branch_id = "5928508c-1bc0-43dc-a094-0352079e39b5"
 
-        mir_tasks_content = {"model_hash": "model_hash", "mean_average_precision": 0.88}
+        mir_tasks_content = {
+            "model_hash": "model_hash",
+            "mean_average_precision": 0.88,
+            "task_parameters": "mock_task_parameters",
+            "executor_config": "mock_executor_config",
+        }
 
         mocker.patch.object(MirStorageOps, "load_single_model", return_value=mir_tasks_content)
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/models")

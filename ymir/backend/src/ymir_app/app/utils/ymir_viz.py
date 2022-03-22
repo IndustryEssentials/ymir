@@ -54,11 +54,14 @@ class Assets:
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Assets":
-        assets = [{
-            "url": get_asset_url(asset["asset_id"]),
-            "hash": asset["asset_id"],
-            "keywords": user_labels.get_main_names(class_ids=asset["class_ids"])[0],
-        } for asset in res["elements"]]
+        assets = [
+            {
+                "url": get_asset_url(asset["asset_id"]),
+                "hash": asset["asset_id"],
+                "keywords": user_labels.get_main_names(class_ids=asset["class_ids"])[0],
+            }
+            for asset in res["elements"]
+        ]
 
         keywords = {user_labels.get_main_names([class_id]): count for class_id, count in res["class_ids_count"].items()}
         ignored_keywords = res["ignored_labels"]
@@ -71,11 +74,11 @@ class Model:
     hash: str
     map: float
     task_parameters: str
-    task_config: str
+    executor_config: str
 
     @classmethod
     def from_viz_res(cls, res: Dict) -> "Model":
-        return cls(res["model_id"], res["model_mAP"], res["task_parameters"], res["task_config"])
+        return cls(res["model_id"], res["model_mAP"], res["task_parameters"], res["executor_config"])
 
 
 class VizClient:

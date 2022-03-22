@@ -219,7 +219,7 @@ class TaskResult:
                 self.db,
                 task=task_in_db,
                 parameters=result["task_parameters"],
-                config=result["task_config"],
+                config=result["executor_config"],
             )
 
     def save_model_stats(self, result: Dict) -> None:
