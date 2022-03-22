@@ -171,8 +171,8 @@ class MirStorageOps():
 
         mir_pb_type = mir_storage.mir_type(ms)
         mir_storage_data = mir_pb_type()
-        with exodus.open_mir(mir_root=mir_root, file_name=mir_storage.mir_path(ms), rev=rev, mode="rb") as f:
-            mir_storage_data.ParseFromString(f.read())
+        mir_storage_data.ParseFromString(exodus.read_mir(mir_root=mir_root, rev=rev,
+                                                         file_name=mir_storage.mir_path(ms)))
 
         if as_dict:
             mir_storage_data = json_format.MessageToDict(mir_storage_data,
