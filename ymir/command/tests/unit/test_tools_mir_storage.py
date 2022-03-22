@@ -280,7 +280,9 @@ class TestMirStorage(unittest.TestCase):
                                                                             mir_task_id='mining-task-id')
         self.assertEqual(actual_dict_model, {'model_hash': 'abc123',
                                              'mean_average_precision': 0.5,
-                                             'context': 'fake_context'})
+                                             'context': 'fake_context',
+                                             'executor_config': {},
+                                             'task_parameters': ''})
         # load_single_model: have no model
         with self.assertRaises(MirError):
             mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root, mir_branch='a', mir_task_id='t2')
