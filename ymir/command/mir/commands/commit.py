@@ -4,7 +4,7 @@ import os
 
 from mir import scm
 from mir.commands import base
-from mir.tools import checker, settings as mir_settings
+from mir.tools import checker, mir_repo_utils, settings as mir_settings
 from mir.tools.code import MirCode
 
 
@@ -15,6 +15,11 @@ class CmdCommit(base.BaseCommand):
                                     [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.IS_DIRTY])
         if return_code != MirCode.RC_OK:
             return return_code
+        
+        extra_items = mir_repo_utils.find_extra_items(mir_root=mir_root)
+        if extra_items:
+            logging.error(f"extra items: {', '.join(extra_items)}")
+            return MirCode.RC_CMD_INVALID_MIR_REPO
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
 

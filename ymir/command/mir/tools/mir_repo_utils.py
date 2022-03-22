@@ -16,19 +16,11 @@ def find_extra_items(mir_root: str) -> List[str]:
 
 
 def mir_check_repo_git_dirty(mir_root: str = ".") -> bool:
-    # no extra items
-    extra_items = find_extra_items(mir_root=mir_root)
-    if extra_items:
-        logging.info(f"extra items: {', '.join(extra_items)}")
-        return True
-
-    # git clean
     git_scm = scm.Scm(mir_root, scm_executable="git")
     git_result = git_scm.status("-s")  # if clean, returns nothing
     if (git_result or len(git_result) > 0):
         logging.info(f"{git_result}")
         return True
-
     return False  # clean
 
 
