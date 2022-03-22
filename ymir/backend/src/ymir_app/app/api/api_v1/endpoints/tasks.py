@@ -28,6 +28,7 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
+from app.models.task import Task
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
@@ -206,12 +207,8 @@ class TaskResult:
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
-    def update_model_related_task_info(self) -> None:
+    def update_model_related_task_info(self, task_in_db: Task) -> None:
         if self.result_type is not ResultType.model:
-            return
-        task_in_db = crud.task.get_by_user_and_id(self.db, id=self.task.id, user_id=self.user_id)
-        if not task_in_db:
-            logger.warning("[update task] found no related task (%s)", self.result_info)
             return
         # not update task info if already record parameters
         if not task_in_db.parameters:
@@ -301,7 +298,7 @@ class TaskResult:
                 task_result,
             )
             self.update_task_result(task_result)
-            self.update_model_related_task_info()
+            self.update_model_related_task_info(task_in_db)
 
         logger.info(
             "[update task] updating task state %s and percent %s",
