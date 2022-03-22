@@ -27,7 +27,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db_obj = Task(
             name=obj_in.name,
             type=obj_in.type,
-            config=obj_in.config if obj_in.config else None,
+            config=obj_in.docker_image_config if obj_in.docker_image_config else None,
             parameters=obj_in.parameters.json() if obj_in.parameters else None,
             project_id=obj_in.project_id,
             hash=task_hash,
