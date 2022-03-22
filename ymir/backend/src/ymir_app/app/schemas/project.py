@@ -46,6 +46,7 @@ class ProjectUpdate(BaseModel):
     training_dataset_group_id: int
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
+    description: Optional[str]
 
 
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
