@@ -4,7 +4,6 @@ some mir commands, such as `mir search`, `mir merge` will use this module
 """
 
 import io
-import os
 
 from mir import scm
 from mir.tools.code import MirCode
