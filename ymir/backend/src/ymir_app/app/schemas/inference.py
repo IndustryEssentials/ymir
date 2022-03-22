@@ -9,7 +9,7 @@ class InferenceBase(BaseModel):
     docker_image: str
     model_id: int
     image_urls: List[str]
-    config: Dict = Field(description="inference docker image runtime configuration")
+    docker_image_config: Dict = Field(description="inference docker image runtime configuration")
 
 
 class InferenceCreate(InferenceBase):

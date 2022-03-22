@@ -56,7 +56,7 @@ def call_inference(
             model.hash,
             asset_dir,
             docker_image.url,
-            json.dumps(inference_in.config),
+            json.dumps(inference_in.docker_image_config),
         )
     except ValueError as e:
         logger.exception("Failed to call inference via Controller: %s", e)
