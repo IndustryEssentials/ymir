@@ -3,17 +3,16 @@ use this module to read contents in other branch head ref or from other tags \n
 some mir commands, such as `mir search`, `mir merge` will use this module
 """
 
-import logging
+import logging  # for test
 import os
-from typing import Any
+import zlib
 
 from mir import scm
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from pydantic import FilePath
 
 
-def locate_file_in_rev(mir_root: str, file_name: str, rev: str) -> str:
+def _blob_hash_in_rev(mir_root: str, file_name: str, rev: str) -> str:
     """
     get the file location in mir_root for special rev
     Args:
@@ -26,36 +25,33 @@ def locate_file_in_rev(mir_root: str, file_name: str, rev: str) -> str:
 
     scm_git = scm.Scm(mir_root if mir_root else ".", scm_executable="git")
 
-    # get `file_name` sha1
     blob_hash = scm_git.rev_parse(f"{rev}:{file_name}")
     if not blob_hash:
-        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_REPO, f"found no file: {file_name}")
-    out_str = scm_git.tree([blob_hash])
-    logging.info(f"out str: {out_str}")
+        raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_REPO, f"found no file: {rev}:{file_name}")
 
-    file_path = os.path.join(mir_root, ".git/objects", blob_hash[:2], blob_hash[2:])
-    return file_path
+    return os.path.join(mir_root, ".git/objects", blob_hash[:2], blob_hash[2:])
 
 
-class open_mir():
-    __slots__ = ("_file_name", "_rev", "_mode", "_fd", "_mir_root")
+def read_mir(mir_root: str, rev: str, file_name: str) -> bytes:
+    blob_path = _blob_path_in_rev(mir_root=mir_root, file_name=file_name, rev=rev)
+    with open(blob_path, 'rb') as f:
+        compressed_blob = f.read()
+    if not compressed_blob:
+        return MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                               error_message=f"empty blob: {rev}:{file_name}")
 
-    def __init__(self, mir_root: str, file_name: str, rev: str, mode: str):
-        self._mir_root = mir_root
-        self._file_name = file_name
-        self._rev = rev
-        self._mode = mode
-        self._fd = None
+    decompressed_blob = zlib.decompress(compressed_blob)
 
-    def __enter__(self) -> Any:
-        if not self._mir_root or not self._file_name or not self._rev or not self._mode:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid arguments')
+    if decompressed_blob.startswith(b'blob 0\x00'):
+        # blob with empty file
+        return b''
 
-        file_path = locate_file_in_rev(mir_root=self._mir_root, file_name=self._file_name, rev=self._rev)
-        self._fd = open(file_path, self._mode)
-        return self._fd
+    idx = decompressed_blob.find(b'\n')
+    if idx < 0 or idx >= len(decompressed_blob):
+        logging.info(f"invalid blob path: {blob_path}")
+        logging.info(f"decompressed blob: {decompressed_blob}")
+        logging.info(f"idx: {idx}")
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"invalid blob: {rev}:{file_name}")
 
-    def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
-        if self._fd is not None:
-            self._fd.close()
-            self._fd = None
+    return decompressed_blob[idx:]

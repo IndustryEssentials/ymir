@@ -27,7 +27,7 @@ class TestCmdFilter(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        self.__deprepare_dir(self._mir_root)
+        # self.__deprepare_dir(self._mir_root)
         return super().tearDown()
 
     # private: prepare env
