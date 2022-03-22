@@ -5,23 +5,24 @@ from typing import Dict
 import pytest
 
 from app.utils import ymir_viz as m
+from common_utils.labels import UserLabels
 from tests.utils.utils import random_lower_string
 
 
 @pytest.fixture(scope="module")
 def mock_user_labels() -> Dict:
-    user_labels = dict()
+    user_labels = []
     for i in range(100):
         name = random_lower_string()
-        user_labels[name] = {
+        user_labels.append({
             "name": name,
             "aliases": [],
-            "create_time": 1647075200.0,
-            "update_time": 1647075200.0,
+            "create_time": 1647075222.0,
+            "update_time": 1647075211.0,
             "id": i,
-        }
+        })
 
-    return user_labels
+    return UserLabels.parse_obj(dict(labels=user_labels))
 
 
 class TestAsset:

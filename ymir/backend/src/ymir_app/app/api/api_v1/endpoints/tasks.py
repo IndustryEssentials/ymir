@@ -28,12 +28,12 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
-from app.utils.class_ids import convert_keywords_to_classes
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
+from common_utils.labels import UserLabels
 
 router = APIRouter()
 
@@ -93,7 +93,7 @@ def create_task(
     viz_client: VizClient = Depends(deps.get_viz_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-    user_labels: Dict = Depends(deps.get_user_labels),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create task
@@ -356,7 +356,7 @@ def normalize_parameters(
     db: Session,
     parameters: schemas.TaskParameter,
     config: Optional[Dict],
-    user_labels: Dict,
+    user_labels: UserLabels,
 ) -> Dict:
     normalized = parameters.dict()  # type: Dict[str, Any]
 
@@ -384,7 +384,7 @@ def normalize_parameters(
             normalized["model_hash"] = model.hash
 
     if parameters.keywords:
-        normalized["class_ids"] = convert_keywords_to_classes(user_labels, parameters.keywords)
+        normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
     return normalized
 
 

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.api.api_v1.api import tasks as m
 from app.config import settings
+from common_utils.labels import UserLabels
 from tests.utils.tasks import create_task
 from tests.utils.utils import random_lower_string
 
@@ -19,16 +20,16 @@ def mock_controller(mocker):
         "cat": {
             "name": "cat",
             "aliases": [],
-            "create_time": 1647075200.0,
-            "update_time": 1647075200.0,
+            "create_time": 1647075201.0,
+            "update_time": 1647075202.0,
             "id": 0,
         },
         "dog": {
             "id": 1,
             "name": "dog",
             "aliases": ["puppy"],
-            "create_time": 1647076200.0,
-            "update_time": 1647076400.0,
+            "create_time": 1647076203.0,
+            "update_time": 1647076404.0,
         },
     }
     return c
@@ -76,32 +77,32 @@ class TestNormalizeParameters:
             "name": random_lower_string(5),
             "else": None,
         }
-        user_labels = {
-            "cat": {
+        user_labels = UserLabels.parse_obj(dict(labels=[
+            {
                 "name": "cat",
                 "aliases": [],
-                "create_time": 1647075200.0,
-                "update_time": 1647075200.0,
-                "id": 1,
+                "create_time": 1647075205.0,
+                "update_time": 1647075206.0,
+                "id": 0,
             },
-            "dog": {
-                "id": 2,
+            {
+                "id": 1,
                 "name": "dog",
                 "aliases": [],
-                "create_time": 1647076200.0,
-                "update_time": 1647076400.0,
+                "create_time": 1647076207.0,
+                "update_time": 1647076408.0,
             },
-            "boy": {
-                "id": 3,
+            {
+                "id": 2,
                 "name": "boy",
                 "aliases": [],
-                "create_time": 1647076200.0,
-                "update_time": 1647076400.0,
+                "create_time": 1647076209.0,
+                "update_time": 1647076410.0,
             },
-        }
+        ]))
         params = m.schemas.TaskParameter(**params)
         res = m.normalize_parameters(mocker.Mock(), params, None, user_labels)
-        assert res["class_ids"] == [1, 2, 3]
+        assert res["class_ids"] == [0, 1, 2]
         assert "dataset_hash" in res
         assert "model_hash" in res
 

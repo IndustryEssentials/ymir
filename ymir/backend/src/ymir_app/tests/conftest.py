@@ -29,15 +29,15 @@ def fake_controller_client() -> Generator:
                     {
                         "name": "tabby",
                         "aliases": [],
-                        "create_time": 1647075200.0,
-                        "update_time": 1647075200.0,
+                        "create_time": 1647075219.0,
+                        "update_time": 1647075218.0,
                         "id": 0,
                     },
                     {
                         "name": "kitten",
                         "aliases": [],
-                        "create_time": 1647075200.0,
-                        "update_time": 1647075200.0,
+                        "create_time": 1647075217.0,
+                        "update_time": 1647075216.0,
                         "id": 0,
                     },
                 ]
@@ -49,15 +49,15 @@ def fake_controller_client() -> Generator:
                     {
                         "name": "tabby",
                         "aliases": [],
-                        "create_time": 1647075200.0,
-                        "update_time": 1647075200.0,
+                        "create_time": 1647075215.0,
+                        "update_time": 1647075214.0,
                         "id": 0,
                     },
                     {
                         "name": "kitten",
                         "aliases": [],
-                        "create_time": 1647075200.0,
-                        "update_time": 1647075200.0,
+                        "create_time": 1647075213.0,
+                        "update_time": 1647075212.0,
                         "id": 0,
                     },
                 ]
@@ -95,8 +95,18 @@ def fake_graph_client() -> Generator:
     try:
         client = Mock()
         nodes = [
-            {"id": 1, "name": "n1", "hash": "h1", "type": 1},
-            {"id": 2, "name": "n2", "hash": "h2", "type": 2},
+            {
+                "id": 1,
+                "name": "n1",
+                "hash": "h1",
+                "type": 1
+            },
+            {
+                "id": 2,
+                "name": "n2",
+                "hash": "h2",
+                "type": 2
+            },
         ]
         edges = [{"target": "h1", "source": "h2", "task": {"id": 1}}]
         client.query_history.return_value = {"nodes": nodes, "edges": edges}
@@ -108,23 +118,25 @@ def fake_graph_client() -> Generator:
 def fake_cache_client() -> Generator:
     try:
         client = Mock()
-        labels = {
-            "tabby": {
-                "name": "tabby",
-                "aliases": [],
-                "create_time": 1647075200.0,
-                "update_time": 1647075200.0,
-                "id": 0,
-            },
-            "kitten": {
-                "id": 1,
-                "name": "kitten",
-                "aliases": [],
-                "create_time": 1647076200.0,
-                "update_time": 1647076400.0,
-            },
+        user_labels = {
+            "labels": [
+                {
+                    "name": "tabby",
+                    "aliases": [],
+                    "create_time": 1647075211.0,
+                    "update_time": 1647075210.0,
+                    "id": 0,
+                },
+                {
+                    "id": 1,
+                    "name": "kitten",
+                    "aliases": [],
+                    "create_time": 1647076209.0,
+                    "update_time": 1647076408.0,
+                },
+            ]
         }
-        client.get.return_value = json.dumps(labels)
+        client.get.return_value = json.dumps(user_labels)
         yield client
     finally:
         client.close()

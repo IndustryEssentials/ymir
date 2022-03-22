@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Dict, List
+from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import utils
@@ -33,7 +34,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         exporting_request = request.req_create_task.exporting
         asset_dir = exporting_request.asset_dir
         annotation_dir = exporting_request.annotation_dir

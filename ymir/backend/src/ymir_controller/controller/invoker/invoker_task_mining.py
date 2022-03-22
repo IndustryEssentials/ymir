@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Dict, List
+from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import TaskBaseInvoker
@@ -26,10 +27,9 @@ class TaskMiningInvoker(TaskBaseInvoker):
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
         gpu_lock_ret = self.gen_executor_config_lock_gpus(
-            repo_root=self._repo_root,
             req_executor_config=request.docker_image_config,
             task_parameters=request.task_parameters,
-            in_class_ids=[],
+            class_names=[],
             output_config_file=output_config_file,
         )
         if not gpu_lock_ret:
@@ -44,7 +44,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
@@ -65,7 +65,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str) -> backend_pb2.GeneralResp:
+                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
         executor_instance = request.task_id
         models_location = assets_config["modelskvlocation"]

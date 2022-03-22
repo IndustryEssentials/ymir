@@ -1,20 +1,9 @@
-from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
 
 from .common import Common
-
-
-class KeywordBase(BaseModel):
-    name: str
-    aliases: Optional[List[str]]
-    create_time: datetime = None  # type: ignore
-    update_time: datetime = None  # type: ignore
-
-
-class Keyword(KeywordBase):
-    pass
+from common_utils.labels import SingleLabel
 
 
 class KeywordUpdate(BaseModel):
@@ -22,17 +11,17 @@ class KeywordUpdate(BaseModel):
 
 
 class KeywordOut(Common):
-    result: Keyword
+    result: SingleLabel
 
 
 class KeywordsCreate(BaseModel):
-    keywords: List[Keyword]
+    keywords: List[SingleLabel]
     dry_run: bool = False
 
 
 class KeywordsPagination(BaseModel):
     total: int
-    items: List[Keyword]
+    items: List[SingleLabel]
 
 
 class KeywordsPaginationOut(Common):
