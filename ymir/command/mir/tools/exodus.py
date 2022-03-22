@@ -12,7 +12,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 
-def _blob_hash_in_rev(mir_root: str, file_name: str, rev: str) -> str:
+def _blob_path_in_rev(mir_root: str, file_name: str, rev: str) -> str:
     """
     get the file location in mir_root for special rev
     Args:
