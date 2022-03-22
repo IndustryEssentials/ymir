@@ -18,4 +18,9 @@ class TestModelController:
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/models")
 
         assert resp.status_code == 200
-        assert resp.json()["result"] == {"model_id": "model_hash", "model_mAP": 0.88}
+        assert resp.json()["result"] == {
+            "model_id": "model_hash",
+            "model_mAP": 0.88,
+            "task_parameters": "mock_task_parameters",
+            "executor_config": "mock_executor_config",
+        }
