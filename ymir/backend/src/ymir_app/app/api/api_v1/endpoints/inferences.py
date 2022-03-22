@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Generator
 
 from fastapi import APIRouter, Depends
@@ -13,7 +14,6 @@ from app.api.errors.errors import (
     ModelNotFound,
 )
 from app.config import settings
-from app.constants.state import DockerImageType
 from app.utils.files import FailedToDownload, save_files
 from app.utils.ymir_controller import ControllerClient
 
@@ -50,14 +50,13 @@ def call_inference(
         logger.error("Failed to download user content: %s", inference_in.image_urls)
         raise FailedtoDownloadError()
 
-    inference_config = next(filter(lambda x: x.type == DockerImageType.infer, docker_image.configs)).config
     try:
         resp = controller_client.call_inference(
             current_user.id,
             model.hash,
             asset_dir,
             docker_image.url,
-            inference_config,
+            json.dumps(inference_in.config),
         )
     except ValueError as e:
         logger.exception("Failed to call inference via Controller: %s", e)
