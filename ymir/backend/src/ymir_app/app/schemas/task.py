@@ -58,10 +58,10 @@ class TaskParameter(BaseModel):
 
 class TaskCreate(TaskBase):
     parameters: TaskParameter = Field(description="task specific parameters")
-    config: Optional[Dict] = Field(description="docker runtime configuration")
+    docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
 
-    @validator("config")
-    def dumps_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
+    @validator("docker_image_config")
+    def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
         # we don't care what's inside of config
         # just dumps it as string and save to db
         if isinstance(v, dict):
