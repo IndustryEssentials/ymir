@@ -15,7 +15,7 @@ class CmdCommit(base.BaseCommand):
                                     [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.IS_DIRTY])
         if return_code != MirCode.RC_OK:
             return return_code
-        
+
         extra_items = mir_repo_utils.find_extra_items(mir_root=mir_root)
         if extra_items:
             logging.error(f"extra items: {', '.join(extra_items)}")
