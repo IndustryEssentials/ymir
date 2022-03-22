@@ -224,7 +224,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.annotation_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = 'c@c'  # too fast, default task_id will be the same as previous one
+        fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one
         fake_args.format = 'voc'
         fake_args.in_cis = 'person'
         fake_args.work_dir = ''
