@@ -606,6 +606,13 @@
       "font_class": "tv",
       "unicode": "e6ea",
       "unicode_decimal": 59114
+    },
+    {
+      "icon_id": "96669944",
+      "name": "Iterative",
+      "font_class": "Iterative",
+      "unicode": "e6eb",
+      "unicode_decimal": 59115
     }
   ]
 }

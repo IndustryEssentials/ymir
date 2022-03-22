@@ -96,4 +96,5 @@ export const ShareIcon = iconFont('share')
 export const UserSharedIcon = iconFont('user-shared')
 export const LinkIcon = iconFont('user-associated')
 export const TvIcon = iconFont('tv')
+export const IterativeIcon = iconFont('Iterative')
 
