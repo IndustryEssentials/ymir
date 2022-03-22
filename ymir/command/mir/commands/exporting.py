@@ -16,7 +16,7 @@ class CmdExport(base.BaseCommand):
 
         dst_rev = self.args.dst_rev
         if not dst_rev:
-            task_id = f"exporting-task-{int(time.time())}"
+            task_id = f"exporting-task-{float(time.time())}"
             dst_rev = f"{task_id}@{task_id}"
 
         return CmdExport.run_with_args(mir_root=self.args.mir_root,

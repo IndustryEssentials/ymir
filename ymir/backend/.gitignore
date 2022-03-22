@@ -14,7 +14,6 @@ ymir_repo_user_rsa.pub
 dist
 .vscode
 .pytest_cache
-.dvc
 server_config.server
 protos
 mir
