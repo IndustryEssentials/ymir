@@ -150,8 +150,14 @@ class TaskInternal(TaskInDBBase):
 
 
 class TaskResult(BaseModel):
-    model: Dict
-    dataset: Dict
+    model: Optional[Dict]
+    dataset: Optional[Dict]
+
+    @root_validator
+    def ensure_single_result(cls, values: Any) -> Any:
+        if values["model"] and values["dataset"]:
+            raise ValueError("Invalid Task Result")
+        return values
 
 
 class Task(TaskInternal):
