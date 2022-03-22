@@ -37,7 +37,7 @@ export function getIterations(id) {
  * }
  * @returns
  */
-export function createIterations({
+export function createIteration({
   name,
   currentStage,
   iterationRound,

@@ -10,11 +10,17 @@ function Stage({ stage, current = 0, end = false, next = () => { }, ...func }) {
   console.log('stage: ', stage, end)
 
   function skip() {
-    updateIteration({ skip: true, id: stage.iterationId, next: stage.next, })
+    func.updateIteration({ id: stage.iterationId, next: stage.next, })
   }
 
   function next() {
-    updateIteration({ skip: false, id: stage.iterationId, next: stage.next, result: stage.result, })
+    if (stage.next) {
+      // goto next stage
+      func.updateIteration({ id: stage.iterationId, next: stage.next, result: stage.result, })
+    } else {
+      // todo create new one
+      func.createIteration({round: current + 1 })
+    }
   }
 
   async function updateIteration(params) {
@@ -49,7 +55,7 @@ function Stage({ stage, current = 0, end = false, next = () => { }, ...func }) {
   const renderMainBtn = () => {
     // show by task state and result
     const disabled = isReady() || isInvalid()
-    const label = isValid() ? '下一步' : t(stage.act)
+    const label = isValid() ? t('common.step.next') : t(stage.act)
     return <Button disabled={disabled} className={s.act} type='primary' onClick={() => next()}>{label}</Button>
   }
 
@@ -99,6 +105,12 @@ const actions = (dispacth) => {
     updateIteration(params) {
       return dispacth({
         type: 'iteration/updateIteration',
+        payload: params,
+      })
+    },
+    createIteration(params) {
+      return dispacth({
+        type: 'iteration/createIteration',
         payload: params,
       })
     }

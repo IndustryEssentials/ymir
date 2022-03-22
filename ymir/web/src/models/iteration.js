@@ -1,7 +1,7 @@
 import {
   getIterations,
   getIteration,
-  createIterations,
+  createIteration,
   updateIteration,
 } from "@/services/iteration"
 import { transferIteration } from "@/constants/project"
@@ -47,8 +47,8 @@ export default {
         return iteration
       }
     },
-    *createIterations({ payload }, { call, put }) {
-      const { code, result } = yield call(createIterations, payload)
+    *createIteration({ payload }, { call, put }) {
+      const { code, result } = yield call(createIteration, payload)
       if (code === 0) {
         return result
       }

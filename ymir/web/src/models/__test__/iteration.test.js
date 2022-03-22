@@ -36,7 +36,7 @@ describe("models: iteration", () => {
 
   errorCode(iteration, "getIterations")
   errorCode(iteration, "getIteration")
-  errorCode(iteration, "createIterations")
+  errorCode(iteration, "createIteration")
   errorCode(iteration, "updateIteration")
 
   it("effects: getIterations -> success", () => {
@@ -81,12 +81,12 @@ describe("models: iteration", () => {
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
-  it("effects: createIterations", () => {
-    const saga = iteration.effects.createIterations
+  it("effects: createIteration", () => {
+    const saga = iteration.effects.createIteration
     const id = 10015
     const expected = { id, name: "new_iteration_name" }
     const creator = {
-      type: "createIterations",
+      type: "createIteration",
       payload: { name: "new_iteration_name", type: 1 },
     }
 
