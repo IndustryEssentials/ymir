@@ -35,8 +35,8 @@ export default {
       }
     },
     *getIteration({ payload }, { call, put }) {
-      const id = payload
-      const { code, result } = yield call(getIteration, id)
+      const { pid, id } = payload
+      const { code, result } = yield call(getIteration, pid, id)
       if (code === 0) {
         const iteration = transferIteration(result)
         console.log("get from remote iteration: ", iteration)

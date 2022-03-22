@@ -2,7 +2,7 @@ import { Button, Col, Row, Space } from "antd"
 import { connect } from "dva"
 
 import t from '@/utils/t'
-import { states } from '@/constants/dataset'
+import { states, statesLabel } from '@/constants/dataset'
 import { TASKSTATES, getTaskStateLabel } from '@/constants/task'
 import s from './iteration.less'
 
@@ -24,16 +24,19 @@ function Stage({ stage, current = 0, end = false, next = () => { }, ...func }) {
     }
   }
 
-  const currentStage = () => current === stage.id
-  const finishStage = () => stage.id < current
-  const pendingStage = () => stage.id > current
+  const currentStage = () => current === stage.value
+  const finishStage = () => stage.value < current
+  const pendingStage = () => stage.value > current
 
-  const isReady = () => [TASKSTATES.READY].includes(stage.taskState)
+  const isPending = () => stage.state < 0
+  const isReady = () => stage?.state === states.READY
+  const isValid = () => stage?.state === states.VALID
+  const isInvalid = () => stage?.state === states.INVALID
 
   const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
 
   const renderCount = () => {
-    if (finishStage() || (currentStage() && stage.taskState === TASKSTATES.FINISH)) {
+    if (finishStage() || (currentStage() && isValid())) {
       return '√' // finish state
     } else {
       return stage.value
@@ -45,21 +48,21 @@ function Stage({ stage, current = 0, end = false, next = () => { }, ...func }) {
 
   const renderMainBtn = () => {
     // show by task state and result
-    const disabled = !([TASKSTATES.PENDING, TASKSTATES.FINISH].includes(stage.taskState) || false)
-    const label = [TASKSTATES.PENDING, TASKSTATES.DOING].includes(stage.taskState) ? t(stage.act) : '下一步'
+    const disabled = isReady() || isInvalid()
+    const label = isValid() ? '下一步' : t(stage.act)
     return <Button disabled={disabled} className={s.act} type='primary' onClick={() => next()}>{label}</Button>
   }
 
   const renderReactBtn = () => {
     return stage.react && currentStage()
-      && [TASKSTATES.FINISH, TASKSTATES.ERROR, TASKSTATES.TERMINATED].includes(stage.taskState)
+      && (isInvalid() || isValid())
       ? <Button className={s.react}>{t(stage.react)}</Button>
       : null
   }
-  const renderState = (state) => {
+  const renderState = () => {
     const pending = 'project.stage.state.pending'
     const result = stage.result
-    return result ? result : t(currentStage() ? getTaskStateLabel(stage.taskState) : pending)
+    return !finishStage() ? (isPending() ? t(pending) : (result ? result : statesLabel(stage.state))) : null
   }
 
   const renderSkip = () => {

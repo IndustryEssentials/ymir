@@ -11,7 +11,7 @@ export enum Stages {
 }
 
 export const StageList = () => {
-  const arr = [
+  const list = [
     Stages.beforeMining,
     Stages.mining,
     Stages.labelling,
@@ -19,7 +19,7 @@ export const StageList = () => {
     Stages.training,
     Stages.trained,
   ]
-  return singleList(arr)
+  return { list, ...singleList(list)}
 }
 
 export function getIterationVersion(version: number) {
@@ -38,7 +38,7 @@ export function transferProject(data: originProject) {
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
-    currentIteration: data.current_iteration_id,
+    currentIteration: data.current_iteration_id || 0,
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,

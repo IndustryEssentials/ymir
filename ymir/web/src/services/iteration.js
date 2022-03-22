@@ -3,11 +3,12 @@ import request from "@/utils/request"
 /** iteration service */
 /**
  * get iteration by id
- * @param {array[number]} id iteration id
+ * @param {number} project_id project id
+ * @param {number} id iteration id
  * @returns
  */
-export function getIteration(id) {
-  return request.get(`iterations/${id}`)
+export function getIteration(project_id, id) {
+  return request.get(`iterations/${id}`, { params: { project_id }})
 }
 
 /**

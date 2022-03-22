@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Card } from "antd"
-import { useLocation, useParams } from "umi"
+import { useLocation, useParams, connect } from "umi"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -15,14 +15,19 @@ const tabsTitle = [
   { tab: t('project.tab.model.title'), key: 'model', },
 ]
 
-function ProjectDetail() {
+function ProjectDetail(func) {
   const location = useLocation()
   const { id } = useParams()
+  const [project, setProject] = useState({})
   const [active, setActive] = useState(tabsTitle[0].key)
   const content = {
     'set': <Datasets pid={id} />,
     'model': <Models pid={id} />
   }
+
+  useEffect(() => {
+    id && fetchProject()
+  }, [id])
   
   useEffect(() => {
     const locationHash = location.hash.replace(/^#/, '')
@@ -31,10 +36,17 @@ function ProjectDetail() {
     }
   }, [location.hash])
 
+  async function fetchProject() {
+    const result  = await func.getProject(id)
+    if (result) {
+      setProject(result)
+    }
+  }
+
   return (
     <div className={styles.projectDetail}>
       <Breadcrumbs />
-      <Iteration id={id} />
+      <Iteration id={id} project={project} />
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} 
         style={{ margin: '-20px -5vw 0', background: 'transparent'}}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px'}}
@@ -45,4 +57,16 @@ function ProjectDetail() {
   )
 }
 
-export default ProjectDetail
+
+const actions = (dispacth) => {
+  return {
+    getProject(id) {
+      return dispacth({
+        type: 'project/getProject',
+        payload: id,
+      })
+    }
+  }
+}
+
+export default connect(null, actions)(ProjectDetail)
