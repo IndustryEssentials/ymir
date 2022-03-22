@@ -9,9 +9,10 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
+import yaml
 
 
 class MirStorageDatas:
@@ -189,14 +190,18 @@ class MirStorageOps():
                                                            mir_task_id=mir_task_id,
                                                            as_dict=False)
 
-        task_model = mir_storage_data.tasks[mir_storage_data.head_task_id].model
-        if not task_model.model_hash:
+        task = mir_storage_data.tasks[mir_storage_data.head_task_id]
+        if not task.model.model_hash:
             raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no model")
 
-        return json_format.MessageToDict(task_model,
-                                         preserving_proto_field_name=True,
-                                         use_integers_for_enums=True,
-                                         including_default_value_fields=True)
+        task_parameters = task.task_parameters
+        single_model_dict = json_format.MessageToDict(task.model,
+                                                      preserving_proto_field_name=True,
+                                                      use_integers_for_enums=True,
+                                                      including_default_value_fields=True)
+        single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task_parameters
+        single_model_dict['task_config'] = yaml.safe_load(task.args).get('executor_config', {})
+        return single_model_dict
 
     @classmethod
     def load_branch_contents(cls,
