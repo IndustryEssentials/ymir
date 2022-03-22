@@ -16,16 +16,16 @@ class TestFindDuplicateLabels:
                 {
                     "name": "cat",
                     "aliases": ["kitty"],
-                    "create_time": 1647075200.0,
-                    "update_time": 1647075200.0,
+                    "create_time": 1647075277.0,
+                    "update_time": 1647075288.0,
                     "id": 0,
                 },
                 {
                     "id": 1,
                     "name": "dog",
                     "aliases": ["puppy"],
-                    "create_time": 1647076200.0,
-                    "update_time": 1647076400.0,
+                    "create_time": 1647076277.0,
+                    "update_time": 1647076488.0,
                 },
             ]))
 
