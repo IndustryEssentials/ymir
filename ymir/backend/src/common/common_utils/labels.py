@@ -120,14 +120,7 @@ class UserLabels(LabelStorage):
         return list(set(self.name_aliases_to_id.keys()) & new_set)
 
     def to_proto(self) -> backend_pb2.LabelCollection:
-        label_dict = self.dict()
-        for label in label_dict.get("labels", []):
-            label["create_time"] = str(label["create_time"])
-            label["update_time"] = str(label["update_time"])
-
-        label_collection = backend_pb2.LabelCollection()
-        json_format.ParseDict(label_dict, label_collection, ignore_unknown_fields=False)
-        return label_collection
+        return json_format.Parse(self.json(), backend_pb2.LabelCollection(), ignore_unknown_fields=False)
 
 
 def merge_labels(label_storage_file: str,

@@ -20,16 +20,16 @@ def mock_controller(mocker):
         "cat": {
             "name": "cat",
             "aliases": [],
-            "create_time": 1647075200.0,
-            "update_time": 1647075200.0,
+            "create_time": 1647075201.0,
+            "update_time": 1647075202.0,
             "id": 0,
         },
         "dog": {
             "id": 1,
             "name": "dog",
             "aliases": ["puppy"],
-            "create_time": 1647076200.0,
-            "update_time": 1647076400.0,
+            "create_time": 1647076203.0,
+            "update_time": 1647076404.0,
         },
     }
     return c
@@ -81,23 +81,23 @@ class TestNormalizeParameters:
             {
                 "name": "cat",
                 "aliases": [],
-                "create_time": 1647075200.0,
-                "update_time": 1647075200.0,
+                "create_time": 1647075205.0,
+                "update_time": 1647075206.0,
                 "id": 0,
             },
             {
                 "id": 1,
                 "name": "dog",
                 "aliases": [],
-                "create_time": 1647076200.0,
-                "update_time": 1647076400.0,
+                "create_time": 1647076207.0,
+                "update_time": 1647076408.0,
             },
             {
                 "id": 2,
                 "name": "boy",
                 "aliases": [],
-                "create_time": 1647076200.0,
-                "update_time": 1647076400.0,
+                "create_time": 1647076209.0,
+                "update_time": 1647076410.0,
             },
         ]))
         params = m.schemas.TaskParameter(**params)
