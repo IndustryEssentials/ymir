@@ -7,7 +7,7 @@ from app.api.errors.errors import IterationNotFound
 
 
 class CRUDIteration(CRUDBase[Iteration, IterationCreate, IterationUpdate]):
-    def proceed_to_next_stage(self, db: Session, *, iteration_id: int, iteration_update: IterationUpdate) -> Iteration:
+    def update_iteration(self, db: Session, *, iteration_id: int, iteration_update: IterationUpdate) -> Iteration:
         iteration = self.get(db, id=iteration_id)
         if not iteration:
             raise IterationNotFound()

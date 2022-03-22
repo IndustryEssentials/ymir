@@ -1,9 +1,8 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
 from app.constants.state import IterationStage
-from app.schemas.task import Task
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -40,11 +39,6 @@ class IterationUpdate(BaseModel):
     training_output_model_id: Optional[int]
 
 
-class IterationNextStage(BaseModel):
-    stage: IterationStage
-    result_id: int
-
-
 class IterationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationBase):
     class Config:
         orm_mode = True
@@ -52,13 +46,7 @@ class IterationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, I
 
 # Properties to return to caller
 class Iteration(IterationInDBBase):
-    tasks: List[Task]
-    tasks_with_stages: Dict[IterationStage, Task]
-
-    @validator("tasks_with_stages", pre=True)
-    def format_tasks(cls, v: Any, values: Any) -> Dict:
-        tasks = values.get("tasks", [])
-        return {task.iteration_stage: task for task in tasks}
+    pass
 
 
 class IterationOut(Common):

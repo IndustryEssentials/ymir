@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger
-from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
@@ -21,14 +20,6 @@ class Iteration(Base):
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
-
-    # in-iteration tasks
-    tasks = relationship(
-        "Task",
-        primaryjoin="foreign(Task.iteration_id)==Iteration.id",
-        uselist=True,
-        viewonly=True,
-    )
 
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)

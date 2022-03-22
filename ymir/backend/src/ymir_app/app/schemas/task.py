@@ -1,4 +1,3 @@
-import enum
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
@@ -150,7 +149,14 @@ class TaskInternal(TaskInDBBase):
         use_enum_values = True
 
 
+class TaskResult(BaseModel):
+    model: Dict
+    dataset: Dict
+
+
 class Task(TaskInternal):
+    result: Optional[TaskResult]
+
     @root_validator
     def ensure_terminate_state(cls, values: Any) -> Any:
         # as long as a task is marked as terminated
@@ -184,14 +190,3 @@ class TaskPagination(BaseModel):
 
 class TaskPaginationOut(Common):
     result: TaskPagination
-
-
-class CreateDatasetType(enum.IntEnum):
-    continued_dataset_group = 0
-    new_dataset_group = 1
-
-
-class TrainDataSet(BaseModel):
-    training_dataset_name: str
-    training_dataset_group: int
-    training_dataset_version: int
