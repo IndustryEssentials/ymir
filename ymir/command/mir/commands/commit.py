@@ -4,7 +4,7 @@ import os
 
 from mir import scm
 from mir.commands import base
-from mir.tools import checker, mir_repo_utils, mir_storage, settings as mir_settings
+from mir.tools import checker, mir_repo_utils, mir_storage
 from mir.tools.code import MirCode
 
 
