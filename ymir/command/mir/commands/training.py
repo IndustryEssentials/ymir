@@ -93,7 +93,9 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                      return_msg=task_err_msg,
                                      serialized_task_parameters=serialized_task_parameters,
                                      serialized_executor_config=serialized_executor_config,
-                                     executor=executor)
+                                     executor=executor,
+                                     src_revs=src_rev_tid.rev_tid,
+                                     dst_rev=dst_rev_tid.rev_tid)
     return mir_tasks
 
 

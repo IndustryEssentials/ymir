@@ -224,7 +224,9 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                      task_type=mirpb.TaskTypeMining,
                                      task_id=dst_typ_rev_tid.tid,
-                                     message='mining')
+                                     message='mining',
+                                     src_revs=src_typ_rev_tid.rev_tid,
+                                     dst_rev=dst_typ_rev_tid.rev_tid)
     mir_tasks.tasks[mir_tasks.head_task_id].model.model_hash = model_hash
 
     # step 3: store results and commit.

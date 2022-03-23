@@ -515,13 +515,11 @@ class Task(google.protobuf.message.Message):
     TYPE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
     TASK_ID_FIELD_NUMBER: builtins.int
-    BASE_TASK_ID_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
     UNKNOWN_TYPES_FIELD_NUMBER: builtins.int
     RETURN_CODE_FIELD_NUMBER: builtins.int
     RETURN_MSG_FIELD_NUMBER: builtins.int
-    ANCESTOR_TASK_ID_FIELD_NUMBER: builtins.int
     SERIALIZED_TASK_PARAMETERS_FIELD_NUMBER: builtins.int
     SERIALIZED_EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     TASK_CONTEXT_FIELD_NUMBER: builtins.int
@@ -530,9 +528,6 @@ class Task(google.protobuf.message.Message):
     """/ user defined task name"""
 
     task_id: typing.Text = ...
-    """/ auto generated unique id"""
-
-    base_task_id: typing.Text = ...
     """/ auto generated unique id"""
 
     timestamp: builtins.int = ...
@@ -547,10 +542,7 @@ class Task(google.protobuf.message.Message):
         """/ (special for import task): unknown types for cmd import"""
         pass
     return_code: builtins.int = ...
-    """/ return code of task"""
-
     return_msg: typing.Text = ...
-    ancestor_task_id: typing.Text = ...
     serialized_task_parameters: typing.Text = ...
     serialized_executor_config: typing.Text = ...
     @property
@@ -560,19 +552,17 @@ class Task(google.protobuf.message.Message):
         type : global___TaskType.V = ...,
         name : typing.Text = ...,
         task_id : typing.Text = ...,
-        base_task_id : typing.Text = ...,
         timestamp : builtins.int = ...,
         model : typing.Optional[global___ModelMeta] = ...,
         unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         return_code : builtins.int = ...,
         return_msg : typing.Text = ...,
-        ancestor_task_id : typing.Text = ...,
         serialized_task_parameters : typing.Text = ...,
         serialized_executor_config : typing.Text = ...,
         task_context : typing.Optional[global___TaskContext] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model","task_context",b"task_context"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ancestor_task_id",b"ancestor_task_id","base_task_id",b"base_task_id","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","task_context",b"task_context","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","task_context",b"task_context","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):
@@ -601,12 +591,18 @@ global___ModelMeta = ModelMeta
 class TaskContext(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     EXECUTOR_FIELD_NUMBER: builtins.int
+    SRC_REVS_FIELD_NUMBER: builtins.int
+    DST_REV_FIELD_NUMBER: builtins.int
     executor: typing.Text = ...
+    src_revs: typing.Text = ...
+    dst_rev: typing.Text = ...
     def __init__(self,
         *,
         executor : typing.Text = ...,
+        src_revs : typing.Text = ...,
+        dst_rev : typing.Text = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["executor",b"executor"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dst_rev",b"dst_rev","executor",b"executor","src_revs",b"src_revs"]) -> None: ...
 global___TaskContext = TaskContext
 
 class MirContext(google.protobuf.message.Message):

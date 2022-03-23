@@ -247,25 +247,28 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
                      return_msg: str = '',
                      serialized_task_parameters: str = '',
                      serialized_executor_config: str = '',
-                     executor: str = '') -> None:
+                     executor: str = '',
+                     src_revs: str = '',
+                     dst_rev: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message
     task.task_id = task_id
     task.timestamp = int(time.time())
-
+    task.return_code = return_code
+    task.return_msg = return_msg
+    task.serialized_task_parameters = serialized_task_parameters
+    task.serialized_executor_config = serialized_executor_config
     for k, v in unknown_types.items():
         task.unknown_types[k] = v
 
     task.model.model_hash = model_hash
     task.model.mean_average_precision = model_mAP
-    task.return_code = return_code
-    task.return_msg = return_msg
-    task.serialized_task_parameters = serialized_task_parameters
-    task.serialized_executor_config = serialized_executor_config
-    task.task_context.executor = executor
 
-    task.ancestor_task_id = mir_tasks.head_task_id
+    task.task_context.executor = executor
+    task.task_context.src_revs = src_revs
+    task.task_context.dst_rev = dst_rev
+
     mir_tasks.tasks[task.task_id].CopyFrom(task)
     mir_tasks.head_task_id = task.task_id
 

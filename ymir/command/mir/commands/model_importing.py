@@ -77,7 +77,9 @@ class CmdModelImport(base.BaseCommand):
                                          model_hash=model_hash,
                                          model_mAP=float(model_storage.task_context['mAP']),
                                          return_code=MirCode.RC_OK,
-                                         return_msg='')
+                                         return_msg='',
+                                         src_revs=src_revs,
+                                         dst_rev=dst_rev)
         mir_tasks.tasks[mir_tasks.head_task_id].serialized_executor_config = yaml.safe_dump(
             model_storage.executor_config)
         mir_tasks.tasks[mir_tasks.head_task_id].serialized_task_parameters = model_storage.task_context.get(

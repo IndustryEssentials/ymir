@@ -185,6 +185,8 @@ message ModelMeta {
 
 message TaskContext {
     string executor = 1;
+    string src_revs = 2;
+    string dst_rev = 3;
 }
 
 /// ========== context.mir ==========

@@ -153,7 +153,9 @@ class CmdFilter(base.BaseCommand):
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                          task_type=mirpb.TaskType.TaskTypeFilter,
                                          task_id=task_id,
-                                         message=commit_message)
+                                         message=commit_message,
+                                         src_revs=src_revs,
+                                         dst_rev=dst_rev)
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,

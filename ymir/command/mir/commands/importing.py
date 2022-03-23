@@ -100,7 +100,9 @@ class CmdImport(base.BaseCommand):
                                          task_type=mirpb.TaskTypeImportData,
                                          task_id=dst_typ_rev_tid.tid,
                                          message=f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}",
-                                         unknown_types=unknown_types)
+                                         unknown_types=unknown_types,
+                                         src_revs=src_revs,
+                                         dst_rev=dst_rev)
 
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,

@@ -34,7 +34,9 @@ class CmdInit(base.BaseCommand):
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                          task_type=mirpb.TaskTypeInit,
                                          task_id=dst_rev_tid.tid,
-                                         message='init empty dataset')
+                                         message='init empty dataset',
+                                         src_revs='master',
+                                         dst_rev=empty_rev)
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,

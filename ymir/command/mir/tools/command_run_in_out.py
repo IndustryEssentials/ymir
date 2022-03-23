@@ -44,7 +44,9 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                          task_id=dst_typ_rev_tid.tid,
                                          message='commit error',
                                          return_code=code,
-                                         return_msg=error_msg)
+                                         return_msg=error_msg,
+                                         src_revs=src_revs,
+                                         dst_rev=dst_rev)
 
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,
