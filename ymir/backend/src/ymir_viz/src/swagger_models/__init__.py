@@ -2,6 +2,7 @@
 
 # flake8: noqa
 from __future__ import absolute_import
+
 # import models into model package
 from src.swagger_models.annotations import Annotations
 from src.swagger_models.annotations_inner import AnnotationsInner
