@@ -16,6 +16,48 @@ tags:
 - name: model
   description: Training task produces model
 paths:
+  /users/{user_id}/repositories/{repo_id}/branches/{branch_id}/datasets:
+    get:
+      tags:
+      - dataset
+      summary: get dataset info
+      description: get dataset info
+      operationId: get_dataset_info
+      parameters:
+      - name: user_id
+        in: path
+        description: user_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: repo_id
+        in: path
+        description: repo_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: branch_id
+        in: path
+        description: branch_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResult'
+        "400":
+          description: Dataset not exists
+      x-openapi-router-controller: src.controllers.dataset_controller
   /users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets:
     get:
       tags:
@@ -145,7 +187,7 @@ paths:
       - model
       summary: get model info
       description: get model info
-      operationId: get_task_info
+      operationId: get_model_info
       parameters:
       - name: user_id
         in: path
@@ -243,6 +285,13 @@ components:
         properties:
           result:
             $ref: '#/components/schemas/ModelResult_result'
+    DatasetResult:
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/components/schemas/DatasetResult_result'
     ApiResponse:
       type: object
       properties:
@@ -257,12 +306,24 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Annotations_inner'
+    AssetsResult_result_negative_info:
+      type: object
+      properties:
+        negative_images_cnt:
+          type: integer
+        project_negative_images_cnt:
+          type: integer
     AssetsResult_result:
       type: object
       properties:
         class_ids_count:
           type: object
           example: "{4:8, 5:2}"
+        ignored_labels:
+          type: object
+          example: "{cat:8}"
+        negative_info:
+          $ref: '#/components/schemas/AssetsResult_result_negative_info'
         elements:
           type: array
           items:
@@ -304,6 +365,17 @@ components:
           minimum: 0
           type: integer
           description: mean average precision of the model
+    DatasetResult_result:
+      type: object
+      properties:
+        class_ids_count:
+          type: object
+          example: "{4:8, 5:2}"
+        ignored_labels:
+          type: object
+          example: "{cat:8}"
+        negative_info:
+          $ref: '#/components/schemas/AssetsResult_result_negative_info'
     Annotations_inner:
       type: object
       properties:

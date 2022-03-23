@@ -7,6 +7,7 @@ from typing import List, Dict  # noqa: F401
 
 from src import util
 from src.swagger_models.asset_info import AssetInfo  # noqa: F401,E501
+from src.swagger_models.assets_result_result_negative_info import AssetsResultResultNegativeInfo  # noqa: F401,E501
 from src.swagger_models.base_model_ import Model
 
 
@@ -15,11 +16,15 @@ class AssetsResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, class_ids_count: object=None, elements: List[AssetInfo]=None, offset: int=None, limit: int=None, tatal: int=None):  # noqa: E501
+    def __init__(self, class_ids_count: object=None, ignored_labels: object=None, negative_info: AssetsResultResultNegativeInfo=None, elements: List[AssetInfo]=None, offset: int=None, limit: int=None, tatal: int=None):  # noqa: E501
         """AssetsResultResult - a model defined in Swagger
 
         :param class_ids_count: The class_ids_count of this AssetsResultResult.  # noqa: E501
         :type class_ids_count: object
+        :param ignored_labels: The ignored_labels of this AssetsResultResult.  # noqa: E501
+        :type ignored_labels: object
+        :param negative_info: The negative_info of this AssetsResultResult.  # noqa: E501
+        :type negative_info: AssetsResultResultNegativeInfo
         :param elements: The elements of this AssetsResultResult.  # noqa: E501
         :type elements: List[AssetInfo]
         :param offset: The offset of this AssetsResultResult.  # noqa: E501
@@ -31,6 +36,8 @@ class AssetsResultResult(Model):
         """
         self.swagger_types = {
             'class_ids_count': object,
+            'ignored_labels': object,
+            'negative_info': AssetsResultResultNegativeInfo,
             'elements': List[AssetInfo],
             'offset': int,
             'limit': int,
@@ -39,12 +46,16 @@ class AssetsResultResult(Model):
 
         self.attribute_map = {
             'class_ids_count': 'class_ids_count',
+            'ignored_labels': 'ignored_labels',
+            'negative_info': 'negative_info',
             'elements': 'elements',
             'offset': 'offset',
             'limit': 'limit',
             'tatal': 'tatal'
         }
         self._class_ids_count = class_ids_count
+        self._ignored_labels = ignored_labels
+        self._negative_info = negative_info
         self._elements = elements
         self._offset = offset
         self._limit = limit
@@ -81,6 +92,48 @@ class AssetsResultResult(Model):
         """
 
         self._class_ids_count = class_ids_count
+
+    @property
+    def ignored_labels(self) -> object:
+        """Gets the ignored_labels of this AssetsResultResult.
+
+
+        :return: The ignored_labels of this AssetsResultResult.
+        :rtype: object
+        """
+        return self._ignored_labels
+
+    @ignored_labels.setter
+    def ignored_labels(self, ignored_labels: object):
+        """Sets the ignored_labels of this AssetsResultResult.
+
+
+        :param ignored_labels: The ignored_labels of this AssetsResultResult.
+        :type ignored_labels: object
+        """
+
+        self._ignored_labels = ignored_labels
+
+    @property
+    def negative_info(self) -> AssetsResultResultNegativeInfo:
+        """Gets the negative_info of this AssetsResultResult.
+
+
+        :return: The negative_info of this AssetsResultResult.
+        :rtype: AssetsResultResultNegativeInfo
+        """
+        return self._negative_info
+
+    @negative_info.setter
+    def negative_info(self, negative_info: AssetsResultResultNegativeInfo):
+        """Sets the negative_info of this AssetsResultResult.
+
+
+        :param negative_info: The negative_info of this AssetsResultResult.
+        :type negative_info: AssetsResultResultNegativeInfo
+        """
+
+        self._negative_info = negative_info
 
     @property
     def elements(self) -> List[AssetInfo]:
