@@ -58,7 +58,7 @@ class Assets:
             {
                 "url": get_asset_url(asset["asset_id"]),
                 "hash": asset["asset_id"],
-                "keywords": user_labels.get_main_names(class_ids=asset["class_ids"])[0],
+                "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
             }
             for asset in res["elements"]
         ]
