@@ -70,15 +70,6 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
     return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
 
 
-def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
-    if not model_pack_path or not dest_path:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='invalid model_pack_path or dest_path')
-
-    shutil.copyfile(model_pack_path, dest_path)
-    return True
-
-
 def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
                       model_sha1: str, mAP: float, model_storage: Optional[mir_utils.ModelStorage], task_ret_code: int,
                       task_err_msg: str) -> mirpb.MirTasks:
@@ -101,7 +92,6 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                      model_hash=model_sha1,
                                      return_code=task_ret_code,
                                      return_msg=task_err_msg,
-                                     args=(yaml.safe_dump(model_storage.as_dict()) if model_storage else ''),
                                      task_parameters=task_parameters)
     return mir_tasks
 

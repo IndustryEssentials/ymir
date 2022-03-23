@@ -240,8 +240,11 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
                      model_mAP: float = 0,
                      return_code: int = 0,
                      return_msg: str = '',
-                     args: str = '',
-                     task_parameters: str = '') -> None:
+                     task_parameters: str = '',
+                     executor_config: str = '',
+                     executor: str = '',
+                     src_revs: str = '',
+                     dst_rev: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message
@@ -255,8 +258,12 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
     task.model.mean_average_precision = model_mAP
     task.return_code = return_code
     task.return_msg = return_msg
-    task.args = args
     task.task_parameters = task_parameters
+    task.executor_config = executor_config
+
+    task.task_context.executor = executor
+    task.task_context.src_revs = src_revs
+    task.task_context.dst_rev = dst_rev
 
     task.ancestor_task_id = mir_tasks.head_task_id
     mir_tasks.tasks[task.task_id].CopyFrom(task)
