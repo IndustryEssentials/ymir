@@ -99,8 +99,8 @@ class CmdShow(base.BaseCommand):
               f"    map: {task.model.mean_average_precision}\n"
               f"    executor: {task.task_context.executor}")
         if verbose:
-            print(f"    executor config: {task.serialized_executor_config}\n"
-                  f"    task parameters: {task.serialized_task_parameters}")
+            print(f"    task parameters: {task.serialized_task_parameters}\n"
+                  f"\n=== executor config ===\n{task.serialized_executor_config}")
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
