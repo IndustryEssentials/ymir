@@ -6,7 +6,7 @@ import { states, statesLabel } from '@/constants/dataset'
 import { TASKSTATES, getTaskStateLabel } from '@/constants/task'
 import s from './iteration.less'
 
-function Stage({ stage, current = 0, end = false, next = () => { }, ...func }) {
+function Stage({ stage, current = 0, end = false, callback = () => { }, ...func }) {
   console.log('stage: ', stage, end)
 
   function skip() {
@@ -14,25 +14,38 @@ function Stage({ stage, current = 0, end = false, next = () => { }, ...func }) {
   }
 
   function next() {
-    if (stage.next) {
+    if (isPending()) {
+      if (stage.url) {
+        history.push(stage.url)
+      } else {
+        // todo create new one
+        createIteration({ round: current + 1 })
+        callback()
+      }
+    } else if (stage.next) {
       // goto next stage
-      func.updateIteration({ id: stage.iterationId, next: stage.next, result: stage.result, })
-    } else {
-      // todo create new one
-      func.createIteration({round: current + 1 })
+      updateIteration({ id: stage.iterationId, next: stage.next, result: stage.result, })
+      callback()
     }
   }
 
   async function updateIteration(params) {
     const result = await func.updateIteration(params)
     if (result) {
-      next(stage)
+      next({ stage })
     }
   }
 
-  const currentStage = () => current === stage.value
-  const finishStage = () => stage.value < current
-  const pendingStage = () => stage.value > current
+  async function createIteration(params) {
+    const result = await func.createIteration(params)
+    if (result) {
+      next({ iterationId: result.id })
+    }
+  }
+
+  const currentStage = () => stage.value === stage.current
+  const finishStage = () => stage.value < stage.current
+  const pendingStage = () => stage.value > stage.current
 
   const isPending = () => stage.state < 0
   const isReady = () => stage?.state === states.READY
@@ -72,7 +85,7 @@ function Stage({ stage, current = 0, end = false, next = () => { }, ...func }) {
   }
 
   const renderSkip = () => {
-    return !stage.unskippable && currentStage() ? <span className={s.skip} onClick={() => skip()}>skip</span> : null
+    return !stage.unskippable && !end && currentStage() ? <span className={s.skip} onClick={() => skip()}>skip</span> : null
   }
   return (
     <div className={stateClass}>

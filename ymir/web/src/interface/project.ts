@@ -23,9 +23,9 @@ export interface Project {
 
 export interface Iteration {
   id: number,
-  name: string,
-  version: number,
-  currentStep: number,
+  name?: string,
+  round: number,
+  current: number,
   trainSet?: Dataset,
   trainUpdateSet: Dataset,
   miningSet?: Dataset,
@@ -35,15 +35,15 @@ export interface Iteration {
 }
 export interface originIteration {
   id: number,
-  name: string,
-  version: number,
-  current_step: number,
-  train_set: Dataset,
-  train_update_result: Dataset,
-  mining_set?: Dataset,
-  mining_result?: Dataset,
-  label_set?: Dataset,
-  model?: number,
+  name?: string,
+  iteration_round?: number,
+  current_stage?: number,
+  mining_input_dataset_id?: Dataset,
+  mining_output_dataset_id?: Dataset,
+  label_output_dataset_id?: Dataset,
+  training_input_dataset_id?: Dataset,
+  training_output_model_id?: Dataset,
+  previous_training_dataset_id?: number,
 }
 
 export interface originProject {

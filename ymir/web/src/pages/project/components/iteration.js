@@ -6,7 +6,7 @@ import { Stages, StageList } from '@/constants/project'
 import Stage from './stage'
 import s from "./iteration.less"
 
-function Iteration({ project, ...func }) {
+function Iteration({ project, fresh = () => {}, ...func }) {
   const [iteration, setIteration] = useState({})
   const [stages, setStages] = useState([])
 
@@ -18,30 +18,47 @@ function Iteration({ project, ...func }) {
   }, [project])
 
   useEffect(() => {
-    rerenderStages(iteration)
+    iteration.id && rerenderStages(iteration)
   }, [iteration])
 
   function initStages() {
     const labels = ['ready', 'mining', 'label', 'merge', 'training', 'next']
     const stageList = StageList()
-    const ss = stageList.list.map(stage => {
-      const label = `project.iteration.stage.${labels[stage]}`
+    const ss = stageList.list.map(({ value, url, prev, resultKey }) => {
+      const label = `project.iteration.stage.${labels[value]}`
       return {
-        value: stage,
+        value: value,
         label,
         act: label,
         react: `${label}.react`,
         state: -1,
-        next: stageList[stage].next,
-        unskippable: [Stages.merging, Stages.training].includes(stage),
+        next: stageList[value].next,
+        url,
+        prepare,
+        resultKey,
+        unskippable: [Stages.merging, Stages.training].includes(value),
+        callback: stageList[value].next ? fetchIteration : fresh(),
       }
     })
 
     setStages(ss)
   }
 
-  function rerenderStages() {
-
+  function rerenderStages(iteration) {
+    const ss = stages.map(stage => {
+      const prepareId = iteration[stage.prepare]
+      const result = iteration[stage.resultKey]
+      return {
+        ...stage,
+        iterationId: iteration.id,
+        round: iteration.round,
+        current: iteration.current,
+        url: `${stage.url}${prepareId}?iterationId=${iteration.id}&stage=${stage.value}`,
+        state: result.state,
+        result,
+      }
+    })
+    setStages(ss)
   }
 
   async function fetchIteration() {
@@ -55,7 +72,7 @@ function Iteration({ project, ...func }) {
       <Row style={{ justifyContent: 'flex-end' }}>
         {stages.map((stage) => (
           <Col key={stage.id} flex={1}>
-            <Stage stage={stage} current={2} end={!stage.next} />
+            <Stage stage={stage} end={!stage.next} />
           </Col>
         ))}
       </Row>
