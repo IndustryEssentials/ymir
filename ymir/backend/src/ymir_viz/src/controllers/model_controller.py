@@ -4,7 +4,7 @@ from src.libs import app_logger, utils
 from src.viz_models import task
 
 
-def get_task_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
+def get_model_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
     """
     get task model info
 
