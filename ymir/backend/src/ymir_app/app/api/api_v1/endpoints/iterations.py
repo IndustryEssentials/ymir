@@ -6,9 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import (
-    IterationNotFound,
-)
+from app.api.errors.errors import IterationNotFound
 
 router = APIRouter()
 
@@ -25,7 +23,7 @@ def create_iteration(
     """
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create iteration] iteration record created: %s", iteration)
-    # todo update project current_iteration_id
+    crud.project.update_current_iteration(db, project_id=obj_in.project_id, iteration_id=iteration.id)
     return {"result": iteration}
 
 
@@ -33,7 +31,7 @@ def create_iteration(
 def list_iterations(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    project_id: int = Query(None),
+    project_id: int = Query(...),
 ) -> Any:
     """
     Get iterations under specific project
@@ -53,6 +51,8 @@ def get_iteration(
     Get verbose information of specific iteration
     """
     iteration = crud.iteration.get(db, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
     return {"result": iteration}
 
 
@@ -60,15 +60,15 @@ def get_iteration(
     "/{iteration_id}",
     response_model=schemas.IterationOut,
 )
-def update_dataset_group(
+def update_iteration(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
-    obj_update: schemas.IterationUpdate,
+    iteration_updates: schemas.IterationUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Change iteration stage
+    Change iteration stage and update iteration context when necessary
 
     available stages:
     - prepare_mining = 0
@@ -80,6 +80,5 @@ def update_dataset_group(
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
     if not iteration:
         raise IterationNotFound()
-
-    iteration = crud.iteration.update(db, db_obj=iteration, obj_in=obj_update)
+    crud.iteration.update_iteration(db, iteration_id=iteration_id, iteration_update=iteration_updates)
     return {"result": iteration}

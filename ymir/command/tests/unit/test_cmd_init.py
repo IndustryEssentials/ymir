@@ -23,7 +23,7 @@ class TestCmdInit(unittest.TestCase):
         init.CmdInit.run_with_args(mir_root=test_root, project_class_names='cat;person', empty_rev='a@a')
 
         assert (os.path.isdir(os.path.join(test_root, ".git")))
-        assert (os.path.isdir(os.path.join(test_root, ".dvc")))
+        assert (os.path.isdir(os.path.join(test_root, ".mir")))
         assert os.path.isfile(class_ids.ids_file_path(mir_root=test_root))
         ignore_file_path = os.path.join(test_root, '.gitignore')
         assert os.path.isfile(ignore_file_path)

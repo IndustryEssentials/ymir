@@ -123,10 +123,10 @@ def create_project(
     crud.dataset.create_with_version(db, obj_in=dataset_in)
 
     # 5.update project info
-    project = crud.project.update(
+    project = crud.project.update_resources(
         db,
-        db_obj=project,
-        obj_in=schemas.ProjectUpdate(training_dataset_group_id=dataset_group.id),
+        project_id=project.id,
+        project_update=schemas.ProjectUpdate(training_dataset_group_id=dataset_group.id),
     )
 
     try:
@@ -177,7 +177,7 @@ def update_project(
     db: Session = Depends(deps.get_db),
     project_id: int = Path(...),
     project_update: schemas.ProjectUpdate,
-    current_user: models.User = Depends(deps.get_current_active_admin),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Setting up a project
@@ -186,7 +186,7 @@ def update_project(
     if not project:
         raise ProjectNotFound()
 
-    project = crud.project.update(db, db_obj=project, obj_in=project_update)
+    project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
     return {"result": project}
 
 
