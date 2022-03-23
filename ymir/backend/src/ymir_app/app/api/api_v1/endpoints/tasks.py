@@ -99,13 +99,12 @@ def create_task(
     Create task
     """
     # 1. validation
-    task_info = jsonable_encoder(task_in)
-    logger.debug("[create task] create task with payload: %s", task_info)
+    logger.debug("[create task] create task with payload: %s", jsonable_encoder(task_in))
     if crud.task.is_duplicated_name(db, user_id=current_user.id, name=task_in.name):
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    parameters = normalize_parameters(db, task_in.parameters, task_in.config, user_labels)
+    parameters = normalize_parameters(db, task_in.parameters, task_in.docker_image_config, user_labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
@@ -127,7 +126,7 @@ def create_task(
 
     # 5. create task result record (dataset or model)
     task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task)
-    task_result.create(task_in.parameters.dataset_id)
+    result = task_result.create(task_in.parameters.dataset_id)
 
     # 6. send metric to clickhouse
     try:
@@ -146,8 +145,13 @@ def create_task(
         )
     except KeyError:
         logger.exception("[create task] failed to get metrics for task(%s), continue anyway", task.hash)
-    logger.info("[create task] created task name: %s" % task_in.name)
-    return {"result": task}
+    logger.info("[create task] created task name: %s", task_in.name)
+
+    # fixme
+    #  find a walkaround to avoid circular imports in schemas
+    task_with_result = schemas.TaskInternal.from_orm(task).dict()
+    task_with_result["result"] = result
+    return {"result": task_with_result}
 
 
 class TaskResult:
@@ -252,16 +256,19 @@ class TaskResult:
                 )
             return model_group.id, model_group.name
 
-    def create(self, dataset_id: int) -> None:
+    def create(self, dataset_id: int) -> Dict[str, Dict]:
         dest_group_id, dest_group_name = self.get_dest_group_info(dataset_id)
         if self.result_type is ResultType.dataset:
             dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
             logger.info("[create task] created new dataset(%s) as task result", dataset.name)
+            return {"dataset": jsonable_encoder(dataset)}
         elif self.result_type is ResultType.model:
             model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
             logger.info("[create task] created new model(%s) as task result", model.name)
+            return {"model": jsonable_encoder(model)}
         else:
             logger.info("[create task] no task result record needed")
+            return {}
 
     def update(
         self,
@@ -355,13 +362,13 @@ def write_clickhouse_metrics(
 def normalize_parameters(
     db: Session,
     parameters: schemas.TaskParameter,
-    config: Optional[Dict],
+    docker_image_config: Optional[Dict],
     user_labels: UserLabels,
 ) -> Dict:
     normalized = parameters.dict()  # type: Dict[str, Any]
 
     # training, mining and inference task has docker_config
-    normalized["docker_config"] = config
+    normalized["docker_config"] = docker_image_config
 
     dataset = crud.dataset.get(db, id=parameters.dataset_id)
     if not dataset:

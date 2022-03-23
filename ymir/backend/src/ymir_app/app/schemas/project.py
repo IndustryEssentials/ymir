@@ -13,7 +13,7 @@ from app.schemas.common import (
 
 
 class ProjectBase(BaseModel):
-    name: str = Field(description="Iteration Name")
+    name: str = Field(description="Project Name")
     description: Optional[str]
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
@@ -37,6 +37,7 @@ class ProjectCreate(ProjectBase):
 
 # Properties that can be changed
 class ProjectUpdate(BaseModel):
+    name: Optional[str]
     iteration_target: Optional[int]
     map_target: Optional[float]
     training_dataset_count_target: Optional[int]
@@ -46,9 +47,16 @@ class ProjectUpdate(BaseModel):
     training_dataset_group_id: int
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
+    description: Optional[str]
+    initial_model_id: Optional[int]
 
 
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
+    training_dataset_group_id: int
+    mining_dataset_id: Optional[int]
+    testing_dataset_id: Optional[int]
+    initial_model_id: Optional[int]
+
     class Config:
         orm_mode = True
 

@@ -1,16 +1,16 @@
 """init tables
 
-Revision ID: d7138f7e5b6a
+Revision ID: 22d1253a4aee
 Revises:
-Create Date: 2022-03-07 15:45:57.082694
+Create Date: 2022-03-22 15:55:34.064782
 
 """
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "d7138f7e5b6a"
+revision = "22d1253a4aee"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,12 +38,7 @@ def upgrade() -> None:
         sa.Column("update_datetime", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_dataset_dataset_group_id"),
-        "dataset",
-        ["dataset_group_id"],
-        unique=False,
-    )
+    op.create_index(op.f("ix_dataset_dataset_group_id"), "dataset", ["dataset_group_id"], unique=False)
     op.create_index(op.f("ix_dataset_hash"), "dataset", ["hash"], unique=True)
     op.create_index(op.f("ix_dataset_id"), "dataset", ["id"], unique=False)
     op.create_index(op.f("ix_dataset_name"), "dataset", ["name"], unique=False)
@@ -66,12 +61,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_dataset_group_id"), "dataset_group", ["id"], unique=False)
     op.create_index(op.f("ix_dataset_group_name"), "dataset_group", ["name"], unique=False)
-    op.create_index(
-        op.f("ix_dataset_group_project_id"),
-        "dataset_group",
-        ["project_id"],
-        unique=False,
-    )
+    op.create_index(op.f("ix_dataset_group_project_id"), "dataset_group", ["project_id"], unique=False)
     op.create_index(op.f("ix_dataset_group_user_id"), "dataset_group", ["user_id"], unique=False)
     op.create_table(
         "docker_image",
@@ -100,18 +90,8 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("image_id", "type"),
         sa.UniqueConstraint("image_id", "type", name="unique_image_type"),
     )
-    op.create_index(
-        op.f("ix_docker_image_config_image_id"),
-        "docker_image_config",
-        ["image_id"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_docker_image_config_type"),
-        "docker_image_config",
-        ["type"],
-        unique=False,
-    )
+    op.create_index(op.f("ix_docker_image_config_image_id"), "docker_image_config", ["image_id"], unique=False)
+    op.create_index(op.f("ix_docker_image_config_type"), "docker_image_config", ["type"], unique=False)
     op.create_table(
         "docker_image_relationship",
         sa.Column("src_image_id", sa.Integer(), nullable=False),
@@ -120,16 +100,10 @@ def upgrade() -> None:
         sa.UniqueConstraint("src_image_id", "dest_image_id", name="unique_image_relationship"),
     )
     op.create_index(
-        op.f("ix_docker_image_relationship_dest_image_id"),
-        "docker_image_relationship",
-        ["dest_image_id"],
-        unique=False,
+        op.f("ix_docker_image_relationship_dest_image_id"), "docker_image_relationship", ["dest_image_id"], unique=False
     )
     op.create_index(
-        op.f("ix_docker_image_relationship_src_image_id"),
-        "docker_image_relationship",
-        ["src_image_id"],
-        unique=False,
+        op.f("ix_docker_image_relationship_src_image_id"), "docker_image_relationship", ["src_image_id"], unique=False
     )
     op.create_table(
         "iteration",
@@ -141,7 +115,6 @@ def upgrade() -> None:
         sa.Column("label_output_dataset_id", sa.Integer(), nullable=True),
         sa.Column("training_input_dataset_id", sa.Integer(), nullable=True),
         sa.Column("training_output_model_id", sa.Integer(), nullable=True),
-        sa.Column("previous_training_dataset_id", sa.Integer(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
@@ -151,24 +124,13 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_iteration_current_stage"), "iteration", ["current_stage"], unique=False)
     op.create_index(op.f("ix_iteration_id"), "iteration", ["id"], unique=False)
-    op.create_index(
-        op.f("ix_iteration_iteration_round"),
-        "iteration",
-        ["iteration_round"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_iteration_previous_training_dataset_id"),
-        "iteration",
-        ["previous_training_dataset_id"],
-        unique=False,
-    )
+    op.create_index(op.f("ix_iteration_iteration_round"), "iteration", ["iteration_round"], unique=False)
     op.create_index(op.f("ix_iteration_project_id"), "iteration", ["project_id"], unique=False)
     op.create_index(op.f("ix_iteration_user_id"), "iteration", ["user_id"], unique=False)
     op.create_table(
         "model",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("hash", sa.String(length=100), nullable=False),
+        sa.Column("hash", sa.String(length=100), nullable=True),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("version_num", sa.Integer(), nullable=False),
         sa.Column("result_state", sa.SmallInteger(), nullable=False),
@@ -199,7 +161,7 @@ def upgrade() -> None:
         sa.Column("description", sa.String(length=100), nullable=True),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
-        sa.Column("training_dataset_id", sa.Integer(), nullable=True),
+        sa.Column("training_dataset_id", sa.Integer(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
         sa.Column("create_datetime", sa.DateTime(), nullable=False),
         sa.Column("update_datetime", sa.DateTime(), nullable=False),
@@ -208,12 +170,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_model_group_id"), "model_group", ["id"], unique=False)
     op.create_index(op.f("ix_model_group_name"), "model_group", ["name"], unique=False)
     op.create_index(op.f("ix_model_group_project_id"), "model_group", ["project_id"], unique=False)
-    op.create_index(
-        op.f("ix_model_group_training_dataset_id"),
-        "model_group",
-        ["training_dataset_id"],
-        unique=False,
-    )
+    op.create_index(op.f("ix_model_group_training_dataset_id"), "model_group", ["training_dataset_id"], unique=False)
     op.create_index(op.f("ix_model_group_user_id"), "model_group", ["user_id"], unique=False)
     op.create_table(
         "project",
@@ -226,10 +183,11 @@ def upgrade() -> None:
         sa.Column("mining_strategy", sa.SmallInteger(), nullable=True),
         sa.Column("chunk_size", sa.Integer(), nullable=True),
         sa.Column("training_type", sa.SmallInteger(), nullable=False),
-        sa.Column("training_keywords", sa.Text(length=20000), nullable=True),
+        sa.Column("training_keywords", sa.Text(length=20000), nullable=False),
         sa.Column("training_dataset_group_id", sa.Integer(), nullable=True),
         sa.Column("mining_dataset_id", sa.Integer(), nullable=True),
         sa.Column("testing_dataset_id", sa.Integer(), nullable=True),
+        sa.Column("initial_model_id", sa.Integer(), nullable=True),
         sa.Column("current_iteration_id", sa.Integer(), nullable=True),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
@@ -238,25 +196,13 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_project_id"), "project", ["id"], unique=False)
-    op.create_index(
-        op.f("ix_project_mining_dataset_id"),
-        "project",
-        ["mining_dataset_id"],
-        unique=False,
-    )
+    op.create_index(op.f("ix_project_initial_model_id"), "project", ["initial_model_id"], unique=False)
+    op.create_index(op.f("ix_project_mining_dataset_id"), "project", ["mining_dataset_id"], unique=False)
     op.create_index(op.f("ix_project_mining_strategy"), "project", ["mining_strategy"], unique=False)
     op.create_index(op.f("ix_project_name"), "project", ["name"], unique=False)
+    op.create_index(op.f("ix_project_testing_dataset_id"), "project", ["testing_dataset_id"], unique=False)
     op.create_index(
-        op.f("ix_project_testing_dataset_id"),
-        "project",
-        ["testing_dataset_id"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_project_training_dataset_group_id"),
-        "project",
-        ["training_dataset_group_id"],
-        unique=False,
+        op.f("ix_project_training_dataset_group_id"), "project", ["training_dataset_group_id"], unique=False
     )
     op.create_index(op.f("ix_project_training_type"), "project", ["training_type"], unique=False)
     op.create_index(op.f("ix_project_user_id"), "project", ["user_id"], unique=False)
@@ -349,6 +295,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_project_name"), table_name="project")
     op.drop_index(op.f("ix_project_mining_strategy"), table_name="project")
     op.drop_index(op.f("ix_project_mining_dataset_id"), table_name="project")
+    op.drop_index(op.f("ix_project_initial_model_id"), table_name="project")
     op.drop_index(op.f("ix_project_id"), table_name="project")
     op.drop_table("project")
     op.drop_index(op.f("ix_model_group_user_id"), table_name="model_group")
@@ -369,19 +316,12 @@ def downgrade() -> None:
     op.drop_table("model")
     op.drop_index(op.f("ix_iteration_user_id"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_project_id"), table_name="iteration")
-    op.drop_index(op.f("ix_iteration_previous_training_dataset_id"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_iteration_round"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_id"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_current_stage"), table_name="iteration")
     op.drop_table("iteration")
-    op.drop_index(
-        op.f("ix_docker_image_relationship_src_image_id"),
-        table_name="docker_image_relationship",
-    )
-    op.drop_index(
-        op.f("ix_docker_image_relationship_dest_image_id"),
-        table_name="docker_image_relationship",
-    )
+    op.drop_index(op.f("ix_docker_image_relationship_src_image_id"), table_name="docker_image_relationship")
+    op.drop_index(op.f("ix_docker_image_relationship_dest_image_id"), table_name="docker_image_relationship")
     op.drop_table("docker_image_relationship")
     op.drop_index(op.f("ix_docker_image_config_type"), table_name="docker_image_config")
     op.drop_index(op.f("ix_docker_image_config_image_id"), table_name="docker_image_config")

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.crud.base import CRUDBase
 from app.models import Project
 from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.api.errors.errors import ProjectNotFound
 
 
 class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
@@ -31,6 +32,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             chunk_size=obj_in.chunk_size,
             training_type=obj_in.training_type,
             training_keywords=training_keywords,
+            description=obj_in.description,
         )
         db.add(db_obj)
         db.commit()
@@ -76,6 +78,28 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         if limit:
             return query.offset(offset).limit(limit).all(), query.count()
         return query.all(), query.count()
+
+    def update_current_iteration(
+        self,
+        db: Session,
+        *,
+        project_id: int,
+        iteration_id: int,
+    ) -> Project:
+        project = self.get(db, id=project_id)
+        if not project:
+            raise ProjectNotFound()
+        project.current_iteration_id = iteration_id
+        db.add(project)
+        db.commit()
+        db.refresh(project)
+        return project
+
+    def update_resources(self, db: Session, *, project_id: int, project_update: ProjectUpdate) -> Project:
+        project = self.get(db, id=project_id)
+        if not project:
+            raise ProjectNotFound()
+        return self.update(db, db_obj=project, obj_in=project_update)
 
 
 project = CRUDProject(Project)
