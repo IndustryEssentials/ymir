@@ -323,7 +323,7 @@ class TaskResult:
 
         if task_result.state is TaskState.done:
             # import model has no parameters, only update this task
-            if not task_in_db.parameters and self.result_type is ResultType.model:
+            if task_in_db.type in [TaskType.import_model, TaskType.copy_model]:
                 crud.task.update_parameters_and_config(
                     self.db,
                     task=task_in_db,
