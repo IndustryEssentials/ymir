@@ -18,12 +18,6 @@ const Routes = [
         breadcrumbName: 'portal.title',
       },
       {
-        path: "/home/task/detail/:id",
-        name: "taskDetail",
-        component: "@/pages/task/detail",
-        title: 'task.title',
-      },
-      {
         path: "/home/task/fusion/:id",
         name: "taskFilter",
         component: "@/pages/task/fusion/index",
@@ -58,6 +52,12 @@ const Routes = [
         name: "datasetDetail",
         component: "@/pages/dataset/detail",
         title: "dataset.title",
+      },
+      {
+        path: "/home/dataset/assets/:id",
+        name: "datasetDetail",
+        component: "@/pages/dataset/assets",
+        title: "dataset.assets.title",
       },
       {
         path: "/home/model/detail/:id",

@@ -32,7 +32,7 @@ function Portal({ }) {
       </Row>
       <Row className={styles.task_panel} gutter={20}>
         <Col span={16}>
-          <TaskList />
+          {/* <TaskList /> */}
         </Col>
         <Col span={8}>
           <TaskChart></TaskChart>

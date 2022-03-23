@@ -9,15 +9,14 @@ from google.protobuf.json_format import ParseDict
 import yaml
 
 from mir.commands.mining import CmdMining
-from mir.tools import class_ids
-from mir.tools.utils import ModelStorage
+from mir.tools import settings as mir_settings, utils as mir_utils
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
 
 
 class TestMiningCmd(unittest.TestCase):
     _USER_NAME = "test_user"
-    _MIR_REPO_NAME = "ymir-dvc-test"
+    _MIR_REPO_NAME = "mir-test-repo"
     _STORAGE_NAME = "monitor_storage_root"
 
     # lifecycle
@@ -26,7 +25,7 @@ class TestMiningCmd(unittest.TestCase):
         # test_invoker_mining_sandbox_root
         # ├── monitor_storage_root
         # └── test_user
-        #     └── ymir-dvc-test
+        #     └── mir-test-repo
         super().__init__(methodName=methodName)
         self._sandbox_root = test_utils.dir_test_root(self.id().split(".")[-3:])
         self._user_root = os.path.join(self._sandbox_root, self._USER_NAME)
@@ -50,9 +49,9 @@ class TestMiningCmd(unittest.TestCase):
         return 0
 
     def _mock_prepare_model(*args, **kwargs):
-        model_storage = ModelStorage(models=['0.params'],
-                                     executor_config={'class_names': ['person', 'cat']},
-                                     task_context={'task_id': '0'})
+        model_storage = mir_utils.ModelStorage(models=['0.params'],
+                                               executor_config={'class_names': ['person', 'cat']},
+                                               task_context={'task_id': '0'})
         return model_storage
 
     # protected: custom: env prepare
@@ -65,8 +64,10 @@ class TestMiningCmd(unittest.TestCase):
         os.mkdir(self._storage_root)
 
     def _prepare_config(self):
-        logging.info(f"current directory: {os.getcwd()}")
-        shutil.copyfile('tests/assets/mining-template.yaml', self._config_file)
+        with open('tests/assets/mining-template.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+        with open(self._config_file, 'w') as f:
+            yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: config}, f)
 
     def _prepare_mir_repo(self):
         # init repo

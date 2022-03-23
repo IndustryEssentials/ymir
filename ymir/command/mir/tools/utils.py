@@ -13,6 +13,7 @@ from PIL import Image, UnidentifiedImageError
 import yaml
 
 from mir import scm
+from mir.tools import hash_utils, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -184,6 +185,7 @@ class ModelStorage:
 
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
+
         # check valid
         if not self.models or not self.executor_config or not self.task_context or not self.class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -250,15 +252,39 @@ def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
     with open(os.path.join(dest_root, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
-                                 executor_config=ymir_info_dict.get('executor_config', {}),
-                                 task_context=ymir_info_dict.get('task_context', {}))
+                                 executor_config=ymir_info_dict.get(mir_settings.EXECUTOR_CONFIG_KEY, {}),
+                                 task_context=ymir_info_dict.get(mir_settings.TASK_CONTEXT_KEY, {}))
 
     return model_storage
 
 
-def map_gpus_zero_index(gpu_id: str) -> str:
-    gpu_count = len(gpu_id.split(',')) if gpu_id else 0
-    return ','.join([str(i) for i in range(gpu_count)])
+def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model_location: str) -> str:
+    """
+    pack model, returns model hash of the new model package
+    """
+    logging.info(f"packing models {model_dir_path} -> {model_location}")
+
+    ymir_info_file_name = 'ymir-info.yaml'
+    ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
+    with open(ymir_info_file_path, 'w') as f:
+        yaml.safe_dump(model_storage.as_dict(), f)
+
+    tar_file_path = os.path.join(model_dir_path, 'model.tar.gz')
+    with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:
+        for model_name in model_storage.models:
+            model_path = os.path.join(model_dir_path, model_name)
+            logging.info(f"    packing {model_path} -> {model_name}")
+            tar_gz_f.add(model_path, model_name)
+        logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
+        tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
+
+    model_hash = hash_utils.sha1sum_for_file(tar_file_path)
+    shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
+    os.remove(tar_file_path)
+
+    logging.info(f"pack success, model hash: {model_hash}")
+
+    return model_hash
 
 
 def repo_dot_mir_path(mir_root: str) -> str:

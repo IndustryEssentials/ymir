@@ -8,18 +8,20 @@ import { transferDatasetGroup, transferDataset, states } from '@/constants/datas
 
 const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
 
+const initState = {
+  query: initQuery,
+  datasets: { items: [], total: 0, },
+  versions: {},
+  dataset: {},
+  assets: { items: [], total: 0, },
+  asset: { annotations: [], },
+  allDatasets: [],
+  publicDatasets: [],
+}
+
 export default {
   namespace: "dataset",
-  state: {
-    query: initQuery,
-    datasets: { items: [], total: 0, },
-    versions: {},
-    dataset: {},
-    assets: { items: [], total: 0, },
-    asset: { annotations: [], },
-    allDatasets: [],
-    publicDatasets: [],
-  },
+  state: { ...initState },
   effects: {
     *getDatasetGroups({ payload }, { call, put }) {
       const { pid, query } = payload
@@ -37,7 +39,8 @@ export default {
     *batchDatasets({ payload }, { call, put }) {
       const { code, result } = yield call(batchDatasets, payload)
       if (code === 0) {
-        return result
+        const datasets = result.map(ds => transferDataset(ds))
+        return datasets || []
       }
     },
     *getDataset({ payload }, { call, put }) {
@@ -101,9 +104,9 @@ export default {
       const id = payload
       const { code, result } = yield call(getAssetsOfDataset, { id, limit: 1 })
       if (code === 0) {
-        const list = result.keywords
+        const { total, keywords, negative_info } = result
         const { negative_images_cnt, project_negative_images_cnt } = result.negative_info
-        return { keywords: list, negative: negative_images_cnt, negative_project: project_negative_images_cnt }
+        return { keywords, total, negative: negative_images_cnt, negative_project: project_negative_images_cnt }
       }
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
@@ -218,6 +221,9 @@ export default {
         payload: initQuery,
       })
     },
+    *clearCache({}, { put }) {
+      yield put({ type: 'CLEAR_ALL', })
+    },
   },
   reducers: {
     UPDATE_DATASETS(state, { payload }) {
@@ -272,6 +278,9 @@ export default {
         ...state,
         query: payload,
       }
+    },
+    CLEAR_ALL() {
+      return { ...initState }
     },
   },
 }

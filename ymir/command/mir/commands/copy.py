@@ -42,13 +42,8 @@ class CmdCopy(base.BaseCommand):
             logging.error('invalid args: no mir_root, data_mir_root, data_src_revs or dst_rev')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        data_src_typ_rev_tid = revs_parser.parse_single_arg_rev(data_src_revs)
-        if checker.check_src_revs(data_src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
-
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        data_src_typ_rev_tid = revs_parser.parse_single_arg_rev(data_src_revs, need_tid=False)
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='copy',
                                                monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
@@ -119,8 +114,10 @@ class CmdCopy(base.BaseCommand):
         task.name = f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}"
         task.task_id = dst_typ_rev_tid.tid
         task.timestamp = int(datetime.datetime.now().timestamp())
-        if mir_tasks.tasks[orig_head_task_id].type == mirpb.TaskTypeTraining:
-            task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
+        # TODO: don't put model, dataset result and task together
+        task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
+        task.args = mir_tasks.tasks[orig_head_task_id].args
+        task.task_parameters = mir_tasks.tasks[orig_head_task_id].task_parameters
         task.unknown_types.clear()
         for type_name, count in unknown_types.items():
             task.unknown_types[type_name] = count

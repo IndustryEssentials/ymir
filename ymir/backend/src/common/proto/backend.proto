@@ -25,6 +25,10 @@ enum TaskType {
     TaskTypeSampling = 10;
     /// merge -> filter -> sampling
     TaskTypeFusion = 11;
+    TaskTypeImportModel = 13;
+    TaskTypeCopyModel = 14;
+
+    reserved 12;
 };
 
 enum LabelFormat {
@@ -105,9 +109,6 @@ message GeneralReq {
     string model_hash = 14;
     string asset_dir = 15;
     string docker_image_config = 16;
-    // init repo: project labels (training target)
-    // add labels: labels you want to add
-    repeated string private_labels = 17;
     bool check_only=18;
     string executor_instance = 19;
     MergeStrategy merge_strategy = 20;
@@ -116,9 +117,11 @@ message GeneralReq {
         int32 sampling_count = 22;
         float sampling_rate = 23;
     }
+    string task_parameters = 24;
+    LabelCollection label_collection = 25;
     ReqCreateTask req_create_task = 1001;
 
-    reserved 1002;
+    reserved 17, 1002;
 }
 
 message GeneralResp {
@@ -126,14 +129,13 @@ message GeneralResp {
     string req_task_id = 2;
     string message = 3;
     repeated string ext_strs = 4;
-    repeated string csv_labels = 5 [deprecated=true];
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     RespCMDInference detection = 1001;
 
-    reserved 1000;
+    reserved 5, 1000;
 }
 
 // base args for create task request
@@ -152,6 +154,7 @@ message ReqCreateTask {
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
     TaskReqFusion fusion = 109;
+    TaskReqModelImporting model_importing = 110;
 }
 
 message TaskReqFilter {
@@ -226,6 +229,10 @@ message TaskReqFusion {
     }
 }
 
+message TaskReqModelImporting {
+    string model_package_path = 1;
+}
+
 message RespCMDInference {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
@@ -259,8 +266,8 @@ message Label {
     int32 id = 1;
     string name = 2;
     repeated string aliases = 3;
-    float create_time = 4;
-    float update_time = 5;
+    string create_time = 4;  // RFC 3339 date strings
+    string update_time = 5;  // RFC 3339 date strings
 }
 
 
@@ -323,7 +330,6 @@ service mir_controller_service {
         Args:
             GeneralReq.user: user name for this sandbox
             GeneralReq.repo: repo name
-            GeneralReq.private_labels: project class names (training target)
         Returns:
             0: success
             errors when:

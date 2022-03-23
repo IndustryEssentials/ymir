@@ -9,9 +9,10 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
+import yaml
 
 
 class MirStorageDatas:
@@ -170,8 +171,8 @@ class MirStorageOps():
 
         mir_pb_type = mir_storage.mir_type(ms)
         mir_storage_data = mir_pb_type()
-        with exodus.open_mir(mir_root=mir_root, file_name=mir_storage.mir_path(ms), rev=rev, mode="rb") as f:
-            mir_storage_data.ParseFromString(f.read())
+        mir_storage_data.ParseFromString(exodus.read_mir(mir_root=mir_root, rev=rev,
+                                                         file_name=mir_storage.mir_path(ms)))
 
         if as_dict:
             mir_storage_data = json_format.MessageToDict(mir_storage_data,
@@ -183,20 +184,25 @@ class MirStorageOps():
 
     @classmethod
     def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
+        # TODO: remove task.args, add task.executor_config_str, task.task_context, task.task_parameters_str
         mir_storage_data: mirpb.MirTasks = cls.load_single(mir_root=mir_root,
                                                            mir_branch=mir_branch,
                                                            ms=mirpb.MirStorage.MIR_TASKS,
                                                            mir_task_id=mir_task_id,
                                                            as_dict=False)
 
-        task_model = mir_storage_data.tasks[mir_storage_data.head_task_id].model
-        if not task_model.model_hash:
+        task = mir_storage_data.tasks[mir_storage_data.head_task_id]
+        if not task.model.model_hash:
             raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no model")
 
-        return json_format.MessageToDict(task_model,
-                                         preserving_proto_field_name=True,
-                                         use_integers_for_enums=True,
-                                         including_default_value_fields=True)
+        single_model_dict = json_format.MessageToDict(task.model,
+                                                      preserving_proto_field_name=True,
+                                                      use_integers_for_enums=True,
+                                                      including_default_value_fields=True)
+        single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task.task_parameters
+        single_model_dict[mir_settings.EXECUTOR_CONFIG_KEY] = yaml.safe_load(task.args).get(
+            mir_settings.EXECUTOR_CONFIG_KEY, {}) if task.args else {}
+        return single_model_dict
 
     @classmethod
     def load_branch_contents(cls,
@@ -239,7 +245,9 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
                      model_hash: str = '',
                      model_mAP: float = 0,
                      return_code: int = 0,
-                     return_msg: str = '') -> None:
+                     return_msg: str = '',
+                     args: str = '',
+                     task_parameters: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message
@@ -253,6 +261,8 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
     task.model.mean_average_precision = model_mAP
     task.return_code = return_code
     task.return_msg = return_msg
+    task.args = args
+    task.task_parameters = task_parameters
 
     task.ancestor_task_id = mir_tasks.head_task_id
     mir_tasks.tasks[task.task_id].CopyFrom(task)

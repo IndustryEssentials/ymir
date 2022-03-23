@@ -19,10 +19,11 @@ import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
-import ImageSelect from "../components/imageSelect"
+import ImageSelect from "@/components/form/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
-import ModelSelect from "../components/modelSelect"
+import ModelSelect from "@/components/form/modelSelect"
+import KeywordRates from "@/components/dataset/keywordRates"
 
 const { Option } = Select
 
@@ -30,7 +31,7 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSysInfo, getDataset, }) {
+function Train({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const history = useHistory()
@@ -66,7 +67,7 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
   }, [allDatasets])
 
   useEffect(() => {
-    id && getDataset(id)
+    id && props.getDataset(id)
     id && setTrainSet(id)
   }, [id])
 
@@ -76,7 +77,7 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
   }, [datasetCache])
 
   useEffect(() => {
-    dataset.projectId && getDatasets(dataset.projectId)
+    dataset.projectId && props.getDatasets(dataset.projectId)
   }, [dataset.projectId])
 
   useEffect(() => {
@@ -116,7 +117,7 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
   }
 
   async function fetchSysInfo() {
-    const result = await getSysInfo()
+    const result = await props.getSysInfo()
     if (result) {
       setGPU(result.gpu_count)
     }
@@ -164,14 +165,20 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
       imageId,
       config,
     }
-    const result = await createTrainTask(params)
+    const result = await props.createTrainTask(params)
     if (result) {
+      await props.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}#model`)
     }
   }
 
   function onFinishFailed(errorInfo) {
     console.log("Failed:", errorInfo)
+  }
+
+  function getTrainSetTotal(setId) {
+    const ds = datasets.find(d => d.id === setId)
+    return ds ? ds.assetCount : 0
   }
 
   function validateGPU(_, value) {
@@ -260,6 +267,11 @@ function Train({ allDatasets, datasetCache, getDatasets, createTrainTask, getSys
                 </Form.Item>
               </Tip>
             </ConfigProvider>
+            <Tip hidden={true}>
+              <Form.Item label={t('dataset.train.form.samples')}>
+                <KeywordRates id={trainSet} trainingKeywords={dataset?.project?.keywords} total={getTrainSetTotal(trainSet)}></KeywordRates>
+              </Form.Item>
+            </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item label={t('task.train.form.keywords.label')}>
                 {dataset?.project?.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
@@ -438,6 +450,9 @@ const dis = (dispatch) => {
         type: "dataset/getDataset",
         payload: id,
       })
+    },
+    clearCache() {
+      return dispatch({ type: "model/clearCache", })
     },
     getSysInfo() {
       return dispatch({

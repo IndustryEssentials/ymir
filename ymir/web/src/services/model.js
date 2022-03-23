@@ -17,7 +17,7 @@ export function getModel(id) {
  * @returns 
  */
 export function getModelVersions(group_id) {
-  return request.get(`model_groups/${group_id}`, { params: { group_id, is_desc: false, limit: 10000 }})
+  return request.get(`models/`, { params: { group_id, is_desc: false, limit: 10000 }})
 }
 
 /**
@@ -103,7 +103,7 @@ export function createModel(model) {
 export function updateModel(id, name) {
   return request({
     method: "patch",
-    url: `/models/${id}`,
+    url: `/model_groups/${id}`,
     data: {
       name,
     },
@@ -117,6 +117,6 @@ export function updateModel(id, name) {
  * @param {number} image docker image url
  * @returns 
  */
-export function verify(model_id, image_urls, image) {
-  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image })
+export function verify(model_id, image_urls, image, config) {
+  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image, config })
 }

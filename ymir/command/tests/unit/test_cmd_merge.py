@@ -61,6 +61,7 @@ class TestMergeCmd(unittest.TestCase):
         # self._prepare_mir_branch_e()
         test_utils.mir_repo_checkout(self._mir_root, "master")
 
+    @staticmethod
     def _generate_attribute_for_asset(width: int, height: int, tvt_type: int = mirpb.TvtTypeUnknown) -> dict:
         if tvt_type == mirpb.TvtTypeUnknown:
             return {'asset_type': 'AssetTypeImageJpeg', 'width': width, 'height': height, 'image_channels': 3}
@@ -73,6 +74,7 @@ class TestMergeCmd(unittest.TestCase):
                 "tvt_type": mirpb.TvtType.Name(tvt_type)
             }
 
+    @staticmethod
     def _generate_annotations_for_asset(type_ids: List[int], x: int, y: int):
         annotations_list = []
         for idx, type_id in enumerate(type_ids):
@@ -87,9 +89,11 @@ class TestMergeCmd(unittest.TestCase):
             })
         return {'annotations': annotations_list}
 
+    @staticmethod
     def _generate_keywords_for_asset(predefined: List[int], customized: List[str]):
         return {'predifined_keyids': predefined, 'customized_keywords': customized}
 
+    @staticmethod
     def _generate_task(task_id: str, name: str, type: int, timestamp: int):
         return {
             'type': type,

@@ -20,9 +20,8 @@ def dir_test_root(sub_dirs: List[str]) -> str:
 # check enviroment
 def check_commands():
     """
-    test if mir, dvc, git command available
+    test if git command available
     """
-    subprocess.run("dvc --version".split(" "), stdout=subprocess.DEVNULL)
     subprocess.run("git --version".split(" "), stdout=subprocess.DEVNULL)
 
 

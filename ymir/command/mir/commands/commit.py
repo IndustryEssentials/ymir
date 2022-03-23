@@ -4,7 +4,7 @@ import os
 
 from mir import scm
 from mir.commands import base
-from mir.tools import checker
+from mir.tools import checker, mir_repo_utils, mir_storage
 from mir.tools.code import MirCode
 
 
@@ -16,13 +16,17 @@ class CmdCommit(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
-        repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
+        extra_items = mir_repo_utils.find_extra_items(mir_root=mir_root)
+        if extra_items:
+            logging.error(f"extra items: {', '.join(extra_items)}")
+            return MirCode.RC_CMD_INVALID_MIR_REPO
 
-        for f in ["metadatas.mir", "annotations.mir", "keywords.mir", "tasks.mir", "context.mir"]:
+        repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
+
+        all_mir_names = mir_storage.get_all_mir_paths()
+        for f in all_mir_names:
             if os.path.isfile(os.path.join(mir_root, f)):
-                repo_dvc.add(f)
-        repo_git.add('.')
+                repo_git.add(f)
 
         output_str = repo_git.commit(["-m", msg])
         logging.info("\n%s" % output_str)

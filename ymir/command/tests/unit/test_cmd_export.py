@@ -8,7 +8,7 @@ from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, data_exporter, hash_utils, mir_storage_ops
+from mir.tools import data_exporter, hash_utils, mir_storage_ops
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -224,7 +224,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.annotation_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = ''
+        fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one
         fake_args.format = 'voc'
         fake_args.in_cis = 'person'
         fake_args.work_dir = ''

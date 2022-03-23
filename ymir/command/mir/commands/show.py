@@ -19,12 +19,7 @@ class CmdShow(base.BaseCommand):
     @classmethod
     def run_with_args(cls, mir_root: str, src_revs: str, verbose: bool) -> int:
         # check args
-        if not src_revs:
-            logging.error('invalid args: empty --src-revs, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         check_code = checker.check(mir_root,
                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if check_code != MirCode.RC_OK:
@@ -33,12 +28,12 @@ class CmdShow(base.BaseCommand):
         # show infos
         cls._show_cis(mir_root, src_typ_rev_tid, verbose)
         cls._show_cks(mir_root, src_typ_rev_tid, verbose)
-        cls._show_general(mir_root, src_typ_rev_tid)
+        cls._show_general(mir_root, src_typ_rev_tid, verbose)
 
         return MirCode.RC_OK
 
     @classmethod
-    def _show_general(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid) -> None:
+    def _show_general(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
         cls._show_general_context_config(mir_root=mir_root)
 
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
@@ -57,7 +52,7 @@ class CmdShow(base.BaseCommand):
             cls._show_general_context(mir_context)
         mir_tasks: mirpb.MirTasks = mir_datas.get(mirpb.MIR_TASKS, None)
         if mir_tasks:
-            cls._show_general_tasks(mir_tasks)
+            cls._show_general_tasks(mir_tasks, verbose)
 
     @classmethod
     def _show_general_metadatas(cls, mir_metadatas: mirpb.MirMetadatas) -> None:
@@ -96,11 +91,13 @@ class CmdShow(base.BaseCommand):
             print('project classes: none')
 
     @classmethod
-    def _show_general_tasks(cls, mir_tasks: mirpb.MirTasks) -> None:
+    def _show_general_tasks(cls, mir_tasks: mirpb.MirTasks, verbose: bool) -> None:
         hid = mir_tasks.head_task_id
         task = mir_tasks.tasks[hid]
         print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
               f"    model hash: {task.model.model_hash}, map: {task.model.mean_average_precision}")
+        if verbose:
+            print(f"args: {task.args}\ntask parameters: {task.task_parameters}")
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:

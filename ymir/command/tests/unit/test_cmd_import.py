@@ -13,7 +13,7 @@ from tests import utils as test_utils
 
 class TestCmdImport(unittest.TestCase):
     _USER_NAME = 'test_user'
-    _MIR_REPO_NAME = 'ymir-dvc-test'
+    _MIR_REPO_NAME = 'mir-test-repo'
     _STORAGE_NAME = 'monitor_storage_root'
 
     def __init__(self, methodName: str) -> None:
