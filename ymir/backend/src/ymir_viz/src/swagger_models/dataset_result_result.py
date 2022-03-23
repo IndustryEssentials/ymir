@@ -1,13 +1,13 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-
 from datetime import date, datetime  # noqa: F401
+
 from typing import List, Dict  # noqa: F401
 
-from src import util
-from src.swagger_models.assets_result_result_negative_info import AssetsResultResultNegativeInfo  # noqa: F401,E501
 from src.swagger_models.base_model_ import Model
+from src.swagger_models.assets_result_result_negative_info import AssetsResultResultNegativeInfo  # noqa: F401,E501
+from src import util
 
 
 class DatasetResultResult(Model):
@@ -15,9 +15,11 @@ class DatasetResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, class_ids_count: object=None, ignored_labels: object=None, negative_info: AssetsResultResultNegativeInfo=None):  # noqa: E501
+    def __init__(self, total_count: int=None, class_ids_count: object=None, ignored_labels: object=None, negative_info: AssetsResultResultNegativeInfo=None):  # noqa: E501
         """DatasetResultResult - a model defined in Swagger
 
+        :param total_count: The total_count of this DatasetResultResult.  # noqa: E501
+        :type total_count: int
         :param class_ids_count: The class_ids_count of this DatasetResultResult.  # noqa: E501
         :type class_ids_count: object
         :param ignored_labels: The ignored_labels of this DatasetResultResult.  # noqa: E501
@@ -26,16 +28,19 @@ class DatasetResultResult(Model):
         :type negative_info: AssetsResultResultNegativeInfo
         """
         self.swagger_types = {
+            'total_count': int,
             'class_ids_count': object,
             'ignored_labels': object,
             'negative_info': AssetsResultResultNegativeInfo
         }
 
         self.attribute_map = {
+            'total_count': 'total_count',
             'class_ids_count': 'class_ids_count',
             'ignored_labels': 'ignored_labels',
             'negative_info': 'negative_info'
         }
+        self._total_count = total_count
         self._class_ids_count = class_ids_count
         self._ignored_labels = ignored_labels
         self._negative_info = negative_info
@@ -50,6 +55,27 @@ class DatasetResultResult(Model):
         :rtype: DatasetResultResult
         """
         return util.deserialize_model(dikt, cls)
+
+    @property
+    def total_count(self) -> int:
+        """Gets the total_count of this DatasetResultResult.
+
+
+        :return: The total_count of this DatasetResultResult.
+        :rtype: int
+        """
+        return self._total_count
+
+    @total_count.setter
+    def total_count(self, total_count: int):
+        """Sets the total_count of this DatasetResultResult.
+
+
+        :param total_count: The total_count of this DatasetResultResult.
+        :type total_count: int
+        """
+
+        self._total_count = total_count
 
     @property
     def class_ids_count(self) -> object:

@@ -1,7 +1,9 @@
+from typing import Dict
+
 from src.swagger_models.dataset_result import DatasetResult  # noqa: E501
 
 
-def get_dataset_info(user_id, repo_id, branch_id):  # noqa: E501
+def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
     """get dataset info
 
     get dataset info # noqa: E501
@@ -15,4 +17,7 @@ def get_dataset_info(user_id, repo_id, branch_id):  # noqa: E501
 
     :rtype: DatasetResult
     """
-    return 'do some magic!'
+    # do some magic!
+
+    DatasetResult
+    return dict()

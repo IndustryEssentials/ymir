@@ -212,6 +212,8 @@ components:
                 class_ids_count:
                   type: object
                   example: "{4:8, 5:2}"
+                total_count:
+                  type: integer
                 ignored_labels:
                   type: object
                   example: "{cat:8}"
@@ -309,6 +311,8 @@ components:
             result:
               type: object
               properties:
+                total_count:
+                  type: integer
                 class_ids_count:
                   type: object
                   example: "{4:8, 5:2}"

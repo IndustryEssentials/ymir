@@ -1,14 +1,14 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-
 from datetime import date, datetime  # noqa: F401
+
 from typing import List, Dict  # noqa: F401
 
-from src import util
+from src.swagger_models.base_model_ import Model
 from src.swagger_models.asset_info import AssetInfo  # noqa: F401,E501
 from src.swagger_models.assets_result_result_negative_info import AssetsResultResultNegativeInfo  # noqa: F401,E501
-from src.swagger_models.base_model_ import Model
+from src import util
 
 
 class AssetsResultResult(Model):
@@ -16,11 +16,13 @@ class AssetsResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, class_ids_count: object=None, ignored_labels: object=None, negative_info: AssetsResultResultNegativeInfo=None, elements: List[AssetInfo]=None, offset: int=None, limit: int=None, tatal: int=None):  # noqa: E501
+    def __init__(self, class_ids_count: object=None, total_count: int=None, ignored_labels: object=None, negative_info: AssetsResultResultNegativeInfo=None, elements: List[AssetInfo]=None, offset: int=None, limit: int=None, tatal: int=None):  # noqa: E501
         """AssetsResultResult - a model defined in Swagger
 
         :param class_ids_count: The class_ids_count of this AssetsResultResult.  # noqa: E501
         :type class_ids_count: object
+        :param total_count: The total_count of this AssetsResultResult.  # noqa: E501
+        :type total_count: int
         :param ignored_labels: The ignored_labels of this AssetsResultResult.  # noqa: E501
         :type ignored_labels: object
         :param negative_info: The negative_info of this AssetsResultResult.  # noqa: E501
@@ -36,6 +38,7 @@ class AssetsResultResult(Model):
         """
         self.swagger_types = {
             'class_ids_count': object,
+            'total_count': int,
             'ignored_labels': object,
             'negative_info': AssetsResultResultNegativeInfo,
             'elements': List[AssetInfo],
@@ -46,6 +49,7 @@ class AssetsResultResult(Model):
 
         self.attribute_map = {
             'class_ids_count': 'class_ids_count',
+            'total_count': 'total_count',
             'ignored_labels': 'ignored_labels',
             'negative_info': 'negative_info',
             'elements': 'elements',
@@ -54,6 +58,7 @@ class AssetsResultResult(Model):
             'tatal': 'tatal'
         }
         self._class_ids_count = class_ids_count
+        self._total_count = total_count
         self._ignored_labels = ignored_labels
         self._negative_info = negative_info
         self._elements = elements
@@ -92,6 +97,27 @@ class AssetsResultResult(Model):
         """
 
         self._class_ids_count = class_ids_count
+
+    @property
+    def total_count(self) -> int:
+        """Gets the total_count of this AssetsResultResult.
+
+
+        :return: The total_count of this AssetsResultResult.
+        :rtype: int
+        """
+        return self._total_count
+
+    @total_count.setter
+    def total_count(self, total_count: int):
+        """Sets the total_count of this AssetsResultResult.
+
+
+        :param total_count: The total_count of this AssetsResultResult.
+        :type total_count: int
+        """
+
+        self._total_count = total_count
 
     @property
     def ignored_labels(self) -> object:
