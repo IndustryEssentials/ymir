@@ -16,6 +16,41 @@ tags:
   - name: model
     description: Training task produces model
 paths:
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/datasets":
+    get:
+      tags:
+        - dataset
+      summary: "get dataset info"
+      description: "get dataset info"
+      operationId: get_dataset_info
+      parameters:
+        - name: user_id
+          in: path
+          description: user_id
+          required: true
+          schema:
+            type: string
+        - name: repo_id
+          in: path
+          description: repo_id
+          required: true
+          schema:
+            type: string
+        - name: branch_id
+          in: path
+          description: branch_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetResult"
+        "400":
+          description: Dataset not exists
   "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets":
     get:
       tags:
@@ -75,8 +110,8 @@ paths:
         "400":
           description: Branch not exists
           content: {}
-  ? "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets/{asset_id}"
-  : get:
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets/{asset_id}":
+    get:
       tags:
         - asset
       summary: "get asset_id info"
@@ -123,7 +158,7 @@ paths:
         - model
       summary: "get model info"
       description: "get model info"
-      operationId: get_task_info
+      operationId: get_model_info
       parameters:
         - name: user_id
           in: path
@@ -177,6 +212,18 @@ components:
                 class_ids_count:
                   type: object
                   example: "{4:8, 5:2}"
+                total_images_cnt:
+                  type: integer
+                ignored_labels:
+                  type: object
+                  example: "{cat:8}"
+                negative_info:
+                  type: object
+                  properties:
+                    negative_images_cnt:
+                      type: integer
+                    project_negative_images_cnt:
+                      type: integer
                 elements:
                   type: array
                   items:
@@ -256,6 +303,30 @@ components:
                   minimum: 0
                   description: mean average precision of the model
                   example: 0.5
+    DatasetResult:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+        - type: object
+          properties:
+            result:
+              type: object
+              properties:
+                total_images_cnt:
+                  type: integer
+                class_ids_count:
+                  type: object
+                  example: "{4:8, 5:2}"
+                ignored_labels:
+                  type: object
+                  example: "{cat:8}"
+                negative_info:
+                  type: object
+                  properties:
+                    negative_images_cnt:
+                      type: integer
+                    project_negative_images_cnt:
+                      type: integer
+
     ApiResponse:
       type: object
       properties:
