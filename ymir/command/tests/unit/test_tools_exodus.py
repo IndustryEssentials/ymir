@@ -1,6 +1,9 @@
+import logging
 import os
 import shutil
+from typing import Type
 import unittest
+import zlib
 
 import google.protobuf.json_format as pb_format
 
@@ -28,10 +31,10 @@ class TestExodus(unittest.TestCase):
 
     # public: test cases
     def test_open_normal_cases(self):
-        self._test_open_normal_cases("metadatas.mir", "a")
-        self._test_open_normal_cases("tasks.mir", "a")
-        self._test_open_normal_cases("annotations.mir", "a")
-        self._test_open_normal_cases("keywords.mir", "a")
+        self._test_open_normal_cases("metadatas.mir", "a", mirpb.MirMetadatas)
+        self._test_open_normal_cases("tasks.mir", "a", mirpb.MirTasks)
+        self._test_open_normal_cases("annotations.mir", "a", mirpb.MirAnnotations)
+        self._test_open_normal_cases("keywords.mir", "a", mirpb.MirKeywords)
 
     def test_open_abnormal_cases(self):
         # wrong branches
@@ -47,17 +50,15 @@ class TestExodus(unittest.TestCase):
         self._test_open_abnormal_cases(None, None, MirCode.RC_CMD_INVALID_ARGS)
 
     # protected: test cases
-    def _test_open_normal_cases(self, file_name: str, branch: str):
-        with exodus.open_mir(mir_root=self._mir_root, file_name=file_name, rev=branch, mode="rb") as f:
-            self.assertIsNotNone(f)
-            contents = f.read()
-            self.assertNotEqual(len(contents), 0)
+    def _test_open_normal_cases(self, file_name: str, branch: str, pb_class: Type):
+        contents = exodus.read_mir(mir_root=self._mir_root, rev=branch, file_name=file_name)
+        pb_instance = pb_class()
+        pb_instance.ParseFromString(contents)
 
     def _test_open_abnormal_cases(self, file_name: str, branch: str, expected_code: int):
         actual_exception = None
         try:
-            with exodus.open_mir(mir_root=self._mir_root, file_name=file_name, rev=branch, mode="rb"):
-                pass
+            exodus.read_mir(mir_root=self._mir_root, rev=branch, file_name=file_name)
         except (TypeError, ValueError) as e:
             actual_exception = e
         except MirRuntimeError as e:
@@ -82,7 +83,6 @@ class TestExodus(unittest.TestCase):
 
         mir_metadatas = mirpb.MirMetadatas()
         mir_annotations = mirpb.MirAnnotations()
-        mir_keywords = mirpb.MirKeywords()
         mir_tasks = mirpb.MirTasks()
 
         dict_metadatas = {
@@ -96,38 +96,6 @@ class TestExodus(unittest.TestCase):
             }
         }
         pb_format.ParseDict(dict_metadatas, mir_metadatas)
-
-        dict_annotations = {
-            "task_annotations": {
-                "mining-task-id": {
-                    "image_annotations": {
-                        "d4e4a60147f1e35bc7f5bc89284aa16073b043c9": {
-                            'annotations': [{
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 2
-                            }]
-                        }
-                    }
-                }
-            }
-        }
-
-        pb_format.ParseDict(dict_annotations, mir_annotations)
-
-        dict_keywords = {
-            'keywords': {
-                'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
-                    'predifined_keyids': [1],
-                    'customized_keywords': ["abc"]
-                }
-            }
-        }
-        pb_format.ParseDict(dict_keywords, mir_keywords)
 
         mir_tasks = mirpb.MirTasks()
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
