@@ -8,7 +8,12 @@ from src.viz_models.base import BaseModel
 
 class Task(BaseModel):
     def format_model_info(self, model_info: Dict) -> Dict:
-        result = dict(model_id=model_info["model_hash"], model_mAP=model_info["mean_average_precision"],)
+        result = dict(
+            model_id=model_info["model_hash"],
+            model_mAP=model_info["mean_average_precision"],
+            task_parameters=model_info["task_parameters"],
+            executor_config=model_info["executor_config"],
+        )
 
         return result
 
