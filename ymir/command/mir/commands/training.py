@@ -20,7 +20,7 @@ from mir.tools.errors import MirRuntimeError
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> Tuple[str, float, Optional[mir_utils.ModelStorage]]:
+                           task_context: dict) -> Tuple[str, float]:
     """
     find and save models
     Returns:
@@ -30,7 +30,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     model_paths, model_mAP = _find_models(out_model_dir)
     if not model_paths:
         # if have no models
-        return '', model_mAP, None
+        return '', model_mAP
 
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
                                            task_context=dict(**task_context,
