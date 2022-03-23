@@ -14,13 +14,15 @@ def mock_user_labels() -> Dict:
     user_labels = []
     for i in range(100):
         name = random_lower_string()
-        user_labels.append({
-            "name": name,
-            "aliases": [],
-            "create_time": 1647075200.0,
-            "update_time": 1647075200.0,
-            "id": i,
-        })
+        user_labels.append(
+            {
+                "name": name,
+                "aliases": [],
+                "create_time": 1647075222.0,
+                "update_time": 1647075211.0,
+                "id": i,
+            }
+        )
 
     return UserLabels.parse_obj(dict(labels=user_labels))
 
@@ -74,10 +76,14 @@ class TestModel:
         res = {
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
+            "task_parameters": "mock_task_parameters",
+            "executor_config": "mock_executor_config",
         }
         M = m.Model.from_viz_res(res)
         assert M.hash == res["model_id"]
         assert M.map == res["model_mAP"]
+        assert M.task_parameters == res["task_parameters"]
+        assert M.executor_config == res["executor_config"]
 
 
 class TestVizClient:
@@ -168,6 +174,8 @@ class TestVizClient:
         res = {
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
+            "task_parameters": "mock_task_parameters",
+            "executor_config": "mock_executor_config",
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -181,6 +189,8 @@ class TestVizClient:
         assert isinstance(ret, dict)
         assert ret["hash"] == res["model_id"]
         assert ret["map"] == res["model_mAP"]
+        assert ret["task_parameters"] == res["task_parameters"]
+        assert ret["executor_config"] == res["executor_config"]
 
     def test_close(self, mocker):
         host = random_lower_string()

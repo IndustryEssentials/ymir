@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel, Field, validator
+from typing import Optional
 
 
 class Common(BaseModel):
@@ -26,3 +27,8 @@ class IdModelMixin(BaseModel):
 
 class IsDeletedModelMixin(BaseModel):
     is_deleted: bool = False
+
+
+class IterationContextMixin(BaseModel):
+    iteration_id: Optional[int]
+    exclude_last_result: bool = True

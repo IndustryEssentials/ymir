@@ -27,7 +27,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db_obj = Task(
             name=obj_in.name,
             type=obj_in.type,
-            config=obj_in.config if obj_in.config else None,
+            config=obj_in.docker_image_config if obj_in.docker_image_config else None,
             parameters=obj_in.parameters.json() if obj_in.parameters else None,
             project_id=obj_in.project_id,
             hash=task_hash,
@@ -101,6 +101,14 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
 
     def update_duration(self, db: Session, *, task: Task) -> Task:
         task.duration = int(time.time() - datetime.timestamp(task.create_datetime))
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        return task
+
+    def update_parameters_and_config(self, db: Session, *, task: Task, parameters: str, config: str) -> Task:
+        task.parameters = parameters
+        task.config = config
         db.add(task)
         db.commit()
         db.refresh(task)

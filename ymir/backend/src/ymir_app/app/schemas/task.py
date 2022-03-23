@@ -1,11 +1,10 @@
-import enum
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import TaskState, TaskType, ResultType
+from app.constants.state import TaskState, TaskType, ResultType, IterationStage
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -57,11 +56,13 @@ class TaskParameter(BaseModel):
 
 
 class TaskCreate(TaskBase):
+    iteration_id: Optional[int]
+    iteration_stage: Optional[IterationStage]
     parameters: TaskParameter = Field(description="task specific parameters")
-    config: Optional[Dict] = Field(description="docker runtime configuration")
+    docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
 
-    @validator("config")
-    def dumps_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
+    @validator("docker_image_config")
+    def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
         # we don't care what's inside of config
         # just dumps it as string and save to db
         if isinstance(v, dict):
@@ -148,7 +149,20 @@ class TaskInternal(TaskInDBBase):
         use_enum_values = True
 
 
+class TaskResult(BaseModel):
+    model: Optional[Dict]
+    dataset: Optional[Dict]
+
+    @root_validator
+    def ensure_single_result(cls, values: Any) -> Any:
+        if values["model"] and values["dataset"]:
+            raise ValueError("Invalid Task Result")
+        return values
+
+
 class Task(TaskInternal):
+    result: Optional[TaskResult]
+
     @root_validator
     def ensure_terminate_state(cls, values: Any) -> Any:
         # as long as a task is marked as terminated
@@ -182,14 +196,3 @@ class TaskPagination(BaseModel):
 
 class TaskPaginationOut(Common):
     result: TaskPagination
-
-
-class CreateDatasetType(enum.IntEnum):
-    continued_dataset_group = 0
-    new_dataset_group = 1
-
-
-class TrainDataSet(BaseModel):
-    training_dataset_name: str
-    training_dataset_group: int
-    training_dataset_version: int

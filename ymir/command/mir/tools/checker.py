@@ -67,21 +67,21 @@ def _check_is_outside_git_repo(mir_root: str) -> int:
 
 def _check_is_inside_mir_repo(mir_root: str) -> int:
     return (MirCode.RC_OK if os.path.isdir(os.path.join(mir_root, ".git"))
-            and os.path.isdir(os.path.join(mir_root, ".dvc")) else MirCode.RC_CMD_INVALID_MIR_REPO)
+            and os.path.isdir(os.path.join(mir_root, ".mir")) else MirCode.RC_CMD_INVALID_MIR_REPO)
 
 
 def _check_is_outside_mir_repo(mir_root: str) -> int:
     return (MirCode.RC_OK if not os.path.isdir(os.path.join(mir_root, ".git"))
-            or not os.path.isdir(os.path.join(mir_root, ".dvc")) else MirCode.RC_CMD_INVALID_ARGS)
+            or not os.path.isdir(os.path.join(mir_root, ".mir")) else MirCode.RC_CMD_INVALID_ARGS)
 
 
 def _check_is_dirty(mir_root: str) -> int:
-    is_dirty = mir_repo_utils.mir_check_repo_dirty(mir_root)
+    is_dirty = mir_repo_utils.mir_check_repo_git_dirty(mir_root)
     return MirCode.RC_OK if is_dirty else MirCode.RC_CMD_INVALID_ARGS
 
 
 def _check_is_clean(mir_root: str) -> int:
-    is_dirty = mir_repo_utils.mir_check_repo_dirty(mir_root)
+    is_dirty = mir_repo_utils.mir_check_repo_git_dirty(mir_root)
     return MirCode.RC_OK if not is_dirty else MirCode.RC_CMD_DIRTY_REPO
 
 
