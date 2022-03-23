@@ -211,18 +211,6 @@ class TaskResult:
     def result_info(self) -> Dict:
         return self.model_info if self.result_type is ResultType.model else self.dataset_info
 
-    def update_model_related_task_info(self, task_in_db: Task) -> None:
-        if self.result_type is not ResultType.model:
-            return
-        # not update task info if already record parameters
-        if not task_in_db.parameters:
-            crud.task.update_parameters_and_config(
-                self.db,
-                task=task_in_db,
-                parameters=self.result_info["task_parameters"],
-                config=self.result_info["executor_config"],
-            )
-
     def save_model_stats(self, result: Dict) -> None:
         model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
         if not model_in_db:
@@ -304,8 +292,7 @@ class TaskResult:
                 task_result.state,
                 task_result,
             )
-            self.update_task_result(task_result)
-            self.update_model_related_task_info(task_in_db)
+            self.update_task_result(task_result, task_in_db)
 
         logger.info(
             "[update task] updating task state %s and percent %s",
@@ -320,7 +307,7 @@ class TaskResult:
             percent=task_result.percent,
         )
 
-    def update_task_result(self, task_result: schemas.TaskUpdateStatus) -> None:
+    def update_task_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: Task) -> None:
         if self.result_type is ResultType.dataset:
             crud_func = crud.dataset
         elif self.result_type is ResultType.model:
@@ -335,6 +322,14 @@ class TaskResult:
             return
 
         if task_result.state is TaskState.done:
+            # import model has no parameters, only update this task
+            if not task_in_db.parameters and self.result_type is ResultType.model:
+                crud.task.update_parameters_and_config(
+                    self.db,
+                    task=task_in_db,
+                    parameters=self.result_info["task_parameters"],
+                    config=self.result_info["executor_config"],
+                )
             crud_func.finish(
                 self.db,
                 result_record.id,
