@@ -78,9 +78,11 @@ class CmdModelImport(base.BaseCommand):
                                          model_mAP=float(model_storage.task_context['mAP']),
                                          return_code=MirCode.RC_OK,
                                          return_msg='')
-        mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict())
-        mir_tasks.tasks[mir_tasks.head_task_id].task_parameters = model_storage.task_context.get(
+        mir_tasks.tasks[mir_tasks.head_task_id].serialized_executor_config = yaml.safe_dump(
+            model_storage.executor_config)
+        mir_tasks.tasks[mir_tasks.head_task_id].serialized_task_parameters = model_storage.task_context.get(
             mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
+        mir_tasks.tasks[mir_tasks.head_task_id].task_context.executor = model_storage.task_context.get('executor', '')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,

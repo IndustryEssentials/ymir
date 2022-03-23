@@ -116,8 +116,9 @@ class CmdCopy(base.BaseCommand):
         task.timestamp = int(datetime.datetime.now().timestamp())
         # TODO: don't put model, dataset result and task together
         task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
-        task.args = mir_tasks.tasks[orig_head_task_id].args
-        task.task_parameters = mir_tasks.tasks[orig_head_task_id].task_parameters
+        task.task_context.CopyFrom(mir_tasks.tasks[orig_head_task_id].task_context)
+        task.serialized_executor_config = mir_tasks.tasks[orig_head_task_id].serialized_executor_config
+        task.serialized_task_parameters = mir_tasks.tasks[orig_head_task_id].serialized_task_parameters
         task.unknown_types.clear()
         for type_name, count in unknown_types.items():
             task.unknown_types[type_name] = count

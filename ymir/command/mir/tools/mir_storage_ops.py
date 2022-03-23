@@ -199,9 +199,8 @@ class MirStorageOps():
                                                       preserving_proto_field_name=True,
                                                       use_integers_for_enums=True,
                                                       including_default_value_fields=True)
-        single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task.task_parameters
-        single_model_dict[mir_settings.EXECUTOR_CONFIG_KEY] = yaml.safe_load(task.args).get(
-            mir_settings.EXECUTOR_CONFIG_KEY, {}) if task.args else {}
+        single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task.serialized_task_parameters
+        single_model_dict[mir_settings.EXECUTOR_CONFIG_KEY] = yaml.safe_load(task.serialized_executor_config) or {}
         return single_model_dict
 
     @classmethod
@@ -246,11 +245,9 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
                      model_mAP: float = 0,
                      return_code: int = 0,
                      return_msg: str = '',
-                     task_parameters: str = '',
-                     executor_config: str = '',
-                     executor: str = '',
-                     src_revs: str = '',
-                     dst_rev: str = '') -> None:
+                     serialized_task_parameters: str = '',
+                     serialized_executor_config: str = '',
+                     executor: str = '') -> None:
     task: mirpb.Task = mirpb.Task()
     task.type = task_type
     task.name = message
@@ -264,12 +261,9 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
     task.model.mean_average_precision = model_mAP
     task.return_code = return_code
     task.return_msg = return_msg
-    task.task_parameters = task_parameters
-    task.executor_config = executor_config
-
+    task.serialized_task_parameters = serialized_task_parameters
+    task.serialized_executor_config = serialized_executor_config
     task.task_context.executor = executor
-    task.task_context.src_revs = src_revs
-    task.task_context.dst_rev = dst_rev
 
     task.ancestor_task_id = mir_tasks.head_task_id
     mir_tasks.tasks[task.task_id].CopyFrom(task)

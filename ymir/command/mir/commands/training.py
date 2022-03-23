@@ -41,7 +41,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                                 model_dir_path=out_model_dir,
                                                 model_location=model_upload_location)
 
-    return model_sha1, model_mAP, model_storage
+    return model_sha1, model_mAP
 
 
 def _find_models(model_root: str) -> Tuple[List[str], float]:
@@ -71,15 +71,14 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
 
 
 def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
-                      model_sha1: str, mAP: float, model_storage: Optional[mir_utils.ModelStorage], task_ret_code: int,
-                      task_err_msg: str) -> mirpb.MirTasks:
+                      model_sha1: str, mAP: float, task_ret_code: int, task_err_msg: str,
+                      serialized_task_parameters: str, serialized_executor_config: str,
+                      executor: str) -> mirpb.MirTasks:
     """
     add a new mir single task into mir_tasks from branch base_branch, and save it to a new branch: dst_branch
     """
     logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
 
-    task_parameters = model_storage.task_context.get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY,
-                                                     '') if model_storage else ''
     mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
                                                                           mir_branch=src_rev_tid.rev,
                                                                           mir_task_id=src_rev_tid.tid,
@@ -92,7 +91,9 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
                                      model_hash=model_sha1,
                                      return_code=task_ret_code,
                                      return_msg=task_err_msg,
-                                     task_parameters=task_parameters)
+                                     serialized_task_parameters=serialized_task_parameters,
+                                     serialized_executor_config=serialized_executor_config,
+                                     executor=executor)
     return mir_tasks
 
 
@@ -421,10 +422,10 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info("saving models")
-        model_sha1, model_mAP, model_storage = _process_model_storage(out_root=work_dir_out,
-                                                                      model_upload_location=model_upload_location,
-                                                                      executor_config=executor_config,
-                                                                      task_context=task_context)
+        model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
+                                                       model_upload_location=model_upload_location,
+                                                       executor_config=executor_config,
+                                                       task_context=task_context)
 
         # update metadatas and task with finish state and model hash
         mir_tasks = _update_mir_tasks(mir_root=mir_root,
@@ -432,9 +433,11 @@ class CmdTrain(base.BaseCommand):
                                       dst_rev_tid=dst_typ_rev_tid,
                                       model_sha1=model_sha1,
                                       mAP=model_mAP,
-                                      model_storage=model_storage,
                                       task_ret_code=task_code,
-                                      task_err_msg=task_error_msg)
+                                      task_err_msg=task_error_msg,
+                                      serialized_task_parameters=task_parameters,
+                                      serialized_executor_config=yaml.safe_dump(executor_config),
+                                      executor=executor)
 
         if task_code != MirCode.RC_OK:
             raise MirRuntimeError(error_code=task_code,
