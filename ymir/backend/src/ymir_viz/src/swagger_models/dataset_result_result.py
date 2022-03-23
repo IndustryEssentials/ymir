@@ -15,11 +15,11 @@ class DatasetResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, total_count: int=None, class_ids_count: object=None, ignored_labels: object=None, negative_info: AssetsResultResultNegativeInfo=None):  # noqa: E501
+    def __init__(self, total_images_cnt: int=None, class_ids_count: object=None, ignored_labels: object=None, negative_info: AssetsResultResultNegativeInfo=None):  # noqa: E501
         """DatasetResultResult - a model defined in Swagger
 
-        :param total_count: The total_count of this DatasetResultResult.  # noqa: E501
-        :type total_count: int
+        :param total_images_cnt: The total_images_cnt of this DatasetResultResult.  # noqa: E501
+        :type total_images_cnt: int
         :param class_ids_count: The class_ids_count of this DatasetResultResult.  # noqa: E501
         :type class_ids_count: object
         :param ignored_labels: The ignored_labels of this DatasetResultResult.  # noqa: E501
@@ -28,19 +28,19 @@ class DatasetResultResult(Model):
         :type negative_info: AssetsResultResultNegativeInfo
         """
         self.swagger_types = {
-            'total_count': int,
+            'total_images_cnt': int,
             'class_ids_count': object,
             'ignored_labels': object,
             'negative_info': AssetsResultResultNegativeInfo
         }
 
         self.attribute_map = {
-            'total_count': 'total_count',
+            'total_images_cnt': 'total_images_cnt',
             'class_ids_count': 'class_ids_count',
             'ignored_labels': 'ignored_labels',
             'negative_info': 'negative_info'
         }
-        self._total_count = total_count
+        self._total_images_cnt = total_images_cnt
         self._class_ids_count = class_ids_count
         self._ignored_labels = ignored_labels
         self._negative_info = negative_info
@@ -57,25 +57,25 @@ class DatasetResultResult(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def total_count(self) -> int:
-        """Gets the total_count of this DatasetResultResult.
+    def total_images_cnt(self) -> int:
+        """Gets the total_images_cnt of this DatasetResultResult.
 
 
-        :return: The total_count of this DatasetResultResult.
+        :return: The total_images_cnt of this DatasetResultResult.
         :rtype: int
         """
-        return self._total_count
+        return self._total_images_cnt
 
-    @total_count.setter
-    def total_count(self, total_count: int):
-        """Sets the total_count of this DatasetResultResult.
+    @total_images_cnt.setter
+    def total_images_cnt(self, total_images_cnt: int):
+        """Sets the total_images_cnt of this DatasetResultResult.
 
 
-        :param total_count: The total_count of this DatasetResultResult.
-        :type total_count: int
+        :param total_images_cnt: The total_images_cnt of this DatasetResultResult.
+        :type total_images_cnt: int
         """
 
-        self._total_count = total_count
+        self._total_images_cnt = total_images_cnt
 
     @property
     def class_ids_count(self) -> object:

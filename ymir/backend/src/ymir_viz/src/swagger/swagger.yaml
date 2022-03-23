@@ -319,7 +319,7 @@ components:
         class_ids_count:
           type: object
           example: "{4:8, 5:2}"
-        total_count:
+        total_images_cnt:
           type: integer
         ignored_labels:
           type: object
@@ -370,7 +370,7 @@ components:
     DatasetResult_result:
       type: object
       properties:
-        total_count:
+        total_images_cnt:
           type: integer
         class_ids_count:
           type: object
