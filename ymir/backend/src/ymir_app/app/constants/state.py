@@ -64,6 +64,7 @@ class IterationStage(IntEnum):
     label = 2
     prepare_training = 3
     training = 4
+    end = 5
 
 
 class MiningStrategy(IntEnum):

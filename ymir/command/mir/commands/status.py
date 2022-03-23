@@ -18,7 +18,7 @@ class CmdStatus(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        repo_dirty = mir_repo_utils.mir_check_repo_dirty(mir_root=mir_root)
+        repo_dirty = mir_repo_utils.mir_check_repo_git_dirty(mir_root=mir_root)
         logging.info('repo: dirty' if repo_dirty else 'repo: clean')
 
         return MirCode.RC_OK

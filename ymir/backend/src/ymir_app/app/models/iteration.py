@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger
 
 from app.db.base_class import Base
+from app.models.task import Task  # noqa
 
 
 class Iteration(Base):
@@ -16,7 +17,6 @@ class Iteration(Base):
     label_output_dataset_id = Column(Integer)
     training_input_dataset_id = Column(Integer)
     training_output_model_id = Column(Integer)
-    previous_training_dataset_id = Column(Integer, index=True, nullable=False)
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
