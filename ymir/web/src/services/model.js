@@ -117,6 +117,6 @@ export function updateModel(id, name) {
  * @param {number} image docker image url
  * @returns 
  */
-export function verify(model_id, image_urls, image) {
-  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image })
+export function verify(model_id, image_urls, image, config) {
+  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image, config })
 }
