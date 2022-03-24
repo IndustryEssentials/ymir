@@ -13,8 +13,6 @@ EXPECTED_FILE_VERSION = 1
 class _SingleLabel(BaseModel):
     id: int
     name: str
-    create_time: float = 0
-    update_time: float = 0
     aliases: List[str] = []
 
     @validator('name')
