@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Card } from "antd"
+import { Card, Space } from "antd"
 import { useLocation, useParams, connect } from "umi"
 
 import t from "@/utils/t"
@@ -8,7 +8,7 @@ import Iteration from './components/iteration'
 import Datasets from '@/components/dataset/list'
 import Models from '@/components/model/list'
 
-import styles from "./detail.less"
+import s from "./detail.less"
 import Prepare from "./components/prepare"
 
 const tabsTitle = [
@@ -29,7 +29,7 @@ function ProjectDetail(func) {
   useEffect(() => {
     id && fetchProject()
   }, [id])
-  
+
   useEffect(() => {
     const locationHash = location.hash.replace(/^#/, '')
     if (locationHash) {
@@ -38,21 +38,30 @@ function ProjectDetail(func) {
   }, [location.hash])
 
   async function fetchProject() {
-    const result  = await func.getProject(id)
+    const result = await func.getProject(id)
     if (result) {
       setProject(result)
     }
   }
 
   return (
-    <div className={styles.projectDetail}>
+    <div className={s.projectDetail}>
       <Breadcrumbs />
-      {project.currentIteration > 0 ? 
-      <Iteration project={project} /> : <Prepare project={project} /> }
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} 
-        style={{ margin: '-20px -5vw 0', background: 'transparent'}}
-        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px'}}
-        bodyStyle={{ padding: '0 5vw'}}>
+      <div className={s.header}>
+        <Space className={s.detailPanel}>
+          <span className={s.name}>{project.name}</span>
+          <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.currentIteration, target: project.targetIteration })}</span>
+          <span>{t('project.train_classes')}: {project?.keywords?.join(',')}</span>
+          <span>{t('project.target.map')}: {project.targetMap}</span>
+          <span>{project.description}</span>
+        </Space>
+        {project.currentIteration > 0 ?
+          <Iteration project={project} /> : <Prepare project={project} />}
+      </div>
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)}
+        style={{ margin: '-20px -5vw 0', background: 'transparent' }}
+        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px' }}
+        bodyStyle={{ padding: '0 5vw' }}>
         {content[active]}
       </Card>
     </div>

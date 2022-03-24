@@ -8,25 +8,21 @@ import Stage from './stage'
 import s from "./iteration.less"
 
 function Prepare({ project = {}, fresh = () => {}, ...func }) {
-  const [iteration, setIteration] = useState({})
   const [stages, setStages] = useState([])
 
   useEffect(() => {
-    initStages()
-  }, [])
-  useEffect(() => {
-    project.id && rerenderStages(project)
+    project.id && initStages()
   }, [project])
 
   function initStages() {
     const labels = [
-      { value: 'datasets', url: '/home/project/add?settings=1', state: states.READY, },
-      { value: 'model', url: '/home/project/modelSettings', state: states.READY, },
-      { value: 'start', state: states.INVALID, callback: () => fresh() },
+      { value: 'datasets', url: `/home/project/add/${project.id}?settings=1`, },
+      { value: 'model', url: '/home/project/modelSettings', },
+      { value: 'start', callback: () => fresh() },
     ]
-    const ss = labels.map(({ value, url, state, callback }, index) => {
+    const ss = labels.map(({ value, url, callback }, index) => {
       const act = `project.iteration.stage.${value}`
-      return {
+      const stage = {
         value: index + 1,
         label: value,
         act,
@@ -38,18 +34,11 @@ function Prepare({ project = {}, fresh = () => {}, ...func }) {
         unskippable: true,
         callback,
       }
-    })
-
-    setStages(ss)
-  }
-
-  function rerenderStages(project) {
-    const ss = stages.map((stage, index) => {
-      if (index === stages.length - 1) {
+      if (index === labels.length - 1) {
         stage.state = project.currentIteration > 0 ? states.READY : states.INVALID
         stage.react = ''
       }
-      return { ...stage }
+      return stage
     })
     setStages(ss)
   }
