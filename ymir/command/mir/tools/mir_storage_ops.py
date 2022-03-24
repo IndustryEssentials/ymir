@@ -184,7 +184,6 @@ class MirStorageOps():
 
     @classmethod
     def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
-        # TODO: remove task.args, add task.executor_config_str, task.task_context, task.task_parameters_str
         mir_storage_data: mirpb.MirTasks = cls.load_single(mir_root=mir_root,
                                                            mir_branch=mir_branch,
                                                            ms=mirpb.MirStorage.MIR_TASKS,
@@ -265,9 +264,9 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
     task.model.model_hash = model_hash
     task.model.mean_average_precision = model_mAP
 
-    task.task_context.executor = executor
-    task.task_context.src_revs = src_revs
-    task.task_context.dst_rev = dst_rev
+    task.executor = executor
+    task.src_revs = src_revs
+    task.dst_rev = dst_rev
 
     mir_tasks.tasks[task.task_id].CopyFrom(task)
     mir_tasks.head_task_id = task.task_id

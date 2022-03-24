@@ -115,8 +115,10 @@ class CmdCopy(base.BaseCommand):
         task.task_id = dst_typ_rev_tid.tid
         task.timestamp = int(datetime.datetime.now().timestamp())
         # TODO: don't put model, dataset result and task together
+        task.src_revs = src_revs
+        task.dst_rev = dst_rev
+        task.executor = mir_tasks.tasks[orig_head_task_id].executor
         task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
-        task.task_context.CopyFrom(mir_tasks.tasks[orig_head_task_id].task_context)
         task.serialized_executor_config = mir_tasks.tasks[orig_head_task_id].serialized_executor_config
         task.serialized_task_parameters = mir_tasks.tasks[orig_head_task_id].serialized_task_parameters
         task.unknown_types.clear()

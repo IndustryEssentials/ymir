@@ -84,7 +84,7 @@ class CmdModelImport(base.BaseCommand):
             model_storage.executor_config)
         mir_tasks.tasks[mir_tasks.head_task_id].serialized_task_parameters = model_storage.task_context.get(
             mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
-        mir_tasks.tasks[mir_tasks.head_task_id].task_context.executor = model_storage.task_context.get('executor', '')
+        mir_tasks.tasks[mir_tasks.head_task_id].executor = model_storage.task_context.get('executor', '')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       task_id=dst_typ_rev_tid.tid,

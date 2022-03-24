@@ -97,7 +97,7 @@ class CmdShow(base.BaseCommand):
         print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
               f"    model hash: {task.model.model_hash}\n"
               f"    map: {task.model.mean_average_precision}\n"
-              f"    executor: {task.task_context.executor}")
+              f"    executor: {task.executor}")
         if verbose:
             print(f"    task parameters: {task.serialized_task_parameters}\n"
                   f"\n=== executor config ===\n{task.serialized_executor_config}")
