@@ -12,11 +12,8 @@ from app.schemas.common import (
 )
 
 from app.schemas.iteration import IterationInDBBase
-<<<<<<< HEAD
 from app.schemas.dataset import DatasetInDBBase
 from app.schemas.dataset_group import DatasetGroupInDBBase
-=======
->>>>>>> master
 
 
 class ProjectBase(BaseModel):
