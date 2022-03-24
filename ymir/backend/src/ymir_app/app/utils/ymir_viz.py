@@ -63,7 +63,9 @@ class Assets:
             for asset in res["elements"]
         ]
 
-        keywords = {user_labels.get_main_names([class_id])[0]: count for class_id, count in res["class_ids_count"].items()}
+        keywords = {
+            user_labels.get_main_names([class_id])[0]: count for class_id, count in res["class_ids_count"].items()
+        }
         ignored_keywords = res["ignored_labels"]
         negative_info = res["negative_info"]
         return cls(res["total"], assets, keywords, ignored_keywords, negative_info)
