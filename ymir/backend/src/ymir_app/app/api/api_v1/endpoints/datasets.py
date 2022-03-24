@@ -2,7 +2,6 @@ import enum
 import pathlib
 import random
 import tempfile
-from operator import attrgetter
 from typing import Any, Dict, Optional
 from zipfile import BadZipFile
 
@@ -10,6 +9,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
+
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
@@ -23,9 +23,9 @@ from app.api.errors.errors import (
     DatasetGroupNotFound,
 )
 from app.config import settings
-from app.constants.state import TaskState, TaskType, MiningStrategy, ResultState
-from app.schemas.dataset import MergeStrategy
+from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
+from app.utils.params import ParametersConversion
 from app.utils.ymir_controller import (
     ControllerClient,
     gen_task_hash,
@@ -460,47 +460,6 @@ def get_asset_of_dataset(
     return {"result": asset}
 
 
-def fusion_normalize_parameters(
-    db: Session,
-    task_in: schemas.DatasetsFusionParameter,
-    user_labels: UserLabels,
-) -> Dict:
-    # in the iteration
-    if task_in.iteration_id is not None and task_in.exclude_last_result:
-        iterations = crud.iteration.get_multi_iterations(db=db, project_id=task_in.project_id)
-        if task_in.mining_strategy == MiningStrategy.chunk:
-            task_in.exclude_datasets += [
-                one_iteration.mining_input_dataset_id
-                for one_iteration in iterations
-                if one_iteration.mining_input_dataset_id
-            ]
-        elif task_in.mining_strategy == MiningStrategy.dedup:
-            task_in.exclude_datasets += [
-                one_iteration.mining_output_dataset_id
-                for one_iteration in iterations
-                if one_iteration.mining_output_dataset_id
-            ]
-
-    include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
-
-    include_datasets_info.sort(
-        key=attrgetter("update_datetime"),
-        reverse=(task_in.include_strategy == MergeStrategy.prefer_newest),
-    )
-
-    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
-    parameters = dict(
-        include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
-        include_strategy=task_in.include_strategy,
-        exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
-        include_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.include_labels),
-        exclude_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.exclude_labels),
-        sampling_count=task_in.sampling_count,
-    )
-
-    return parameters
-
-
 @router.post(
     "/fusion",
     response_model=schemas.DatasetOut,
@@ -522,7 +481,8 @@ def create_dataset_fusion(
     )
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
 
-    parameters = fusion_normalize_parameters(db, task_in, user_labels)
+    parameters = ParametersConversion(db=db, user_labels=user_labels, parameter=task_in)
+
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,

@@ -3,12 +3,14 @@ import json
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, validator
-from app.constants.state import ResultState, TaskType, MiningStrategy
+
+from app.constants.state import ResultState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
+    IterationContext,
 )
 from app.schemas.task import TaskInternal
 
@@ -136,12 +138,10 @@ class DatasetPaginationOut(Common):
 
 
 class DatasetsFusionParameter(BaseModel):
+    iteration_context: Optional[IterationContext]
     dataset_group_id: int
     main_dataset_id: int
     project_id: int
-    mining_strategy: MiningStrategy = MiningStrategy.customize
-    iteration_id: Optional[int]
-    exclude_last_result: bool = True
 
     include_datasets: List[int]
     include_strategy: Optional[MergeStrategy] = Field(

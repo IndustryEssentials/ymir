@@ -1,7 +1,9 @@
 from datetime import datetime
+from typing import Optional, List
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional
+
+from app.constants.state import MiningStrategy
 
 
 class Common(BaseModel):
@@ -29,6 +31,17 @@ class IsDeletedModelMixin(BaseModel):
     is_deleted: bool = False
 
 
-class IterationContextMixin(BaseModel):
+class IterationContext(BaseModel):
+    # data fusion in iteration
     iteration_id: Optional[int]
     exclude_last_result: bool = True
+    mining_strategy: MiningStrategy = MiningStrategy.customize
+
+
+class UniformParams(BaseModel):
+    include_datasets: List[str]
+    exclude_datasets: List[str]
+    include_strategy: int
+    include_class_ids: List[int]
+    exclude_class_ids: List[int]
+    sampling_count: int
