@@ -128,7 +128,7 @@ def create_task(
 
     # 5. create task result record (dataset or model)
     task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task)
-    result = task_result.create(task_in.parameters.dataset_id)
+    task_result.create(task_in.parameters.dataset_id)
 
     # 6. send metric to clickhouse
     try:
@@ -149,11 +149,7 @@ def create_task(
         logger.exception("[create task] failed to get metrics for task(%s), continue anyway", task.hash)
     logger.info("[create task] created task name: %s", task_in.name)
 
-    # fixme
-    #  find a walkaround to avoid circular imports in schemas
-    task_with_result = schemas.TaskInternal.from_orm(task).dict()
-    task_with_result["result"] = result
-    return {"result": task_with_result}
+    return {"result": task}
 
 
 class TaskResult:
