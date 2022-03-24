@@ -249,24 +249,26 @@ def update_mir_tasks(mir_tasks: mirpb.MirTasks,
                      executor: str = '',
                      src_revs: str = '',
                      dst_rev: str = '') -> None:
+    task_dict = {
+        'type': task_type,
+        'name': message,
+        'task_id': task_id,
+        'timestamp': int(time.time()),
+        'return_code': return_code,
+        'return_msg': return_msg,
+        'serialized_task_parameters': serialized_task_parameters,
+        'serialized_executor_config': serialized_executor_config,
+        'unknown_types': unknown_types,
+        'model': {
+            'model_hash': model_hash,
+            'mean_average_precision': model_mAP,
+        },
+        'executor': executor,
+        'src_revs': src_revs,
+        'dst_rev': dst_rev,
+    }
     task: mirpb.Task = mirpb.Task()
-    task.type = task_type
-    task.name = message
-    task.task_id = task_id
-    task.timestamp = int(time.time())
-    task.return_code = return_code
-    task.return_msg = return_msg
-    task.serialized_task_parameters = serialized_task_parameters
-    task.serialized_executor_config = serialized_executor_config
-    for k, v in unknown_types.items():
-        task.unknown_types[k] = v
-
-    task.model.model_hash = model_hash
-    task.model.mean_average_precision = model_mAP
-
-    task.executor = executor
-    task.src_revs = src_revs
-    task.dst_rev = dst_rev
+    json_format.ParseDict(task_dict, task)
 
     mir_tasks.tasks[task.task_id].CopyFrom(task)
     mir_tasks.head_task_id = task.task_id
