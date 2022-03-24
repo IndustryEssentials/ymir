@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -36,12 +36,3 @@ class IterationContext(BaseModel):
     iteration_id: Optional[int]
     exclude_last_result: bool = True
     mining_strategy: MiningStrategy = MiningStrategy.customize
-
-
-class UniformParams(BaseModel):
-    include_datasets: List[str]
-    exclude_datasets: List[str]
-    include_strategy: int
-    include_class_ids: List[int]
-    exclude_class_ids: List[int]
-    sampling_count: int

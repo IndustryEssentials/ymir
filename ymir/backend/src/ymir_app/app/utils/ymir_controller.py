@@ -10,7 +10,6 @@ from fastapi.logger import logger
 from google.protobuf import json_format  # type: ignore
 
 from app.constants.state import TaskType
-from app.schemas.common import UniformParams
 from app.schemas.dataset import ImportStrategy, MergeStrategy
 from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
@@ -226,20 +225,20 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_GPU_INFO_GET
         return request
 
-    def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, uniform_params: UniformParams) -> mirsvrpb.GeneralReq:
+    def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()
-        data_fusion_request.in_dataset_ids[:] = uniform_params.include_datasets
-        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[uniform_params.include_strategy]
-        if uniform_params.exclude_datasets:
-            data_fusion_request.ex_dataset_ids[:] = uniform_params.exclude_datasets
+        data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
+        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[args["include_strategy"]]
+        if args.get("exclude_datasets"):
+            data_fusion_request.ex_dataset_ids[:] = args["exclude_datasets"]
 
-        if uniform_params.include_class_ids:
-            data_fusion_request.in_class_ids[:] = uniform_params.include_class_ids
-        if uniform_params.exclude_class_ids:
-            data_fusion_request.ex_class_ids[:] = uniform_params.exclude_class_ids
+        if args.get("include_class_ids"):
+            data_fusion_request.in_class_ids[:] = args["include_class_ids"]
+        if args.get("exclude_class_ids"):
+            data_fusion_request.ex_class_ids[:] = args["exclude_class_ids"]
 
-        if uniform_params.sampling_count:
-            data_fusion_request.count = uniform_params.sampling_count
+        if args.get("sampling_count"):
+            data_fusion_request.count = args["sampling_count"]
         else:
             # not sampling
             data_fusion_request.rate = 1
@@ -420,7 +419,7 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         task_id: str,
-        task_parameters: UniformParams,
+        task_parameters: Optional[Dict],
     ) -> Dict:
         req = ControllerRequest(
             type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters

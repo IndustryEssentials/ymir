@@ -82,7 +82,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             db.query(self.model)
             .filter(
                 self.model.project_id == project_id,  # type: ignore
-                not_(self.model.is_deleted),
             )
             .all()
         )
