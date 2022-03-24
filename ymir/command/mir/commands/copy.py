@@ -1,6 +1,5 @@
 import argparse
 from collections import defaultdict
-import datetime
 import logging
 from typing import Dict, List, Set, Tuple
 

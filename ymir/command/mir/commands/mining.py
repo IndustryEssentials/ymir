@@ -9,7 +9,7 @@ import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, data_exporter, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
