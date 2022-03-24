@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -14,6 +15,12 @@ class _SingleLabel(BaseModel):
     id: int
     name: str
     aliases: List[str] = []
+
+    @validator('create_time', 'update_time', pre=True)
+    def _cast_datetime_type(cls, v: Any) -> float:
+        if isinstance(v, datetime):
+            return v.timestamp()
+        return v
 
     @validator('name')
     def _strip_and_lower_name(cls, v: str) -> str:
