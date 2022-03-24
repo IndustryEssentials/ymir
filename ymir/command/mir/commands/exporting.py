@@ -57,10 +57,8 @@ class CmdExport(base.BaseCommand):
         format_type = data_exporter.format_type_from_str(format)
 
         # asset ids
-        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                                      mir_branch=src_typ_rev_tid.rev,
-                                                                                      mir_task_id=src_typ_rev_tid.tid,
-                                                                                      ms=mirpb.MIR_METADATAS)
+        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=mir_root, mir_branch=src_typ_rev_tid.rev, mir_task_id=src_typ_rev_tid.tid, ms=mirpb.MIR_METADATAS)
         asset_ids = set()
         for k in mir_metadatas.attributes.keys():
             asset_ids.add(str(k))
@@ -74,7 +72,8 @@ class CmdExport(base.BaseCommand):
         # export
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
-                             class_type_ids={type_id: type_id for type_id in type_ids_list},
+                             class_type_ids={type_id: type_id
+                                             for type_id in type_ids_list},
                              asset_ids=asset_ids,
                              asset_dir=asset_dir,
                              annotation_dir=annotation_dir,
@@ -113,8 +112,7 @@ class CmdExport(base.BaseCommand):
                                                       commit_message=task.name)
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     exporting_arg_parser = subparsers.add_parser('export',
                                                  parents=[parent_parser],
                                                  description='use this command to export data',
@@ -146,7 +144,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                       default="none",
                                       choices=data_exporter.support_format_type(),
                                       help='annotation format: ark / voc / none')
-    exporting_arg_parser.add_argument("-p", '--cis',
+    exporting_arg_parser.add_argument("-p",
+                                      '--cis',
                                       dest="in_cis",
                                       type=str,
                                       required=False,

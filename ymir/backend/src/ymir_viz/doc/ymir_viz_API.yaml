@@ -209,21 +209,6 @@ components:
             result:
               type: object
               properties:
-                class_ids_count:
-                  type: object
-                  example: "{4:8, 5:2}"
-                total_images_cnt:
-                  type: integer
-                ignored_labels:
-                  type: object
-                  example: "{cat:8}"
-                negative_info:
-                  type: object
-                  properties:
-                    negative_images_cnt:
-                      type: integer
-                    project_negative_images_cnt:
-                      type: integer
                 elements:
                   type: array
                   items:

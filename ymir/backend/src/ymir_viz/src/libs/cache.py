@@ -4,7 +4,7 @@ from typing import Dict, Any, List, Optional
 import redis
 from werkzeug.local import LocalProxy
 
-from src import config
+from src import viz_config
 from src.libs import app_logger
 
 
@@ -39,7 +39,7 @@ class RedisCache:
         try:
             return self._client.exists(names)
         except Exception as e:
-            app_logger.logger.error(f"{e}")
+            app_logger.logger.exception(f"{e}")
             return False
 
     def pipeline(self) -> Any:
@@ -58,7 +58,7 @@ class RedisCache:
 
 
 def get_connect() -> redis.Redis:
-    return redis.StrictRedis.from_url(str(config.VIZ_REDIS_URI), encoding="utf8", decode_responses=True)
+    return redis.StrictRedis.from_url(str(viz_config.VIZ_REDIS_URI), encoding="utf8", decode_responses=True)
 
 
 proxy_rds_con = LocalProxy(get_connect)

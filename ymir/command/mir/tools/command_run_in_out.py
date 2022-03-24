@@ -35,10 +35,10 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
     else:
         mir_tasks = mirpb.MirTasks()
         if src_revs != 'master':
-            mir_tasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                  mir_branch=src_typ_rev_tid.rev,
-                                                                  ms=mirpb.MIR_TASKS,
-                                                                  mir_task_id=src_typ_rev_tid.tid)
+            mir_tasks = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
+                                                                          mir_branch=src_typ_rev_tid.rev,
+                                                                          ms=mirpb.MIR_TASKS,
+                                                                          mir_task_id=src_typ_rev_tid.tid)
         mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                          task_type=mirpb.TaskType.TaskTypeUnknown,
                                          task_id=dst_typ_rev_tid.tid,

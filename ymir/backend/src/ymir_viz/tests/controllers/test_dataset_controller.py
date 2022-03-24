@@ -90,7 +90,7 @@ def mock_mir_content(mocker):
 
     mocker.patch.object(
         MirStorageOps,
-        "load_assets_content",
+        "load_branch_contents",
         return_value=(dict_metadatas, dict_annotations, dict_keywords, mir_tasks_content, statistic_info),
     )
 

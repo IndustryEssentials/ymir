@@ -93,15 +93,17 @@ class TestCmdCopy(unittest.TestCase):
 
     # private: check results
     def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool):
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
-                                                       mir_branch=dst_branch,
-                                                       mir_task_id='',
-                                                       mir_storages=mir_storage.get_all_mir_storage())
-        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MIR_METADATAS]
+        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
+         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+             mir_root=self._mir_root,
+             mir_branch=dst_branch,
+             mir_task_id='',
+             ms_list=mir_storage.get_all_mir_storage(),
+             as_dict=False,
+         )
         metadatas_keys = set(mir_metadatas.attributes.keys())
         self.assertEqual({'asset0', 'asset1'}, metadatas_keys)
 
-        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MIR_ANNOTATIONS]
         self.assertEqual(dst_tid, mir_annotations.head_task_id)
         asset0_idx_ids = {
             annotation.index: annotation.class_id
@@ -114,11 +116,9 @@ class TestCmdCopy(unittest.TestCase):
         self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
         self.assertEqual({}, asset1_idx_ids)
 
-        mir_keywords: mirpb.MirKeywords = mir_datas[mirpb.MIR_KEYWORDS]
         self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predifined_keyids))
         self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predifined_keyids))
 
-        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MIR_TASKS]
         self.assertEqual(dst_tid, mir_tasks.head_task_id)
         mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision
         self.assertTrue(mAP > 0.29999 and mAP < 0.30001)  # it's actually 0.3

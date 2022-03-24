@@ -36,23 +36,16 @@ class CmdShow(base.BaseCommand):
     def _show_general(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
         cls._show_general_context_config(mir_root=mir_root)
 
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                       mir_branch=src_typ_rev_tid.rev,
-                                                       mir_task_id=src_typ_rev_tid.tid,
-                                                       mir_storages=mir_storage.get_all_mir_storage())
-
-        mir_metadatas: mirpb.MirMetadatas = mir_datas.get(mirpb.MirStorage.MIR_METADATAS, None)
-        if mir_metadatas:
-            cls._show_general_metadatas(mir_metadatas)
-        mir_annotations: mirpb.MirAnnotations = mir_datas.get(mirpb.MirStorage.MIR_ANNOTATIONS, None)
-        if mir_annotations:
-            cls._show_general_annotations(mir_annotations)
-        mir_context: mirpb.MirContext = mir_datas.get(mirpb.MirStorage.MIR_CONTEXT, None)
-        if mir_context:
-            cls._show_general_context(mir_context)
-        mir_tasks: mirpb.MirTasks = mir_datas.get(mirpb.MIR_TASKS, None)
-        if mir_tasks:
-            cls._show_general_tasks(mir_tasks, verbose)
+        [metadatas, annotations, _, tasks,
+         context] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
+                                                                         mir_branch=src_typ_rev_tid.rev,
+                                                                         mir_task_id=src_typ_rev_tid.tid,
+                                                                         ms_list=mir_storage.get_all_mir_storage(),
+                                                                         as_dict=False)
+        cls._show_general_metadatas(metadatas)
+        cls._show_general_annotations(annotations)
+        cls._show_general_context(context)
+        cls._show_general_tasks(tasks, verbose)
 
     @classmethod
     def _show_general_metadatas(cls, mir_metadatas: mirpb.MirMetadatas) -> None:
@@ -101,10 +94,8 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
-        mir_context: mirpb.MirContext = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                                  mir_branch=src_typ_rev_tid.rev,
-                                                                                  mir_task_id=src_typ_rev_tid.tid,
-                                                                                  ms=mirpb.MIR_CONTEXT)
+        mir_context: mirpb.MirContext = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=mir_root, mir_branch=src_typ_rev_tid.rev, mir_task_id=src_typ_rev_tid.tid, ms=mirpb.MIR_CONTEXT)
         cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         if verbose:
             print('predefined key ids and assets count:')

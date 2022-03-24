@@ -60,15 +60,16 @@ class CmdCopy(base.BaseCommand):
             return check_code
 
         # read from src mir root
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=data_mir_root,
-                                                       mir_branch=data_src_typ_rev_tid.rev,
-                                                       mir_task_id=data_src_typ_rev_tid.tid,
-                                                       mir_storages=mir_storage.get_all_mir_storage())
+        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
+         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=data_mir_root,
+                                                                   mir_branch=data_src_typ_rev_tid.rev,
+                                                                   mir_task_id=data_src_typ_rev_tid.tid,
+                                                                   ms_list=mir_storage.get_all_mir_storage(),
+                                                                   as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
         # annotations.mir: change head task id and type ids
-        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
         orig_head_task_id = mir_annotations.head_task_id
         if not orig_head_task_id:
             logging.error('bad annotations.mir: empty head task id')
@@ -79,7 +80,6 @@ class CmdCopy(base.BaseCommand):
 
         # annotations.mir and keywords.mir: change type ids
         single_task_annotations = mir_annotations.task_annotations[orig_head_task_id]
-        mir_keywords: mirpb.MirKeywords = mir_datas[mirpb.MIR_KEYWORDS]
         return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
                                                               mir_keywords=mir_keywords,
                                                               data_mir_root=data_mir_root,
@@ -100,7 +100,6 @@ class CmdCopy(base.BaseCommand):
         mir_annotations.head_task_id = dst_typ_rev_tid.tid
 
         # tasks.mir: get necessary head task infos, remove others and change head task id
-        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MIR_TASKS]
         orig_head_task_id = mir_tasks.head_task_id
         if not orig_head_task_id:
             logging.error('bad tasks.mir: empty head task id')
@@ -130,7 +129,7 @@ class CmdCopy(base.BaseCommand):
 
         # save and commit
         copied_mir_datas = {}
-        copied_mir_datas[mirpb.MirStorage.MIR_METADATAS] = mir_datas[mirpb.MirStorage.MIR_METADATAS]
+        copied_mir_datas[mirpb.MirStorage.MIR_METADATAS] = mir_metadatas
         copied_mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mir_annotations
         copied_mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
@@ -186,8 +185,7 @@ class CmdCopy(base.BaseCommand):
         return MirCode.RC_OK, unknown_types_and_count
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     copy_arg_parser = subparsers.add_parser("copy",
                                             parents=[parent_parser],
                                             description="use this command to copy datas from another repo",

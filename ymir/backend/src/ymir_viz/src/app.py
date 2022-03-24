@@ -8,14 +8,14 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.wrappers import Response
 
 from id_definition.error_codes import VizErrorCode
-from src.config import VIZ_SENTRY_DSN
+from src.viz_config import VIZ_SENTRY_DSN
 from src.encoder import JSONEncoder
 from src.libs.exceptions import VizException
 
 
 def config_app(app: connexion, config: Dict = None) -> None:
     # load default configuration
-    app.config.from_object("src.config")
+    app.config.from_object("src.viz_config")
 
     # load app specified configuration if need
     if config is not None and isinstance(config, dict):

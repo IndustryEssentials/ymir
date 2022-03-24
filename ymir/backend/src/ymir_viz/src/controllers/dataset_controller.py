@@ -1,6 +1,8 @@
 from typing import Dict
 
-from src.swagger_models.dataset_result import DatasetResult  # noqa: E501
+from src import viz_config
+from src.libs import app_logger, utils
+from src.viz_models import pb_reader
 
 
 def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
@@ -17,7 +19,15 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
 
     :rtype: DatasetResult
     """
-    # do some magic!
+    dataset_info = pb_reader.MirStorageLoader(
+        sandbox_root=viz_config.SANDBOX_ROOT,
+        user_id=user_id,
+        repo_id=repo_id,
+        branch_id=branch_id,
+        task_id=branch_id,
+    ).get_dataset_info()
 
-    DatasetResult
-    return dict()
+    resp = utils.suss_resp(result=dataset_info)
+    app_logger.logger.info(f"get_dataset_info: {resp}")
+
+    return resp

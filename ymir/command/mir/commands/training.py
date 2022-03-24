@@ -89,10 +89,10 @@ def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev
 
     task_parameters = model_storage.task_context.get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY,
                                                      '') if model_storage else ''
-    mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                          mir_branch=src_rev_tid.rev,
-                                                                          mir_task_id=src_rev_tid.tid,
-                                                                          ms=mirpb.MirStorage.MIR_TASKS)
+    mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
+                                                                                  mir_branch=src_rev_tid.rev,
+                                                                                  mir_task_id=src_rev_tid.tid,
+                                                                                  ms=mirpb.MirStorage.MIR_TASKS)
     mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
                                      task_type=mirpb.TaskType.TaskTypeTraining,
                                      task_id=dst_rev_tid.tid,
@@ -279,11 +279,11 @@ class CmdTrain(base.BaseCommand):
         val_ids = set()  # type: Set[str]
         test_ids = set()  # type: Set[str]
         unused_ids = set()  # type: Set[str]
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                       mir_branch=src_typ_rev_tid.rev,
-                                                       mir_task_id=src_typ_rev_tid.tid,
-                                                       mir_storages=[mirpb.MirStorage.MIR_METADATAS])
-        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
+        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=mir_root,
+            mir_branch=src_typ_rev_tid.rev,
+            mir_task_id=src_typ_rev_tid.tid,
+            ms=mirpb.MirStorage.MIR_METADATAS)
         for asset_id, asset_attr in mir_metadatas.attributes.items():
             if asset_attr.tvt_type == mirpb.TvtTypeTraining:
                 train_ids.add(asset_id)
