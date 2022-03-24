@@ -36,6 +36,7 @@ class Model(Base):
     related_task = relationship(
         "Task",
         primaryjoin="foreign(Task.id)==Model.task_id",
+        backref="result_model",
         uselist=False,
         viewonly=True,
     )
