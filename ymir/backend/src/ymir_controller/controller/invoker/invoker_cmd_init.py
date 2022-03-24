@@ -38,7 +38,7 @@ class InitInvoker(BaseMirControllerInvoker):
         if self._request.in_class_ids:
             command.extend([
                 '--project-class-names',
-                ';'.join(self._user_labels.get_main_names(class_ids=self._request.in_class_ids))
+                ';'.join(self._user_labels.get_main_names(class_ids=list(self._request.in_class_ids)))
             ])
         command.extend(
             ['--with-empty-rev',
