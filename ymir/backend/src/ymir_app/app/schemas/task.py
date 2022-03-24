@@ -150,18 +150,16 @@ class TaskInternal(TaskInDBBase):
 
 
 class TaskResult(BaseModel):
-    model: Optional[Dict]
-    dataset: Optional[Dict]
+    id: int
+    hash: str
 
-    @root_validator
-    def ensure_single_result(cls, values: Any) -> Any:
-        if values["model"] and values["dataset"]:
-            raise ValueError("Invalid Task Result")
-        return values
+    class Config:
+        orm_mode = True
 
 
 class Task(TaskInternal):
-    result: Optional[TaskResult]
+    result_model: Optional[TaskResult]
+    result_dataset: Optional[TaskResult]
 
     @root_validator
     def ensure_terminate_state(cls, values: Any) -> Any:
@@ -169,6 +167,12 @@ class Task(TaskInternal):
         # use terminate as external state
         if values["is_terminated"]:
             values["state"] = TaskState.terminate
+        return values
+
+    @root_validator
+    def ensure_single_result(cls, values: Any) -> Any:
+        if values["result_model"] and values["result_dataset"]:
+            raise ValueError("Invalid Task Result")
         return values
 
 
