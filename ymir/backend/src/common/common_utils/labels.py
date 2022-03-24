@@ -87,7 +87,7 @@ class UserLabels(LabelStorage):
 
     def get_main_names(self, class_ids: Union[int, List[int]]) -> List[str]:
         if isinstance(class_ids, (str, int)):
-            return [self.id_to_name[class_ids]]
+            return [self.id_to_name[int(class_ids)]]
         elif isinstance(class_ids, list):
             return [self.id_to_name[int(class_id)] for class_id in class_ids]
         else:
