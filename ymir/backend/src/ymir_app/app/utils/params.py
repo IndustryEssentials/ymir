@@ -1,5 +1,5 @@
 from operator import attrgetter
-from typing import Union, Dict
+from typing import Union, Dict, Any
 
 from sqlalchemy.orm import Session
 
@@ -71,8 +71,8 @@ class IterationConversion:
 
         return uniform_params
 
-    def __enter__(self):
+    def __enter__(self) -> "IterationConversion":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         pass
