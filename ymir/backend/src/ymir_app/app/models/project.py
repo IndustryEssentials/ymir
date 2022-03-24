@@ -51,15 +51,21 @@ class Project(Base):
         uselist=False,
         viewonly=True,
     )
-    testing_dataset = relationship(
+    datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.project_id)==Project.id",
+        uselist=True,
+        viewonly=True,
+    )
+    testing_dataset = relationship(
+        "Dataset",
+        primaryjoin="foreign(Dataset.id)==Project.testing_dataset_id",
         uselist=False,
         viewonly=True,
     )
     mining_dataset = relationship(
         "Dataset",
-        primaryjoin="foreign(Dataset.project_id)==Project.id",
+        primaryjoin="foreign(Dataset.id)==Project.mining_dataset_id",
         uselist=False,
         viewonly=True,
     )

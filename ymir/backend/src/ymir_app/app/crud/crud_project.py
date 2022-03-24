@@ -103,4 +103,3 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
 
 
 project = CRUDProject(Project)
-
