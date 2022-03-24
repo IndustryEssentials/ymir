@@ -46,7 +46,6 @@ class ProjectUpdate(BaseModel):
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
     chunk_size: Optional[int]
-    training_dataset_group_id: int
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     description: Optional[str]
