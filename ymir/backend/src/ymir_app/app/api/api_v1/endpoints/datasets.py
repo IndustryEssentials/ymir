@@ -25,7 +25,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
-from app.utils.params import ParametersConversion
+from app.utils.params import IterationConversion
 from app.utils.ymir_controller import (
     ControllerClient,
     gen_task_hash,
@@ -479,10 +479,11 @@ def create_dataset_fusion(
         "[create task] create dataset fusion with payload: %s",
         jsonable_encoder(task_in),
     )
+    with IterationConversion(db=db, user_labels=user_labels, parameter=task_in) as iter_conver:
+        iter_conver.convert_iteration_fusion_parameter()
+        parameters = iter_conver.fusion_param_to_uniform()
+
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
-
-    parameters = ParametersConversion(db=db, user_labels=user_labels, parameter=task_in)
-
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,

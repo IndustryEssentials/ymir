@@ -10,7 +10,7 @@ from app.schemas.dataset import MergeStrategy
 from common_utils.labels import UserLabels
 
 
-class ParametersConversion:
+class IterationConversion:
     def __init__(
         self,
         db: Session,
@@ -23,7 +23,7 @@ class ParametersConversion:
 
     def convert_iteration_fusion_parameter(self):
         if self.parameter.iteration_context.exclude_last_result:
-            iterations = crud.iteration.get_multi_iterations(db=self.db, project_id=self.parameter.project_id)
+            iterations = crud.iteration.get_multi_by_project(db=self.db, project_id=self.parameter.project_id)
             if self.parameter.iteration_context.mining_strategy == MiningStrategy.chunk:
                 self.parameter.exclude_datasets += [
                     one_iteration.mining_input_dataset_id
@@ -71,3 +71,9 @@ class ParametersConversion:
             raise ValueError("input parameter error")
 
         return uniform_params
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
