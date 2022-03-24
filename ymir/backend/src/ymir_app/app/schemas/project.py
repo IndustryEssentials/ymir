@@ -11,6 +11,8 @@ from app.schemas.common import (
     IsDeletedModelMixin,
 )
 
+from app.schemas.iteration import IterationInDBBase
+
 
 class ProjectBase(BaseModel):
     name: str = Field(description="Project Name")
@@ -56,6 +58,7 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     initial_model_id: Optional[int]
+    current_iteraion: Optional[IterationInDBBase]
 
     class Config:
         orm_mode = True

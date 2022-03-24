@@ -69,10 +69,10 @@ class Project(Base):
         uselist=True,
         viewonly=True,
     )
-    iterations = relationship(
+    current_iteraion = relationship(
         "Iteration",
-        primaryjoin="foreign(Iteration.project_id)==Project.id",
-        uselist=True,
+        primaryjoin="foreign(Iteration.id)==Project.current_iteration_id",
+        uselist=False,
         viewonly=True,
     )
 
