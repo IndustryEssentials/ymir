@@ -186,12 +186,6 @@ message ModelMeta {
     string context = 3;
 };
 
-message TaskContext {
-    string executor = 1;
-    string src_revs = 2;
-    string dst_rev = 3;
-}
-
 /// ========== context.mir ==========
 message MirContext {
     /// total images count
