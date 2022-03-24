@@ -166,7 +166,8 @@ class CmdMining(base.BaseCommand):
                          src_typ_rev_tid=src_typ_rev_tid,
                          model_hash=model_hash,
                          topk=topk,
-                         add_annotations=add_annotations)
+                         add_annotations=add_annotations,
+                         executor=executor)
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
@@ -175,16 +176,16 @@ class CmdMining(base.BaseCommand):
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
                      src_typ_rev_tid: revs_parser.TypRevTid, model_hash: str, topk: Optional[int],
-                     add_annotations: bool) -> int:
+                     add_annotations: bool, executor: str) -> int:
     # step 1: build topk results:
     #   read old
-    mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                   mir_branch=src_typ_rev_tid.rev,
-                                                   mir_task_id=src_typ_rev_tid.tid,
-                                                   mir_storages=mir_storage.get_all_mir_storage())
+    mir_datas = mir_storage_ops.MirStorageOps.load(
+        mir_root=mir_root,
+        mir_branch=src_typ_rev_tid.rev,
+        mir_task_id=src_typ_rev_tid.tid,
+        mir_storages=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
     mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
     mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
-    mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
 
     #   parse new: topk and new annotations (both optional)
     topk_result_file_path = os.path.join(export_out, 'result.tsv')
@@ -221,26 +222,24 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     #   mir_keywords: auto generated from mir_annotations, so do nothing
 
     #   update_mir_task
-    mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                     task_type=mirpb.TaskTypeMining,
-                                     task_id=dst_typ_rev_tid.tid,
-                                     message='mining',
-                                     src_revs=src_typ_rev_tid.rev_tid,
-                                     dst_rev=dst_typ_rev_tid.rev_tid)
-    mir_tasks.tasks[mir_tasks.head_task_id].model.model_hash = model_hash
+    task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
+                                       task_id=dst_typ_rev_tid.tid,
+                                       message='mining',
+                                       model_hash=model_hash,
+                                       src_revs=src_typ_rev_tid.rev_tid,
+                                       dst_rev=dst_typ_rev_tid.rev_tid,
+                                       executor=executor)
 
     # step 3: store results and commit.
     mir_datas = {
         mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
         mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-        mirpb.MirStorage.MIR_TASKS: mir_tasks,
     }
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   his_branch=src_typ_rev_tid.rev,
                                                   mir_branch=dst_typ_rev_tid.rev,
-                                                  task_id=dst_typ_rev_tid.tid,
                                                   mir_datas=mir_datas,
-                                                  commit_message=dst_typ_rev_tid.tid)
+                                                  task=task)
 
     return MirCode.RC_OK
 

@@ -70,35 +70,6 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
     return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
 
 
-def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
-                      model_sha1: str, mAP: float, task_ret_code: int, task_err_msg: str,
-                      serialized_task_parameters: str, serialized_executor_config: str,
-                      executor: str) -> mirpb.MirTasks:
-    """
-    add a new mir single task into mir_tasks from branch base_branch, and save it to a new branch: dst_branch
-    """
-    logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
-
-    mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                          mir_branch=src_rev_tid.rev,
-                                                                          mir_task_id=src_rev_tid.tid,
-                                                                          ms=mirpb.MirStorage.MIR_TASKS)
-    mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                     task_type=mirpb.TaskType.TaskTypeTraining,
-                                     task_id=dst_rev_tid.tid,
-                                     message='training',
-                                     model_mAP=mAP,
-                                     model_hash=model_sha1,
-                                     return_code=task_ret_code,
-                                     return_msg=task_err_msg,
-                                     serialized_task_parameters=serialized_task_parameters,
-                                     serialized_executor_config=serialized_executor_config,
-                                     executor=executor,
-                                     src_revs=src_rev_tid.rev_tid,
-                                     dst_rev=dst_rev_tid.rev_tid)
-    return mir_tasks
-
-
 # private: process
 def _run_train_cmd(cmd: List[str], out_log_path: str) -> int:
     """
@@ -429,30 +400,31 @@ class CmdTrain(base.BaseCommand):
                                                        executor_config=executor_config,
                                                        task_context=task_context)
 
-        # update metadatas and task with finish state and model hash
-        mir_tasks = _update_mir_tasks(mir_root=mir_root,
-                                      src_rev_tid=src_typ_rev_tid,
-                                      dst_rev_tid=dst_typ_rev_tid,
-                                      model_sha1=model_sha1,
-                                      mAP=model_mAP,
-                                      task_ret_code=task_code,
-                                      task_err_msg=task_error_msg,
-                                      serialized_task_parameters=task_parameters,
-                                      serialized_executor_config=yaml.safe_dump(executor_config),
-                                      executor=executor)
+        # commit task
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message='training',
+                                           model_mAP=model_mAP,
+                                           model_hash=model_sha1,
+                                           return_code=task_code,
+                                           return_msg=task_error_msg,
+                                           serialized_task_parameters=task_parameters,
+                                           serialized_executor_config=yaml.safe_dump(executor_config),
+                                           executor=executor,
+                                           src_revs=src_typ_rev_tid.rev_tid,
+                                           dst_rev=dst_typ_rev_tid.rev_tid)
 
         if task_code != MirCode.RC_OK:
             raise MirRuntimeError(error_code=task_code,
                                   error_message=task_error_msg,
                                   needs_new_commit=True,
-                                  mir_tasks=mir_tasks)
+                                  task=task)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_typ_rev_tid.rev,
-                                                      mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
-                                                      commit_message=dst_typ_rev_tid.tid)
+                                                      mir_datas={},
+                                                      task=task)
 
         logging.info("training done")
 

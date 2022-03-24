@@ -66,8 +66,8 @@ class MirStorageOps():
 
     # public: save and load
     @classmethod
-    def save_and_commit(cls, mir_root: str, mir_branch: str, task_id: str, his_branch: Optional[str], mir_datas: dict,
-                        commit_message: str) -> int:
+    def save_and_commit(cls, mir_root: str, mir_branch: str, his_branch: Optional[str], mir_datas: dict,
+                        task: mirpb.Task) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -75,12 +75,11 @@ class MirStorageOps():
         Args:
             mir_root (str): path to mir repo
             mir_branch (str): branch you wish to save to, if not exists, create new one
-            task_id (str): task id for this commit
             his_branch (Optional[str]): if `mir_branch` not exists, this is the branch where you wish to start with
             mir_datas (Dict[mirpb.MirStorage.V, pb_message.Message]): datas you wish to save, need no mir_keywords,
                 mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
                  datasets
-            commit_message (str): commit messages
+            task (mirpb.Task): task for this commit
 
         Raises:
             MirRuntimeError
@@ -90,23 +89,23 @@ class MirStorageOps():
         """
         if not mir_root:
             mir_root = '.'
-        if not commit_message:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not mir_branch:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty mir branch")
-        if not task_id:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
         if mirpb.MirStorage.MIR_CONTEXT in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_context')
-        if mirpb.MirStorage.MIR_TASKS not in mir_datas:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need mir_tasks')
+        if mirpb.MirStorage.MIR_TASKS in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_tasks')
+        if not task.name:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
+        if not task.task_id:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
 
-        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
-        if task_id != mir_tasks.head_task_id:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"head task id mismatch: {mir_tasks.head_task_id} != {task_id}")
+        mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
+        mir_tasks.head_task_id = task.task_id
+        mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
+        mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
 
         branch_exists = mir_repo_utils.mir_check_branch_exists(mir_root=mir_root, branch=mir_branch)
         if not branch_exists and not his_branch:
@@ -135,12 +134,12 @@ class MirStorageOps():
 
             cls.__save(mir_root=mir_root, mir_datas=mir_datas)
 
-            ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=commit_message)
+            ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:
                 return ret_code
 
             # also have a tag for this commit
-            cls.__add_git_tag(mir_root=mir_root, tag=revs_parser.join_rev_tid(mir_branch, task_id))
+            cls.__add_git_tag(mir_root=mir_root, tag=revs_parser.join_rev_tid(mir_branch, task.task_id))
 
         return ret_code
 
@@ -235,45 +234,6 @@ def build_annotations_head_task_id(mir_annotations: mirpb.MirAnnotations, head_t
     mir_annotations.head_task_id = head_task_id
 
 
-def update_mir_tasks(mir_tasks: mirpb.MirTasks,
-                     task_type: 'mirpb.TaskType.V',
-                     task_id: str,
-                     message: str,
-                     unknown_types: Dict[str, int] = {},
-                     model_hash: str = '',
-                     model_mAP: float = 0,
-                     return_code: int = 0,
-                     return_msg: str = '',
-                     serialized_task_parameters: str = '',
-                     serialized_executor_config: str = '',
-                     executor: str = '',
-                     src_revs: str = '',
-                     dst_rev: str = '') -> None:
-    task_dict = {
-        'type': task_type,
-        'name': message,
-        'task_id': task_id,
-        'timestamp': int(time.time()),
-        'return_code': return_code,
-        'return_msg': return_msg,
-        'serialized_task_parameters': serialized_task_parameters,
-        'serialized_executor_config': serialized_executor_config,
-        'unknown_types': unknown_types,
-        'model': {
-            'model_hash': model_hash,
-            'mean_average_precision': model_mAP,
-        },
-        'executor': executor,
-        'src_revs': src_revs,
-        'dst_rev': dst_rev,
-    }
-    task: mirpb.Task = mirpb.Task()
-    json_format.ParseDict(task_dict, task)
-
-    mir_tasks.tasks[task.task_id].CopyFrom(task)
-    mir_tasks.head_task_id = task.task_id
-
-
 def build_mir_keywords(single_task_annotations: mirpb.SingleTaskAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
     """
     build mir_keywords from single_task_annotations
@@ -324,3 +284,40 @@ def build_mir_context(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.
     if project_class_ids:
         mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
         # if no project_class_ids, project_negative_images_cnt set to 0
+
+
+def create_task(task_type: 'mirpb.TaskType.V',
+                task_id: str,
+                message: str,
+                unknown_types: Dict[str, int] = {},
+                model_hash: str = '',
+                model_mAP: float = 0,
+                return_code: int = 0,
+                return_msg: str = '',
+                serialized_task_parameters: str = '',
+                serialized_executor_config: str = '',
+                executor: str = '',
+                src_revs: str = '',
+                dst_rev: str = '') -> mirpb.Task:
+    task_dict = {
+        'type': task_type,
+        'name': message,
+        'task_id': task_id,
+        'timestamp': int(time.time()),
+        'return_code': return_code,
+        'return_msg': return_msg,
+        'serialized_task_parameters': serialized_task_parameters,
+        'serialized_executor_config': serialized_executor_config,
+        'unknown_types': unknown_types,
+        'model': {
+            'model_hash': model_hash,
+            'mean_average_precision': model_mAP,
+        },
+        'executor': executor,
+        'src_revs': src_revs,
+        'dst_rev': dst_rev,
+    }
+    task: mirpb.Task = mirpb.Task()
+    json_format.ParseDict(task_dict, task)
+
+    return task
