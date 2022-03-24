@@ -10,7 +10,7 @@ from app.schemas.common import (
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
-    IterationContext,
+    RequestParameterBase,
 )
 from app.schemas.task import TaskInternal
 
@@ -137,12 +137,9 @@ class DatasetPaginationOut(Common):
     result: DatasetPagination
 
 
-class DatasetsFusionParameter(BaseModel):
-    iteration_context: Optional[IterationContext]
+class DatasetsFusionParameter(RequestParameterBase):
     dataset_group_id: int
     main_dataset_id: int
-    project_id: int
-
     include_datasets: List[int]
     include_strategy: Optional[MergeStrategy] = Field(
         MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"

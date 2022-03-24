@@ -36,3 +36,8 @@ class IterationContext(BaseModel):
     iteration_id: Optional[int]
     exclude_last_result: bool = True
     mining_strategy: MiningStrategy = MiningStrategy.customize
+
+
+class RequestParameterBase(BaseModel):
+    iteration_context: Optional[IterationContext]
+    project_id: int
