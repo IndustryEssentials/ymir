@@ -1,11 +1,10 @@
-import json
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List
+import yaml
 
 import redis
 from werkzeug.local import LocalProxy
 
-from src import viz_config
-from src.libs import app_logger
+from src.config import viz_settings
 
 
 class RedisCache:
@@ -16,17 +15,17 @@ class RedisCache:
         raw_value = self._client.get(key)
         if raw_value is None:
             return dict()
-        try:
-            content = json.loads(str(raw_value))
-        except ValueError as e:
-            app_logger.logger.warning(f"loads {raw_value} error: {e}")
-            content = dict()
+        content = yaml.safe_load(str(raw_value))
 
         return content
 
     def set(self, key: str, value: Any, timeout: int = None) -> None:
         if isinstance(value, dict):
-            value = json.dumps(value)
+            value = yaml.safe_dump(value)
+        elif isinstance(value, str):
+            value = value
+        else:
+            raise ValueError(f"Invalid redis value type: {type(value)}")
         self._client.set(key, value, timeout)
 
     def hmget(self, name: str, keys: List) -> List:
@@ -36,11 +35,7 @@ class RedisCache:
         return self._client.lrange(name, start, end)
 
     def exists(self, names: str) -> int:
-        try:
-            return self._client.exists(names)
-        except Exception as e:
-            app_logger.logger.exception(f"{e}")
-            return False
+        return self._client.exists(names)
 
     def pipeline(self) -> Any:
         return self._client.pipeline(transaction=False)
@@ -48,17 +43,18 @@ class RedisCache:
     def llen(self, name: str) -> int:
         return self._client.llen(name)
 
-    def hget(self, name: str, key: str) -> Optional[Dict]:
-        try:
-            res = self._client.hget(name, key)
-            return json.loads(str(res))
-        except Exception as e:
-            app_logger.logger.error(f"{e}")
-            return None
+    def hget(self, name: str, key: str) -> Dict:
+        res = self._client.hget(name, key)
+        return yaml.safe_load(str(res))
 
 
 def get_connect() -> redis.Redis:
-    return redis.StrictRedis.from_url(str(viz_config.VIZ_REDIS_URI), encoding="utf8", decode_responses=True)
+    if viz_settings.REDIS_TESTING:
+        import redislite
+        redis_con = redislite.StrictRedis("/tmp/redis.db")
+    else:
+        redis_con = redis.StrictRedis.from_url(str(viz_settings.VIZ_REDIS_URI), encoding="utf8", decode_responses=True)
+    return redis_con
 
 
 proxy_rds_con = LocalProxy(get_connect)

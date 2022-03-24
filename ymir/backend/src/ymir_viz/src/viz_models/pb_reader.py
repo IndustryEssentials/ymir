@@ -3,7 +3,7 @@ from typing import Dict
 
 from mir.tools import mir_storage_ops, errors
 
-from src import viz_config
+from src.config import viz_settings
 from src.libs import exceptions, app_logger
 
 
@@ -12,7 +12,8 @@ class MirStorageLoader:
         self.mir_root = os.path.join(sandbox_root, user_id, repo_id)
         self.branch_id = branch_id
         if not task_id:
-            self.task_id = branch_id
+            task_id = branch_id
+        self.task_id = task_id
 
     def get_model_info(self) -> Dict:
         try:
@@ -44,7 +45,6 @@ class MirStorageLoader:
                 mir_root=self.mir_root,
                 mir_branch=self.branch_id,
                 mir_task_id=self.task_id,
-                with_assets_detail=False,
             )
         #
         except ValueError as e:
@@ -53,7 +53,7 @@ class MirStorageLoader:
 
         return dataset_info
 
-    def get_asset_content(self) -> Dict:
+    def get_assets_content(self) -> Dict:
         """
         exampled data:
         {
@@ -69,17 +69,14 @@ class MirStorageLoader:
         }
         """
         try:
-            assets_info = mir_storage_ops.MirStorageOps.load_single_dataset(
+            assets_info = mir_storage_ops.MirStorageOps.load_assets_content(
                 mir_root=self.mir_root,
                 mir_branch=self.branch_id,
                 mir_task_id=self.task_id,
-                with_assets_detail=True,
             )
         except ValueError as e:
             app_logger.logger.error(e)
             raise exceptions.BranchNotExists(f"branch {self.branch_id} not exist from ymir command")
-
-        assets_info["class_ids_index"][viz_config.ALL_INDEX_CLASSIDS] = assets_info["all_asset_ids"]
-        assets_info.pop("all_asset_ids", None)
+        assets_info["class_ids_index"][viz_settings.VIZ_ALL_INDEX_CLASSIDS] = assets_info["all_asset_ids"]
 
         return assets_info

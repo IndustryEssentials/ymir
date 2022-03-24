@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Dict, Tuple
 
@@ -8,14 +9,14 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.wrappers import Response
 
 from id_definition.error_codes import VizErrorCode
-from src.viz_config import VIZ_SENTRY_DSN
+from src.config import viz_settings
 from src.encoder import JSONEncoder
 from src.libs.exceptions import VizException
 
 
 def config_app(app: connexion, config: Dict = None) -> None:
     # load default configuration
-    app.config.from_object("src.viz_config")
+    app.config.from_object("src.config.viz_settings")
 
     # load app specified configuration if need
     if config is not None and isinstance(config, dict):
@@ -28,7 +29,7 @@ def create_connexion_app(config: Dict = None) -> connexion.App:
     app.json_encoder = JSONEncoder
     config_app(app, config)
 
-    sentry_sdk.init(dsn=VIZ_SENTRY_DSN, integrations=[FlaskIntegration()])
+    sentry_sdk.init(dsn=viz_settings.VIZ_SENTRY_DSN, integrations=[FlaskIntegration()])
 
     connexion_app.add_api("swagger.yaml", arguments={"title": "Ymir-viz API"})
 
@@ -45,6 +46,7 @@ def create_connexion_app(config: Dict = None) -> connexion.App:
 
     @app.errorhandler(Exception)
     def handle_exception(e: Exception) -> Tuple[Response, int]:
+        logging.exception(e)
         resp = dict(code=VizErrorCode.INTERNAL_ERROR, message=str(e))
 
         return jsonify(resp), 500

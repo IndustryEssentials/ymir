@@ -308,12 +308,12 @@ class MirStorageOps():
             "all_asset_ids": ["asset_id"],
             "asset_ids_detail": {
                 "asset_id": {
-                    "metadata": {"asset_type": 2, "width": 1080, "height": 1620,},
+                    "metadata": {"asset_type": 2, "width": 1080, "height": 1620},
                     "annotations": [{"box": {"x": 26, "y": 189, "w": 19, "h": 50}, "class_id": 2}],
-                    "class_ids": [2, 3],
+                    "class_ids": [2],
                 }
             },
-            "class_ids_index": {3: ["asset_id",],
+            "class_ids_index": {2: ["asset_id"]},
         }
         """
         # Require asset details, build snapshot.

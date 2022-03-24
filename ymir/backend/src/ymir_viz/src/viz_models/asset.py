@@ -2,7 +2,7 @@ import threading
 from typing import Dict, Union
 import yaml
 
-from src import viz_config
+from src.config import viz_settings
 from src.libs import utils, app_logger
 from src.libs.cache import redis_cache
 from src.viz_models import pb_reader
@@ -14,10 +14,10 @@ class AssetsModel:
         self.repo_id = repo_id
         self.branch_id = branch_id
 
-        self.redis_key_prefix = f"{user_id}_{repo_id}_{branch_id}:{viz_config.MIDDLE_STRUCTURE_VERSION}"
-        self.key_asset_detail = f"{self.redis_key_prefix}:{viz_config.ASSET_ID_DETAIL}"
-        self.key_asset_index = f"{self.redis_key_prefix}:{viz_config.ASSETS_CLASS_ID_INDEX}"
-        self.key_cache_status = f"{self.redis_key_prefix}:{viz_config.CACHE_STATUS}"
+        self.redis_key_prefix = f"{user_id}_{repo_id}_{branch_id}:{viz_settings.VIZ_MIDDLE_VERSION}"
+        self.key_asset_detail = f"{self.redis_key_prefix}:{viz_settings.VIZ_KEY_ASSET_DETAIL}"
+        self.key_asset_index = f"{self.redis_key_prefix}:{viz_settings.VIZ_KEY_ASSET_INDEX}"
+        self.key_cache_status = f"{self.redis_key_prefix}:{viz_settings.VIZ_CACHE_STATUS}"
 
     def check_cache_existence(self) -> int:
         detail_existence = redis_cache.exists(self.key_asset_detail)
@@ -91,7 +91,7 @@ class AssetsModel:
         {'class_ids_count': {3: 34}, 'elements': [{'asset_id':xxx, 'class_ids':[2,3]},],
         'limit': 3, offset: 1, total: 234}
         """
-        asset_ids = assets_content["class_ids_index"][class_id]["asset_ids"][offset:limit + offset]
+        asset_ids = assets_content["class_ids_index"][class_id][offset:limit + offset]
         elements = [
             dict(asset_id=asset_id, class_ids=assets_content["asset_ids_detail"][asset_id]["class_ids"])
             for asset_id in asset_ids
@@ -141,19 +141,19 @@ class AssetsModel:
             'metadata': {'asset_type': 1, 'height': 375, 'image_channels': 3, 'timestamp': {'start': 123}, 'width': 500}
         }]
         """
-        class_id = class_id if class_id is not None else viz_config.ALL_INDEX_CLASSIDS
+        class_id = class_id if class_id is not None else viz_settings.VIZ_ALL_INDEX_CLASSIDS
 
         if self.check_cache_existence():
             result = self.get_assets_info_from_cache(offset=offset, limit=limit, class_id=class_id)
             app_logger.logger.info("get_assets_info from cache")
         else:
             assets_content = pb_reader.MirStorageLoader(
-                sandbox_root=viz_config.SANDBOX_ROOT,
+                sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
                 user_id=self.user_id,
                 repo_id=self.repo_id,
                 branch_id=self.branch_id,
                 task_id=self.branch_id,
-            ).get_asset_content()
+            ).get_assets_content()
             result = self.format_assets_info(assets_content=assets_content,
                                              offset=offset,
                                              limit=limit,
@@ -179,12 +179,12 @@ class AssetsModel:
             app_logger.logger.info(f"get_asset_id: {asset_id} from cache")
         else:
             assets_content = pb_reader.MirStorageLoader(
-                sandbox_root=viz_config.SANDBOX_ROOT,
+                sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
                 user_id=self.user_id,
                 repo_id=self.repo_id,
                 branch_id=self.branch_id,
                 task_id=self.branch_id,
-            ).get_asset_content()
+            ).get_assets_content()
             result = assets_content["asset_ids_detail"][asset_id]
 
             # asynchronous generate cache content,and we can add some policy to trigger it later

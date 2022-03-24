@@ -5,7 +5,7 @@ class TestModelController:
     def test_get_model_info(self, test_client, mocker):
         user_id = "user_id"
         repo_id = "repo_id"
-        branch_id = "5928508c-1bc0-43dc-a094-0352079e39b5"
+        branch_id = "branch_id"
 
         mir_tasks_content = {"model_hash": "model_hash", "mean_average_precision": 0.88}
 
