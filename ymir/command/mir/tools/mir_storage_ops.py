@@ -4,6 +4,7 @@ from typing import Any, List, Dict, Optional, Set, Tuple
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
+import yaml
 
 from mir import scm
 from mir.commands.checkout import CmdCheckout
@@ -12,15 +13,6 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
-import yaml
-
-
-class MirStorageDatas:
-    def __init__(self) -> None:
-        self.mir_metadatas: Any = None
-        self.mir_annotations: Any = None
-        self.mir_keywords: Any = None
-        self.mir_tasks: Any = None
 
 
 class MirStorageOps():
