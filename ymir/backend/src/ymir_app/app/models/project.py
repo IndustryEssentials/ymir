@@ -45,16 +45,22 @@ class Project(Base):
     current_iteration_id = Column(Integer)
     user_id = Column(Integer, index=True, nullable=False)
 
-    dataset_groups = relationship(
+    training_dataset_group = relationship(
         "DatasetGroup",
-        primaryjoin="foreign(DatasetGroup.project_id)==Project.id",
-        uselist=True,
+        primaryjoin="foreign(DatasetGroup.id)==Project.training_dataset_group_id",
+        uselist=False,
         viewonly=True,
     )
-    datasets = relationship(
+    testing_dataset = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.project_id)==Project.id",
-        uselist=True,
+        uselist=False,
+        viewonly=True,
+    )
+    mining_dataset = relationship(
+        "Dataset",
+        primaryjoin="foreign(Dataset.project_id)==Project.id",
+        uselist=False,
         viewonly=True,
     )
     model_groups = relationship(
