@@ -1,5 +1,5 @@
 import { Button, Col, Row, Space } from "antd"
-import { connect } from "dva"
+import { useHistory, connect } from "umi"
 
 import t from '@/utils/t'
 import { states, statesLabel } from '@/constants/dataset'
@@ -8,6 +8,7 @@ import s from './iteration.less'
 
 function Stage({ stage, current = 0, end = false, callback = () => { }, ...func }) {
   console.log('stage: ', stage, end)
+  const history = useHistory()
 
   function skip() {
     func.updateIteration({ id: stage.iterationId, next: stage.next, })
@@ -48,9 +49,9 @@ function Stage({ stage, current = 0, end = false, callback = () => { }, ...func 
   const pendingStage = () => stage.value > stage.current
 
   const isPending = () => stage.state < 0
-  const isReady = () => stage?.state === states.READY
-  const isValid = () => stage?.state === states.VALID
-  const isInvalid = () => stage?.state === states.INVALID
+  const isReady = () => stage.state === states.READY
+  const isValid = () => stage.state === states.VALID
+  const isInvalid = () => stage.state === states.INVALID
 
   const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
 
@@ -81,7 +82,7 @@ function Stage({ stage, current = 0, end = false, callback = () => { }, ...func 
   const renderState = () => {
     const pending = 'project.stage.state.pending'
     const result = stage.result
-    return !finishStage() ? (isPending() ? t(pending) : (result ? result : statesLabel(stage.state))) : null
+    return !finishStage() ? (isPending() ? t(pending) : (result ? result : t(statesLabel(stage.state)))) : null
   }
 
   const renderSkip = () => {
@@ -89,7 +90,7 @@ function Stage({ stage, current = 0, end = false, callback = () => { }, ...func 
   }
   return (
     <div className={stateClass}>
-      <Row className={s.row} align='middle'>
+      <Row className={s.row} align='middle' wrap={false}>
         <Col flex={"30px"}><span className={s.num}>{renderCount()}</span></Col>
         <Col>
           <Space>
@@ -97,7 +98,7 @@ function Stage({ stage, current = 0, end = false, callback = () => { }, ...func 
             {renderReactBtn()}
           </Space>
         </Col>
-        <Col className={s.lineContainer} hidden={end} flex={1}><span className={s.line}></span></Col>
+        { !end ? <Col className={s.lineContainer} hidden={end} flex={1}><span className={s.line}></span></Col> : null }
       </Row>
       <Row className={s.row}>
         <Col flex={"30px"}>&nbsp;</Col>

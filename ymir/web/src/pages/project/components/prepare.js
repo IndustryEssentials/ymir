@@ -7,7 +7,7 @@ import { Stages, StageList } from '@/constants/project'
 import Stage from './stage'
 import s from "./iteration.less"
 
-function Prepare({ project, fresh = () => {}, ...func }) {
+function Prepare({ project = {}, fresh = () => {}, ...func }) {
   const [iteration, setIteration] = useState({})
   const [stages, setStages] = useState([])
 
@@ -18,10 +18,6 @@ function Prepare({ project, fresh = () => {}, ...func }) {
     project.id && rerenderStages(project)
   }, [project])
 
-  useEffect(() => {
-    iteration?.id && rerenderStages(iteration)
-  }, [iteration])
-
   function initStages() {
     const labels = [
       { value: 'datasets', url: '/home/project/add?settings=1', state: states.READY, },
@@ -31,13 +27,14 @@ function Prepare({ project, fresh = () => {}, ...func }) {
     const ss = labels.map(({ value, url, state, callback }, index) => {
       const act = `project.iteration.stage.${value}`
       return {
-        value: index,
-        label,
+        value: index + 1,
+        label: value,
         act,
         react: `${act}.react`,
-        next: index + 1,
+        next: index + 2,
         url,
-        state,
+        state: -1,
+        current: index + 1,
         unskippable: true,
         callback,
       }
@@ -49,9 +46,10 @@ function Prepare({ project, fresh = () => {}, ...func }) {
   function rerenderStages(project) {
     const ss = stages.map((stage, index) => {
       if (index === stages.length - 1) {
-        stage.state = project.round > 0 ? states.READY : states.INVALID
+        stage.state = project.currentIteration > 0 ? states.READY : states.INVALID
+        stage.react = ''
       }
-      return stage
+      return { ...stage }
     })
     setStages(ss)
   }
@@ -59,9 +57,9 @@ function Prepare({ project, fresh = () => {}, ...func }) {
   return (
     <div className={s.iteration}>
       <Row style={{ justifyContent: 'flex-end' }}>
-        {stages.map((stage) => (
-          <Col key={stage.id} flex={1}>
-            <Stage stage={stage} current={iteration.current} end={!stage.next} callback={stage.callback} />
+        {stages.map((stage, index) => (
+          <Col key={stage.value} flex={index >= stages.length - 1? null : 1}>
+            <Stage stage={stage} end={index >= stages.length - 1} callback={stage.callback} />
           </Col>
         ))}
       </Row>

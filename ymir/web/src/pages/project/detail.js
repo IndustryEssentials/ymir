@@ -9,6 +9,7 @@ import Datasets from '@/components/dataset/list'
 import Models from '@/components/model/list'
 
 import styles from "./detail.less"
+import Prepare from "./components/prepare"
 
 const tabsTitle = [
   { tab: t('project.tab.set.title'), key: 'set', },
@@ -46,7 +47,8 @@ function ProjectDetail(func) {
   return (
     <div className={styles.projectDetail}>
       <Breadcrumbs />
-      <Iteration id={id} project={project} />
+      {project.currentIteration > 0 ? 
+      <Iteration project={project} /> : <Prepare project={project} /> }
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)} 
         style={{ margin: '-20px -5vw 0', background: 'transparent'}}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px'}}

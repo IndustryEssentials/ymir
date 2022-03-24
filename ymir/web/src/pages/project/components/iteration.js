@@ -24,7 +24,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   function initStages() {
     const labels = ['ready', 'mining', 'label', 'merge', 'training', 'next']
     const stageList = StageList()
-    const ss = stageList.list.map(({ value, url, prev, resultKey }) => {
+    const ss = stageList.list.map(({ value, url, prepare, resultKey }) => {
       const label = `project.iteration.stage.${labels[value]}`
       return {
         value: value,
@@ -71,7 +71,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
     <div className={s.iteration}>
       <Row style={{ justifyContent: 'flex-end' }}>
         {stages.map((stage) => (
-          <Col key={stage.id} flex={1}>
+          <Col key={stage.value} flex={1}>
             <Stage stage={stage} end={!stage.next} />
           </Col>
         ))}
