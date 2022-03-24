@@ -29,6 +29,7 @@ class Dataset(Base):
     related_task = relationship(
         "Task",
         primaryjoin="foreign(Task.id)==Dataset.task_id",
+        backref="result_dataset",
         uselist=False,
         viewonly=True,
     )
