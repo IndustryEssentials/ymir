@@ -91,4 +91,4 @@ class Project(Base):
 
     @property
     def model_count(self) -> int:
-        return len(self.datasets)
+        return len(self.models)
