@@ -92,7 +92,15 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_general_tasks(cls, mir_tasks: mirpb.MirTasks, verbose: bool) -> None:
-        print(f"tasks.mir: {mir_tasks}")
+        hid = mir_tasks.head_task_id
+        task = mir_tasks.tasks[hid]
+        if not verbose:
+            print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
+                  f"    model hash: {task.model.model_hash}\n"
+                  f"    map: {task.model.mean_average_precision}\n"
+                  f"    executor: {task.executor}")
+        else:
+            print(f"tasks.mir: {mir_tasks}")
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
