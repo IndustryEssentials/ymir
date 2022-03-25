@@ -66,6 +66,12 @@ const Routes = [
         title: "model.title",
       },
       {
+        path: "/home/model/import/:pid",
+        name: "modelImport",
+        component: "@/pages/model/add",
+        title: "model.title",
+      },
+      {
         path: "/home/history/:type/:id",
         name: "history",
         component: "@/pages/history/index",

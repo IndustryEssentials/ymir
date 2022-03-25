@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, } from "antd"
+import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, } from "antd"
 import {
   SearchOutlined,
 } from "@ant-design/icons"
@@ -19,7 +19,7 @@ import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
 import Del from "./del"
 import DelGroup from "./delGroup"
-import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
+import { ArrowDownIcon, ArrowRightIcon, ImportIcon } from "../common/icons"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -66,7 +66,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
   async function initState() {
     await resetQuery()
     form.resetFields()
- }
+  }
 
   const types = getModelImportTypes()
 
@@ -126,7 +126,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     updateQuery({ ...query, limit, offset })
   }
 
-  
+
   async function showVersions(id) {
     if (!models.some(item => item.id === id && item.showVersions)) {
       const result = await getVersions(id)
@@ -178,7 +178,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
         onclick: () => history.push(`/home/task/train?mid=${id}`),
         icon: <TrainIcon />,
       },
-      
+
     ]
     const delAction = {
       key: "del",
@@ -187,21 +187,21 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
       className: styles.action_del,
       icon: <DeleteIcon />,
     }
-    return isValidModel(state) ? [ ...actions, delAction] : [delAction]
+    return isValidModel(state) ? [...actions, delAction] : [delAction]
   }
 
   const edit = (record) => {
     setCurrent({})
     setTimeout(() => setCurrent(record), 0)
   }
-  
+
   const delGroup = (id, name) => {
     delGroupRef.current.del(id, name)
   }
   const del = (id, name) => {
     delRef.current.del(id, name)
   }
-  
+
   const delOk = (id) => {
     getVersions(id, true)
   }
@@ -242,11 +242,21 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     return states.VALID === state
   }
 
+  function add() {
+    history.push(`/home/model/import/${pid}`)
+  }
+
+  const addBtn = (
+    <Button type="primary" onClick={add}>
+      <ImportIcon /> {t("model.import.label")}
+    </Button>
+  )
+
   const renderGroups = (<>
     <div className={styles.groupList}>
       {models.length ? models.map(group => <div className={styles.groupItem} key={group.id}>
         <Row className={styles.groupTitle}>
-          <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{ group.showVersions ? <ArrowDownIcon /> :<ArrowRightIcon />} </span>
+          <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
             <span className={styles.groupName}>{group.name}</span></Col>
           <Col><Space>
             <a onClick={edit} title={t('common.modify')}><EditIcon /></a>
@@ -270,6 +280,11 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
 
   return (
     <div className={styles.model}>
+      <div className={styles.actions}>
+        <Space>
+          {addBtn}
+        </Space>
+      </div>
       <div className={styles.list}>
         <div className={styles.search}>
           <Form
