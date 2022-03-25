@@ -13,6 +13,7 @@ class Dataset(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     hash = Column(String(settings.STRING_LEN_LIMIT), index=True, unique=True, nullable=False)
     name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
+    description = Column(String(settings.STRING_LEN_LIMIT))
     version_num = Column(Integer, index=True, nullable=False)
     result_state = Column(SmallInteger, index=True, nullable=False)
 
@@ -29,6 +30,7 @@ class Dataset(Base):
     related_task = relationship(
         "Task",
         primaryjoin="foreign(Task.id)==Dataset.task_id",
+        backref="result_dataset",
         uselist=False,
         viewonly=True,
     )

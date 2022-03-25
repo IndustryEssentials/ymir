@@ -11,6 +11,8 @@ from app.schemas.common import (
     IsDeletedModelMixin,
 )
 
+from app.schemas.iteration import IterationInDBBase
+
 
 class ProjectBase(BaseModel):
     name: str = Field(description="Project Name")
@@ -44,7 +46,6 @@ class ProjectUpdate(BaseModel):
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
     chunk_size: Optional[int]
-    training_dataset_group_id: int
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     description: Optional[str]
@@ -56,6 +57,7 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     initial_model_id: Optional[int]
+    current_iteration: Optional[IterationInDBBase]
 
     class Config:
         orm_mode = True

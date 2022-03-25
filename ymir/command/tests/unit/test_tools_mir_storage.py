@@ -147,9 +147,15 @@ class TestMirStorage(unittest.TestCase):
                 },
             },
             'index_predifined_keyids': {
-                1: {'asset_ids': ['a001']},
-                2: {'asset_ids': ['a001', 'a002']},
-                3: {'asset_ids': ['a002', 'a003']},
+                1: {
+                    'asset_ids': ['a001']
+                },
+                2: {
+                    'asset_ids': ['a001', 'a002']
+                },
+                3: {
+                    'asset_ids': ['a002', 'a003']
+                },
             }
         }
         pb_format.ParseDict(dict_keywords, mir_keywords)
@@ -163,7 +169,10 @@ class TestMirStorage(unittest.TestCase):
                 2: 2,
                 3: 2,
             },
-            'project_predefined_keyids_cnt': ({3: 2, 4: 0} if with_project else {}),
+            'project_predefined_keyids_cnt': ({
+                3: 2,
+                4: 0
+            } if with_project else {}),
             'customized_keywords_cnt': {},
         }
         pb_format.ParseDict(dict_context, mir_context)
@@ -217,10 +226,12 @@ class TestMirStorage(unittest.TestCase):
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
-                                                      task_id='mining-task-id',
                                                       his_branch='master',
-                                                      mir_datas=mir_datas_expect,
-                                                      commit_message='test_ops')
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations
+                                                      },
+                                                      task=mir_tasks.tasks[mir_tasks.head_task_id])
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
                                                        mir_branch='a',
                                                        mir_task_id='mining-task-id',
@@ -245,42 +256,50 @@ class TestMirStorage(unittest.TestCase):
             raise e
 
         # add another commit a@t2, which has empty dataset
+        mir_annotations_2 = mirpb.MirAnnotations()
+        task_2 = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining, task_id='t2', message='task-t2')
         mir_tasks_2 = mirpb.MirTasks()
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks_2,
-                                         task_type=mirpb.TaskType.TaskTypeMining,
-                                         task_id='t2',
-                                         message='task-t2')
+        mir_tasks_2.head_task_id = task_2.task_id
+        mir_tasks_2.tasks[task_2.task_id].CopyFrom(task_2)
         mir_datas_expect_2 = {
             mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-            mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations_2,
             mirpb.MirStorage.MIR_TASKS: mir_tasks_2,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
-                                                      task_id='t2',
                                                       his_branch='a',
-                                                      mir_datas=mir_datas_expect_2,
-                                                      commit_message='t2')
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations_2,
+                                                      },
+                                                      task=task_2)
         # previous a@mining-task-id remains unchanged
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
                                                        mir_branch='a',
                                                        mir_task_id='mining-task-id',
                                                        mir_storages=[x for x in mir_datas_expect.keys()])
         self.assertDictEqual(mir_datas, mir_datas_expect)
-        # previous a@mining-task-id remains unchanged
+        # check a@t2
         mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
                                                        mir_branch='a',
                                                        mir_task_id='t2',
-                                                       mir_storages=[x for x in mir_datas_expect.keys()])
+                                                       mir_storages=[x for x in mir_datas_expect_2.keys()])
+        mir_annotations_2.head_task_id = 't2'
         self.assertDictEqual(mir_datas, mir_datas_expect_2)
 
         # load_single_model: have model
         actual_dict_model = mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root,
                                                                             mir_branch='a',
                                                                             mir_task_id='mining-task-id')
-        self.assertEqual(actual_dict_model, {'model_hash': 'abc123',
-                                             'mean_average_precision': 0.5,
-                                             'context': 'fake_context'})
+        self.assertEqual(
+            actual_dict_model, {
+                'model_hash': 'abc123',
+                'mean_average_precision': 0.5,
+                'context': 'fake_context',
+                'executor_config': {},
+                'task_parameters': ''
+            })
         # load_single_model: have no model
         with self.assertRaises(MirError):
             mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root, mir_branch='a', mir_task_id='t2')
@@ -300,14 +319,12 @@ class TestMirStorage(unittest.TestCase):
         mir_datas_expect = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
-                                                      task_id='mining-task-id',
                                                       his_branch='master',
                                                       mir_datas=mir_datas_expect,
-                                                      commit_message='test_ops')
+                                                      task=mir_tasks.tasks[mir_tasks.head_task_id])
         loaded_mir_keywords = mir_storage_ops.MirStorageOps.load_single(mir_root=self._mir_root,
                                                                         mir_branch='a',
                                                                         ms=mirpb.MirStorage.MIR_KEYWORDS,

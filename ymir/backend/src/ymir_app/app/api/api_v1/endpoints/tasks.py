@@ -28,6 +28,7 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
+from app.models.task import Task
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
@@ -104,17 +105,18 @@ def create_task(
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
-    parameters = normalize_parameters(db, task_in.parameters, task_in.docker_image_config, user_labels)
+    args = normalize_parameters(db, task_in.parameters, task_in.docker_image_config, user_labels)
 
     # 3. call controller
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
     try:
         resp = controller_client.create_task(
-            current_user.id,
-            task_in.project_id,
-            task_hash,
-            task_in.type,
-            parameters,
+            user_id=current_user.id,
+            project_id=task_in.project_id,
+            task_id=task_hash,
+            task_type=task_in.type,
+            args=args,
+            task_parameters=task_in.parameters.json() if task_in.parameters else None,
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
@@ -126,7 +128,7 @@ def create_task(
 
     # 5. create task result record (dataset or model)
     task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task)
-    result = task_result.create(task_in.parameters.dataset_id)
+    task_result.create(task_in.parameters.dataset_id)
 
     # 6. send metric to clickhouse
     try:
@@ -147,11 +149,7 @@ def create_task(
         logger.exception("[create task] failed to get metrics for task(%s), continue anyway", task.hash)
     logger.info("[create task] created task name: %s", task_in.name)
 
-    # fixme
-    #  find a walkaround to avoid circular imports in schemas
-    task_with_result = schemas.TaskInternal.from_orm(task).dict()
-    task_with_result["result"] = result
-    return {"result": task_with_result}
+    return {"result": task}
 
 
 class TaskResult:
@@ -290,7 +288,7 @@ class TaskResult:
                 task_result.state,
                 task_result,
             )
-            self.update_task_result(task_result)
+            self.update_task_result(task_result, task_in_db)
 
         logger.info(
             "[update task] updating task state %s and percent %s",
@@ -305,7 +303,7 @@ class TaskResult:
             percent=task_result.percent,
         )
 
-    def update_task_result(self, task_result: schemas.TaskUpdateStatus) -> None:
+    def update_task_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: Task) -> None:
         if self.result_type is ResultType.dataset:
             crud_func = crud.dataset
         elif self.result_type is ResultType.model:
@@ -320,6 +318,14 @@ class TaskResult:
             return
 
         if task_result.state is TaskState.done:
+            # import model has no parameters, only update this task
+            if task_in_db.type in [TaskType.import_model, TaskType.copy_model]:
+                crud.task.update_parameters_and_config(
+                    self.db,
+                    task=task_in_db,
+                    parameters=self.result_info["task_parameters"],
+                    config=self.result_info["executor_config"],
+                )
             crud_func.finish(
                 self.db,
                 result_record.id,
