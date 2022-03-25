@@ -72,8 +72,9 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
     }
     const result = await func[`${action}Project`](params)
     if (result) {
+      const pid = result.id || id
       message.success(t(`project.${action}.success`))
-      history.push(`/home/project/detail/${id}`)
+      history.push(`/home/project/detail/${pid}`)
     }
   }
 
