@@ -44,6 +44,7 @@ class ProjectUpdate(BaseModel):
     name: Optional[str]
     iteration_target: Optional[int]
     map_target: Optional[float]
+    training_dataset_group_id: Optional[int]
     training_dataset_count_target: Optional[int]
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
