@@ -150,22 +150,21 @@ class CmdFilter(base.BaseCommand):
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
         commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeFilter,
-                                         task_id=task_id,
-                                         message=commit_message)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeFilter,
+                                           task_id=task_id,
+                                           message=commit_message,
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=task_id,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas=matched_mir_contents,
-                                                      commit_message=commit_message)
+                                                      task=task)
 
         return MirCode.RC_OK
 

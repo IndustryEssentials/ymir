@@ -14,6 +14,7 @@ const getCrumbs = () => [
   { path: '/home/task/train/:ids?', label: t('breadcrumbs.task.training'), pid: 2, id: 7 },
   { path: '/home/task/label/:id?', label: t('breadcrumbs.task.label'), pid: 2, id: 8 },
   { path: '/home/task/mining/:ids?', label: t('breadcrumbs.task.mining'), pid: 2, id: 9 },
+  { path: '/home/task/copy/:id', label: t('breadcrumbs.datasets.copy'), pid: 28, id: 10 },
   { path: '/home/dataset/detail/:id', label: t('breadcrumbs.dataset'), pid: 28, id: 13 },
   { path: '/home/dataset/assets/:id', label: t('breadcrumbs.dataset'), pid: 13, id: 31 },
   { path: '/home/model/detail/:id', label: t('breadcrumbs.model'), pid: 3, id: 16 },

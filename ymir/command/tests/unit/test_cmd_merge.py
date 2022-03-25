@@ -8,6 +8,7 @@ from google.protobuf.json_format import MessageToDict, ParseDict
 
 from mir.commands.merge import CmdMerge
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
 import tests.utils as test_utils
 
@@ -106,11 +107,10 @@ class TestMergeCmd(unittest.TestCase):
         }
 
     def _prepare_mir_branch(self, assets_and_keywords: Dict[str, Tuple[List[int], List[str]]], size: int,
-                            branch_name_and_task_id: str, task_timestamp: int, commit_msg: str):
+                            branch_name_and_task_id: str, commit_msg: str):
         mir_annotations = mirpb.MirAnnotations()
         mir_keywords = mirpb.MirKeywords()
         mir_metadatas = mirpb.MirMetadatas()
-        mir_tasks = mirpb.MirTasks()
 
         dict_metadatas = {'attributes': {}}
         for asset_id in assets_and_keywords:
@@ -138,26 +138,17 @@ class TestMergeCmd(unittest.TestCase):
                 keywords_pair[0], keywords_pair[1])
         ParseDict(dict_keywords, mir_keywords)
 
-        dict_tasks = {
-            'tasks': {
-                branch_name_and_task_id:
-                TestMergeCmd._generate_task(task_id=branch_name_and_task_id,
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
-                                            timestamp=task_timestamp)
-            },
-            'head_task_id': branch_name_and_task_id
-        }
-        ParseDict(dict_tasks, mir_tasks)
-
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch=branch_name_and_task_id,
-                                       task_id=branch_name_and_task_id,
-                                       no_space_message=commit_msg)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
+                                           task_id=branch_name_and_task_id,
+                                           message=commit_msg)
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch=branch_name_and_task_id,
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                                      },
+                                                      task=task)
 
     def _prepare_mir_branch_a(self):
         """
@@ -174,7 +165,6 @@ class TestMergeCmd(unittest.TestCase):
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1000,
                                  branch_name_and_task_id="a",
-                                 task_timestamp=1624376173,
                                  commit_msg="prepare_branch_merge_a")
 
     def _prepare_mir_branch_b(self):
@@ -191,7 +181,6 @@ class TestMergeCmd(unittest.TestCase):
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1100,
                                  branch_name_and_task_id="b",
-                                 task_timestamp=1624376173 + 10,
                                  commit_msg="prepare_branch_merge_b")
 
     def _prepare_mir_branch_d(self):
@@ -208,15 +197,13 @@ class TestMergeCmd(unittest.TestCase):
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1300,
                                  branch_name_and_task_id="d",
-                                 task_timestamp=1624376173 + 30,
                                  commit_msg="prepare_branch_merge_d")
 
     # protected: check
     def _check_result(self,
                       expected_dict_metadatas=None,
                       expected_dict_annotations=None,
-                      expected_dict_keywords=None,
-                      expected_dict_tasks=None):
+                      expected_dict_keywords=None):
         if expected_dict_metadatas:
             try:
                 mir_metadatas = test_utils.read_mir_pb(os.path.join(self._mir_root, "metadatas.mir"),
@@ -251,19 +238,6 @@ class TestMergeCmd(unittest.TestCase):
                     logging.info(f"e: {expected_keywords}")
                     logging.info(f"a: {actual_keywords}")
                     raise e
-
-        if expected_dict_tasks:
-            try:
-                mir_tasks = test_utils.read_mir_pb(os.path.join(self._mir_root, "tasks.mir"), mirpb.MirTasks)
-                actual_dict_tasks = MessageToDict(mir_tasks, preserving_proto_field_name=True)
-                for task_id in expected_dict_tasks["tasks"]:
-                    self.assertTrue(task_id in actual_dict_tasks["tasks"])
-                self.assertTrue("merge-task-id" in actual_dict_tasks["tasks"])
-                self.assertTrue("merge-task-id", mir_tasks.head_task_id)
-            except AssertionError as e:
-                logging.info(f"e: {expected_dict_tasks}")
-                logging.info(f"a: {actual_dict_tasks}")
-                raise e
 
     # public: test cases
     def test_all(self):
@@ -330,26 +304,7 @@ class TestMergeCmd(unittest.TestCase):
                 "b2": TestMergeCmd._generate_keywords_for_asset([2], ["c0", "c2"]),
             }
         }
-
-        expected_dict_tasks = {
-            'tasks': {
-                "a":
-                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
-                                            timestamp=1624376173),
-                "b":
-                TestMergeCmd._generate_task(task_id="b",
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
-                                            timestamp=1624376173 + 10),
-                'merge-task-id':
-                TestMergeCmd._generate_task(task_id="merge-task-id",
-                                            name="merge",
-                                            type=mirpb.TaskTypeMerge,
-                                            timestamp=0),
-            }
-        }
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords,
-                           expected_dict_tasks)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
 
     def _test_tvt_stop_01(self):
         """ abnormal case: with tvt flag assigned, strategy stop, a + d, have joint assets """
@@ -420,27 +375,7 @@ class TestMergeCmd(unittest.TestCase):
                 "d1": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
             }
         }
-
-        expected_dict_tasks = {
-            'tasks': {
-                "a":
-                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
-                                            timestamp=1624376173),
-                "d":
-                TestMergeCmd._generate_task(task_id="d",
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
-                                            timestamp=1624376173 + 30),
-                'merge-task-id':
-                TestMergeCmd._generate_task(task_id="merge-task-id",
-                                            name="merge",
-                                            type=mirpb.TaskTypeMerge,
-                                            timestamp=0),
-            }
-        }
-
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords,
-                           expected_dict_tasks)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
 
     def _test_tvt_guest_00(self):
         """ normal case: with tvt flag assigned, strategy guest, a + d, have joint assets """
@@ -496,26 +431,7 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
-        expected_dict_tasks = {
-            'tasks': {
-                "a":
-                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
-                                            timestamp=1624376173),
-                "d":
-                TestMergeCmd._generate_task(task_id="d",
-                                            name="mining",
-                                            type=mirpb.TaskTypeMining,
-                                            timestamp=1624376173 + 30),
-                'merge-task-id':
-                TestMergeCmd._generate_task(task_id="merge-task-id",
-                                            name="merge",
-                                            type=mirpb.TaskTypeMerge,
-                                            timestamp=0),
-            }
-        }
-
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords,
-                           expected_dict_tasks)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
 
     def _test_exclude_no_tvt_stop_00(self):
         """ a - d """
@@ -562,18 +478,4 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
-        expected_dict_tasks = {
-            'tasks': {
-                "a":
-                TestMergeCmd._generate_task(task_id="a", name="mining", type=mirpb.TaskTypeMining,
-                                            timestamp=1624376173),
-                'merge-task-id':
-                TestMergeCmd._generate_task(task_id="merge-task-id",
-                                            name="merge",
-                                            type=mirpb.TaskTypeMerge,
-                                            timestamp=0),
-            }
-        }
-
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords,
-                           expected_dict_tasks)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
