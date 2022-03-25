@@ -11,9 +11,9 @@ from app.schemas.common import (
     IsDeletedModelMixin,
 )
 
-from app.schemas.iteration import IterationInDBBase
-from app.schemas.dataset import DatasetInDBBase
-from app.schemas.dataset_group import DatasetGroupInDBBase
+from app.schemas.iteration import Iteration
+from app.schemas.dataset import Dataset
+from app.schemas.dataset_group import DatasetGroup
 
 
 class ProjectBase(BaseModel):
@@ -59,10 +59,11 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     initial_model_id: Optional[int]
-    current_iteration: Optional[IterationInDBBase]
-    training_dataset_group: Optional[DatasetGroupInDBBase]
-    testing_dataset: Optional[DatasetInDBBase]
-    mining_dataset: Optional[DatasetInDBBase]
+
+    current_iteration: Optional[Iteration]
+    training_dataset_group: Optional[DatasetGroup]
+    testing_dataset: Optional[Dataset]
+    mining_dataset: Optional[Dataset]
 
     class Config:
         orm_mode = True
