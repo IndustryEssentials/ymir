@@ -73,7 +73,7 @@ class CmdModelImport(base.BaseCommand):
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"import model {package_path} as {model_hash}",
                                            model_hash=model_hash,
-                                           model_mAP=float(model_storage.task_context['mAP']),
+                                           model_mAP=float(model_storage.task_context.get('mAP', 0)),
                                            return_code=MirCode.RC_OK,
                                            return_msg='',
                                            src_revs=src_revs,

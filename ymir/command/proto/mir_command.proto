@@ -160,7 +160,7 @@ message Task {
     /// auto generated unique id
     string task_id = 3;
     /// execution time of this task
-    int64 timestamp = 5;
+    int64 timestamp = 5;  // RFC 3339 date strings
     /// (special for training task): result model for cmd train
     ModelMeta model = 6;
     /// (special for import task): unknown types for cmd import
