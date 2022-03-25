@@ -86,6 +86,29 @@ class TestModel:
         assert M.executor_config == res["executor_config"]
 
 
+class TestDataset:
+    def test_dataset(self, mock_user_labels):
+        res = {{
+            'class_ids_count': {
+                '3': 34
+            },
+            'ignored_labels': {
+                'cat': 5
+            },
+            'negative_info': {
+                'negative_images_cnt': 0,
+                'project_negative_images_cnt': 0
+            },
+            'total_images_cnt': 1
+        }}
+        M = m.Dataset.from_viz_res(res)
+        assert M.class_ids_count == res["class_ids_count"]
+        assert M.ignored_labels == res["ignored_labels"]
+        assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
+        assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
+        assert M.total_images_cnt == res["total_images_cnt"]
+
+
 class TestVizClient:
     def test_get_viz_client(self):
         host = random_lower_string()

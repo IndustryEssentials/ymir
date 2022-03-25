@@ -24,7 +24,6 @@ class TestDatasetController:
         mocker.patch.object(MirStorageOps, "load_single_dataset", return_value=mir_dataset_content)
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/datasets")
 
-        print(f"resp.data: {resp.data.decode('utf-8')}")
         assert resp.status_code == 200
         assert resp.json()["result"] == {
             'class_ids_count': {
