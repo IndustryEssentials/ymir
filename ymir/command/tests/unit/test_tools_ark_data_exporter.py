@@ -6,7 +6,7 @@ import unittest
 from google.protobuf import json_format
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_exporter, hash_utils
+from mir.tools import data_exporter, hash_utils, mir_storage_ops
 from tests import utils as test_utils
 
 
@@ -162,30 +162,20 @@ class TestArkDataExporter(unittest.TestCase):
         mir_keywords = mirpb.MirKeywords()
         json_format.ParseDict(keywords_dict, mir_keywords)
 
-        # tasks
-        tasks_dict = {
-            'tasks': {
-                'a': {
-                    'type': 'TaskTypeImportData',
-                    'name': 'import',
-                    'task_id': 'a',
-                    'timestamp': 17020362735,
-                }
-            },
-            'head_task_id': 'a'
-        }
-        mir_tasks = mirpb.MirTasks()
-        json_format.ParseDict(tasks_dict, mir_tasks)
+        # task
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
+                                           task_id='a',
+                                           message='import')
 
         # save and commit
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='a',
-                                       no_space_message='test_tools_data_exporter_branch_a')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                                      },
+                                                      task=task)
 
     # private: check result
     def __check_result(self, asset_ids, format_type, export_path, index_file_path):

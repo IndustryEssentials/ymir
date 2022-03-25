@@ -166,21 +166,20 @@ class TestCmdExport(unittest.TestCase):
         json_format.ParseDict(keywords_dict, mir_keywords)
 
         # tasks
-        mir_tasks = mirpb.MirTasks()
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeImportData,
-                                         task_id='a',
-                                         message='import')
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
+                                           task_id='a',
+                                           message='test_tools_data_exporter_branch_a')
 
         # save and commit
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='a',
-                                       no_space_message='test_tools_data_exporter_branch_a')
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+        }
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas=mir_datas,
+                                                      task=task)
 
     # private: mocked
     def __mock_export(*args, **kwargs) -> Dict[str, Tuple[str, str]]:

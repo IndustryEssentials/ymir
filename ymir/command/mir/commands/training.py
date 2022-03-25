@@ -20,7 +20,7 @@ from mir.tools.errors import MirRuntimeError
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> Tuple[str, float, Optional[mir_utils.ModelStorage]]:
+                           task_context: dict) -> Tuple[str, float]:
     """
     find and save models
     Returns:
@@ -30,7 +30,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     model_paths, model_mAP = _find_models(out_model_dir)
     if not model_paths:
         # if have no models
-        return '', model_mAP, None
+        return '', model_mAP
 
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
                                            task_context=dict(**task_context,
@@ -41,7 +41,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                                 model_dir_path=out_model_dir,
                                                 model_location=model_upload_location)
 
-    return model_sha1, model_mAP, model_storage
+    return model_sha1, model_mAP
 
 
 def _find_models(model_root: str) -> Tuple[List[str], float]:
@@ -68,42 +68,6 @@ def _find_models(model_root: str) -> Tuple[List[str], float]:
         return [], 0.0
 
     return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
-
-
-def _upload_model_pack(model_pack_path: str, dest_path: str) -> bool:
-    if not model_pack_path or not dest_path:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='invalid model_pack_path or dest_path')
-
-    shutil.copyfile(model_pack_path, dest_path)
-    return True
-
-
-def _update_mir_tasks(mir_root: str, src_rev_tid: revs_parser.TypRevTid, dst_rev_tid: revs_parser.TypRevTid,
-                      model_sha1: str, mAP: float, model_storage: Optional[mir_utils.ModelStorage], task_ret_code: int,
-                      task_err_msg: str) -> mirpb.MirTasks:
-    """
-    add a new mir single task into mir_tasks from branch base_branch, and save it to a new branch: dst_branch
-    """
-    logging.info("creating task id: {}, model hash: {}, mAP: {}".format(dst_rev_tid.tid, model_sha1, mAP))
-
-    task_parameters = model_storage.task_context.get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY,
-                                                     '') if model_storage else ''
-    mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                          mir_branch=src_rev_tid.rev,
-                                                                          mir_task_id=src_rev_tid.tid,
-                                                                          ms=mirpb.MirStorage.MIR_TASKS)
-    mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                     task_type=mirpb.TaskType.TaskTypeTraining,
-                                     task_id=dst_rev_tid.tid,
-                                     message='training',
-                                     model_mAP=mAP,
-                                     model_hash=model_sha1,
-                                     return_code=task_ret_code,
-                                     return_msg=task_err_msg,
-                                     args=(yaml.safe_dump(model_storage.as_dict()) if model_storage else ''),
-                                     task_parameters=task_parameters)
-    return mir_tasks
 
 
 # private: process
@@ -431,33 +395,36 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info("saving models")
-        model_sha1, model_mAP, model_storage = _process_model_storage(out_root=work_dir_out,
-                                                                      model_upload_location=model_upload_location,
-                                                                      executor_config=executor_config,
-                                                                      task_context=task_context)
+        model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
+                                                       model_upload_location=model_upload_location,
+                                                       executor_config=executor_config,
+                                                       task_context=task_context)
 
-        # update metadatas and task with finish state and model hash
-        mir_tasks = _update_mir_tasks(mir_root=mir_root,
-                                      src_rev_tid=src_typ_rev_tid,
-                                      dst_rev_tid=dst_typ_rev_tid,
-                                      model_sha1=model_sha1,
-                                      mAP=model_mAP,
-                                      model_storage=model_storage,
-                                      task_ret_code=task_code,
-                                      task_err_msg=task_error_msg)
+        # commit task
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message='training',
+                                           model_mAP=model_mAP,
+                                           model_hash=model_sha1,
+                                           return_code=task_code,
+                                           return_msg=task_error_msg,
+                                           serialized_task_parameters=task_parameters,
+                                           serialized_executor_config=yaml.safe_dump(executor_config),
+                                           executor=executor,
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
             raise MirRuntimeError(error_code=task_code,
                                   error_message=task_error_msg,
                                   needs_new_commit=True,
-                                  mir_tasks=mir_tasks)
+                                  task=task)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_typ_rev_tid.rev,
-                                                      mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
-                                                      commit_message=dst_typ_rev_tid.tid)
+                                                      mir_datas={},
+                                                      task=task)
 
         logging.info("training done")
 

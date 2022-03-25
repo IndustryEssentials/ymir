@@ -17,8 +17,7 @@ def _get_task_name(dst_rev: str) -> str:
 
 
 @utils.time_it
-def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str,
-                  predefined_mir_tasks: Any) -> None:
+def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str, predefined_task: Any) -> None:
     if not src_revs:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='empty src_revs',
@@ -30,28 +29,20 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
 
     src_typ_rev_tid = revs_parser.parse_arg_revs(src_revs)[0]
     dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
-    if predefined_mir_tasks:
-        mir_tasks = predefined_mir_tasks
-    else:
-        mir_tasks = mirpb.MirTasks()
-        if src_revs != 'master':
-            mir_tasks = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                  mir_branch=src_typ_rev_tid.rev,
-                                                                  ms=mirpb.MIR_TASKS,
-                                                                  mir_task_id=src_typ_rev_tid.tid)
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeUnknown,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         message='commit error',
-                                         return_code=code,
-                                         return_msg=error_msg)
+    if not predefined_task:
+        predefined_task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeUnknown,
+                                                      task_id=dst_typ_rev_tid.tid,
+                                                      message='task failed',
+                                                      return_code=code,
+                                                      return_msg=error_msg,
+                                                      src_revs=src_revs,
+                                                      dst_rev=dst_rev)
 
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,
-                                                  task_id=dst_typ_rev_tid.tid,
                                                   his_branch=src_typ_rev_tid.rev,
-                                                  mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
-                                                  commit_message='task failed')
+                                                  mir_datas={},
+                                                  task=predefined_task)
 
 
 def command_run_in_out(f: Callable) -> Callable:
@@ -71,21 +62,21 @@ def command_run_in_out(f: Callable) -> Callable:
         except MirRuntimeError as e:
             error_code = e.error_code
             state_message = e.error_message
-            predefined_mir_tasks = e.mir_tasks
+            predefined_task = e.task
             needs_new_commit = e.needs_new_commit
             exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
         except CalledProcessError as e:
             error_code = MirCode.RC_CMD_CONTAINER_ERROR
             state_message = str(e)
-            predefined_mir_tasks = None
+            predefined_task = None
             needs_new_commit = True
             exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
         except BaseException as e:
             error_code = MirCode.RC_CMD_ERROR_UNKNOWN
             state_message = str(e)
-            predefined_mir_tasks = None
+            predefined_task = None
             needs_new_commit = True
             exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
@@ -100,7 +91,7 @@ def command_run_in_out(f: Callable) -> Callable:
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
-                              predefined_mir_tasks=None)
+                              predefined_task=None)
                 mir_logger.update_percent_info(local_percent=1,
                                                task_state=phase_logger.PhaseStateEnum.ERROR,
                                                state_code=ret,
@@ -116,7 +107,7 @@ def command_run_in_out(f: Callable) -> Callable:
                           mir_root=mir_root,
                           src_revs=src_revs,
                           dst_rev=dst_rev,
-                          predefined_mir_tasks=predefined_mir_tasks)
+                          predefined_task=predefined_task)
         mir_logger.update_percent_info(local_percent=1,
                                        task_state=phase_logger.PhaseStateEnum.ERROR,
                                        state_code=error_code,
