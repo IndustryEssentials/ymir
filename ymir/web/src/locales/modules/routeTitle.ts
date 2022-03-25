@@ -9,6 +9,7 @@ const routeTitle = {
   "datasets.title": { cn: `${SysName}-数据集列表`, en: `${SysName} - Dataset List`, },
   "dataset.title": { cn: `${SysName}-数据集详情`, en: `${SysName} - Dataset Detail`, },
   "dataset.add.title": { cn: `${SysName}-导入数据集`, en: `${SysName} - Dataset Import`, },
+  "dataset.copy.title": { cn: `${SysName}-数据集复制`, en: `${SysName} - Dataset Copy`, },
   "asset.title": { cn: `${SysName}-数据详情`, en: `${SysName} - Asset Detail`, },
   "models.title": { cn: `${SysName}-模型列表`, en: `${SysName} - Model List`, },
   "model.title": { cn: `${SysName}-模型详情`, en: `${SysName} - Model Detail`, },

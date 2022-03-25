@@ -110,16 +110,18 @@ export function delDatasetGroup(id) {
  *   {number} [datasetId]
  *   {string} [inputPath]
  *   {number} [strategy] default: 0
+ *   {string} [description]
  * }
  * @returns
  */
-export function createDataset({ name, projectId, url, datasetId, path, strategy }) {
+export function createDataset({ name, projectId, url, datasetId, path, strategy, description }) {
   return request.post("/datasets/importing", {
     dataset_group_name: name, strategy,
     project_id: projectId,
     input_url: url,
     input_dataset_id: datasetId,
     input_path: path,
+    description,
   })
 }
 
