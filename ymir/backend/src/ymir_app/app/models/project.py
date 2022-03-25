@@ -69,10 +69,10 @@ class Project(Base):
         uselist=True,
         viewonly=True,
     )
-    iterations = relationship(
+    current_iteration = relationship(
         "Iteration",
-        primaryjoin="foreign(Iteration.project_id)==Project.id",
-        uselist=True,
+        primaryjoin="foreign(Iteration.id)==Project.current_iteration_id",
+        uselist=False,
         viewonly=True,
     )
 
@@ -91,4 +91,4 @@ class Project(Base):
 
     @property
     def model_count(self) -> int:
-        return len(self.datasets)
+        return len(self.models)
