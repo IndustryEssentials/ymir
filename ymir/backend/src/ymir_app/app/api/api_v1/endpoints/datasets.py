@@ -125,7 +125,7 @@ def get_public_datasets(
     "/importing",
     response_model=schemas.DatasetOut,
 )
-def create_dataset(
+def import_dataset(
     *,
     db: Session = Depends(deps.get_db),
     dataset_import: schemas.DatasetImport,
