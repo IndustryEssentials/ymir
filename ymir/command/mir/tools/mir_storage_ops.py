@@ -93,8 +93,8 @@ class MirStorageOps():
 
         # Remove redundant index values and sort
         for key_id, assets in mir_keywords.index_predifined_keyids.items():
-            mir_keywords.index_predifined_keyids[key_id].asset_ids[:] = set(
-                mir_keywords.index_predifined_keyids[key_id].asset_ids)
+            mir_keywords.index_predifined_keyids[key_id].asset_ids[:] = sorted(
+                set(mir_keywords.index_predifined_keyids[key_id].asset_ids))
 
     @classmethod
     def __build_mir_context(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
