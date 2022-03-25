@@ -117,13 +117,11 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            "elements": [
-                {
-                    "asset_id": random_lower_string(),
-                    "class_ids": [random.randint(1, 80) for _ in range(10)],
-                }
-            ],
-            "total": 124
+            "elements": [{
+                "asset_id": random_lower_string(),
+                "class_ids": [random.randint(1, 80) for _ in range(10)],
+            }],
+            "total": random.randint(1000, 2000),
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -138,6 +136,8 @@ class TestVizClient:
         )
         ret = viz.get_assets(user_labels=mock_user_labels)
         assert isinstance(ret, m.Assets)
+        assert ret.total
+        assert ret.items
         assert len(ret.items) == len(res["elements"])
 
     def test_get_asset(self, mock_user_labels, mocker):

@@ -13,7 +13,11 @@ class RedisCache:
         self._client = rds_client
 
     def get(self, key: str) -> Dict:
-        raw_value = self._client.get(key)
+        try:
+            raw_value = self._client.get(key)
+        except Exception as e:
+            logging.exception(f"{e}")
+            return dict()
         if raw_value is None:
             return dict()
         content = yaml.safe_load(str(raw_value))
