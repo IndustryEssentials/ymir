@@ -13,6 +13,7 @@ from app.schemas.common import (
 
 class IterationBase(BaseModel):
     iteration_round: int
+    description: Optional[str]
     current_stage: Optional[IterationStage]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
@@ -31,6 +32,7 @@ class IterationCreate(IterationBase):
 # Properties that can be changed
 class IterationUpdate(BaseModel):
     current_stage: IterationStage
+    description: Optional[str]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]

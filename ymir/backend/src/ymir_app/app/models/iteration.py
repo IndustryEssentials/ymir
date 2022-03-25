@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger
+from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger, String
 
+from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
 
@@ -9,6 +10,7 @@ from app.models.task import Task  # noqa
 class Iteration(Base):
     __tablename__ = "iteration"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    description = Column(String(settings.STRING_LEN_LIMIT))
     iteration_round = Column(Integer, index=True, nullable=False)
     current_stage = Column(SmallInteger, index=True, default=0, nullable=False)
 
