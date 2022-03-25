@@ -411,8 +411,8 @@ class CmdTrain(base.BaseCommand):
                                            serialized_task_parameters=task_parameters,
                                            serialized_executor_config=yaml.safe_dump(executor_config),
                                            executor=executor,
-                                           src_revs=src_typ_rev_tid.rev_tid,
-                                           dst_rev=dst_typ_rev_tid.rev_tid)
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
             raise MirRuntimeError(error_code=task_code,
