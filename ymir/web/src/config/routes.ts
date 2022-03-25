@@ -42,6 +42,12 @@ const Routes = [
         title: 'task.label.title',
       },
       {
+        path: "/home/task/copy/:id",
+        name: "taskCopy",
+        component: "@/pages/task/copy/index",
+        title: 'dataset.copy.title',
+      },
+      {
         path: "/home/dataset/add/:pid",
         name: "datasetImport",
         component: "@/pages/dataset/add",
