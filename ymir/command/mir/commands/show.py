@@ -2,6 +2,8 @@ import argparse
 import logging
 from typing import Any, List
 
+from google.protobuf import json_format
+
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, context, mir_storage, mir_storage_ops, revs_parser
@@ -100,7 +102,7 @@ class CmdShow(base.BaseCommand):
                   f"    map: {task.model.mean_average_precision}\n"
                   f"    executor: {task.executor}")
         else:
-            print(f"tasks.mir: {mir_tasks}")
+            print(f"tasks.mir: {json_format.MessageToDict(mir_tasks, preserving_proto_field_name=True)}")
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
