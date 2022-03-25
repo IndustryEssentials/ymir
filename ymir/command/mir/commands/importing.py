@@ -95,24 +95,22 @@ class CmdImport(base.BaseCommand):
                 raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
 
         # create and write tasks
-        mir_tasks = mirpb.MirTasks()
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskTypeImportData,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         message=f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}",
-                                         unknown_types=unknown_types)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeImportData,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}",
+                                           unknown_types=unknown_types,
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotation,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       mir_datas=mir_data,
-                                                      commit_message=dst_typ_rev_tid.tid)
+                                                      task=task)
 
         # cleanup
         os.remove(sha1_index_abs)

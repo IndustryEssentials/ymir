@@ -233,6 +233,7 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
 
+    # TODO: auto gen, so need no more merge on k and t
     if not guest_mir_keywords:
         logging.warning(f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no keywords.")
     _merge_keywords(host_mir_keywords.keywords, guest_mir_keywords.keywords, id_guest_only, id_joint, strategy)
@@ -323,24 +324,22 @@ class CmdMerge(base.BaseCommand):
                 return ret
 
         # create and write tasks
-        message = f"merge: {src_revs} - {ex_src_revs} to {dst_rev}"
-        mir_storage_ops.update_mir_tasks(mir_tasks=host_mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeMerge,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}")
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMerge,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}",
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         host_typ_rev_tid = src_typ_rev_tids[0]
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: host_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: host_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: host_mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=host_typ_rev_tid.rev,
                                                       mir_datas=mir_data,
-                                                      commit_message=message)
+                                                      task=task)
 
         logging.debug("mir merge: write files done")
 
