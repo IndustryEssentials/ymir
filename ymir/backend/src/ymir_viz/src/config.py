@@ -19,7 +19,7 @@ class VizSettings(BaseSettings):
     VIZ_CACHE_STATUS: str = "viz_key_status"
 
     VIZ_SENTRY_DSN: Optional[str] = None
-    REDIS_TESTING: bool = True
+    REDIS_TESTING: bool = False
 
 
 viz_settings = VizSettings(_env_file=".env")  # type: ignore

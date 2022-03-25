@@ -20,13 +20,10 @@ class Asset:
 
     @classmethod
     def from_viz_res(cls, asset_id: str, res: Dict, user_labels: UserLabels) -> "Asset":
-        annotations = [
-            {
-                "box": annotation["box"],
-                "keyword": user_labels.get_main_names(annotation["class_id"])[0],
-            }
-            for annotation in res["annotations"]
-        ]
+        annotations = [{
+            "box": annotation["box"],
+            "keyword": user_labels.get_main_names(annotation["class_id"])[0],
+        } for annotation in res["annotations"]]
         keywords = user_labels.get_main_names(class_ids=res["class_ids"])
         keywords = list(filter(None, keywords))
         metadata = {
@@ -50,14 +47,11 @@ class Assets:
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Assets":
-        assets = [
-            {
-                "url": get_asset_url(asset["asset_id"]),
-                "hash": asset["asset_id"],
-                "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
-            }
-            for asset in res["elements"]
-        ]
+        assets = [{
+            "url": get_asset_url(asset["asset_id"]),
+            "hash": asset["asset_id"],
+            "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
+        } for asset in res["elements"]]
 
         return cls(assets)
 
@@ -83,10 +77,13 @@ class Dataset:
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Dataset":
-        keywords = {user_labels.get_main_names([class_id]): count for class_id, count in res["class_ids_count"].items()}
+        keywords = {
+            user_labels.get_main_names(class_id)[0]: count
+            for class_id, count in res["class_ids_count"].items()
+        }
         ignored_keywords = res["ignored_labels"]
         negative_info = res["negative_info"]
-        return cls(res["total"], keywords, ignored_keywords, negative_info)
+        return cls(res["total_images_cnt"], keywords, ignored_keywords, negative_info)
 
 
 class VizClient:
