@@ -132,11 +132,11 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
         </Col>
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>{t('project.train_set')}/{t('project.test_set')}/{t('project.mining_set')}</div>
-          <div className={s.sets}>{item.trainSet}/{item.testSet}/{item.miningSet}</div>
+          <div className={s.sets}>{item.trainSet?.name}/{item.testSet?.name}/{item.miningSet?.name}</div>
         </Col>
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>{t('project.interation.number')}</div>
-          <div className={s.contentContent}>{item?.currentInteration}</div>
+          <div className={s.contentContent}>{item?.currentInteration?.iteration_round}/{item?.targetInteration}</div>
         </Col>
       </Row>
       <Row>
