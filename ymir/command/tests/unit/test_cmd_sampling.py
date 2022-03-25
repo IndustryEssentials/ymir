@@ -6,6 +6,7 @@ from google.protobuf import json_format
 
 from mir.commands.sampling import CmdSampling
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
 
 from tests import utils as test_utils
@@ -76,20 +77,15 @@ class TestCmdSampling(unittest.TestCase):
         mir_metadatas = mirpb.MirMetadatas()
         json_format.ParseDict(metadatas_dict, mir_metadatas)
 
-        mir_annotations = mirpb.MirAnnotations()
-
-        mir_tasks = mirpb.MirTasks()
-        mir_tasks.tasks["t0"].name = "import"
-        mir_tasks.head_task_id = 't0'
-
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='t0',
-                                       no_space_message="test_cmd_filter_branch_a")
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='t0', message='import')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
+                                                      },
+                                                      task=task)
 
     def test_00(self):
         fake_args = type('', (), {})()

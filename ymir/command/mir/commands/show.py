@@ -2,6 +2,8 @@ import argparse
 import logging
 from typing import Any, List
 
+from google.protobuf import json_format
+
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, context, mir_storage, mir_storage_ops, revs_parser
@@ -94,10 +96,13 @@ class CmdShow(base.BaseCommand):
     def _show_general_tasks(cls, mir_tasks: mirpb.MirTasks, verbose: bool) -> None:
         hid = mir_tasks.head_task_id
         task = mir_tasks.tasks[hid]
-        print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
-              f"    model hash: {task.model.model_hash}, map: {task.model.mean_average_precision}")
-        if verbose:
-            print(f"args: {task.args}\ntask parameters: {task.task_parameters}")
+        if not verbose:
+            print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
+                  f"    model hash: {task.model.model_hash}\n"
+                  f"    map: {task.model.mean_average_precision}\n"
+                  f"    executor: {task.executor}")
+        else:
+            print(f"tasks.mir: {json_format.MessageToDict(mir_tasks, preserving_proto_field_name=True)}")
 
     @classmethod
     def _show_cis(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
