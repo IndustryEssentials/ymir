@@ -10,6 +10,7 @@ const breadcrumbs = {
   'breadcrumbs.task.mining': { cn: '新建挖掘任务', en: 'New Mining Task', },
   'breadcrumbs.task': { cn: '任务详情', en: 'Task Detail', },
   'breadcrumbs.datasets.search': { cn: '数据集搜索', en: 'Dataset Search', },
+  'breadcrumbs.datasets.copy': { cn: '数据集复制', en: 'Dataset Copy', },
   'breadcrumbs.dataset': { cn: '数据集详情', en: 'Dataset Detail', },
   'breadcrumbs.dataset.add': { cn: '导入数据集', en: 'Dataset Import', },
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
