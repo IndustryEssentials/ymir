@@ -8,6 +8,7 @@ import {
   createMiningTask,
   createTrainTask,
   createLabelTask,
+  createInferenceTask,
 } from "@/services/task"
 import { isFinalState } from '@/constants/task'
 
@@ -120,6 +121,12 @@ export default {
     },
     *createLabelTask({ payload }, { call, put }) {
       let { code, result } = yield call(createLabelTask, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *createInferenceTask({ payload }, { call, put }) {
+      let { code, result } = yield call(createInferenceTask, payload)
       if (code === 0) {
         return result
       }
