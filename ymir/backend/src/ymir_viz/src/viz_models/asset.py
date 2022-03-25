@@ -88,8 +88,12 @@ class AssetsModel:
     def format_assets_info(cls, assets_content: Dict, offset: int, limit: int, class_id: int) -> Dict:
         """
         return structure like this:
-        {'class_ids_count': {3: 34}, 'elements': [{'asset_id':xxx, 'class_ids':[2,3]},],
-        'limit': 3, offset: 1, total: 234}
+        {
+            'elements': [{'asset_id':xxx, 'class_ids':[2,3]},],
+            'limit': 3,
+            'offset': 1,
+            'total': 234
+        }
         """
         asset_ids = assets_content["class_ids_index"][class_id][offset:limit + offset]
         elements = [
@@ -97,11 +101,10 @@ class AssetsModel:
             for asset_id in asset_ids
         ]
 
-        result = dict(
-            elements=elements,
-            limit=limit,
-            offset=offset,
-        )
+        result = dict(elements=elements,
+                      limit=limit,
+                      offset=offset,
+                      total=len(assets_content["class_ids_index"][class_id]),)
 
         return result
 
@@ -109,7 +112,6 @@ class AssetsModel:
         """
         return structure like this:
         {
-            'class_ids_count': {3: 34},
             'elements': [{'asset_id':xxx, 'class_ids':[2,3]},],
             'limit': 3,
             'offset': 1,
@@ -122,12 +124,8 @@ class AssetsModel:
         elements = []
         for asset_id, asset_detail in zip(asset_ids, assets_detail):
             elements.append(dict(asset_id=asset_id, class_ids=yaml.safe_load(asset_detail)["class_ids"]))
-
-        result = dict(
-            elements=elements,
-            limit=limit,
-            offset=offset,
-        )
+        total = redis_cache.llen(f"{viz_settings.VIZ_ALL_INDEX_CLASSIDS}:{class_id}")
+        result = dict(elements=elements, limit=limit, offset=offset, total=total)
 
         return result
 

@@ -44,6 +44,7 @@ class Asset:
 @dataclass
 class Assets:
     items: List
+    total: int
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Assets":
@@ -53,7 +54,7 @@ class Assets:
             "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
         } for asset in res["elements"]]
 
-        return cls(assets)
+        return cls(items=assets, total=res["total"])
 
 
 @dataclass
@@ -75,7 +76,7 @@ class VizDataset():
     ignored_labels: Dict[str, int]
     negative_info: Dict[str, int]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.class_ids_count = {int(k): v for k, v in self.class_ids_count.items()}
 
     def to_app_dataset(self, user_labels: UserLabels) -> 'AppDataset':

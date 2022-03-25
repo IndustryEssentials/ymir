@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List
 import yaml
 
@@ -35,7 +36,11 @@ class RedisCache:
         return self._client.lrange(name, start, end)
 
     def exists(self, names: str) -> int:
-        return self._client.exists(names)
+        try:
+            return self._client.exists(names)
+        except Exception as e:
+            logging.exception(f"{e}")
+            return False
 
     def pipeline(self) -> Any:
         return self._client.pipeline(transaction=False)

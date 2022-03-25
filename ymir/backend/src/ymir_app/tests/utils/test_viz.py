@@ -59,6 +59,7 @@ class TestAssets:
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
                 }
             ],
+            "total": 124
         }
         AS = m.Assets.from_viz_res(res, mock_user_labels)
         assert len(AS.items) == len(res["elements"])
@@ -122,6 +123,7 @@ class TestVizClient:
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
                 }
             ],
+            "total": 124
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp

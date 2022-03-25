@@ -379,6 +379,7 @@ def get_assets_of_dataset(
     )
     result = {
         "items": assets.items,
+        "total": assets.total,
     }
     return {"result": result}
 
