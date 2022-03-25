@@ -36,6 +36,7 @@ class AssetOut(Common):
 
 class AssetPagination(BaseModel):
     items: List[Asset]
+    total: int
 
 
 class AssetPaginationOut(Common):
