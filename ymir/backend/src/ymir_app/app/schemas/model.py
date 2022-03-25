@@ -20,6 +20,7 @@ def get_model_url(model_hash: str) -> str:
 class ModelBase(BaseModel):
     hash: Optional[str]
     name: str
+    description: Optional[str]
     map: Optional[float] = Field(description="Mean Average Precision")
     result_state: ResultState = ResultState.processing
     model_group_id: int
@@ -31,10 +32,10 @@ class ModelBase(BaseModel):
 class ModelImport(BaseModel):
     project_id: int
     name: str = Field(description="Model Group Name")
+    description: Optional[str]
     input_model_path: Optional[str] = Field(description="from uploaded file url")
     input_model_id: Optional[int] = Field(description="from model of other user")
     import_type: Optional[TaskType]
-    description: Optional[str]
 
     @validator("import_type", pre=True, always=True)
     def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
@@ -53,6 +54,7 @@ class ModelCreate(ModelBase):
 
 class ModelUpdate(BaseModel):
     name: str
+    description: Optional[str]
 
 
 class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):
