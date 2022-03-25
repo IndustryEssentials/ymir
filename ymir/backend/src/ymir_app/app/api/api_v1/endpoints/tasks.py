@@ -195,11 +195,11 @@ class TaskResult:
 
     @property
     def dataset_info(self) -> Dict:
-        assets = self.viz.get_assets(user_labels=self.user_labels)
+        dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
         result = {
-            "keywords": list(assets.keywords.keys()),
-            "ignored_keywords": list(assets.ignored_keywords.keys()),
-            "asset_count": assets.total,
+            "keywords": list(dataset_info.keywords.keys()),
+            "ignored_keywords": list(dataset_info.ignored_keywords.keys()),
+            "asset_count": dataset_info.total,
         }
         return result
 

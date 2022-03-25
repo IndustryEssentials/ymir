@@ -148,11 +148,11 @@ class VizClient:
         res = self.parse_resp(resp)
         return asdict(Model.from_viz_res(res))
 
-    def get_dataset(self, user_labels: UserLabels) -> Dict:
+    def get_dataset(self, user_labels: UserLabels) -> 'Dataset':
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/datasets"  # noqa: E501
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
-        return asdict(Dataset.from_viz_res(res, user_labels))
+        return Dataset.from_viz_res(res, user_labels)
 
     def parse_resp(self, resp: requests.Response) -> Dict:
         """

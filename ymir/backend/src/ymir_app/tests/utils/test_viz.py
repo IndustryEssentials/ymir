@@ -128,13 +128,6 @@ class TestVizClient:
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
                 }
             ],
-            "class_ids_count": {},
-            "ignored_labels": {"cat": 1},
-            "negative_info": {
-                "negative_images_cnt": 2,
-                "project_negative_images_cnt": 3,
-            },
-            "total": random.randint(1000, 2000),
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -214,6 +207,40 @@ class TestVizClient:
         assert ret["map"] == res["model_mAP"]
         assert ret["task_parameters"] == res["task_parameters"]
         assert ret["executor_config"] == res["executor_config"]
+
+    def test_get_dataset(self, mocker):
+        host = random_lower_string()
+        viz = m.VizClient(host=host)
+        mock_session = mocker.Mock()
+        resp = mocker.Mock()
+        res = {
+            'class_ids_count': {
+                '3': 34
+            },
+            'ignored_labels': {
+                'cat': 5
+            },
+            'negative_info': {
+                'negative_images_cnt': 0,
+                'project_negative_images_cnt': 0
+            },
+            'total_images_cnt': 1
+        }
+        resp.json.return_value = {"result": res}
+        mock_session.get.return_value = resp
+        viz.session = mock_session
+
+        user_id = random.randint(100, 200)
+        project_id = random.randint(100, 200)
+        task_id = random_lower_string()
+        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
+        ret = viz.get_dataset()
+        assert isinstance(ret, dict)
+        assert ret["class_ids_count"] == res.class_ids_count
+        assert ret["map"] == res.ignored_labels
+        assert ret["negative_info"]["negative_images_cnt"] == res.negative_info["negative_images_cnt"]
+        assert ret["negative_info"]["project_negative_images_cnt"] == res.negative_info["project_negative_images_cnt"]
+        assert ret["total_images_cnt"] == res["total_images_cnt"]
 
     def test_close(self, mocker):
         host = random_lower_string()
