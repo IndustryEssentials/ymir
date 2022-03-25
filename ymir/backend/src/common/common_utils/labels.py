@@ -85,12 +85,11 @@ class UserLabels(LabelStorage):
         else:
             raise ValueError(f"unsupported type: {type(names_or_aliases)}")
 
-    def get_main_names(self, class_ids: Union[str, int, List[int]]) -> List[str]:
-        # TODO(chao): remove str type when fix viz return
-        if isinstance(class_ids, (str, int)):
-            return [self.id_to_name[int(class_ids)]]
+    def get_main_names(self, class_ids: Union[int, List[int]]) -> List[str]:
+        if isinstance(class_ids, int):
+            return [self.id_to_name[class_ids]]
         elif isinstance(class_ids, list):
-            return [self.id_to_name[int(class_id)] for class_id in class_ids]
+            return [self.id_to_name[class_id] for class_id in class_ids]
         else:
             raise ValueError(f"unsupported type: {type(class_ids)}")
 
