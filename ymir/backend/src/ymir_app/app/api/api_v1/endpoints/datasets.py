@@ -176,6 +176,7 @@ def import_dataset(
     dataset_in = schemas.DatasetCreate(
         name=f"{dataset_import.dataset_group_name}_initial",
         hash=task.hash,
+        description=dataset_import.description,
         dataset_group_id=dataset_group.id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,

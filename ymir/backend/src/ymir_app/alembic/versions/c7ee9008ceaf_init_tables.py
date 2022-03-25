@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: 22d1253a4aee
+Revision ID: c7ee9008ceaf
 Revises:
-Create Date: 2022-03-22 15:55:34.064782
+Create Date: 2022-03-25 11:34:41.215163
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "22d1253a4aee"
+revision = "c7ee9008ceaf"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,6 +23,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("hash", sa.String(length=100), nullable=False),
         sa.Column("name", sa.String(length=100), nullable=False),
+        sa.Column("description", sa.String(length=100), nullable=True),
         sa.Column("version_num", sa.Integer(), nullable=False),
         sa.Column("result_state", sa.SmallInteger(), nullable=False),
         sa.Column("dataset_group_id", sa.Integer(), nullable=False),
@@ -108,6 +109,7 @@ def upgrade() -> None:
     op.create_table(
         "iteration",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("description", sa.String(length=100), nullable=True),
         sa.Column("iteration_round", sa.Integer(), nullable=False),
         sa.Column("current_stage", sa.SmallInteger(), nullable=False),
         sa.Column("mining_input_dataset_id", sa.Integer(), nullable=True),
@@ -132,6 +134,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("hash", sa.String(length=100), nullable=True),
         sa.Column("name", sa.String(length=100), nullable=False),
+        sa.Column("description", sa.String(length=100), nullable=True),
         sa.Column("version_num", sa.Integer(), nullable=False),
         sa.Column("result_state", sa.SmallInteger(), nullable=False),
         sa.Column("model_group_id", sa.Integer(), nullable=False),

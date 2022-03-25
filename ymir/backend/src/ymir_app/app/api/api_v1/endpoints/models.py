@@ -127,6 +127,7 @@ def import_model(
     # 4. create model record
     model_in = schemas.ModelCreate(
         name=task.hash,
+        description=model_import.description,
         hash=None,
         result_state=ResultState.processing,
         model_group_id=model_group.id,
