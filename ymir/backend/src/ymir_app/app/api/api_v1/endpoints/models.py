@@ -89,7 +89,7 @@ def list_models(
 
 
 @router.post(
-    "/",
+    "/importing",
     response_model=schemas.ModelOut,
 )
 def import_model(
