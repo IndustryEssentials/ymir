@@ -48,8 +48,8 @@ export function transferProject(data: originProject) {
     type: data.training_type,
     targetMap: data.map_target,
     targetDataset: data.training_dataset_count_target,
-    targetIteration: data.iteration_target,
-    updateTime: data.update_datetime,
+    targetIteration: data.iteration_target || 0,
+    updateTime: format(data.update_datetime),
   }
   return project
 }

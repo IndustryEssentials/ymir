@@ -81,6 +81,7 @@ export default {
           type: "UPDATE_ALL_MODELS",
           payload: dss.items,
         })
+        return dss.items
       }
     },
     *batchModels({ payload }, { call, put }) {

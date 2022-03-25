@@ -6,8 +6,7 @@ import t from '@/utils/t'
 import { generateName } from '@/utils/string'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Tip from "@/components/form/tip"
-import ModelSelect from "@/components/form/modelSelect"
-import ProjectSelect from "@/components/form/projectSelect"
+import ProjectSelect from "@/components/form/projectModelSelect"
 import Uploader from '@/components/form/uploader'
 import s from './add.less'
 
@@ -22,14 +21,14 @@ const TYPES = Object.freeze({
 
 const Add = ({ importModel }) => {
   const types = [
-    { id: TYPES.COPY, label: t('model.add.types.share') },
+    { id: TYPES.COPY, label: t('model.add.types.copy') },
     { id: TYPES.LOCAL, label: t('model.add.types.local') },
   ]
 
   const history = useHistory()
   const { pid } = useParams()
   const [form] = useForm()
-  const [url, setUrl] = useState('/ymir-storage/472ee37fe649efa355c1d12152191f24.ymir')
+  const [url, setUrl] = useState('')
   const [currentType, setCurrentType] = useState(TYPES.LOCAL)
   const initialValues = {
     name: generateName('import_model'),
@@ -37,14 +36,21 @@ const Add = ({ importModel }) => {
 
   async function submit(values) {
     console.log('values:', values)
-    var params = {
+    const params = {
       ...values,
       projectId: pid,
-      url,
     }
+    if (url) {
+      params.url = url
+    }
+    if (values.modelId) {
+      params.modelId = values.modelId[values.modelId.length - 1]
+    }
+    console.log('params:', params)
     const result = await importModel(params)
     if (result) {
       message.success(t('model.add.success'))
+      history.push(`/home/project/detail/${pid}#model`)
     }
   }
 
@@ -83,12 +89,11 @@ const Add = ({ importModel }) => {
             </Tip>
             {isType(TYPES.COPY) ?
               <>
-                <Form.Item label={t('model.add.form.project')} name='project'>
-                  <ProjectSelect />
-                </Form.Item>
-                <Form.Item label={t('model.add.form.model')}>
-                  <ModelSelect />
-                </Form.Item>
+                <Tip hidden={true}>
+                  <Form.Item label={t('model.add.form.project')} name='modelId'>
+                    <ProjectSelect onChange={(value) => console.log('model change: ', value)} />
+                  </Form.Item>
+                </Tip>
               </>
               : null}
             {isType(TYPES.LOCAL) ?
@@ -104,7 +109,7 @@ const Add = ({ importModel }) => {
                 </Form.Item>
               </Tip> : null}
 
-            <Tip content={t('tip.project.add.desc')}>
+            <Tip hidden={true}>
               <Form.Item label={t('project.add.form.desc')} name='description'
                 rules={[
                   { max: 500 },

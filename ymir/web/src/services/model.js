@@ -85,7 +85,7 @@ export function delModelGroup(id) {
 
 /**
  * 
- * @param {object} param0 {
+ * @param {object} param {
  * {string} projectId
  * {string} name
  * {string} [url] 
@@ -98,7 +98,7 @@ export function importModel({ projectId, name, description, url, modelId, }) {
   return request.post('/models/importing', {
     project_id: projectId,
     input_model_path: url,
-    model_id: modelId,
+    input_model_id: modelId,
     description,
     name,
   })
