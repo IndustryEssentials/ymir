@@ -95,7 +95,7 @@ class TestDataset:
             'total_images_cnt': 1
         }
 
-        M = m.Dataset.from_viz_res(res, mock_user_labels)
+        M = m.AppDataset.from_viz_res(res, mock_user_labels)
         assert len(M.keywords) == len(res["class_ids_count"])
         assert M.ignored_keywords == res["ignored_labels"]
         assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
@@ -228,7 +228,7 @@ class TestVizClient:
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
         ret = viz.get_dataset(mock_user_labels)
-        assert isinstance(ret, m.Dataset)
+        assert isinstance(ret, m.AppDataset)
         assert len(ret.keywords) == len(res["class_ids_count"])
         assert ret.ignored_keywords == res["ignored_labels"]
         assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]

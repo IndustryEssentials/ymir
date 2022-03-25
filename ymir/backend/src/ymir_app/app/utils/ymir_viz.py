@@ -69,21 +69,36 @@ class Model:
 
 
 @dataclass
-class Dataset:
+class VizDataset():
+    total_images_cnt: int
+    class_ids_count: Dict[int, int]
+    ignored_labels: Dict[str, int]
+    negative_info: Dict[str, int]
+
+    def __post_init__(self):
+        self.class_ids_count = {int(k): v for k, v in self.class_ids_count.items()}
+
+    def to_app_dataset(self, user_labels: UserLabels) -> 'AppDataset':
+        keywords = {
+            user_labels.get_main_names(class_id)[0]: count
+            for class_id, count in self.class_ids_count.items()
+        }
+        return AppDataset(total=self.total_images_cnt,
+                          keywords=keywords,
+                          ignored_keywords=self.ignored_labels,
+                          negative_info=self.negative_info)
+
+
+@dataclass
+class AppDataset():
     total: int
     keywords: Dict[str, int]
     ignored_keywords: Dict[str, int]
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "Dataset":
-        keywords = {
-            user_labels.get_main_names(class_id)[0]: count
-            for class_id, count in res["class_ids_count"].items()
-        }
-        ignored_keywords = res["ignored_labels"]
-        negative_info = res["negative_info"]
-        return cls(res["total_images_cnt"], keywords, ignored_keywords, negative_info)
+    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "AppDataset":
+        return VizDataset(**res).to_app_dataset(user_labels)
 
 
 class VizClient:
@@ -145,11 +160,11 @@ class VizClient:
         res = self.parse_resp(resp)
         return asdict(Model.from_viz_res(res))
 
-    def get_dataset(self, user_labels: UserLabels) -> 'Dataset':
+    def get_dataset(self, user_labels: UserLabels) -> 'AppDataset':
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/datasets"  # noqa: E501
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
-        return Dataset.from_viz_res(res, user_labels)
+        return AppDataset.from_viz_res(res, user_labels)
 
     def parse_resp(self, resp: requests.Response) -> Dict:
         """
