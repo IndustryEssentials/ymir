@@ -171,7 +171,7 @@ class Task(TaskInternal):
 
     @root_validator
     def ensure_single_result(cls, values: Any) -> Any:
-        if values["result_model"] and values["result_dataset"]:
+        if values.get("result_model") and values.get("result_dataset"):
             raise ValueError("Invalid Task Result")
         return values
 
