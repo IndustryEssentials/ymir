@@ -83,7 +83,6 @@ class TestExodus(unittest.TestCase):
 
         mir_metadatas = mirpb.MirMetadatas()
         mir_annotations = mirpb.MirAnnotations()
-        mir_tasks = mirpb.MirTasks()
 
         dict_metadatas = {
             'attributes': {
@@ -97,19 +96,17 @@ class TestExodus(unittest.TestCase):
         }
         pb_format.ParseDict(dict_metadatas, mir_metadatas)
 
-        mir_tasks = mirpb.MirTasks()
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeMining,
-                                         task_id='mining-task-id',
-                                         message='mining')
-
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='mining-task-id',
-                                       no_space_message="branch_a_for_test_exodus")
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+        }
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
+                                           task_id='mining-task-id',
+                                           message='branch_a_for_test_exodus')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas=mir_datas,
+                                                      task=task)
 
         test_utils.mir_repo_checkout(self._mir_root, "master")
