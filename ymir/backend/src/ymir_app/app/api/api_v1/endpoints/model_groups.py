@@ -37,6 +37,7 @@ def list_model_groups(
     model_groups, total = crud.model_group.get_multi_model_groups(
         db,
         user_id=current_user.id,
+        project_id=project_id,
         name=name,
         offset=offset,
         limit=limit,
