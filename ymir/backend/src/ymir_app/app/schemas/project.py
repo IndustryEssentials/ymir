@@ -12,6 +12,8 @@ from app.schemas.common import (
 )
 
 from app.schemas.iteration import IterationInDBBase
+from app.schemas.dataset import DatasetInDBBase
+from app.schemas.dataset_group import DatasetGroupInDBBase
 
 
 class ProjectBase(BaseModel):
@@ -58,6 +60,9 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     testing_dataset_id: Optional[int]
     initial_model_id: Optional[int]
     current_iteration: Optional[IterationInDBBase]
+    training_dataset_group: Optional[DatasetGroupInDBBase]
+    testing_dataset: Optional[DatasetInDBBase]
+    mining_dataset: Optional[DatasetInDBBase]
 
     class Config:
         orm_mode = True
