@@ -73,16 +73,15 @@ class CmdSampling(base.BaseCommand):
             sampled_mir_annotations = mirpb.MirAnnotations()
             sampled_mir_annotations.head_task_id = dst_typ_rev_tid.tid
             sampled_mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(
-                mir_annotations.task_annotations[mir_annotations.head_task_id]
-            )
+                mir_annotations.task_annotations[mir_annotations.head_task_id])
 
         # mir_tasks
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
-        mir_tasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeSampling,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         message=message)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeSampling,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=message,
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         logging.info(f"sampling done, assets count: {sampled_assets_count}")
 
@@ -90,14 +89,12 @@ class CmdSampling(base.BaseCommand):
         sampled_mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: sampled_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: sampled_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas=sampled_mir_datas,
-                                                      commit_message=message)
+                                                      task=task)
 
         return MirCode.RC_OK
 

@@ -9,7 +9,7 @@ from google.protobuf.json_format import ParseDict
 import yaml
 
 from mir.commands.mining import CmdMining
-from mir.tools import settings as mir_settings, utils as mir_utils
+from mir.tools import mir_storage_ops, settings as mir_settings, utils as mir_utils
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
 
@@ -126,27 +126,17 @@ class TestMiningCmd(unittest.TestCase):
         }
         ParseDict(dict_metadatas, mir_metadatas)
 
-        dict_tasks = {
-            'tasks': {
-                '5928508c-1bc0-43dc-a094-0352079e39b5': {
-                    'type': 'TaskTypeMining',
-                    'name': 'mining',
-                    'task_id': 'mining-task-id',
-                    'timestamp': '1624376173'
-                }
-            },
-            'head_task_id': '5928508c-1bc0-43dc-a094-0352079e39b5',
-        }
-        ParseDict(dict_tasks, mir_tasks)
-
-        test_utils.mir_repo_commit_all(mir_root=self._mir_repo_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
-                                       no_space_message="prepare_branch_mining")
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
+                                           task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
+                                           message='prepare_branch_mining')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_repo_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                                      },
+                                                      task=task)
 
     # public: test cases
     @mock.patch("mir.commands.infer.CmdInfer.run_with_args", side_effect=_mock_run_func)
