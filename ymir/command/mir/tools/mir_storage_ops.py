@@ -52,6 +52,7 @@ class MirStorageOps():
                 m_f.write(mir_data.SerializeToString())
 
     @classmethod
+    # public: presave actions
     def __build_annotations_head_task_id(cls, mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
         task_annotations_count = len(mir_annotations.task_annotations)
         if task_annotations_count == 0:
