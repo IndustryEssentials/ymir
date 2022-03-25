@@ -4,7 +4,7 @@ import {
   batchModels,
   getModel,
   delModel,
-  createModel,
+  importModel,
   updateModel,
   verify,
 } from "../model"
@@ -49,12 +49,12 @@ describe("service: models", () => {
     const expected = { id, name }
     requestExample(updateModel, [id, name], expected)
   })
-  it("createModel -> success", () => {
+  it("importModel -> success", () => {
     const params = {
       name: 'newmodel',
     }
     const expected = "ok"
-    requestExample(createModel, params, expected, 'post')
+    requestExample(importModel, params, expected, 'post')
   })
   it("veirfy -> success", () => {
     const params = { model_id: 754, image_urls: ['/path/to/image'], image: 'dockerimage:latest' }
