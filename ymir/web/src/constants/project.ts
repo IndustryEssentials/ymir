@@ -1,4 +1,6 @@
-import { Project, originProject, originIteration, Iteration, } from "@/interface/project"
+import { Project, Iteration, } from "@/interface/project"
+import { backendData } from "@/interface/common"
+import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 
 export enum Stages {
@@ -30,19 +32,19 @@ export function getIterationVersion(version: number) {
   return `V${version}`
 }
 
-export function transferProject(data: originProject) {
-  const project: Project = {
+export function transferProject(data: backendData) {
+  const project : Project = {
     id: data.id,
     name: data.name,
     keywords: data.training_keywords,
-    trainSet: data.train_set,
-    testSet: data.test_set,
-    miningSet: data.mining_set,
+    trainSet: data.training_dataset_group ? transferDatasetGroup(data.training_dataset_group) : undefined,
+    testSet: data.testing_dataset ? transferDataset(data.testing_dataset) : undefined,
+    miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
     setCount: data.dataset_count,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
-    currentIteration: data.current_iteration_id || 0,
+    currentIteration: data.current_iteration ? transferIteration(data.current_iteration) : undefined,
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,
@@ -54,40 +56,22 @@ export function transferProject(data: originProject) {
   return project
 }
 
-type mapObject = {
-  name: string,
-  origin: string,
-  def?: any,
-}
-interface dataObject {
-  [key: string]: any,
-}
-
-export function transferIteration(data: dataObject) {
+export function transferIteration(data: backendData): Iteration | undefined {
   if (!data) {
-    return {}
+    return
   }
-  const maps = [
-    { name: 'id', origin: 'id', def: 0 },
-    { name: 'name', origin: 'name', def: '' },
-    { name: 'round', origin: 'iteration_round', def: 0 },
-    { name: 'current', origin: 'current_stage', def: 0 },
-    { name: 'miningSet', origin: 'mining_input_dataset_id', def: 0 },
-    { name: 'miningResult', origin: 'mining_output_dataset_id', def: 0 },
-    { name: 'labelSet', origin: 'label_output_dataset_id', def: 0 },
-    { name: 'trainUpdateSet', origin: 'training_input_dataset_id', def: 0 },
-    { name: 'model', origin: 'training_output_model_id', def: 0 },
-    { name: 'trainSet', origin: 'previous_training_dataset_id', def: 0 },
-  ]
-  return transferData(maps, data)
-}
-export function transferData(maps: Array<mapObject>, data: dataObject) {
-  return maps.reduce((prev, curr, index) => {
-    return {
-      ...prev,
-      [curr.name]: data[curr.origin] || curr.def,
-    }
-  }, {})
+  return {
+    id: data.id,
+    name: data.name,
+    round: data.iteration_round || 0,
+    currentStage: data.current_stage || 0,
+    miningSet: data.mining_input_dataset_id,
+    miningResult: data.mining_output_dataset_id,
+    labelSet: data.label_output_dataset_id,
+    trainUpdateSet: data.training_input_dataset_id,
+    model: data.training_output_model_id,
+    trainSet: data.previous_training_dataset_id,
+  }
 }
 
 function singleList(arr: Array<stageObject>) {

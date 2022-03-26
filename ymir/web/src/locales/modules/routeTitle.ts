@@ -19,6 +19,7 @@ const routeTitle = {
   "task.fusion.title": { cn: `${SysName}-数据融合`, en: `${SysName} - Data Fusion`, },
   "task.train.title": { cn: `${SysName}-新建训练任务`, en: `${SysName} - Create Training Task`, },
   "task.mining.title": { cn: `${SysName}-新建挖掘任务`, en: `${SysName} - Create Mining Task`, },
+  "task.inference.title": { cn: `${SysName}-新建推理任务`, en: `${SysName} - Create Inferential Task`, },
   "task.label.title": { cn: `${SysName}-新建标注任务`, en: `${SysName} - Create Label Task`, },
   "history.title": { cn: `${SysName}-历史树`, en: `${SysName} - History Tree`, },
   "keywords.title": { cn: `${SysName}-标签管理`, en: `${SysName} - Keywords`, },

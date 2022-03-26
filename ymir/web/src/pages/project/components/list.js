@@ -115,7 +115,7 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
           <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item?.currentIteration}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item?.currentInteration?.currentStage}</span></span>
         </Space>
       </Col>
       <Col>{more(item)}</Col>
@@ -132,11 +132,11 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
         </Col>
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>{t('project.train_set')}/{t('project.test_set')}/{t('project.mining_set')}</div>
-          <div className={s.sets}>{item.trainSet}/{item.testSet}/{item.miningSet}</div>
+          <div className={s.sets}>{item.trainSet?.name}/{item.testSet?.name}/{item.miningSet?.name}</div>
         </Col>
         <Col span={6} className={s.stats}>
           <div className={s.contentLabel}>{t('project.iteration.number')}</div>
-          <div className={s.contentContent}>{item?.currentIteration}</div>
+          <div className={s.contentContent}>{item?.currentIteration?.iterationRound}/{item?.targetIteration}</div>
         </Col>
       </Row>
       <Row>
