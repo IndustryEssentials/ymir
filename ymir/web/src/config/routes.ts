@@ -156,6 +156,12 @@ export const homeRoutes = [
     component: "@/pages/project/interation",
     title: "project.interation.title",
   },
+  {
+    path: "/home/project/initModel/:id",
+    name: "initModel",
+    component: "@/pages/interation/initModel",
+    title: "project.interation.initmodel",
+  },
 ]
 const Routes = [
   {
