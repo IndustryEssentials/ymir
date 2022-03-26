@@ -32,7 +32,7 @@ const getCrumbs = () => [
   { path: '/home/project/detail/:id', label: t('breadcrumbs.project'), pid: 27, id: 28 },
   { path: '/home/project/add/:id?', label: t('breadcrumbs.project.add'), pid: 28, id: 29 },
   { path: '/home/project/interation/:id', label: t('breadcrumbs.project.interation'), pid: 28, id: 30 },
-  { path: '/home/project/initModel/:id', label: t('breadcrumbs.project.interation'), pid: 28, id: 31 },
+  { path: '/home/project/initModel/:id', label: t('breadcrumbs.project.initmodel'), pid: 28, id: 31 },
 ]
 
 function getCrumbItems(path, crumbs) {

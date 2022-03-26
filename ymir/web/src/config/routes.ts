@@ -159,15 +159,16 @@ export const homeRoutes = [
   {
     path: "/home/project/initModel/:id",
     name: "initModel",
-    component: "@/pages/interation/initModel",
-    title: "project.interation.initmodel",
+    component: "@/pages/iteration/initModel",
+    title: "project.iteration.initmodel",
   },
 ]
+
 const Routes = [
   {
     path: "/home",
     component: "@/layouts/index",
-    routes: homeRoutes.map(({ path, name, component, title = '' }) => ({ path, name, component, title })),
+    routes: homeRoutes,
   },
   {
     path: "/",
