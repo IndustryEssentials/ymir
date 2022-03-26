@@ -1,5 +1,5 @@
-
-type Dataset = number
+import { DatasetGroup, Dataset } from "@/interface/dataset"
+type DatasetId = number
 export interface Project {
   id: number,
   name: string,
@@ -8,14 +8,14 @@ export interface Project {
   targetMap: number,
   targetDataset: number,
   targetInteration: number,
-  trainSet: Dataset,
-  testSet: Dataset,
-  miningSet: Dataset,
+  trainSet?: DatasetGroup,
+  testSet?: Dataset,
+  miningSet?: Dataset,
   setCount: number,
   modelCount: number,
   miningStrategy: number,
   chunkSize?: number,
-  currentInteration?: number,
+  currentInteration?: Interation,
   createTime: string,
   updateTime: string,
   description?: string,
@@ -26,11 +26,13 @@ export interface Interation {
   name: string,
   version: number,
   currentStep: number,
-  trainSet?: Dataset,
-  trainUpdateSet: Dataset,
-  miningSet?: Dataset,
-  miningResult?: Dataset,
-  labelSet?: Dataset,
+  currentStage: number,
+  iterationRound: number,
+  trainSet?: DatasetId,
+  trainUpdateSet: DatasetId,
+  miningSet?: DatasetId,
+  miningResult?: DatasetId,
+  labelSet?: DatasetId,
   model?: number,
 }
 export interface originInteration {
@@ -38,11 +40,13 @@ export interface originInteration {
   name: string,
   version: number,
   current_step: number,
-  train_set: Dataset,
-  train_update_result: Dataset,
-  mining_set?: Dataset,
-  mining_result?: Dataset,
-  label_set?: Dataset,
+  current_stage: number,
+  iteration_round: number,
+  train_set: DatasetId,
+  train_update_result: DatasetId,
+  mining_set?: DatasetId,
+  mining_result?: DatasetId,
+  label_set?: DatasetId,
   model?: number,
 }
 

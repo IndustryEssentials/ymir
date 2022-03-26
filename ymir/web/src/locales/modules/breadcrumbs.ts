@@ -8,6 +8,7 @@ const breadcrumbs = {
   'breadcrumbs.task.training': { cn: '新建训练任务', en: 'New Training Task', },
   'breadcrumbs.task.label': { cn: '新建标注任务', en: 'New Label Task', },
   'breadcrumbs.task.mining': { cn: '新建挖掘任务', en: 'New Mining Task', },
+  'breadcrumbs.task.inference': { cn: '新建推理任务', en: 'New Inferential Task', },
   'breadcrumbs.task': { cn: '任务详情', en: 'Task Detail', },
   'breadcrumbs.datasets.search': { cn: '数据集搜索', en: 'Dataset Search', },
   'breadcrumbs.datasets.copy': { cn: '数据集复制', en: 'Dataset Copy', },

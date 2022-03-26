@@ -1,4 +1,6 @@
 import { Project, originProject, originInteration, Interation, } from "@/interface/project"
+import { backendData } from "@/interface/common"
+import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 
 export enum Steps {
@@ -14,19 +16,19 @@ export function getInterationVersion (version: number) {
   return `V${version}`
 }
 
-export function transferProject(data: originProject) {
+export function transferProject(data: backendData) {
   const project : Project = {
     id: data.id,
     name: data.name,
     keywords: data.training_keywords,
-    trainSet: data.train_set,
-    testSet: data.test_set,
-    miningSet: data.mining_set,
+    trainSet: data.training_dataset_group ? transferDatasetGroup(data.training_dataset_group) : undefined,
+    testSet: data.testing_dataset ? transferDataset(data.testing_dataset) : undefined,
+    miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
     setCount: data.dataset_count,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
-    currentInteration: data.current_iteration_id,
+    currentInteration: data.current_iteration ? transferInteration(data.current_iteration) : undefined,
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,
@@ -47,6 +49,8 @@ export function transferInteration (data: originInteration | undefined) {
     name: data.name,
     version: data.version,
     currentStep: data.current_step,
+    currentStage: data.current_stage,
+    iterationRound: data.iteration_round,
     trainSet: data.train_set,
     trainUpdateSet: data.train_update_result,
     miningResult: data.mining_result,
