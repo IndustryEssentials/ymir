@@ -18,7 +18,7 @@ const model = {
   "model.action.verify": { en: "Verify", cn: "验证", },
   "model.action.detail": { en: "Detail", cn: "详情", },
   "model.empty.label": { en: "Train A Model", cn: "训练出一个模型", },
-  "model.empty.btn.label": { en: "Train", cn: '去训练', },
+  "model.empty.btn.label": { en: "Import Model", cn: '导入模型', },
   "model.import.label": { en: "Import Model", cn: "导入模型", },
   "model.query.name": { en: "Model Name", cn: "模型名称", },
   "model.query.source": { en: "Source", cn: "数据来源", },
