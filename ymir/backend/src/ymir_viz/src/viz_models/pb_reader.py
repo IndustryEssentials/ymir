@@ -46,7 +46,6 @@ class MirStorageLoader:
                 mir_branch=self.branch_id,
                 mir_task_id=self.task_id,
             )
-        #
         except ValueError as e:
             app_logger.logger.error(e)
             raise exceptions.BranchNotExists(f"dataset {self.branch_id} not exist from ymir command")

@@ -40,7 +40,6 @@ class AssetsModel:
         key_asset_detail: str,
         key_asset_index: str,
         key_cache_status: str,
-        # key_asset_attribute: str,
     ) -> None:
         """
         set cache to Redis
