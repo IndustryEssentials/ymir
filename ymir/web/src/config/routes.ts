@@ -74,6 +74,12 @@ export const homeRoutes = [
     title: "model.title",
   },
   {
+    path: "/home/model/import/:pid",
+    name: "modelImport",
+    component: "@/pages/model/add",
+    title: "model.title",
+  },
+  {
     path: "/home/history/:type/:id",
     name: "history",
     component: "@/pages/history/index",
@@ -151,10 +157,10 @@ export const homeRoutes = [
     title: "project.add.title",
   },
   {
-    path: "/home/project/interation/:pid",
-    name: "projectInteration",
-    component: "@/pages/project/interation",
-    title: "project.interation.title",
+    path: "/home/project/iterations/:id",
+    name: "projectIteration",
+    component: "@/pages/project/iterations",
+    title: "project.iterations.title",
   },
   {
     path: "/home/project/initModel/:id",

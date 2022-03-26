@@ -15,6 +15,7 @@ const breadcrumbs = {
   'breadcrumbs.dataset': { cn: '数据集详情', en: 'Dataset Detail', },
   'breadcrumbs.dataset.add': { cn: '导入数据集', en: 'Dataset Import', },
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
+  'breadcrumbs.model.add': { cn: '导入模型', en: 'Model Import', },
   'breadcrumbs.models.search': { cn: '模型搜索', en: 'Model Search', },
   'breadcrumbs.model': { cn: '模型详情', en: 'Model Detail', },
   'breadcrumbs.model.verify': { cn: '模型验证', en: 'Model Verification', },
@@ -27,7 +28,7 @@ const breadcrumbs = {
   'breadcrumbs.projects': { cn: '项目管理', en: 'Project', },
   'breadcrumbs.project': { cn: '项目详情', en: 'Detail', },
   'breadcrumbs.project.add': { cn: '项目设置', en: 'Settings', },
-  'breadcrumbs.project.interation': { cn: '项目迭代', en: 'Interation', },
+  'breadcrumbs.project.iterations': { cn: '项目迭代', en: 'Iterations', },
 }
 
 export default breadcrumbs

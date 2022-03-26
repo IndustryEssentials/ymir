@@ -31,7 +31,7 @@ const initQuery = {
   limit: 20,
 }
 
-function Keyword({ getModels, delModel, updateModel }) {
+function Iterations({ getModels, delModel, updateModel }) {
   const { keyword } = useParams()
   const history = useHistory()
   const [models, setModels] = useState([])
@@ -274,27 +274,6 @@ function Keyword({ getModels, delModel, updateModel }) {
     }
   }
 
-  const resetQuery = () => {
-    setQuery(initQuery)
-    form.resetFields()
-  }
-
-  const moreActions = (record) => {
-    return (
-      <Menu>
-        {moreActionsList(record).map((action) => (
-          <Menu.Item
-            className={action.className}
-            key={action.key}
-            onClick={action.onclick}
-          >
-            {action.label}
-          </Menu.Item>
-        ))}
-      </Menu>
-    )
-  }
-
   return (
     <div className={styles.model}>
       <Breadcrumbs />
@@ -385,25 +364,7 @@ const props = (state) => {
 
 const actions = (dispatch) => {
   return {
-    getModels: (payload) => {
-      return dispatch({
-        type: 'model/getModelGroups',
-        payload,
-      })
-    },
-    delModel: (payload) => {
-      return dispatch({
-        type: 'model/delModel',
-        payload,
-      })
-    },
-    updateModel: (id, name) => {
-      return dispatch({
-        type: 'model/updateModel',
-        payload: { id, name },
-      })
-    },
   }
 }
 
-export default connect(props, actions)(Keyword)
+export default connect(props, actions)(Iterations)

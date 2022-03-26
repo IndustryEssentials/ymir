@@ -10,10 +10,6 @@ export function getProject(id) {
   return request.get(`projects/${id}`)
 }
 
-export function getInterations(id) {
-  return request.get(`projects/${id}/interations`)
-}
-
 /**
  * @param {*} params
  * { name, offset = 0, limit = 10 }
@@ -51,18 +47,18 @@ export function delProject(id) {
 export function createProject({
   name,
   description,
-  target_iteration,
-  target_map,
-  target_dataset,
+  targetIteration,
+  targetMap,
+  targetDataset,
   keywords,
 }) {
   return request.post("/projects/", {
     name,
     description,
     training_type: 1,
-    iteration_target: target_iteration,
-    map_target: target_map,
-    training_dataset_count_target: target_dataset,
+    iteration_target: targetIteration,
+    map_target: targetMap,
+    training_dataset_count_target: targetDataset,
     training_keywords: keywords,
   })
 }
@@ -72,20 +68,46 @@ export function createProject({
  * @param {number} id 
  * @param {object} params 
  * {
- * {string}    description
- * {number}    iteration_target
- * {array<string>}    keywords
- * {number}    map_target
- * {string}    name
- * {number}    training_dataset_count_target
- * {number}    type
+ * {string} name
+ * {number} iteration_target
+ * {number} map_target
+ * {number} training_dataset_count_target
+ * {number} mining_strategy
+ * {number} chunk_size
+ * {number} training_dataset_group_id
+ * {number} mining_dataset_id
+ * {number} testing_dataset_id
+ * {string} description
+ * {number} initial_model_id
  * }
  * @returns 
  */
-export function updateProject(id, params) {
+export function updateProject(id, {
+  name,
+  targetIteration,
+  targetMap,
+  targetDataset,
+  strategy,
+  chunkSize,
+  description,
+  miningSet,
+  testSet,
+  model,
+}) {
   return request({
     method: "patch",
     url: `/projects/${id}`,
-    data: params,
+    data: {
+      name,
+      iteration_target: targetIteration,
+      map_target: targetMap,
+      training_dataset_count_target: targetDataset,
+      mining_strategy: strategy,
+      chunk_size: chunkSize,
+      mining_dataset_id: miningSet,
+      testing_dataset_id: testSet,
+      description,
+      initial_model_id: model,
+    },
   })
 }
