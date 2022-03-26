@@ -3,6 +3,7 @@ import { Row, Col } from "antd"
 import { connect } from "dva"
 
 import { Stages, StageList } from '@/constants/project'
+import { templateString } from '@/utils/string'
 import Stage from './stage'
 import s from "./iteration.less"
 
