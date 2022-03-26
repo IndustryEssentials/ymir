@@ -17,7 +17,7 @@ import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
 
 import {
-  ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, SearchIcon,
+  ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
   TipsIcon, EditIcon, DeleteIcon, TreeIcon, CopyIcon
 } from "@/components/common/icons"
 import { humanize } from "@/utils/number"
@@ -159,6 +159,12 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
         label: t("dataset.action.mining"),
         onclick: () => history.push(`/home/task/mining/${id}`),
         icon: <VectorIcon />,
+      },
+      {
+        key: "inference",
+        label: t("dataset.action.inference"),
+        onclick: () => history.push(`/home/task/inference/${id}`),
+        icon: <WajueIcon />,
       },
       {
         key: "label",

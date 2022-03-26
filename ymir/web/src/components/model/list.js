@@ -14,7 +14,7 @@ import { percent } from '@/utils/number'
 import { getTimes, getModelImportTypes } from '@/constants/query'
 import RenderProgress from "@/components/common/progress"
 import EditBox from "@/components/form/editBox"
-import { ShieldIcon, VectorIcon, TipsIcon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon } from "@/components/common/icons"
+import { ShieldIcon, VectorIcon, TipsIcon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon } from "@/components/common/icons"
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
 import Del from "./del"
@@ -177,6 +177,12 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
         label: t("dataset.action.train"),
         onclick: () => history.push(`/home/task/train?mid=${id}`),
         icon: <TrainIcon />,
+      },
+      {
+        key: "inference",
+        label: t("dataset.action.inference"),
+        onclick: () => history.push(`/home/task/inference/?mid=${id}&pjid=${pid}`),
+        icon: <WajueIcon />,
       },
       
     ]
