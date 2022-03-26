@@ -29,6 +29,7 @@ const breadcrumbs = {
   'breadcrumbs.project': { cn: '项目详情', en: 'Detail', },
   'breadcrumbs.project.add': { cn: '项目设置', en: 'Settings', },
   'breadcrumbs.project.iterations': { cn: '项目迭代', en: 'Iterations', },
+  'breadcrumbs.project.initmodel': { cn: '初始模型准备', en: 'Initial Model Setting', },
 }
 
 export default breadcrumbs

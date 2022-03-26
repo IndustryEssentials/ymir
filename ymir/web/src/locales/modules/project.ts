@@ -66,6 +66,7 @@ const project = {
   'project.mining.strategy.unique': { en: 'Dedup Mining', cn: '去重挖掘（在迭代中会将之前迭代的挖掘数据排除出去）', },
   'project.mining.strategy.custom': { en: 'Customer Mining', cn: '自定义挖掘（在迭代中不对挖掘数据进行额外处理）', },
   'project.detail.info.iteration': { en: 'iterations: {current}/{target}', cn: '您当前处于项目迭代的{current}/{target}次迭代', },
+  'project.iteration.initmodel': { en: 'Initial Model Setting', cn: '初始模型设置', },
 }
 
 export default project

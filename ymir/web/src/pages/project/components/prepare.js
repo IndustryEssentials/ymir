@@ -17,7 +17,7 @@ function Prepare({ project = {}, fresh = () => {}, ...func }) {
   function initStages() {
     const labels = [
       { value: 'datasets', url: `/home/project/add/${project.id}?settings=1`, },
-      { value: 'model', url: '/home/project/modelSettings', },
+      { value: 'model', url: `/home/project/initmodel/${project.id}`, },
       { value: 'start', callback: () => fresh() },
     ]
     const ss = labels.map(({ value, url, callback }, index) => {

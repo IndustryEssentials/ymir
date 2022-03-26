@@ -10,44 +10,33 @@ import s from './add.less'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Tip from "@/components/form/tip"
 
-const { Option } = Select
 const { useForm } = Form
-
-const TYPES = Object.freeze({
-  INTERNAL: 1,
-  SHARE: 2,
-  NET: 3,
-  LOCAL: 4,
-  PATH: 5,
-})
-
 
 const InitModel = (props) => {
   const history = useHistory()
   const pageParams = useParams()
-  const pid = Number(pageParams.pid)
+  const id = Number(pageParams.id)
 
   const [form] = useForm()
 
   async function submit(values) {
 
-    const result = await props.createDataset(params)
+    const params = {
+      ...values,
+      id,
+    }
+    console.log('params:', params)
+    const result = await props.updateProject(params)
     if (result) {
       message.success(t('dataset.add.success.msg'))
-      props.clearCache()
-      history.push(`/home/project/detail/${pid}`)
+      history.push(`/home/project/detail/${id}`)
     }
   }
-
-  function onFinishFailed(err) {
-    console.log('finish failed: ', err)
-  }
-
 
   return (
     <div className={s.wrapper}>
       <Breadcrumbs />
-      <Card className={s.container} title={t('breadcrumbs.dataset.add')}>
+      <Card className={s.container} title={t('project.iteration.initmodel')}>
         <div className={s.formContainer}>
           <Form
             name='datasetImportForm'
@@ -58,7 +47,7 @@ const InitModel = (props) => {
             labelAlign={'left'}
             colon={false}
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateModel id={id} />}>
               <Tip content={t('tip.task.filter.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
@@ -67,7 +56,7 @@ const InitModel = (props) => {
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
                 >
-                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={pid} />
+                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={id} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -76,7 +65,7 @@ const InitModel = (props) => {
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
                     <Button type="primary" size="large" htmlType="submit">
-                      {t('task.create')}
+                      {t('common.confirm')}
                     </Button>
                   </Form.Item>
                   <Form.Item name='backBtn' noStyle>
@@ -97,24 +86,9 @@ const InitModel = (props) => {
 
 const actions = (dispatch) => {
   return {
-    getInternalDataset: (payload) => {
+    updateProject: (payload) => {
       return dispatch({
-        type: 'dataset/getInternalDataset',
-        payload,
-      })
-    },
-    createDataset: (payload) => {
-      return dispatch({
-        type: 'dataset/createDataset',
-        payload,
-      })
-    },
-    clearCache() {
-      return dispatch({ type: "dataset/clearCache", })
-    },
-    updateKeywords: (payload) => {
-      return dispatch({
-        type: 'keyword/updateKeywords',
+        type: 'project/updateProject',
         payload,
       })
     },
