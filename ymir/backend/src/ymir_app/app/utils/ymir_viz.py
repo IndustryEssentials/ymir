@@ -71,6 +71,10 @@ class Model:
 
 @dataclass
 class VizDataset():
+    """
+    Interface dataclass of VIZ output, defined as DatasetResult in doc:
+    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir-viz/doc/ymir_viz_API.yaml
+    """
     total_images_cnt: int
     class_ids_count: Dict[int, int]
     ignored_labels: Dict[str, int]
