@@ -47,14 +47,15 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   function rerenderStages(iteration) {
     const ss = stages.map(stage => {
       const prepareId = iteration[stage.prepare]
-      const result = iteration[stage.resultKey]
+      const result = iteration[stage.resultKey] || {}
+      const url = templateString(stage.url, { ...stage, id: prepareId })
       return {
         ...stage,
         iterationId: iteration.id,
         round: iteration.round,
-        current: iteration.current,
-        url: `${stage.url}${prepareId}?iterationId=${iteration.id}&stage=${stage.value}`,
-        state: result.state,
+        current: iteration.currentStage,
+        url: `${url}?iterationId=${iteration.id}&stage=${stage.value}`,
+        state: result.state || -1,
         result,
       }
     })
@@ -62,7 +63,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   }
 
   async function fetchIteration() {
-    const result = await func.getIteration(project.id, project.currentIteration)
+    const result = await func.getIteration(project.id, project.round)
     if (result) {
       setIteration(result)
     }

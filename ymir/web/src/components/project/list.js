@@ -12,7 +12,7 @@ export const Lists = ({ projects=[], more=''}) => {
           <span className={s.name}>{item.name}</span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}%</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item?.currentIteration?.currentStage}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item.currentStage}</span></span>
         </Space>
       </Col>
       <Col>{more}</Col>
@@ -44,7 +44,7 @@ export const Lists = ({ projects=[], more=''}) => {
         </Col>
         <Col span={5} className={s.stats}>
           <div className={s.contentLabel}>{t('project.iteration.number')}</div>
-          <div className={s.contentContent}><span className={s.currentIteration}>{item?.currentIteration?.iterationRound}</span>/{item?.targetIteration}</div>
+          <div className={s.contentContent}><span className={s.currentIteration}>{item.round}</span>/{item?.targetIteration}</div>
         </Col>
       </Row>
       <Row>

@@ -16,6 +16,8 @@ export interface Project {
   miningStrategy: number,
   chunkSize?: number,
   currentIteration?: Iteration,
+  round: number,
+  currentStage: number,
   createTime: string,
   updateTime: string,
   description?: string,

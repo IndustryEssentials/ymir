@@ -35,8 +35,10 @@ function Prepare({ project = {}, fresh = () => {}, ...func }) {
         callback,
       }
       if (index === labels.length - 1) {
-        stage.state = project.currentIteration > 0 ? states.READY : states.INVALID
+        const prepared = project.miningSet && project.testSet && project.trainSet
+        stage.state = prepared ?  -1 : states.READY
         stage.react = ''
+        console.log('project:', project, prepared, stage)
       }
       return stage
     })
@@ -48,7 +50,7 @@ function Prepare({ project = {}, fresh = () => {}, ...func }) {
       <Row style={{ justifyContent: 'flex-end' }}>
         {stages.map((stage, index) => (
           <Col key={stage.value} flex={index >= stages.length - 1? null : 1}>
-            <Stage stage={stage} end={index >= stages.length - 1} callback={stage.callback} />
+            <Stage pid={project.id} stage={stage} end={index >= stages.length - 1} callback={stage.callback} />
           </Col>
         ))}
       </Row>
