@@ -237,6 +237,45 @@ export function createMiningTask({
   })
 }
 
+/**
+ * create inference task
+ * @param {object} task {
+ * {string} name
+ * {number} projectId
+ * {number} datasetId
+ * {object} config
+ * {number} model
+ * {string} image
+ * {string} imageId
+ * {string} description
+ * } 
+ * @returns 
+ */
+export function createInferenceTask({
+  name,
+  projectId,
+  datasetId,
+  model,
+  config,
+  image,
+  imageId,
+  description,
+}) {
+  return createTask({
+    name,
+    type: TASKTYPES.INFERENCE,
+    project_id: projectId,
+    description,
+    config,
+    parameters: {
+      model_id: model,
+      dataset_id: datasetId,
+      docker_image: image,
+      docker_image_id: imageId,
+    }
+  })
+}
+
 export function createTask(params) {
   return request.post("/tasks/", params)
 }

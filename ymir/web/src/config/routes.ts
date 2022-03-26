@@ -32,6 +32,12 @@ export const homeRoutes = [
     title: 'task.train.title',
   },
   {
+    path: "/home/task/inference/:id?",
+    name: "taskInference",
+    component: "@/pages/task/inference/index",
+    title: 'task.inference.title',
+  },
+  {
     path: "/home/task/label/:id",
     name: "taskTrain",
     component: "@/pages/task/label/index",
