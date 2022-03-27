@@ -1,5 +1,5 @@
 from operator import attrgetter
-from typing import Union, Dict, Any
+from typing import Dict, Any
 
 from sqlalchemy.orm import Session
 
@@ -11,17 +11,14 @@ from common_utils.labels import UserLabels
 
 class IterationConversion:
     # TODO(chao): add tmi task other parameter here
-    def __init__(
-        self,
-        db: Session,
-        user_labels: UserLabels,
-        parameter: schemas.RequestParameterBase
-    ):
+    def __init__(self, db: Session, user_labels: UserLabels, parameter: schemas.RequestParameterBase):
         self.db = db
         self.parameter = parameter
         self.user_labels = user_labels
 
-    def convert_iteration_fusion_parameter(self, parameter: schemas.DatasetsFusionParameter) -> schemas.DatasetsFusionParameter:
+    def convert_iteration_fusion_parameter(
+        self, parameter: schemas.DatasetsFusionParameter
+    ) -> schemas.DatasetsFusionParameter:
         if parameter.iteration_context and parameter.iteration_context.exclude_last_result:
             iterations = crud.iteration.get_multi_by_project(db=self.db, project_id=parameter.project_id)
             if parameter.iteration_context.mining_strategy == MiningStrategy.chunk:
