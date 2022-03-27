@@ -68,25 +68,25 @@ class CmdModelImport(base.BaseCommand):
         # remove tmp files
         shutil.rmtree(extract_model_dir_path)
 
-        # update task and commit
-        mir_tasks = mirpb.MirTasks()
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeImportModel,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         message='import model',
-                                         model_hash=model_hash,
-                                         model_mAP=float(model_storage.task_context['mAP']),
-                                         return_code=MirCode.RC_OK,
-                                         return_msg='')
-        mir_tasks.tasks[mir_tasks.head_task_id].args = yaml.safe_dump(model_storage.as_dict())
-        mir_tasks.tasks[mir_tasks.head_task_id].task_parameters = model_storage.task_context.get(
-            mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
+        # create task and commit
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportModel,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=f"import model {package_path} as {model_hash}",
+                                           model_hash=model_hash,
+                                           model_mAP=float(model_storage.task_context.get('mAP', 0)),
+                                           return_code=MirCode.RC_OK,
+                                           return_msg='',
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev,
+                                           serialized_executor_config=yaml.safe_dump(model_storage.executor_config),
+                                           serialized_task_parameters=model_storage.task_context.get(
+                                               mir_settings.TASK_CONTEXT_PARAMETERS_KEY, ''),
+                                           executor=model_storage.task_context.get('executor', ''))
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_typ_rev_tid.rev,
-                                                      mir_datas={mirpb.MirStorage.MIR_TASKS: mir_tasks},
-                                                      commit_message=f"import model {model_hash}")
+                                                      mir_datas={},
+                                                      task=task)
 
         return MirCode.RC_OK
 

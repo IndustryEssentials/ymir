@@ -36,10 +36,22 @@ const Routes = [
         title: 'task.train.title',
       },
       {
+        path: "/home/task/inference/:id?",
+        name: "taskInference",
+        component: "@/pages/task/inference/index",
+        title: 'task.inference.title',
+      },
+      {
         path: "/home/task/label/:id",
         name: "taskTrain",
         component: "@/pages/task/label/index",
         title: 'task.label.title',
+      },
+      {
+        path: "/home/task/copy/:id",
+        name: "taskCopy",
+        component: "@/pages/task/copy/index",
+        title: 'dataset.copy.title',
       },
       {
         path: "/home/dataset/add/:pid",

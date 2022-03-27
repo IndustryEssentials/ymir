@@ -47,16 +47,15 @@ class TestCmdStatus(unittest.TestCase):
         }
         ParseDict(dict_metadatas, mir_metadatas)
 
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeMining,
-                                         task_id='mining-task-id',
-                                         message='mining')
-
-        test_utils.mir_repo_commit_all(mir_root=mir_repo_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='mining-task-id',
-                                       no_space_message="prepare_branch_status")
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+        }
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
+                                           task_id='mining-task-id',
+                                           message='mining')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_repo_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas=mir_datas,
+                                                      task=task)

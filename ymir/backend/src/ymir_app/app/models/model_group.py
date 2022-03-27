@@ -16,7 +16,7 @@ class ModelGroup(Base):
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
-    training_dataset_id = Column(Integer, index=True, nullable=False)
+    training_dataset_id = Column(Integer, index=True)
 
     models = relationship(
         "Model",

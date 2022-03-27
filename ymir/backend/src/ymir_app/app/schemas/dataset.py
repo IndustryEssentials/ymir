@@ -29,6 +29,7 @@ class MergeStrategy(enum.IntEnum):
 
 class DatasetBase(BaseModel):
     name: str = Field(description="Dataset Name")
+    description: Optional[str]
     result_state: ResultState = ResultState.processing
     dataset_group_id: int
     project_id: int
@@ -47,6 +48,7 @@ class DatasetBase(BaseModel):
 # Properties required for a client to create a dataset
 class DatasetImport(BaseModel):
     dataset_group_name: str = Field(description="Dataset Group Name")
+    description: Optional[str]
     project_id: int
     input_url: Optional[str] = Field(description="from url")
     input_dataset_id: Optional[int] = Field(description="from dataset of other user")
@@ -78,6 +80,7 @@ class DatasetCreate(DatasetBase):
 # Properties that can be changed
 class DatasetUpdate(BaseModel):
     name: Optional[str]
+    description: Optional[str]
     result_state: Optional[ResultState]
     keywords: Optional[str]
     ignored_keywords: Optional[str]

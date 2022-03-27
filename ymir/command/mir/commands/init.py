@@ -30,22 +30,20 @@ class CmdInit(base.BaseCommand):
 
         mir_metadatas = mirpb.MirMetadatas()
         mir_annotations = mirpb.MirAnnotations()
-        mir_tasks = mirpb.MirTasks()
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskTypeInit,
-                                         task_id=dst_rev_tid.tid,
-                                         message='init empty dataset')
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeInit,
+                                           task_id=dst_rev_tid.tid,
+                                           message='init empty dataset',
+                                           src_revs='master',
+                                           dst_rev=empty_rev)
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
-                                                      task_id=dst_rev_tid.tid,
                                                       his_branch='master',
                                                       mir_datas=mir_datas,
-                                                      commit_message='init empty dataset')
+                                                      task=task)
 
     # public: run
     @staticmethod
@@ -57,16 +55,14 @@ class CmdInit(base.BaseCommand):
 
         class_ids.create_empty_if_not_exists(mir_root=mir_root)
 
-        project_class_ids = class_ids.ClassIdManager(mir_root=mir_root).id_for_names(
-            project_class_names.split(';')) if project_class_names else []
+        project_class_ids = class_ids.ClassIdManager(
+            mir_root=mir_root).id_for_names(project_class_names.split(';')) if project_class_names else []
         context.save(mir_root=mir_root, project_class_ids=project_class_ids)
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         repo_git.init()
 
-        CmdInit.__update_ignore(mir_root=mir_root,
-                                git=repo_git,
-                                ignored_items=['.mir_lock', '.mir'])
+        CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', '.mir'])
         repo_git.commit(["-m", "first commit"])
 
         # creates an empty dataset if empty_rev provided

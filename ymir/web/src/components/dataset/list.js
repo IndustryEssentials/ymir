@@ -17,8 +17,8 @@ import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
 
 import {
-  ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, SearchIcon,
-  TipsIcon, EditIcon, DeleteIcon, TreeIcon
+  ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
+  TipsIcon, EditIcon, DeleteIcon, TreeIcon, CopyIcon
 } from "@/components/common/icons"
 import { humanize } from "@/utils/number"
 import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
@@ -161,10 +161,22 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
         icon: <VectorIcon />,
       },
       {
+        key: "inference",
+        label: t("dataset.action.inference"),
+        onclick: () => history.push(`/home/task/inference/${id}`),
+        icon: <WajueIcon />,
+      },
+      {
         key: "label",
         label: t("dataset.action.label"),
         onclick: () => history.push(`/home/task/label/${id}`),
         icon: <TaggingIcon />,
+      },
+      {
+        key: "copy",
+        label: t("task.action.copy"),
+        onclick: () => history.push(`/home/task/copy/${id}`),
+        icon: <CopyIcon />,
       },
     ]
     const delMenu = {

@@ -109,6 +109,9 @@ const dataset = {
       3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml)
       4. Sample: {sample}`
   },
+  "dataset.copy.form.dataset": { cn: "原数据集", en: "Original Dataset", },
+  "dataset.copy.form.desc.label": { cn: '备注', en: 'Description', },
+  "dataset.copy.success.msg": { cn: "复制任务创建成功", en: "Copy dataset task created", },
   'dataset.detail.info': { cn: '详细信息', en: '', },
   'dataset.detail.action.fusion': { cn: '数据融合', en: 'Data Fusion', },
   'dataset.detail.action.train': { cn: '训练模型', en: 'Train Model', },

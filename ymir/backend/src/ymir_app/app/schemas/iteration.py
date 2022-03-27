@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.constants.state import IterationStage
 from app.schemas.common import (
@@ -12,8 +12,8 @@ from app.schemas.common import (
 
 
 class IterationBase(BaseModel):
-    name: str = Field(description="Iteration Name")
     iteration_round: int
+    description: Optional[str]
     current_stage: Optional[IterationStage]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
@@ -32,6 +32,7 @@ class IterationCreate(IterationBase):
 # Properties that can be changed
 class IterationUpdate(BaseModel):
     current_stage: IterationStage
+    description: Optional[str]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]

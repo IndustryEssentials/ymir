@@ -36,6 +36,7 @@ class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
         db: Session,
         *,
         user_id: int,
+        project_id: int,
         name: Optional[str],
         start_time: Optional[int],
         end_time: Optional[int],
@@ -60,6 +61,9 @@ class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
         if name:
             # basic fuzzy search
             query = query.filter(self.model.name.like(f"%{name}%"))
+
+        if project_id is not None:
+            query = query.filter(self.model.project_id == project_id)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:

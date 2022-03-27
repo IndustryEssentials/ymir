@@ -44,7 +44,8 @@ class CmdExport(base.BaseCommand):
             logging.error(f"invalid --format: {format}")
             return MirCode.RC_CMD_INVALID_ARGS
 
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='export',
                                                monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
@@ -58,8 +59,8 @@ class CmdExport(base.BaseCommand):
 
         # asset ids
         mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                                      mir_branch=src_typ_rev_tid.rev,
-                                                                                      mir_task_id=src_typ_rev_tid.tid,
+                                                                                      mir_branch=src_rev_tid.rev,
+                                                                                      mir_task_id=src_rev_tid.tid,
                                                                                       ms=mirpb.MIR_METADATAS)
         asset_ids = set()
         for k in mir_metadatas.attributes.keys():
@@ -80,37 +81,21 @@ class CmdExport(base.BaseCommand):
                              annotation_dir=annotation_dir,
                              need_ext=True,
                              need_id_sub_folder=False,
-                             base_branch=src_typ_rev_tid.rev,
-                             base_task_id=src_typ_rev_tid.tid,
+                             base_branch=src_rev_tid.rev,
+                             base_task_id=src_rev_tid.tid,
                              format_type=format_type)
 
         # add task result commit
-        CmdExport._commit(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev)
-
-        return MirCode.RC_OK
-
-    @staticmethod
-    def _commit(mir_root: str, src_revs: str, dst_rev: str) -> None:
-        src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
-        dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
-
-        task = mirpb.Task()
-        task.return_code = MirCode.RC_OK
-        task.type = mirpb.TaskTypeExportData
-        task.task_id = dst_rev_tid.tid
-        task.timestamp = int(time.time())
-        task.name = dst_rev_tid.tid
-
-        mir_tasks = mirpb.MirTasks()
-        mir_tasks.head_task_id = dst_rev_tid.tid
-        mir_tasks.tasks[dst_rev_tid.tid].CopyFrom(task)
-
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeExportData,
+                                           task_id=dst_rev_tid.tid,
+                                           message=f"export from {src_rev_tid.rev_tid}")
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
-                                                      task_id=dst_rev_tid.tid,
                                                       his_branch=src_rev_tid.rev,
-                                                      mir_datas={mirpb.MIR_TASKS: mir_tasks},
-                                                      commit_message=task.name)
+                                                      mir_datas={},
+                                                      task=task)
+
+        return MirCode.RC_OK
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
