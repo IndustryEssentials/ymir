@@ -481,8 +481,8 @@ def create_dataset_fusion(
         jsonable_encoder(task_in),
     )
     with IterationConversion(db=db, user_labels=user_labels, parameter=task_in) as iter_conver:
-        iter_conver.convert_iteration_fusion_parameter()
-        parameters = iter_conver.fusion_param_to_uniform()
+        # iter_conver.convert_iteration_fusion_parameter()
+        parameters = iter_conver.convert_parameter()
 
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
     try:

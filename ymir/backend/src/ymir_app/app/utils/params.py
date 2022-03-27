@@ -15,61 +15,63 @@ class IterationConversion:
         self,
         db: Session,
         user_labels: UserLabels,
-        parameter: Union[schemas.DatasetsFusionParameter],
+        parameter: schemas.RequestParameterBase
     ):
         self.db = db
         self.parameter = parameter
         self.user_labels = user_labels
 
-    def convert_iteration_fusion_parameter(self) -> None:
-        if self.parameter.iteration_context and self.parameter.iteration_context.exclude_last_result:
-            iterations = crud.iteration.get_multi_by_project(db=self.db, project_id=self.parameter.project_id)
-            if self.parameter.iteration_context.mining_strategy == MiningStrategy.chunk:
-                self.parameter.exclude_datasets += [
+    def convert_iteration_fusion_parameter(self, parameter: schemas.DatasetsFusionParameter) -> schemas.DatasetsFusionParameter:
+        if parameter.iteration_context and parameter.iteration_context.exclude_last_result:
+            iterations = crud.iteration.get_multi_by_project(db=self.db, project_id=parameter.project_id)
+            if parameter.iteration_context.mining_strategy == MiningStrategy.chunk:
+                parameter.exclude_datasets += [
                     one_iteration.mining_input_dataset_id
                     for one_iteration in iterations
                     if one_iteration.mining_input_dataset_id
                 ]
-            elif self.parameter.iteration_context.mining_strategy == MiningStrategy.dedup:
-                self.parameter.exclude_datasets += [
+            elif parameter.iteration_context.mining_strategy == MiningStrategy.dedup:
+                parameter.exclude_datasets += [
                     one_iteration.mining_output_dataset_id
                     for one_iteration in iterations
                     if one_iteration.mining_output_dataset_id
                 ]
 
-            self.parameter.exclude_datasets = list(set(self.parameter.exclude_datasets))
+            parameter.exclude_datasets = list(set(parameter.exclude_datasets))
 
-    def fusion_param_to_uniform(self) -> Dict:
+        return parameter
+
+    def fusion_param_to_uniform(self, parameter: schemas.DatasetsFusionParameter) -> Dict:
         include_datasets_info = crud.dataset.get_multi_by_ids(
             self.db,
-            ids=[self.parameter.main_dataset_id] + self.parameter.include_datasets,
+            ids=[parameter.main_dataset_id] + parameter.include_datasets,
         )
 
         include_datasets_info.sort(
             key=attrgetter("update_datetime"),
-            reverse=(self.parameter.include_strategy == MergeStrategy.prefer_newest),
+            reverse=(parameter.include_strategy == MergeStrategy.prefer_newest),
         )
 
-        exclude_datasets_info = crud.dataset.get_multi_by_ids(self.db, ids=self.parameter.exclude_datasets)
+        exclude_datasets_info = crud.dataset.get_multi_by_ids(self.db, ids=parameter.exclude_datasets)
         uniform_params = dict(
             include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
-            include_strategy=self.parameter.include_strategy,
+            include_strategy=parameter.include_strategy,
             exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
-            include_class_ids=self.user_labels.get_class_ids(names_or_aliases=self.parameter.include_labels),
-            exclude_class_ids=self.user_labels.get_class_ids(names_or_aliases=self.parameter.exclude_labels),
-            sampling_count=self.parameter.sampling_count,
+            include_class_ids=self.user_labels.get_class_ids(names_or_aliases=parameter.include_labels),
+            exclude_class_ids=self.user_labels.get_class_ids(names_or_aliases=parameter.exclude_labels),
+            sampling_count=parameter.sampling_count,
         )
 
         return uniform_params
 
     def convert_parameter(self) -> Dict:
         if isinstance(self.parameter, schemas.DatasetsFusionParameter):
-            self.convert_iteration_fusion_parameter()
-            uniform_params = self.fusion_param_to_uniform()
+            updated_parameter = self.convert_iteration_fusion_parameter(self.parameter)
+            parameter = self.fusion_param_to_uniform(updated_parameter)
         else:
             raise ValueError("input parameter error")
 
-        return uniform_params
+        return parameter
 
     def __enter__(self) -> "IterationConversion":
         return self
