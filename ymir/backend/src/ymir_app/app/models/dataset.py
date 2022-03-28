@@ -24,6 +24,7 @@ class Dataset(Base):
 
     keywords = Column(Text(settings.TEXT_LEN_LIMIT))
     ignored_keywords = Column(Text(settings.TEXT_LEN_LIMIT))
+    negative_info = Column(String(settings.STRING_LEN_LIMIT))
     asset_count = Column(Integer)
     keyword_count = Column(Integer)
 
