@@ -258,7 +258,7 @@ const actions = (dispatch) => {
     getProject: (id) => {
       return dispatch({
         type: 'project/getProject',
-        payload: id,
+        payload: { id },
       })
     },
     getKeywords(payload) {
