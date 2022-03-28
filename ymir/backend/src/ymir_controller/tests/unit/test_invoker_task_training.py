@@ -158,14 +158,13 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self.assertDictEqual(expected_config, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
+        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "training_assset_cache")
 
         training_cmd = ("mir train --root {0} --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --config-file {5} --executor {6} "
-                        "--executor-instance {7} --tensorboard {8}".format(self._mir_repo_root, self._task_id,
-                                                                           self._storage_root, working_dir_0,
-                                                                           self._sub_task_id_1, output_config,
-                                                                           training_image, self._task_id,
-                                                                           tensorboard_dir))
+                        "--executor-instance {7} --tensorboard {8} --cache {9}".format(
+                            self._mir_repo_root, self._task_id, self._storage_root, working_dir_0, self._sub_task_id_1,
+                            output_config, training_image, self._task_id, tensorboard_dir, asset_cache_dir))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
             mock.call(training_cmd.split(' '), capture_output=True, text=True),
