@@ -267,6 +267,7 @@ class ControllerRequest:
 
     def prepare_copy_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         copy_request = mirsvrpb.TaskReqCopyData()
+        copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
         copy_request.src_dataset_id = args["src_resource_id"]
 
