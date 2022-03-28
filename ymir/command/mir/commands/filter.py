@@ -82,14 +82,12 @@ class CmdFilter(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        mir_contents = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                          mir_branch=src_typ_rev_tid.rev,
-                                                          mir_task_id=src_typ_rev_tid.tid,
-                                                          mir_storages=mir_storage.get_all_mir_storage())
-        mir_metadatas: mirpb.MirMetadatas = mir_contents[mirpb.MirStorage.MIR_METADATAS]
-        mir_annotations: mirpb.MirAnnotations = mir_contents[mirpb.MirStorage.MIR_ANNOTATIONS]
-        mir_keywords: mirpb.MirKeywords = mir_contents[mirpb.MirStorage.MIR_KEYWORDS]
-        mir_tasks: mirpb.MirTasks = mir_contents[mirpb.MirStorage.MIR_TASKS]
+        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
+         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
+                                                                   mir_branch=src_typ_rev_tid.rev,
+                                                                   mir_task_id=src_typ_rev_tid.tid,
+                                                                   ms_list=mir_storage.get_all_mir_storage(),
+                                                                   as_dict=False)
         task_id = dst_typ_rev_tid.tid
         base_task_id = mir_annotations.head_task_id
 
@@ -150,22 +148,21 @@ class CmdFilter(base.BaseCommand):
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
         commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
-        mir_storage_ops.update_mir_tasks(mir_tasks=mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeFilter,
-                                         task_id=task_id,
-                                         message=commit_message)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeFilter,
+                                           task_id=task_id,
+                                           message=commit_message,
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
         matched_mir_contents = {
             mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=task_id,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas=matched_mir_contents,
-                                                      commit_message=commit_message)
+                                                      task=task)
 
         return MirCode.RC_OK
 

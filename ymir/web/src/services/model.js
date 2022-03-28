@@ -17,7 +17,7 @@ export function getModel(id) {
  * @returns 
  */
 export function getModelVersions(group_id) {
-  return request.get(`models/`, { params: { group_id, is_desc: false, limit: 10000 }})
+  return request.get(`models/`, { params: { group_id, is_desc: false, limit: 10000 } })
 }
 
 /**
@@ -32,7 +32,7 @@ export function getModelVersions(group_id) {
  * }
  * @returns 
  */
- export function queryModels({ project_id, type, state, name, offset = 0, limit = 10 }) {
+export function queryModels({ project_id, type, state, name, offset = 0, limit = 10 }) {
   return request.get("models/", { params: { project_id, type, state, name, offset, limit } })
 }
 
@@ -56,7 +56,7 @@ export function getModels(project_id, { name, offset = 0, limit = 10 }) {
  * @returns 
  */
 export function batchModels(ids) {
-  return request.get('models/batch', { params: { ids: ids.toString() }})
+  return request.get('models/batch', { params: { ids: ids.toString() } })
 }
 
 /**
@@ -64,7 +64,7 @@ export function batchModels(ids) {
  * @param {number} id
  * @returns
  */
- export function delModel(id) {
+export function delModel(id) {
   return request({
     method: "delete",
     url: `/models/${id}`,
@@ -84,20 +84,24 @@ export function delModelGroup(id) {
 }
 
 /**
- * create a model
- * @param {object} model
- * {
- *   "hash": "string",
- *   "name": "string",
- *   "map": "string",
- *   "parameters": "string",
- *   "task_id": 0,
- *   "user_id": 0
+ * 
+ * @param {object} param {
+ * {string} projectId
+ * {string} name
+ * {string} [url] 
+ * {number} [modelId] model id
+ * {string} [description]
  * }
- * @returns
+ * @returns 
  */
-export function createModel(model) {
-  return request.post("/models/", model)
+export function importModel({ projectId, name, description, url, modelId, }) {
+  return request.post('/models/importing', {
+    project_id: projectId,
+    input_model_path: url,
+    input_model_id: modelId,
+    description,
+    name,
+  })
 }
 
 export function updateModel(id, name) {

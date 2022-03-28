@@ -1,22 +1,25 @@
-import os
+from typing import Optional
+from pydantic import BaseSettings
 
-env = os.environ.get
 
-SANDBOX_ROOT = env("SANDBOX_ROOT", '/data/mir_root')
+class VizSettings(BaseSettings):
+    VIZ_SANDBOX_ROOT: str = "/data/mir_root"
 
-VIZ_REDIS_URI = env("VIZ_REDIS_URI", "redis://")
+    VIZ_REDIS_URI: str = "redis://"
 
-# redis key info
-ASSET_ID_DETAIL = "detail"
-ASSETS_ATTRIBUTES = "assets_attributes"
-ASSETS_CLASS_ID_INDEX = "index"
+    # the middle data structure, it will save into cache,like Redis
+    VIZ_MIDDLE_VERSION: str = "0.1"
 
-# the middle data structure, it will save into cache,like Redis
-MIDDLE_STRUCTURE_VERSION = "0.1"
+    # redis key info
+    VIZ_KEY_ASSET_DETAIL: str = "viz_key_detail"
+    VIZ_KEY_ASSET_INDEX: str = "viz_key_index"
+    # added all assets index by viz
+    VIZ_ALL_INDEX_CLASSIDS: str = "__all_index_classids__"
+    # set flag status when generating cache
+    VIZ_CACHE_STATUS: str = "viz_key_status"
 
-# added all assets index by viz
-ALL_INDEX_CLASSIDS = "__all_index_classids__"
-# set flag status when generating cache
-CACHE_STATUS = "status"
+    VIZ_SENTRY_DSN: Optional[str] = None
+    REDIS_TESTING: bool = False
 
-VIZ_SENTRY_DSN = env("VIZ_SENTRY_DSN", None)
+
+viz_settings = VizSettings(_env_file=".env")  # type: ignore

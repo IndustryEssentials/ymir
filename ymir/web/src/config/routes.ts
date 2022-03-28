@@ -36,10 +36,22 @@ const Routes = [
         title: 'task.train.title',
       },
       {
+        path: "/home/task/inference/:id?",
+        name: "taskInference",
+        component: "@/pages/task/inference/index",
+        title: 'task.inference.title',
+      },
+      {
         path: "/home/task/label/:id",
         name: "taskTrain",
         component: "@/pages/task/label/index",
         title: 'task.label.title',
+      },
+      {
+        path: "/home/task/copy/:id",
+        name: "taskCopy",
+        component: "@/pages/task/copy/index",
+        title: 'dataset.copy.title',
       },
       {
         path: "/home/dataset/add/:pid",
@@ -63,6 +75,12 @@ const Routes = [
         path: "/home/model/detail/:id",
         name: "modelDetail",
         component: "@/pages/model/detail",
+        title: "model.title",
+      },
+      {
+        path: "/home/model/import/:pid",
+        name: "modelImport",
+        component: "@/pages/model/add",
         title: "model.title",
       },
       {
@@ -143,10 +161,10 @@ const Routes = [
         title: "project.add.title",
       },
       {
-        path: "/home/project/interation/:pid",
-        name: "projectInteration",
-        component: "@/pages/project/interation",
-        title: "project.interation.title",
+        path: "/home/project/iterations/:pid",
+        name: "projectIteration",
+        component: "@/pages/project/iterations",
+        title: "project.iterations.title",
       },
     ],
   },

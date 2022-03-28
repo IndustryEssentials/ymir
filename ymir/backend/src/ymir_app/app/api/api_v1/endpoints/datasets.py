@@ -176,6 +176,7 @@ def import_dataset(
     dataset_in = schemas.DatasetCreate(
         name=f"{dataset_import.dataset_group_name}_initial",
         hash=task.hash,
+        description=dataset_import.description,
         dataset_group_id=dataset_group.id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
@@ -377,10 +378,8 @@ def get_assets_of_dataset(
         user_labels=user_labels,
     )
     result = {
-        "keywords": assets.keywords,
         "items": assets.items,
         "total": assets.total,
-        "negative_info": assets.negative_info,
     }
     return {"result": result}
 
@@ -416,7 +415,7 @@ def get_random_asset_id_of_dataset(
         limit=1,
         user_labels=user_labels,
     )
-    if assets.total == 0:
+    if len(assets.items) == 0:
         raise AssetNotFound()
     return {"result": assets.items[0]}
 

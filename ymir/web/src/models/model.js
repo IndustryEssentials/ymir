@@ -6,7 +6,7 @@ import {
   getModel,
   delModel,
   delModelGroup,
-  createModel,
+  importModel,
   updateModel,
   verify,
 } from "@/services/model"
@@ -81,6 +81,7 @@ export default {
           type: "UPDATE_ALL_MODELS",
           payload: dss.items,
         })
+        return dss.items
       }
     },
     *batchModels({ payload }, { call, put }) {
@@ -125,8 +126,8 @@ export default {
         return result
       }
     },
-    *createModel({ payload }, { call, put }) {
-      const { code, result } = yield call(createModel, payload)
+    *importModel({ payload }, { call, put }) {
+      const { code, result } = yield call(importModel, payload)
       if (code === 0) {
         return result
       }

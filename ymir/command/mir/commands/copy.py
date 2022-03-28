@@ -1,6 +1,5 @@
 import argparse
 from collections import defaultdict
-import datetime
 import logging
 from typing import Dict, List, Set, Tuple
 
@@ -60,15 +59,16 @@ class CmdCopy(base.BaseCommand):
             return check_code
 
         # read from src mir root
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=data_mir_root,
-                                                       mir_branch=data_src_typ_rev_tid.rev,
-                                                       mir_task_id=data_src_typ_rev_tid.tid,
-                                                       mir_storages=mir_storage.get_all_mir_storage())
+        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
+         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=data_mir_root,
+                                                                   mir_branch=data_src_typ_rev_tid.rev,
+                                                                   mir_task_id=data_src_typ_rev_tid.tid,
+                                                                   ms_list=mir_storage.get_all_mir_storage(),
+                                                                   as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
         # annotations.mir: change head task id and type ids
-        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
         orig_head_task_id = mir_annotations.head_task_id
         if not orig_head_task_id:
             logging.error('bad annotations.mir: empty head task id')
@@ -79,7 +79,6 @@ class CmdCopy(base.BaseCommand):
 
         # annotations.mir and keywords.mir: change type ids
         single_task_annotations = mir_annotations.task_annotations[orig_head_task_id]
-        mir_keywords: mirpb.MirKeywords = mir_datas[mirpb.MIR_KEYWORDS]
         return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
                                                               mir_keywords=mir_keywords,
                                                               data_mir_root=data_mir_root,
@@ -100,7 +99,6 @@ class CmdCopy(base.BaseCommand):
         mir_annotations.head_task_id = dst_typ_rev_tid.tid
 
         # tasks.mir: get necessary head task infos, remove others and change head task id
-        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MIR_TASKS]
         orig_head_task_id = mir_tasks.head_task_id
         if not orig_head_task_id:
             logging.error('bad tasks.mir: empty head task id')
@@ -109,36 +107,29 @@ class CmdCopy(base.BaseCommand):
             logging.error(f"bad tasks.mir: can not find head task id: {orig_head_task_id}")
             return MirCode.RC_CMD_INVALID_MIR_REPO
 
-        task = mirpb.Task()
-        task.type = mirpb.TaskTypeCopyData
-        task.name = f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}"
-        task.task_id = dst_typ_rev_tid.tid
-        task.timestamp = int(datetime.datetime.now().timestamp())
-        # TODO: don't put model, dataset result and task together
-        task.model.CopyFrom(mir_tasks.tasks[orig_head_task_id].model)
-        task.args = mir_tasks.tasks[orig_head_task_id].args
-        task.task_parameters = mir_tasks.tasks[orig_head_task_id].task_parameters
-        task.unknown_types.clear()
-        for type_name, count in unknown_types.items():
-            task.unknown_types[type_name] = count
-
-        mir_tasks = mirpb.MirTasks()
-        mir_tasks.head_task_id = dst_typ_rev_tid.tid
-        mir_tasks.tasks[dst_typ_rev_tid.tid].CopyFrom(task)
-
         PhaseLoggerCenter.update_phase(phase='copy.change')
 
         # save and commit
-        copied_mir_datas = {}
-        copied_mir_datas[mirpb.MirStorage.MIR_METADATAS] = mir_datas[mirpb.MirStorage.MIR_METADATAS]
-        copied_mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mir_annotations
-        copied_mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
+        orig_task = mir_tasks.tasks[orig_head_task_id]
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",
+                                           unknown_types=unknown_types,
+                                           model_hash=orig_task.model.model_hash,
+                                           model_mAP=orig_task.model.mean_average_precision,
+                                           serialized_task_parameters=orig_task.serialized_task_parameters,
+                                           serialized_executor_config=orig_task.serialized_executor_config,
+                                           executor=orig_task.executor,
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=src_revs,
-                                                      mir_datas=copied_mir_datas,
-                                                      commit_message=task.name)
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                                      },
+                                                      task=task)
 
         return MirCode.RC_OK
 
@@ -186,8 +177,7 @@ class CmdCopy(base.BaseCommand):
         return MirCode.RC_OK, unknown_types_and_count
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     copy_arg_parser = subparsers.add_parser("copy",
                                             parents=[parent_parser],
                                             description="use this command to copy datas from another repo",

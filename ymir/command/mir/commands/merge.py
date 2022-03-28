@@ -89,8 +89,7 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
                                                                 set(guest_image_annotations.keys()))
 
     if strategy == "stop" and joint_ids:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
-                              error_message='found conflicts in strategy stop')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR, error_message='found conflicts in strategy stop')
 
     for asset_id in host_only_ids:
         host_mir_annotations.task_annotations[task_id].image_annotations[asset_id].CopyFrom(
@@ -197,12 +196,13 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
     Raises:
         RuntimeError: when guest branch has no metadatas, or guest branch has no tasks
     """
-    mir_data = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                  mir_branch=guest_typ_rev_tid.rev,
-                                                  mir_task_id=guest_typ_rev_tid.tid,
-                                                  mir_storages=mir_storage.get_all_mir_storage())
+    [guest_mir_metadatas, guest_mir_annotations, guest_mir_keywords, guest_mir_tasks,
+     _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
+                                                               mir_branch=guest_typ_rev_tid.rev,
+                                                               mir_task_id=guest_typ_rev_tid.tid,
+                                                               ms_list=mir_storage.get_all_mir_storage(),
+                                                               as_dict=False)
 
-    guest_mir_metadatas: mirpb.MirMetadatas = mir_data.get(mirpb.MirStorage.MIR_METADATAS, None)
     if not guest_mir_metadatas:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
@@ -227,19 +227,17 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
                      suggested_tvt_type=_tvt_type_from_str(guest_typ_rev_tid.typ),
                      strategy=strategy)
 
-    guest_mir_annotations: mirpb.MirAnnotations = mir_data.get(mirpb.MirStorage.MIR_ANNOTATIONS, None)
     if not guest_mir_annotations:
         logging.warning("guest repo {}:{} has no annotations.".format(mir_root, guest_typ_rev_tid.rev))
     _merge_annotations(host_mir_annotations=host_mir_annotations,
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
 
-    guest_mir_keywords: mirpb.MirKeywords = mir_data.get(mirpb.MirStorage.MIR_KEYWORDS, None)
+    # TODO: auto gen, so need no more merge on k and t
     if not guest_mir_keywords:
         logging.warning(f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no keywords.")
     _merge_keywords(host_mir_keywords.keywords, guest_mir_keywords.keywords, id_guest_only, id_joint, strategy)
 
-    guest_mir_tasks = mir_data.get(mirpb.MirStorage.MIR_TASKS, None)
     if not guest_mir_tasks:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no tasks.")
@@ -255,7 +253,7 @@ def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
     if not host_mir_metadatas:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid host_mir_metadatas')
 
-    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(
+    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=branch_id, mir_task_id=task_id, ms=mirpb.MirStorage.MIR_METADATAS)
     if not guest_mir_metadatas:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
@@ -326,32 +324,29 @@ class CmdMerge(base.BaseCommand):
                 return ret
 
         # create and write tasks
-        message = f"merge: {src_revs} - {ex_src_revs} to {dst_rev}"
-        mir_storage_ops.update_mir_tasks(mir_tasks=host_mir_tasks,
-                                         task_type=mirpb.TaskType.TaskTypeMerge,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}")
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMerge,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}",
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         host_typ_rev_tid = src_typ_rev_tids[0]
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: host_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: host_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: host_mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=host_typ_rev_tid.rev,
                                                       mir_datas=mir_data,
-                                                      commit_message=message)
+                                                      task=task)
 
         logging.debug("mir merge: write files done")
 
         return MirCode.RC_OK
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     merge_arg_parser = subparsers.add_parser("merge",
                                              parents=[parent_parser],
                                              description="use this command to merge contents from other branch",

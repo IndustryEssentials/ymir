@@ -17,7 +17,7 @@ from app.api.errors.errors import (
     TaskNotFound,
     FieldValidationFailed,
 )
-from app.constants.state import TaskType, ResultState
+from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.files import NGINX_DATA_PATH
 from app.utils.ymir_controller import gen_repo_hash, ControllerClient
 
@@ -111,6 +111,7 @@ def import_model(
     task = crud.task.create_placeholder(
         db=db,
         type_=model_import.import_type,
+        state_=TaskState.pending,
         user_id=current_user.id,
         project_id=model_import.project_id,
     )
@@ -127,6 +128,7 @@ def import_model(
     # 4. create model record
     model_in = schemas.ModelCreate(
         name=task.hash,
+        description=model_import.description,
         hash=None,
         result_state=ResultState.processing,
         model_group_id=model_group.id,
@@ -144,7 +146,7 @@ def import_model(
         controller_client,
         model_import,
         current_user.id,
-        model.hash,
+        task.hash,
     )
     return {"result": model}
 

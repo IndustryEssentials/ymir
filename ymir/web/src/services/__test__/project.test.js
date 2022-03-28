@@ -4,7 +4,6 @@ import {
   delProject,
   createProject,
   updateProject,
-  getInterations,
 } from "../project"
 import { product, products, requestExample } from './func'
 
@@ -54,10 +53,5 @@ describe("service: projects", () => {
     }
     const expected = "ok"
     requestExample(createProject, project, expected, 'post')
-  })
-  it("getInterations -> success", () => {
-    const id = 9856
-    const expected = "ok"
-    requestExample(getInterations, id, expected, 'get')
   })
 })

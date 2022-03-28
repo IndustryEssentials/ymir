@@ -67,20 +67,19 @@ class TestCmdCopy(unittest.TestCase):
         mir_keywords.keywords['asset0'].predifined_keyids.extend([1, 2, 3])
         mir_keywords.keywords['asset1'].predifined_keyids.extend([3])
 
-        mir_tasks = mirpb.MirTasks()
-        mir_tasks.head_task_id = 't0'
-        mir_tasks.tasks['t0']
-        mir_tasks.tasks['t0'].type = mirpb.TaskTypeTraining
-        mir_tasks.tasks['t0'].model.mean_average_precision = 0.3
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
+                                           task_id='t0',
+                                           message='training',
+                                           model_mAP=0.3)
 
-        test_utils.mir_repo_commit_all(mir_root=self._src_mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='t0',
-                                       no_space_message="commit for src branch a")
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._src_mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                                      },
+                                                      task=task)
 
     def __create_image_annotations(self, type_ids: List[int]) -> mirpb.SingleImageAnnotations:
         single_image_annotations = mirpb.SingleImageAnnotations()
@@ -93,15 +92,17 @@ class TestCmdCopy(unittest.TestCase):
 
     # private: check results
     def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool):
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
-                                                       mir_branch=dst_branch,
-                                                       mir_task_id='',
-                                                       mir_storages=mir_storage.get_all_mir_storage())
-        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MIR_METADATAS]
+        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
+         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+             mir_root=self._mir_root,
+             mir_branch=dst_branch,
+             mir_task_id='',
+             ms_list=mir_storage.get_all_mir_storage(),
+             as_dict=False,
+         )
         metadatas_keys = set(mir_metadatas.attributes.keys())
         self.assertEqual({'asset0', 'asset1'}, metadatas_keys)
 
-        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MIR_ANNOTATIONS]
         self.assertEqual(dst_tid, mir_annotations.head_task_id)
         asset0_idx_ids = {
             annotation.index: annotation.class_id
@@ -114,11 +115,9 @@ class TestCmdCopy(unittest.TestCase):
         self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
         self.assertEqual({}, asset1_idx_ids)
 
-        mir_keywords: mirpb.MirKeywords = mir_datas[mirpb.MIR_KEYWORDS]
         self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predifined_keyids))
         self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predifined_keyids))
 
-        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MIR_TASKS]
         self.assertEqual(dst_tid, mir_tasks.head_task_id)
         mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision
         self.assertTrue(mAP > 0.29999 and mAP < 0.30001)  # it's actually 0.3
