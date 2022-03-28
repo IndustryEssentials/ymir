@@ -50,4 +50,4 @@ class Model(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
-    __table_args__ = (UniqueConstraint("user_id", "hash", name="uniq_user_hash"),)
+    __table_args__ = (UniqueConstraint("project_id", "hash", name="uniq_project_hash"),)
