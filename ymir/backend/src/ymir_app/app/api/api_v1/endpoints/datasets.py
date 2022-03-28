@@ -1,8 +1,8 @@
+from operator import attrgetter
 import enum
 import pathlib
 import random
 import tempfile
-from operator import attrgetter
 from typing import Any, Dict, Optional
 from zipfile import BadZipFile
 
@@ -24,10 +24,9 @@ from app.api.errors.errors import (
     DatasetGroupNotFound,
 )
 from app.config import settings
-from app.constants.state import ResultState
-from app.constants.state import TaskState, TaskType
-from app.schemas.dataset import MergeStrategy
+from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
+from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import (
     ControllerClient,
     gen_task_hash,
@@ -35,6 +34,7 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from app.utils.ymir_viz import VizClient
+from app.schemas.dataset import MergeStrategy
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -505,9 +505,13 @@ def create_dataset_fusion(
         "[create task] create dataset fusion with payload: %s",
         jsonable_encoder(task_in),
     )
+
+    with get_iteration_context_converter(db, user_labels) as iteration_context_converter:
+        task_in_parameters = iteration_context_converter(task_in)
+
+    parameters = fusion_normalize_parameters(db, task_in_parameters, user_labels)
     task_hash = gen_task_hash(current_user.id, task_in.project_id)
 
-    parameters = fusion_normalize_parameters(db, task_in, user_labels)
     try:
         resp = controller_client.create_data_fusion(
             current_user.id,
