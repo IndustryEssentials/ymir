@@ -163,7 +163,7 @@ export const homeRoutes = [
     title: "project.iterations.title",
   },
   {
-    path: "/home/project/initModel/:id",
+    path: "/home/project/initmodel/:id",
     name: "initModel",
     component: "@/pages/iteration/initModel",
     title: "project.iteration.initmodel",
