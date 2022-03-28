@@ -2,7 +2,6 @@
 exports the assets and annotations from mir format to ark-training-format
 """
 
-from cmath import atanh
 from collections.abc import Collection
 from enum import Enum
 import logging
