@@ -1,6 +1,9 @@
 
 import { Project } from './project'
 import { Task } from './task'
+type Keywords = {
+  [key: string]: number,
+}
 export interface DatasetGroup {
   id: number,
   name: string,
@@ -17,6 +20,9 @@ export interface Dataset {
   version: number,
   keywords: Array<string>,
   keywordCount: number,
+  keywordsCount: Keywords,
+  nagetiveCount?: number,
+  projectNagetiveCount?: number,
   state: number,
   createTime: string,
   updateTime: string,

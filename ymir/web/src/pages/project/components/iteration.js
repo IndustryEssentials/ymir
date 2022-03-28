@@ -49,7 +49,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
     const ss = stages.map(stage => {
       const prepareId = iteration[stage.prepare]
       const result = iteration[stage.resultKey] || {}
-      const url = templateString(stage.url, { ...stage, id: prepareId })
+      const url = templateString(stage.url || '', { ...stage, id: prepareId })
       return {
         ...stage,
         iterationId: iteration.id,
