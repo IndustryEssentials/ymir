@@ -93,3 +93,4 @@ from .user import (
     UserState,
     UserUpdate,
 )
+from .common import RequestParameterBase
