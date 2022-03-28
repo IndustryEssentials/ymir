@@ -34,6 +34,7 @@ export function getIterationVersion(version: number) {
 }
 
 export function transferProject(data: backendData) {
+  const iteration = transferIteration(data.current_iteration)
   const project : Project = {
     id: data.id,
     name: data.name,
@@ -45,7 +46,9 @@ export function transferProject(data: backendData) {
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
-    currentIteration: data.current_iteration ? transferIteration(data.current_iteration) : undefined,
+    currentIteration: iteration,
+    currentStage: iteration?.currentStage || 0,
+    round: iteration?.round || 0,
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,

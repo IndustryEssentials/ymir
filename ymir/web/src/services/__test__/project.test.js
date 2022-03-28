@@ -21,7 +21,7 @@ describe("service: projects", () => {
       id,
       name: '63projectname',
     }
-    requestExample(getProject, id, expected, 'get')
+    requestExample(getProject, { id }, expected, 'get')
   })
 
   it("delProject -> success", () => {
