@@ -363,12 +363,12 @@ components:
       properties:
         total_images_cnt:
           type: integer
-        class_ids_count:
+        class_names_count:
           type: object
-          example: "{4:8, 5:2}"
+          example: "{'cat':8, 'dog':2}"
         ignored_labels:
           type: object
-          example: "{cat:8}"
+          example: "{'cat':8}"
         negative_info:
           $ref: '#/components/schemas/DatasetResult_result_negative_info'
     Annotations_inner:

@@ -10,7 +10,7 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
+from mir.tools import class_ids, context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
 
@@ -221,10 +221,7 @@ class MirStorageOps():
                                                          file_name=mir_storage.mir_path(ms)))
 
         if as_dict:
-            mir_storage_data = json_format.MessageToDict(mir_storage_data,
-                                                         preserving_proto_field_name=True,
-                                                         use_integers_for_enums=True,
-                                                         including_default_value_fields=True)
+            mir_storage_data = cls.__message_to_dict(mir_storage_data)
 
         return mir_storage_data
 
@@ -246,6 +243,13 @@ class MirStorageOps():
         ]
 
     @classmethod
+    def __message_to_dict(cls, message: Any) -> Dict:
+        return json_format.MessageToDict(message,
+                                         preserving_proto_field_name=True,
+                                         use_integers_for_enums=True,
+                                         including_default_value_fields=True)
+
+    @classmethod
     def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
         mir_storage_data: mirpb.MirTasks = cls.load_single_storage(mir_root=mir_root,
                                                                    mir_branch=mir_branch,
@@ -256,10 +260,7 @@ class MirStorageOps():
         if not task.model.model_hash:
             raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no model")
 
-        single_model_dict = json_format.MessageToDict(task.model,
-                                                      preserving_proto_field_name=True,
-                                                      use_integers_for_enums=True,
-                                                      including_default_value_fields=True)
+        single_model_dict = cls.__message_to_dict(task.model)
         single_model_dict[mir_settings.TASK_CONTEXT_PARAMETERS_KEY] = task.serialized_task_parameters
         single_model_dict[mir_settings.EXECUTOR_CONFIG_KEY] = yaml.safe_load(task.serialized_executor_config) or {}
         return single_model_dict
@@ -269,7 +270,7 @@ class MirStorageOps():
         """
         exampled return data:
         {
-            "class_ids_count": {3: 34},
+            "class_names_count": {'cat': 34},
             "ignored_labels": {'cat':5, },
             "negative_info": {
                 "negative_images_cnt": 0,
@@ -287,9 +288,13 @@ class MirStorageOps():
         )
         task_storage = mir_storage_tasks.tasks[mir_storage_tasks.head_task_id]
 
+        class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         return dict(
-            class_ids_count=mir_storage_context.predefined_keyids_cnt,
-            ignored_labels=task_storage.unknown_types,
+            class_names_count={
+                class_id_mgr.main_name_for_id(id): count
+                for id, count in mir_storage_context.predefined_keyids_cnt.items()
+            },
+            ignored_labels={k: v for k, v in task_storage.unknown_types.items()},
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
@@ -326,14 +331,14 @@ class MirStorageOps():
         annotations = mir_storage_annotations.task_annotations[mir_storage_annotations.head_task_id].image_annotations
         for asset_id, metadata in mir_storage_metadatas.attributes.items():
             asset_ids_detail[asset_id] = dict(
-                metadata=metadata,
-                annotations=annotations[asset_id].annotations,
+                metadata=cls.__message_to_dict(metadata),
+                annotations=cls.__message_to_dict(annotations[asset_id].annotations),
                 class_ids=mir_storage_keywords.keywords[asset_id].predifined_keyids,
             )
         return dict(
             all_asset_ids=mir_storage_metadatas.attributes.keys(),
             asset_ids_detail=asset_ids_detail,
-            class_ids_index=mir_storage_keywords.index_predifined_keyids,
+            class_ids_index=cls.__message_to_dict(mir_storage_keywords.index_predifined_keyids),
         )
 
 

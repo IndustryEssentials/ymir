@@ -31,7 +31,7 @@ class MirStorageLoader:
         """
         exampled return data:
         {
-            "class_ids_count": {3: 34},
+            "class_names_count": {'cat': 34},
             "ignored_labels": {'cat':5, },
             "negative_info": {
                 "negative_images_cnt": 0,
