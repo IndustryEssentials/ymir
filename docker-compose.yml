@@ -15,7 +15,7 @@ services:
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
       - DATA_SOURCE=/data/sharing
       # viz
-      - SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
+      - VIZ_SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
       - VIZ_REDIS_URI=redis://:@viz-redis
       # app
       - DATABASE_URI=mysql+pymysql://user:passwd@db/ymir

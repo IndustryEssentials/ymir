@@ -25,8 +25,16 @@ class IterationBase(BaseModel):
 
 
 # Sufficient properties to create a iteration
-class IterationCreate(IterationBase):
-    pass
+class IterationCreate(BaseModel):
+    iteration_round: int
+    description: Optional[str]
+    project_id: int
+    current_stage: Optional[IterationStage] = IterationStage.prepare_mining
+    mining_input_dataset_id: Optional[int]
+    mining_output_dataset_id: Optional[int]
+    label_output_dataset_id: Optional[int]
+    training_input_dataset_id: Optional[int]
+    training_output_model_id: Optional[int]
 
 
 # Properties that can be changed

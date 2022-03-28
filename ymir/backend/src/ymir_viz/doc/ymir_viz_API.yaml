@@ -277,9 +277,6 @@ components:
             result:
               type: object
               properties:
-                task_type:
-                  type: string
-                  description: 也可作为Enum
                 model_id:
                   type: string
                 model_mAP:
@@ -288,6 +285,10 @@ components:
                   minimum: 0
                   description: mean average precision of the model
                   example: 0.5
+                task_parameters:
+                  type: string
+                executor_config:
+                  type: string
     DatasetResult:
       allOf:
         - $ref: "#/components/schemas/ApiResponse"

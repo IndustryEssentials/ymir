@@ -14,8 +14,8 @@ from src.swagger_models.assets_meta_info_metadata import AssetsMetaInfoMetadata
 from src.swagger_models.assets_meta_info_metadata_timestamp import AssetsMetaInfoMetadataTimestamp
 from src.swagger_models.assets_result import AssetsResult
 from src.swagger_models.assets_result_result import AssetsResultResult
-from src.swagger_models.assets_result_result_negative_info import AssetsResultResultNegativeInfo
 from src.swagger_models.dataset_result import DatasetResult
 from src.swagger_models.dataset_result_result import DatasetResultResult
+from src.swagger_models.dataset_result_result_negative_info import DatasetResultResultNegativeInfo
 from src.swagger_models.model_result import ModelResult
 from src.swagger_models.model_result_result import ModelResultResult
