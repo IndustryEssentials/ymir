@@ -2,6 +2,7 @@ import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
 import { errorCode } from './func'
 import { format } from '@/utils/date'
+import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
 
 jest.mock('umi', () => {
   return {
@@ -152,7 +153,8 @@ describe("models: dataset", () => {
       "dataset_group_id": 1,
       // "project_id": 1,
       state: 1,
-      "keywords": [],
+      "keywords": {},
+      "negative_info": {negative_images_cnt: 1, project_negative_images_cnt: 1},
       "ignored_keywords": [],
       "asset_count": null,
       "keyword_count": null,
@@ -167,30 +169,7 @@ describe("models: dataset", () => {
       "related_task": task,
     }
 
-    const expected = {
-      "id": 1,
-      "groupId": 1,
-      "projectId": undefined,
-      "name": "p0001_training_dataset",
-      "version": 0,
-      "versionName": "V0",
-      "assetCount": 0,
-      "keywords": [],
-      "keywordCount": 0,
-      "ignoredKeywords": [],
-      state: 1,
-      "hash": "t00000020000012afef21646883528",
-      "createTime": format(createTime),
-      "updateTime": format(createTime),
-      "taskId": 1,
-      "progress": 1,
-      "taskState": 3,
-      "taskType": 105,
-      "duration": null,
-      "durationLabel": "",
-      "taskName": "t00000020000013277a01646883549",
-      task,
-    }
+    const expected = transferDataset(send)
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -230,59 +209,11 @@ describe("models: dataset", () => {
       "is_terminated": false,
       "result_type": null
     }
-    const expected = [{
-      "id": 1,
-      "groupId": 1,
-      "projectId": undefined,
-      "name": "p0001_training_dataset",
-      "version": 0,
-      "versionName": "V0",
-      "assetCount": 0,
-      "keywords": [],
-      "keywordCount": 0,
-      "ignoredKeywords": [],
-      state: 1,
-      "hash": "t00000020000012afef21646883528",
-      "createTime": format(createTime),
-      "updateTime": format(createTime),
-      "taskId": 1,
-      "progress": 1,
-      "taskState": 3,
-      "taskType": 105,
-      "duration": null,
-      "durationLabel": "",
-      "taskName": "t00000020000013277a01646883549",
-      task,
-    }, {
-      "id": 2,
-      "groupId": 1,
-      "projectId": undefined,
-      "name": "p0001_training_dataset",
-      "version": 0,
-      "versionName": "V0",
-      "assetCount": 0,
-      "keywords": [],
-      "keywordCount": 0,
-      "ignoredKeywords": [],
-      state: 1,
-      "hash": "t00000020000012afef21646883528",
-      "createTime": format(createTime),
-      "updateTime": format(createTime),
-      "taskId": 1,
-      "progress": 1,
-      "taskState": 3,
-      "taskType": 105,
-      "duration": null,
-      "durationLabel": "",
-      "taskName": "t00000020000013277a01646883549",
-      task,
-    }]
 
-    const send = [{
+    const send = [1, 2].map(item => ({
       "name": "p0001_training_dataset",
       "result_state": 1,
       "dataset_group_id": 1,
-      // "project_id": 1,
       state: 1,
       "keywords": [],
       "ignored_keywords": [],
@@ -291,32 +222,15 @@ describe("models: dataset", () => {
       "is_deleted": false,
       "create_datetime": createTime,
       "update_datetime": createTime,
-      "id": 1,
+      "id": item,
       "hash": "t00000020000012afef21646883528",
       "version_num": 0,
       "task_id": 1,
       "user_id": 2,
       "related_task": task,
-    }, {
-      "name": "p0001_training_dataset",
-      "result_state": 1,
-      "dataset_group_id": 1,
-      // "project_id": 1,
-      state: 1,
-      "keywords": [],
-      "ignored_keywords": [],
-      "asset_count": null,
-      "keyword_count": null,
-      "is_deleted": false,
-      "create_datetime": createTime,
-      "update_datetime": createTime,
-      "id": 2,
-      "hash": "t00000020000012afef21646883528",
-      "version_num": 0,
-      "task_id": 1,
-      "user_id": 2,
-      "related_task": task,
-    }]
+    }))
+
+    const expected = send.map(item => transferDataset(item))
 
     const generator = saga(creator, { put, call })
     generator.next()

@@ -12,11 +12,7 @@ export const Lists = ({ projects=[], more=''}) => {
           <span className={s.name}>{item.name}</span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}%</span></span>
-<<<<<<< HEAD
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item.currentStage}</span></span>
-=======
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item?.currentIteration?.currentStage}</span></span>
->>>>>>> 0f3ab7f6afcd128460d53bc414114a4e8e3c1fc0
         </Space>
       </Col>
       <Col>{more}</Col>

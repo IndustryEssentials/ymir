@@ -26,7 +26,7 @@ function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
     }
   }, [data, trainingKeywords])
 
-  async function fetchRates(){
+  async function fetchRates() {
     const result = await getKeywordRates(id)
     if (result) {
       setData(result)
@@ -34,29 +34,31 @@ function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
   }
 
   function prepareList(data = {}, trainingKeywords = []) {
-    const { total, keywords, negative_project, negative } = data
-    const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywords)
-    const neg = trainingKeywords.length ? negative_project : negative
-    return getKeywordList(keywords, filter, neg).map(item => ({
+    const { keywordCount, keywordsCount, nagetiveCount, projectNagetiveCount } = data
+    const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywordsCount)
+    const neg = trainingKeywords.length ? projectNagetiveCount : nagetiveCount
+    return getKeywordList(keywordsCount, filter, neg).map(item => ({
       ...item,
-      percent: percent(item.count * 0.8 / total),
-      total,
+      percent: percent(item.count * 0.8 / keywordCount),
+      total: keywordCount,
       color: randomColor(),
     }))
   }
 
-  function getKeywordList(keywords, filterKeywords, negative ) {
+  function getKeywordList(keywords, filterKeywords, negative) {
     const klist = filterKeywords.map(keyword => {
       const count = keywords[keyword] || 0
       return {
         keyword, count
       }
     })
-    klist.push({
-      keyword: t('dataset.samples.negative'),
-      count: negative,
-    })
-    return klist
+    return [
+      ...klist,
+      {
+        keyword: t('dataset.samples.negative'),
+        count: negative,
+      }
+    ]
   }
 
   function format({ percent = 0, keyword = '', count = 0, total }) {
@@ -69,8 +71,8 @@ function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
         <div key={item.keyword} className={s.rate}>
           <span className={s.bar} style={{ width: item.percent, background: item.color }}>&nbsp;</span>
           <span>{format(item)}</span>
-          </div>
-      ))}  
+        </div>
+      ))}
     </div>
   ) : null
 }
@@ -79,7 +81,7 @@ const actions = (dispatch) => {
   return {
     getKeywordRates(id) {
       return dispatch({
-        type: 'dataset/getKeywordRates',
+        type: 'dataset/getDataset',
         payload: id,
       })
     }

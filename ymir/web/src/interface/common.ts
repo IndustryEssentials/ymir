@@ -1,3 +1,3 @@
-export type backendData = {
+export type BackendData = {
   [key: string]: any,
 }
