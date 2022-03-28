@@ -3,10 +3,7 @@ import { Row, Col } from "antd"
 import { connect } from "dva"
 
 import { Stages, StageList } from '@/constants/project'
-<<<<<<< HEAD
 import { templateString } from '@/utils/string'
-=======
->>>>>>> 0f3ab7f6afcd128460d53bc414114a4e8e3c1fc0
 import Stage from './stage'
 import s from "./iteration.less"
 
