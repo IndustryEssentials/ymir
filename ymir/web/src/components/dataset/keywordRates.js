@@ -37,9 +37,9 @@ function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
     const { keywordCount, keywordsCount, nagetiveCount, projectNagetiveCount } = data
     const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywordsCount)
     const neg = trainingKeywords.length ? projectNagetiveCount : nagetiveCount
-    return getKeywordList(keywords, filter, neg).map(item => ({
+    return getKeywordList(keywordsCount, filter, neg).map(item => ({
       ...item,
-      percent: percent(item.count * 0.8 / total),
+      percent: percent(item.count * 0.8 / keywordCount),
       total: keywordCount,
       color: randomColor(),
     }))
