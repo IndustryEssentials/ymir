@@ -1,7 +1,8 @@
 from typing import Dict
 
+from src.config import viz_settings
 from src.libs import app_logger, utils
-from src.viz_models import task
+from src.viz_models import pb_reader
 
 
 def get_model_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
@@ -17,10 +18,24 @@ def get_model_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
 
     :rtype: ModelResult
     """
-    result = task.Task(user_id, repo_id, branch_id).get_model_info()
+    model_info = pb_reader.MirStorageLoader(
+        sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
+        user_id=user_id,
+        repo_id=repo_id,
+        branch_id=branch_id,
+        task_id=branch_id,
+    ).get_model_info()
 
     resp = utils.suss_resp()
-    resp.update({"result": result})
-    app_logger.logger.info(f"get_task_info: {resp}")
+    resp.update({
+        "result":
+        dict(
+            model_id=model_info["model_hash"],
+            model_mAP=model_info["mean_average_precision"],
+            task_parameters=model_info["task_parameters"],
+            executor_config=model_info["executor_config"],
+        )
+    })
+    app_logger.logger.info(f"get_model_info: {resp}")
 
     return resp
