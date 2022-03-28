@@ -35,10 +35,8 @@ class AssetOut(Common):
 
 
 class AssetPagination(BaseModel):
-    total: int
     items: List[Asset]
-    keywords: Dict[str, int]
-    negative_info: Dict[str, int]
+    total: int
 
 
 class AssetPaginationOut(Common):

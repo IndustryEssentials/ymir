@@ -59,15 +59,16 @@ class CmdCopy(base.BaseCommand):
             return check_code
 
         # read from src mir root
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=data_mir_root,
-                                                       mir_branch=data_src_typ_rev_tid.rev,
-                                                       mir_task_id=data_src_typ_rev_tid.tid,
-                                                       mir_storages=mir_storage.get_all_mir_storage())
+        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
+         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=data_mir_root,
+                                                                   mir_branch=data_src_typ_rev_tid.rev,
+                                                                   mir_task_id=data_src_typ_rev_tid.tid,
+                                                                   ms_list=mir_storage.get_all_mir_storage(),
+                                                                   as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
         # annotations.mir: change head task id and type ids
-        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
         orig_head_task_id = mir_annotations.head_task_id
         if not orig_head_task_id:
             logging.error('bad annotations.mir: empty head task id')
@@ -78,7 +79,6 @@ class CmdCopy(base.BaseCommand):
 
         # annotations.mir and keywords.mir: change type ids
         single_task_annotations = mir_annotations.task_annotations[orig_head_task_id]
-        mir_keywords: mirpb.MirKeywords = mir_datas[mirpb.MIR_KEYWORDS]
         return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
                                                               mir_keywords=mir_keywords,
                                                               data_mir_root=data_mir_root,
@@ -99,7 +99,6 @@ class CmdCopy(base.BaseCommand):
         mir_annotations.head_task_id = dst_typ_rev_tid.tid
 
         # tasks.mir: get necessary head task infos, remove others and change head task id
-        mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MIR_TASKS]
         orig_head_task_id = mir_tasks.head_task_id
         if not orig_head_task_id:
             logging.error('bad tasks.mir: empty head task id')
@@ -111,7 +110,6 @@ class CmdCopy(base.BaseCommand):
         PhaseLoggerCenter.update_phase(phase='copy.change')
 
         # save and commit
-        mir_metadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         orig_task = mir_tasks.tasks[orig_head_task_id]
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
                                            task_id=dst_typ_rev_tid.tid,

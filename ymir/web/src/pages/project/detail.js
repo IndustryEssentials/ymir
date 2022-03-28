@@ -71,10 +71,17 @@ function ProjectDetail(func) {
 
 const actions = (dispacth) => {
   return {
+<<<<<<< HEAD
     getProject(id, force) {
       return dispacth({
         type: 'project/getProject',
         payload: { id, force },
+=======
+    getProject(id) {
+      return dispacth({
+        type: 'project/getProject',
+        payload: id,
+>>>>>>> 0f3ab7f6afcd128460d53bc414114a4e8e3c1fc0
       })
     }
   }
