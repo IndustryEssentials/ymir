@@ -1,6 +1,6 @@
 import { OriginModelGroup, ModelGroup, OriginModelVersion, ModelVersion } from "@/interface/model"
 import { format } from '@/utils/date'
-import { getInterationVersion } from "./project"
+import { getIterationVersion } from "./project"
 
 export enum states {
   READY = 0,
@@ -26,7 +26,7 @@ export function transferModel (data: OriginModelVersion): ModelVersion {
     projectId: data.project_id,
     hash: data.hash,
     version: data.version_num || 0,
-    versionName: getInterationVersion(data.version_num),
+    versionName: getIterationVersion(data.version_num),
     state: data.result_state,
     map: data.map || 0,
     url: data.url || '',

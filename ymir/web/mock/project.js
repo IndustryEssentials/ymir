@@ -21,7 +21,7 @@ const item = {
     value: '@integer(4,6)',
   },
   'mining_strategy|1': [1,2,3],
-  current_interation: {
+  current_iteration: {
     'id|+1': 3001,
     'name': 'V@integer(1,10)',
     'version': '@integer(1,10)',

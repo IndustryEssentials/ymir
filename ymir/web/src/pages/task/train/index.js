@@ -236,7 +236,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
                     disabled={id}
                     showArrow
                   >
-                    {datasets.filter(ds => ds.id !== testSet).map(item => 
+                    {datasets.filter(ds => ds.id !== testSet).map(item =>
                       <Option value={item.id} key={item.name}>
                         {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>
@@ -258,7 +258,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
                     onChange={validationSetChange}
                     showArrow
                   >
-                    {datasets.filter(ds => ds.id !== trainSet).map(item => 
+                    {datasets.filter(ds => ds.id !== trainSet).map(item =>
                       <Option value={item.id} key={item.name}>
                         {item.name}({item.assetCount})
                       </Option>
@@ -331,7 +331,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
                   noStyle
                   name="gpu_count"
                   rules={[
-                    {validator: validateGPU}
+                    { validator: validateGPU }
                   ]}
                 >
                   <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
@@ -439,10 +439,10 @@ const props = (state) => {
 
 const dis = (dispatch) => {
   return {
-    getDatasets(pid) {
+    getDatasets(pid, force) {
       return dispatch({
         type: "dataset/queryAllDatasets",
-        payload: pid,
+        payload: { pid, force },
       })
     },
     getDataset(id) {

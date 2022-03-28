@@ -37,7 +37,7 @@ describe("models: model", () => {
   errorCode(model, 'batchModels')
   errorCode(model, 'getModel')
   errorCode(model, 'delModel')
-  errorCode(model, 'createModel')
+  errorCode(model, 'importModel')
   errorCode(model, 'updateModel')
   errorCode(model, 'verify')
   errorCode(model, 'getModelsByRef', [])
@@ -131,12 +131,12 @@ describe("models: model", () => {
     expect(end.value.id).toBe(expected.id)
     expect(end.done).toBe(true)
   })
-  it("effects: createModel", () => {
-    const saga = model.effects.createModel
+  it("effects: importModel", () => {
+    const saga = model.effects.importModel
     const expected = { id: 618, name: 'anewmodel' }
     const creator = {
-      type: "createModel",
-      payload: expected,
+      type: "importModel",
+      payload: { projectId: 6181, name: expected.name, url: '/testmodellocalurl'},
     }
 
     const generator = saga(creator, { put, call })

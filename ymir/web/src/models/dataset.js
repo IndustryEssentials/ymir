@@ -1,10 +1,12 @@
-import { 
-  getDatasetGroups, getDatasetByGroup,  queryDatasets, getDataset, batchDatasets,
+import {
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets,
   getAssetsOfDataset, getAsset, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { isFinalState } from '@/constants/task'
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
+
+let loading = false
 
 const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
 
@@ -27,8 +29,8 @@ export default {
       const { pid, query } = payload
       const { code, result } = yield call(getDatasetGroups, pid, query)
       if (code === 0) {
-      const groups = result.items.map(item => transferDatasetGroup(item))
-      const payload = { items: groups, total: result.total }
+        const groups = result.items.map(item => transferDatasetGroup(item))
+        const payload = { items: groups, total: result.total }
         yield put({
           type: "UPDATE_DATASETS",
           payload,
@@ -47,7 +49,7 @@ export default {
       const { code, result } = yield call(getDataset, payload)
       if (code === 0) {
         const dataset = transferDataset(result)
-        
+
         if (dataset.projectId) {
           const presult = yield put.resolve({
             type: 'project/getProject',
@@ -90,16 +92,28 @@ export default {
       }
     },
     *queryAllDatasets({ payload }, { select, call, put }) {
-      const pid = payload
-      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: states.VALID, limit: 10000 }})
+      if (loading) {
+        return
+      }
+      loading = true
+      const { pid, force } = payload
+      if (!force) {
+        const dssCache = yield select(state => state.dataset.allDatasets)
+        console.log('dssCache:', dssCache)
+        if (dssCache.length) {
+          loading = false
+          return dssCache
+        }
+      }
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",
           payload: dss.items,
         })
       }
+      loading = false
     },
-    
     *getKeywordRates({ payload }, { call, put }) {
       const id = payload
       const { code, result } = yield call(getAssetsOfDataset, { id, limit: 1 })
@@ -215,13 +229,13 @@ export default {
         }
       })
     },
-    *resetQuery({}, { put }) {
+    *resetQuery({ }, { put }) {
       yield put({
         type: 'UPDATE_QUERY',
         payload: initQuery,
       })
     },
-    *clearCache({}, { put }) {
+    *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
     },
   },
@@ -240,7 +254,7 @@ export default {
     },
     UPDATE_VERSIONS(state, { payload }) {
       const { id, versions } = payload
-      const vs = state.versions 
+      const vs = state.versions
       vs[id] = versions
       return {
         ...state,
@@ -283,4 +297,13 @@ export default {
       return { ...initState }
     },
   },
+  subscriptions: {
+    setup({ dispatch, history }) {
+      history.listen(location => {
+        dispatch({
+          type: 'clearCache',
+        })
+      })
+    },
+  }
 }

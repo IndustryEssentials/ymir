@@ -10,10 +10,9 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import s from "./index.less"
 import commonStyles from "../common.less"
-import { TASKSTATES } from '@/constants/task'
 import Tip from "@/components/form/tip"
 import RecommendKeywords from "@/components/common/recommendKeywords"
-import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
+import Panel from "@/components/form/panel"
 
 const { Option } = Select
 
@@ -131,22 +130,6 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
     setSelectedKeywords(kws)
     form.setFieldsValue({ inc: kws })
   }
-
-  const Panel = ({ hasHeader = true, visible = false, setVisible = () => {}, label = '', children }) => {
-
-    return (
-      <div className={s.panel}>
-        {hasHeader ? <Row className={s.header} onClick={() => setVisible(!visible)}>
-          <Col flex={1} className={s.title}>{label}</Col>
-          <Col className={s.foldBtn}>{visible ? <span><ArrowDownIcon /></span> : <span><ArrowRightIcon /></span>}</Col>
-        </Row> : null}
-        <div className={s.content} hidden={hasHeader ? !visible : false}>
-          {children}
-        </div>
-      </div>
-    )
-  }
-
   const datasetSelect = (filter = [], onChange = () => { }) => {
     return (
       <Select
@@ -281,10 +264,10 @@ const props = (state) => {
 }
 const mapDispatchToProps = (dispatch) => {
   return {
-    getDatasets(pid) {
+    getDatasets(pid, force) {
       return dispatch({
         type: "dataset/queryAllDatasets",
-        payload: pid,
+        payload: { pid, force },
       })
     },
     getDataset(id) {

@@ -11,31 +11,43 @@ function randomColor() {
 }
 
 function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
+  const [data, setData] = useState(null)
   const [list, setList] = useState([])
 
   useEffect(() => {
     id && fetchRates()
   }, [id])
 
+  useEffect(() => {
+    if (data) {
+      const klist = prepareList(data, trainingKeywords)
+      console.log(klist, trainingKeywords, 'params')
+      setList(klist)
+    }
+  }, [data, trainingKeywords])
+
   async function fetchRates(){
     const result = await getKeywordRates(id)
     if (result) {
-      const { total, keywords, negative_project, negative } = result
-      const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywords)
-      const neg = trainingKeywords.length ? negative_project : negative
-      const klist = getKeywordList(keywords, filter, neg).map(item => ({
-        ...item,
-        percent: percent(item.count * 0.8 / total),
-        total,
-        color: randomColor(),
-      }))
-      setList(klist)
+      setData(result)
     }
+  }
+
+  function prepareList(data = {}, trainingKeywords = []) {
+    const { total, keywords, negative_project, negative } = data
+    const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywords)
+    const neg = trainingKeywords.length ? negative_project : negative
+    return getKeywordList(keywords, filter, neg).map(item => ({
+      ...item,
+      percent: percent(item.count * 0.8 / total),
+      total,
+      color: randomColor(),
+    }))
   }
 
   function getKeywordList(keywords, filterKeywords, negative ) {
     const klist = filterKeywords.map(keyword => {
-      const count = keywords[keyword]
+      const count = keywords[keyword] || 0
       return {
         keyword, count
       }
