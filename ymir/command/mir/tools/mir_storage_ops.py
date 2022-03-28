@@ -324,21 +324,22 @@ class MirStorageOps():
             mir_branch=mir_branch,
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS],
             mir_task_id=mir_task_id,
-            as_dict=False,
+            as_dict=True,
         )
 
         asset_ids_detail: Dict[str, Dict] = dict()
-        annotations = mir_storage_annotations.task_annotations[mir_storage_annotations.head_task_id].image_annotations
-        for asset_id, metadata in mir_storage_metadatas.attributes.items():
+        hid = mir_storage_annotations["head_task_id"]
+        annotations = mir_storage_annotations["task_annotations"][hid]["image_annotations"]
+        for asset_id, metadata in mir_storage_metadatas["attributes"].items():
             asset_ids_detail[asset_id] = dict(
-                metadata=cls.__message_to_dict(metadata),
-                annotations=cls.__message_to_dict(annotations[asset_id].annotations),
-                class_ids=mir_storage_keywords.keywords[asset_id].predifined_keyids,
+                metadata=metadata,
+                annotations=annotations[asset_id]["annotations"],
+                class_ids=mir_storage_keywords["keywords"][asset_id]["predifined_keyids"],
             )
         return dict(
-            all_asset_ids=mir_storage_metadatas.attributes.keys(),
+            all_asset_ids=[*mir_storage_metadatas["attributes"].keys()],
             asset_ids_detail=asset_ids_detail,
-            class_ids_index=cls.__message_to_dict(mir_storage_keywords.index_predifined_keyids),
+            class_ids_index={k: v["asset_ids"] for k, v in mir_storage_keywords["index_predifined_keyids"].items()},
         )
 
 
