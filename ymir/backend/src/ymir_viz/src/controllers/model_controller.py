@@ -1,11 +1,10 @@
-from typing import Dict
-
 from src.config import viz_settings
 from src.libs import app_logger, utils
+from src.swagger_models.model_result import ModelResult
 from src.viz_models import pb_reader
 
 
-def get_model_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
+def get_model_info(user_id: str, repo_id: str, branch_id: str) -> ModelResult:
     """
     get task model info
 
@@ -38,4 +37,4 @@ def get_model_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
     })
     app_logger.logger.info(f"get_model_info: {resp}")
 
-    return resp
+    return ModelResult(**resp)

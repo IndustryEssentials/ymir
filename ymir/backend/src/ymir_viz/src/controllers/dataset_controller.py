@@ -1,7 +1,7 @@
 from src.config import viz_settings
 from src.libs import app_logger, utils
-from src.viz_models import pb_reader
 from src.swagger_models.dataset_result import DatasetResult
+from src.viz_models import pb_reader
 
 
 def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResult:
