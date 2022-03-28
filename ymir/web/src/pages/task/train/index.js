@@ -277,7 +277,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
                 {dataset?.project?.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
               </Form.Item>
             </Tip>
-            <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateModel id={dataset.projectId} />}>
               <Tip content={t('tip.task.train.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}

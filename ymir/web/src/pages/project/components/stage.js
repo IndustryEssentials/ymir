@@ -6,7 +6,7 @@ import { states, statesLabel } from '@/constants/dataset'
 import { TASKSTATES, getTaskStateLabel } from '@/constants/task'
 import s from './iteration.less'
 
-function Stage({ stage, current = 0, end = false, callback = () => { }, ...func }) {
+function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...func }) {
   console.log('stage: ', stage, end)
   const history = useHistory()
 
@@ -20,7 +20,7 @@ function Stage({ stage, current = 0, end = false, callback = () => { }, ...func 
         history.push(stage.url)
       } else {
         // todo create new one
-        createIteration({ round: current + 1 })
+        createIteration({ userId: func.userId, projectId: pid, iterationRound: current + 1 })
         callback()
       }
     } else if (stage.next) {
@@ -33,14 +33,14 @@ function Stage({ stage, current = 0, end = false, callback = () => { }, ...func 
   async function updateIteration(params) {
     const result = await func.updateIteration(params)
     if (result) {
-      next({ stage })
+      callback(stage)
     }
   }
 
   async function createIteration(params) {
     const result = await func.createIteration(params)
     if (result) {
-      next({ iterationId: result.id })
+      callback({ iterationId: result.id })
     }
   }
 
@@ -111,7 +111,9 @@ function Stage({ stage, current = 0, end = false, callback = () => { }, ...func 
 }
 
 const props = (state) => {
-  return {}
+  return {
+    userId: state.user.id,
+  }
 }
 
 const actions = (dispacth) => {
