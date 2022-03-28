@@ -19,7 +19,7 @@ from app.api.errors.errors import (
 )
 from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.files import NGINX_DATA_PATH
-from app.utils.ymir_controller import gen_repo_hash, ControllerClient
+from app.utils.ymir_controller import gen_user_hash, gen_repo_hash, ControllerClient
 
 router = APIRouter()
 
@@ -183,6 +183,7 @@ def import_model_in_background(
         if task_obj is None:
             raise TaskNotFound()
         parameters = {
+            "src_user_id": gen_user_hash(model_obj.user_id),
             "src_repo_id": gen_repo_hash(model_obj.project_id),
             "src_resource_id": task_obj.hash,
         }

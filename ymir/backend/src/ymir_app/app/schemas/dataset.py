@@ -10,6 +10,7 @@ from app.schemas.common import (
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
+    RequestParameterBase,
 )
 from app.schemas.task import TaskInternal
 
@@ -36,6 +37,7 @@ class DatasetBase(BaseModel):
     # user_id can be parsed from token
     keywords: Optional[str]
     ignored_keywords: Optional[str]
+    negative_info: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -83,6 +85,7 @@ class DatasetUpdate(BaseModel):
     result_state: Optional[ResultState]
     keywords: Optional[str]
     ignored_keywords: Optional[str]
+    negative_info: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -102,17 +105,12 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
 class Dataset(DatasetInDBBase):
     keywords: Optional[str]
     ignored_keywords: Optional[str]
+    negative_info: Optional[str]
     source: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords")
-    def unpack_keywords(cls, v: Optional[str]) -> List[str]:
-        if v is None:
-            return []
-        return json.loads(v)
-
-    @validator("ignored_keywords")
-    def unpack_ignored_keywords(cls, v: Optional[str]) -> List[str]:
+    @validator("keywords", "ignored_keywords", "negative_info")
+    def unpack(cls, v: Optional[str]) -> List[str]:
         if v is None:
             return []
         return json.loads(v)
@@ -139,10 +137,9 @@ class DatasetPaginationOut(Common):
     result: DatasetPagination
 
 
-class DatasetsFusionParameter(BaseModel):
+class DatasetsFusionParameter(RequestParameterBase):
     dataset_group_id: int
     main_dataset_id: int
-    project_id: int
 
     include_datasets: List[int]
     include_strategy: Optional[MergeStrategy] = Field(
