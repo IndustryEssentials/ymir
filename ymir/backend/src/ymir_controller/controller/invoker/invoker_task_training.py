@@ -73,6 +73,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_assset_cache")
         executor_instance = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,
@@ -83,6 +84,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             work_dir=subtask_workdir,
             in_dataset_id=request.task_id,
             his_task_id=previous_subtask_id,
+            asset_cache_dir=asset_cache_dir,
             training_image=training_image,
             executor_instance=executor_instance,
             tensorboard=tensorboard_dir,
@@ -102,6 +104,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         in_dataset_id: str,
         his_task_id: str,
         training_image: str,
+        asset_cache_dir: str,
         executor_instance: str,
         tensorboard: str,
         model_hash: str,
@@ -110,7 +113,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
             '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
             '--src-revs', f"{in_dataset_id}@{his_task_id}", '--config-file', config_file, '--executor', training_image,
-            '--executor-instance', executor_instance, '--tensorboard', tensorboard
+            '--executor-instance', executor_instance, '--tensorboard', tensorboard, '--cache', asset_cache_dir,
         ]
         if model_hash:
             training_cmd.append('--model-hash')
