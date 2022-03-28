@@ -81,7 +81,7 @@ const actions = (dispatch) => {
   return {
     getKeywordRates(id) {
       return dispatch({
-        type: 'dataset/getKeywordRates',
+        type: 'dataset/getDataset',
         payload: id,
       })
     }
