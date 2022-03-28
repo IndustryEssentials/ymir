@@ -270,7 +270,6 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
         annotation_file_path = os.path.join(dest_path, _rel_annotation_path_for_asset(rel_asset_path=asset_file_name,
                                                                                       format_type=format_type))
         os.makedirs(os.path.dirname(annotation_file_path), exist_ok=True)
-        logging.info(f"annotation file path: {annotation_file_path}")
         with open(annotation_file_path, 'w') as f:
             f.write(anno_str)
 
