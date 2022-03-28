@@ -1,5 +1,5 @@
 import { Project, Iteration, } from "@/interface/project"
-import { backendData } from "@/interface/common"
+import { BackendData } from "@/interface/common"
 import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 
@@ -32,7 +32,7 @@ export function getIterationVersion(version: number) {
   return `V${version}`
 }
 
-export function transferProject(data: backendData) {
+export function transferProject(data: BackendData) {
   const iteration = transferIteration(data.current_iteration)
   const project : Project = {
     id: data.id,
@@ -59,7 +59,7 @@ export function transferProject(data: backendData) {
   return project
 }
 
-export function transferIteration(data: backendData): Iteration | undefined {
+export function transferIteration(data: BackendData): Iteration | undefined {
   if (!data) {
     return
   }

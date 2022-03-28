@@ -2,6 +2,7 @@ import { getLocale } from "umi"
 import { OriginDatasetGroup, DatasetGroup, OriginDataset, Dataset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
 import { getIterationVersion } from "./project"
+import { BackendData } from "@/interface/common"
 
 export enum states {
   READY = 0,
@@ -28,7 +29,8 @@ export function transferDatasetGroup (data: OriginDatasetGroup) {
   return group
 }
 
-export function transferDataset (data: OriginDataset): Dataset {
+export function transferDataset (data: BackendData): Dataset {
+  const { negative_images_cnt, project_negative_images_cnt } = data.negative_info || {}
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -37,8 +39,11 @@ export function transferDataset (data: OriginDataset): Dataset {
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
     assetCount: data.asset_count || 0,
-    keywords: data.keywords || [],
+    keywords: Object.keys(data.keywords || {}),
     keywordCount: data.keyword_count || 0,
+    keywordsCount: data.keywords || {},
+    nagetiveCount: negative_images_cnt || 0,
+    projectNagetiveCount: project_negative_images_cnt || 0,
     ignoredKeywords: data.ignored_keywords || [],
     hash: data.hash,
     state: data.result_state,
