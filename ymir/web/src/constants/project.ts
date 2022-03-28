@@ -17,12 +17,13 @@ type stageObject = {
   url?: string,
 }
 export const StageList = () => {
+  const iterationParams = 'iterationId={id}&currentStage={currentStage}'
   const list = [
-    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', url: '/home/task/fusion/' },
-    { value: Stages.mining, prepare: 'miningSet', resultKey: 'miningResult', url: '/home/task/mining/' },
-    { value: Stages.labelling, prepare: 'miningResult', resultKey: 'labelSet', url: '/home/task/label/' },
-    { value: Stages.merging, prepare: 'labelSet', resultKey: 'trainUpdateSet', url: '/home/task/fusion/' },
-    { value: Stages.training, prepare: 'trainUpdateSet', resultKey: 'model', url: '/home/task/training/' },
+    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', url: `/home/task/fusion/{trainSet}?${iterationParams}` },
+    { value: Stages.mining, prepare: 'miningSet', resultKey: 'miningResult', url: `/home/task/mining/{miningSet}?${iterationParams}` },
+    { value: Stages.labelling, prepare: 'miningResult', resultKey: 'labelSet', url: '/home/task/label/{miningResult}' },
+    { value: Stages.merging, prepare: 'labelSet', resultKey: 'trainUpdateSet', url: '/home/task/fusion/{labelSet}' },
+    { value: Stages.training, prepare: 'trainUpdateSet', resultKey: 'model', url: '/home/task/training/{trainUpdateSet}' },
     { value: Stages.trained, prepare: 'trainUpdateSet', resultKey: 'trainSet', },
   ]
   return { list, ...singleList(list) }
