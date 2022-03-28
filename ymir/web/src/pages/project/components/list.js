@@ -122,19 +122,19 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
     </Row>
     const desc = <>
       <Row className={s.content} justify="center">
-        <Col span={6} className={s.stats}>
+        <Col span={4} className={s.stats}>
           <div className={s.contentLabel}>Datasets</div>
           <div className={s.contentContent}>{item.setCount}</div>
         </Col>
-        <Col span={6} className={s.stats}>
+        <Col span={4} className={s.stats}>
           <div className={s.contentLabel}>Models</div>
           <div className={s.contentContent}>{item.modelCount}</div>
         </Col>
-        <Col span={6} className={s.stats}>
+        <Col span={12} className={s.stats}>
           <div className={s.contentLabel}>{t('project.train_set')}/{t('project.test_set')}/{t('project.mining_set')}</div>
-          <div className={s.sets}>{item.trainSet?.name}/{item.testSet?.name}/{item.miningSet?.name}</div>
+          <div className={s.sets} title={`${t('project.train_set')}:${item.trainSet?.name}\n${t('project.test_set')}:${item.testSet?.name}\n${t('project.mining_set')}:${item.miningSet?.name}`}>{item.trainSet?.name}/{item.testSet?.name}/{item.miningSet?.name}</div>
         </Col>
-        <Col span={6} className={s.stats}>
+        <Col span={4} className={s.stats}>
           <div className={s.contentLabel}>{t('project.iteration.number')}</div>
           <div className={s.contentContent}>{item.round}/{item?.targetIteration}</div>
         </Col>
