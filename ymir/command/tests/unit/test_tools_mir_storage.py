@@ -6,7 +6,7 @@ import unittest
 import google.protobuf.json_format as pb_format
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import context, mir_storage_ops
+from mir.tools import context, mir_storage, mir_storage_ops
 from mir.tools.errors import MirError
 from tests import utils as test_utils
 
@@ -197,33 +197,18 @@ class TestMirStorage(unittest.TestCase):
 
         return (mir_metadatas, mir_annotations, mir_keywords, mir_tasks, mir_context)
 
-    # protected: check result
-    def _check_keywords(self, expected_mir_keywords: mirpb.MirKeywords, actual_mir_keywords: mirpb.MirKeywords) -> None:
-        """
-        for mir_keywords, both keyids and asset_ids should be compared as set
-        """
-        self.assertEqual(expected_mir_keywords.keywords.keys(), actual_mir_keywords.keywords.keys())
-        logging.info(f"expected: {expected_mir_keywords.index_predifined_keyids.keys()}")
-        logging.info(f"actual: {actual_mir_keywords.index_predifined_keyids.keys()}")
-        self.assertEqual(expected_mir_keywords.index_predifined_keyids.keys(),
-                         actual_mir_keywords.index_predifined_keyids.keys())
-        for k, v in actual_mir_keywords.keywords.items():
-            self.assertEqual(set(v.predifined_keyids), set(expected_mir_keywords.keywords[k].predifined_keyids))
-        for k, v in actual_mir_keywords.index_predifined_keyids.items():
-            self.assertEqual(set(v.asset_ids), set(expected_mir_keywords.index_predifined_keyids[k].asset_ids))
-
     # public: test cases
     def test_normal_00(self):
         """
         normal cases: no project context, commit twice
         """
         mir_metadatas, mir_annotations, mir_keywords, mir_tasks, mir_context = self._prepare_mir_pb(with_project=False)
-
         mir_datas_expect = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
             mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
+        mir_storage_list = mir_datas_expect.keys()
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='master',
@@ -232,22 +217,27 @@ class TestMirStorage(unittest.TestCase):
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations
                                                       },
                                                       task=mir_tasks.tasks[mir_tasks.head_task_id])
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
-                                                       mir_branch='a',
-                                                       mir_task_id='mining-task-id',
-                                                       mir_storages=[x for x in mir_datas_expect.keys()])
-        self.assertDictEqual(mir_datas, mir_datas_expect)
-        loaded_mir_keywords = mir_storage_ops.MirStorageOps.load_single(mir_root=self._mir_root,
-                                                                        mir_branch='a',
-                                                                        ms=mirpb.MirStorage.MIR_KEYWORDS,
-                                                                        mir_task_id='mining-task-id',
-                                                                        as_dict=False)
-        self._check_keywords(expected_mir_keywords=mir_keywords, actual_mir_keywords=loaded_mir_keywords)
-        loaded_mir_context = mir_storage_ops.MirStorageOps.load_single(mir_root=self._mir_root,
-                                                                       mir_branch='a',
-                                                                       ms=mirpb.MirStorage.MIR_CONTEXT,
-                                                                       mir_task_id='mining-task-id',
-                                                                       as_dict=False)
+        mir_datas = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=self._mir_root,
+            mir_branch='a',
+            mir_task_id='mining-task-id',
+            ms_list=mir_storage_list,
+            as_dict=False,
+        )
+        actual_data = dict(zip(mir_storage_list, mir_datas))
+        self.assertDictEqual(actual_data, mir_datas_expect)
+        loaded_mir_keywords = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
+                                                                                mir_branch='a',
+                                                                                ms=mirpb.MirStorage.MIR_KEYWORDS,
+                                                                                mir_task_id='mining-task-id',
+                                                                                as_dict=False)
+        self.assertDictEqual(pb_format.MessageToDict(mir_keywords),
+                             pb_format.MessageToDict(loaded_mir_keywords))
+        loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
+                                                                               mir_branch='a',
+                                                                               ms=mirpb.MirStorage.MIR_CONTEXT,
+                                                                               mir_task_id='mining-task-id',
+                                                                               as_dict=False)
         try:
             self.assertEqual(loaded_mir_context, mir_context)
         except AssertionError as e:
@@ -256,37 +246,54 @@ class TestMirStorage(unittest.TestCase):
             raise e
 
         # add another commit a@t2, which has empty dataset
-        mir_annotations_2 = mirpb.MirAnnotations()
         task_2 = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining, task_id='t2', message='task-t2')
         mir_tasks_2 = mirpb.MirTasks()
         mir_tasks_2.head_task_id = task_2.task_id
         mir_tasks_2.tasks[task_2.task_id].CopyFrom(task_2)
         mir_datas_expect_2 = {
-            mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations_2,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks_2,
+            mirpb.MirStorage.MIR_METADATAS:
+            mirpb.MirMetadatas(),
+            mirpb.MirStorage.MIR_ANNOTATIONS:
+            pb_format.ParseDict({
+                "task_annotations": {
+                    "t2": {}
+                },
+                "head_task_id": "t2",
+            }, mirpb.MirAnnotations()),
+            mirpb.MirStorage.MIR_TASKS:
+            mir_tasks_2,
         }
+
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='a',
                                                       mir_datas={
                                                           mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations_2,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
                                                       },
                                                       task=task_2)
         # previous a@mining-task-id remains unchanged
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
-                                                       mir_branch='a',
-                                                       mir_task_id='mining-task-id',
-                                                       mir_storages=[x for x in mir_datas_expect.keys()])
-        self.assertDictEqual(mir_datas, mir_datas_expect)
-        # check a@t2
-        mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=self._mir_root,
-                                                       mir_branch='a',
-                                                       mir_task_id='t2',
-                                                       mir_storages=[x for x in mir_datas_expect_2.keys()])
-        mir_annotations_2.head_task_id = 't2'
-        self.assertDictEqual(mir_datas, mir_datas_expect_2)
+        mir_datas = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=self._mir_root,
+            mir_branch='a',
+            mir_task_id='mining-task-id',
+            ms_list=mir_storage_list,
+            as_dict=False,
+        )
+        actual_data = dict(zip(mir_storage_list, mir_datas))
+        self.assertDictEqual(actual_data, mir_datas_expect)
+        # previous a@mining-task-id remains unchanged
+        mir_datas = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=self._mir_root,
+            mir_branch='a',
+            mir_task_id='t2',
+            ms_list=mir_storage_list,
+            as_dict=False,
+        )
+        actual_data = dict(zip(mir_storage_list, mir_datas))
+        print(f"actual_data: {actual_data}")
+        print(f"mir_datas_expect_2: {mir_datas_expect_2}")
+        self.assertDictEqual(actual_data, mir_datas_expect_2)
 
         # load_single_model: have model
         actual_dict_model = mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root,
@@ -304,11 +311,13 @@ class TestMirStorage(unittest.TestCase):
         with self.assertRaises(MirError):
             mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root, mir_branch='a', mir_task_id='t2')
 
-        # load_branch_contents
-        actual_contents_tuple = mir_storage_ops.MirStorageOps.load_branch_contents(mir_root=self._mir_root,
-                                                                                   mir_branch='a',
-                                                                                   mir_task_id='mining-task-id')
-        self.assertEqual(len(actual_contents_tuple), 5)
+        actual_contents_list = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=self._mir_root,
+            mir_branch='a',
+            mir_task_id='mining-task-id',
+            ms_list=mir_storage.get_all_mir_storage(),
+            as_dict=False)
+        self.assertEqual(len(actual_contents_list), 5)
 
     def test_normal_01(self):
         # change project settings
@@ -325,17 +334,17 @@ class TestMirStorage(unittest.TestCase):
                                                       his_branch='master',
                                                       mir_datas=mir_datas_expect,
                                                       task=mir_tasks.tasks[mir_tasks.head_task_id])
-        loaded_mir_keywords = mir_storage_ops.MirStorageOps.load_single(mir_root=self._mir_root,
-                                                                        mir_branch='a',
-                                                                        ms=mirpb.MirStorage.MIR_KEYWORDS,
-                                                                        mir_task_id='mining-task-id',
-                                                                        as_dict=False)
-        self._check_keywords(expected_mir_keywords=mir_keywords, actual_mir_keywords=loaded_mir_keywords)
-        loaded_mir_context = mir_storage_ops.MirStorageOps.load_single(mir_root=self._mir_root,
-                                                                       mir_branch='a',
-                                                                       ms=mirpb.MirStorage.MIR_CONTEXT,
-                                                                       mir_task_id='mining-task-id',
-                                                                       as_dict=False)
+        loaded_mir_keywords = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
+                                                                                mir_branch='a',
+                                                                                ms=mirpb.MirStorage.MIR_KEYWORDS,
+                                                                                mir_task_id='mining-task-id',
+                                                                                as_dict=False)
+        self.assertDictEqual(pb_format.MessageToDict(mir_keywords), pb_format.MessageToDict(loaded_mir_keywords))
+        loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
+                                                                               mir_branch='a',
+                                                                               ms=mirpb.MirStorage.MIR_CONTEXT,
+                                                                               mir_task_id='mining-task-id',
+                                                                               as_dict=False)
         try:
             self.assertEqual(loaded_mir_context, mir_context)
         except AssertionError as e:

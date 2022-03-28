@@ -35,12 +35,13 @@ class CmdSampling(base.BaseCommand):
             mir_root = '.'
 
         # read all
-        mir_datas = mir_storage_ops.MirStorageOps.load(
+        [mir_metadatas, mir_annotations, mir_tasks] = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=mir_root,
             mir_branch=src_typ_rev_tid.rev,
             mir_task_id=src_typ_rev_tid.tid,
-            mir_storages=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_TASKS])
-        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_TASKS],
+            as_dict=False,
+        )
         assets_count = len(mir_metadatas.attributes)
         sampled_assets_count = 0
         if count > 0:
@@ -55,7 +56,6 @@ class CmdSampling(base.BaseCommand):
             sampled_assets_count = assets_count
 
         # sampling
-        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
         if sampled_assets_count < assets_count:
             sampled_asset_ids = random.sample(mir_metadatas.attributes.keys(), sampled_assets_count)
             # sampled_mir_metadatas and sampled_mir_annotations
