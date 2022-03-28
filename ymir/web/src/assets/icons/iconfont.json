@@ -606,6 +606,76 @@
       "font_class": "tv",
       "unicode": "e6ea",
       "unicode_decimal": 59114
+    },
+    {
+      "icon_id": "96669944",
+      "name": "Iterative",
+      "font_class": "Iterative",
+      "unicode": "e6eb",
+      "unicode_decimal": 59115
+    },
+    {
+      "icon_id": "96683448",
+      "name": "bar-chart-2-line",
+      "font_class": "bar-chart-2-line",
+      "unicode": "e6ec",
+      "unicode_decimal": 59116
+    },
+    {
+      "icon_id": "96683449",
+      "name": "artboard-2-line",
+      "font_class": "artboard-2-line",
+      "unicode": "e6ed",
+      "unicode_decimal": 59117
+    },
+    {
+      "icon_id": "96683450",
+      "name": "repeat-2-line",
+      "font_class": "repeat-2-line",
+      "unicode": "e6ee",
+      "unicode_decimal": 59118
+    },
+    {
+      "icon_id": "96683451",
+      "name": "skip-back-mini-line",
+      "font_class": "skip-back-mini-line",
+      "unicode": "e6ef",
+      "unicode_decimal": 59119
+    },
+    {
+      "icon_id": "96683452",
+      "name": "terminal-box-line",
+      "font_class": "terminal-box-line",
+      "unicode": "e6f0",
+      "unicode_decimal": 59120
+    },
+    {
+      "icon_id": "96683453",
+      "name": "bug-line",
+      "font_class": "bug-line",
+      "unicode": "e6f1",
+      "unicode_decimal": 59121
+    },
+    {
+      "icon_id": "96683454",
+      "name": "questionnaire-line",
+      "font_class": "questionnaire-line",
+      "unicode": "e6f2",
+      "unicode_decimal": 59122
+    },
+    {
+      "icon_id": "96683455",
+      "name": "brackets-line",
+      "font_class": "brackets-line",
+      "unicode": "e6f3",
+      "unicode_decimal": 59123
+    },
+    {
+      "icon_id": "96683456",
+      "name": "global-line",
+      "font_class": "global-line",
+      "unicode": "e6f4",
+      "unicode_decimal": 59124
     }
   ]
 }

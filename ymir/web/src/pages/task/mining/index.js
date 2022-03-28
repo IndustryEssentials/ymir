@@ -146,7 +146,7 @@ function Mining({ datasetCache, datasets, ...props }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
-    
+
     const img = (form.getFieldValue('image') || '').split(',')
     const imageId = Number(img[0])
     const image = img[1]
@@ -175,7 +175,7 @@ function Mining({ datasetCache, datasets, ...props }) {
   }
 
   function modelChange(id, model) {
-      model && setSelectedModel(model)
+    model && setSelectedModel(model)
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -191,7 +191,7 @@ function Mining({ datasetCache, datasets, ...props }) {
   return (
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
-       <Card className={commonStyles.container} title={t('breadcrumbs.task.mining')}>
+      <Card className={commonStyles.container} title={t('breadcrumbs.task.mining')}>
         <div className={commonStyles.formContainer}>
           <Form
             className={styles.form}
@@ -206,42 +206,42 @@ function Mining({ datasetCache, datasets, ...props }) {
             scrollToFirstError
           >
             <Tip hidden={true}>
-            <Form.Item
-              label={t('task.common.dataset.name')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
-                { type: 'string', min: 2, max: 50 },
-              ]}
-            >
-              <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
-            </Form.Item>
+              <Form.Item
+                label={t('task.common.dataset.name')}
+                name='name'
+                rules={[
+                  { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
+                  { type: 'string', min: 2, max: 50 },
+                ]}
+              >
+                <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
+              </Form.Item>
             </Tip>
 
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
 
-            <Tip hidden={true}>
-            <Form.Item
-              label={t('task.mining.form.dataset.label')}
-              required
-              name="datasetId"
-              rules={[
-                { required: true, message: t('task.mining.form.dataset.required') },
-              ]}
-            >
-              <Select
-                placeholder={t('task.mining.form.dataset.placeholder')}
-                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={setsChange}
-                showArrow
-              >
-                {datasets.map(item =>
-                  <Option value={item.id} key={item.name}>
-                    {item.name}(assets: {item.assetCount})
-                  </Option>)}
-              </Select>
-            </Form.Item>
-            </Tip>
+              <Tip hidden={true}>
+                <Form.Item
+                  label={t('task.mining.form.dataset.label')}
+                  required
+                  name="datasetId"
+                  rules={[
+                    { required: true, message: t('task.mining.form.dataset.required') },
+                  ]}
+                >
+                  <Select
+                    placeholder={t('task.mining.form.dataset.placeholder')}
+                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    onChange={setsChange}
+                    showArrow
+                  >
+                    {datasets.map(item =>
+                      <Option value={item.id} key={item.name}>
+                        {item.name}(assets: {item.assetCount})
+                      </Option>)}
+                  </Select>
+                </Form.Item>
+              </Tip>
             </ConfigProvider>
 
 
@@ -261,7 +261,7 @@ function Mining({ datasetCache, datasets, ...props }) {
 
             <Tip content={t('tip.task.mining.image')}>
               <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-                {required: true, message: t('task.train.form.image.required')}
+                { required: true, message: t('task.train.form.image.required') }
               ]}>
                 <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
               </Form.Item>
@@ -313,7 +313,7 @@ function Mining({ datasetCache, datasets, ...props }) {
             </Tip>
 
             <Tip content={t('tip.task.filter.mgpucount')}>
-            <Form.Item
+              <Form.Item
                 label={t('task.gpu.count')}
               >
                 <Form.Item
@@ -321,7 +321,7 @@ function Mining({ datasetCache, datasets, ...props }) {
                   name="gpu_count"
                 >
                   <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
-                  <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+                <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
 
@@ -391,22 +391,22 @@ function Mining({ datasetCache, datasets, ...props }) {
                 </Form.List>
 
               </Form.Item>
-            </Tip> : null }
+            </Tip> : null}
             <Tip hidden={true}>
-            <Form.Item wrapperCol={{ offset: 8 }}>
-              <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
-                    {t('task.create')}
-                  </Button>
-                </Form.Item>
-                <Form.Item name='backBtn' noStyle>
-                  <Button size="large" onClick={() => history.goBack()}>
-                    {t('task.btn.back')}
-                  </Button>
-                </Form.Item>
-              </Space>
-            </Form.Item>
+              <Form.Item wrapperCol={{ offset: 8 }}>
+                <Space size={20}>
+                  <Form.Item name='submitBtn' noStyle>
+                    <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
+                      {t('task.create')}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item name='backBtn' noStyle>
+                    <Button size="large" onClick={() => history.goBack()}>
+                      {t('task.btn.back')}
+                    </Button>
+                  </Form.Item>
+                </Space>
+              </Form.Item>
             </Tip>
           </Form>
         </div>
@@ -429,10 +429,10 @@ const dis = (dispatch) => {
         type: "common/getSysInfo",
       })
     },
-    getDatasets(pid) {
+    getDatasets(pid, force) {
       return dispatch({
         type: "dataset/queryAllDatasets",
-        payload: pid,
+        payload: { pid, force },
       })
     },
     getDataset(id) {
