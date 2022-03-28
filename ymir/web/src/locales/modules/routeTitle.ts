@@ -26,7 +26,7 @@ const routeTitle = {
   "projects.title": { cn: `${SysName}-项目管理`, en: `${SysName} - Project`, },
   "project.title": { cn: `${SysName}-项目详情`, en: `${SysName} - Project Detail`, },
   "project.add.title": { cn: `${SysName}-设置项目`, en: `${SysName} - Project Settings`, },
-  "project.interation.title": { cn: `${SysName}-迭代详情`, en: `${SysName} - Project Interation`, },
+  "project.iteration.title": { cn: `${SysName}-迭代详情`, en: `${SysName} - Project Iteration`, },
 }
 
 export default routeTitle

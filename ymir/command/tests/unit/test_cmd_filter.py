@@ -15,6 +15,10 @@ from mir.tools.mir_storage_ops import MirStorageOps
 
 from tests import utils as test_utils
 
+# Python 3.8 in macOS switches to the spawn start method in multiprocessing as default,
+# this fix makes sure the same behaviour on both unix/mac system.
+mp.set_start_method('fork')
+
 
 class TestCmdFilter(unittest.TestCase):
     def __init__(self, methodName: str) -> None:

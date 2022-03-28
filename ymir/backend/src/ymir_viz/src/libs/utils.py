@@ -4,12 +4,16 @@ from typing import Dict, Callable
 
 from flask import request
 
-from src import config
 from src.libs import app_logger
 
 
-def suss_resp(error_code: int = 0, message: str = "operation successful") -> Dict:
-    resp = dict(error_code=error_code, message=message, request_id=request.headers.get("request_id"))
+def suss_resp(error_code: int = 0, message: str = "operation successful", result: Dict = {}) -> Dict:
+    resp = dict(
+        error_code=error_code,
+        message=message,
+        request_id=request.headers.get("request_id"),
+        result=result,
+    )
 
     return resp
 
@@ -24,11 +28,3 @@ def time_it(f: Callable) -> Callable:
         return _ret
 
     return wrapper
-
-
-def gen_cache_key(user_id: str, repo_id: str, branch_id: str) -> str:
-    """
-    generate cache atom, releated to middle data structure storage
-    :return:
-    """
-    return f"{user_id}_{repo_id}_{branch_id}:{config.MIDDLE_STRUCTURE_VERSION}"

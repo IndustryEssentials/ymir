@@ -70,6 +70,7 @@ const common = {
   'common.recommend.keyword.label': {cn: '常用标签', en: 'Recommend Keywords', },
   'common.index.keyword.label': {cn: '标签', en: 'Keywords', },
   'common.view': {cn: '查看', en: 'View', },
+  'common.step.next': {cn: '下一步', en: 'Next', },
 }
 
 export default common
