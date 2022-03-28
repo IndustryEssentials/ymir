@@ -2,6 +2,7 @@
 exports the assets and annotations from mir format to ark-training-format
 """
 
+from cmath import atanh
 from collections.abc import Collection
 from enum import Enum
 import logging
@@ -52,6 +53,11 @@ def format_file_ext(anno_format: ExportFormat) -> str:
         ExportFormat.EXPORT_FORMAT_LS_JSON: '.json',
     }
     return _format_ext_map[anno_format]
+
+
+def _rel_annotation_path_for_asset(rel_asset_path: str, format_type: ExportFormat) -> str:
+    rel_asset_path_without_ext = os.path.splitext(rel_asset_path)[0]
+    return f"{rel_asset_path_without_ext}{format_file_ext(format_type)}"
 
 
 def format_file_output_func(anno_format: ExportFormat) -> Callable:
@@ -253,13 +259,19 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
             empty_counter += 1
 
         format_func = format_file_output_func(anno_format=format_type)
+        asset_file_name = assert_id_filename_map[asset_id]
         anno_str = format_func(asset_id=asset_id,
                                attrs=attrs,
                                annotations=annotations,
                                class_type_mapping=class_type_mapping,
                                cls_id_mgr=cls_id_mgr,
-                               asset_filename=assert_id_filename_map[asset_id])
-        with open(os.path.join(dest_path, f"{asset_id}{format_file_ext(format_type)}"), 'w') as f:
+                               asset_filename=asset_file_name)
+
+        annotation_file_path = os.path.join(dest_path, _rel_annotation_path_for_asset(rel_asset_path=asset_file_name,
+                                                                                      format_type=format_type))
+        os.makedirs(os.path.dirname(annotation_file_path), exist_ok=True)
+        logging.info(f"annotation file path: {annotation_file_path}")
+        with open(annotation_file_path, 'w') as f:
             f.write(anno_str)
 
     logging.info(f"missing annotations: {missing_counter}, "

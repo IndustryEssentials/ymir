@@ -190,14 +190,13 @@ class CmdTrain(base.BaseCommand):
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         if not work_dir:
-            logging.error("empty work_dir, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not config_file:
-            logging.warning('empty --config-file, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not os.path.isfile(config_file):
-            logging.error(f"invalid --config-file {config_file}, not a file, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty work_dir')
+        if not config_file or not os.path.isfile(config_file):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --config-file: {config_file}")
+        if media_cache and not os.path.isabs(media_cache):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --cache {config_file}, not an absolute path for directory")
 
         return_code = checker.check(mir_root,
                                     [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
@@ -259,11 +258,9 @@ class CmdTrain(base.BaseCommand):
             else:
                 unused_ids.add(asset_id)
         if not train_ids:
-            logging.error("no training set; abort")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no training set')
         if not val_ids:
-            logging.error("no validation set; abort")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no validation set')
 
         if not unused_ids:
             logging.info(f"training: {len(train_ids)}, validation: {len(val_ids)}, test: {len(test_ids)}")
@@ -278,6 +275,8 @@ class CmdTrain(base.BaseCommand):
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
+        if media_cache:
+            os.makedirs(media_cache, exist_ok=True)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
@@ -297,56 +296,59 @@ class CmdTrain(base.BaseCommand):
         work_dir_in_train = os.path.join(work_dir_in, 'train')
         if os.path.isdir(work_dir_in_train):
             shutil.rmtree(work_dir_in_train)
+        os.makedirs(work_dir_in_train, exist_ok=True)
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=train_ids,
-                             asset_dir=work_dir_in_train,
+                             asset_dir=(media_cache or work_dir_in_train),
                              annotation_dir=work_dir_in_train,
                              need_ext=True,
-                             need_id_sub_folder=False,
+                             need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_train, 'index.tsv'),
-                             index_prefix='/in/train')
+                             index_prefix=('/in/cache' if media_cache else '/in/train'))
 
         # export validation set
         work_dir_in_val = os.path.join(work_dir_in, 'val')
         if os.path.isdir(work_dir_in_val):
             shutil.rmtree(work_dir_in_val)
+        os.makedirs(work_dir_in_val, exist_ok=True)
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=val_ids,
-                             asset_dir=work_dir_in_val,
+                             asset_dir=(media_cache or work_dir_in_val),
                              annotation_dir=work_dir_in_val,
                              need_ext=True,
-                             need_id_sub_folder=False,
+                             need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_val, 'index.tsv'),
-                             index_prefix='/in/val')
+                             index_prefix=('/in/cache' if media_cache else '/in/val'))
 
         # export test set (if we have)
         if test_ids:
             work_dir_in_test = os.path.join(work_dir_in, 'test')
             if os.path.isdir(work_dir_in_test):
                 shutil.rmtree(work_dir_in_test)
+            os.makedirs(work_dir_in_test, exist_ok=True)
             data_exporter.export(mir_root=mir_root,
                                  assets_location=media_location,
                                  class_type_ids=type_id_idx_mapping,
                                  asset_ids=test_ids,
-                                 asset_dir=work_dir_in_test,
+                                 asset_dir=(media_cache or work_dir_in_test),
                                  annotation_dir=work_dir_in_test,
                                  need_ext=True,
-                                 need_id_sub_folder=False,
+                                 need_id_sub_folder=True,
                                  base_branch=src_typ_rev_tid.rev,
                                  base_task_id=src_typ_rev_tid.tid,
                                  format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                                  index_file_path=os.path.join(work_dir_in_test, 'index.tsv'),
-                                 index_prefix='/in/test')
+                                 index_prefix=('/in/cache' if media_cache else '/in/test'))
 
         logging.info("starting train docker container")
 
@@ -363,6 +365,8 @@ class CmdTrain(base.BaseCommand):
         # start train docker and wait
         path_binds = []
         path_binds.append(f"-v{work_dir_in}:/in")
+        if media_cache:
+            path_binds.append(f"-v{media_cache}:/in/cache")
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
         shm_size = _get_shm_size(executor_config=executor_config)
@@ -416,10 +420,7 @@ class CmdTrain(base.BaseCommand):
                                            dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
-            raise MirRuntimeError(error_code=task_code,
-                                  error_message=task_error_msg,
-                                  needs_new_commit=True,
-                                  task=task)
+            raise MirRuntimeError(error_code=task_code, error_message=task_error_msg, needs_new_commit=True, task=task)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
