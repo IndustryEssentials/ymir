@@ -1,14 +1,8 @@
-import { getDatasetTypes } from '@/constants/query'
+import { getTaskTypeLabel } from '@/constants/task'
 
-const TypeTag = ({ types = getDatasetTypes(),  type = 0 }) => {
+const TypeTag = ({ type = 0 }) => {
 
-  
-  const target = types.find((t) => t.value === type)
-  if (!target) {
-    return type
-  }
-
-  return target.label
+  return getTaskTypeLabel(type)
 }
 
 export default TypeTag

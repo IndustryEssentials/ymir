@@ -27,7 +27,7 @@ export const isFinalState = (state: number) => {
 }
 
 export const getTaskTypeLabel = (type: number) => {
-  return {
+  const maps = {
     [TASKTYPES.TRAINING]: 'task.type.train',
     [TASKTYPES.MINING]: 'task.type.mining',
     [TASKTYPES.LABEL]: 'task.type.label',
@@ -38,7 +38,8 @@ export const getTaskTypeLabel = (type: number) => {
     [TASKTYPES.MODELIMPORT]: 'task.type.modelimport',
     [TASKTYPES.MODELCOPY]: 'task.type.modelcopy',
     [TASKTYPES.SYS]: 'task.type.sys',
-  }[type]
+  }
+  return maps[type] ? maps[type] : type
 }
 export const getTaskStateLabel = (state: number) => {
   return {
