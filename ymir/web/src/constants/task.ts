@@ -8,6 +8,8 @@ export const TASKTYPES = Object.freeze({
   COPY: 7,
   INFERENCE: 9,
   FUSION: 11,
+  MODELIMPORT: 13,
+  MODELCOPY: 14,
   SYS: 105,
 })
 
@@ -33,6 +35,8 @@ export const getTaskTypeLabel = (type: number) => {
     [TASKTYPES.COPY]: 'task.type.copy',
     [TASKTYPES.INFERENCE]: 'task.type.inference',
     [TASKTYPES.IMPORT]: 'task.type.import',
+    [TASKTYPES.MODELIMPORT]: 'task.type.modelimport',
+    [TASKTYPES.MODELCOPY]: 'task.type.modelcopy',
     [TASKTYPES.SYS]: 'task.type.sys',
   }[type]
 }

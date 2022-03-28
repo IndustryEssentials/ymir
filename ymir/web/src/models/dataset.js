@@ -53,7 +53,7 @@ export default {
         if (dataset.projectId) {
           const presult = yield put.resolve({
             type: 'project/getProject',
-            payload: dataset.projectId,
+            payload: { id: dataset.projectId },
           })
           if (presult) {
             dataset.project = presult
