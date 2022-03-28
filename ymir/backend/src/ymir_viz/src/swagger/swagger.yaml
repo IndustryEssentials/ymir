@@ -306,26 +306,9 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Annotations_inner'
-    AssetsResult_result_negative_info:
-      type: object
-      properties:
-        negative_images_cnt:
-          type: integer
-        project_negative_images_cnt:
-          type: integer
     AssetsResult_result:
       type: object
       properties:
-        class_ids_count:
-          type: object
-          example: "{4:8, 5:2}"
-        total_images_cnt:
-          type: integer
-        ignored_labels:
-          type: object
-          example: "{cat:8}"
-        negative_info:
-          $ref: '#/components/schemas/AssetsResult_result_negative_info'
         elements:
           type: array
           items:
@@ -357,9 +340,6 @@ components:
     ModelResult_result:
       type: object
       properties:
-        task_type:
-          type: string
-          description: 也可作为Enum
         model_id:
           type: string
         model_mAP:
@@ -367,6 +347,17 @@ components:
           minimum: 0
           type: integer
           description: mean average precision of the model
+        task_parameters:
+          type: string
+        executor_config:
+          type: string
+    DatasetResult_result_negative_info:
+      type: object
+      properties:
+        negative_images_cnt:
+          type: integer
+        project_negative_images_cnt:
+          type: integer
     DatasetResult_result:
       type: object
       properties:
@@ -379,7 +370,7 @@ components:
           type: object
           example: "{cat:8}"
         negative_info:
-          $ref: '#/components/schemas/AssetsResult_result_negative_info'
+          $ref: '#/components/schemas/DatasetResult_result_negative_info'
     Annotations_inner:
       type: object
       properties:
