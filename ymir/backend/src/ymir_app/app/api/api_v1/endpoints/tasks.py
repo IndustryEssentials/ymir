@@ -178,12 +178,17 @@ class TaskResult:
         )
         self.viz = viz
 
+        self._result: Optional[Dict] = None
+        self._user_labels: Optional[Dict] = None
+
     @property
     def user_labels(self) -> Dict:
         """
         Lazy evaluate labels from controller
         """
-        return self.controller.get_labels_of_user(self.user_id)
+        if self._user_labels is None:
+            self._user_labels = self.controller.get_labels_of_user(self.user_id)
+        return self._user_labels
 
     @property
     def model_info(self) -> Dict:
@@ -198,15 +203,18 @@ class TaskResult:
     def dataset_info(self) -> Dict:
         dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
         result = {
-            "keywords": list(dataset_info.keywords.keys()),
+            "keywords": dataset_info.keywords,
             "ignored_keywords": list(dataset_info.ignored_keywords.keys()),
+            "negative_info": dataset_info.negative_info,
             "asset_count": dataset_info.total,
         }
         return result
 
     @property
     def result_info(self) -> Dict:
-        return self.model_info if self.result_type is ResultType.model else self.dataset_info
+        if self._result is None:
+            self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
+        return self._result
 
     def save_model_stats(self, result: Dict) -> None:
         model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
