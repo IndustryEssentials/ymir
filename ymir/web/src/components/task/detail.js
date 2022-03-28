@@ -112,10 +112,14 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       [TASKTYPES.COPY]: renderImport,
       [TASKTYPES.INFERENCE]: renderInference,
       [TASKTYPES.FUSION]: renderFusion,
+      [TASKTYPES.MODELCOPY]: renderImport,
+      [TASKTYPES.MODELIMPORT]: renderImport,
+      [TASKTYPES.SYS]: renderSys,
     }
     return maps[task.type]()
   }
 
+  const renderSys = () => <Item label={t("dataset.column.source")}>{t('task.detail.source.sys')}</Item>
   const renderTraining = () => (
     <>
       {renderDatasetSource(task?.parameters.dataset_id)}

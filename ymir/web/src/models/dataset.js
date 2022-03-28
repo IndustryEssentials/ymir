@@ -53,7 +53,7 @@ export default {
         if (dataset.projectId) {
           const presult = yield put.resolve({
             type: 'project/getProject',
-            payload: dataset.projectId,
+            payload: { id: dataset.projectId },
           })
           if (presult) {
             dataset.project = presult
@@ -113,15 +113,6 @@ export default {
         })
       }
       loading = false
-    },
-    *getKeywordRates({ payload }, { call, put }) {
-      const id = payload
-      const { code, result } = yield call(getAssetsOfDataset, { id, limit: 1 })
-      if (code === 0) {
-        const { total, keywords, negative_info } = result
-        const { negative_images_cnt, project_negative_images_cnt } = result.negative_info
-        return { keywords, total, negative: negative_images_cnt, negative_project: project_negative_images_cnt }
-      }
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getAssetsOfDataset, payload)
@@ -258,7 +249,7 @@ export default {
       vs[id] = versions
       return {
         ...state,
-        versions: vs,
+        versions: { ...vs },
       }
     },
     UPDATE_DATASET(state, { payload }) {
