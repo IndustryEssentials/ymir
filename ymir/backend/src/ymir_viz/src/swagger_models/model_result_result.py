@@ -14,30 +14,35 @@ class ModelResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, task_type: str=None, model_id: str=None, model_m_ap: int=None):  # noqa: E501
+    def __init__(self, model_id: str=None, model_m_ap: int=None, task_parameters: str=None, executor_config: str=None):  # noqa: E501
         """ModelResultResult - a model defined in Swagger
 
-        :param task_type: The task_type of this ModelResultResult.  # noqa: E501
-        :type task_type: str
         :param model_id: The model_id of this ModelResultResult.  # noqa: E501
         :type model_id: str
         :param model_m_ap: The model_m_ap of this ModelResultResult.  # noqa: E501
         :type model_m_ap: int
+        :param task_parameters: The task_parameters of this ModelResultResult.  # noqa: E501
+        :type task_parameters: str
+        :param executor_config: The executor_config of this ModelResultResult.  # noqa: E501
+        :type executor_config: str
         """
         self.swagger_types = {
-            'task_type': str,
             'model_id': str,
-            'model_m_ap': int
+            'model_m_ap': int,
+            'task_parameters': str,
+            'executor_config': str
         }
 
         self.attribute_map = {
-            'task_type': 'task_type',
             'model_id': 'model_id',
-            'model_m_ap': 'model_mAP'
+            'model_m_ap': 'model_mAP',
+            'task_parameters': 'task_parameters',
+            'executor_config': 'executor_config'
         }
-        self._task_type = task_type
         self._model_id = model_id
         self._model_m_ap = model_m_ap
+        self._task_parameters = task_parameters
+        self._executor_config = executor_config
 
     @classmethod
     def from_dict(cls, dikt) -> 'ModelResultResult':
@@ -49,29 +54,6 @@ class ModelResultResult(Model):
         :rtype: ModelResultResult
         """
         return util.deserialize_model(dikt, cls)
-
-    @property
-    def task_type(self) -> str:
-        """Gets the task_type of this ModelResultResult.
-
-        也可作为Enum  # noqa: E501
-
-        :return: The task_type of this ModelResultResult.
-        :rtype: str
-        """
-        return self._task_type
-
-    @task_type.setter
-    def task_type(self, task_type: str):
-        """Sets the task_type of this ModelResultResult.
-
-        也可作为Enum  # noqa: E501
-
-        :param task_type: The task_type of this ModelResultResult.
-        :type task_type: str
-        """
-
-        self._task_type = task_type
 
     @property
     def model_id(self) -> str:
@@ -116,3 +98,45 @@ class ModelResultResult(Model):
         """
 
         self._model_m_ap = model_m_ap
+
+    @property
+    def task_parameters(self) -> str:
+        """Gets the task_parameters of this ModelResultResult.
+
+
+        :return: The task_parameters of this ModelResultResult.
+        :rtype: str
+        """
+        return self._task_parameters
+
+    @task_parameters.setter
+    def task_parameters(self, task_parameters: str):
+        """Sets the task_parameters of this ModelResultResult.
+
+
+        :param task_parameters: The task_parameters of this ModelResultResult.
+        :type task_parameters: str
+        """
+
+        self._task_parameters = task_parameters
+
+    @property
+    def executor_config(self) -> str:
+        """Gets the executor_config of this ModelResultResult.
+
+
+        :return: The executor_config of this ModelResultResult.
+        :rtype: str
+        """
+        return self._executor_config
+
+    @executor_config.setter
+    def executor_config(self, executor_config: str):
+        """Sets the executor_config of this ModelResultResult.
+
+
+        :param executor_config: The executor_config of this ModelResultResult.
+        :type executor_config: str
+        """
+
+        self._executor_config = executor_config
