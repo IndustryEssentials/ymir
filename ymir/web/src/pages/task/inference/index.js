@@ -208,7 +208,7 @@ function Inference({ datasetCache, datasets, ...props }) {
             </ConfigProvider>
 
 
-            <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateModel id={dataset.projectId} />}>
               <Tip content={t('tip.task.filter.imodel')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
