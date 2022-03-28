@@ -37,8 +37,8 @@ function ProjectDetail(func) {
     }
   }, [location.hash])
 
-  async function fetchProject() {
-    const result = await func.getProject(id)
+  async function fetchProject(force) {
+    const result = await func.getProject(id, force)
     if (result) {
       setProject(result)
     }
@@ -50,13 +50,13 @@ function ProjectDetail(func) {
       <div className={s.header}>
         <Space className={s.detailPanel}>
           <span className={s.name}>{project.name}</span>
-          <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.currentIteration, target: project.targetIteration })}</span>
+          <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.currentStage, target: project.targetIteration })}</span>
           <span>{t('project.train_classes')}: {project?.keywords?.join(',')}</span>
           <span>{t('project.target.map')}: {project.targetMap}</span>
           <span>{project.description}</span>
         </Space>
-        {project.currentIteration > 0 ?
-          <Iteration project={project} /> : <Prepare project={project} />}
+        {project.round > 0 ?
+          <Iteration project={project} /> : <Prepare project={project} callback={() => fetchProject(true)} />}
       </div>
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
@@ -71,10 +71,10 @@ function ProjectDetail(func) {
 
 const actions = (dispacth) => {
   return {
-    getProject(id) {
+    getProject(id, force) {
       return dispacth({
         type: 'project/getProject',
-        payload: id,
+        payload: { id, force },
       })
     }
   }

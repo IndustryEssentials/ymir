@@ -71,7 +71,7 @@ describe("models: project", () => {
     const id = 10012
     const creator = {
       type: "getProject",
-      payload: id,
+      payload: { id },
     }
     const expected = { id, name: "project001" }
 

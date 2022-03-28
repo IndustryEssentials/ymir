@@ -102,6 +102,7 @@ export function updateProject(id, {
       iteration_target: targetIteration,
       map_target: targetMap,
       training_dataset_count_target: targetDataset,
+      training_dataset_group_id: 5,
       mining_strategy: strategy,
       chunk_size: chunkSize,
       mining_dataset_id: miningSet,

@@ -27,10 +27,7 @@ export default {
     *getProjects({ payload }, { call, put }) {
       const { code, result } = yield call(getProjects, payload)
       if (code === 0) {
-        const projects = { items: result.items.map(project => {
-          
-          return transferProject(project)
-        }), total: result.total }
+        const projects = { items: result.items.map(project => transferProject(project)), total: result.total }
         yield put({
           type: "UPDATE_LIST",
           payload: projects,
@@ -39,13 +36,15 @@ export default {
       }
     },
     *getProject({ payload }, { select, call, put }) {
-      const id = payload
-      const cache = yield select(state => state.project.projects)
-      const cacheProject = cache[id]
-      if (cacheProject) {
-        return cacheProject
+      const { id, force } = payload
+      if (!force) {
+        const cache = yield select(state => state.project.projects)
+        const cacheProject = cache[id]
+        if (cacheProject) {
+          return cacheProject
+        }
       }
-      const { code, result } = yield call(getProject, payload)
+      const { code, result } = yield call(getProject, id)
       if (code === 0) {
         const project = transferProject(result)
         console.log('get from remote project: ', project)
@@ -104,7 +103,6 @@ export default {
       const projects = { ...state.projects }
       const project = payload
       projects[project.id] = project
-      console.log('project reducer: ', projects)
       return {
         ...state,
         projects,
