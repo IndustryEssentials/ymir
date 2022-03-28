@@ -59,16 +59,10 @@ class TestAssets:
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
                 }
             ],
-            "class_ids_count": {},
-            "ignored_labels": {"cat": 1},
-            "negative_info": {
-                "negative_images_cnt": 2,
-                "project_negative_images_cnt": 3,
-            },
-            "total": random.randint(1000, 2000),
+            "total": 124
         }
         AS = m.Assets.from_viz_res(res, mock_user_labels)
-        assert AS.total == res["total"]
+        assert len(AS.items) == len(res["elements"])
 
 
 class TestModel:
@@ -86,6 +80,30 @@ class TestModel:
         assert M.executor_config == res["executor_config"]
 
 
+class TestDataset:
+    def test_dataset(self, mock_user_labels):
+        res = {
+            'class_ids_count': {
+                '3': 34
+            },
+            'ignored_labels': {
+                'cat': 5
+            },
+            'negative_info': {
+                'negative_images_cnt': 0,
+                'project_negative_images_cnt': 0
+            },
+            'total_images_cnt': 1
+        }
+
+        M = m.AppDataset.from_viz_res(res, mock_user_labels)
+        assert len(M.keywords) == len(res["class_ids_count"])
+        assert M.ignored_keywords == res["ignored_labels"]
+        assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
+        assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
+        assert M.total == res["total_images_cnt"]
+
+
 class TestVizClient:
     def test_get_viz_client(self):
         host = random_lower_string()
@@ -99,18 +117,10 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            "elements": [
-                {
-                    "asset_id": random_lower_string(),
-                    "class_ids": [random.randint(1, 80) for _ in range(10)],
-                }
-            ],
-            "class_ids_count": {},
-            "ignored_labels": {"cat": 1},
-            "negative_info": {
-                "negative_images_cnt": 2,
-                "project_negative_images_cnt": 3,
-            },
+            "elements": [{
+                "asset_id": random_lower_string(),
+                "class_ids": [random.randint(1, 80) for _ in range(10)],
+            }],
             "total": random.randint(1000, 2000),
         }
         resp.json.return_value = {"result": res}
@@ -128,6 +138,7 @@ class TestVizClient:
         assert isinstance(ret, m.Assets)
         assert ret.total
         assert ret.items
+        assert len(ret.items) == len(res["elements"])
 
     def test_get_asset(self, mock_user_labels, mocker):
         host = random_lower_string()
@@ -191,6 +202,40 @@ class TestVizClient:
         assert ret["map"] == res["model_mAP"]
         assert ret["task_parameters"] == res["task_parameters"]
         assert ret["executor_config"] == res["executor_config"]
+
+    def test_get_dataset(self, mock_user_labels, mocker):
+        host = random_lower_string()
+        viz = m.VizClient(host=host)
+        mock_session = mocker.Mock()
+        resp = mocker.Mock()
+        res = {
+            'class_ids_count': {
+                '3': 34
+            },
+            'ignored_labels': {
+                'cat': 5
+            },
+            'negative_info': {
+                'negative_images_cnt': 0,
+                'project_negative_images_cnt': 0
+            },
+            'total_images_cnt': 1
+        }
+        resp.json.return_value = {"result": res}
+        mock_session.get.return_value = resp
+        viz.session = mock_session
+
+        user_id = random.randint(100, 200)
+        project_id = random.randint(100, 200)
+        task_id = random_lower_string()
+        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
+        ret = viz.get_dataset(mock_user_labels)
+        assert isinstance(ret, m.AppDataset)
+        assert len(ret.keywords) == len(res["class_ids_count"])
+        assert ret.ignored_keywords == res["ignored_labels"]
+        assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
+        assert ret.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
+        assert ret.total == res["total_images_cnt"]
 
     def test_close(self, mocker):
         host = random_lower_string()

@@ -131,12 +131,11 @@ def export(mir_root: str,
         return True
 
     # export annotations
-    mir_datas = mir_storage_ops.MirStorageOps.load(
+    [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=base_branch,
         mir_task_id=base_task_id,
-        mir_storages=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
-    mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
 
     # add all annotations to assets_to_det_annotations_dict
     # key: asset_id as str, value: annotations as List[mirpb.Annotation]
@@ -145,7 +144,6 @@ def export(mir_root: str,
         class_type_ids=set(class_type_ids.keys()) if class_type_ids else None,
         base_task_id=mir_annotations.head_task_id)
 
-    mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
     _export_detect_annotations_to_path(asset_ids=list(asset_ids),
                                        format_type=format_type,
                                        mir_metadatas=mir_metadatas,

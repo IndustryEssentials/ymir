@@ -107,10 +107,11 @@ class CmdMining(base.BaseCommand):
             return return_code
 
         # check `topk` and `add_annotations`
-        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                                      mir_branch=src_typ_rev_tid.rev,
-                                                                                      mir_task_id=src_typ_rev_tid.tid,
-                                                                                      ms=mirpb.MirStorage.MIR_METADATAS)
+        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=mir_root,
+            mir_branch=src_typ_rev_tid.rev,
+            mir_task_id=src_typ_rev_tid.tid,
+            ms=mirpb.MirStorage.MIR_METADATAS)
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
@@ -179,13 +180,13 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
                      add_annotations: bool, executor: str) -> int:
     # step 1: build topk results:
     #   read old
-    mir_datas = mir_storage_ops.MirStorageOps.load(
+    [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=src_typ_rev_tid.rev,
         mir_task_id=src_typ_rev_tid.tid,
-        mir_storages=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
-    mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
-    mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        as_dict=False,
+    )
 
     #   parse new: topk and new annotations (both optional)
     topk_result_file_path = os.path.join(export_out, 'result.tsv')
