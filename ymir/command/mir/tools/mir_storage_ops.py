@@ -287,7 +287,7 @@ class MirStorageOps():
         )
         task_storage = mir_storage_tasks.tasks[mir_storage_tasks.head_task_id]
 
-        return Dict(
+        return dict(
             class_ids_count=mir_storage_context.predefined_keyids_cnt,
             ignored_labels=task_storage.unknown_types,
             negative_info=dict(
