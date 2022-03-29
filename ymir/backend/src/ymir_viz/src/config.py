@@ -1,4 +1,5 @@
 from typing import Optional
+
 from pydantic import BaseSettings
 
 
@@ -20,6 +21,8 @@ class VizSettings(BaseSettings):
 
     VIZ_SENTRY_DSN: Optional[str] = None
     REDIS_TESTING: bool = False
+
+    VIZ_DEBUG_MODE: bool = False
 
 
 viz_settings = VizSettings(_env_file=".env")  # type: ignore
