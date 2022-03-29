@@ -25,7 +25,7 @@ def config_app(app: connexion, config: Dict = None) -> None:
 
 
 def init_logging() -> None:
-    logging_level = logging.DEBUG if viz_settings.VIZ_DEBUG_MODEL else logging.INFO
+    logging_level = logging.DEBUG if viz_settings.VIZ_DEBUG_MODE else logging.INFO
     logging.basicConfig(stream=sys.stdout,
                         format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
                         datefmt='%Y%m%d-%H:%M:%S',
