@@ -137,7 +137,8 @@ def create_task(
         write_clickhouse_metrics(
             clickhouse,
             jsonable_encoder(task),
-            task_in.parameters.dataset_id,
+            args["dataset_group_id"],
+            args["dataset_id"],
             task_in.parameters.model_id,
             task_in.parameters.keywords or [],
         )
@@ -221,6 +222,8 @@ class TaskResult:
         clickhouse.save_model_result(
             model_in_db.create_datetime,
             self.user_id,
+            model_in_db.project_id,
+            model_in_db.model_group_id,
             model_in_db.id,
             model_in_db.name,
             result.hash,
@@ -346,10 +349,12 @@ class TaskResult:
 def write_clickhouse_metrics(
     clickhouse: YmirClickHouse,
     task_info: Dict,
+    dataset_group_id: int,
     dataset_id: int,
     model_id: Optional[int],
     keywords: List[str],
 ) -> None:
+    # for task stats
     clickhouse.save_task_parameter(
         dt=task_info["create_datetime"],
         user_id=task_info["user_id"],
@@ -360,9 +365,12 @@ def write_clickhouse_metrics(
         model_ids=[model_id] if model_id else [],
         keywords=keywords,
     )
+    # for keywords recommendation
     clickhouse.save_dataset_keyword(
         dt=task_info["create_datetime"],
         user_id=task_info["user_id"],
+        project_id=task_info["project_id"],
+        group_id=dataset_group_id,
         dataset_id=dataset_id,
         keywords=keywords,
     )
@@ -384,6 +392,7 @@ def normalize_parameters(
         logger.error("[create task] main dataset(%s) not exists", parameters.dataset_id)
         raise DatasetNotFound()
     normalized["dataset_hash"] = dataset.hash
+    normalized["dataset_group_id"] = dataset.dataset_group_id
     # label task uses dataset name as task name for LabelStudio
     normalized["dataset_name"] = dataset.name
 
