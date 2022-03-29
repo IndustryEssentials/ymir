@@ -45,7 +45,7 @@ class AssetsModel:
         set cache to Redis
         hash xxx:detail {'asset_id': {'metadata': xxx, 'annotations': xxx, 'class_ids': xx}}
         list xxx:class_id ['asset_id',]
-        str  xxx:class_ids_count "{3:44, }"
+        str  xxx:class_names_count "{'cat':44, }"
         str  xxx:ignored_labels "{'cat':5, }"
         str  xxx:negative_info "{
                 "negative_images_cnt": 0,

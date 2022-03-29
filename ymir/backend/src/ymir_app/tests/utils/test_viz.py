@@ -83,8 +83,8 @@ class TestModel:
 class TestDataset:
     def test_dataset(self, mock_user_labels):
         res = {
-            'class_ids_count': {
-                '3': 34
+            'class_names_count': {
+                'cat': 34
             },
             'ignored_labels': {
                 'cat': 5
@@ -97,7 +97,7 @@ class TestDataset:
         }
 
         M = m.AppDataset.from_viz_res(res, mock_user_labels)
-        assert len(M.keywords) == len(res["class_ids_count"])
+        assert len(M.keywords) == len(res["class_names_count"])
         assert M.ignored_keywords == res["ignored_labels"]
         assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
@@ -209,8 +209,8 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            'class_ids_count': {
-                '3': 34
+            'class_names_count': {
+                'cat': 34
             },
             'ignored_labels': {
                 'cat': 5
@@ -231,7 +231,7 @@ class TestVizClient:
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
         ret = viz.get_dataset(mock_user_labels)
         assert isinstance(ret, m.AppDataset)
-        assert len(ret.keywords) == len(res["class_ids_count"])
+        assert len(ret.keywords) == len(res["class_names_count"])
         assert ret.ignored_keywords == res["ignored_labels"]
         assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert ret.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]

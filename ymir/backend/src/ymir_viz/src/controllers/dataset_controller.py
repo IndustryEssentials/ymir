@@ -1,11 +1,10 @@
-from typing import Dict
-
 from src.config import viz_settings
 from src.libs import app_logger, utils
+from src.swagger_models.dataset_result import DatasetResult
 from src.viz_models import pb_reader
 
 
-def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
+def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResult:
     """get dataset info
 
     get dataset info # noqa: E501
@@ -18,6 +17,17 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
     :type branch_id: str
 
     :rtype: DatasetResult
+
+    exampled return data:
+    {
+        "class_names_count": {'cat': 34},
+        "ignored_labels": {'cat':5, },
+        "negative_info": {
+            "negative_images_cnt": 0,
+            "project_negative_images_cnt": 0,
+        },
+        "total_images_cnt": 1,
+    }
     """
     dataset_info = pb_reader.MirStorageLoader(
         sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
@@ -30,4 +40,4 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> Dict:
     resp = utils.suss_resp(result=dataset_info)
     app_logger.logger.info(f"get_dataset_info: {resp}")
 
-    return resp
+    return DatasetResult(**resp)
