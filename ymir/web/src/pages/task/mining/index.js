@@ -218,7 +218,7 @@ function Mining({ datasetCache, datasets, ...props }) {
               </Form.Item>
             </Tip>
 
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
               <Tip hidden={true}>
                 <Form.Item

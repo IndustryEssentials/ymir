@@ -219,7 +219,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
             colon={false}
             scrollToFirstError
           >
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${dataset.projectId}`)} />}>
               <Tip hidden={true}>
                 <Form.Item
                   label={t('task.train.form.trainsets.label')}

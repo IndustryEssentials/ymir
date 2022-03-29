@@ -180,7 +180,7 @@ function Inference({ datasetCache, datasets, ...props }) {
             colon={false}
             scrollToFirstError
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
             <Tip hidden={true}>
             <Form.Item

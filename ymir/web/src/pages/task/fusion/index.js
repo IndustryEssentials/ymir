@@ -179,7 +179,7 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
             </Tip>
           </Panel>
           <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${dataset.projectId}`)} />}>
               <Tip hidden={true}>
                 <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
                   {datasetSelect(excludeDatasets, onIncludeDatasetChange)}
