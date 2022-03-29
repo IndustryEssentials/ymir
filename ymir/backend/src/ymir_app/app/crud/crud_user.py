@@ -8,6 +8,7 @@ from app.crud.base import CRUDBase
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRole, UserState, UserUpdate
 from app.utils.security import get_password_hash, verify_password
+from app.config import settings
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -15,10 +16,12 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return db.query(User).filter(User.email == email).first()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
+        state = UserState.registered.value if settings.REGISTRATION_NEEDS_APPROVAL else UserState.active.value
         db_obj = User(
             email=obj_in.email,
             hashed_password=get_password_hash(obj_in.password),
             username=obj_in.username,
+            state=state,
         )
         db.add(db_obj)
         db.commit()
