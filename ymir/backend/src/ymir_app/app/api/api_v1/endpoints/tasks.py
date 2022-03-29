@@ -201,7 +201,7 @@ class TaskResult:
 
     @property
     def dataset_info(self) -> Dict:
-        dataset_info = self.viz.get_dataset()
+        dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
         result = {
             "keywords": dataset_info.keywords,
             "ignored_keywords": list(dataset_info.ignored_keywords.keys()),
