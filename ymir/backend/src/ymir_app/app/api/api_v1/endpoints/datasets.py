@@ -25,7 +25,7 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
-from app.utils.files import FailedToDownload, is_valid_import_path, prepare_dataset
+from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir
 from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -209,7 +209,7 @@ def import_dataset_in_background(
     try:
         _import_dataset(db, controller_client, pre_dataset, user_id, task_hash)
     except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound):
-        logger.exception("[create dataset] failed to import dataset")
+        logger.exception("[import dataset] failed to import dataset")
         crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
 
 
@@ -221,28 +221,7 @@ def _import_dataset(
     task_hash: str,
 ) -> None:
     parameters = {}  # type: Dict[str, Any]
-    if dataset_import.input_url is not None:
-        # Controller will read this directory later
-        # so temp_dir will not be removed here
-        temp_dir = tempfile.mkdtemp(prefix="import_dataset_", dir=settings.SHARED_DATA_DIR)
-        paths = prepare_dataset(dataset_import.input_url, temp_dir)
-        if "annotations" not in paths or "images" not in paths:
-            raise FailedtoCreateDataset()
-        parameters = {
-            "annotation_dir": str(paths["annotations"]),
-            "asset_dir": str(paths["images"]),
-            "strategy": dataset_import.strategy,
-        }
-    elif dataset_import.input_path is not None:
-        src_path = pathlib.Path(dataset_import.input_path)
-        if not is_valid_import_path(src_path):
-            raise FailedtoCreateDataset()
-        parameters = {
-            "annotation_dir": str(src_path / "annotations"),
-            "asset_dir": str(src_path / "images"),
-            "strategy": dataset_import.strategy,
-        }
-    elif dataset_import.input_dataset_id is not None:
+    if dataset_import.input_dataset_id is not None:
         dataset = crud.dataset.get(db, id=dataset_import.input_dataset_id)
         if not dataset:
             raise DatasetNotFound()
@@ -250,6 +229,15 @@ def _import_dataset(
             "src_user_id": gen_user_hash(dataset.user_id),
             "src_repo_id": gen_repo_hash(dataset.project_id),
             "src_resource_id": dataset.hash,
+            "strategy": dataset_import.strategy,
+        }
+    else:
+        paths = ImportDatasetPaths(
+            cache_dir=settings.SHARED_DATA_DIR, input_path=dataset_import.input_path, input_url=dataset_import.input_url
+        )
+        parameters = {
+            "annotation_dir": paths.annotation_dir,
+            "asset_dir": paths.asset_dir,
             "strategy": dataset_import.strategy,
         }
 
@@ -261,9 +249,8 @@ def _import_dataset(
             dataset_import.import_type,
             parameters,
         )
-    except ValueError as e:
-        # todo parse error message
-        logger.exception("[create dataset] controller error: %s", e)
+    except ValueError:
+        logger.exception("[import dataset] controller error")
         raise FailedtoCreateDataset()
 
 
@@ -552,3 +539,34 @@ def create_dataset_fusion(
     logger.info("[create dataset] dataset record created: %s", dataset.name)
 
     return {"result": dataset}
+
+
+class ImportDatasetPaths:
+    def __init__(
+        self, input_path: Optional[str], input_url: Optional[str], cache_dir: str = settings.SHARED_DATA_DIR
+    ) -> None:
+        self.cache_dir = cache_dir
+        self.input_url = input_url
+        self.input_path = input_path
+        self._data_dir: Optional[str] = None
+
+    @property
+    def annotation_dir(self) -> str:
+        return str(self.data_dir / "annotations")
+
+    @property
+    def asset_dir(self) -> str:
+        return str(self.data_dir / "images")
+
+    @property
+    def data_dir(self) -> pathlib.Path:
+        if not self._data_dir:
+            if self.input_path:
+                verify_import_path(self.input_path)
+                self._data_dir = self.input_path
+            elif self.input_url:
+                temp_dir = tempfile.mkdtemp(prefix="import_dataset_", dir=self.cache_dir)
+                self._data_dir = prepare_imported_dataset_dir(self.input_url, temp_dir)
+            else:
+                raise ValueError("input_path or input_url is required")
+        return pathlib.Path(self._data_dir)

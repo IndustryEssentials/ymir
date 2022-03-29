@@ -22,8 +22,8 @@ def patch_prepare_dataset(mocker, tmp_path):
     images_dir.mkdir()
     mocker.patch.object(
         m,
-        "prepare_dataset",
-        return_value={"annotations": str(annotations_dir), "images": str(images_dir)},
+        "prepare_imported_dataset_dir",
+        return_value=tmp_path,
     )
 
 
