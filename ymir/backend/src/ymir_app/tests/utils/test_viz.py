@@ -59,7 +59,7 @@ class TestAssets:
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
                 }
             ],
-            "total": 124
+            "total": 124,
         }
         AS = m.Assets.from_viz_res(res, mock_user_labels)
         assert len(AS.items) == len(res["elements"])
@@ -73,7 +73,7 @@ class TestModel:
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
         }
-        M = m.Model.from_viz_res(res)
+        M = m.ModelMetaData.from_viz_res(res)
         assert M.hash == res["model_id"]
         assert M.map == res["model_mAP"]
         assert M.task_parameters == res["task_parameters"]
@@ -83,28 +83,17 @@ class TestModel:
 class TestDataset:
     def test_dataset(self, mock_user_labels):
         res = {
-            'class_ids_count': {
-                3: 34
-            },
-            'class_names_count': {
-                'cat': 34
-            },
-            'ignored_labels': {
-                'cat': 5
-            },
-            'negative_info': {
-                'negative_images_cnt': 0,
-                'project_negative_images_cnt': 0
-            },
-            'total_images_cnt': 1
+            "class_ids_count": {3: 34},
+            "ignored_labels": {"cat": 5},
+            "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+            "total_images_cnt": 1,
         }
-
-        M = m.AppDataset.from_viz_res(res, mock_user_labels)
-        assert len(M.keywords) == len(res["class_names_count"])
+        M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
+        assert M.keyword_count == len(res["class_ids_count"])
         assert M.ignored_keywords == res["ignored_labels"]
         assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
-        assert M.total == res["total_images_cnt"]
+        assert M.asset_count == res["total_images_cnt"]
 
 
 class TestVizClient:
@@ -120,10 +109,12 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            "elements": [{
-                "asset_id": random_lower_string(),
-                "class_ids": [random.randint(1, 80) for _ in range(10)],
-            }],
+            "elements": [
+                {
+                    "asset_id": random_lower_string(),
+                    "class_ids": [random.randint(1, 80) for _ in range(10)],
+                }
+            ],
             "total": random.randint(1000, 2000),
         }
         resp.json.return_value = {"result": res}
@@ -200,11 +191,11 @@ class TestVizClient:
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
         ret = viz.get_model()
-        assert isinstance(ret, dict)
-        assert ret["hash"] == res["model_id"]
-        assert ret["map"] == res["model_mAP"]
-        assert ret["task_parameters"] == res["task_parameters"]
-        assert ret["executor_config"] == res["executor_config"]
+        assert isinstance(ret, m.ModelMetaData)
+        assert ret.hash == res["model_id"]
+        assert ret.map == res["model_mAP"]
+        assert ret.task_parameters == res["task_parameters"]
+        assert ret.executor_config == res["executor_config"]
 
     def test_get_dataset(self, mock_user_labels, mocker):
         host = random_lower_string()
@@ -212,20 +203,10 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            'class_ids_count': {
-                3: 34
-            },
-            'class_names_count': {
-                'cat': 34
-            },
-            'ignored_labels': {
-                'cat': 5
-            },
-            'negative_info': {
-                'negative_images_cnt': 0,
-                'project_negative_images_cnt': 0
-            },
-            'total_images_cnt': 1
+            "class_ids_count": {3: 34},
+            "ignored_labels": {"cat": 5},
+            "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+            "total_images_cnt": 1,
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -236,12 +217,12 @@ class TestVizClient:
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
         ret = viz.get_dataset(mock_user_labels)
-        assert isinstance(ret, m.AppDataset)
-        assert len(ret.keywords) == len(res["class_names_count"])
+        assert isinstance(ret, m.DatasetMetaData)
+        assert ret.keyword_count == len(res["class_ids_count"])
         assert ret.ignored_keywords == res["ignored_labels"]
         assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert ret.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
-        assert ret.total == res["total_images_cnt"]
+        assert ret.asset_count == res["total_images_cnt"]
 
     def test_close(self, mocker):
         host = random_lower_string()
