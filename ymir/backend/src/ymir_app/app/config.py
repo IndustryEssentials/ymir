@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     STRING_LEN_LIMIT: int = 100
     TEXT_LEN_LIMIT: int = 20000
     SENTRY_DSN: Optional[str]
-    REGISTRATION_APPROVAL: bool = False
+    REGISTRATION_NEEDS_APPROVAL: bool = False
 
     # assets viz
     VIZ_HOST: str = "viz:9099"

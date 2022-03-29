@@ -16,7 +16,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return db.query(User).filter(User.email == email).first()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
-        state = UserState.registered.value if settings.REGISTRATION_APPROVAL else UserState.active.value
+        state = UserState.registered.value if settings.REGISTRATION_NEEDS_APPROVAL else UserState.active.value
         db_obj = User(
             email=obj_in.email,
             hashed_password=get_password_hash(obj_in.password),
