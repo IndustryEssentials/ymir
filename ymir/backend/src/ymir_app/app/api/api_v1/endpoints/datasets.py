@@ -523,7 +523,6 @@ def create_dataset_fusion(
     except ValueError:
         raise FailedtoCreateTask()
 
-    # TODO(chao): data fusion parameter is different from other task, need save
     # 1. create task
     task = crud.task.create_placeholder(
         db,
