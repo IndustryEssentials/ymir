@@ -1,9 +1,11 @@
+import logging
 import threading
 from typing import Dict, Union
+
 import yaml
 
 from src.config import viz_settings
-from src.libs import utils, app_logger
+from src.libs import utils
 from src.libs.cache import redis_cache
 from src.viz_models import pb_reader
 
@@ -54,10 +56,10 @@ class AssetsModel:
         str  xxx:total_images_cnt "1"
         """
         if redis_cache.get(key_cache_status):
-            app_logger.logger.info(f"Skip setting cache {key_asset_detail}, The other thread is writing cache now")
+            logging.info(f"Skip setting cache {key_asset_detail}, The other thread is writing cache now")
             return
 
-        app_logger.logger.info(f"start setting cache {key_asset_detail}")
+        logging.info(f"start setting cache {key_asset_detail}")
         redis_cache.set(key_cache_status, {"flag": 0})
         with redis_cache.pipeline() as pipe:
             for asset_id, asset_id_detail in asset_content["asset_ids_detail"].items():
@@ -70,7 +72,7 @@ class AssetsModel:
             pipe.execute()
 
         redis_cache.set(key_cache_status, {"flag": 1})
-        app_logger.logger.info("finish setting cache!!!")
+        logging.info("finish setting cache!!!")
 
     def trigger_cache_generator(self, asset_content: Dict) -> None:
         # async generate middle structure content cache
@@ -143,7 +145,7 @@ class AssetsModel:
 
         if self.check_cache_existence():
             result = self.get_assets_info_from_cache(offset=offset, limit=limit, class_id=class_id)
-            app_logger.logger.info("get_assets_info from cache")
+            logging.info("get_assets_info from cache")
         else:
             assets_content = pb_reader.MirStorageLoader(
                 sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
@@ -174,7 +176,7 @@ class AssetsModel:
         """
         if self.check_cache_existence():
             result = redis_cache.hget(self.key_asset_detail, asset_id)
-            app_logger.logger.info(f"get_asset_id: {asset_id} from cache")
+            logging.info(f"get_asset_id: {asset_id} from cache")
         else:
             assets_content = pb_reader.MirStorageLoader(
                 sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
