@@ -57,6 +57,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     const result = await func.createIteration(params)
     if (result) {
       fresh()
+   
     }
   }
 
