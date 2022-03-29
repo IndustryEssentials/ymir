@@ -7,9 +7,9 @@ from flask import request
 from src.libs import app_logger
 
 
-def suss_resp(error_code: int = 0, message: str = "operation successful", result: Dict = {}) -> Dict:
+def suss_resp(code: int = 0, message: str = "operation successful", result: Dict = {}) -> Dict:
     resp = dict(
-        error_code=error_code,
+        code=code,
         message=message,
         request_id=request.headers.get("request_id"),
         result=result,
