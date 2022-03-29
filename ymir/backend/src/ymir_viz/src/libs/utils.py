@@ -1,10 +1,9 @@
+import logging
 import time
 from functools import wraps
 from typing import Dict, Callable
 
 from flask import request
-
-from src.libs import app_logger
 
 
 def suss_resp(code: int = 0, message: str = "operation successful", result: Dict = {}) -> Dict:
@@ -24,7 +23,7 @@ def time_it(f: Callable) -> Callable:
         _start = time.time()
         _ret = f(*args, **kwargs)
         _cost = time.time() - _start
-        app_logger.logger.info(f"|-{f.__name__} costs {_cost:.2f}s({_cost / 60:.2f}m).")
+        logging.info(f"|-{f.__name__} costs {_cost:.2f}s({_cost / 60:.2f}m).")
         return _ret
 
     return wrapper
