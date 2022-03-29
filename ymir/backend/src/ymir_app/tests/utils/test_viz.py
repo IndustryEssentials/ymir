@@ -212,6 +212,9 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
+            'class_ids_count': {
+                3: 34
+            },
             'class_names_count': {
                 'cat': 34
             },
