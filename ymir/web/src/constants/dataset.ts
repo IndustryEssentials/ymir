@@ -44,7 +44,7 @@ export function transferDataset (data: BackendData): Dataset {
     keywordsCount: data.keywords || {},
     nagetiveCount: negative_images_cnt || 0,
     projectNagetiveCount: project_negative_images_cnt || 0,
-    ignoredKeywords: data.ignored_keywords || [],
+    ignoredKeywords: Object.keys(data.ignored_keywords || {}),
     hash: data.hash,
     state: data.result_state,
     createTime: format(data.create_datetime),

@@ -1,10 +1,11 @@
+import logging
 import os
 from typing import Dict
 
 from mir.tools import mir_storage_ops, errors
 
 from src.config import viz_settings
-from src.libs import exceptions, app_logger
+from src.libs import exceptions
 
 
 class MirStorageLoader:
@@ -31,6 +32,7 @@ class MirStorageLoader:
         """
         exampled return data:
         {
+            "class_ids_count": {3: 34},
             "class_names_count": {'cat': 34},
             "ignored_labels": {'cat':5, },
             "negative_info": {
@@ -47,7 +49,7 @@ class MirStorageLoader:
                 mir_task_id=self.task_id,
             )
         except ValueError as e:
-            app_logger.logger.error(e)
+            logging.error(e)
             raise exceptions.BranchNotExists(f"dataset {self.branch_id} not exist from ymir command")
 
         return dataset_info
@@ -74,7 +76,7 @@ class MirStorageLoader:
                 mir_task_id=self.task_id,
             )
         except ValueError as e:
-            app_logger.logger.error(e)
+            logging.error(e)
             raise exceptions.BranchNotExists(f"branch {self.branch_id} not exist from ymir command")
         assets_info["class_ids_index"][viz_settings.VIZ_ALL_INDEX_CLASSIDS] = assets_info["all_asset_ids"]
 

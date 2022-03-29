@@ -11,6 +11,9 @@ class TestDatasetController:
             "class_names_count": {
                 'cat': 34
             },
+            "class_ids_count": {
+                3: 34
+            },
             "ignored_labels": {
                 'cat': 5,
             },
@@ -26,6 +29,9 @@ class TestDatasetController:
 
         assert resp.status_code == 200
         assert resp.json()["result"] == {
+            'class_ids_count': {
+                '3': 34  # int is converted to str in json.dumps.
+            },
             'class_names_count': {
                 'cat': 34
             },

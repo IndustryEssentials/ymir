@@ -299,6 +299,9 @@ components:
               properties:
                 total_images_cnt:
                   type: integer
+                class_ids_count:
+                  type: object
+                  example: "{3:8, 4:2}"
                 class_names_count:
                   type: object
                   example: "{'cat':8, 'dog':2}"

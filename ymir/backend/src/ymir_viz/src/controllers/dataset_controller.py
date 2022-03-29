@@ -1,5 +1,7 @@
+import logging
+
 from src.config import viz_settings
-from src.libs import app_logger, utils
+from src.libs import utils
 from src.swagger_models.dataset_result import DatasetResult
 from src.viz_models import pb_reader
 
@@ -20,6 +22,7 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResul
 
     exampled return data:
     {
+        "class_ids_count": {3: 34},
         "class_names_count": {'cat': 34},
         "ignored_labels": {'cat':5, },
         "negative_info": {
@@ -38,6 +41,6 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResul
     ).get_dataset_info()
 
     resp = utils.suss_resp(result=dataset_info)
-    app_logger.logger.info(f"get_dataset_info: {resp}")
+    logging.info(f"get_dataset_info: {resp}")
 
     return DatasetResult(**resp)
