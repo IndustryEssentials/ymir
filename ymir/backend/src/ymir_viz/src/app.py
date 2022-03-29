@@ -1,4 +1,5 @@
 import logging
+import sys
 import uuid
 from typing import Dict, Tuple
 
@@ -23,7 +24,16 @@ def config_app(app: connexion, config: Dict = None) -> None:
         app.config.update(config)
 
 
+def init_logging() -> None:
+    logging_level = logging.DEBUG if viz_settings.VIZ_DEBUG_MODEL else logging.INFO
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
+                        datefmt='%Y%m%d-%H:%M:%S',
+                        level=logging_level)
+
+
 def create_connexion_app(config: Dict = None) -> connexion.App:
+    init_logging()
     connexion_app = connexion.App(__name__, specification_dir="./swagger/")
     app = connexion_app.app
     app.json_encoder = JSONEncoder
