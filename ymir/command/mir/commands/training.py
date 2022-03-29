@@ -309,7 +309,8 @@ class CmdTrain(base.BaseCommand):
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_train, 'index.tsv'),
-                             index_prefix=('/in/cache' if media_cache else '/in/train'))
+                             index_assets_prefix=('/in/cache' if media_cache else '/in/train'),
+                             index_annotations_prefix='/in/train')
 
         # export validation set
         work_dir_in_val = os.path.join(work_dir_in, 'val')
@@ -328,7 +329,8 @@ class CmdTrain(base.BaseCommand):
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_val, 'index.tsv'),
-                             index_prefix=('/in/cache' if media_cache else '/in/val'))
+                             index_assets_prefix=('/in/cache' if media_cache else '/in/val'),
+                             index_annotations_prefix='/in/val')
 
         # export test set (if we have)
         if test_ids:
@@ -348,7 +350,8 @@ class CmdTrain(base.BaseCommand):
                                  base_task_id=src_typ_rev_tid.tid,
                                  format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                                  index_file_path=os.path.join(work_dir_in_test, 'index.tsv'),
-                                 index_prefix=('/in/cache' if media_cache else '/in/test'))
+                                 index_assets_prefix=('/in/cache' if media_cache else '/in/test'),
+                                 index_annotations_prefix='/in/test')
 
         logging.info("starting train docker container")
 

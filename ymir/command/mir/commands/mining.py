@@ -325,7 +325,7 @@ def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_ti
                          base_task_id=src_rev_tid.tid,
                          format_type=data_exporter.ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
                          index_file_path=work_index_file,
-                         index_prefix=path_prefix_in_index_file)
+                         index_assets_prefix=path_prefix_in_index_file)
 
 
 def _get_shm_size(mining_config_file_path: str) -> str:
