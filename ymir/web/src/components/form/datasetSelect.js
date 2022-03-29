@@ -6,12 +6,8 @@ import t from '@/utils/t'
 const DatasetSelect = ({ pid, filter = [], value, datasets = [], onChange = () => { }, getDatasets, ...resProps }) => {
 
   useEffect(() => {
-    fetchDatasets()
-  }, [])
-
-  useEffect(() => {
-  console.log('filter:', filter)
-  }, [filter])
+    pid && fetchDatasets()
+  }, [pid])
 
   function fetchDatasets() {
     getDatasets(pid)
@@ -42,7 +38,6 @@ const props = (state) => {
 const actions = (dispatch) => {
   return {
     getDatasets(pid, force) {
-      console.log('pid:', pid)
       return dispatch({
         type: 'dataset/queryAllDatasets',
         payload: {pid, force},

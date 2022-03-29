@@ -40,6 +40,8 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
 
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
+    samples: chunkSize,
+    strategy: strategy || 2,
   }
 
   useEffect(() => {
@@ -102,6 +104,10 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
       dataset: id,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
+    }
+    if (iterationId) {
+      params.iteration = iterationId
+      params.stage = currentStage
     }
     const result = await props.createFusionTask(params)
     if (result) {
@@ -182,7 +188,7 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
               <Tip hidden={true}>
                 <Form.Item name='strategy'
                   hidden={includeDatasets.length < 1}
-                  initialValue={2} label={t('task.train.form.repeatdata.label')}>
+                  label={t('task.train.form.repeatdata.label')}>
                   <Radio.Group options={[
                     { value: 2, label: t('task.train.form.repeatdata.latest') },
                     { value: 3, label: t('task.train.form.repeatdata.original') },
