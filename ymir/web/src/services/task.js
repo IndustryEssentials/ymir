@@ -103,11 +103,14 @@ export function updateTask(id, name) {
  * @returns 
  */
 export function createFusionTask({
+  iteration, stage,
   project_id, group_id, dataset, include_datasets = [], strategy = 2,
   exclude_datasets = [], include = [], exclude = [], samples,
 }) {
   return request.post('/datasets/fusion', {
     project_id, include_datasets, exclude_datasets,
+    iteration_id: iteration,
+    iteration_stage: stage,
     dataset_group_id: group_id,
     main_dataset_id: dataset,
     include_strategy: strategy,
@@ -130,19 +133,16 @@ export function createFusionTask({
  * @returns 
  */
 export function createLabelTask({
-  projectId,
-  groupId,
-  name,
-  datasetId,
-  keywords,
-  labellers,
-  keepAnnotations,
-  doc,
+  projectId, iteration, stage,
+  groupId, name, datasetId, keywords,
+  labellers, keepAnnotations, doc,
 }) {
   return createTask({
     name,
     type: TASKTYPES.LABEL,
     project_id: projectId,
+    iteration_id: iteration,
+    iteration_stage: stage,
     parameters: {
       dataset_group_id: groupId,
       dataset_id: datasetId,
@@ -172,23 +172,16 @@ export function createLabelTask({
  * @returns 
  */
 export function createTrainTask({
-  name,
-  projectId,
-  datasetId,
-  keywords,
-  testset,
-  backbone,
-  config,
-  network,
-  trainType,
-  strategy,
-  model,
-  image,
-  imageId,
+  iteration, stage,
+  name, projectId, datasetId, keywords, testset,
+  backbone, config, network, trainType, strategy,
+  model, image, imageId,
 }) {
   return createTask({
     name,
     project_id: projectId,
+    iteration_id: iteration,
+    iteration_stage: stage,
     type: TASKTYPES.TRAINING,
     config,
     parameters: {
@@ -207,21 +200,15 @@ export function createTrainTask({
 }
 
 export function createMiningTask({
-  projectId,
-  datasetId,
-  model,
-  topk,
-  algorithm,
-  config,
-  strategy,
-  inference,
-  name,
-  image,
-  imageId,
+  iteration, stage,
+  projectId, datasetId, model, topk, algorithm,
+  config, strategy, inference, name, image, imageId,
 }) {
   return createTask({
     type: TASKTYPES.MINING,
     project_id: projectId,
+    iteration_id: iteration,
+    iteration_stage: stage,
     name,
     config,
     parameters: {
