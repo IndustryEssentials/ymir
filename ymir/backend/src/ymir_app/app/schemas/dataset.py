@@ -1,6 +1,6 @@
 import enum
 import json
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -110,9 +110,9 @@ class Dataset(DatasetInDBBase):
 
     # make sure all the json dumped value is unpacked before returning to caller
     @validator("keywords", "ignored_keywords", "negative_info")
-    def unpack(cls, v: Optional[str]) -> List[str]:
+    def unpack(cls, v: Optional[str]) -> Dict[str, int]:
         if v is None:
-            return []
+            return {}
         return json.loads(v)
 
     class Config:
