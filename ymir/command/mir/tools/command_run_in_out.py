@@ -86,7 +86,7 @@ def command_run_in_out(f: Callable) -> Callable:
         mir_logger.update_percent_info(local_percent=0, task_state=phase_logger.PhaseStateEnum.PENDING)
 
         exc: Any = None
-        
+
         ignored_out_dir_items = {
             'log.txt',  # see also: ymir-cmd-container.md
             'monitor.txt',  # monitor file
