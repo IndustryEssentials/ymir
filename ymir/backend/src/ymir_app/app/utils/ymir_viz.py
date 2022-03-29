@@ -76,11 +76,15 @@ class VizDataset():
     https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir-viz/doc/ymir_viz_API.yaml
     """
     total_images_cnt: int
+    class_ids_count: Dict[int, int]
     class_names_count: Dict[str, int]
     ignored_labels: Dict[str, int]
     negative_info: Dict[str, int]
 
-    def to_app_dataset(self, user_labels: UserLabels) -> 'AppDataset':
+    def __post_init__(self) -> None:
+        self.class_ids_count = {int(k): v for k, v in self.class_ids_count.items()}
+
+    def to_app_dataset(self) -> 'AppDataset':
         return AppDataset(total=self.total_images_cnt,
                           keywords=self.class_names_count,
                           ignored_keywords=self.ignored_labels,
@@ -95,8 +99,8 @@ class AppDataset():
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "AppDataset":
-        return VizDataset(**res).to_app_dataset(user_labels)
+    def from_viz_res(cls, res: Dict) -> "AppDataset":
+        return VizDataset(**res).to_app_dataset()
 
 
 class VizClient:
@@ -158,11 +162,11 @@ class VizClient:
         res = self.parse_resp(resp)
         return asdict(Model.from_viz_res(res))
 
-    def get_dataset(self, user_labels: UserLabels) -> 'AppDataset':
+    def get_dataset(self) -> 'AppDataset':
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/datasets"  # noqa: E501
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
-        return AppDataset.from_viz_res(res, user_labels)
+        return AppDataset.from_viz_res(res)
 
     def parse_resp(self, resp: requests.Response) -> Dict:
         """

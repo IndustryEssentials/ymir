@@ -81,8 +81,11 @@ class TestModel:
 
 
 class TestDataset:
-    def test_dataset(self, mock_user_labels):
+    def test_dataset(self):
         res = {
+            'class_ids_count': {
+                3: 34
+            },
             'class_names_count': {
                 'cat': 34
             },
@@ -96,7 +99,7 @@ class TestDataset:
             'total_images_cnt': 1
         }
 
-        M = m.AppDataset.from_viz_res(res, mock_user_labels)
+        M = m.AppDataset.from_viz_res(res)
         assert len(M.keywords) == len(res["class_names_count"])
         assert M.ignored_keywords == res["ignored_labels"]
         assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
@@ -203,7 +206,7 @@ class TestVizClient:
         assert ret["task_parameters"] == res["task_parameters"]
         assert ret["executor_config"] == res["executor_config"]
 
-    def test_get_dataset(self, mock_user_labels, mocker):
+    def test_get_dataset(self, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
         mock_session = mocker.Mock()
@@ -229,7 +232,7 @@ class TestVizClient:
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
-        ret = viz.get_dataset(mock_user_labels)
+        ret = viz.get_dataset()
         assert isinstance(ret, m.AppDataset)
         assert len(ret.keywords) == len(res["class_names_count"])
         assert ret.ignored_keywords == res["ignored_labels"]
