@@ -45,8 +45,8 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                   his_branch=src_typ_rev_tid.rev,
                                                   mir_datas={},
                                                   task=predefined_task)
-    
-    
+
+
 def _cleanup_dir_items(dir: str, ignored_items: Set[str]) -> None:
     if not os.path.isdir(dir):
         return
