@@ -270,6 +270,7 @@ class MirStorageOps():
         """
         exampled return data:
         {
+            "class_ids_count": {3: 34},
             "class_names_count": {'cat': 34},
             "ignored_labels": {'cat':5, },
             "negative_info": {
@@ -290,11 +291,14 @@ class MirStorageOps():
 
         class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         return dict(
+            class_ids_count={k: v
+                             for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             class_names_count={
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
             },
-            ignored_labels={k: v for k, v in task_storage.unknown_types.items()},
+            ignored_labels={k: v
+                            for k, v in task_storage.unknown_types.items()},
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
@@ -330,11 +334,14 @@ class MirStorageOps():
         asset_ids_detail: Dict[str, Dict] = dict()
         hid = mir_storage_annotations["head_task_id"]
         annotations = mir_storage_annotations["task_annotations"][hid]["image_annotations"]
-        for asset_id, metadata in mir_storage_metadatas["attributes"].items():
+        class_ids = mir_storage_keywords["keywords"]
+        for asset_id, asset_metadata in mir_storage_metadatas["attributes"].items():
+            asset_annotations = annotations[asset_id]["annotations"] if asset_id in annotations else {}
+            asset_class_ids = class_ids[asset_id]["predifined_keyids"] if asset_id in class_ids else {}
             asset_ids_detail[asset_id] = dict(
-                metadata=metadata,
-                annotations=annotations[asset_id]["annotations"],
-                class_ids=mir_storage_keywords["keywords"][asset_id]["predifined_keyids"],
+                metadata=asset_metadata,
+                annotations=asset_annotations,
+                class_ids=asset_class_ids,
             )
         return dict(
             all_asset_ids=[*mir_storage_metadatas["attributes"].keys()],

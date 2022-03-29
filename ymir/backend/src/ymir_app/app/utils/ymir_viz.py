@@ -76,13 +76,20 @@ class VizDataset():
     https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir-viz/doc/ymir_viz_API.yaml
     """
     total_images_cnt: int
+    class_ids_count: Dict[int, int]
     class_names_count: Dict[str, int]
     ignored_labels: Dict[str, int]
     negative_info: Dict[str, int]
 
+    def __post_init__(self) -> None:
+        self.class_ids_count = {int(k): v for k, v in self.class_ids_count.items()}
+
     def to_app_dataset(self, user_labels: UserLabels) -> 'AppDataset':
         return AppDataset(total=self.total_images_cnt,
-                          keywords=self.class_names_count,
+                          keywords={
+                              user_labels.get_main_names(class_id)[0]: count
+                              for class_id, count in self.class_ids_count.items()
+                          },
                           ignored_keywords=self.ignored_labels,
                           negative_info=self.negative_info)
 
