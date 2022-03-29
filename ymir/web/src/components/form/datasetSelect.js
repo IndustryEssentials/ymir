@@ -21,10 +21,11 @@ const DatasetSelect = ({ pid, filter = [], value, datasets = [], onChange = () =
       showArrow
       {...resProps}
     >
+      {console.log('hello datasets: ', datasets)}
       {datasets.filter(ds => !filter.includes(ds.id)).map(item =>
-        <Option value={item.id} key={item.name}>
+        <Select.Option value={item.id} key={item.id}>
           {item.name} {item.versionName}(assets: {item.assetCount})
-        </Option>
+        </Select.Option>
       )}
     </Select>
   )

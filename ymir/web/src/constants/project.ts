@@ -19,7 +19,8 @@ type stageObject = {
 export const StageList = () => {
   const iterationParams = 'iterationId={id}&currentStage={currentStage}'
   const list = [
-    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', url: `/home/task/fusion/{trainSet}?strategy={strategy}&chunk={chunkSize}&${iterationParams}` },
+    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', 
+      url: `/home/task/fusion/{trainSet}?strategy={miningStrategy}&chunk={chunkSize}&${iterationParams}` },
     { value: Stages.mining, prepare: 'miningSet', resultKey: 'miningResult', url: `/home/task/mining/{miningSet}?${iterationParams}` },
     { value: Stages.labelling, prepare: 'miningResult', resultKey: 'labelSet', url: `/home/task/label/{miningResult}?${iterationParams}` },
     { value: Stages.merging, prepare: 'labelSet', resultKey: 'trainUpdateSet', url: `/home/task/fusion/{labelSet}?${iterationParams}` },
@@ -43,6 +44,7 @@ export function transferProject(data: BackendData) {
     testSet: data.testing_dataset ? transferDataset(data.testing_dataset) : undefined,
     miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
     setCount: data.dataset_count,
+    model: data.initial_model_id || 0,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
@@ -66,6 +68,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
   }
   return {
     id: data.id,
+    projectId: data.project_id,
     name: data.name,
     round: data.iteration_round || 0,
     currentStage: data.current_stage || 0,

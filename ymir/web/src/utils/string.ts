@@ -10,6 +10,6 @@ type ob = {
 }
 export function templateString(str: string, obj: ob = {}) {
   return str.replace(/\{(\w+)\}/g, (reg, variable: string) => {
-    return obj[variable] ? String(obj[variable]) : reg
+    return typeof obj[variable] !== 'undefined' ? String(obj[variable]) : reg
   })
 }

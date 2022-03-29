@@ -106,6 +106,7 @@ export default {
         }
       }
       const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
+      console.log('hello dss:', dss)
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",

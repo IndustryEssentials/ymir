@@ -7,7 +7,7 @@ import { TASKSTATES, getTaskStateLabel } from '@/constants/task'
 import s from './iteration.less'
 
 function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...func }) {
-  console.log('stage: ', stage, end)
+  // console.log('stage: ', stage, end)
   const history = useHistory()
 
   function skip() {
@@ -19,28 +19,18 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
       if (stage.url) {
         history.push(stage.url)
       } else {
-        // todo create new one
-        createIteration({ userId: func.userId, projectId: pid, iterationRound: current + 1 })
-        callback()
+        callback({
+          type: 'create',
+          data: {
+            round: current + 1,
+          },
+        })
       }
     } else if (stage.next) {
-      // goto next stage
-      updateIteration({ id: stage.iterationId, next: stage.next, result: stage.result, })
-      callback()
-    }
-  }
-
-  async function updateIteration(params) {
-    const result = await func.updateIteration(params)
-    if (result) {
-      callback(stage)
-    }
-  }
-
-  async function createIteration(params) {
-    const result = await func.createIteration(params)
-    if (result) {
-      callback({ iterationId: result.id })
+      callback({
+        type: 'update',
+        data: { stage: stage.next },
+      })
     }
   }
 

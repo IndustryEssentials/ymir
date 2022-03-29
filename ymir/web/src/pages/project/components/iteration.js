@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Row, Col } from "antd"
 import { connect } from "dva"
 
@@ -22,6 +22,8 @@ function Iteration({ project, fresh = () => {}, ...func }) {
     iteration.id && rerenderStages(iteration)
   }, [iteration])
 
+  const callback = useCallback(iterationHandle, [iteration])
+
   function initStages() {
     const labels = ['ready', 'mining', 'label', 'merge', 'training', 'next']
     const stageList = StageList()
@@ -37,8 +39,9 @@ function Iteration({ project, fresh = () => {}, ...func }) {
         url,
         prepare,
         resultKey,
+        project,
         unskippable: [Stages.merging, Stages.training].includes(value),
-        callback: stageList[value].next ? fetchIteration : fresh(),
+        callback,
       }
     })
 
@@ -47,15 +50,15 @@ function Iteration({ project, fresh = () => {}, ...func }) {
 
   function rerenderStages(iteration) {
     const ss = stages.map(stage => {
-      const prepareId = iteration[stage.prepare]
       const result = iteration[stage.resultKey] || {}
-      const url = templateString(stage.url || '', { ...stage, id: prepareId })
+      const url = templateString(stage.url || '', { ...project, ...iteration,})
+      console.log('url:', url, { ...project, ...iteration })
       return {
         ...stage,
         iterationId: iteration.id,
         round: iteration.round,
         current: iteration.currentStage,
-        url: `${url}?iterationId=${iteration.id}&stage=${stage.value}`,
+        url,
         state: result.state || -1,
         result,
       }
@@ -63,8 +66,46 @@ function Iteration({ project, fresh = () => {}, ...func }) {
     setStages(ss)
   }
 
-  async function fetchIteration() {
-    const result = await func.getIteration(project.id, project.round)
+  function iterationHandle({ type = 'update', data = {}}) {
+    if (type === 'create') {
+      createIteration(data)
+    } else {
+      updateIteration(data)
+    }
+  }
+
+  function fetchIteration() {
+    // const result = await func.getIteration(project.id, project?.currentIteration?.id)
+    // if (result) {
+      setIteration(project?.currentIteration)
+    // }
+  }
+  async function createIteration(data = {}) {
+    const params = {
+      // currentStage: 0
+      iterationRound: data.round,
+      miningDataset: iteration.miningSet,
+      trainingModel: iteration.model,
+      prevTrainingDataset: iteration.trainUpdateSet,
+      projectId: project.id,
+    }
+    const result = await func.createIteration(params)
+    if (result) {
+      fresh()
+    }
+  }
+  async function updateIteration(data = {}) {
+    const params = {
+      id: iteration.id,
+      currentStage: data.stage,
+      miningDataset: iteration.miningSet,
+      trainingModel: iteration.model,
+      prevTrainingDataset: iteration.trainSet,
+      miningResult: iteration.miningResult,
+      labelResult: iteration.labelSet,
+      traningDataset: iteration.trainUpdateSet,
+    }
+    const result = await func.updateIteration(params)
     if (result) {
       setIteration(result)
     }
@@ -94,6 +135,18 @@ const actions = (dispacth) => {
         payload: { pid, id },
       })
     },
+    updateIteration(params) {
+      return dispacth({
+        type: 'iteration/updateIteration',
+        payload: params,
+      })
+    },
+    createIteration(params) {
+      return dispacth({
+        type: 'iteration/createIteration',
+        payload: params,
+      })
+    }
   }
 }
 

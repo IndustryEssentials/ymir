@@ -48,7 +48,6 @@ export function createIteration({
   trainingModel,
   prevTrainingDataset,
   projectId,
-  userId,
 }) {
   return request.post("/iterations/", {
     name,
@@ -61,7 +60,6 @@ export function createIteration({
     training_output_model_id: trainingModel,
     previous_training_dataset_id: prevTrainingDataset,
     project_id: projectId,
-    user_id: userId,
   })
 }
 /**

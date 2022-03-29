@@ -51,6 +51,8 @@ const project = {
   'project.iteration.stage.merge': { en: 'Merge', cn: '更新训练集', },
   'project.iteration.stage.training': { en: 'Training', cn: '模型训练', },
   'project.iteration.stage.next': { en: 'Next Iteration', cn: '开启下一轮迭代', },
+  'project.iteration.stage.datasets.react': { en: 'Rehandle', cn: '重新设置数据', },
+  'project.iteration.stage.model.react': { en: 'Rehandle', cn: '重新选择模型', },
   'project.iteration.stage.ready.react': { en: 'Rehandle', cn: '重新处理', },
   'project.iteration.stage.mining.react': { en: 'Rehandle', cn: '重新挖掘', },
   'project.iteration.stage.label.react': { en: 'Rehandle', cn: '重新标注', },
