@@ -67,11 +67,19 @@ def _cleanup_dir_items(dir: str, ignored_items: Set[str]) -> None:
             os.remove(item_path)
 
 
-def _cleanup(work_dir: str, ignored_out_dir_items: Set[str]) -> None:
+def _cleanup(work_dir: str) -> None:
     if not work_dir:
         return
 
     _cleanup_dir_items(work_dir, ignored_items={'out'})
+
+    ignored_out_dir_items = {
+        'log.txt',  # see also: ymir-cmd-container.md
+        'monitor.txt',  # monitor file
+        'monitor-log.txt',  # monitor detail file
+        'tensorboard',  # default root directory for tensorboard event files
+        'ymir-executor-out.log',  # container output
+    }
     _cleanup_dir_items(os.path.join(work_dir, 'out'), ignored_items=ignored_out_dir_items)
 
 
@@ -86,14 +94,6 @@ def command_run_in_out(f: Callable) -> Callable:
         mir_logger.update_percent_info(local_percent=0, task_state=phase_logger.PhaseStateEnum.PENDING)
 
         exc: Any = None
-
-        ignored_out_dir_items = {
-            'log.txt',  # see also: ymir-cmd-container.md
-            'monitor.txt',  # monitor file
-            'monitor-log.txt',  # monitor detail file
-            'tensorboard',  # default root directory for tensorboard event files
-            'ymir-executor-out.log',  # container output
-        }
 
         try:
             ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, work_dir=work_dir, *args, **kwargs)
@@ -138,7 +138,7 @@ def command_run_in_out(f: Callable) -> Callable:
 
             logging.info(f"command done: {dst_rev}, result: {ret}")
 
-            _cleanup(work_dir=work_dir, ignored_out_dir_items=ignored_out_dir_items)
+            _cleanup(work_dir=work_dir)
 
             return ret
 
@@ -158,7 +158,7 @@ def command_run_in_out(f: Callable) -> Callable:
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
 
-        _cleanup(work_dir=work_dir, ignored_out_dir_items=ignored_out_dir_items)
+        _cleanup(work_dir=work_dir)
 
         raise exc
 
