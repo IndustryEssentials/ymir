@@ -19,6 +19,10 @@ const { Option } = Select
 function Fusion({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
+  const iterationId = Number(pageParams.iterationId)
+  const currentStage = Number(pageParams.currentStage)
+  const chunkSize = Number(pageParams.chunkSize)
+  const strategy = Number(pageParams.strategy)
   const history = useHistory()
   const [form] = Form.useForm()
   const [dataset, setDataset] = useState({})

@@ -1,5 +1,5 @@
 import { Project, Iteration, } from "@/interface/project"
-import { backendData } from "@/interface/common"
+import { BackendData } from "@/interface/common"
 import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 
@@ -19,11 +19,11 @@ type stageObject = {
 export const StageList = () => {
   const iterationParams = 'iterationId={id}&currentStage={currentStage}'
   const list = [
-    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', url: `/home/task/fusion/{trainSet}?${iterationParams}` },
+    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', url: `/home/task/fusion/{trainSet}?strategy={strategy}&chunk={chunkSize}&${iterationParams}` },
     { value: Stages.mining, prepare: 'miningSet', resultKey: 'miningResult', url: `/home/task/mining/{miningSet}?${iterationParams}` },
-    { value: Stages.labelling, prepare: 'miningResult', resultKey: 'labelSet', url: '/home/task/label/{miningResult}' },
-    { value: Stages.merging, prepare: 'labelSet', resultKey: 'trainUpdateSet', url: '/home/task/fusion/{labelSet}' },
-    { value: Stages.training, prepare: 'trainUpdateSet', resultKey: 'model', url: '/home/task/training/{trainUpdateSet}' },
+    { value: Stages.labelling, prepare: 'miningResult', resultKey: 'labelSet', url: `/home/task/label/{miningResult}?${iterationParams}` },
+    { value: Stages.merging, prepare: 'labelSet', resultKey: 'trainUpdateSet', url: `/home/task/fusion/{labelSet}?${iterationParams}` },
+    { value: Stages.training, prepare: 'trainUpdateSet', resultKey: 'model', url: `/home/task/training/{trainUpdateSet}?${iterationParams}` },
     { value: Stages.trained, prepare: 'trainUpdateSet', resultKey: 'trainSet', },
   ]
   return { list, ...singleList(list) }
@@ -33,7 +33,7 @@ export function getIterationVersion(version: number) {
   return `V${version}`
 }
 
-export function transferProject(data: backendData) {
+export function transferProject(data: BackendData) {
   const iteration = transferIteration(data.current_iteration)
   const project : Project = {
     id: data.id,
@@ -60,7 +60,7 @@ export function transferProject(data: backendData) {
   return project
 }
 
-export function transferIteration(data: backendData): Iteration | undefined {
+export function transferIteration(data: BackendData): Iteration | undefined {
   if (!data) {
     return
   }
