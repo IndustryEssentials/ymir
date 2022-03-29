@@ -1,8 +1,8 @@
 import logging
 from typing import Any, Dict, List
-import yaml
 
 import redis
+import yaml
 from werkzeug.local import LocalProxy
 
 from src.config import viz_settings
