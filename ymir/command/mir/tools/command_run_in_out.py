@@ -1,9 +1,11 @@
 import copy
 from functools import wraps
 import logging
+import os
+import shutil
 from subprocess import CalledProcessError
 import traceback
-from typing import Any, Callable
+from typing import Any, Callable, Set
 
 from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser, utils
 from mir.tools.code import MirCode
@@ -43,6 +45,27 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                   his_branch=src_typ_rev_tid.rev,
                                                   mir_datas={},
                                                   task=predefined_task)
+
+
+def _cleanup(work_dir: str, ignored_out_dir_items: Set[str]) -> None:
+    if not work_dir:
+        return
+
+    in_dir = os.path.join(work_dir, 'in')
+    out_dir = os.path.join(work_dir, 'out')
+
+    if os.path.isdir(in_dir):
+        shutil.rmtree(in_dir)
+    if os.path.isdir(out_dir):
+        out_dir_items = os.listdir(out_dir)
+        for item in out_dir_items:
+            if item in ignored_out_dir_items:
+                continue
+            item_path = os.path.join(out_dir, item)
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+            elif os.path.isfile(item_path):
+                os.remove(item_path)
 
 
 def command_run_in_out(f: Callable) -> Callable:
@@ -113,8 +136,19 @@ def command_run_in_out(f: Callable) -> Callable:
                                        state_code=error_code,
                                        state_content=state_message,
                                        trace_message=trace_message)
+
+        ignored_out_dir_items = {
+            'log.txt',  # see also: ymir-cmd-container.md
+            'monitor.txt',  # monitor file
+            'monitor-log.txt',  # monitor detail file
+            'tensorboard',  # root directory for tensorboard event files
+            'ymir-executor-out.log',  # container output
+        }
+        _cleanup(work_dir=work_dir, ignored_out_dir_items=ignored_out_dir_items)
+
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
+
         raise exc
 
     return wrapper
