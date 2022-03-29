@@ -337,7 +337,7 @@ class MirStorageOps():
         class_ids = mir_storage_keywords["keywords"]
         for asset_id, asset_metadata in mir_storage_metadatas["attributes"].items():
             asset_annotations = annotations[asset_id]["annotations"] if asset_id in annotations else {}
-            asset_class_ids = class_ids[asset_id]["predifined_keyids"] if asset_id in class_ids else {}
+            asset_class_ids = class_ids[asset_id]["predifined_keyids"] if asset_id in class_ids else []
             asset_ids_detail[asset_id] = dict(
                 metadata=asset_metadata,
                 annotations=asset_annotations,
