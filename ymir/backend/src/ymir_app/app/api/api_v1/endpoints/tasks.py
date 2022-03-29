@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import enum
 import json
 from typing import Any, Dict, List, Optional, Union, Tuple
@@ -34,7 +35,7 @@ from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
-from app.utils.ymir_viz import VizClient
+from app.utils.ymir_viz import VizClient, ModelMetaData, DatasetMetaData
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -178,7 +179,7 @@ class TaskResult:
         )
         self.viz = viz
 
-        self._result: Optional[Dict] = None
+        self._result: Optional[Union[DatasetMetaData, ModelMetaData]] = None
         self._user_labels: Optional[Dict] = None
 
     @property
@@ -191,7 +192,7 @@ class TaskResult:
         return self._user_labels
 
     @property
-    def model_info(self) -> Dict:
+    def model_info(self) -> ModelMetaData:
         result = self.viz.get_model()
         try:
             self.save_model_stats(result)
@@ -200,23 +201,16 @@ class TaskResult:
         return result
 
     @property
-    def dataset_info(self) -> Dict:
-        dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
-        result = {
-            "keywords": dataset_info.keywords,
-            "ignored_keywords": list(dataset_info.ignored_keywords.keys()),
-            "negative_info": dataset_info.negative_info,
-            "asset_count": dataset_info.total,
-        }
-        return result
+    def dataset_info(self) -> DatasetMetaData:
+        return self.viz.get_dataset(user_labels=self.user_labels)
 
     @property
-    def result_info(self) -> Dict:
+    def result_info(self) -> Union[DatasetMetaData, ModelMetaData]:
         if self._result is None:
             self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
         return self._result
 
-    def save_model_stats(self, result: Dict) -> None:
+    def save_model_stats(self, result: ModelMetaData) -> None:
         model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
         if not model_in_db:
             logger.warning("[update task] found no model to save model stats(%s)", result)
@@ -229,8 +223,8 @@ class TaskResult:
             self.user_id,
             model_in_db.id,
             model_in_db.name,
-            result["hash"],
-            result["map"],
+            result.hash,
+            result.map,
             keywords,
         )
 
@@ -328,18 +322,18 @@ class TaskResult:
 
         if task_result.state is TaskState.done:
             # import model has no parameters, only update this task
-            if task_in_db.type in [TaskType.import_model, TaskType.copy_model]:
+            if isinstance(self.result_info, ModelMetaData):
                 crud.task.update_parameters_and_config(
                     self.db,
                     task=task_in_db,
-                    parameters=json.dumps(self.result_info["task_parameters"]),
-                    config=json.dumps(self.result_info["executor_config"]),
+                    parameters=json.dumps(self.result_info.task_parameters),
+                    config=json.dumps(self.result_info.executor_config),
                 )
             crud_func.finish(
                 self.db,
                 result_record.id,
                 result_state=ResultState.ready,
-                result=self.result_info,
+                result=asdict(self.result_info),
             )
         else:
             crud_func.finish(
