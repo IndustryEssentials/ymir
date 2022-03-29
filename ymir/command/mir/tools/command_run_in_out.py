@@ -141,7 +141,7 @@ def command_run_in_out(f: Callable) -> Callable:
             'log.txt',  # see also: ymir-cmd-container.md
             'monitor.txt',  # monitor file
             'monitor-log.txt',  # monitor detail file
-            'tensorboard',  # root directory for tensorboard event files
+            'tensorboard',  # default root directory for tensorboard event files
             'ymir-executor-out.log',  # container output
         }
         _cleanup(work_dir=work_dir, ignored_out_dir_items=ignored_out_dir_items)
