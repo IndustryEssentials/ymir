@@ -47,12 +47,8 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                   task=predefined_task)
 
 
-def _cleanup_dir_items(dir: str, ignored_items: Set[str]) -> None:
+def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
     if not os.path.isdir(dir):
-        return
-
-    if not ignored_items:
-        shutil.rmtree(dir)
         return
 
     dir_items = os.listdir(dir)
@@ -71,9 +67,9 @@ def _cleanup(work_dir: str) -> None:
     if not work_dir:
         return
 
-    _cleanup_dir_items(work_dir, ignored_items={'out'})
+    _cleanup_dir_sub_items(work_dir, ignored_items={'out'})
 
-    _cleanup_dir_items(
+    _cleanup_dir_sub_items(
         os.path.join(work_dir, 'out'),
         ignored_items={
             'log.txt',  # see also: ymir-cmd-container.md
