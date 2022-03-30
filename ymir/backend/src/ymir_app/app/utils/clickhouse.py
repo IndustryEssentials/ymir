@@ -81,6 +81,8 @@ class YmirClickHouse:
         self,
         dt: datetime,
         user_id: int,
+        project_id: int,
+        group_id: int,
         id_: int,
         name: str,
         hash_: str,
@@ -89,14 +91,18 @@ class YmirClickHouse:
     ) -> Any:
         return self.execute(
             "INSERT INTO model VALUES",
-            [[dt, user_id, id_, name, hash_, map_, keywords]],
+            [[dt, user_id, project_id, group_id, id_, name, hash_, map_, keywords]],
         )
 
-    def save_dataset_keyword(self, dt: datetime, user_id: int, dataset_id: int, keywords: List[str]) -> Any:
+    def save_dataset_keyword(
+        self, dt: datetime, user_id: int, project_id: int, group_id: int, dataset_id: int, keywords: List[str]
+    ) -> Any:
         """
         for keywords recommendation
         """
-        return self.execute("INSERT INTO dataset_keywords VALUES", [[dt, user_id, dataset_id, keywords]])
+        return self.execute(
+            "INSERT INTO dataset_keywords VALUES", [[dt, user_id, project_id, group_id, dataset_id, keywords]]
+        )
 
     def get_popular_items(self, user_id: int, column: str, limit: int = 10) -> Any:
         """
