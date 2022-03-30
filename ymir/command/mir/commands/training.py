@@ -369,7 +369,7 @@ class CmdTrain(base.BaseCommand):
         path_binds = []
         path_binds.append(f"-v{work_dir_in}:/in")
         if asset_cache_dir:
-            path_binds.append(f"-v{asset_cache_dir}:/in/cache")
+            path_binds.append(f"-v{asset_cache_dir}:/in/cache:ro")
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
         shm_size = _get_shm_size(executor_config=executor_config)
