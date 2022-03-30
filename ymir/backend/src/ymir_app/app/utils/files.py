@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
 from tempfile import NamedTemporaryFile, mkdtemp
-from typing import Any, Dict, Generator, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -35,6 +35,10 @@ DOWNLOAD_TIMEOUT = int(env("DOWNLOAD_TIMEOUT", 10))
 
 
 class FailedToDownload(Exception):
+    pass
+
+
+class InvalidFileStructure(Exception):
     pass
 
 
@@ -91,23 +95,29 @@ def decompress_zip(zip_file_path: Union[str, Path], output_dir: Union[str, Path]
         zip_ref.extractall(str(output_dir))
 
 
-def locate_dirs(p: Union[str, Path], targets: List[str]) -> Generator:
+def locate_dir(p: Union[str, Path], target: str) -> Path:
     """
     Locate specifc target dirs
     """
     for _p in Path(p).iterdir():
         for __p in _p.iterdir():
-            if __p.is_dir() and __p.name.lower() in targets:
-                yield (__p.name.lower(), __p)
+            if __p.is_dir() and __p.name.lower() == target:
+                return __p
+    raise FileNotFoundError()
 
 
-def prepare_dataset(url: Union[AnyHttpUrl, str], output_dir: Union[str, Path]) -> Dict:
+def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
     with NamedTemporaryFile("wb") as tmp:
         save_file_content(url, tmp.name)
-        logging.debug("cached to %s" % tmp.name)
+        logging.info("[import dataset] url content cached to %s", tmp.name)
         decompress_zip(tmp.name, output_dir)
 
-    return dict(locate_dirs(output_dir, ["images", "annotations"]))
+    image_dir = locate_dir(output_dir, "images")
+    annotation_dir = locate_dir(output_dir, "annotations")
+    if image_dir.parent != annotation_dir.parent:
+        logging.error("[import dataset] image(%s) and annotation(%s) not in the same dir", image_dir, annotation_dir)
+        raise InvalidFileStructure()
+    return str(image_dir.parent)
 
 
 def save_file(
@@ -138,12 +148,11 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
     return Path(path_short) in Path(path_long).parents
 
 
-def is_valid_import_path(src_path: Union[str, Path]) -> bool:
+def verify_import_path(src_path: Union[str, Path]) -> None:
     src_path = Path(src_path)
     annotation_path = src_path / "annotations"
     if not (src_path.is_dir() and annotation_path.is_dir()):
-        return False
+        raise InvalidFileStructure()
     if not is_relative_to(annotation_path, settings.SHARED_DATA_DIR):
         logger.error("import path (%s) not within shared_dir (%s)" % (annotation_path, settings.SHARED_DATA_DIR))
-        return False
-    return True
+        raise InvalidFileStructure()
