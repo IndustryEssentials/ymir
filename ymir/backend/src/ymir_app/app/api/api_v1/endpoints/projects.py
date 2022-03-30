@@ -117,6 +117,7 @@ def create_project(
         dataset_group_id=dataset_group.id,
         project_id=project.id,
         user_id=current_user.id,
+        source=task.type,
         result_state=ResultState.ready,
         task_id=task.id,
     )
