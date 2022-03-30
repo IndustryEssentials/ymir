@@ -231,6 +231,8 @@ class CmdTrain(base.BaseCommand):
             executor_instance = f"default-training-{task_id}"
         if not tensorboard_dir:
             tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
+        if not asset_cache_dir:
+            asset_cache_dir = os.path.join(work_dir, 'in', 'assets')
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
@@ -270,13 +272,17 @@ class CmdTrain(base.BaseCommand):
 
         # export
         logging.info("exporting assets")
+
         os.makedirs(work_dir, exist_ok=True)
+
         work_dir_in = os.path.join(work_dir, "in")
+        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
+        os.makedirs(work_dir_annotations, exist_ok=True)
+
         work_dir_out = os.path.join(work_dir, "out")
-        os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
-        if asset_cache_dir:
-            os.makedirs(asset_cache_dir, exist_ok=True)
+
+        os.makedirs(asset_cache_dir, exist_ok=True)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
@@ -293,65 +299,53 @@ class CmdTrain(base.BaseCommand):
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
         # export train set
-        work_dir_in_train = os.path.join(work_dir_in, 'train')
-        if os.path.isdir(work_dir_in_train):
-            shutil.rmtree(work_dir_in_train)
-        os.makedirs(work_dir_in_train, exist_ok=True)
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=train_ids,
-                             asset_dir=(asset_cache_dir or work_dir_in_train),
-                             annotation_dir=work_dir_in_train,
+                             asset_dir=asset_cache_dir,
+                             annotation_dir=work_dir_annotations,
                              need_ext=True,
                              need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
-                             index_file_path=os.path.join(work_dir_in_train, 'index.tsv'),
-                             index_assets_prefix=('/in/cache' if asset_cache_dir else '/in/train'),
-                             index_annotations_prefix='/in/train')
+                             index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
+                             index_assets_prefix='/in/assets',
+                             index_annotations_prefix='/in/annotations')
 
         # export validation set
-        work_dir_in_val = os.path.join(work_dir_in, 'val')
-        if os.path.isdir(work_dir_in_val):
-            shutil.rmtree(work_dir_in_val)
-        os.makedirs(work_dir_in_val, exist_ok=True)
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=val_ids,
-                             asset_dir=(asset_cache_dir or work_dir_in_val),
-                             annotation_dir=work_dir_in_val,
+                             asset_dir=asset_cache_dir,
+                             annotation_dir=work_dir_annotations,
                              need_ext=True,
                              need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
-                             index_file_path=os.path.join(work_dir_in_val, 'index.tsv'),
-                             index_assets_prefix=('/in/cache' if asset_cache_dir else '/in/val'),
-                             index_annotations_prefix='/in/val')
+                             index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
+                             index_assets_prefix='/in/assets',
+                             index_annotations_prefix='/in/annotations')
 
         # export test set (if we have)
         if test_ids:
-            work_dir_in_test = os.path.join(work_dir_in, 'test')
-            if os.path.isdir(work_dir_in_test):
-                shutil.rmtree(work_dir_in_test)
-            os.makedirs(work_dir_in_test, exist_ok=True)
             data_exporter.export(mir_root=mir_root,
                                  assets_location=media_location,
                                  class_type_ids=type_id_idx_mapping,
                                  asset_ids=test_ids,
-                                 asset_dir=(asset_cache_dir or work_dir_in_test),
-                                 annotation_dir=work_dir_in_test,
+                                 asset_dir=asset_cache_dir,
+                                 annotation_dir=work_dir_annotations,
                                  need_ext=True,
                                  need_id_sub_folder=True,
                                  base_branch=src_typ_rev_tid.rev,
                                  base_task_id=src_typ_rev_tid.tid,
                                  format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
-                                 index_file_path=os.path.join(work_dir_in_test, 'index.tsv'),
-                                 index_assets_prefix=('/in/cache' if asset_cache_dir else '/in/test'),
-                                 index_annotations_prefix='/in/test')
+                                 index_file_path=os.path.join(work_dir_in, 'test-index.tsv'),
+                                 index_assets_prefix='/in/assets',
+                                 index_annotations_prefix='/in/annotations')
 
         logging.info("starting train docker container")
 
@@ -367,19 +361,17 @@ class CmdTrain(base.BaseCommand):
 
         # start train docker and wait
         path_binds = []
-        path_binds.append(f"-v{work_dir_in}:/in")
-        if asset_cache_dir:
-            path_binds.append(f"-v{asset_cache_dir}:/in/cache:ro")
+        path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
+        path_binds.append(f"-v{asset_cache_dir}:/in/assets:ro")  # assets
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
-        shm_size = _get_shm_size(executor_config=executor_config)
 
-        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={shm_size}"]
+        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
         cmd.extend(path_binds)
         if available_gpu_id:
             cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
-        cmd.extend(['--name', f"{executor_instance}"])
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+        cmd.extend(['--name', f"{executor_instance}"])  # executor name used to stop executor
         cmd.append(executor)
 
         task_code = MirCode.RC_OK
