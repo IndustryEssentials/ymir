@@ -73,14 +73,15 @@ def _cleanup(work_dir: str) -> None:
 
     _cleanup_dir_items(work_dir, ignored_items={'out'})
 
-    ignored_out_dir_items = {
-        'log.txt',  # see also: ymir-cmd-container.md
-        'monitor.txt',  # monitor file
-        'monitor-log.txt',  # monitor detail file
-        'tensorboard',  # default root directory for tensorboard event files
-        'ymir-executor-out.log',  # container output
-    }
-    _cleanup_dir_items(os.path.join(work_dir, 'out'), ignored_items=ignored_out_dir_items)
+    _cleanup_dir_items(
+        os.path.join(work_dir, 'out'),
+        ignored_items={
+            'log.txt',  # see also: ymir-cmd-container.md
+            'monitor.txt',  # monitor file
+            'monitor-log.txt',  # monitor detail file
+            'tensorboard',  # default root directory for tensorboard event files
+            'ymir-executor-out.log',  # container output
+        })
 
 
 def command_run_in_out(f: Callable) -> Callable:
