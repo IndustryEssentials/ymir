@@ -1,8 +1,8 @@
-"""update
+"""init tables
 
-Revision ID: 9241f19996ab
+Revision ID: d98715d85826
 Revises:
-Create Date: 2022-03-28 17:01:03.287128
+Create Date: 2022-03-30 15:53:43.410398
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "9241f19996ab"
+revision = "d98715d85826"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -113,6 +113,7 @@ def upgrade() -> None:
         sa.Column("description", sa.String(length=100), nullable=True),
         sa.Column("iteration_round", sa.Integer(), nullable=False),
         sa.Column("current_stage", sa.SmallInteger(), nullable=False),
+        sa.Column("previous_iteration", sa.Integer(), nullable=False),
         sa.Column("mining_input_dataset_id", sa.Integer(), nullable=True),
         sa.Column("mining_output_dataset_id", sa.Integer(), nullable=True),
         sa.Column("label_output_dataset_id", sa.Integer(), nullable=True),
@@ -128,6 +129,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_iteration_current_stage"), "iteration", ["current_stage"], unique=False)
     op.create_index(op.f("ix_iteration_id"), "iteration", ["id"], unique=False)
     op.create_index(op.f("ix_iteration_iteration_round"), "iteration", ["iteration_round"], unique=False)
+    op.create_index(op.f("ix_iteration_previous_iteration"), "iteration", ["previous_iteration"], unique=False)
     op.create_index(op.f("ix_iteration_project_id"), "iteration", ["project_id"], unique=False)
     op.create_index(op.f("ix_iteration_user_id"), "iteration", ["user_id"], unique=False)
     op.create_table(
@@ -320,6 +322,7 @@ def downgrade() -> None:
     op.drop_table("model")
     op.drop_index(op.f("ix_iteration_user_id"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_project_id"), table_name="iteration")
+    op.drop_index(op.f("ix_iteration_previous_iteration"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_iteration_round"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_id"), table_name="iteration")
     op.drop_index(op.f("ix_iteration_current_stage"), table_name="iteration")
