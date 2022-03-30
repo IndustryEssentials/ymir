@@ -23,7 +23,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
                          previous_subtask_id: str, user_labels: labels.UserLabels) -> backend_pb2.GeneralResp:
         labeling_request = request.req_create_task.labeling
         logging.info(f"labeling_request: {labeling_request}")
-        keywords = user_labels.get_main_names(class_ids=labeling_request.in_class_ids)
+        keywords = user_labels.get_main_names(class_ids=list(labeling_request.in_class_ids))
         labeler_accounts = list(labeling_request.labeler_accounts)
         media_location = assets_config["assetskvlocation"]
 
