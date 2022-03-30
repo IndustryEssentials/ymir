@@ -13,6 +13,7 @@ class Iteration(Base):
     description = Column(String(settings.STRING_LEN_LIMIT))
     iteration_round = Column(Integer, index=True, nullable=False)
     current_stage = Column(SmallInteger, index=True, default=0, nullable=False)
+    previous_iteration = Column(Integer, index=True, default=0, nullable=False)
 
     mining_input_dataset_id = Column(Integer)
     mining_output_dataset_id = Column(Integer)
