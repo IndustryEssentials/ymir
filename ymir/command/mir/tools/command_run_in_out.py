@@ -1,9 +1,11 @@
 import copy
 from functools import wraps
 import logging
+import os
+import shutil
 from subprocess import CalledProcessError
 import traceback
-from typing import Any, Callable
+from typing import Any, Callable, Set
 
 from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser, utils
 from mir.tools.code import MirCode
@@ -43,6 +45,39 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                   his_branch=src_typ_rev_tid.rev,
                                                   mir_datas={},
                                                   task=predefined_task)
+
+
+def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
+    if not os.path.isdir(dir):
+        return
+
+    dir_items = os.listdir(dir)
+    for item in dir_items:
+        if item in ignored_items:
+            continue
+
+        item_path = os.path.join(dir, item)
+        if os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+        elif os.path.isfile(item_path):
+            os.remove(item_path)
+
+
+def _cleanup(work_dir: str) -> None:
+    if not work_dir:
+        return
+
+    _cleanup_dir_sub_items(work_dir, ignored_items={'out'})
+
+    _cleanup_dir_sub_items(
+        os.path.join(work_dir, 'out'),
+        ignored_items={
+            'log.txt',  # see also: ymir-cmd-container.md
+            'monitor.txt',  # monitor file
+            'monitor-log.txt',  # monitor detail file
+            'tensorboard',  # default root directory for tensorboard event files
+            'ymir-executor-out.log',  # container output
+        })
 
 
 def command_run_in_out(f: Callable) -> Callable:
@@ -99,6 +134,9 @@ def command_run_in_out(f: Callable) -> Callable:
                                                trace_message=trace_message)
 
             logging.info(f"command done: {dst_rev}, result: {ret}")
+
+            _cleanup(work_dir=work_dir)
+
             return ret
 
         if needs_new_commit:
@@ -113,8 +151,12 @@ def command_run_in_out(f: Callable) -> Callable:
                                        state_code=error_code,
                                        state_content=state_message,
                                        trace_message=trace_message)
+
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
+
+        _cleanup(work_dir=work_dir)
+
         raise exc
 
     return wrapper
