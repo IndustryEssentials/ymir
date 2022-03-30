@@ -151,7 +151,7 @@ class TestMiningCmd(unittest.TestCase):
         args.dst_rev = 'a@mining-task-id'
         args.model_hash = 'xyz'
         args.work_dir = os.path.join(self._storage_root, "mining-task-id")
-        args.media_cache = ''
+        args.asset_cache_dir = ''
         args.model_location = self._storage_root
         args.media_location = self._storage_root
         args.topk = 1

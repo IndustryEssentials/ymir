@@ -30,7 +30,7 @@ class CmdMining(base.BaseCommand):
         logging.debug(f"command mining: {self.args}")
 
         return CmdMining.run_with_args(work_dir=self.args.work_dir,
-                                       media_cache=self.args.media_cache,
+                                       asset_cache_dir=self.args.asset_cache_dir,
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
@@ -46,7 +46,7 @@ class CmdMining(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
-                      media_cache: Optional[str],
+                      asset_cache_dir: Optional[str],
                       src_revs: str,
                       dst_rev: str,
                       mir_root: str,
@@ -62,7 +62,7 @@ class CmdMining(base.BaseCommand):
         runs a mining task \n
         Args:
             work_dir: mining docker container's work directory
-            media_cache: media cache directory
+            asset_cache_dir: media cache directory
             src_revs: data branch name and base task id
             dst_rev: destination branch name and task id
             mir_root: mir repo path, in order to run in non-mir folder.
@@ -127,7 +127,7 @@ class CmdMining(base.BaseCommand):
 
         work_in_path = os.path.join(work_dir, 'in')  # docker container's input data directory
         work_out_path = os.path.join(work_dir, 'out')  # docker container's output data directory
-        work_asset_path = media_cache or os.path.join(work_in_path, 'candidate')
+        work_asset_path = asset_cache_dir or os.path.join(work_in_path, 'candidate')
         work_model_path = os.path.join(work_in_path, 'model')
         work_index_file = os.path.join(work_in_path, 'candidate', 'src-index.tsv')
 
@@ -349,7 +349,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    help='work place for mining and monitoring')
     mining_arg_parser.add_argument('--asset-cache-dir',
                                    required=False,
-                                   dest='media_cache',
+                                   dest='asset_cache_dir',
                                    type=str,
                                    help='media cache directory')
     mining_arg_parser.add_argument('--model-location',

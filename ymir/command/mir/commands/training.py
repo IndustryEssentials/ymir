@@ -158,7 +158,7 @@ class CmdTrain(base.BaseCommand):
         logging.debug("command train: %s", self.args)
 
         return CmdTrain.run_with_args(work_dir=self.args.work_dir,
-                                      media_cache=self.args.media_cache,
+                                      asset_cache_dir=self.args.asset_cache_dir,
                                       model_upload_location=self.args.model_path,
                                       pretrained_model_hash=self.args.model_hash,
                                       src_revs=self.args.src_revs,
@@ -173,7 +173,7 @@ class CmdTrain(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
-                      media_cache: Optional[str],
+                      asset_cache_dir: Optional[str],
                       model_upload_location: str,
                       pretrained_model_hash: str,
                       executor: str,
@@ -194,7 +194,7 @@ class CmdTrain(base.BaseCommand):
         if not config_file or not os.path.isfile(config_file):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"invalid --config-file: {config_file}")
-        if media_cache and not os.path.isabs(media_cache):
+        if asset_cache_dir and not os.path.isabs(asset_cache_dir):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"invalid --cache {config_file}, not an absolute path for directory")
 
@@ -275,8 +275,8 @@ class CmdTrain(base.BaseCommand):
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
-        if media_cache:
-            os.makedirs(media_cache, exist_ok=True)
+        if asset_cache_dir:
+            os.makedirs(asset_cache_dir, exist_ok=True)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
@@ -301,7 +301,7 @@ class CmdTrain(base.BaseCommand):
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=train_ids,
-                             asset_dir=(media_cache or work_dir_in_train),
+                             asset_dir=(asset_cache_dir or work_dir_in_train),
                              annotation_dir=work_dir_in_train,
                              need_ext=True,
                              need_id_sub_folder=True,
@@ -309,7 +309,7 @@ class CmdTrain(base.BaseCommand):
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_train, 'index.tsv'),
-                             index_assets_prefix=('/in/cache' if media_cache else '/in/train'),
+                             index_assets_prefix=('/in/cache' if asset_cache_dir else '/in/train'),
                              index_annotations_prefix='/in/train')
 
         # export validation set
@@ -321,7 +321,7 @@ class CmdTrain(base.BaseCommand):
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=val_ids,
-                             asset_dir=(media_cache or work_dir_in_val),
+                             asset_dir=(asset_cache_dir or work_dir_in_val),
                              annotation_dir=work_dir_in_val,
                              need_ext=True,
                              need_id_sub_folder=True,
@@ -329,7 +329,7 @@ class CmdTrain(base.BaseCommand):
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in_val, 'index.tsv'),
-                             index_assets_prefix=('/in/cache' if media_cache else '/in/val'),
+                             index_assets_prefix=('/in/cache' if asset_cache_dir else '/in/val'),
                              index_annotations_prefix='/in/val')
 
         # export test set (if we have)
@@ -342,7 +342,7 @@ class CmdTrain(base.BaseCommand):
                                  assets_location=media_location,
                                  class_type_ids=type_id_idx_mapping,
                                  asset_ids=test_ids,
-                                 asset_dir=(media_cache or work_dir_in_test),
+                                 asset_dir=(asset_cache_dir or work_dir_in_test),
                                  annotation_dir=work_dir_in_test,
                                  need_ext=True,
                                  need_id_sub_folder=True,
@@ -350,7 +350,7 @@ class CmdTrain(base.BaseCommand):
                                  base_task_id=src_typ_rev_tid.tid,
                                  format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                                  index_file_path=os.path.join(work_dir_in_test, 'index.tsv'),
-                                 index_assets_prefix=('/in/cache' if media_cache else '/in/test'),
+                                 index_assets_prefix=('/in/cache' if asset_cache_dir else '/in/test'),
                                  index_annotations_prefix='/in/test')
 
         logging.info("starting train docker container")
@@ -368,8 +368,8 @@ class CmdTrain(base.BaseCommand):
         # start train docker and wait
         path_binds = []
         path_binds.append(f"-v{work_dir_in}:/in")
-        if media_cache:
-            path_binds.append(f"-v{media_cache}:/in/cache")
+        if asset_cache_dir:
+            path_binds.append(f"-v{asset_cache_dir}:/in/cache")
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
         shm_size = _get_shm_size(executor_config=executor_config)
@@ -459,7 +459,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     train_arg_parser.add_argument("-w", required=True, dest="work_dir", type=str, help="work place for training")
     train_arg_parser.add_argument('--asset-cache-dir',
                                   required=False,
-                                  dest='media_cache',
+                                  dest='asset_cache_dir',
                                   type=str,
                                   help='asset cache directory')
     train_arg_parser.add_argument("--executor",
