@@ -32,11 +32,14 @@ def list_iterations(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     project_id: int = Query(...),
+    iteration_round: int = Query(None),
 ) -> Any:
     """
     Get iterations under specific project
     """
-    iterations = crud.iteration.get_multi_by_project(db, project_id=project_id)
+    iterations = crud.iteration.get_multi_iterations(
+        db, user_id=current_user.id, project_id=project_id, iteration_round=iteration_round
+    )
     return {"result": iterations}
 
 
