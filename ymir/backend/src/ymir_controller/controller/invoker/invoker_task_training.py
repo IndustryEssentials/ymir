@@ -113,7 +113,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
             '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
             '--src-revs', f"{in_dataset_id}@{his_task_id}", '--config-file', config_file, '--executor', training_image,
-            '--executor-instance', executor_instance, '--tensorboard', tensorboard, '--cache', asset_cache_dir,
+            '--executor-instance', executor_instance, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
+            asset_cache_dir
         ]
         if model_hash:
             training_cmd.append('--model-hash')

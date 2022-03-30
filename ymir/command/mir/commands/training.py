@@ -457,7 +457,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=False,
                                   help='model hash to be used')
     train_arg_parser.add_argument("-w", required=True, dest="work_dir", type=str, help="work place for training")
-    train_arg_parser.add_argument('--cache', required=False, dest='media_cache', type=str, help='media cache directory')
+    train_arg_parser.add_argument('--asset-cache-dir',
+                                  required=False,
+                                  dest='media_cache',
+                                  type=str,
+                                  help='asset cache directory')
     train_arg_parser.add_argument("--executor",
                                   required=True,
                                   dest="executor",
@@ -483,7 +487,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   required=True,
                                   help="path to executor config file")
-    train_arg_parser.add_argument("--tensorboard",
+    train_arg_parser.add_argument("--tensorboard-dir",
                                   dest="tensorboard_dir",
                                   type=str,
                                   required=False,

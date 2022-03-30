@@ -347,7 +347,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='work_dir',
                                    type=str,
                                    help='work place for mining and monitoring')
-    mining_arg_parser.add_argument('--cache',
+    mining_arg_parser.add_argument('--asset-cache-dir',
                                    required=False,
                                    dest='media_cache',
                                    type=str,
