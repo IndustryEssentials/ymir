@@ -4,12 +4,12 @@ import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 
 export enum Stages {
-  beforeMining = 0,
+  prepareMining = 0,
   mining = 1,
   labelling = 2,
   merging = 3,
   training = 4,
-  trained = 5,
+  next = 5,
 }
 type stageObject = {
   value: Stages,
@@ -17,15 +17,15 @@ type stageObject = {
   url?: string,
 }
 export const StageList = () => {
-  const iterationParams = 'iterationId={id}&currentStage={currentStage}'
+  const iterationParams = 'iterationId={id}&currentStage={stage}&outputKey={output}'
   const list = [
-    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', 
-      url: `/home/task/fusion/{trainSet}?strategy={miningStrategy}&chunk={chunkSize}&${iterationParams}` },
-    { value: Stages.mining, prepare: 'miningSet', resultKey: 'miningResult', url: `/home/task/mining/{miningSet}?${iterationParams}` },
-    { value: Stages.labelling, prepare: 'miningResult', resultKey: 'labelSet', url: `/home/task/label/{miningResult}?${iterationParams}` },
-    { value: Stages.merging, prepare: 'labelSet', resultKey: 'trainUpdateSet', url: `/home/task/fusion/{labelSet}?${iterationParams}` },
-    { value: Stages.training, prepare: 'trainUpdateSet', resultKey: 'model', url: `/home/task/training/{trainUpdateSet}?${iterationParams}` },
-    { value: Stages.trained, prepare: 'trainUpdateSet', resultKey: 'trainSet', },
+    { value: Stages.prepareMining, output: 'miningSet', input: 'miningSet', 
+      url: `/home/task/fusion/{s0d}?strategy={s0s}&chunk={s0c}&${iterationParams}` },
+    { value: Stages.mining, output: 'miningResult', input: 'miningResult', url: `/home/task/mining/{s1d}?mid={s1m}${iterationParams}` },
+    { value: Stages.labelling, output: 'labelResult', input: 'labelSet', url: `/home/task/label/{s2d}?${iterationParams}` },
+    { value: Stages.merging, output: 'trainUpdateSet', input: 'trainUpdateSet', url: `/home/task/fusion/{s3d}?merging={s3m}?${iterationParams}` },
+    { value: Stages.training, output: 'model', input: 'model', url: `/home/task/training/{s4d}?${iterationParams}` },
+    { value: Stages.next, output: '', input: 'trainSet', },
   ]
   return { list, ...singleList(list) }
 }
@@ -78,6 +78,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
     trainUpdateSet: data.training_input_dataset_id,
     model: data.training_output_model_id,
     trainSet: data.previous_training_dataset_id,
+    prevIteration: data.previous_iteration || 0,
   }
 }
 

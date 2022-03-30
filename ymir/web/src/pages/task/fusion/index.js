@@ -20,7 +20,7 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
   const iterationId = Number(pageParams.iterationId)
-  const currentStage = Number(pageParams.currentStage)
+  const outputKey = Number(pageParams.outputKey)
   const chunkSize = Number(pageParams.chunkSize)
   const strategy = Number(pageParams.strategy)
   const history = useHistory()
@@ -40,7 +40,7 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
 
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
-    samples: chunkSize,
+    samples: chunkSize || 0,
     strategy: strategy || 2,
   }
 
@@ -111,6 +111,9 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
     }
     const result = await props.createFusionTask(params)
     if (result) {
+      if (iterationId) {
+        func.updateIteration({ id: iterationId, [outputKey]: result.result_dataset.id })
+      }
       message.info(t('task.fusion.create.success.msg'))
       props.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}`)
@@ -293,6 +296,12 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch({
         type: "task/createFusionTask",
         payload,
+      })
+    },
+    updateIteration(params) {
+      return dispatch({
+        type: 'iteration/updateIteration',
+        payload: params,
       })
     },
   }

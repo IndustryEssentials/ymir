@@ -41,25 +41,15 @@ export function createIteration({
   name,
   currentStage,
   iterationRound,
-  miningDataset,
-  miningResult,
-  labelResult,
-  traningDataset,
-  trainingModel,
-  prevTrainingDataset,
+  prevIteration,
   projectId,
 }) {
   return request.post("/iterations/", {
     name,
     current_stage: currentStage,
     iteration_round: iterationRound,
-    mining_input_dataset_id: miningDataset,
-    mining_output_dataset_id: miningResult,
-    label_output_dataset_id: labelResult,
-    training_input_dataset_id: traningDataset,
-    training_output_model_id: trainingModel,
-    previous_training_dataset_id: prevTrainingDataset,
     project_id: projectId,
+    previous_iteration: prevIteration,
   })
 }
 /**
@@ -67,25 +57,29 @@ export function createIteration({
  * @param {object} iteration
  * {
  *   {number}  [currentStage]
- *   {number}  [miningDataset]
+ *   {number}  [trainUpdateSet]
+ *   {number}  [miningSet]
  *   {number}  [miningResult]
- *   {number}  [labelResult]
- *   {number}  traningDataset
- *   {number}  trainingModel
- *   {number}  prevTrainingDataset
+ *   {number}  [labelSet]
+ *   {number}  [model]
  * }
  * @returns
  */
+ trainSet
+ trainUpdateSet
+ miningSet
+ miningResult
+ labelSet
+ model
 export function updateIteration(
   id,
   {
     currentStage,
-    miningDataset,
+    miningSet,
     miningResult,
-    labelResult,
-    traningDataset,
-    trainingModel,
-    prevTrainingDataset,
+    labelSet,
+    trainUpdateSet,
+    model,
   }
 ) {
   return request({
@@ -93,12 +87,11 @@ export function updateIteration(
     url: `/iterations/${id}`,
     data: {
       current_stage: currentStage,
-      mining_input_dataset_id: miningDataset,
+      mining_input_dataset_id: miningSet,
       mining_output_dataset_id: miningResult,
-      label_output_dataset_id: labelResult,
-      training_input_dataset_id: traningDataset,
-      training_output_model_id: trainingModel,
-      previous_training_dataset_id: prevTrainingDataset,
+      label_output_dataset_id: labelSet,
+      training_input_dataset_id: trainUpdateSet,
+      training_output_model_id: model,
     },
   })
 }

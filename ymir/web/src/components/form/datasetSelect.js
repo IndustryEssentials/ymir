@@ -15,13 +15,13 @@ const DatasetSelect = ({ pid, filter = [], value, datasets = [], onChange = () =
 
   return (
     <Select
+      value={value}
       placeholder={t('task.train.form.training.datasets.placeholder')}
-      filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+      // filterOption={(input, option) => option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0}
       onChange={onChange}
       showArrow
       {...resProps}
     >
-      {console.log('hello datasets: ', datasets)}
       {datasets.filter(ds => !filter.includes(ds.id)).map(item =>
         <Select.Option value={item.id} key={item.id}>
           {item.name} {item.versionName}(assets: {item.assetCount})

@@ -41,6 +41,8 @@ const renderRadio = (types) => {
 function Mining({ datasetCache, datasets, ...props }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
+  const iterationId = Number(pageParams.iterationId)
+  const outputKey = Number(pageParams.outputKey)
   const history = useHistory()
   const location = useLocation()
   const { pjid, mid, image } = location.query
@@ -161,6 +163,9 @@ function Mining({ datasetCache, datasets, ...props }) {
     }
     const result = await props.createMiningTask(params)
     if (result) {
+      if (iterationId) {
+        func.updateIteration({ id: iterationId, [outputKey]: result.result_dataset.id })
+      }
       await props.clearCache()
       history.replace(`/home/project/detail/${pid}`)
     }
@@ -448,6 +453,12 @@ const dis = (dispatch) => {
       return dispatch({
         type: "task/createMiningTask",
         payload,
+      })
+    },
+    updateIteration(params) {
+      return dispatch({
+        type: 'iteration/updateIteration',
+        payload: params,
       })
     },
   }

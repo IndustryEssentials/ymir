@@ -4,7 +4,8 @@ import {
   createIteration,
   updateIteration,
 } from "@/services/iteration"
-import { transferIteration } from "@/constants/project"
+import { Stages, transferIteration } from "@/constants/project"
+
 
 const initQuery = {
   name: "",
@@ -60,6 +61,17 @@ export default {
         return result
       }
     },
+    *getStageResult({ payload }, { call, put }) {
+      const { id, stage } = payload
+      const type = stage === Stages.training ? 'model/getModel' : 'dataset/getDataset'
+      const result = yield put.resolve({
+        type,
+        payload: id,
+      })
+      if (result) {
+        return result
+      }
+    }
   },
   reducers: {
     UPDATE_ITERATIONS(state, { payload }) {

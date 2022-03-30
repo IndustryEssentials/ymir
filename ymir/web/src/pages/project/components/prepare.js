@@ -19,7 +19,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     const labels = [
       { value: 'datasets', state: project.miningSet && project.testSet ? states.VALID : -1, url: `/home/project/add/${project.id}?settings=1`, },
       { value: 'model', state: project.model ? states.VALID : -1, url: `/home/project/initmodel/${project.id}`, },
-      { value: 'start', state: project.miningSet && project.testSet && project.model ? -1 : states.READY, },
+      { value: 'start', state: project.model ? -1 : states.READY, },
     ]
     const ss = labels.map(({ value, state, url, }, index) => {
       const act = `project.iteration.stage.${value}`
@@ -37,7 +37,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
       }
       if (index === labels.length - 1) {
         stage.react = ''
-        stage.callback = createIteration
+        stage.callback = () => createIteration()
         console.log('project:', project, stage)
       }
       return stage
@@ -47,17 +47,13 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
 
   async function createIteration() {
     const params = {
-      // currentStage: 0
       iterationRound: 1,
-      miningDataset: project.miningSet?.id,
-      trainingModel: project.model,
-      prevTrainingDataset: project.trainSet?.id,
       projectId: project.id,
+      prevIteration: 0,
     }
     const result = await func.createIteration(params)
     if (result) {
       fresh()
-   
     }
   }
 
@@ -86,6 +82,13 @@ const actions = (dispacth) => {
         payload: params,
       })
     },
+    queryTrainDataset(group_id) {
+      console.log('group id: ', group_id)
+      return dispacth({
+        type: 'dataset/queryDatasets',
+        payload: { group_id, is_desc: false, limit: 1 }
+      })
+    }
   }
 }
 

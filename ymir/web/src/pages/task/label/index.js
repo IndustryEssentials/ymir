@@ -20,6 +20,8 @@ const LabelTypes = () => [
 function Label({ datasets, keywords, ...props }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
+  const iterationId = Number(pageParams.iterationId)
+  const outputKey = Number(pageParams.outputKey)
   const history = useHistory()
   const [dataset, setDataset] = useState({})
   const [doc, setDoc] = useState(undefined)
@@ -77,6 +79,9 @@ function Label({ datasets, keywords, ...props }) {
     }
     const result = await props.createLabelTask(params)
     if (result) {
+      if (iterationId) {
+        func.updateIteration({ id: iterationId, [outputKey]: result.result_dataset.id })
+      }
       await props.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}`)
     }
@@ -258,6 +263,12 @@ const dis = (dispatch) => {
       return dispatch({
         type: 'keyword/getKeywords',
         payload,
+      })
+    },
+    updateIteration(params) {
+      return dispatch({
+        type: 'iteration/updateIteration',
+        payload: params,
       })
     },
   }

@@ -36,4 +36,5 @@ export interface Iteration {
   miningResult?: DatasetId,
   labelSet?: DatasetId,
   model?: number,
+  prevIteration: number,
 }
