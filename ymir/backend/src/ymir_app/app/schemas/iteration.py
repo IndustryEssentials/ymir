@@ -13,6 +13,7 @@ from app.schemas.common import (
 
 class IterationBase(BaseModel):
     iteration_round: int
+    previous_iteration: int
     description: Optional[str]
     current_stage: Optional[IterationStage]
     mining_input_dataset_id: Optional[int]
@@ -27,6 +28,7 @@ class IterationBase(BaseModel):
 # Sufficient properties to create a iteration
 class IterationCreate(BaseModel):
     iteration_round: int
+    previous_iteration: int
     description: Optional[str]
     project_id: int
     current_stage: Optional[IterationStage] = IterationStage.prepare_mining
