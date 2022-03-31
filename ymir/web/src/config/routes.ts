@@ -32,7 +32,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.fusion',
   },
   {
-    path: "/home/task/mining/:id?",
+    path: "/home/task/mining/:id",
     name: "taskMining",
     component: "@/pages/task/mining/index",
     title: 'task.mining.title',
@@ -41,7 +41,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.mining',
   },
   {
-    path: "/home/task/train/:id?",
+    path: "/home/task/train/:id",
     name: "taskTrain",
     component: "@/pages/task/train/index",
     title: 'task.train.title',
@@ -50,7 +50,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.training',
   },
   {
-    path: "/home/task/inference/:id?",
+    path: "/home/task/inference/:id",
     name: "taskInference",
     component: "@/pages/task/inference/index",
     title: 'task.inference.title',
@@ -59,7 +59,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.inference',
   },
   {
-    path: "/home/task/label/:id?",
+    path: "/home/task/label/:id",
     name: "taskTrain",
     component: "@/pages/task/label/index",
     title: 'task.label.title',

@@ -78,6 +78,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
         s4d: iteration.trainUpdateSet,
         s4t: project?.testSet?.id,
         id: iteration.id,
+        pid: project.id,
         stage: iteration.currentStage,
         output: stage.output,
       })

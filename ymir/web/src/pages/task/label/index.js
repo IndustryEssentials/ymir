@@ -20,8 +20,8 @@ const LabelTypes = () => [
 function Label({ datasets, keywords, ...func }) {
   const pageParams = useParams()
   const { query } = useLocation()
-  const id = Number(pageParams.id)
-  const { iterationId, outputKey, currentStage } = query
+  const pid = Number(pageParams.id)
+  const { did, iterationId, outputKey, currentStage } = query
   const history = useHistory()
   const [dataset, setDataset] = useState({})
   const [doc, setDoc] = useState(undefined)
@@ -30,15 +30,15 @@ function Label({ datasets, keywords, ...func }) {
 
 
   useEffect(() => {
-    id && func.getDataset(id)
-  }, [id])
+    did && func.getDataset(did)
+  }, [did])
 
   useEffect(() => {
     func.getKeywords({ limit: 100000 })
   }, [])
 
   useEffect(() => {
-    datasets[id] && setDataset(datasets[id])
+    datasets[did] && setDataset(datasets[did])
   }, [datasets])
 
   useEffect(() => {
@@ -65,15 +65,14 @@ function Label({ datasets, keywords, ...func }) {
     }
   }, [history.location.state])
 
-  console.log('iteration id: ', iterationId, currentStage, outputKey)
   const onFinish = async (values) => {
     const { labellers, checker } = values
     const emails = [labellers]
     checker && emails.push(checker)
     const params = {
       ...values,
-      projectId: dataset.projectId,
-      datasetId: id,
+      projectId: pid,
+      datasetId: Number(did) ? Number(did) : undefined,
       name: values.name.trim(),
       labellers: emails,
       doc,
@@ -84,7 +83,7 @@ function Label({ datasets, keywords, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/detail/${dataset.projectId}`)
+      history.replace(`/home/project/detail/${pid}`)
     }
   }
 

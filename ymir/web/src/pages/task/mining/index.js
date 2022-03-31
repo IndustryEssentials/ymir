@@ -40,11 +40,10 @@ const renderRadio = (types) => {
 
 function Mining({ datasetCache, datasets, ...func }) {
   const pageParams = useParams()
-  const id = Number(pageParams.id)
+  const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { pjid, mid, image, iterationId, currentStage, outputKey } = location.query
-  const [pid, setPid] = useState(null)
+  const { did, mid, image, iterationId, currentStage, outputKey } = location.query
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
@@ -58,24 +57,19 @@ function Mining({ datasetCache, datasets, ...func }) {
   }, [])
 
   useEffect(() => {
-    setPid(Number(pjid))
-  }, [pjid])
-
-  useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
   useEffect(() => {
-    id && func.getDataset(id)
-  }, [id])
+    did && func.getDataset(did)
+  }, [did])
 
   useEffect(() => {
-    const cache = datasetCache[id]
+    const cache = datasetCache[did]
     if (cache) {
       setDataset(cache)
-      setPid(cache.projectId)
     }
-  }, [datasetCache[id]])
+  }, [datasetCache])
 
   useEffect(() => {
     pid && func.getDatasets(pid)
@@ -186,7 +180,7 @@ function Mining({ datasetCache, datasets, ...func }) {
     name: 'task_mining_' + randomNumber(),
     model: mid ? parseInt(mid) : undefined,
     image: image ? parseInt(image) : undefined,
-    datasetId: id || null,
+    datasetId: Number(did) ? Number(did) : undefined,
     algorithm: getCheckedValue(Algorithm()),
     topk: 0,
     gpu_count: 0,
@@ -248,7 +242,7 @@ function Mining({ datasetCache, datasets, ...func }) {
             </ConfigProvider>
 
 
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={dataset.projectId} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.filter.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
@@ -257,7 +251,7 @@ function Mining({ datasetCache, datasets, ...func }) {
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
                 >
-                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={dataset.projectId} />
+                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
