@@ -170,7 +170,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
     const result = await props.createTrainTask(params)
     if (result) {
       if (iterationId) {
-        func.updateIteration({ id: iterationId, [outputKey]: result.result_dataset.id })
+        func.updateIteration({ id: iterationId, [outputKey]: result.result_model.id })
       }
       await props.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}#model`)

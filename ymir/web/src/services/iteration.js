@@ -65,12 +65,6 @@ export function createIteration({
  * }
  * @returns
  */
- trainSet
- trainUpdateSet
- miningSet
- miningResult
- labelSet
- model
 export function updateIteration(
   id,
   {

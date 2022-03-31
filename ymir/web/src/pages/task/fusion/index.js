@@ -112,7 +112,7 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
     const result = await props.createFusionTask(params)
     if (result) {
       if (iterationId) {
-        func.updateIteration({ id: iterationId, [outputKey]: result.result_dataset.id })
+        func.updateIteration({ id: iterationId, [outputKey]: result.id })
       }
       message.info(t('task.fusion.create.success.msg'))
       props.clearCache()
