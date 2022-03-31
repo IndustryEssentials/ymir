@@ -33,18 +33,26 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   }
 
   function next() {
-    if (stage.next) {
+    if (isValid()) {
       callback({
         type: 'update',
         data: { stage: stage.next },
       })
     } else {
+      act()
+    }
+  }
+
+  function ending() {
+    if (end) {
       callback({
         type: 'create',
         data: {
           round: current + 1,
         },
       })
+    } else {
+      act()
     }
   }
 
@@ -84,7 +92,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
     // show by task state and result
     const disabled = isReady() || isInvalid()
     const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
-    return <Button disabled={disabled} className={s.act} type='primary' onClick={() => isValid() ? next() : act()}>{label}</Button>
+    return <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
   }
 
   const renderReactBtn = () => {

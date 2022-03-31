@@ -19,7 +19,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     const labels = [
       { value: 'datasets', state: project.miningSet && project.testSet ? states.VALID : -1, url: `/home/project/add/${project.id}?settings=1`, },
       { value: 'model', state: project.model ? states.VALID : -1, url: `/home/project/initmodel/${project.id}`, },
-      { value: 'start', state: project.model ? states.VALID : states.READY, },
+      { value: 'start', state: project.miningSet && project.testSet && project.model ? states.VALID : states.READY, },
     ]
     const ss = labels.map(({ value, state, url, }, index) => {
       const act = `project.iteration.stage.${value}`
