@@ -181,7 +181,7 @@ def import_model_in_background(
 ) -> None:
     try:
         _import_model(db, controller_client, model_import, user_id, task_hash)
-    except (ValueError, FieldValidationFailed, ModelNotFound, TaskNotFound):
+    except (ValueError, FieldValidationFailed, FailedtoImportModel, ModelNotFound, TaskNotFound):
         logger.exception("[import model] failed to import model, set model result_state to error")
         crud.model.update_state(db, model_id=model_id, new_state=ResultState.error)
 
