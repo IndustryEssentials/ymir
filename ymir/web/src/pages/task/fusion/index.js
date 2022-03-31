@@ -18,9 +18,9 @@ const { Option } = Select
 
 function Fusion({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
-  const id = Number(pageParams.id)
+  const pid = Number(pageParams.id)
   const { query } = useLocation()
-  const { iterationId, currentStage, outputKey, chunk, strategy, merging } = query
+  const { did, iterationId, currentStage, outputKey, chunk, strategy, merging } = query
   const history = useHistory()
   const [form] = Form.useForm()
   const [dataset, setDataset] = useState({})
@@ -44,15 +44,15 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   }
 
   useEffect(() => {
-    dataset.projectId && func.getDatasets(dataset.projectId)
-  }, [dataset.projectId])
+    pid && func.getDatasets(dataset.projectId)
+  }, [pid])
 
   useEffect(() => {
-    id && func.getDataset(id)
-  }, [id])
+    did && func.getDataset(did)
+  }, [did])
 
   useEffect(() => {
-    const dst = datasetCache[id]
+    const dst = datasetCache[did]
     dst && setDataset(dst)
   }, [datasetCache])
 
@@ -85,8 +85,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   }, [history.location.state])
 
   const getKeywords = () => {
-    const selectedDataset = [id, ...includeDatasets]
-    console.log('get keyword datasets: ', selectedDataset, id, includeDatasets, datasets)
+    const selectedDataset = [did, ...includeDatasets]
     let ks = datasets.reduce((prev, current) => selectedDataset.includes(current.id)
       ? prev.concat(current.keywords)
       : prev, [])
@@ -100,12 +99,11 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
       ...values,
       project_id: dataset.projectId,
       group_id: dataset.groupId,
-      dataset: id,
+      dataset: did,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
       strategy: Number(values.strategy) || 2,
     }
-    console.log('strategy : ', params)
     if (iterationId) {
       params.iteration = iterationId
       params.stage = currentStage
@@ -153,7 +151,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
         onChange={onChange}
         showArrow
       >
-        {datasets.filter(ds => ![id, ...filter].includes(ds.id)).map(item => (
+        {datasets.filter(ds => ![did, ...filter].includes(ds.id)).map(item => (
           <Option value={item.id} key={item.name}>
             {item.name}({item.assetCount})
           </Option>
