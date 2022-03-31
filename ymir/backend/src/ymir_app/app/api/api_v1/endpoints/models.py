@@ -151,6 +151,7 @@ def import_model(
         model_import,
         current_user.id,
         task.hash,
+        model.id,
     )
     return {"result": model}
 
@@ -171,6 +172,21 @@ def create_model_record(db: Session, model_import: schemas.ModelImport, task: mo
 
 
 def import_model_in_background(
+    db: Session,
+    controller_client: ControllerClient,
+    model_import: schemas.ModelImport,
+    user_id: int,
+    task_hash: str,
+    model_id: int,
+) -> None:
+    try:
+        _import_model(db, controller_client, model_import, user_id, task_hash)
+    except (ValueError, FieldValidationFailed, FailedtoImportModel, ModelNotFound, TaskNotFound):
+        logger.exception("[import model] failed to import model, set model result_state to error")
+        crud.model.update_state(db, model_id=model_id, new_state=ResultState.error)
+
+
+def _import_model(
     db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
 ) -> None:
     logger.info(
@@ -210,7 +226,6 @@ def import_model_in_background(
     except ValueError as e:
         logger.exception("[import model] controller error: %s", e)
         raise FailedtoImportModel()
-    # update model info when get model ready status from postman
 
 
 @router.delete(

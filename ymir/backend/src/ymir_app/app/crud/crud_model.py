@@ -6,7 +6,7 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
-from app.constants.state import ResultState, TaskState, TaskType
+from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Model
 from app.schemas.model import ModelCreate, ModelUpdate
@@ -124,7 +124,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db: Session,
         *,
         model_id: int,
-        new_state: TaskState,
+        new_state: ResultState,
     ) -> Optional[Model]:
         model = self.get(db, id=model_id)
         if not model:
