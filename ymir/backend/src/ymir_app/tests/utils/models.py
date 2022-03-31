@@ -16,6 +16,7 @@ def create_model(db: Session, client: TestClient, user_id: int) -> models.Model:
         name=random_lower_string(6),
         user_id=user_id,
         task_id=task.id,
+        source=task.type,
         project_id=project_id,
         model_group_id=randint(1000, 2000),
     )

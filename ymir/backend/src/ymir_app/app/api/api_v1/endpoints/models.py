@@ -41,12 +41,14 @@ class SortField(enum.Enum):
     id = "id"
     create_datetime = "create_datetime"
     map = "map"
+    source = "source"
 
 
 @router.get("/", response_model=schemas.ModelPaginationOut)
 def list_models(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by model's name"),
+    source: TaskType = Query(None, description="type of related task"),
     state: ResultState = Query(None),
     project_id: int = Query(None),
     group_id: int = Query(None),
@@ -76,6 +78,7 @@ def list_models(
         project_id=project_id,
         group_id=group_id,
         name=name,
+        source=source,
         state=state,
         offset=offset,
         limit=limit,
@@ -130,6 +133,7 @@ def import_model(
         name=task.hash,
         description=model_import.description,
         hash=None,
+        source=task.type,
         result_state=ResultState.processing,
         model_group_id=model_group.id,
         project_id=model_import.project_id,
@@ -147,6 +151,7 @@ def import_model(
         model_import,
         current_user.id,
         task.hash,
+        model.id,
     )
     return {"result": model}
 
@@ -167,6 +172,21 @@ def create_model_record(db: Session, model_import: schemas.ModelImport, task: mo
 
 
 def import_model_in_background(
+    db: Session,
+    controller_client: ControllerClient,
+    model_import: schemas.ModelImport,
+    user_id: int,
+    task_hash: str,
+    model_id: int,
+) -> None:
+    try:
+        _import_model(db, controller_client, model_import, user_id, task_hash)
+    except (ValueError, FieldValidationFailed, FailedtoImportModel, ModelNotFound, TaskNotFound):
+        logger.exception("[import model] failed to import model, set model result_state to error")
+        crud.model.update_state(db, model_id=model_id, new_state=ResultState.error)
+
+
+def _import_model(
     db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
 ) -> None:
     logger.info(
@@ -206,7 +226,6 @@ def import_model_in_background(
     except ValueError as e:
         logger.exception("[import model] controller error: %s", e)
         raise FailedtoImportModel()
-    # update model info when get model ready status from postman
 
 
 @router.delete(
