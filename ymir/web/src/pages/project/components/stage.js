@@ -3,7 +3,6 @@ import { useHistory, connect } from "umi"
 
 import t from '@/utils/t'
 import { states, statesLabel } from '@/constants/dataset'
-import { TASKSTATES, getTaskStateLabel } from '@/constants/task'
 import s from './iteration.less'
 import { useEffect, useState } from "react"
 
@@ -19,26 +18,24 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
 
   function skip() {
     callback({
-      type: 'update',
+      type: 'skip',
       data: { stage: stage.next },
     })
   }
 
   function next() {
-    if (isPending()) {
-      if (stage.next) {
-        callback({
-          type: 'update',
-          data: { stage: stage.next },
-        })
-      } else {
-        callback({
-          type: 'create',
-          data: {
-            round: current + 1,
-          },
-        })
-      }
+    if (stage.next) {
+      callback({
+        type: 'update',
+        data: { stage: stage.next },
+      })
+    } else {
+      callback({
+        type: 'create',
+        data: {
+          round: current + 1,
+        },
+      })
     }
   }
 
@@ -78,7 +75,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
     // show by task state and result
     const disabled = isReady() || isInvalid()
     const label = isValid() ? t('common.step.next') : t(stage.act)
-    return <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.url ? act() : next()}>{label}</Button>
+    return <Button disabled={disabled} className={s.act} type='primary' onClick={() => isValid() ? next() : act()}>{label}</Button>
   }
 
   const renderReactBtn = () => {

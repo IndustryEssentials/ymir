@@ -58,7 +58,7 @@ export default {
       const { id, ...params } = payload
       const { code, result } = yield call(updateIteration, id, params)
       if (code === 0) {
-        return result
+        return transferIteration(result)
       }
     },
     *getStageResult({ payload }, { call, put }) {

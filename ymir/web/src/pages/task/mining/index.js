@@ -38,14 +38,12 @@ const renderRadio = (types) => {
   )
 }
 
-function Mining({ datasetCache, datasets, ...props }) {
+function Mining({ datasetCache, datasets, ...func }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
-  const iterationId = Number(pageParams.iterationId)
-  const outputKey = Number(pageParams.outputKey)
   const history = useHistory()
   const location = useLocation()
-  const { pjid, mid, image } = location.query
+  const { pjid, mid, image, iterationId, currentStage, outputKey } = location.query
   const [pid, setPid] = useState(null)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
@@ -68,7 +66,7 @@ function Mining({ datasetCache, datasets, ...props }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    id && props.getDataset(id)
+    id && func.getDataset(id)
   }, [id])
 
   useEffect(() => {
@@ -80,7 +78,7 @@ function Mining({ datasetCache, datasets, ...props }) {
   }, [datasetCache[id]])
 
   useEffect(() => {
-    pid && props.getDatasets(pid)
+    pid && func.getDatasets(pid)
   }, [pid])
 
   useEffect(() => {
@@ -122,7 +120,7 @@ function Mining({ datasetCache, datasets, ...props }) {
   }
 
   async function fetchSysInfo() {
-    const result = await props.getSysInfo()
+    const result = await func.getSysInfo()
     if (result) {
       setGPU(result.gpu_count)
     }
@@ -161,12 +159,12 @@ function Mining({ datasetCache, datasets, ...props }) {
       image,
       config,
     }
-    const result = await props.createMiningTask(params)
+    const result = await func.createMiningTask(params)
     if (result) {
       if (iterationId) {
-        func.updateIteration({ id: iterationId, [outputKey]: result.result_dataset.id })
+        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
-      await props.clearCache()
+      await func.clearCache()
       history.replace(`/home/project/detail/${pid}`)
     }
   }

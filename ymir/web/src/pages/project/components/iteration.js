@@ -32,6 +32,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   }, [iteration])
 
   useEffect(() => {
+    console.log('rerender iteration: ', iteration)
     iteration.id && rerenderStages()
   }, [iteration, firstTrainSet])
 
@@ -75,6 +76,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
         s3d: prevIteration.trainUpdateSet || firstTrainSet.id,
         s3m: iteration.labelSet,
         s4d: iteration.trainUpdateSet,
+        s4t: project?.testSet?.id,
         id: iteration.id,
         stage: iteration.currentStage,
         output: stage.output,
@@ -94,6 +96,8 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   function iterationHandle({ type = 'update', data = {}}) {
     if (type === 'create') {
       createIteration(data)
+    } else if (type === 'skip') {
+      skipStage(data)
     } else {
       updateIteration(data)
     }
@@ -128,7 +132,18 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   async function updateIteration(data = {}) {
     const params = {
       id: iteration.id,
-      currentStage: data.stage,
+      currentStage: data.stage.value,
+    }
+    const result = await func.updateIteration(params)
+    if (result) {
+      setIteration(result)
+    }
+  }
+  async function skipStage({ stage = {}}) {
+    const params = {
+      id: iteration.id,
+      currentStage: stage.value,
+      [stage.output]: 0,
     }
     const result = await func.updateIteration(params)
     if (result) {
@@ -140,7 +155,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
       <Row style={{ justifyContent: 'flex-end' }}>
         {stages.map((stage) => (
           <Col key={stage.value} flex={1}>
-            <Stage stage={stage} end={!stage.next} />
+            <Stage stage={stage} end={!stage.next} callback={callback} />
           </Col>
         ))}
       </Row>

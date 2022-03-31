@@ -31,14 +31,12 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ allDatasets, datasetCache, ...props }) {
+function Train({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
-  const iterationId = Number(pageParams.iterationId)
-  const outputKey = Number(pageParams.outputKey)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image } = location.query
+  const { mid, image, iterationId, outputKey, currentStage, test } = location.query
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
@@ -69,7 +67,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
   }, [allDatasets])
 
   useEffect(() => {
-    id && props.getDataset(id)
+    id && func.getDataset(id)
     id && setTrainSet(id)
   }, [id])
 
@@ -79,7 +77,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
   }, [datasetCache])
 
   useEffect(() => {
-    dataset.projectId && props.getDatasets(dataset.projectId)
+    dataset.projectId && func.getDatasets(dataset.projectId)
   }, [dataset.projectId])
 
   useEffect(() => {
@@ -119,7 +117,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
   }
 
   async function fetchSysInfo() {
-    const result = await props.getSysInfo()
+    const result = await func.getSysInfo()
     if (result) {
       setGPU(result.gpu_count)
     }
@@ -167,12 +165,12 @@ function Train({ allDatasets, datasetCache, ...props }) {
       imageId,
       config,
     }
-    const result = await props.createTrainTask(params)
+    const result = await func.createTrainTask(params)
     if (result) {
       if (iterationId) {
-        func.updateIteration({ id: iterationId, [outputKey]: result.result_model.id })
+        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
-      await props.clearCache()
+      await func.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}#model`)
     }
   }
@@ -200,6 +198,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
   const initialValues = {
     name: 'task_train_' + randomNumber(),
     datasetId: id,
+    testset: Number(test),
     image: image ? parseInt(image) : undefined,
     model: mid ? parseInt(mid) : undefined,
     trainType: getCheckedValue(TrainType()),
@@ -258,6 +257,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
                   ]}
                 >
                   <Select
+                    disabled={test}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
                     filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={validationSetChange}

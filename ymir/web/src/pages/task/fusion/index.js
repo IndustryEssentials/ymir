@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo, useMemo } from "react"
 import { connect } from "dva"
 import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio, Row, Col, InputNumber } from "antd"
-import { useHistory, useParams } from "umi"
+import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
@@ -16,13 +16,11 @@ import Panel from "@/components/form/panel"
 
 const { Option } = Select
 
-function Fusion({ allDatasets, datasetCache, ...props }) {
+function Fusion({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const id = Number(pageParams.id)
-  const iterationId = Number(pageParams.iterationId)
-  const outputKey = Number(pageParams.outputKey)
-  const chunkSize = Number(pageParams.chunkSize)
-  const strategy = Number(pageParams.strategy)
+  const { query } = useLocation()
+  const { iterationId, currentStage, outputKey, chunk, strategy, merging } = query
   const history = useHistory()
   const [form] = Form.useForm()
   const [dataset, setDataset] = useState({})
@@ -35,21 +33,22 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
   const [visibles, setVisibles] = useState({
     merge: true,
     filter: false,
-    sampling: false,
+    sampling: !!chunk,
   })
 
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
-    samples: chunkSize || 0,
+    samples: chunk || 0,
+    include_datasets: [Number(merging)],
     strategy: strategy || 2,
   }
 
   useEffect(() => {
-    dataset.projectId && props.getDatasets(dataset.projectId)
+    dataset.projectId && func.getDatasets(dataset.projectId)
   }, [dataset.projectId])
 
   useEffect(() => {
-    id && props.getDataset(id)
+    id && func.getDataset(id)
   }, [id])
 
   useEffect(() => {
@@ -109,13 +108,13 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
       params.iteration = iterationId
       params.stage = currentStage
     }
-    const result = await props.createFusionTask(params)
+    const result = await func.createFusionTask(params)
     if (result) {
       if (iterationId) {
-        func.updateIteration({ id: iterationId, [outputKey]: result.id })
+        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.id })
       }
       message.info(t('task.fusion.create.success.msg'))
-      props.clearCache()
+      func.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}`)
     }
   }

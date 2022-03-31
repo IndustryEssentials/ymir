@@ -183,7 +183,7 @@ export function createTrainTask({
     iteration_id: iteration,
     iteration_stage: stage,
     type: TASKTYPES.TRAINING,
-    config,
+    docker_image_config: config,
     parameters: {
       strategy,
       dataset_id: datasetId,
@@ -210,7 +210,7 @@ export function createMiningTask({
     iteration_id: iteration,
     iteration_stage: stage,
     name,
-    config,
+    docker_image_config: config,
     parameters: {
       strategy,
       model_id: model,
@@ -253,7 +253,7 @@ export function createInferenceTask({
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
     description,
-    config,
+    docker_image_config: config,
     parameters: {
       model_id: model,
       dataset_id: datasetId,
