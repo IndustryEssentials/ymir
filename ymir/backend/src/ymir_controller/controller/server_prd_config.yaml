@@ -13,7 +13,7 @@ ASSETS:
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
-  sandboxroot: ${SANDBOX}
+  sandboxroot: ${BACKEND_SANDBOX_ROOT}
 METRICS:
   allow_feedback: ${ALLOW_ANONYMOUS_FEEDBACK}
   anonymous_uuid: ${ANONYMOUS_UUID}

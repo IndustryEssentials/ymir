@@ -33,7 +33,7 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResul
     }
     """
     dataset_info = pb_reader.MirStorageLoader(
-        sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
+        sandbox_root=viz_settings.BACKEND_SANDBOX_ROOT,
         user_id=user_id,
         repo_id=repo_id,
         branch_id=branch_id,

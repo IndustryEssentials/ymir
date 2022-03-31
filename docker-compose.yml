@@ -9,13 +9,12 @@ services:
       - BACKEND_REDIS_URL=redis://redis:6379/0
       # controller
       - NVIDIA_VISIBLE_DEVICES=all
-      - SANDBOX=${YMIR_PATH}/ymir-data/sandbox
+      - BACKEND_SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
       - MODELS_PATH=${YMIR_PATH}/ymir-models
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
       - DATA_SOURCE=/data/sharing
       # viz
-      - VIZ_SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
       - VIZ_REDIS_URI=redis://:@viz-redis
       # app
       - DATABASE_URI=mysql+pymysql://user:passwd@db/ymir
@@ -30,7 +29,7 @@ services:
       - MONITOR_URL=http://127.0.0.1:9098
       - APP_API_HOST=127.0.0.1:80
     volumes:
-      - "${YMIR_PATH}/ymir-data/sandbox:${YMIR_PATH}/ymir-data/sandbox"
+      - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"
       - "${YMIR_PATH}/ymir-models:${YMIR_PATH}/ymir-models"
       - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
