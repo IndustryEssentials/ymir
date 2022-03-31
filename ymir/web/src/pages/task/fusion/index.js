@@ -39,7 +39,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
     samples: chunk || 0,
-    include_datasets: [Number(merging)],
+    include_datasets: merging ? [Number(merging)] : [],
     strategy: strategy || 2,
   }
 
@@ -103,7 +103,9 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
       dataset: id,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
+      strategy: Number(values.strategy) || 2,
     }
+    console.log('strategy : ', params)
     if (iterationId) {
       params.iteration = iterationId
       params.stage = currentStage
@@ -190,6 +192,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
               <Tip hidden={true}>
                 <Form.Item name='strategy'
                   hidden={includeDatasets.length < 1}
+                  initialValue={2}
                   label={t('task.train.form.repeatdata.label')}>
                   <Radio.Group options={[
                     { value: 2, label: t('task.train.form.repeatdata.latest') },

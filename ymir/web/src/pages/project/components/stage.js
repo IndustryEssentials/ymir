@@ -10,9 +10,18 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   // console.log('stage: ', stage, end)
   const history = useHistory()
   const [result, setResult] = useState({})
+  const [state, setState] = useState(-1)
 
   useEffect(() => {
-    console.log('use effec stage.result:', stage.result)
+    console.log('stage:', stage)
+    setState(stage.state)
+  }, [stage])
+
+  useEffect(() => {
+    result.state && setState(result.state)
+  }, [result])
+
+  useEffect(() => {
     currentStage() && stage.result && fetchStageResult()
   }, [stage.result])
 
@@ -43,10 +52,10 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   const finishStage = () => stage.value < stage.current
   const pendingStage = () => stage.value > stage.current
 
-  const isPending = () => result.state < 0
-  const isReady = () => result.state === states.READY
-  const isValid = () => result.state === states.VALID
-  const isInvalid = () => result.state === states.INVALID
+  const isPending = () => state < 0
+  const isReady = () => state === states.READY
+  const isValid = () => state === states.VALID
+  const isInvalid = () => state === states.INVALID
 
   function act() {
     stage.url && history.push(stage.url)
@@ -74,7 +83,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   const renderMainBtn = () => {
     // show by task state and result
     const disabled = isReady() || isInvalid()
-    const label = isValid() ? t('common.step.next') : t(stage.act)
+    const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
     return <Button disabled={disabled} className={s.act} type='primary' onClick={() => isValid() ? next() : act()}>{label}</Button>
   }
 
@@ -86,11 +95,11 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   }
   const renderState = () => {
     const pending = 'project.stage.state.pending'
-    return !finishStage() ? (isPending() ? t(pending) : (stage.result ? stage.result : t(statesLabel(result.state)))) : null
+    return !finishStage() ? (isPending() ? t(pending) : (result ? result.name : t(statesLabel(state)))) : null
   }
 
   const renderSkip = () => {
-    return !stage.unskippable && !end && currentStage() ? <span className={s.skip} onClick={() => skip()}>skip</span> : null
+    return !stage.unskippable && !end && currentStage() ? <span className={s.skip} onClick={() => skip()}>{t('common.skip')}</span> : null
   }
   return (
     <div className={stateClass}>
