@@ -177,12 +177,12 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
-                  <Form.Item label={t('project.add.form.test.set')} name="testSet">
-                    <DatasetSelect pid={id} filter={[project.trainSet, miningSet]} onChange={(value) => value && setTestSet(value)} />
+                  <Form.Item label={t('project.add.form.test.set')} name="testSet" required>
+                    <DatasetSelect disabled={project.testSet} pid={id} filter={[project.trainSet, miningSet]} onChange={(value) => value && setTestSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
-                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet">
+                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet" required>
                     <DatasetSelect pid={id} filter={[project.trainSet, testSet]} onChange={(value) => value && setMiningSet(value)} />
                   </Form.Item>
                 </Tip>
