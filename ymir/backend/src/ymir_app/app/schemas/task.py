@@ -151,7 +151,6 @@ class TaskInternal(TaskInDBBase):
 
 class TaskResult(BaseModel):
     id: int
-    hash: str
 
     class Config:
         orm_mode = True

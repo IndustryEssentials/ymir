@@ -4,7 +4,7 @@ from pydantic import BaseSettings
 
 
 class VizSettings(BaseSettings):
-    VIZ_SANDBOX_ROOT: str = "/data/mir_root"
+    BACKEND_SANDBOX_ROOT: str = "/data/mir_root"
 
     VIZ_REDIS_URI: str = "redis://"
 
