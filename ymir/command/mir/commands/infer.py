@@ -21,16 +21,16 @@ class CmdInfer(base.BaseCommand):
     Steps:
         a. prepare_env: make dirs
         b. prepare_assets: copy assets in orig index.tsv into work_dir/in/candidate, and make candidate index.tsv
-        c. prepare_model: copy model to work_dir/in/model and unpack
+        c. prepare_model: copy model to work_dir/in/models and unpack
         d. prepare_config_file: generate work_dir/in/config.yaml
         e. run_docker_cmd: bind paths and run docker cmd
 
-    About path mappings:
-        a. work_dir/in/candidate -> /in/candidate
-        b. work_dir/in/model -> /in/model
-        c: work_dir/out -> out
-        d: work_dir/in/candidate/index.tsv -> /in/candidate/index.tsv
-        e: work_dir/in/config.yaml -> /in/config.yaml
+    About path bindings:
+        a. work_dir/in/assets or cache -> /in/assets
+        b. work_dir/in/models -> /in/models
+        c. work_dir/in/candidate-index.tsv -> /in/candidate-index.tsv
+        d. work_dir/in/config.yaml -> /in/config.yaml
+        e. work_dir/out -> out
     """
     def run(self) -> int:
         logging.debug("command infer: %s", self.args)
@@ -114,7 +114,7 @@ class CmdInfer(base.BaseCommand):
             executor_instance = task_id
 
         _, work_model_path, work_out_path = _prepare_env(work_dir)
-        work_index_file = os.path.join(work_dir, 'in', 'candidate', 'index.tsv')
+        work_index_file = os.path.join(work_dir, 'in', 'candidate-index.tsv')
         work_config_file = os.path.join(work_dir, 'in', 'config.yaml')
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
@@ -133,7 +133,7 @@ class CmdInfer(base.BaseCommand):
                             dst_config_file=work_config_file,
                             class_names=class_names,
                             task_id=task_id,
-                            model_params_path=[os.path.join('/in/model', name) for name in model_names],
+                            model_params_path=[os.path.join('/in/models', name) for name in model_names],
                             run_infer=run_infer,
                             run_mining=run_mining)
 
@@ -162,8 +162,8 @@ def _prepare_env(work_dir: str) -> Tuple[str, str, str]:
     make the following dir structures:
     * work_dir
             * in
-                    * candidate
-                    * model
+                    * assets
+                    * models
             * out
 
     if work_dir already exists, do nothing
@@ -172,8 +172,8 @@ def _prepare_env(work_dir: str) -> Tuple[str, str, str]:
         work_dir (str): work dir root
     """
     os.makedirs(os.path.join(work_dir, 'in'), exist_ok=True)
-    work_assets_path = os.path.join(work_dir, 'in', 'candidate')
-    work_model_path = os.path.join(work_dir, 'in', 'model')
+    work_assets_path = os.path.join(work_dir, 'in', 'assets')
+    work_model_path = os.path.join(work_dir, 'in', 'models')
     work_out_path = os.path.join(work_dir, 'out')
     os.makedirs(work_assets_path, exist_ok=True)
     os.makedirs(work_model_path, exist_ok=True)
@@ -221,7 +221,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
             media_keys_set.add(media_key)
 
             # write in-container index file
-            f.write(f"/in/candidate/{media_key}\n")
+            f.write(f"/in/assets/{media_key}\n")
 
     if not media_keys_set:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -278,9 +278,9 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
-    cmd.append(f"-v{asset_path}:/in/candidate")
-    cmd.append(f"-v{model_path}:/in/model")
-    cmd.append(f"-v{index_file_path}:/in/candidate/index.tsv")
+    cmd.append(f"-v{asset_path}:/in/assets")
+    cmd.append(f"-v{model_path}:/in/models")
+    cmd.append(f"-v{index_file_path}:/in/candidate-index.tsv")
     cmd.append(f"-v{config_file_path}:/in/config.yaml")
     cmd.append(f"-v{out_path}:/out")
     # permissions and shared memory

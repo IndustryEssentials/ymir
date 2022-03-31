@@ -164,10 +164,10 @@ class TestMiningCmd(unittest.TestCase):
         mining_instance.run()
 
         mock_run.assert_called_once_with(work_dir=args.work_dir,
-                                         media_path=os.path.join(args.work_dir, 'in', 'candidate'),
+                                         media_path=os.path.join(args.work_dir, 'in', 'assets'),
                                          model_location=args.model_location,
                                          model_hash=args.model_hash,
-                                         index_file=os.path.join(args.work_dir, 'in', 'candidate', 'src-index.tsv'),
+                                         index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
                                          config_file=args.config_file,
                                          task_id='mining-task-id',
                                          shm_size='16G',

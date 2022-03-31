@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import shutil
 import subprocess
 from subprocess import CalledProcessError
 import traceback

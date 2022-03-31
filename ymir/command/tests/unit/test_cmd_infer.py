@@ -118,9 +118,8 @@ class TestCmdInfer(unittest.TestCase):
         # check running result
         self.assertEqual(MirCode.RC_OK, cmd_result)
         mock_run.assert_called_once_with(asset_path=fake_args.work_dir,
-                                         index_file_path=os.path.join(fake_args.work_dir, 'in', 'candidate',
-                                                                      'index.tsv'),
-                                         model_path=os.path.join(fake_args.work_dir, 'in', 'model'),
+                                         index_file_path=os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'),
+                                         model_path=os.path.join(fake_args.work_dir, 'in', 'models'),
                                          config_file_path=os.path.join(fake_args.work_dir, 'in', 'config.yaml'),
                                          out_path=os.path.join(fake_args.work_dir, 'out'),
                                          executor=fake_args.executor,
@@ -133,10 +132,10 @@ class TestCmdInfer(unittest.TestCase):
                                              max_boxes=50)
 
         # check assets and index.tsv
-        with open(os.path.join(fake_args.work_dir, 'in', 'candidate', 'index.tsv'), 'r') as f:
+        with open(os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'), 'r') as f:
             contents = f.read().splitlines()
             self.assertEqual(1, len(contents))
-            self.assertEqual('/in/candidate/2007_000032.jpg', contents[0])
+            self.assertEqual('/in/assets/2007_000032.jpg', contents[0])
 
         # check config
         with open(os.path.join(fake_args.work_dir, 'in', 'config.yaml'), 'r') as f:
@@ -145,4 +144,4 @@ class TestCmdInfer(unittest.TestCase):
             self.assertTrue('model_params_path' in infer_config)
 
         # check model params
-        self.assertTrue(os.path.isfile(os.path.join(fake_args.work_dir, 'in', 'model', 'model.params')))
+        self.assertTrue(os.path.isfile(os.path.join(fake_args.work_dir, 'in', 'models', 'model.params')))

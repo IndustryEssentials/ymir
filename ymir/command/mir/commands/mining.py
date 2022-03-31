@@ -20,10 +20,10 @@ class CmdMining(base.BaseCommand):
     mining command
 
     About path mappings:
-        a. work_dir/in/candidate or cache -> /in/candidate
-        b: work_dir/in/model -> /in/model
+        a. work_dir/in/assets or cache -> /in/assets
+        b: work_dir/in/models -> /in/models
         c: work_dir/out -> out
-        d: work_dir/in/candidate/index.tsv -> /in/candidate/index.tsv
+        d: work_dir/in/candidate-index.tsv -> /in/candidate-index.tsv
         e: work_dir/in/config.yaml -> /in/config.yaml
     """
     def run(self) -> int:
@@ -126,10 +126,10 @@ class CmdMining(base.BaseCommand):
         # topk can be None (means no mining), or in interval (0, assets_count) (means mining and select topk)
 
         work_in_path = os.path.join(work_dir, 'in')  # docker container's input data directory
+        work_asset_path = asset_cache_dir or os.path.join(work_in_path, 'assets')
+        work_model_path = os.path.join(work_in_path, 'models')
+        work_index_file = os.path.join(work_in_path, 'candidate-src-index.tsv')
         work_out_path = os.path.join(work_dir, 'out')  # docker container's output data directory
-        work_asset_path = asset_cache_dir or os.path.join(work_in_path, 'candidate')
-        work_model_path = os.path.join(work_in_path, 'model')
-        work_index_file = os.path.join(work_in_path, 'candidate', 'src-index.tsv')
 
         ret = _prepare_env(export_root=work_dir,
                            work_in_path=work_in_path,
@@ -144,7 +144,6 @@ class CmdMining(base.BaseCommand):
                         mir_root=mir_root,
                         src_rev_tid=src_typ_rev_tid,
                         media_location=media_location,
-                        path_prefix_in_index_file=work_asset_path,
                         work_asset_path=work_asset_path,
                         work_index_file=work_index_file)
 
@@ -307,11 +306,7 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
 
 
 def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_tid: revs_parser.TypRevTid,
-                    media_location: str, path_prefix_in_index_file: str, work_asset_path: str,
-                    work_index_file: str) -> None:
-    os.makedirs(work_asset_path, exist_ok=True)
-    os.makedirs(os.path.dirname(work_index_file), exist_ok=True)
-
+                    media_location: str, work_asset_path: str, work_index_file: str) -> None:
     img_list = set(mir_metadatas.attributes.keys())
     data_exporter.export(mir_root=mir_root,
                          assets_location=media_location,
@@ -325,7 +320,7 @@ def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_ti
                          base_task_id=src_rev_tid.tid,
                          format_type=data_exporter.ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
                          index_file_path=work_index_file,
-                         index_assets_prefix=path_prefix_in_index_file)
+                         index_assets_prefix=work_asset_path)
 
 
 def _get_shm_size(mining_config_file_path: str) -> str:
