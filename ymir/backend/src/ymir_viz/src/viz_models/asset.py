@@ -148,7 +148,7 @@ class AssetsModel:
             logging.info("get_assets_info from cache")
         else:
             assets_content = pb_reader.MirStorageLoader(
-                sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
+                sandbox_root=viz_settings.BACKEND_SANDBOX_ROOT,
                 user_id=self.user_id,
                 repo_id=self.repo_id,
                 branch_id=self.branch_id,
@@ -179,7 +179,7 @@ class AssetsModel:
             logging.info(f"get_asset_id: {asset_id} from cache")
         else:
             assets_content = pb_reader.MirStorageLoader(
-                sandbox_root=viz_settings.VIZ_SANDBOX_ROOT,
+                sandbox_root=viz_settings.BACKEND_SANDBOX_ROOT,
                 user_id=self.user_id,
                 repo_id=self.repo_id,
                 branch_id=self.branch_id,
