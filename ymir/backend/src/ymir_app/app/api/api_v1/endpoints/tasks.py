@@ -127,6 +127,7 @@ def create_task(
 
     # 4. create task record
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=current_user.id)
+    task_info = schemas.TaskInternal.from_orm(task)
 
     # 5. create task result record (dataset or model)
     task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task)
@@ -136,7 +137,7 @@ def create_task(
     try:
         write_clickhouse_metrics(
             clickhouse,
-            jsonable_encoder(task),
+            task_info,
             args["dataset_group_id"],
             args["dataset_id"],
             task_in.parameters.model_id,
@@ -148,8 +149,6 @@ def create_task(
             "[create task] failed to write task(%s) stats to clickhouse, continue anyway",
             task.hash,
         )
-    except KeyError:
-        logger.exception("[create task] failed to get metrics for task(%s), continue anyway", task.hash)
     logger.info("[create task] created task name: %s", task_in.name)
 
     return {"result": task}
@@ -348,7 +347,7 @@ class TaskResult:
 
 def write_clickhouse_metrics(
     clickhouse: YmirClickHouse,
-    task_info: Dict,
+    task_info: schemas.TaskInternal,
     dataset_group_id: int,
     dataset_id: int,
     model_id: Optional[int],
@@ -356,20 +355,21 @@ def write_clickhouse_metrics(
 ) -> None:
     # for task stats
     clickhouse.save_task_parameter(
-        dt=task_info["create_datetime"],
-        user_id=task_info["user_id"],
-        name=task_info["name"],
-        hash_=task_info["hash"],
-        type_=TaskType(task_info["type"]).name,
+        dt=task_info.create_datetime,
+        user_id=task_info.user_id,
+        project_id=task_info.project_id,
+        name=task_info.name,
+        hash_=task_info.hash,
+        type_=TaskType(task_info.type).name,
         dataset_ids=[dataset_id],
         model_ids=[model_id] if model_id else [],
         keywords=keywords,
     )
     # for keywords recommendation
     clickhouse.save_dataset_keyword(
-        dt=task_info["create_datetime"],
-        user_id=task_info["user_id"],
-        project_id=task_info["project_id"],
+        dt=task_info.create_datetime,
+        user_id=task_info.user_id,
+        project_id=task_info.project_id,
         group_id=dataset_group_id,
         dataset_id=dataset_id,
         keywords=keywords,

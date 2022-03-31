@@ -65,6 +65,7 @@ class YmirClickHouse:
         self,
         dt: datetime,
         user_id: int,
+        project_id: int,
         name: str,
         hash_: str,
         type_: str,
@@ -74,7 +75,7 @@ class YmirClickHouse:
     ) -> Any:
         return self.execute(
             "INSERT INTO task_create VALUES",
-            [[dt, user_id, name, hash_, type_, dataset_ids, model_ids, keywords]],
+            [[dt, user_id, project_id, name, hash_, type_, dataset_ids, model_ids, keywords]],
         )
 
     def save_model_result(
