@@ -13,13 +13,9 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   const [state, setState] = useState(-1)
 
   useEffect(() => {
-    console.log('stage:', stage)
-    setState(stage.state)
-  }, [stage])
-
-  useEffect(() => {
-    result.state && setState(result.state)
-  }, [result])
+    const st = typeof result.state !== 'undefined' ? result.state : stage.state
+    setState(st)
+  }, [result, stage])
 
   useEffect(() => {
     currentStage() && stage.result && fetchStageResult()
@@ -103,7 +99,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   }
   const renderState = () => {
     const pending = 'project.stage.state.pending'
-    return !finishStage() ? (isPending() ? t(pending) : (result ? result.name : t(statesLabel(state)))) : null
+    return !finishStage() ? (isPending() ? t(pending) : (isValid() ? result.name : t(statesLabel(state)))) : null
   }
 
   const renderSkip = () => {

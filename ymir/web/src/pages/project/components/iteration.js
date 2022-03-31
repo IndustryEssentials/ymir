@@ -32,7 +32,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   }, [iteration])
 
   useEffect(() => {
-    console.log('rerender iteration: ', iteration)
+    console.log('rerender iteration: ', iteration, firstTrainSet)
     iteration.id && rerenderStages()
   }, [iteration, firstTrainSet])
 
@@ -50,7 +50,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
         react: `${label}.react`,
         state: -1,
         next: stageList[value].next,
-        url,
+        temp: url,
         output,
         input,
         project,
@@ -65,8 +65,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   function rerenderStages() {
     const ss = stages.map(stage => {
       const result = iteration[stage.output]
-      console.log('result:', result, iteration[stage.output], stage.output)
-      const url = templateString(stage.url || '', {
+      const url = templateString(stage.temp || '', {
         s0d: project.miningSet.id || 0,
         s0s: project.miningStrategy,
         s0c: project.chunkSize || 0,

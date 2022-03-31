@@ -36,6 +36,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
     sampling: !!chunk,
   })
 
+  console.log('merging: ', merging)
+
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
     samples: chunk || 0,

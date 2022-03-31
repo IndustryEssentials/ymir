@@ -63,13 +63,19 @@ export default {
     },
     *getStageResult({ payload }, { call, put }) {
       const { id, stage } = payload
-      const type = stage === Stages.training ? 'model/getModel' : 'dataset/getDataset'
+      const isModel = stage === Stages.training
+      const type = isModel ? 'model/getModel' : 'dataset/getDataset'
       const result = yield put.resolve({
         type,
         payload: id,
       })
       if (result) {
-        return result
+        return {
+          id: result.id,
+          name: result.name,
+          state: isModel ? result.result_state : result.state,
+          progress: isModel ? result.percent : result.progress,
+        }
       }
     }
   },
@@ -78,7 +84,6 @@ export default {
       const projectIterations = { ...state.iterations }
       const { id, iterations } = payload
       projectIterations[id] = iterations
-      console.log("iteration reducer: ", id, iterations)
       return {
         ...state,
         iterations: projectIterations,
