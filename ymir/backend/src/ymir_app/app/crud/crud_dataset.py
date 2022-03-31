@@ -7,7 +7,7 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
-from app.constants.state import ResultState
+from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Dataset
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
@@ -22,7 +22,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         name: Optional[str] = None,
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
-        type_: Optional[IntEnum] = None,
+        source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
@@ -48,10 +48,10 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
 
         if name:
             query = query.filter(self.model.name.like(f"%{name}%"))
-        # todo
-        #  filter by dataset type (task type)
         if state:
             query = query.filter(self.model.result_state == int(state))
+        if source:
+            query = query.filter(self.model.source == int(source))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
         if group_id is not None:
@@ -108,6 +108,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             name=name,
             version_num=version_num,
             hash=obj_in.hash,
+            source=int(obj_in.source),
             result_state=int(obj_in.result_state),
             dataset_group_id=obj_in.dataset_group_id,
             project_id=obj_in.project_id,
@@ -125,6 +126,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         dataset_in = DatasetCreate(
             name=task.hash,
             hash=task.hash,
+            source=task.type,
             dataset_group_id=dest_group_id,
             project_id=task.project_id,
             user_id=task.user_id,

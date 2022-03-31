@@ -6,7 +6,7 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
-from app.constants.state import TaskState, ResultState
+from app.constants.state import ResultState, TaskState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Model
 from app.schemas.model import ModelCreate, ModelUpdate
@@ -21,6 +21,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         user_id: int,
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
+        source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
         start_time: Optional[int],
         end_time: Optional[int],
@@ -45,6 +46,9 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if name:
             # basic fuzzy search
             query = query.filter(self.model.name.like(f"%{name}%"))
+
+        if source:
+            query = query.filter(self.model.source == int(source))
 
         if state:
             query = query.filter(self.model.result_state == int(state))
@@ -88,6 +92,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             name=name,
             version_num=version_num,
             hash=obj_in.hash,
+            source=int(obj_in.source),
             result_state=int(obj_in.result_state),
             model_group_id=obj_in.model_group_id,
             project_id=obj_in.project_id,
@@ -105,6 +110,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         model_in = ModelCreate(
             name=task.hash,
             hash=task.hash,
+            source=task.type,
             result_state=ResultState.processing,
             model_group_id=dest_group_id,
             project_id=task.project_id,

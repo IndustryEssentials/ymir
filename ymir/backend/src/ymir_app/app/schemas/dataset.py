@@ -29,6 +29,7 @@ class MergeStrategy(enum.IntEnum):
 
 class DatasetBase(BaseModel):
     name: str = Field(description="Dataset Name")
+    source: TaskType
     description: Optional[str]
     result_state: ResultState = ResultState.processing
     dataset_group_id: int
@@ -56,9 +57,10 @@ class DatasetImport(BaseModel):
     input_dataset_name: Optional[str] = Field(description="name for source dataset")
     input_path: Optional[str] = Field(description="from path on ymir server")
     strategy: ImportStrategy = ImportStrategy.ignore_unknown_annotations
+    source: Optional[TaskType]
     import_type: Optional[TaskType]
 
-    @validator("import_type", pre=True, always=True)
+    @validator("import_type", "source", pre=True, always=True)
     def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
         if values.get("input_url") or values.get("input_path"):
             return TaskType.import_data
@@ -106,7 +108,6 @@ class Dataset(DatasetInDBBase):
     keywords: Optional[str]
     ignored_keywords: Optional[str]
     negative_info: Optional[str]
-    source: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
     @validator("keywords", "ignored_keywords", "negative_info")

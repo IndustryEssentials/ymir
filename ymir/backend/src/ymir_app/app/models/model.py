@@ -22,6 +22,7 @@ class Model(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     hash = Column(String(settings.STRING_LEN_LIMIT), index=True)
     name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
+    source = Column(SmallInteger, index=True, nullable=False)
     description = Column(String(settings.STRING_LEN_LIMIT))
     version_num = Column(Integer, index=True, nullable=False)
     result_state = Column(SmallInteger, index=True, nullable=False)

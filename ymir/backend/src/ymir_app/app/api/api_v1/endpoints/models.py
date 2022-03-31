@@ -41,12 +41,14 @@ class SortField(enum.Enum):
     id = "id"
     create_datetime = "create_datetime"
     map = "map"
+    source = "source"
 
 
 @router.get("/", response_model=schemas.ModelPaginationOut)
 def list_models(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by model's name"),
+    source: TaskType = Query(None, description="type of related task"),
     state: ResultState = Query(None),
     project_id: int = Query(None),
     group_id: int = Query(None),
@@ -76,6 +78,7 @@ def list_models(
         project_id=project_id,
         group_id=group_id,
         name=name,
+        source=source,
         state=state,
         offset=offset,
         limit=limit,
@@ -130,6 +133,7 @@ def import_model(
         name=task.hash,
         description=model_import.description,
         hash=None,
+        source=task.type,
         result_state=ResultState.processing,
         model_group_id=model_group.id,
         project_id=model_import.project_id,

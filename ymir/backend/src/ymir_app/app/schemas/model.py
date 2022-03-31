@@ -1,9 +1,8 @@
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field, root_validator, validator
-from app.constants.state import TaskType
 from app.config import settings
-from app.constants.state import ResultState
+from app.constants.state import ResultState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -20,6 +19,7 @@ def get_model_url(model_hash: str) -> str:
 class ModelBase(BaseModel):
     hash: Optional[str]
     name: str
+    source: TaskType
     description: Optional[str]
     map: Optional[float] = Field(description="Mean Average Precision")
     result_state: ResultState = ResultState.processing
@@ -35,9 +35,10 @@ class ModelImport(BaseModel):
     description: Optional[str]
     input_model_path: Optional[str] = Field(description="from uploaded file url")
     input_model_id: Optional[int] = Field(description="from model of other user")
+    source: Optional[TaskType]
     import_type: Optional[TaskType]
 
-    @validator("import_type", pre=True, always=True)
+    @validator("import_type", "source", pre=True, always=True)
     def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
         if values.get("input_model_id"):
             return TaskType.copy_model
