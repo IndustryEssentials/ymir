@@ -58,6 +58,8 @@ def batch_get_datasets(
 class SortField(enum.Enum):
     id = "id"
     create_datetime = "create_datetime"
+    asset_count = "asset_count"
+    source = "source"
 
 
 @router.get(
@@ -67,7 +69,7 @@ class SortField(enum.Enum):
 def list_datasets(
     db: Session = Depends(deps.get_db),
     name: str = Query(None, description="search by dataset's name"),
-    type_: TaskType = Query(None, alias="type", description="type of related task"),
+    source: TaskType = Query(None, description="type of related task"),
     project_id: int = Query(None),
     group_id: int = Query(None),
     state: ResultState = Query(None),
@@ -89,7 +91,7 @@ def list_datasets(
         name=name,
         project_id=project_id,
         group_id=group_id,
-        type_=type_,
+        source=source,
         state=state,
         offset=offset,
         limit=limit,
@@ -180,6 +182,7 @@ def import_dataset(
         dataset_group_id=dataset_group.id,
         project_id=dataset_import.project_id,
         user_id=current_user.id,
+        source=task.type,
         task_id=task.id,
     )
     dataset = crud.dataset.create_with_version(db, obj_in=dataset_in, dest_group_name=dataset_group.name)
@@ -532,6 +535,7 @@ def create_dataset_fusion(
         dataset_group_id=task_in.dataset_group_id,
         project_id=task.project_id,
         user_id=task.user_id,
+        source=task.type,
         task_id=task.id,
     )
     dataset = crud.dataset.create_with_version(db, obj_in=dataset_in, dest_group_name=dataset_group.name)
