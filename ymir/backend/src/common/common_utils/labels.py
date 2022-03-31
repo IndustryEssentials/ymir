@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from datetime import datetime
 import logging
 import os
@@ -78,18 +77,18 @@ class UserLabels(LabelStorage):
     class Config:
         fields = {'labels': {'include': True}}
 
-    def get_class_ids(self, names_or_aliases: Union[str, Sequence]) -> List[int]:
+    def get_class_ids(self, names_or_aliases: Union[str, List[str]]) -> List[int]:
         if isinstance(names_or_aliases, str):
             return [self.name_aliases_to_id[names_or_aliases]]
-        elif isinstance(names_or_aliases, Sequence):
+        elif isinstance(names_or_aliases, list):
             return [self.name_aliases_to_id[name_or_aliaes] for name_or_aliaes in names_or_aliases]
         else:
             raise ValueError(f"unsupported type: {type(names_or_aliases)}")
 
-    def get_main_names(self, class_ids: Union[int, Sequence]) -> List[str]:
+    def get_main_names(self, class_ids: Union[int, List[int]]) -> List[str]:
         if isinstance(class_ids, int):
             return [self.id_to_name[class_ids]]
-        elif isinstance(class_ids, Sequence):
+        elif isinstance(class_ids, list):
             return [self.id_to_name[class_id] for class_id in class_ids]
         else:
             raise ValueError(f"unsupported type: {type(class_ids)}")
