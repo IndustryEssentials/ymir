@@ -9,7 +9,6 @@ services:
       - BACKEND_REDIS_URL=redis://redis:6379/0
       # controller
       - NVIDIA_VISIBLE_DEVICES=all
-      - BACKEND_SANDBOX_ROOT=${YMIR_PATH}/ymir-data/sandbox
       - MODELS_PATH=${YMIR_PATH}/ymir-models
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
