@@ -41,13 +41,16 @@ class IterationCreate(BaseModel):
 
 # Properties that can be changed
 class IterationUpdate(BaseModel):
-    current_stage: IterationStage
+    current_stage: Optional[IterationStage]
     description: Optional[str]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]
     training_input_dataset_id: Optional[int]
     training_output_model_id: Optional[int]
+
+    class Config:
+        use_enum_values = True
 
 
 class IterationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationBase):
