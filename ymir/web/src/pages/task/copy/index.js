@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { connect } from "dva"
 import { Input, Button, Form, message, Radio, Card, Space } from "antd"
-import { useHistory, useParams } from "umi"
+import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
@@ -12,35 +12,37 @@ import Tip from "@/components/form/tip"
 
 function Copy({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
-  const id = Number(pageParams.id)
+  const pid = Number(pageParams.id)
   const history = useHistory()
+  const location = useLocation()
+  const { did } = location.query
   const [form] = Form.useForm()
   const [dataset, setDataset] = useState({})
 
   useEffect(() => {
-    dataset.projectId && props.getDatasets(dataset.projectId)
-  }, [dataset.projectId])
+    pid && props.getDatasets(pid)
+  }, [pid])
 
   useEffect(() => {
-    id && props.getDataset(id)
-  }, [id])
+    did && props.getDataset(did)
+  }, [did])
 
   useEffect(() => {
-    const dst = datasetCache[id]
+    const dst = datasetCache[did]
     dst && setDataset(dst)
   }, [datasetCache])
 
   const onFinish = async (values) => {
     const params = {
       ...values,
-      projectId: dataset.projectId,
-      datasetId: id,
+      projectId: pid,
+      datasetId: did,
     }
     const result = await props.createDataset(params)
     if (result) {
       message.success(t('dataset.copy.success.msg'))
       props.clearCache()
-      history.replace(`/home/project/detail/${dataset.projectId}`)
+      history.replace(`/home/project/detail/${pid}`)
     }
   }
 

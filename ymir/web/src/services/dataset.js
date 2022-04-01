@@ -22,7 +22,8 @@ export function getDatasetByGroup(group_id) {
 /**
  * get datasets
  * @param {object} param1 {
- *   {number} project_id 
+ *   {number} project_id
+ *   {number} group_id
  *   {number} type task type
  *   {number} state dataset state
  *   {string} name dataset name
@@ -31,8 +32,8 @@ export function getDatasetByGroup(group_id) {
  * }
  * @returns 
  */
-export function queryDatasets({ project_id, type, state, name, offset = 0, limit = 10 }) {
-  return request.get("datasets/", { params: { project_id, type, state, name, offset, limit } })
+export function queryDatasets({ project_id, group_id, type, state, name, offset = 0, limit = 10 }) {
+  return request.get("datasets/", { params: { project_id, group_id, type, state, name, offset, limit } })
 }
 /**
  * get dataset groups

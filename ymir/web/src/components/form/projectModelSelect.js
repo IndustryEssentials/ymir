@@ -11,7 +11,7 @@ const ProjectSelect = ({ pid, value, projects = [], onChange = () => { }, getPro
   }, [])
 
   useEffect(() => {
-    const opts = projects.map(project => {
+    const opts = projects.filter(project => project.id !== pid).map(project => {
       return {
         label: project.name,
         value: project.id,
@@ -35,7 +35,6 @@ const ProjectSelect = ({ pid, value, projects = [], onChange = () => { }, getPro
     const target = selected[selected.length - 1]
     target.loading = true
     const result = await getModels(target.value)
-    console.log('result:', target, options, result)
     
     target.loading = false
     if (result?.length) {

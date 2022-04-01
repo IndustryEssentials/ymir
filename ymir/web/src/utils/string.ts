@@ -9,7 +9,7 @@ type ob = {
   [key: string]: any,
 }
 export function templateString(str: string, obj: ob = {}) {
-  return str.replace(/\$\{(\w+)\}/g, (reg, variable: string) => {
-    return obj[variable] ? String(obj[variable]) : reg
+  return str.replace(/\{(\w+)\}/g, (reg, variable: string) => {
+    return typeof obj[variable] !== 'undefined' && obj[variable] !== null ? obj[variable] : ''
   })
 }

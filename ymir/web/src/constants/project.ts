@@ -4,12 +4,12 @@ import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 
 export enum Stages {
-  beforeMining = 0,
+  prepareMining = 0,
   mining = 1,
   labelling = 2,
   merging = 3,
   training = 4,
-  trained = 5,
+  next = 5,
 }
 type stageObject = {
   value: Stages,
@@ -17,13 +17,14 @@ type stageObject = {
   url?: string,
 }
 export const StageList = () => {
+  const iterationParams = 'iterationId={id}&currentStage={stage}&outputKey={output}'
   const list = [
-    { value: Stages.beforeMining, prepare: 'trainSet', resultKey: 'miningSet', url: '/home/task/fusion/' },
-    { value: Stages.mining, prepare: 'miningSet', resultKey: 'miningResult', url: '/home/task/mining/' },
-    { value: Stages.labelling, prepare: 'miningResult', resultKey: 'labelSet', url: '/home/task/label/' },
-    { value: Stages.merging, prepare: 'labelSet', resultKey: 'trainUpdateSet', url: '/home/task/fusion/' },
-    { value: Stages.training, prepare: 'trainUpdateSet', resultKey: 'model', url: '/home/task/training/' },
-    { value: Stages.trained, prepare: 'trainUpdateSet', resultKey: 'trainSet', },
+    { value: Stages.prepareMining, output: 'miningSet', input: '', url: `/home/task/fusion/{pid}?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}` },
+    { value: Stages.mining, output: 'miningResult', input: 'miningSet', url: `/home/task/mining/{pid}?did={s1d}&mid={s1m}&${iterationParams}` },
+    { value: Stages.labelling, output: 'labelSet', input: 'miningResult', url: `/home/task/label/{pid}?did={s2d}&${iterationParams}` },
+    { value: Stages.merging, output: 'trainUpdateSet', input: 'labelSet', url: `/home/task/fusion/{pid}?did={s3d}&merging={s3m}&${iterationParams}` },
+    { value: Stages.training, output: 'model', input: 'trainUpdateSet', url: `/home/task/train/{pid}?did={s4d}&test={s4t}&${iterationParams}` },
+    { value: Stages.next, output: '', input: 'trainSet', },
   ]
   return { list, ...singleList(list) }
 }
@@ -42,6 +43,7 @@ export function transferProject(data: BackendData) {
     testSet: data.testing_dataset ? transferDataset(data.testing_dataset) : undefined,
     miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
     setCount: data.dataset_count,
+    model: data.initial_model_id || 0,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
@@ -65,6 +67,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
   }
   return {
     id: data.id,
+    projectId: data.project_id,
     name: data.name,
     round: data.iteration_round || 0,
     currentStage: data.current_stage || 0,
@@ -74,6 +77,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
     trainUpdateSet: data.training_input_dataset_id,
     model: data.training_output_model_id,
     trainSet: data.previous_training_dataset_id,
+    prevIteration: data.previous_iteration || 0,
   }
 }
 

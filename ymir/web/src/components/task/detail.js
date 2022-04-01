@@ -29,7 +29,6 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const [model, setModel] = useState({})
 
   useEffect(() => {
-    console.log('task:', task)
     task.id && fetchDatasets()
     task?.parameters?.model_id && fetchModel(task.parameters.model_id)
   }, [task.id])
