@@ -235,13 +235,13 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 >
                   <Select
                     placeholder={t('task.train.form.training.datasets.placeholder')}
-                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={trainSetChange}
                     disabled={did}
                     showArrow
                   >
                     {datasets.filter(ds => ds.id !== testSet).map(item =>
-                      <Option value={item.id} key={item.name}>
+                      <Option value={item.id} key={item.id}>
                         {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>
                     )}
@@ -259,12 +259,12 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   <Select
                     disabled={test}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
-                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={validationSetChange}
                     showArrow
                   >
                     {datasets.filter(ds => ds.id !== trainSet).map(item =>
-                      <Option value={item.id} key={item.name}>
+                      <Option value={item.id} key={item.id}>
                         {item.name}({item.assetCount})
                       </Option>
                     )}

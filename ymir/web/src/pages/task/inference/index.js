@@ -184,13 +184,13 @@ function Inference({ datasetCache, datasets, ...props }) {
             >
               <Select
                 placeholder={t('task.inference.form.dataset.placeholder')}
-                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                 onChange={setsChange}
                 disabled={did}
                 showArrow
               >
                 {datasets.map(item =>
-                  <Option value={item.id} key={item.name}>
+                  <Option value={item.id} key={item.id}>
                     {item.name}(assets: {item.assetCount})
                   </Option>)}
               </Select>

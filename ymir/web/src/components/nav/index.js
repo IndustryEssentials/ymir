@@ -71,7 +71,6 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   const guideRefs = []
 
   useEffect(() => {
-    // console.log('effect of guide refs: ', guideRefs)
     if (guideRefs.length && guideRefs[1]) {
       setGuideTarget(guideRefs[1])
     }
