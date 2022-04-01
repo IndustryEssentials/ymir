@@ -145,11 +145,17 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         model = self.get(db, id=model_id)
         if not model:
             return model
-        model.result_state = int(result_state)
 
         if result:
             model.map = result["map"]
-            model.hash = result["hash"]
+
+            # avoid duplicated model hash within the same project
+            if self.is_duplicated_hash(db, model.project_id, result["hash"]):
+                result_state = ResultState.error
+            else:
+                model.hash = result["hash"]
+
+        model.result_state = int(result_state)
 
         db.add(model)
         db.commit()

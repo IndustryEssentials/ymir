@@ -6,7 +6,7 @@ import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
-import { useHistory, useParams, Link } from "umi"
+import { useHistory, useParams, Link, useLocation } from "umi"
 import Uploader from "@/components/form/uploader"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomNumber } from "@/utils/number"
@@ -17,9 +17,11 @@ const LabelTypes = () => [
   { id: "all", label: t('task.label.form.type.all') },
 ]
 
-function Label({ datasets, keywords, ...props }) {
+function Label({ datasets, keywords, ...func }) {
   const pageParams = useParams()
-  const id = Number(pageParams.id)
+  const { query } = useLocation()
+  const pid = Number(pageParams.id)
+  const { did, iterationId, outputKey, currentStage } = query
   const history = useHistory()
   const [dataset, setDataset] = useState({})
   const [doc, setDoc] = useState(undefined)
@@ -28,15 +30,15 @@ function Label({ datasets, keywords, ...props }) {
 
 
   useEffect(() => {
-    id && props.getDataset(id)
-  }, [id])
+    did && func.getDataset(did)
+  }, [did])
 
   useEffect(() => {
-    props.getKeywords({ limit: 100000 })
+    func.getKeywords({ limit: 100000 })
   }, [])
 
   useEffect(() => {
-    datasets[id] && setDataset(datasets[id])
+    datasets[did] && setDataset(datasets[did])
   }, [datasets])
 
   useEffect(() => {
@@ -69,16 +71,19 @@ function Label({ datasets, keywords, ...props }) {
     checker && emails.push(checker)
     const params = {
       ...values,
-      projectId: dataset.projectId,
-      datasetId: id,
+      projectId: pid,
+      datasetId: Number(did) ? Number(did) : undefined,
       name: values.name.trim(),
       labellers: emails,
       doc,
     }
-    const result = await props.createLabelTask(params)
+    const result = await func.createLabelTask(params)
     if (result) {
-      await props.clearCache()
-      history.replace(`/home/project/detail/${dataset.projectId}`)
+      if (iterationId) {
+        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
+      }
+      await func.clearCache()
+      history.replace(`/home/project/detail/${pid}`)
     }
   }
 
@@ -187,11 +192,11 @@ function Label({ datasets, keywords, ...props }) {
                   placeholder={t('task.label.form.member.labeltarget')}
                   filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                   {keywords.map(keyword => (
-                    <Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
                       <Row>
                         <Col flex={1}>{keyword.name}</Col>
                       </Row>
-                    </Option>
+                    </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -258,6 +263,12 @@ const dis = (dispatch) => {
       return dispatch({
         type: 'keyword/getKeywords',
         payload,
+      })
+    },
+    updateIteration(params) {
+      return dispatch({
+        type: 'iteration/updateIteration',
+        payload: params,
       })
     },
   }

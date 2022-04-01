@@ -106,7 +106,7 @@ describe("models: iteration", () => {
       type: "updateIteration",
       payload: { id: 10011, name: "new_iteration_name" },
     }
-    const expected = { id: 10011, name: "new_iteration_name" }
+    const expected = { id: 10011, name: "new_iteration_name","round":0,"currentStage":0,"prevIteration":0 }
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -115,7 +115,7 @@ describe("models: iteration", () => {
       result: expected,
     })
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
 })

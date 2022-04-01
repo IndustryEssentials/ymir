@@ -12,17 +12,18 @@ const initQuery = {
   offset: 0,
   limit: 20,
 }
+const initState = {
+  query: initQuery,
+  list: {
+    items: [],
+    total: 0,
+  },
+  projects: {},
+}
 
 export default {
   namespace: "project",
-  state: {
-    query: initQuery,
-    list: {
-      items: [],
-      total: 0,
-    },
-    projects: {},
-  },
+  state: initState,
   effects: {
     *getProjects({ payload }, { call, put }) {
       const { code, result } = yield call(getProjects, payload)
@@ -47,7 +48,6 @@ export default {
       const { code, result } = yield call(getProject, id)
       if (code === 0) {
         const project = transferProject(result)
-        console.log('get from remote project: ', project)
         yield put({
           type: "UPDATE_PROJECTS",
           payload: project,
@@ -91,6 +91,9 @@ export default {
         payload: initQuery,
       })
     },
+    *clearCache({}, { put }) {
+      yield put({ type: 'CLEAR_ALL' })
+    },
   },
   reducers: {
     UPDATE_LIST(state, { payload }) {
@@ -113,6 +116,18 @@ export default {
         ...state,
         query: payload,
       }
+    },
+    CLEAR_ALL() {
+      return { ...initState }
+    },
+  },
+  subscriptions: {
+    setup({ dispatch, history }) {
+      history.listen(location => {
+        dispatch({
+          type: 'clearCache',
+        })
+      })
     },
   },
 }

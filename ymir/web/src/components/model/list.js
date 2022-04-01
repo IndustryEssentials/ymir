@@ -169,19 +169,19 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
       {
         key: "mining",
         label: t("dataset.action.mining"),
-        onclick: () => history.push(`/home/task/mining?mid=${id}&pjid=${pid}`),
+        onclick: () => history.push(`/home/task/mining/${pid}?mid=${id}`),
         icon: <VectorIcon />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
-        onclick: () => history.push(`/home/task/train?mid=${id}`),
+        onclick: () => history.push(`/home/task/train/${pid}?mid=${id}`),
         icon: <TrainIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
-        onclick: () => history.push(`/home/task/inference/?mid=${id}&pjid=${pid}`),
+        onclick: () => history.push(`/home/task/inference/${pid}?mid=${id}`),
         icon: <WajueIcon />,
       },
       

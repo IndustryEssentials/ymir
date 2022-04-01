@@ -9,7 +9,6 @@ const EditBox = ({ children, record, max=50, action = () => { } }) => {
   const { id, name, type, state } = record
 
   useEffect(() => {
-    // console.log('use effect: ', record)
     setShow(!!id)
     editForm.setFieldsValue({ name })
   }, [id])
