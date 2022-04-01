@@ -23,7 +23,8 @@ class AssetsModel:
 
     def check_cache_existence(self) -> int:
         detail_existence = redis_cache.exists(self.key_asset_detail)
-        index_existence = redis_cache.exists(self.key_asset_index)
+        all_index_key = f"{self.key_asset_index}:{viz_settings.VIZ_ALL_INDEX_CLASSIDS}"
+        index_existence = redis_cache.exists(all_index_key)
         cache_status = redis_cache.get(self.key_cache_status)
         if cache_status.get("flag"):
             cache_flag = True
