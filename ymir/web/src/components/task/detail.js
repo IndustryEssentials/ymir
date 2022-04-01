@@ -29,6 +29,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const [model, setModel] = useState({})
 
   useEffect(() => {
+    console.log('task:', task)
     task.id && fetchDatasets()
     task?.parameters?.model_id && fetchModel(task.parameters.model_id)
   }, [task.id])
@@ -84,7 +85,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
         <Col flex={"200px"} style={{ fontWeight: "bold" }}>
           {key}:
         </Col>
-        <Col flex={1}>{config[key]}</Col>
+        <Col flex={1}>{config[key].toString()}</Col>
       </Row>
     ))
   }
@@ -112,8 +113,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       [TASKTYPES.COPY]: renderImport,
       [TASKTYPES.INFERENCE]: renderInference,
       [TASKTYPES.FUSION]: renderFusion,
-      [TASKTYPES.MODELCOPY]: renderImport,
-      [TASKTYPES.MODELIMPORT]: renderImport,
+      [TASKTYPES.MODELCOPY]: renderModelCopy,
+      [TASKTYPES.MODELIMPORT]: renderModelImport,
       [TASKTYPES.SYS]: renderSys,
     }
     return maps[task.type]()
@@ -218,6 +219,20 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       </Item>
     </>
   )
+  const renderModelImport = () => <>
+    <Item label={t("dataset.column.source")}>{t('task.type.modelimport')}</Item>
+    {renderCreateTime(task.create_datetime)}
+    <Item label={t("task.detail.label.hyperparams")} span={2}>
+      {renderConfig(task.config)}
+    </Item>
+  </>
+  const renderModelCopy = () => <>
+      <Item label={t("dataset.column.source")}>{t('task.type.modelcopy')}</Item>
+    {renderCreateTime(task.create_datetime)}
+    <Item label={t("task.detail.label.hyperparams")} span={2}>
+      {renderConfig(task.config)}
+    </Item>
+  </>
   const renderImport = () => (
     <>
       {renderImportSource(task?.parameters)}
