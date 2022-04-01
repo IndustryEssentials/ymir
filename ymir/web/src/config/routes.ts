@@ -121,15 +121,6 @@ export const homeRoutes = [
     id: 13,
     breadcrumbLabel: 'breadcrumbs.portal',
   },
-  // {
-  //   path: "/home/history/:type/:id",
-  //   name: "history",
-  //   component: "@/pages/history/index",
-  //   title: "history.title",
-  //   pid: 2,
-  //   id: 14,
-  //   breadcrumbLabel: 'breadcrumbs.portal',
-  // },
   {
     path: "/home/model/verify/:id",
     name: "modelVerify",
@@ -139,14 +130,6 @@ export const homeRoutes = [
     id: 15,
     breadcrumbLabel: 'breadcrumbs.model.verify',
   },
-  // {
-  //   path: "/home/modify_pwd",
-  //   component: "@/pages/user/modifyPwd",
-  //   title: "modify_pwd.title",
-  //   pid: 18,
-  //   id: 16,
-  //   breadcrumbLabel: 'breadcrumbs.portal',
-  // },
   {
     path: "/home/keyword",
     name: "keyword",
