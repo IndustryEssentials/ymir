@@ -21,7 +21,6 @@ function ModelDetail({ getModel }) {
   useEffect(async () => {
     const result = await getModel(id)
     if (result) {
-      console.log('model: ', result)
       setModel(result)
     }
   }, [id])
@@ -42,16 +41,17 @@ function ModelDetail({ getModel }) {
         {/* {<h3 className={styles.title}>{t("dataset.detail.title")}</h3> } */}
         <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className={styles.infoTable}>
           <Item label={t('model.detail.label.name')}>{model.name}</Item>
-          <Item label={t('model.detail.label.id')}>{model.id}</Item>
+          {/* <Item label={t('model.detail.label.id')}>{model.id}</Item> */}
           <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
         </Descriptions>
-        <TaskProgress state={model.state} task={model.task} duration={''} progress={model?.task?.percent} />
+        <TaskProgress state={model.state} task={model.task} duration={model.durationLabel} progress={model.progress} />
         <TaskDetail task={model.task}></TaskDetail>
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-          <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button>
+          { model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null }
           <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.project_id}?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/train/${model.project_id}?mid=${model.id}`)}>{t('dataset.action.train')}</Button>
+          <Button onClick={() => history.push(`/home/model/import/${model.projectId}?mid=${model.id}`)}>{t('model.action.copy')}</Button>
+          <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
+          <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
         </Space>
       </Card>
     </div>
