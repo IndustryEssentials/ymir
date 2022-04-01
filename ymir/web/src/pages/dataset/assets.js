@@ -181,17 +181,17 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
           <Button
             hidden={!dataset.keyword_count}
             icon={<ScreenIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/filter/${id}`)}
-          >{t('dataset.detail.action.filter')} </Button>
+            onClick={() => history.push(`/home/task/fusion/${dataset.projectId}?did=${id}`)}
+          >{t('dataset.detail.action.fusion')} </Button>
           <Button
             icon={<TrainIcon className={styles.addBtnIcon} />}
             type='primary'
-            onClick={() => history.push(`/home/task/train/${id}`)}
+            onClick={() => history.push(`/home/task/train/${dataset.projectId}?did=${id}`)}
           >{t('dataset.detail.action.train')}</Button>
           <Button icon={<VectorIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/mining/${id}`)}>{t('dataset.detail.action.mining')}</Button>
+            onClick={() => history.push(`/home/task/mining/${dataset.projectId}?did=${id}`)}>{t('dataset.detail.action.mining')}</Button>
           <Button icon={<TaggingIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/label/${id}`)}>{t('dataset.detail.action.label')}</Button>
+            onClick={() => history.push(`/home/task/label/${dataset.projectId}?did=${id}`)}>{t('dataset.detail.action.label')}</Button>
         </Space>
       </div>
       <Card className={styles.list} title={renderTitle}>

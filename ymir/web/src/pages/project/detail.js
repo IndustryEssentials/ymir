@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Card, Space } from "antd"
 import { useLocation, useParams, connect } from "umi"
 
@@ -43,6 +43,9 @@ function ProjectDetail(func) {
       setProject(result)
     }
   }
+  const fresh = useCallback(() => {
+    fetchProject(true)
+  }, [])
 
   return (
     <div className={s.projectDetail}>
@@ -56,7 +59,7 @@ function ProjectDetail(func) {
           <span>{project.description}</span>
         </Space>
         {project.round > 0 ?
-          <Iteration project={project} /> : <Prepare project={project} callback={() => fetchProject(true)} />}
+          <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
       </div>
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}

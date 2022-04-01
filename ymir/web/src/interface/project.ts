@@ -12,6 +12,7 @@ export interface Project {
   testSet?: Dataset,
   miningSet?: Dataset,
   setCount: number,
+  model?: number,
   modelCount: number,
   miningStrategy: number,
   chunkSize?: number,
@@ -25,6 +26,7 @@ export interface Project {
 
 export interface Iteration {
   id: number,
+  projectId: number,
   name?: string,
   round: number,
   currentStage: number,
@@ -34,4 +36,5 @@ export interface Iteration {
   miningResult?: DatasetId,
   labelSet?: DatasetId,
   model?: number,
+  prevIteration: number,
 }

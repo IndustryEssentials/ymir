@@ -10,9 +10,7 @@ import {
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
-import TripleRates from "@/components/form/tripleRates"
 import t from "@/utils/t"
-import { TASKSTATES } from '@/constants/task'
 import { TYPES } from '@/constants/image'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
@@ -31,12 +29,12 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ allDatasets, datasetCache, ...props }) {
+function Train({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
-  const id = Number(pageParams.id)
+  const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image } = location.query
+  const { did, mid, image, iterationId, outputKey, currentStage, test } = location.query
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
@@ -67,18 +65,20 @@ function Train({ allDatasets, datasetCache, ...props }) {
   }, [allDatasets])
 
   useEffect(() => {
-    id && props.getDataset(id)
-    id && setTrainSet(id)
-  }, [id])
+    if (did) {
+      func.getDataset(did)
+      setTrainSet(did)
+    }
+  }, [did])
 
   useEffect(() => {
-    const dst = datasetCache[id]
+    const dst = datasetCache[did]
     dst && setDataset(dst)
   }, [datasetCache])
 
   useEffect(() => {
-    dataset.projectId && props.getDatasets(dataset.projectId)
-  }, [dataset.projectId])
+    pid && func.getDatasets(pid)
+  }, [pid])
 
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
@@ -117,7 +117,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
   }
 
   async function fetchSysInfo() {
-    const result = await props.getSysInfo()
+    const result = await func.getSysInfo()
     if (result) {
       setGPU(result.gpu_count)
     }
@@ -159,16 +159,19 @@ function Train({ allDatasets, datasetCache, ...props }) {
     const params = {
       ...values,
       name: 'group_' + randomNumber(),
-      projectId: dataset.projectId,
+      projectId: pid,
       keywords: dataset.project.keywords,
       image,
       imageId,
       config,
     }
-    const result = await props.createTrainTask(params)
+    const result = await func.createTrainTask(params)
     if (result) {
-      await props.clearCache()
-      history.replace(`/home/project/detail/${dataset.projectId}#model`)
+      if (iterationId) {
+        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
+      }
+      await func.clearCache()
+      history.replace(`/home/project/detail/${pid}#model`)
     }
   }
 
@@ -194,7 +197,8 @@ function Train({ allDatasets, datasetCache, ...props }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
-    datasetId: id,
+    datasetId: Number(did) ? Number(did) : undefined,
+    testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
     model: mid ? parseInt(mid) : undefined,
     trainType: getCheckedValue(TrainType()),
@@ -219,7 +223,7 @@ function Train({ allDatasets, datasetCache, ...props }) {
             colon={false}
             scrollToFirstError
           >
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${pid}`)} />}>
               <Tip hidden={true}>
                 <Form.Item
                   label={t('task.train.form.trainsets.label')}
@@ -231,13 +235,13 @@ function Train({ allDatasets, datasetCache, ...props }) {
                 >
                   <Select
                     placeholder={t('task.train.form.training.datasets.placeholder')}
-                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={trainSetChange}
-                    disabled={id}
+                    disabled={did}
                     showArrow
                   >
                     {datasets.filter(ds => ds.id !== testSet).map(item =>
-                      <Option value={item.id} key={item.name}>
+                      <Option value={item.id} key={item.id}>
                         {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>
                     )}
@@ -253,13 +257,14 @@ function Train({ allDatasets, datasetCache, ...props }) {
                   ]}
                 >
                   <Select
+                    disabled={test}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
-                    filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={validationSetChange}
                     showArrow
                   >
                     {datasets.filter(ds => ds.id !== trainSet).map(item =>
-                      <Option value={item.id} key={item.name}>
+                      <Option value={item.id} key={item.id}>
                         {item.name}({item.assetCount})
                       </Option>
                     )}
@@ -277,13 +282,13 @@ function Train({ allDatasets, datasetCache, ...props }) {
                 {dataset?.project?.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
               </Form.Item>
             </Tip>
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={dataset.projectId} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.train.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
                   name="model"
                 >
-                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={dataset.projectId} />
+                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -463,6 +468,12 @@ const dis = (dispatch) => {
       return dispatch({
         type: "task/createTrainTask",
         payload,
+      })
+    },
+    updateIteration(params) {
+      return dispatch({
+        type: 'iteration/updateIteration',
+        payload: params,
       })
     },
   }

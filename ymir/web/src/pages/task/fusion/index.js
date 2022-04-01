@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo, useMemo } from "react"
 import { connect } from "dva"
 import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio, Row, Col, InputNumber } from "antd"
-import { useHistory, useParams } from "umi"
+import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
@@ -16,9 +16,11 @@ import Panel from "@/components/form/panel"
 
 const { Option } = Select
 
-function Fusion({ allDatasets, datasetCache, ...props }) {
+function Fusion({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
-  const id = Number(pageParams.id)
+  const pid = Number(pageParams.id)
+  const { query } = useLocation()
+  const { did, iterationId, currentStage, outputKey, chunk, strategy, merging } = query
   const history = useHistory()
   const [form] = Form.useForm()
   const [dataset, setDataset] = useState({})
@@ -31,23 +33,26 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
   const [visibles, setVisibles] = useState({
     merge: true,
     filter: false,
-    sampling: false,
+    sampling: !!chunk,
   })
 
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
+    samples: chunk || 0,
+    include_datasets: merging ? [Number(merging)] : [],
+    strategy: strategy || 2,
   }
 
   useEffect(() => {
-    dataset.projectId && props.getDatasets(dataset.projectId)
-  }, [dataset.projectId])
+    pid && func.getDatasets(dataset.projectId)
+  }, [pid])
 
   useEffect(() => {
-    id && props.getDataset(id)
-  }, [id])
+    did && func.getDataset(did)
+  }, [did])
 
   useEffect(() => {
-    const dst = datasetCache[id]
+    const dst = datasetCache[did]
     dst && setDataset(dst)
   }, [datasetCache])
 
@@ -80,8 +85,7 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
   }, [history.location.state])
 
   const getKeywords = () => {
-    const selectedDataset = [id, ...includeDatasets]
-    console.log('get keyword datasets: ', selectedDataset, id, includeDatasets, datasets)
+    const selectedDataset = [did, ...includeDatasets]
     let ks = datasets.reduce((prev, current) => selectedDataset.includes(current.id)
       ? prev.concat(current.keywords)
       : prev, [])
@@ -95,14 +99,22 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
       ...values,
       project_id: dataset.projectId,
       group_id: dataset.groupId,
-      dataset: id,
+      dataset: did,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
+      strategy: Number(values.strategy) || 2,
     }
-    const result = await props.createFusionTask(params)
+    if (iterationId) {
+      params.iteration = iterationId
+      params.stage = currentStage
+    }
+    const result = await func.createFusionTask(params)
     if (result) {
+      if (iterationId) {
+        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.id })
+      }
       message.info(t('task.fusion.create.success.msg'))
-      props.clearCache()
+      func.clearCache()
       history.replace(`/home/project/detail/${dataset.projectId}`)
     }
   }
@@ -135,12 +147,12 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
       <Select
         placeholder={t('task.fusion.form.datasets.placeholder')}
         mode='multiple'
-        filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
         onChange={onChange}
         showArrow
       >
-        {datasets.filter(ds => ![id, ...filter].includes(ds.id)).map(item => (
-          <Option value={item.id} key={item.name}>
+        {datasets.filter(ds => ![did, ...filter].includes(ds.id)).map(item => (
+          <Option value={item.id} key={item.id}>
             {item.name}({item.assetCount})
           </Option>
         ))}
@@ -169,7 +181,7 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
             </Tip>
           </Panel>
           <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push('/home/dataset/add')} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${dataset.projectId}`)} />}>
               <Tip hidden={true}>
                 <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
                   {datasetSelect(excludeDatasets, onIncludeDatasetChange)}
@@ -178,7 +190,8 @@ function Fusion({ allDatasets, datasetCache, ...props }) {
               <Tip hidden={true}>
                 <Form.Item name='strategy'
                   hidden={includeDatasets.length < 1}
-                  initialValue={2} label={t('task.train.form.repeatdata.label')}>
+                  initialValue={2}
+                  label={t('task.train.form.repeatdata.label')}>
                   <Radio.Group options={[
                     { value: 2, label: t('task.train.form.repeatdata.latest') },
                     { value: 3, label: t('task.train.form.repeatdata.original') },
@@ -283,6 +296,12 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch({
         type: "task/createFusionTask",
         payload,
+      })
+    },
+    updateIteration(params) {
+      return dispatch({
+        type: 'iteration/updateIteration',
+        payload: params,
       })
     },
   }
