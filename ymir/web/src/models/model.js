@@ -93,6 +93,7 @@ export default {
     *getModel({ payload }, { call, put }) {
       const { code, result } = yield call(getModel, payload)
       if (code === 0) {
+        let model = { ...result }
         const pa = result.parameters || {}
         const trainSets = pa?.include_train_datasets || []
         const testSets = pa?.include_validation_datasets || []
@@ -103,15 +104,16 @@ export default {
         if (ids.length) {
           const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: ids })
           if (datasets && datasets.length) {
-            result['trainSets'] = trainSets.map(sid => datasets.find(ds => ds.id === sid))
-            result['testSets'] = testSets.map(sid => datasets.find(ds => ds.id === sid))
+            model['trainSets'] = trainSets.map(sid => datasets.find(ds => ds.id === sid))
+            model['testSets'] = testSets.map(sid => datasets.find(ds => ds.id === sid))
           }
         }
+        model.task = model.related_task
         yield put({
           type: "UPDATE_MODEL",
-          payload: result,
+          payload: model,
         })
-        return result
+        return model
       }
     },
     *delModel({ payload }, { call, put }) {
