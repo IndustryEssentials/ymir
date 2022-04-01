@@ -348,7 +348,7 @@ class MirStorageOps():
                 class_ids=asset_class_ids,
             )
         return dict(
-            all_asset_ids=[*mir_storage_metadatas["attributes"].keys()],
+            all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),    # ordered list.
             asset_ids_detail=asset_ids_detail,
             class_ids_index={k: v["asset_ids"] for k, v in mir_storage_keywords["index_predifined_keyids"].items()},
         )
