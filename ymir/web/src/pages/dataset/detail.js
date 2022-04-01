@@ -9,7 +9,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import TaskDetail from "@/components/task/detail"
 import Detail from "@/components/dataset/detail"
 import s from "./detail.less"
-import TaskProgress from "../../components/task/progress"
+import TaskProgress from "@/components/task/progress"
 
 const taskTypes = ["fusion", "train", "mining", "label"]
 
