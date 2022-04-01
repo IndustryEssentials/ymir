@@ -3,44 +3,52 @@ import { useHistory, connect } from "umi"
 
 import t from '@/utils/t'
 import { states, statesLabel } from '@/constants/dataset'
-import { TASKSTATES, getTaskStateLabel } from '@/constants/task'
 import s from './iteration.less'
+import { useEffect, useState } from "react"
 
 function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...func }) {
-  console.log('stage: ', stage, end)
+  // console.log('stage: ', stage, end)
   const history = useHistory()
+  const [result, setResult] = useState({})
+  const [state, setState] = useState(-1)
+
+  useEffect(() => {
+    const st = typeof result.state !== 'undefined' ? result.state : stage.state
+    setState(st)
+  }, [result, stage])
+
+  useEffect(() => {
+    currentStage() && stage.result && fetchStageResult()
+  }, [stage.result])
 
   function skip() {
-    func.updateIteration({ id: stage.iterationId, next: stage.next, })
+    callback({
+      type: 'skip',
+      data: { stage: stage.next },
+    })
   }
 
   function next() {
-    if (isPending()) {
-      if (stage.url) {
-        history.push(stage.url)
-      } else {
-        // todo create new one
-        createIteration({ userId: func.userId, projectId: pid, iterationRound: current + 1 })
-        callback()
-      }
-    } else if (stage.next) {
-      // goto next stage
-      updateIteration({ id: stage.iterationId, next: stage.next, result: stage.result, })
-      callback()
+    if (isValid()) {
+      callback({
+        type: 'update',
+        data: { stage: stage.next },
+      })
+    } else {
+      act()
     }
   }
 
-  async function updateIteration(params) {
-    const result = await func.updateIteration(params)
-    if (result) {
-      callback(stage)
-    }
-  }
-
-  async function createIteration(params) {
-    const result = await func.createIteration(params)
-    if (result) {
-      callback({ iterationId: result.id })
+  function ending() {
+    if (end) {
+      callback({
+        type: 'create',
+        data: {
+          round: current + 1,
+        },
+      })
+    } else {
+      act()
     }
   }
 
@@ -48,10 +56,20 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   const finishStage = () => stage.value < stage.current
   const pendingStage = () => stage.value > stage.current
 
-  const isPending = () => stage.state < 0
-  const isReady = () => stage.state === states.READY
-  const isValid = () => stage.state === states.VALID
-  const isInvalid = () => stage.state === states.INVALID
+  const isPending = () => state < 0
+  const isReady = () => state === states.READY
+  const isValid = () => state === states.VALID
+  const isInvalid = () => state === states.INVALID
+
+  function act() {
+    stage.url && history.push(stage.url)
+  }
+
+  async function fetchStageResult() {
+    const resp = await func.getStageResult(stage.result, stage.current)
+    console.log('resp:', resp, stage)
+    resp && setResult(resp)
+  }
 
   const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
 
@@ -69,24 +87,23 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   const renderMainBtn = () => {
     // show by task state and result
     const disabled = isReady() || isInvalid()
-    const label = isValid() ? t('common.step.next') : t(stage.act)
-    return <Button disabled={disabled} className={s.act} type='primary' onClick={() => next()}>{label}</Button>
+    const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
+    return <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
   }
 
   const renderReactBtn = () => {
     return stage.react && currentStage()
       && (isInvalid() || isValid())
-      ? <Button className={s.react}>{t(stage.react)}</Button>
+      ? <Button className={s.react} onClick={() => act()}>{t(stage.react)}</Button>
       : null
   }
   const renderState = () => {
     const pending = 'project.stage.state.pending'
-    const result = stage.result
-    return !finishStage() ? (isPending() ? t(pending) : (result ? result : t(statesLabel(stage.state)))) : null
+    return !finishStage() ? (isPending() ? t(pending) : (isValid() ? result.name : t(statesLabel(state)))) : null
   }
 
   const renderSkip = () => {
-    return !stage.unskippable && !end && currentStage() ? <span className={s.skip} onClick={() => skip()}>skip</span> : null
+    return !stage.unskippable && !end && currentStage() ? <span className={s.skip} onClick={() => skip()}>{t('common.skip')}</span> : null
   }
   return (
     <div className={stateClass}>
@@ -98,7 +115,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
             {renderReactBtn()}
           </Space>
         </Col>
-        { !end ? <Col className={s.lineContainer} hidden={end} flex={1}><span className={s.line}></span></Col> : null }
+        {!end ? <Col className={s.lineContainer} hidden={end} flex={1}><span className={s.line}></span></Col> : null}
       </Row>
       <Row className={s.row}>
         <Col flex={"30px"}>&nbsp;</Col>
@@ -118,10 +135,10 @@ const props = (state) => {
 
 const actions = (dispacth) => {
   return {
-    updateIteration(params) {
+    getStageResult(id, stage) {
       return dispacth({
-        type: 'iteration/updateIteration',
-        payload: params,
+        type: 'iteration/getStageResult',
+        payload: { id, stage },
       })
     },
     createIteration(params) {

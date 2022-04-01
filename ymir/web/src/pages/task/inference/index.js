@@ -28,11 +28,10 @@ const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
 
 function Inference({ datasetCache, datasets, ...props }) {
   const pageParams = useParams()
-  const id = Number(pageParams.id)
+  const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { pjid, mid, image } = location.query
-  const [pid, setPid] = useState(null)
+  const { did, mid, image } = location.query
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
@@ -45,24 +44,16 @@ function Inference({ datasetCache, datasets, ...props }) {
   }, [])
 
   useEffect(() => {
-    setPid(Number(pjid))
-  }, [pjid])
-
-  useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
   useEffect(() => {
-    id && props.getDataset(id)
-  }, [id])
+    did && props.getDataset(did)
+  }, [did])
 
   useEffect(() => {
-    const cache = datasetCache[id]
-    if (cache) {
-      setDataset(cache)
-      setPid(cache.projectId)
-    }
-  }, [datasetCache[id]])
+    datasetCache[did] && setDataset(cache)
+  }, [datasetCache])
 
   useEffect(() => {
     pid && props.getDatasets(pid)
@@ -159,7 +150,7 @@ function Inference({ datasetCache, datasets, ...props }) {
     description: '',
     model: mid ? parseInt(mid) : undefined,
     image: image ? parseInt(image) : undefined,
-    datasetId: id || null,
+    datasetId: Number(did) ? Number(did) : undefined,
     algorithm: getCheckedValue(Algorithm()),
     gpu_count: 0,
   }
@@ -180,7 +171,7 @@ function Inference({ datasetCache, datasets, ...props }) {
             colon={false}
             scrollToFirstError
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push('/home/dataset/add')} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
             <Tip hidden={true}>
             <Form.Item
@@ -193,13 +184,13 @@ function Inference({ datasetCache, datasets, ...props }) {
             >
               <Select
                 placeholder={t('task.inference.form.dataset.placeholder')}
-                filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                 onChange={setsChange}
-                disabled={id}
+                disabled={did}
                 showArrow
               >
                 {datasets.map(item =>
-                  <Option value={item.id} key={item.name}>
+                  <Option value={item.id} key={item.id}>
                     {item.name}(assets: {item.assetCount})
                   </Option>)}
               </Select>
@@ -208,7 +199,7 @@ function Inference({ datasetCache, datasets, ...props }) {
             </ConfigProvider>
 
 
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={dataset.projectId} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.filter.imodel')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
@@ -217,7 +208,7 @@ function Inference({ datasetCache, datasets, ...props }) {
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
                 >
-                  <ModelSelect placeholder={t('task.inference.form.model.required')} disabled={mid} onChange={modelChange} pid={dataset.projectId} />
+                  <ModelSelect placeholder={t('task.inference.form.model.required')} disabled={mid} onChange={modelChange} pid={pid} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>

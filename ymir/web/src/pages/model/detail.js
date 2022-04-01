@@ -26,7 +26,7 @@ function ModelDetail({ getModel }) {
     }
   }, [id])
 
-  function renderTitle () {
+  function renderTitle() {
     return (
       <Row>
         <Col flex={1}>{model.name}</Col>
@@ -39,19 +39,19 @@ function ModelDetail({ getModel }) {
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
       <Card title={renderTitle()}>
-      {/* {<h3 className={styles.title}>{t("dataset.detail.title")}</h3> } */}
-      <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className={styles.infoTable}>
-        <Item label={t('model.detail.label.name')}>{model.name}</Item>
-        <Item label={t('model.detail.label.id')}>{model.id}</Item>
-        <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
-      </Descriptions>
-      <TaskProgress state={model.state} task={model.task} duration={''} progress={model?.task?.percent} />
-      <TaskDetail task={model.task}></TaskDetail>
-      <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+        {/* {<h3 className={styles.title}>{t("dataset.detail.title")}</h3> } */}
+        <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className={styles.infoTable}>
+          <Item label={t('model.detail.label.name')}>{model.name}</Item>
+          <Item label={t('model.detail.label.id')}>{model.id}</Item>
+          <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
+        </Descriptions>
+        <TaskProgress state={model.state} task={model.task} duration={''} progress={model?.task?.percent} />
+        <TaskDetail task={model.task}></TaskDetail>
+        <Space style={{ width: "100%", justifyContent: "flex-end" }}>
           <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button>
           <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/mining?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/train?mid=${model.id}`)}>{t('dataset.action.train')}</Button>
+          <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.project_id}?mid=${model.id}`)}>{t('dataset.action.mining')}</Button>
+          <Button type='primary' onClick={() => history.push(`/home/task/train/${model.project_id}?mid=${model.id}`)}>{t('dataset.action.train')}</Button>
         </Space>
       </Card>
     </div>

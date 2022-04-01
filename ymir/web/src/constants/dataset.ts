@@ -30,7 +30,7 @@ export function transferDatasetGroup (data: OriginDatasetGroup) {
 }
 
 export function transferDataset (data: BackendData): Dataset {
-  const { negative_images_cnt, project_negative_images_cnt } = data.negative_info || {}
+  const { negative_images_cnt = 0, project_negative_images_cnt = 0 } = {} //data.negative_info || {}
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -42,8 +42,8 @@ export function transferDataset (data: BackendData): Dataset {
     keywords: Object.keys(data.keywords || {}),
     keywordCount: data.keyword_count || 0,
     keywordsCount: data.keywords || {},
-    nagetiveCount: negative_images_cnt || 0,
-    projectNagetiveCount: project_negative_images_cnt || 0,
+    nagetiveCount: negative_images_cnt,
+    projectNagetiveCount: project_negative_images_cnt,
     ignoredKeywords: Object.keys(data.ignored_keywords || {}),
     hash: data.hash,
     state: data.result_state,

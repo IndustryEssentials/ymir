@@ -71,6 +71,7 @@ const common = {
   'common.index.keyword.label': {cn: '标签', en: 'Keywords', },
   'common.view': {cn: '查看', en: 'View', },
   'common.step.next': {cn: '下一步', en: 'Next', },
+  'common.skip': {cn: '跳过', en: 'Skip', },
   'common.confirm': {cn: '确定', en: 'OK', },
 }
 

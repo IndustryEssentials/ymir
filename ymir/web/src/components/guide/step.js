@@ -29,7 +29,6 @@ const Step = ({ elem, show = false }) => {
 
   useEffect(() => {
     if (elem) {
-      // console.log('test elem: ', elem.getBoundingClientRect() )
       const { x, y, width, height } = elem.getBoundingClientRect()
       setPos({
         x, y, width, height,
@@ -44,7 +43,7 @@ const Step = ({ elem, show = false }) => {
 
   return visible ? (
     <>
-      <Popover ref={e => console.log('popover: ', ReactDOM.findDOMNode(e))} content={'hello'} trigger='click' visible={true}>
+      <Popover content={'hello'} trigger='click' visible={true}>
         <div style={{position: 'fixed', left: pos.x, top: pos.y, width: pos.width, height: pos.height }}></div>
       </Popover>
       <Rect x={pos.x} y={pos.y} width={pos.width} height={pos.height} visible={true} />
