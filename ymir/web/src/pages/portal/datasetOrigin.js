@@ -91,8 +91,7 @@ const actions = (dispatch) => {
   return {
     getPublicDataset(ids) {
       return dispatch({
-        type: "dataset/getDataset",
-        payload: 'public',
+        type: "dataset/getInternalDataset",
       })
     },
   }
