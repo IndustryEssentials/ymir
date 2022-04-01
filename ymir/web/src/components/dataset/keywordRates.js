@@ -20,8 +20,8 @@ function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
 
   useEffect(() => {
     if (data) {
+      console.log('data:', data)
       const klist = prepareList(data, trainingKeywords)
-      console.log(klist, trainingKeywords, 'params')
       setList(klist)
     }
   }, [data, trainingKeywords])
@@ -34,13 +34,13 @@ function KeywordRates({ id, trainingKeywords = [], getKeywordRates }) {
   }
 
   function prepareList(data = {}, trainingKeywords = []) {
-    const { keywordCount, keywordsCount, nagetiveCount, projectNagetiveCount } = data
+    const { assetCount, keywordsCount, nagetiveCount, projectNagetiveCount } = data
     const filter = trainingKeywords.length ? trainingKeywords : Object.keys(keywordsCount)
     const neg = trainingKeywords.length ? projectNagetiveCount : nagetiveCount
     return getKeywordList(keywordsCount, filter, neg).map(item => ({
       ...item,
-      percent: percent(item.count * 0.8 / keywordCount),
-      total: keywordCount,
+      percent: percent(item.count * 0.8 / assetCount),
+      total: assetCount,
       color: randomColor(),
     }))
   }

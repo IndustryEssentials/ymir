@@ -67,7 +67,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   useEffect(() => {
     if (did) {
       func.getDataset(did)
-      setTrainSet(did)
+      setTrainSet(Number(did))
     }
   }, [did])
 
@@ -265,7 +265,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   >
                     {datasets.filter(ds => ds.id !== trainSet).map(item =>
                       <Option value={item.id} key={item.id}>
-                        {item.name}({item.assetCount})
+                        {item.name} {item.versionName}({item.assetCount})
                       </Option>
                     )}
                   </Select>
