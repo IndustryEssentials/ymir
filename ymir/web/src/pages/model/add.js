@@ -28,7 +28,7 @@ const Add = ({ importModel }) => {
   const history = useHistory()
   const { query } = useLocation()
   const { mid } = query
-  const { pid } = useParams()
+  const { id: pid } = useParams()
   const [form] = useForm()
   const [url, setUrl] = useState('')
   const [currentType, setCurrentType] = useState(mid ? TYPES.COPY : TYPES.LOCAL)
@@ -92,7 +92,7 @@ const Add = ({ importModel }) => {
               <>
                 <Tip hidden={true}>
                   <Form.Item label={t('model.add.form.project')} name='modelId'>
-                    <ProjectSelect onChange={(value) => console.log('model change: ', value)} />
+                    <ProjectSelect pid={pid} />
                   </Form.Item>
                 </Tip>
               </>
