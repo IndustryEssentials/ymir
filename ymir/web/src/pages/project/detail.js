@@ -53,7 +53,7 @@ function ProjectDetail(func) {
       <div className={s.header}>
         <Space className={s.detailPanel}>
           <span className={s.name}>{project.name}</span>
-          <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.currentStage, target: project.targetIteration })}</span>
+          <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.round, target: project.targetIteration })}</span>
           <span>{t('project.train_classes')}: {project?.keywords?.join(',')}</span>
           <span>{t('project.target.map')}: {project.targetMap}</span>
           <span>{project.description}</span>

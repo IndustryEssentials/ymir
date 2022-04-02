@@ -71,10 +71,7 @@ export default {
       })
       if (result) {
         return {
-          id: result.id,
-          name: result.name,
-          state: isModel ? result.result_state : result.state,
-          progress: isModel ? result.percent : result.progress,
+          ...result,
         }
       }
     }
