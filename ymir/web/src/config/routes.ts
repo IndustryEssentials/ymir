@@ -98,7 +98,7 @@ export const homeRoutes = [
     path: "/home/dataset/assets/:id",
     name: "datasetDetail",
     component: "@/pages/dataset/assets",
-    title: "dataset.assets.title",
+    title: "assets.title",
     pid: 10,
     id: 11,
     breadcrumbLabel: 'breadcrumbs.dataset.assets',
