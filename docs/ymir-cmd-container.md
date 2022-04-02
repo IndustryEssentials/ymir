@@ -18,13 +18,13 @@ ymir 系统有两种用户交互方式：web 方式和命令行方式。
 
 模型的训练过程分为以下几个步骤：
 
-1. ymir 导出对应的训练集，验证集与测试集至指定的工作目录，并准备 `config.yaml` 文件；
+1. ymir 导出对应的训练集与验证集至指定的工作目录，并准备 `config.yaml` 文件；
 
 2. ymir 通过 `nvidia-run` 将指定的工作目录，以及训练所需要的全部配置文件挂载至 4.3 节所述的位置，启动训练镜像，并等待完成；
 
 3. 在此过程中，镜像完成以下事务：
 
-    3.1. 读取 `/in/train-index.tsv`， `/in/val-index.tsv`，`/in/test-index.tsv` 中的训练集，验证集和测试集中的图片和标注信息；
+    3.1. 读取 `/in/train-index.tsv` 及 `/in/val-index.tsv` 中的训练集与验证集中的图片和标注信息；
 
     3.2. 启动训练流程；
 
@@ -193,7 +193,6 @@ task_0    1622552975    1    done
 | ---- | ---- |
 | /in/train-index.tsv | 必要，训练集图像及标注的索引文件，每一行都是图片文件路径和标注路径<br>* 图片文件为jpg，png等常用格式（但不保证一定有扩展名）；<br>* 标注文件可以是csv，txt，xml，json格式，拥有和图片相同的主文件名。 |
 | /in/val-index.tsv | 必要，验证集图像及标注的索引文件，格式同/in/train-index.tsv |
-| /in/test-index.tsv | 非必要，测试集图像及标注的索引文件，格式同/in/train-index.tsv |
 | /in/config.yaml | 必要，配置项所在的文件，YAML 格式，具体配置项由调用双方商定，注1中列出了几个固定的键 |
 | /in/assets | 必要，图像资源所在的目录，只读 |
 | /in/annotations | 必要，图像标注所在的目录 |
