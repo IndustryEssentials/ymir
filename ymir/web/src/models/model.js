@@ -94,6 +94,15 @@ export default {
       const { code, result } = yield call(getModel, payload)
       if (code === 0) {
         let model = transferModel(result)
+        if (model.projectId) {
+          const presult = yield put.resolve({
+            type: 'project/getProject',
+            payload: { id: model.projectId },
+          })
+          if (presult) {
+            model.project = presult
+          }
+        }
         yield put({
           type: "UPDATE_MODEL",
           payload: model,
