@@ -283,6 +283,7 @@ def delete_dataset(
         raise RejectDeleteDataset()
     if dataset.user_id != current_user.id:
         raise NoDatasetPermission()
+    dataset_group_id = dataset.dataset_group_id
     dataset = crud.dataset.soft_remove(db, id=dataset_id)
 
     # remove dataset group if all dataset is deleted
@@ -291,7 +292,7 @@ def delete_dataset(
         user_id=current_user.id,
     )
     if not total:
-        crud.dataset_group.soft_remove(db, id=dataset.dataset_group_id)
+        crud.dataset_group.soft_remove(db, id=dataset_group_id)
 
     return {"result": dataset}
 
