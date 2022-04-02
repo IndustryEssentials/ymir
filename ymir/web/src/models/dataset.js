@@ -99,14 +99,12 @@ export default {
       const { pid, force } = payload
       if (!force) {
         const dssCache = yield select(state => state.dataset.allDatasets)
-        console.log('dssCache:', dssCache)
         if (dssCache.length) {
           loading = false
           return dssCache
         }
       }
       const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
-      console.log('hello dss:', dss)
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",
@@ -163,30 +161,33 @@ export default {
     *getInternalDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getInternalDataset, payload)
       if (code === 0) {
+        const dss = result.items.map(item => transferDataset(item))
+        const ds = { items: dss, total: result.total }
         yield put({
           type: "UPDATE_PUBLICDATASETS",
-          payload: result,
+          payload: ds,
         })
-        return result
+        return ds
       }
     },
     *updateDatasets({ payload }, { put, select }) {
-      const datasets = yield select(state => state.dataset.datasets)
+      const versions = yield select(state => state.dataset.versions)
       const updateList = payload || {}
-      const result = datasets.items.map(dataset => {
-        const updateItem = updateList[dataset.hash]
-        if (updateItem) {
-          dataset.state = updateItem.state
-          dataset.progress = updateItem.percent * 100
-          if (isFinalState(updateItem.state)) {
-            dataset.forceUpdate = true
+      Object.keys(versions).forEach(gid => {
+        const datasets = versions[gid]
+        const updatedDatsets = datasets.map(dataset => {
+          const updateItem = updateList[dataset.hash]
+          if (updateItem) {
+            dataset.state = updateItem.state
+            dataset.progress = updateItem.percent
           }
-        }
-        return dataset
+          return { ...dataset }
+        })
+        versions[gid] = updatedDatsets
       })
       yield put({
-        type: 'UPDATE_DATASETS',
-        payload: { items: result, total: datasets.total },
+        type: 'UPDATE_ALL_VERSIONS',
+        payload: versions,
       })
     },
     *getHotDatasets({ payload }, { call, put }) {
@@ -251,6 +252,13 @@ export default {
       return {
         ...state,
         versions: { ...vs },
+      }
+    },
+    
+    UPDATE_ALL_VERSIONS(state, { payload }) {
+      return {
+        ...state,
+        versions: { ...payload },
       }
     },
     UPDATE_DATASET(state, { payload }) {

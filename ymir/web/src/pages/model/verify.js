@@ -209,7 +209,7 @@ function Verify({ getModel, verify }) {
                   <span title={model.map}>{percent(model.map)}</span>
                 </Descriptions.Item>
                 <Descriptions.Item label={t("model.column.create_time")}>
-                  {format(model.create_datetime)}
+                  {model.createTime}
                 </Descriptions.Item>
                 <Descriptions.Item label={t("dataset.asset.info.keyword")}>
                   {model.keywords?.map((keyword, i) => (
