@@ -22,6 +22,7 @@ from app.api.errors.errors import (
     NoDatasetPermission,
     FailedtoCreateTask,
     DatasetGroupNotFound,
+    RejectDeleteDataset,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
@@ -278,9 +279,20 @@ def delete_dataset(
     dataset = crud.dataset.get(db, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
+    if dataset.is_protected:
+        raise RejectDeleteDataset()
     if dataset.user_id != current_user.id:
         raise NoDatasetPermission()
     dataset = crud.dataset.soft_remove(db, id=dataset_id)
+
+    # remove dataset group if all dataset is deleted
+    _, total = crud.dataset.get_multi_datasets(
+        db,
+        user_id=current_user.id,
+    )
+    if not total:
+        crud.dataset_group.soft_remove(db, id=dataset.dataset_group_id)
+
     return {"result": dataset}
 
 
