@@ -14,6 +14,7 @@ const breadcrumbs = {
   'breadcrumbs.datasets.copy': { cn: '数据集复制', en: 'Dataset Copy', },
   'breadcrumbs.dataset': { cn: '数据集详情', en: 'Dataset Detail', },
   'breadcrumbs.dataset.add': { cn: '导入数据集', en: 'Dataset Import', },
+  'breadcrumbs.dataset.assets': { cn: '数据列表', en: 'Assets List', },
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
   'breadcrumbs.model.add': { cn: '导入模型', en: 'Model Import', },
   'breadcrumbs.models.search': { cn: '模型搜索', en: 'Model Search', },

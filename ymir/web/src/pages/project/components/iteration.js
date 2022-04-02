@@ -68,7 +68,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
       const url = templateString(stage.temp || '', {
         s0d: project.miningSet.id || 0,
         s0s: project.miningStrategy,
-        s0c: project.chunkSize || 0,
+        s0c: project.chunkSize || undefined,
         s1d: iteration.miningSet,
         s1m: prevIteration.model || project.model,
         s2d: iteration.miningResult,
