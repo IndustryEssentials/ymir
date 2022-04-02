@@ -160,7 +160,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState,
         response.raise_for_status()
     except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
         logging.exception(msg=f"update db single task error ignored: {tid}, {e}")
-        return (f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
+        return (0, f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
 
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
