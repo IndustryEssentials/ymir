@@ -53,7 +53,7 @@ function Inference({ datasetCache, datasets, ...props }) {
   }, [did])
 
   useEffect(() => {
-    datasetCache[did] && setDataset(cache)
+    datasetCache[did] && setDataset(datasetCache[did])
   }, [datasetCache])
 
   useEffect(() => {

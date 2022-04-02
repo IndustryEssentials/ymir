@@ -30,7 +30,7 @@ export function transferDatasetGroup (data: OriginDatasetGroup) {
 }
 
 export function transferDataset (data: BackendData): Dataset {
-  const { negative_images_cnt = 0, project_negative_images_cnt = 0 } = {} //data.negative_info || {}
+  const { negative_images_cnt = 0, project_negative_images_cnt = 0 } = data.negative_info || {}
   return {
     id: data.id,
     groupId: data.dataset_group_id,

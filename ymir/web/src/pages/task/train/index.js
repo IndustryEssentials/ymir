@@ -35,6 +35,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const history = useHistory()
   const location = useLocation()
   const { did, mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const [project, setProject] = useState({})
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
@@ -58,6 +59,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     fetchSysInfo()
+    fetchProject()
   }, [])
 
   useEffect(() => {
@@ -123,6 +125,11 @@ function Train({ allDatasets, datasetCache, ...func }) {
     }
   }
 
+  async function fetchProject() {
+    const project = await func.getProject(pid)
+    project && setProject(project)
+  }
+
   function trainSetChange(value) {
     setTrainSet(value)
   }
@@ -160,7 +167,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
       ...values,
       name: 'group_' + randomNumber(),
       projectId: pid,
-      keywords: dataset.project.keywords,
+      keywords: project.keywords,
       image,
       imageId,
       config,
@@ -279,7 +286,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
             </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
               <Form.Item label={t('task.train.form.keywords.label')}>
-                {dataset?.project?.keywords.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
+                {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
               </Form.Item>
             </Tip>
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
@@ -444,6 +451,12 @@ const props = (state) => {
 
 const dis = (dispatch) => {
   return {
+    getProject(id) {
+      return dispatch({
+        type: "project/getProject",
+        payload: { id },
+      })
+    },
     getDatasets(pid, force) {
       return dispatch({
         type: "dataset/queryAllDatasets",

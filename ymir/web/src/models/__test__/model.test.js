@@ -44,7 +44,6 @@ describe("models: model", () => {
     map: 0.88,
     state: 2,
     version_num: 2,
-    "project_id": 1,
     "create_datetime": createTime,
     "update_datetime": createTime,
     related_task: task,
