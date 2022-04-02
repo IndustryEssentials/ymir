@@ -338,7 +338,7 @@ class CmdTrain(base.BaseCommand):
 
         # start train docker and wait
         path_binds = []
-        path_binds.append(f"-v{work_dir_in}:/in:ro")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
+        path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
         path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
