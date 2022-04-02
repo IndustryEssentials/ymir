@@ -44,7 +44,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
       callback({
         type: 'create',
         data: {
-          round: current + 1,
+          round: stage.round + 1,
         },
       })
     } else {
