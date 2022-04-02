@@ -54,6 +54,10 @@ class ProjectUpdate(BaseModel):
     description: Optional[str]
     initial_model_id: Optional[int]
 
+    class Config:
+        use_enum_values = True
+        validate_all = True
+
 
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
     training_dataset_group_id: int
