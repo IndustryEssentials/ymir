@@ -125,7 +125,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                   },
                 ]}
               >
-                <Input.Password allowClear placeholder={t('signup.pwd.placeholder')} prefix={<LockIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+                <Input.Password allowClear visibilityToggle={false} placeholder={t('signup.pwd.placeholder')} prefix={<LockIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
               <Form.Item
                 label={t("signup.repwd")}
@@ -139,7 +139,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                   pwdRepeat,
                 ]}
               >
-                <Input.Password allowClear placeholder={t('signup.repwd.placeholder')} prefix={<KeyIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+                <Input.Password allowClear visibilityToggle={false} placeholder={t('signup.repwd.placeholder')} prefix={<KeyIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
 
               <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
