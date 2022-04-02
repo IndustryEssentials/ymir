@@ -101,7 +101,7 @@ export const homeRoutes = [
     title: "dataset.assets.title",
     pid: 10,
     id: 11,
-    breadcrumbLabel: 'bbreadcrumbs.dataset.assets',
+    breadcrumbLabel: 'breadcrumbs.dataset.assets',
   },
   {
     path: "/home/model/detail/:id",
