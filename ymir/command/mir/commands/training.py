@@ -238,10 +238,9 @@ class CmdTrain(base.BaseCommand):
                                                             dst_model_dir=os.path.join(work_dir, 'in', 'models'),
                                                             class_names=class_names)
 
-        # get train_ids, val_ids, test_ids
+        # get train_ids and val_ids
         train_ids = set()  # type: Set[str]
         val_ids = set()  # type: Set[str]
-        test_ids = set()  # type: Set[str]
         unused_ids = set()  # type: Set[str]
         mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=mir_root,
@@ -253,8 +252,6 @@ class CmdTrain(base.BaseCommand):
                 train_ids.add(asset_id)
             elif asset_attr.tvt_type == mirpb.TvtTypeValidation:
                 val_ids.add(asset_id)
-            elif asset_attr.tvt_type == mirpb.TvtTypeTest:
-                test_ids.add(asset_id)
             else:
                 unused_ids.add(asset_id)
         if not train_ids:
@@ -263,10 +260,9 @@ class CmdTrain(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no validation set')
 
         if not unused_ids:
-            logging.info(f"training: {len(train_ids)}, validation: {len(val_ids)}, test: {len(test_ids)}")
+            logging.info(f"training: {len(train_ids)}, validation: {len(val_ids)}")
         else:
-            logging.warning(f"training: {len(train_ids)}, validation: {len(val_ids)}, test: {len(test_ids)}, "
-                            f"unused: {len(unused_ids)}")
+            logging.warning(f"training: {len(train_ids)}, validation: {len(val_ids)}" f"unused: {len(unused_ids)}")
 
         # export
         logging.info("exporting assets")
@@ -327,23 +323,6 @@ class CmdTrain(base.BaseCommand):
                              index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
                              index_assets_prefix='/in/assets',
                              index_annotations_prefix='/in/annotations')
-
-        # export test set (if we have)
-        if test_ids:
-            data_exporter.export(mir_root=mir_root,
-                                 assets_location=media_location,
-                                 class_type_ids=type_id_idx_mapping,
-                                 asset_ids=test_ids,
-                                 asset_dir=asset_dir,
-                                 annotation_dir=work_dir_annotations,
-                                 need_ext=True,
-                                 need_id_sub_folder=True,
-                                 base_branch=src_typ_rev_tid.rev,
-                                 base_task_id=src_typ_rev_tid.tid,
-                                 format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
-                                 index_file_path=os.path.join(work_dir_in, 'test-index.tsv'),
-                                 index_assets_prefix='/in/assets',
-                                 index_annotations_prefix='/in/annotations')
 
         logging.info("starting train docker container")
 
