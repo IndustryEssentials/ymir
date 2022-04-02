@@ -105,7 +105,9 @@ def import_model(
 ) -> Any:
 
     # 1. validation model group name
-    if crud.model_group.is_duplicated_name(db=db, user_id=current_user.id, name=model_import.name):
+    if crud.model_group.is_duplicated_name_in_project(
+        db=db, project_id=model_import.project_id, name=model_import.name
+    ):
         raise DuplicateModelGroupError()
 
     # 2. create placeholder task

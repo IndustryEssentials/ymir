@@ -1,5 +1,6 @@
 import { Button, Card, Form, message, Select, Space, ConfigProvider } from 'antd'
 import { connect } from 'dva'
+import { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'umi'
 
 import { formLayout } from "@/config/antd"
@@ -12,12 +13,27 @@ import Tip from "@/components/form/tip"
 
 const { useForm } = Form
 
-const InitModel = (props) => {
+const InitModel = ({ projects = {}, ...props }) => {
   const history = useHistory()
   const pageParams = useParams()
   const id = Number(pageParams.id)
+  const [project, setProject] = useState({})
 
   const [form] = useForm()
+
+  useEffect(() => {
+    id && fetchProject()
+  }, [id])
+
+  useEffect(() => {
+    if (projects[id]) {
+      setProject(projects[id])
+    }
+  }, [projects[id]])
+
+  useEffect(() => {
+    initForm(project)
+  }, [project])
 
   async function submit(values) {
 
@@ -25,12 +41,25 @@ const InitModel = (props) => {
       ...values,
       id,
     }
-    console.log('params:', params)
     const result = await props.updateProject(params)
     if (result) {
       message.success(t('dataset.add.success.msg'))
       history.push(`/home/project/detail/${id}`)
     }
+  }
+
+
+  function initForm(project = {}) {
+    const { model } = project
+    if (model) {
+      form.setFieldsValue({
+        model,
+      })
+    }
+  }
+
+  function fetchProject() {
+    props.getProject(id)
   }
 
   return (
@@ -83,6 +112,9 @@ const InitModel = (props) => {
   )
 }
 
+const props = state => ({
+  projects: state.project.projects,
+})
 
 const actions = (dispatch) => {
   return {
@@ -92,7 +124,13 @@ const actions = (dispatch) => {
         payload,
       })
     },
+    getProject: (id) => {
+      return dispatch({
+        type: 'project/getProject',
+        payload: { id },
+      })
+    },
   }
 }
 
-export default connect(null, actions)(InitModel)
+export default connect(props, actions)(InitModel)
