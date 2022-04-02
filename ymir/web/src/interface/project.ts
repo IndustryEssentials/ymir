@@ -1,4 +1,5 @@
 import { DatasetGroup, Dataset } from "@/interface/dataset"
+import { ModelVersion as Model } from "@/interface/model"
 type DatasetId = number
 export interface Project {
   id: number,
@@ -32,9 +33,14 @@ export interface Iteration {
   currentStage: number,
   trainSet?: DatasetId,
   trainUpdateSet: DatasetId,
+  trainUpdateDataset?: Dataset,
   miningSet?: DatasetId,
+  miningDataset?: Dataset,
   miningResult?: DatasetId,
+  miningResultDataset?: Dataset,
   labelSet?: DatasetId,
+  labelDataset?: Dataset,
   model?: number,
+  trainingModel?: Model,
   prevIteration: number,
 }
