@@ -16,6 +16,7 @@ const model = {
   "model.action.history": { en: "History", cn: "历史树", },
   "model.action.download": { en: "Download", cn: "下载", },
   "model.action.verify": { en: "Verify", cn: "验证", },
+  "model.action.copy": { en: "Copy", cn: "复制", },
   "model.action.detail": { en: "Detail", cn: "详情", },
   "model.empty.label": { en: "Train A Model", cn: "训练出一个模型", },
   "model.empty.btn.label": { en: "Import Model", cn: '导入模型', },

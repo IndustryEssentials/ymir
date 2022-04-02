@@ -250,12 +250,13 @@ export function createInferenceTask({
 }) {
   return createTask({
     name,
-    type: TASKTYPES.INFERENCE,
+    type: TASKTYPES.MINING,
     project_id: projectId,
     description,
     docker_image_config: config,
     parameters: {
       model_id: model,
+      generate_annotations: true,
       dataset_id: datasetId,
       docker_image: image,
       docker_image_id: imageId,
