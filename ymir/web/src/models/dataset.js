@@ -175,23 +175,19 @@ export default {
       const updateList = payload || {}
       Object.keys(versions).forEach(gid => {
         const datasets = versions[gid]
-        const needUpdate = false
         const updatedDatsets = datasets.map(dataset => {
           const updateItem = updateList[dataset.hash]
           if (updateItem) {
-            needUpdate = true
             dataset.state = updateItem.state
             dataset.progress = updateItem.percent
           }
           return { ...dataset }
         })
-
-        if (needUpdate) {
-          put({
-            type: 'UPDATE_VERSIONS',
-            payload: { id: gid, versions: updatedDatsets }
-          })
-        }
+        versions[gid] = updatedDatsets
+      })
+      yield put({
+        type: 'UPDATE_ALL_VERSIONS',
+        payload: versions,
       })
     },
     *getHotDatasets({ payload }, { call, put }) {
@@ -256,6 +252,13 @@ export default {
       return {
         ...state,
         versions: { ...vs },
+      }
+    },
+    
+    UPDATE_ALL_VERSIONS(state, { payload }) {
+      return {
+        ...state,
+        versions: { ...payload },
       }
     },
     UPDATE_DATASET(state, { payload }) {
