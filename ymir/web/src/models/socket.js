@@ -1,9 +1,10 @@
 import { getSocket } from '../services/socket'
 
 const pageMaps = [
-  { path: '/home/project/', method: 'task/updateTasks' },
-  { path: '/home/task/detail/\\d+', method: 'task/updateTaskState' },
-  { path: '/home/dataset', method: 'dataset/updateDatasets' },
+  { path: '/home/project/detail/\\d+', method: 'dataset/updateDatasets' },
+  { path: '/home/project/detail/\\d+', method: 'model/updateModels' },
+  { path: '/home/model/detail/\\d+', method: 'model/updateModelState' },
+  { path: '/home/dataset/detail/\\d+', method: 'dataset/updateDatasetState' },
 ]
 
 export default {
