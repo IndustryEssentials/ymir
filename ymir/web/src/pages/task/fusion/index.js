@@ -39,7 +39,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
 
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
-    samples: chunk || 0,
+    samples: chunk,
     include_datasets: merging ? [Number(merging)] : [],
     strategy: strategy || 2,
   }
@@ -244,7 +244,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
           <Panel label={t('task.fusion.header.sampling')} visible={visibles['sampling']} setVisible={(value) => setVisibles(old => ({ ...old, sampling: value }))}>
             <Tip content={t('tip.task.fusion.sampling')}>
               <Form.Item label={t('task.fusion.form.sampling')} name='samples'>
-                <InputNumber step={1} min={0} style={{ width: '100%' }} />
+                <InputNumber step={1} min={1} style={{ width: '100%' }} />
               </Form.Item>
             </Tip>
           </Panel>
