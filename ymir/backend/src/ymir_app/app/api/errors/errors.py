@@ -331,7 +331,7 @@ class IterationNotFound(NotFound):
 
 
 class RejectDeleteDataset(APIError):
-    code = error_codes.DATASET_NOT_ALLOWED_DELETEE
+    code = error_codes.DATASET_REJECT_TO_DELETE
     message = "Reject to Delete Dataset"
 
 
