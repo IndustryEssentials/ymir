@@ -1,7 +1,7 @@
 import { getSocket } from '../services/socket'
 
 const pageMaps = [
-  { path: '/home/task', method: 'task/updateTasks' },
+  { path: '/home/project/', method: 'task/updateTasks' },
   { path: '/home/task/detail/\\d+', method: 'task/updateTaskState' },
   { path: '/home/dataset', method: 'dataset/updateDatasets' },
 ]
