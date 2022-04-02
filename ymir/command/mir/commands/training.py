@@ -230,8 +230,7 @@ class CmdTrain(base.BaseCommand):
             executant_name = f"default-training-{task_id}"
         if not tensorboard_dir:
             tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
-        if not asset_cache_dir:
-            asset_cache_dir = os.path.join(work_dir, 'in', 'assets')
+        asset_dir = asset_cache_dir or os.path.join(work_dir, 'in', 'assets')
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
@@ -281,7 +280,7 @@ class CmdTrain(base.BaseCommand):
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_out, exist_ok=True)
 
-        os.makedirs(asset_cache_dir, exist_ok=True)
+        os.makedirs(asset_dir, exist_ok=True)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
@@ -302,7 +301,7 @@ class CmdTrain(base.BaseCommand):
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=train_ids,
-                             asset_dir=asset_cache_dir,
+                             asset_dir=asset_dir,
                              annotation_dir=work_dir_annotations,
                              need_ext=True,
                              need_id_sub_folder=True,
@@ -318,7 +317,7 @@ class CmdTrain(base.BaseCommand):
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=val_ids,
-                             asset_dir=asset_cache_dir,
+                             asset_dir=asset_dir,
                              annotation_dir=work_dir_annotations,
                              need_ext=True,
                              need_id_sub_folder=True,
@@ -335,7 +334,7 @@ class CmdTrain(base.BaseCommand):
                                  assets_location=media_location,
                                  class_type_ids=type_id_idx_mapping,
                                  asset_ids=test_ids,
-                                 asset_dir=asset_cache_dir,
+                                 asset_dir=asset_dir,
                                  annotation_dir=work_dir_annotations,
                                  need_ext=True,
                                  need_id_sub_folder=True,
@@ -361,7 +360,7 @@ class CmdTrain(base.BaseCommand):
         # start train docker and wait
         path_binds = []
         path_binds.append(f"-v{work_dir_in}:/in:ro")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
-        path_binds.append(f"-v{asset_cache_dir}:/in/assets:ro")  # assets
+        path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
 
