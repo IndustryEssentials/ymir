@@ -278,8 +278,8 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
-    cmd.append(f"-v{asset_path}:/in/assets")
-    cmd.append(f"-v{model_path}:/in/models")
+    cmd.append(f"-v{asset_path}:/in/assets:ro")
+    cmd.append(f"-v{model_path}:/in/models:ro")
     cmd.append(f"-v{index_file_path}:/in/candidate-index.tsv")
     cmd.append(f"-v{config_file_path}:/in/config.yaml")
     cmd.append(f"-v{out_path}:/out")
