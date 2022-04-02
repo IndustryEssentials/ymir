@@ -67,7 +67,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         mining_request = request.req_create_task.mining
-        executor_instance = request.task_id
+        executant_name = request.task_id
         models_location = assets_config["modelskvlocation"]
         media_location = assets_config["assetskvlocation"]
         mining_image = request.singleton_op
@@ -86,7 +86,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          in_dataset_id=request.task_id,
                                          his_task_id=previous_subtask_id,
                                          executor=mining_image,
-                                         executor_instance=executor_instance,
+                                         executant_name=executant_name,
                                          generate_annotations=mining_request.generate_annotations)
 
         return mining_response
@@ -106,14 +106,14 @@ class TaskMiningInvoker(TaskBaseInvoker):
         his_task_id: str,
         asset_cache_dir: str,
         executor: str,
-        executor_instance: str,
+        executant_name: str,
         generate_annotations: bool,
     ) -> backend_pb2.GeneralResp:
         mining_cmd = [
             utils.mir_executable(), 'mining', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir,
             '--model-location', model_location, '--media-location', media_location, '--model-hash', model_hash,
             '--src-revs', f"{in_dataset_id}@{his_task_id}", '--asset-cache-dir', asset_cache_dir, '--task-config-file',
-            config_file, '--executor', executor, '--executant-name', executor_instance
+            config_file, '--executor', executor, '--executant-name', executant_name
         ]
         if top_k > 0:
             mining_cmd.append('--topk')

@@ -42,7 +42,7 @@ class CmdInfer(base.BaseCommand):
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
-                                      executor_instance=self.args.executor_instance,
+                                      executant_name=self.args.executant_name,
                                       run_infer=True,
                                       run_mining=False)
 
@@ -54,7 +54,7 @@ class CmdInfer(base.BaseCommand):
                       index_file: str,
                       config_file: str,
                       executor: str,
-                      executor_instance: str,
+                      executant_name: str,
                       task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
                       run_infer: bool = False,
@@ -72,7 +72,7 @@ class CmdInfer(base.BaseCommand):
             index_file (str): index file, each line means an image abs path
             config_file (str): configuration file passed to infer executor
             executor (str): docker image name used to infer
-            executor_instance (str): docker container name
+            executant_name (str): docker container name
             task_id (str, optional): id of this infer (or mining) task. Defaults to 'default-infer' + timestamp.
             shm_size (str, optional): shared memory size used to start the infer docker. Defaults to None.
             run_infer (bool, optional): run or not run infer. Defaults to False.
@@ -110,8 +110,8 @@ class CmdInfer(base.BaseCommand):
             logging.error('empty --executor, abort')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        if not executor_instance:
-            executor_instance = task_id
+        if not executant_name:
+            executant_name = task_id
 
         _, work_model_path, work_out_path = _prepare_env(work_dir)
         work_index_file = os.path.join(work_dir, 'in', 'candidate-index.tsv')
@@ -145,7 +145,7 @@ class CmdInfer(base.BaseCommand):
                        config_file_path=work_config_file,
                        out_path=work_out_path,
                        executor=executor,
-                       executor_instance=executor_instance,
+                       executant_name=executant_name,
                        shm_size=shm_size,
                        task_type=task_id,
                        gpu_id=available_gpu_id)
@@ -274,7 +274,7 @@ def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> No
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
-                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str, gpu_id: str) -> int:
+                   executor: str, executant_name: str, shm_size: Optional[str], task_type: str, gpu_id: str) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
@@ -289,7 +289,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
         cmd.extend(['--gpus', f"\"device={gpu_id}\""])
     if shm_size:
         cmd.append(f"--shm-size={shm_size}")
-    cmd.extend(['--name', executor_instance])
+    cmd.extend(['--name', executant_name])
     cmd.append(executor)
 
     out_log_path = os.path.join(out_path, 'ymir-executor-out.log')
@@ -334,7 +334,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   help="docker image name for infer or mining")
     infer_arg_parser.add_argument('--executant-name',
                                   required=False,
-                                  dest='executor_instance',
+                                  dest='executant_name',
                                   type=str,
                                   help='docker container name for infer or mining')
     infer_arg_parser.set_defaults(func=CmdInfer)

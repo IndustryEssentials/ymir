@@ -143,9 +143,9 @@ class TestInvokerTaskMining(unittest.TestCase):
         mining_cmd = ("mir mining --root {0} --dst-rev {1}@{1} -w {2} --model-location {3} --media-location {3} "
                       "--model-hash {5} --src-revs {1}@{6} --asset-cache-dir {9} --task-config-file {7} --executor {8} "
                       "--executant-name {10} --topk {4}".format(self._mir_repo_root, self._task_id, working_dir_0,
-                                                                   self._storage_root, top_k, model_hash,
-                                                                   self._sub_task_id_1, output_config, 'mining_image',
-                                                                   asset_cache_dir, self._task_id))
+                                                                self._storage_root, top_k, model_hash,
+                                                                self._sub_task_id_1, output_config, 'mining_image',
+                                                                asset_cache_dir, self._task_id))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
             mock.call(mining_cmd.split(' '), capture_output=True, text=True),

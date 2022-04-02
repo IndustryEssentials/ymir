@@ -41,7 +41,7 @@ class CmdMining(base.BaseCommand):
                                        topk=self.args.topk,
                                        add_annotations=self.args.add_annotations,
                                        executor=self.args.executor,
-                                       executor_instance=self.args.executor_instance)
+                                       executant_name=self.args.executant_name)
 
     @staticmethod
     @command_run_in_out
@@ -55,7 +55,7 @@ class CmdMining(base.BaseCommand):
                       model_location: str,
                       config_file: str,
                       executor: str,
-                      executor_instance: str,
+                      executant_name: str,
                       topk: int = None,
                       add_annotations: bool = False) -> int:
         """
@@ -70,7 +70,7 @@ class CmdMining(base.BaseCommand):
             media_location, model_location: location of assets.
             config_file: path to the config file
             executor: executor name, currently, the docker image name
-            executor_instance: docker container name
+            executant_name: docker container name
             topk: top k assets you want to select in the result workspace, positive integer or None (no mining)
             add_annotations: if true, write new annotations into annotations.mir
         Returns:
@@ -156,7 +156,7 @@ class CmdMining(base.BaseCommand):
                                      task_id=dst_typ_rev_tid.tid,
                                      shm_size=_get_shm_size(config_file),
                                      executor=executor,
-                                     executor_instance=executor_instance,
+                                     executant_name=executant_name,
                                      run_infer=add_annotations,
                                      run_mining=(topk is not None))
 
@@ -394,7 +394,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    help='docker image name for mining')
     mining_arg_parser.add_argument('--executant-name',
                                    required=False,
-                                   dest='executor_instance',
+                                   dest='executant_name',
                                    type=str,
                                    help='docker container name for mining')
     mining_arg_parser.set_defaults(func=CmdMining)

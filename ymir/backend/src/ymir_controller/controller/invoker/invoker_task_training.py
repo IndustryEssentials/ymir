@@ -74,7 +74,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_assset_cache")
-        executor_instance = request.task_id
+        executant_name = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,
             config_file=config_file,
@@ -86,7 +86,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             his_task_id=previous_subtask_id,
             asset_cache_dir=asset_cache_dir,
             training_image=training_image,
-            executor_instance=executor_instance,
+            executant_name=executant_name,
             tensorboard=tensorboard_dir,
             model_hash=request.model_hash,
         )
@@ -105,7 +105,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         his_task_id: str,
         training_image: str,
         asset_cache_dir: str,
-        executor_instance: str,
+        executant_name: str,
         tensorboard: str,
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
@@ -113,7 +113,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
             '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
             '--src-revs', f"{in_dataset_id}@{his_task_id}", '--task-config-file', config_file, '--executor',
-            training_image, '--executant-name', executor_instance, '--tensorboard-dir', tensorboard,
+            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard,
             '--asset-cache-dir', asset_cache_dir
         ]
         if model_hash:

@@ -159,7 +159,7 @@ class TestMiningCmd(unittest.TestCase):
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
-        args.executor_instance = 'executor-instance'
+        args.executant_name = 'executor-instance'
         mining_instance = CmdMining(args)
         mining_instance.run()
 
@@ -172,7 +172,7 @@ class TestMiningCmd(unittest.TestCase):
                                          task_id='mining-task-id',
                                          shm_size='16G',
                                          executor=args.executor,
-                                         executor_instance=args.executor_instance,
+                                         executant_name=args.executant_name,
                                          run_infer=False,
                                          run_mining=True)
 

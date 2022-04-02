@@ -20,7 +20,7 @@ def make_cmd_request(user_id: str = None,
                      model_hash: str = None,
                      force: bool = None,
                      commit_message: str = None,
-                     executor_instance: str = None,
+                     executant_name: str = None,
                      merge_strategy: int = None,
                      req_create_task: backend_pb2.ReqCreateTask = None,
                      docker_image_config: str = None,
@@ -65,8 +65,8 @@ def make_cmd_request(user_id: str = None,
         request.model_hash = model_hash
     if req_create_task is not None:
         request.req_create_task.CopyFrom(req_create_task)
-    if executor_instance is not None:
-        request.executor_instance = executor_instance
+    if executant_name is not None:
+        request.executant_name = executant_name
     if merge_strategy is not None:
         request.merge_strategy = merge_strategy
     if docker_image_config is not None:
@@ -89,7 +89,7 @@ def make_invoker_cmd_call(invoker: Any,
                           user_id: str = None,
                           repo_id: str = None,
                           task_id: str = None,
-                          executor_instance: str = None,
+                          executant_name: str = None,
                           singleton_op: str = None,
                           his_task_id: str = None,
                           dst_dataset_id: str = None,
@@ -124,7 +124,7 @@ def make_invoker_cmd_call(invoker: Any,
                                force=force,
                                commit_message=commit_message,
                                req_create_task=req_create_task,
-                               executor_instance=executor_instance,
+                               executant_name=executant_name,
                                merge_strategy=merge_strategy,
                                model_hash=model_hash,
                                docker_image_config=docker_image_config,

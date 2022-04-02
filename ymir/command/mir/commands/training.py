@@ -166,7 +166,7 @@ class CmdTrain(base.BaseCommand):
                                       media_location=self.args.media_location,
                                       tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
-                                      executor_instance=self.args.executor_instance,
+                                      executant_name=self.args.executant_name,
                                       config_file=self.args.config_file)
 
     @staticmethod
@@ -176,7 +176,7 @@ class CmdTrain(base.BaseCommand):
                       model_upload_location: str,
                       pretrained_model_hash: str,
                       executor: str,
-                      executor_instance: str,
+                      executant_name: str,
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
@@ -226,8 +226,8 @@ class CmdTrain(base.BaseCommand):
                                   error_message=f"dumplicate class names in class_names: {class_names}")
 
         task_id = dst_typ_rev_tid.tid
-        if not executor_instance:
-            executor_instance = f"default-training-{task_id}"
+        if not executant_name:
+            executant_name = f"default-training-{task_id}"
         if not tensorboard_dir:
             tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
         if not asset_cache_dir:
@@ -370,7 +370,7 @@ class CmdTrain(base.BaseCommand):
         if available_gpu_id:
             cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
         cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
-        cmd.extend(['--name', f"{executor_instance}"])  # executor name used to stop executor
+        cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
         cmd.append(executor)
 
         task_code = MirCode.RC_OK
@@ -460,7 +460,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   help="docker image name for training")
     train_arg_parser.add_argument('--executant-name',
                                   required=False,
-                                  dest='executor_instance',
+                                  dest='executant_name',
                                   type=str,
                                   help='docker container name for training')
     train_arg_parser.add_argument("--src-revs",

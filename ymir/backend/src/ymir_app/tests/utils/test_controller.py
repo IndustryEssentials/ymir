@@ -110,7 +110,7 @@ class TestControllerRequest:
         )
         assert kill_other_task.req.req_type == m.mirsvrpb.CMD_TERMINATE
         assert kill_other_task.req.terminated_task_type == task.type
-        assert kill_other_task.req.executor_instance == task.hash
+        assert kill_other_task.req.executant_name == task.hash
 
 
 class TestControllerClient:
