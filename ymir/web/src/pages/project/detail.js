@@ -64,7 +64,10 @@ function ProjectDetail(func) {
             </Space>
           </Col>
           <Col>
-            <Link to={`/home/project/add/${id}`}>{t('breadcrumbs.project.add')}</Link>
+            <Space>
+              <Link to={`/home/project/add/${id}`}>{t('breadcrumbs.project.add')}</Link>
+              <Link to={`/home/project/iterations/${id}`}>{t('breadcrumbs.project.iterations')}</Link>
+            </Space>
           </Col>
         </Row>
         {project.round > 0 ?
