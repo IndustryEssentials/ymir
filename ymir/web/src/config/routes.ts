@@ -113,13 +113,13 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.model',
   },
   {
-    path: "/home/model/import/:pid",
+    path: "/home/model/import/:id",
     name: "modelImport",
     component: "@/pages/model/add",
     title: "model.title",
     pid: 25,
     id: 13,
-    breadcrumbLabel: 'breadcrumbs.portal',
+    breadcrumbLabel: 'breadcrumbs.model.add',
   },
   {
     path: "/home/model/verify/:id",
