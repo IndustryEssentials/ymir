@@ -98,10 +98,10 @@ export const homeRoutes = [
     path: "/home/dataset/assets/:id",
     name: "datasetDetail",
     component: "@/pages/dataset/assets",
-    title: "dataset.assets.title",
+    title: "assets.title",
     pid: 10,
     id: 11,
-    breadcrumbLabel: 'bbreadcrumbs.dataset.assets',
+    breadcrumbLabel: 'breadcrumbs.dataset.assets',
   },
   {
     path: "/home/model/detail/:id",
@@ -113,13 +113,13 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.model',
   },
   {
-    path: "/home/model/import/:pid",
+    path: "/home/model/import/:id",
     name: "modelImport",
     component: "@/pages/model/add",
     title: "model.title",
     pid: 25,
     id: 13,
-    breadcrumbLabel: 'breadcrumbs.portal',
+    breadcrumbLabel: 'breadcrumbs.model.add',
   },
   {
     path: "/home/model/verify/:id",

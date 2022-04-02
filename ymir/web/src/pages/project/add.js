@@ -25,6 +25,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
 
   const [testSet, setTestSet] = useState(0)
   const [miningSet, setMiningSet] = useState(0)
+  const [strategy, setStrategy] = useState(0)
 
   useEffect(() => {
     setEdit(!!id)
@@ -33,7 +34,6 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
   }, [id])
 
   useEffect(() => {
-    console.log('hello projects:', projects)
     if (projects[id]) {
       setProject(projects[id])
     }
@@ -48,14 +48,18 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
   }, [project])
 
   function initForm(project = {}) {
-    const { name, targetMap, targetDataset, targetIteration, description } = project
-    console.log('hello project:', project)
+    const { name, keywords: kws, targetMap, targetDataset, targetIteration, 
+      description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
     if (name) {
       form.setFieldsValue({
-        name, keywords, description,
+        name, keywords: kws, description,
         map_target: targetMap,
         iteration_target: targetIteration,
         training_dataset_count_target: targetDataset,
+        testSet: testDataset?.id,
+        miningSet: miningDataset?.id,
+        strategy: miningStrategy || 0,
+        chunkSize: miningStrategy === 0 ? chunkSize : undefined,
       })
     }
   }
@@ -64,6 +68,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
     const action = isEdit ? 'update' : 'create'
     var params = {
       ...values,
+      chunkSize: strategy === 0 ? values.chunkSize : undefined,
     }
     if (settings || isEdit) {
       params.id = id
@@ -178,12 +183,12 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 </Tip>
                 <Tip hidden={true}>
                   <Form.Item label={t('project.add.form.test.set')} name="testSet" required>
-                    <DatasetSelect disabled={project.testSet} pid={id} filter={[project.trainSet, miningSet]} onChange={(value) => value && setTestSet(value)} />
+                    <DatasetSelect disabled={project.testSet} pid={id} filter={[miningSet]} onChange={(value) => value && setTestSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
                   <Form.Item label={t('project.add.form.mining.set')} name="miningSet" required>
-                    <DatasetSelect pid={id} filter={[project.trainSet, testSet]} onChange={(value) => value && setMiningSet(value)} />
+                    <DatasetSelect pid={id} filter={[project?.trainSet?.id, testSet]} onChange={(value) => value && setMiningSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
@@ -199,14 +204,14 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                             { value: 0, label: t('project.mining.strategy.block') },
                             { value: 1, label: t('project.mining.strategy.unique') },
                             { value: 2, label: t('project.mining.strategy.custom') },
-                          ]} />
+                          ]} onChange={value => setStrategy(value)} />
                         </Form.Item>
                       </Col>
-                      <Col flex={'100px'} offset={1}>
-                        <Form.Item noStyle name='chunkSize' initialValue={0}>
-                          <InputNumber step={1} min={0} style={{ width: '100%' }} />
+                      { strategy === 0 ? <Col flex={'100px'} offset={1}>
+                        <Form.Item noStyle name='chunkSize' required={strategy === 0}>
+                          <InputNumber step={1} min={1} style={{ width: '100%' }} />
                         </Form.Item>
-                      </Col>
+                      </Col> : null }
                     </Row>
                   </Form.Item>
                 </Tip>
