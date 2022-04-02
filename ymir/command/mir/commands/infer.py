@@ -96,10 +96,10 @@ class CmdInfer(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not config_file:
-            logging.error("empty --config-file")
+            logging.error("empty --task-config-file")
             return MirCode.RC_CMD_INVALID_ARGS
         if not os.path.isfile(config_file):
-            logging.error(f"invalid --config-file {config_file}, not a file, abort")
+            logging.error(f"invalid --task-config-file {config_file}, not a file, abort")
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not run_infer and not run_mining:
@@ -322,7 +322,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   required=True,
                                   help='model hash to be used')
-    infer_arg_parser.add_argument('--config-file',
+    infer_arg_parser.add_argument('--task-config-file',
                                   dest='config_file',
                                   type=str,
                                   required=True,
@@ -332,7 +332,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   dest='executor',
                                   type=str,
                                   help="docker image name for infer or mining")
-    infer_arg_parser.add_argument('--executor-instance',
+    infer_arg_parser.add_argument('--executant-name',
                                   required=False,
                                   dest='executor_instance',
                                   type=str,

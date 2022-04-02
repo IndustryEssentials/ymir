@@ -112,8 +112,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
         mining_cmd = [
             utils.mir_executable(), 'mining', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir,
             '--model-location', model_location, '--media-location', media_location, '--model-hash', model_hash,
-            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--asset-cache-dir', asset_cache_dir, '--config-file',
-            config_file, '--executor', executor, '--executor-instance', executor_instance
+            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--asset-cache-dir', asset_cache_dir, '--task-config-file',
+            config_file, '--executor', executor, '--executant-name', executor_instance
         ]
         if top_k > 0:
             mining_cmd.append('--topk')

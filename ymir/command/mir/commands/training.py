@@ -192,7 +192,7 @@ class CmdTrain(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty work_dir')
         if not config_file or not os.path.isfile(config_file):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"invalid --config-file: {config_file}")
+                                  error_message=f"invalid --task-config-file: {config_file}")
         if asset_cache_dir and not os.path.isabs(asset_cache_dir):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"invalid --cache {config_file}, not an absolute path for directory")
@@ -360,7 +360,7 @@ class CmdTrain(base.BaseCommand):
 
         # start train docker and wait
         path_binds = []
-        path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
+        path_binds.append(f"-v{work_dir_in}:/in:ro")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
         path_binds.append(f"-v{asset_cache_dir}:/in/assets:ro")  # assets
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
@@ -458,7 +458,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   dest="executor",
                                   type=str,
                                   help="docker image name for training")
-    train_arg_parser.add_argument('--executor-instance',
+    train_arg_parser.add_argument('--executant-name',
                                   required=False,
                                   dest='executor_instance',
                                   type=str,
@@ -473,7 +473,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   required=True,
                                   help="rev@tid: destination branch name and task id")
-    train_arg_parser.add_argument("--config-file",
+    train_arg_parser.add_argument("--task-config-file",
                                   dest="config_file",
                                   type=str,
                                   required=True,

@@ -92,10 +92,10 @@ class CmdMining(base.BaseCommand):
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         if not config_file:
-            logging.warning('empty --config-file, abort')
+            logging.warning('empty --task-config-file, abort')
             return MirCode.RC_CMD_INVALID_ARGS
         if not os.path.isfile(config_file):
-            logging.error(f"invalid --config-file {config_file}, not a file, abort")
+            logging.error(f"invalid --task-config-file {config_file}, not a file, abort")
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not executor:
@@ -382,7 +382,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    type=str,
                                    required=True,
                                    help='rev@tid: destination branch name and task id')
-    mining_arg_parser.add_argument('--config-file',
+    mining_arg_parser.add_argument('--task-config-file',
                                    dest='config_file',
                                    type=str,
                                    required=True,
@@ -392,7 +392,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='executor',
                                    type=str,
                                    help='docker image name for mining')
-    mining_arg_parser.add_argument('--executor-instance',
+    mining_arg_parser.add_argument('--executant-name',
                                    required=False,
                                    dest='executor_instance',
                                    type=str,
