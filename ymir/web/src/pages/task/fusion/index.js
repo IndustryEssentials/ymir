@@ -20,7 +20,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { query } = useLocation()
-  const { did, iterationId, currentStage, outputKey, chunk, strategy, merging } = query
+  const { iterationId, currentStage, outputKey, chunk, strategy, merging } = query
+  const did = Number(query.did)
   const history = useHistory()
   const [form] = Form.useForm()
   const [dataset, setDataset] = useState({})
@@ -44,7 +45,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   }
 
   useEffect(() => {
-    pid && func.getDatasets(dataset.projectId)
+    pid && func.getDatasets(pid)
   }, [pid])
 
   useEffect(() => {
@@ -61,7 +62,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   }, [datasets, includeDatasets])
 
   useEffect(() => {
-    setDatasets(allDatasets.filter(dataset => dataset.keywords.length))
+    setDatasets(allDatasets)
   }, [allDatasets])
 
   useEffect(() => {
@@ -151,6 +152,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
         onChange={onChange}
         showArrow
       >
+        {console.log('datasets:', datasets, datasets.filter(ds => ![did, ...filter].includes(ds.id)), did, filter)}
         {datasets.filter(ds => ![did, ...filter].includes(ds.id)).map(item => (
           <Option value={item.id} key={item.id}>
             {item.name}({item.assetCount})
@@ -190,7 +192,6 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
               <Tip hidden={true}>
                 <Form.Item name='strategy'
                   hidden={includeDatasets.length < 1}
-                  initialValue={2}
                   label={t('task.train.form.repeatdata.label')}>
                   <Radio.Group options={[
                     { value: 2, label: t('task.train.form.repeatdata.latest') },
