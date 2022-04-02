@@ -1,6 +1,8 @@
-import { OriginModelGroup, ModelGroup, OriginModelVersion, ModelVersion } from "@/interface/model"
-import { format } from '@/utils/date'
+import { ModelGroup, ModelVersion } from "@/interface/model"
+import { calDuration, format } from '@/utils/date'
 import { getIterationVersion } from "./project"
+import { BackendData } from "@/interface/common"
+import { getLocale } from "umi"
 
 export enum states {
   READY = 0,
@@ -8,7 +10,7 @@ export enum states {
   INVALID = 2,
 }
 
-export function transferModelGroup (data: OriginModelGroup) {
+export function transferModelGroup (data: BackendData) {
   const group: ModelGroup = {
     id: data.id,
     name: data.name,
@@ -18,7 +20,7 @@ export function transferModelGroup (data: OriginModelGroup) {
   return group
 }
 
-export function transferModel (data: OriginModelVersion): ModelVersion {
+export function transferModel (data: BackendData): ModelVersion {
   return {
     id: data.id,
     name: data.name,
@@ -37,6 +39,8 @@ export function transferModel (data: OriginModelVersion): ModelVersion {
     taskType: data.related_task.type,
     taskState: data.related_task.state,
     taskName: data.related_task.name,
+    duration: data.related_task.duration,
+    durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: data.related_task,
   }
 }
