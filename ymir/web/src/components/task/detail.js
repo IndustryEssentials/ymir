@@ -30,7 +30,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
 
   useEffect(() => {
     task.id && fetchDatasets()
-    task?.parameters?.model_id && fetchModel(task.parameters.model_id)
+    isModel(task.type) && task?.parameters?.model_id && fetchModel(task.parameters.model_id)
   }, [task.id])
 
   async function fetchDatasets() {
@@ -63,6 +63,10 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     width: "15%",
     paddingRight: "20px",
     justifyContent: "flex-end",
+  }
+
+  function isModel (type) {
+    return [TASKTYPES.TRAINING, TASKTYPES.MODELCOPY, TASKTYPES.MODELIMPORT].includes(type)
   }
 
   function renderDatasetName(id) {
@@ -147,12 +151,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       <Item label={t("task.detail.label.training.image")}>
         {task?.parameters?.docker_image}
       </Item>
-      <Item label={t("task.mining.form.model.label")}>
-        {task?.parameters?.model_id ? (
-          <Link to={`/home/model/detail/${task.parameters.model_id}`}>
-            {task?.model?.name || task.parameters.model_id}
-          </Link>
-        ) : null}
+      <Item label={t("task.train.form.traintype.label")}>
+        {t('task.train.form.traintypes.detect')}
       </Item>
       <Item label={t("task.detail.label.hyperparams")} span={2}>
         {renderConfig(task.config)}
