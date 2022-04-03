@@ -218,9 +218,10 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.force = True
         fake_args.force_rebuild = False
         fake_args.executor = "executor"
-        fake_args.executor_instance = 'executor-instance'
+        fake_args.executant_name = 'executor-instance'
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file
+        fake_args.asset_cache_dir = ''
 
         cmd = training.CmdTrain(fake_args)
         cmd_run_result = cmd.run()

@@ -73,7 +73,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        executor_instance = request.task_id
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_assset_cache")
+        executant_name = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,
             config_file=config_file,
@@ -83,8 +84,9 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             work_dir=subtask_workdir,
             in_dataset_id=request.task_id,
             his_task_id=previous_subtask_id,
+            asset_cache_dir=asset_cache_dir,
             training_image=training_image,
-            executor_instance=executor_instance,
+            executant_name=executant_name,
             tensorboard=tensorboard_dir,
             model_hash=request.model_hash,
         )
@@ -102,15 +104,17 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         in_dataset_id: str,
         his_task_id: str,
         training_image: str,
-        executor_instance: str,
+        asset_cache_dir: str,
+        executant_name: str,
         tensorboard: str,
         model_hash: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
             '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
-            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--config-file', config_file, '--executor', training_image,
-            '--executor-instance', executor_instance, '--tensorboard', tensorboard
+            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--task-config-file', config_file, '--executor',
+            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard,
+            '--asset-cache-dir', asset_cache_dir
         ]
         if model_hash:
             training_cmd.append('--model-hash')

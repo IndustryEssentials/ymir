@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import shutil
 import subprocess
 from subprocess import CalledProcessError
 import traceback
@@ -158,6 +157,7 @@ class CmdTrain(base.BaseCommand):
         logging.debug("command train: %s", self.args)
 
         return CmdTrain.run_with_args(work_dir=self.args.work_dir,
+                                      asset_cache_dir=self.args.asset_cache_dir,
                                       model_upload_location=self.args.model_path,
                                       pretrained_model_hash=self.args.model_hash,
                                       src_revs=self.args.src_revs,
@@ -166,37 +166,36 @@ class CmdTrain(base.BaseCommand):
                                       media_location=self.args.media_location,
                                       tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
-                                      executor_instance=self.args.executor_instance,
+                                      executant_name=self.args.executant_name,
                                       config_file=self.args.config_file)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
+                      asset_cache_dir: Optional[str],
                       model_upload_location: str,
                       pretrained_model_hash: str,
                       executor: str,
-                      executor_instance: str,
+                      executant_name: str,
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
                       tensorboard_dir: str,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
-
         if not model_upload_location:
             logging.error("empty --model-location, abort")
             return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         if not work_dir:
-            logging.error("empty work_dir, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not config_file:
-            logging.warning('empty --config-file, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not os.path.isfile(config_file):
-            logging.error(f"invalid --config-file {config_file}, not a file, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty work_dir')
+        if not config_file or not os.path.isfile(config_file):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --task-config-file: {config_file}")
+        if asset_cache_dir and not os.path.isabs(asset_cache_dir):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --cache {config_file}, not an absolute path for directory")
 
         return_code = checker.check(mir_root,
                                     [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
@@ -227,10 +226,11 @@ class CmdTrain(base.BaseCommand):
                                   error_message=f"dumplicate class names in class_names: {class_names}")
 
         task_id = dst_typ_rev_tid.tid
-        if not executor_instance:
-            executor_instance = f"default-training-{task_id}"
+        if not executant_name:
+            executant_name = f"default-training-{task_id}"
         if not tensorboard_dir:
             tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
+        asset_dir = asset_cache_dir or os.path.join(work_dir, 'in', 'assets')
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
@@ -238,10 +238,9 @@ class CmdTrain(base.BaseCommand):
                                                             dst_model_dir=os.path.join(work_dir, 'in', 'models'),
                                                             class_names=class_names)
 
-        # get train_ids, val_ids, test_ids
+        # get train_ids and val_ids
         train_ids = set()  # type: Set[str]
         val_ids = set()  # type: Set[str]
-        test_ids = set()  # type: Set[str]
         unused_ids = set()  # type: Set[str]
         mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=mir_root,
@@ -253,30 +252,31 @@ class CmdTrain(base.BaseCommand):
                 train_ids.add(asset_id)
             elif asset_attr.tvt_type == mirpb.TvtTypeValidation:
                 val_ids.add(asset_id)
-            elif asset_attr.tvt_type == mirpb.TvtTypeTest:
-                test_ids.add(asset_id)
             else:
                 unused_ids.add(asset_id)
         if not train_ids:
-            logging.error("no training set; abort")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no training set')
         if not val_ids:
-            logging.error("no validation set; abort")
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no validation set')
 
         if not unused_ids:
-            logging.info(f"training: {len(train_ids)}, validation: {len(val_ids)}, test: {len(test_ids)}")
+            logging.info(f"training: {len(train_ids)}, validation: {len(val_ids)}")
         else:
-            logging.warning(f"training: {len(train_ids)}, validation: {len(val_ids)}, test: {len(test_ids)}, "
-                            f"unused: {len(unused_ids)}")
+            logging.warning(f"training: {len(train_ids)}, validation: {len(val_ids)}" f"unused: {len(unused_ids)}")
 
         # export
         logging.info("exporting assets")
+
         os.makedirs(work_dir, exist_ok=True)
+
         work_dir_in = os.path.join(work_dir, "in")
+        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
+        os.makedirs(work_dir_annotations, exist_ok=True)
+
         work_dir_out = os.path.join(work_dir, "out")
-        os.makedirs(work_dir_in, exist_ok=True)
         os.makedirs(work_dir_out, exist_ok=True)
+
+        os.makedirs(asset_dir, exist_ok=True)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
@@ -293,59 +293,36 @@ class CmdTrain(base.BaseCommand):
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
         # export train set
-        work_dir_in_train = os.path.join(work_dir_in, 'train')
-        if os.path.isdir(work_dir_in_train):
-            shutil.rmtree(work_dir_in_train)
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=train_ids,
-                             asset_dir=work_dir_in_train,
-                             annotation_dir=work_dir_in_train,
+                             asset_dir=asset_dir,
+                             annotation_dir=work_dir_annotations,
                              need_ext=True,
-                             need_id_sub_folder=False,
+                             need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
-                             index_file_path=os.path.join(work_dir_in_train, 'index.tsv'),
-                             index_prefix='/in/train')
+                             index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
+                             index_assets_prefix='/in/assets',
+                             index_annotations_prefix='/in/annotations')
 
         # export validation set
-        work_dir_in_val = os.path.join(work_dir_in, 'val')
-        if os.path.isdir(work_dir_in_val):
-            shutil.rmtree(work_dir_in_val)
         data_exporter.export(mir_root=mir_root,
                              assets_location=media_location,
                              class_type_ids=type_id_idx_mapping,
                              asset_ids=val_ids,
-                             asset_dir=work_dir_in_val,
-                             annotation_dir=work_dir_in_val,
+                             asset_dir=asset_dir,
+                             annotation_dir=work_dir_annotations,
                              need_ext=True,
-                             need_id_sub_folder=False,
+                             need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
-                             index_file_path=os.path.join(work_dir_in_val, 'index.tsv'),
-                             index_prefix='/in/val')
-
-        # export test set (if we have)
-        if test_ids:
-            work_dir_in_test = os.path.join(work_dir_in, 'test')
-            if os.path.isdir(work_dir_in_test):
-                shutil.rmtree(work_dir_in_test)
-            data_exporter.export(mir_root=mir_root,
-                                 assets_location=media_location,
-                                 class_type_ids=type_id_idx_mapping,
-                                 asset_ids=test_ids,
-                                 asset_dir=work_dir_in_test,
-                                 annotation_dir=work_dir_in_test,
-                                 need_ext=True,
-                                 need_id_sub_folder=False,
-                                 base_branch=src_typ_rev_tid.rev,
-                                 base_task_id=src_typ_rev_tid.tid,
-                                 format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
-                                 index_file_path=os.path.join(work_dir_in_test, 'index.tsv'),
-                                 index_prefix='/in/test')
+                             index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
+                             index_assets_prefix='/in/assets',
+                             index_annotations_prefix='/in/annotations')
 
         logging.info("starting train docker container")
 
@@ -361,17 +338,17 @@ class CmdTrain(base.BaseCommand):
 
         # start train docker and wait
         path_binds = []
-        path_binds.append(f"-v{work_dir_in}:/in")
+        path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
+        path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
-        shm_size = _get_shm_size(executor_config=executor_config)
 
-        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={shm_size}"]
+        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
         cmd.extend(path_binds)
         if available_gpu_id:
             cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
-        cmd.extend(['--name', f"{executor_instance}"])
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+        cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
         cmd.append(executor)
 
         task_code = MirCode.RC_OK
@@ -415,10 +392,7 @@ class CmdTrain(base.BaseCommand):
                                            dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
-            raise MirRuntimeError(error_code=task_code,
-                                  error_message=task_error_msg,
-                                  needs_new_commit=True,
-                                  task=task)
+            raise MirRuntimeError(error_code=task_code, error_message=task_error_msg, needs_new_commit=True, task=task)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
@@ -452,14 +426,19 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=False,
                                   help='model hash to be used')
     train_arg_parser.add_argument("-w", required=True, dest="work_dir", type=str, help="work place for training")
+    train_arg_parser.add_argument('--asset-cache-dir',
+                                  required=False,
+                                  dest='asset_cache_dir',
+                                  type=str,
+                                  help='asset cache directory')
     train_arg_parser.add_argument("--executor",
                                   required=True,
                                   dest="executor",
                                   type=str,
                                   help="docker image name for training")
-    train_arg_parser.add_argument('--executor-instance',
+    train_arg_parser.add_argument('--executant-name',
                                   required=False,
-                                  dest='executor_instance',
+                                  dest='executant_name',
                                   type=str,
                                   help='docker container name for training')
     train_arg_parser.add_argument("--src-revs",
@@ -472,12 +451,12 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   required=True,
                                   help="rev@tid: destination branch name and task id")
-    train_arg_parser.add_argument("--config-file",
+    train_arg_parser.add_argument("--task-config-file",
                                   dest="config_file",
                                   type=str,
                                   required=True,
                                   help="path to executor config file")
-    train_arg_parser.add_argument("--tensorboard",
+    train_arg_parser.add_argument("--tensorboard-dir",
                                   dest="tensorboard_dir",
                                   type=str,
                                   required=False,

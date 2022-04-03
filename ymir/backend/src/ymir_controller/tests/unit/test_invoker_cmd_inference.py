@@ -119,7 +119,7 @@ class TestInvokerCMDInference(unittest.TestCase):
 
         cmd = (f"mir infer -w {working_dir} --model-location {self._storage_root} "
                f"--index-file {index_file} --model-hash {model_hash} "
-               f"--config-file {config_file} --executor {inference_image}")
+               f"--task-config-file {config_file} --executor {inference_image}")
 
         mock_run.assert_has_calls(calls=[
             mock.call(cmd.split(' '), capture_output=True, text=True),

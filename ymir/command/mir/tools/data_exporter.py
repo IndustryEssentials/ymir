@@ -54,6 +54,11 @@ def format_file_ext(anno_format: ExportFormat) -> str:
     return _format_ext_map[anno_format]
 
 
+def _rel_annotation_path_for_asset(rel_asset_path: str, format_type: ExportFormat) -> str:
+    rel_asset_path_without_ext = os.path.splitext(rel_asset_path)[0]
+    return f"{rel_asset_path_without_ext}{format_file_ext(format_type)}"
+
+
 def format_file_output_func(anno_format: ExportFormat) -> Callable:
     _format_func_map = {
         ExportFormat.EXPORT_FORMAT_ARK: _single_image_annotations_to_ark,
@@ -75,8 +80,9 @@ def export(mir_root: str,
            base_branch: str,
            base_task_id: str,
            format_type: ExportFormat,
-           index_file_path: str = None,
-           index_prefix: str = None) -> bool:
+           index_file_path: str = '',
+           index_assets_prefix: str = '',
+           index_annotations_prefix: str = '') -> bool:
     """
     export assets and annotations
 
@@ -92,8 +98,9 @@ def export(mir_root: str,
         need_id_sub_folder (bool): if True, use last 2 chars of asset id as a sub folder name
         base_branch (str): data branch
         format_type (ExportFormat): format type, NONE means exports no annotations
-        index_file_path (str | None): path to index file, if None, generates no index file
-        index_prefix (str | None): prefix added to each line in index path
+        index_file_path (str): path to index file, if None, generates no index file
+        index_assets_prefix (str): prefix path added to each asset index path
+        index_annotations_prefix (str): prefix path added to each annotation index path
 
     Raises:
         MirRuntimeError
@@ -103,13 +110,11 @@ def export(mir_root: str,
     """
     if not mir_root:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message="invalid mir_repo",
-                              needs_new_commit=False)  # TODO: needs new commit
+                              error_message="invalid mir_repo")
 
     if not check_support_format(format_type):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"invalid --format: {format_type}",
-                              needs_new_commit=False)  # TODO: needs new commit
+                              error_message=f"invalid --format: {format_type}")
 
     # export assets
     os.makedirs(asset_dir, exist_ok=True)
@@ -121,57 +126,65 @@ def export(mir_root: str,
                                                  create_prefix=need_id_sub_folder,
                                                  need_suffix=need_ext)
 
+    # export annotations
+    if format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+        [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=base_branch,
+            mir_task_id=base_task_id,
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
+
+        # add all annotations to assets_to_det_annotations_dict
+        # key: asset_id as str, value: annotations as List[mirpb.Annotation]
+        assets_to_det_annotations_dict = _annotations_by_assets(
+            mir_annotations=mir_annotations,
+            class_type_ids=set(class_type_ids.keys()) if class_type_ids else None,
+            base_task_id=mir_annotations.head_task_id)
+
+        _export_detect_annotations_to_path(asset_ids=list(asset_ids),
+                                           format_type=format_type,
+                                           mir_metadatas=mir_metadatas,
+                                           annotations_dict=assets_to_det_annotations_dict,
+                                           class_type_mapping=class_type_ids,
+                                           dest_path=annotation_dir,
+                                           mir_root=mir_root,
+                                           assert_id_filename_map=asset_result)
+
+    # generate index file
     if index_file_path:
         _generate_asset_index_file(asset_rel_paths=asset_result.values(),
-                                   prefix_path=index_prefix,
+                                   index_assets_prefix=index_assets_prefix,
+                                   index_annotations_prefix=index_annotations_prefix,
                                    index_file_path=index_file_path,
-                                   overwrite=True)
-
-    if format_type == ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
-        return True
-
-    # export annotations
-    [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
-        mir_root=mir_root,
-        mir_branch=base_branch,
-        mir_task_id=base_task_id,
-        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
-
-    # add all annotations to assets_to_det_annotations_dict
-    # key: asset_id as str, value: annotations as List[mirpb.Annotation]
-    assets_to_det_annotations_dict = _annotations_by_assets(
-        mir_annotations=mir_annotations,
-        class_type_ids=set(class_type_ids.keys()) if class_type_ids else None,
-        base_task_id=mir_annotations.head_task_id)
-
-    _export_detect_annotations_to_path(asset_ids=list(asset_ids),
-                                       format_type=format_type,
-                                       mir_metadatas=mir_metadatas,
-                                       annotations_dict=assets_to_det_annotations_dict,
-                                       class_type_mapping=class_type_ids,
-                                       dest_path=annotation_dir,
-                                       mir_root=mir_root,
-                                       assert_id_filename_map=asset_result)
+                                   format_type=format_type)
 
     return True
 
 
 def _generate_asset_index_file(asset_rel_paths: Collection,
-                               prefix_path: Optional[str],
+                               index_assets_prefix: str,
+                               index_annotations_prefix: str,
                                index_file_path: str,
+                               format_type: ExportFormat,
                                overwrite: bool = True,
                                image_exts: tuple = ('.jpg', '.jpeg', '.png')) -> None:
     """
-    generate index file for export result. in index file, each line is a asset path (in or outside the container)
+    generate index file for export result
+
+    if format_type == NO_ANNOTATION, index file contains only asset paths
+
+    if not, index file contains both asset and annotation paths, separated by `\t`
 
     Args:
         asset_rel_paths (Collection): the relative asset paths, element type: str
-        prefix_path (Optional[str]): prefix path added in front of each element in asset_rel_paths
+        index_assets_prefix (str): prefix path added in front of each element in asset_rel_paths
+        index_annotations_prefix (str): prefix path added in front of each annotations
         index_file_path (str): index file save path
+        format_type (ExporterFormat): format type
         override (bool): if True, override if file already exists, if False, raise Exception when already exists
 
     Raise:
-        FileExistsError: if index file already exists, and override set to False
+        MirRuntimeError: if index file already exists, and override set to False
     """
     if not asset_rel_paths or not index_file_path:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -188,7 +201,14 @@ def _generate_asset_index_file(asset_rel_paths: Collection,
             if os.path.splitext(item)[1] not in image_exts:
                 logging.warning(f"unsupported image ext in path: {item}")
                 continue
-            f.write((os.path.join(prefix_path, item) if prefix_path else item) + '\n')
+
+            asset_path = os.path.join(index_assets_prefix, item)
+            if format_type == ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+                annotation_path = ''
+            else:
+                annotation_rel_path = _rel_annotation_path_for_asset(rel_asset_path=item, format_type=format_type)
+                annotation_path = os.path.join(index_annotations_prefix, annotation_rel_path)
+            f.write(f"{asset_path}\t{annotation_path}\n")
 
 
 # private: export annotations: general
@@ -253,13 +273,18 @@ def _export_detect_annotations_to_path(asset_ids: List[str], format_type: Export
             empty_counter += 1
 
         format_func = format_file_output_func(anno_format=format_type)
+        asset_file_name = assert_id_filename_map[asset_id]
         anno_str = format_func(asset_id=asset_id,
                                attrs=attrs,
                                annotations=annotations,
                                class_type_mapping=class_type_mapping,
                                cls_id_mgr=cls_id_mgr,
-                               asset_filename=assert_id_filename_map[asset_id])
-        with open(os.path.join(dest_path, f"{asset_id}{format_file_ext(format_type)}"), 'w') as f:
+                               asset_filename=asset_file_name)
+
+        annotation_file_path = os.path.join(
+            dest_path, _rel_annotation_path_for_asset(rel_asset_path=asset_file_name, format_type=format_type))
+        os.makedirs(os.path.dirname(annotation_file_path), exist_ok=True)
+        with open(annotation_file_path, 'w') as f:
             f.write(anno_str)
 
     logging.info(f"missing annotations: {missing_counter}, "
