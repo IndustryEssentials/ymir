@@ -56,7 +56,7 @@ class TestInvokerCMDTerminate(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        executor_instance = "executor_instance"
+        executant_name = "executant_name"
         make_invoker_cmd_call(
             invoker=RequestTypeToInvoker[backend_pb2.CMD_TERMINATE],
             sandbox_root=self._sandbox_root,
@@ -64,11 +64,11 @@ class TestInvokerCMDTerminate(unittest.TestCase):
             user_id=self._user_name,
             repo_id=self._mir_repo_name,
             task_id=self._task_id,
-            executor_instance=executor_instance,
+            executant_name=executant_name,
             terminated_task_type=backend_pb2.TaskType.TaskTypeTraining,
         )
 
-        cmd = f"docker rm -f {executor_instance}"
+        cmd = f"docker rm -f {executant_name}"
         mock_run.assert_has_calls(calls=[
             mock.call(cmd.split(' '), capture_output=True, text=True),
         ])
