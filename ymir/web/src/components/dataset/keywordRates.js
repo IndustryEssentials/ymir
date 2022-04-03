@@ -10,7 +10,7 @@ function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ id, dataset = {}, getKeywordRates }) {
+function KeywordRates({ id, dataset = {}, progressWidth = 0.8, getKeywordRates }) {
   const [data, setData] = useState(null)
   const [list, setList] = useState([])
 
@@ -42,13 +42,13 @@ function KeywordRates({ id, dataset = {}, getKeywordRates }) {
     const neg = keywords.length ? projectNagetiveCount : nagetiveCount
     return getKeywordList(keywordsCount, filter, neg).map(item => ({
       ...item,
-      percent: percent(item.count * 0.8 / assetCount),
+      percent: percent(item.count * progressWidth / assetCount),
       total: assetCount,
       color: randomColor(),
     }))
   }
 
-  function getKeywordList(keywords, filterKeywords, negative) {
+  function getKeywordList(keywords = {}, filterKeywords, negative) {
     const klist = filterKeywords.map(keyword => {
       const count = keywords[keyword] || 0
       return {

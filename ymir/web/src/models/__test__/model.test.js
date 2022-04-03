@@ -109,16 +109,17 @@ describe("models: model", () => {
       type: "batchModels",
       payload: { ids: '1,3' },
     }
-    const expected = products(2)
+    const recieved = products(2).map(id => md(id))
+    const expected = recieved.map(item => transferModel(item))
 
     const generator = saga(creator, { put, call })
     const start = generator.next()
     const end = generator.next({
       code: 0,
-      result: expected,
+      result: recieved,
     })
 
-    expect(end.value.join('')).toBe(expected.join(''))
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getModel", () => {
