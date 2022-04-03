@@ -87,7 +87,8 @@ export default {
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
-        return result
+        const models = result.map(model => transferModel(model))
+        return models
       }
     },
     *getModel({ payload }, { call, put }) {
