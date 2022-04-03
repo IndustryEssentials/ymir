@@ -547,7 +547,7 @@ docker pull industryessentials/executor-det-yolov4-mining:release-0.1.2
 mir train -w /tmp/ymir/training/train-0 \
           --media-location ~/ymir-assets \ # import时的资源存储路径
           --model-location ~/ymir-models \ # 训练完成后的模型存储路径
-          --config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
+          --task-config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
           --src-revs tr-va@filtered \
           --dst-rev training-0@trained \
           --executor industryessentials/executor-det-yolov4-training:release-0.1.2 # 训练镜像
@@ -569,7 +569,7 @@ mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
            --media-location ~/ymir-assets \
            --model-hash <hash> \ # 上一步训练出来的模型id
            --cache /tmp/ymir/cache \ # 资源缓存
-           --config-file ~/mining-config.yaml \ # 挖掘参数配置文件，到挖掘镜像中获取
+           --task-config-file ~/mining-config.yaml \ # 挖掘参数配置文件，到挖掘镜像中获取
            --executor industryessentials/executor-det-yolov4-mining:release-0.1.2
 ```
 
@@ -613,7 +613,7 @@ $ mir merge --src-revs tr-va@filtered;tr:labeled-0@import \ # 待合并分支
 mir train -w /tmp/ymir/training/train-1 \ # 每个不同的训练和挖掘任务都用不同的工作目录
           --media-location ~/ymir-assets \
           --model-location ~/ymir-models \
-          --config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
+          --task-config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
           --src-revs tr-va-1@merged \ # 使用合成以后的分支
           --dst-rev training-1@trained \
           --executor industryessentials/executor-det-yolov4-training:release-0.1.2

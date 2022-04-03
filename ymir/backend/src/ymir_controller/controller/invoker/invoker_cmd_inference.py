@@ -103,6 +103,6 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
                       executor: str) -> backend_pb2.GeneralResp:
         infer_cmd = [
             utils.mir_executable(), 'infer', '-w', work_dir, '--model-location', model_location, '--index-file',
-            index_file, '--model-hash', model_hash, '--config-file', config_file, "--executor", executor
+            index_file, '--model-hash', model_hash, '--task-config-file', config_file, "--executor", executor
         ]
         return utils.run_command(infer_cmd)

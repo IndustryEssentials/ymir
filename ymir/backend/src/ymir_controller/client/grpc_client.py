@@ -208,7 +208,7 @@ def call_create_task(client: ControllerClient, *, args: Any) -> Optional[str]:
                                         model_hash=args["model_hash"],
                                         req_type=backend_pb2.TASK_CREATE,
                                         req_create_task=task_req,
-                                        executor_instance=args['tid'],
+                                        executant_name=args['tid'],
                                         merge_strategy=1,
                                         docker_image_config=_get_executor_config(args),
                                         singleton_op=args['executor_name'],
