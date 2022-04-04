@@ -1,5 +1,6 @@
 from dataclasses import asdict
 import enum
+import json
 from typing import Any, Dict, List, Optional, Union, Tuple
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -327,7 +328,7 @@ class TaskResult:
                     self.db,
                     task=task_in_db,
                     parameters=self.result_info.task_parameters,
-                    config=self.result_info.executor_config,
+                    config=json.dumps(self.result_info.executor_config),
                 )
             crud_func.finish(
                 self.db,
