@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Card, Space } from "antd"
-import { useLocation, useParams, connect } from "umi"
+import { Card, Col, Row, Space } from "antd"
+import { useLocation, useParams, connect, Link } from "umi"
 
 import t from "@/utils/t"
+import { percent } from '@/utils/number'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Iteration from './components/iteration'
 import Datasets from '@/components/dataset/list'
@@ -51,13 +52,24 @@ function ProjectDetail(func) {
     <div className={s.projectDetail}>
       <Breadcrumbs />
       <div className={s.header}>
-        <Space className={s.detailPanel}>
-          <span className={s.name}>{project.name}</span>
-          <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.currentStage, target: project.targetIteration })}</span>
-          <span>{t('project.train_classes')}: {project?.keywords?.join(',')}</span>
-          <span>{t('project.target.map')}: {project.targetMap}</span>
-          <span>{project.description}</span>
-        </Space>
+        <Row>
+          <Col flex={1}>
+            <Space className={s.detailPanel}>
+              <span className={s.name}>{project.name}</span>
+              <span>{t('project.train_classes')}: {project?.keywords?.join(',')}</span>
+              <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.round, target: project.targetIteration })}</span>
+              {project.targetMap ? <span>{t('project.target.map')}: {project.targetMap}%</span> : null}
+              {project.targetDataset ? <span>{t('project.target.dataset')}: {project.targetDataset}</span> : null}
+              {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
+            </Space>
+          </Col>
+          <Col>
+            <Space>
+              <Link to={`/home/project/add/${id}`}>{t('breadcrumbs.project.add')}</Link>
+              <Link to={`/home/project/iterations/${id}`}>{t('breadcrumbs.project.iterations')}</Link>
+            </Space>
+          </Col>
+        </Row>
         {project.round > 0 ?
           <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
       </div>

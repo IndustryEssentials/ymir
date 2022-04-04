@@ -75,7 +75,7 @@ export default {
     },
     *queryAllModels({ payload }, { select, call, put }) {
       const pid = payload
-      const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VALID, limit: 10000 }})
+      const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
       if (dss) {
         yield put({
           type: "UPDATE_ALL_MODELS",
@@ -87,28 +87,23 @@ export default {
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
-        return result
+        const models = result.map(model => transferModel(model))
+        return models
       }
     },
     *getModel({ payload }, { call, put }) {
       const { code, result } = yield call(getModel, payload)
       if (code === 0) {
-        let model = { ...result }
-        const pa = result.parameters || {}
-        const trainSets = pa?.include_train_datasets || []
-        const testSets = pa?.include_validation_datasets || []
-        const ids = [
-          ...trainSets,
-          ...testSets,
-        ]
-        if (ids.length) {
-          const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: ids })
-          if (datasets && datasets.length) {
-            model['trainSets'] = trainSets.map(sid => datasets.find(ds => ds.id === sid))
-            model['testSets'] = testSets.map(sid => datasets.find(ds => ds.id === sid))
+        let model = transferModel(result)
+        if (model.projectId) {
+          const presult = yield put.resolve({
+            type: 'project/getProject',
+            payload: { id: model.projectId },
+          })
+          if (presult) {
+            model.project = presult
           }
         }
-        model.task = model.related_task
         yield put({
           type: "UPDATE_MODEL",
           payload: model,
@@ -147,6 +142,29 @@ export default {
       if (code === 0) {
         return result
       }
+    },
+    *updateModelsStates({ payload }, { put }) {
+      const versions = yield select(state => state.model.versions)
+      const updateList = payload || {}
+      Object.keys(versions).forEach(gid => {
+        const models = versions[gid]
+        const needUpdate = false
+        const updatedModels = models.map(model => {
+          const updateItem = updateList[model.hash]
+          if (updateItem) {
+            needUpdate = true
+            model.state = updateItem.state
+            model.progress = updateItem.percent
+          }
+          return { ...model }
+        })
+        if (needUpdate) {
+          put({
+            type: 'UPDATE_VERSIONS',
+            payload: { id: gid, versions: updatedModels },
+          })
+        }
+      })
     },
     *getModelsByRef({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'hms' })
@@ -213,7 +231,7 @@ export default {
         payload: initQuery,
       })
     },
-    *clearCache({}, { put }) {
+    *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
     },
   },

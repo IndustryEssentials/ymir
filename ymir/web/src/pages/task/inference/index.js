@@ -21,6 +21,7 @@ import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
+import DatasetSelect from "@/components/form/datasetSelect"
 
 const { Option } = Select
 
@@ -52,7 +53,7 @@ function Inference({ datasetCache, datasets, ...props }) {
   }, [did])
 
   useEffect(() => {
-    datasetCache[did] && setDataset(cache)
+    datasetCache[did] && setDataset(datasetCache[did])
   }, [datasetCache])
 
   useEffect(() => {
@@ -182,18 +183,7 @@ function Inference({ datasetCache, datasets, ...props }) {
                 { required: true, message: t('task.inference.form.dataset.required') },
               ]}
             >
-              <Select
-                placeholder={t('task.inference.form.dataset.placeholder')}
-                filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={setsChange}
-                disabled={did}
-                showArrow
-              >
-                {datasets.map(item =>
-                  <Option value={item.id} key={item.id}>
-                    {item.name}(assets: {item.assetCount})
-                  </Option>)}
-              </Select>
+              <DatasetSelect pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} onChange={setsChange} disabled={did} showArrow />
             </Form.Item>
             </Tip>
             </ConfigProvider>

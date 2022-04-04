@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Modal, Select, Space, Upload } from 'antd'
-import { useParams, connect, useHistory } from 'umi'
+import { useParams, connect, useHistory, useLocation } from 'umi'
 
 import t from '@/utils/t'
 import { generateName } from '@/utils/string'
@@ -26,16 +26,18 @@ const Add = ({ importModel }) => {
   ]
 
   const history = useHistory()
-  const { pid } = useParams()
+  const { query } = useLocation()
+  const { mid } = query
+  const { id: pid } = useParams()
   const [form] = useForm()
   const [url, setUrl] = useState('')
-  const [currentType, setCurrentType] = useState(TYPES.LOCAL)
+  const [currentType, setCurrentType] = useState(mid ? TYPES.COPY : TYPES.LOCAL)
   const initialValues = {
     name: generateName('import_model'),
+    modelId: Number(mid) ? [Number(pid), Number(mid)] : undefined,
   }
 
   async function submit(values) {
-    console.log('values:', values)
     const params = {
       ...values,
       projectId: pid,
@@ -46,7 +48,6 @@ const Add = ({ importModel }) => {
     if (values.modelId) {
       params.modelId = values.modelId[values.modelId.length - 1]
     }
-    console.log('params:', params)
     const result = await importModel(params)
     if (result) {
       message.success(t('model.add.success'))
@@ -91,7 +92,7 @@ const Add = ({ importModel }) => {
               <>
                 <Tip hidden={true}>
                   <Form.Item label={t('model.add.form.project')} name='modelId'>
-                    <ProjectSelect onChange={(value) => console.log('model change: ', value)} />
+                    <ProjectSelect pid={pid} />
                   </Form.Item>
                 </Tip>
               </>

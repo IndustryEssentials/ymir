@@ -1,12 +1,53 @@
 import model from "../model"
 import { put, putResolve, select, call } from "redux-saga/effects"
 import { errorCode } from './func'
+import { transferModelGroup, transferModel, states } from '@/constants/model'
 
 put.resolve = putResolve
+
+jest.mock('umi', () => {
+  return {
+    getLocale() {
+      return 'en-US'
+    }
+  }
+})
 
 describe("models: model", () => {
   const product = (id) => ({ id })
   const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
+  
+  const createTime = "2022-03-10T03:39:09"
+  const task = {
+    "name": "t00000020000013277a01646883549",
+    "type": 105,
+    "project_id": 1,
+    "is_deleted": false,
+    "create_datetime": createTime,
+    "update_datetime": createTime,
+    "id": 1,
+    "hash": "t00000020000013277a01646883549",
+    "state": 3,
+    "error_code": null,
+    "duration": null,
+    "percent": 1,
+    "parameters": {},
+    "config": {},
+    "user_id": 2,
+    "last_message_datetime": "2022-03-10T03:39:09.033206",
+    "is_terminated": false,
+    "result_type": null
+  }
+  const md = id => ({
+    id,
+    hash: 'testhash',
+    map: 0.88,
+    state: 2,
+    version_num: 2,
+    "create_datetime": createTime,
+    "update_datetime": createTime,
+    related_task: task,
+  })
 
   it("reducers: UPDATE_MODELS, UPDATE_MODEL", () => {
     const state = {
@@ -68,16 +109,17 @@ describe("models: model", () => {
       type: "batchModels",
       payload: { ids: '1,3' },
     }
-    const expected = products(2)
+    const recieved = products(2).map(id => md(id))
+    const expected = recieved.map(item => transferModel(item))
 
     const generator = saga(creator, { put, call })
     const start = generator.next()
     const end = generator.next({
       code: 0,
-      result: expected,
+      result: recieved,
     })
 
-    expect(end.value.join('')).toBe(expected.join(''))
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getModel", () => {
@@ -90,27 +132,17 @@ describe("models: model", () => {
       payload: { id: modelId },
     }
 
-    const expected = {
-      id: modelId,
-      parameters: {
-        include_train_datasets: [datasetId],
-        include_validation_datasets: [vsId],
-      }
-    }
-    const datasets = [product(datasetId), product(vsId), product(0), product(1)]
+    const recieved = md(modelId)
+    const expected = transferModel(recieved)
 
     const generator = saga(creator, { put, call })
     generator.next()
     generator.next({
       code: 0,
-      result: expected,
+      result: recieved,
     })
-    generator.next(datasets)
     const end = generator.next()
-    const { id, parameters, trainSets } = end.value
-    expect(id).toBe(modelId)
-    expect(parameters.include_train_datasets[0]).toBe(datasetId)
-    expect(trainSets[0].id).toBe(datasetId)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: delModel", () => {

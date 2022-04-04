@@ -212,7 +212,7 @@ class ControllerRequest:
 
     def prepare_kill(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_TERMINATE
-        request.executor_instance = args["target_container"]
+        request.executant_name = args["target_container"]
         request.terminated_task_type = args["task_type"]
         return request
 

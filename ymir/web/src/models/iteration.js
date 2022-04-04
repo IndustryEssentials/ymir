@@ -22,16 +22,39 @@ export default {
   },
   effects: {
     *getIterations({ payload }, { call, put }) {
-      const id = payload
+      const { id, more } = payload
       const { code, result } = yield call(getIterations, id)
       if (code === 0) {
-        const iterations = result.map((iteration) =>
-          transferIteration(iteration)
-        )
+        let iterations = result.map((iteration) => transferIteration(iteration))
+        console.log('iterations:', iterations)
+        if (more) {
+          const datasetIds = [...new Set(iterations.map(i => [i.miningSet, i.miningResult, i.labelSet, i.trainUpdateSet]).flat())].filter(id => id)
+          const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
+          const datasets = yield put.resolve({
+            type: 'dataset/batchDatasets',
+            payload: datasetIds,
+          })
+          const models = yield put.resolve({
+            type: 'model/batchModels',
+            payload: modelIds,
+          })
+          iterations = iterations.map(i => {
+            const ds = id => datasets.find(d => d.id === id)
+            return {
+              ...i,
+              trainUpdateDataset: ds(i.trainUpdateSet),
+              miningDataset: ds(i.miningSet),
+              miningResultDataset: ds(i.miningResult),
+              labelDataset: ds(i.labelSet),
+              trainingModel: models.find(m => m.id === i.model),
+            }
+          })
+        }
         yield put({
           type: "UPDATE_ITERATIONS",
           payload: { id, iterations },
         })
+        console.log('return iterations:', iterations)
         return iterations
       }
     },
@@ -40,7 +63,6 @@ export default {
       const { code, result } = yield call(getIteration, pid, id)
       if (code === 0) {
         const iteration = transferIteration(result)
-        console.log("get from remote iteration: ", iteration)
         yield put({
           type: "UPDATE_ITERATION",
           payload: iteration,
@@ -71,10 +93,7 @@ export default {
       })
       if (result) {
         return {
-          id: result.id,
-          name: result.name,
-          state: isModel ? result.result_state : result.state,
-          progress: isModel ? result.percent : result.progress,
+          ...result,
         }
       }
     }

@@ -20,7 +20,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         inference_config = yaml.safe_load(req_inference_config)
         inference_config_file = os.path.join(work_dir, "inference_config.yaml")
         with open(inference_config_file, "w") as f:
-            yaml.dump(inference_config, f)
+            yaml.dump({'executor_config': inference_config}, f)
 
         return inference_config_file
 
@@ -103,6 +103,6 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
                       executor: str) -> backend_pb2.GeneralResp:
         infer_cmd = [
             utils.mir_executable(), 'infer', '-w', work_dir, '--model-location', model_location, '--index-file',
-            index_file, '--model-hash', model_hash, '--config-file', config_file, "--executor", executor
+            index_file, '--model-hash', model_hash, '--task-config-file', config_file, "--executor", executor
         ]
         return utils.run_command(infer_cmd)

@@ -8,6 +8,8 @@ import os
 from typing import Any, Dict, List, Optional
 
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools.code import MirCode
+from mir.tools.errors import MirError
 
 
 class PhaseStateEnum(IntEnum):
@@ -17,16 +19,14 @@ class PhaseStateEnum(IntEnum):
     ERROR = mirpb.TaskStateError
 
 
-# TODO: make PhaseLoggerError a sub class of MirError
-class PhaseLoggerError(BaseException):
-    def __init__(self, msg: str) -> None:
-        super().__init__()
-        self.msg = msg
+class PhaseLoggerError(MirError):
+    def __init__(self, error_message: str) -> None:
+        super().__init__(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=error_message)
 
 
 def _raise_if_false(condition: Any, msg: str) -> None:
     if not condition:
-        raise PhaseLoggerError(msg=msg)
+        raise PhaseLoggerError(error_message=msg)
 
 
 class PhaseLogger:
