@@ -165,7 +165,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState,
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
     return_msg = response_obj.get('message', '')
-    app_task_id = int(response_obj['result']['id'])
+    app_task_id = int(response_obj.get('result', {}).get('id', 0))
 
     return (app_task_id, return_msg, _conclusion_from_return_code(return_code))
 
