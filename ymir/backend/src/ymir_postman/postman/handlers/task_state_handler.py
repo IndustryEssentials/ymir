@@ -4,7 +4,7 @@ import json
 import logging
 import requests
 import time
-from typing import Any, List, Set, Dict, Tuple
+from typing import Any, Dict, List, Set, Optional, Tuple
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
@@ -130,7 +130,7 @@ def _update_db(tid_to_tasks: entities.TaskStateDict) -> _UpdateDbResult:
 
 
 def _update_db_single_task(tid: str, task: entities.TaskState,
-                           custom_headers: dict) -> Tuple[int, str, _UpdateDbConclusion]:
+                           custom_headers: dict) -> Tuple[Optional[int], str, _UpdateDbConclusion]:
     """
     update db for single task
 
@@ -165,10 +165,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState,
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
     return_msg = response_obj.get('message', '')
-    if return_code == constants.RC_OK:
-        app_task_id = int(response_obj['result']['id'])
-    else:
-        app_task_id = None
+    app_task_id = int(response_obj['result']['id']) if return_code == constants.RC_OK else None
 
     return (app_task_id, return_msg, _conclusion_from_return_code(return_code))
 
