@@ -168,7 +168,7 @@ def _update_db_single_task(tid: str, task: entities.TaskState,
     if return_code == constants.RC_OK:
         app_task_id = int(response_obj['result']['id'])
     else:
-        app_task_id = constants.DEFAULT_APP_TASK_ID
+        app_task_id = None
 
     return (app_task_id, return_msg, _conclusion_from_return_code(return_code))
 

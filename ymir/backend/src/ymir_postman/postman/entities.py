@@ -11,7 +11,7 @@ class TaskStateExtra(BaseModel):
 
 class TaskStatePercent(BaseModel):
     task_id: str
-    app_task_id: int = constants.DEFAULT_APP_TASK_ID
+    app_task_id: int = 0
     timestamp: float = Field(gt=0)
     percent: float = Field(ge=0, le=1)
     state: int
