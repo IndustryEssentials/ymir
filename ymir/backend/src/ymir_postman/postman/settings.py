@@ -22,6 +22,8 @@ class Constants(BaseSettings):
     EVENT_TOPIC_RAW = 'raw'
     EVENT_TOPIC_INNER = '_inner_'
 
+    DEFAULT_APP_TASK_ID = -1
+
     RC_OK = 0
     RC_FAILED_TO_UPDATE_TASK_STATUS = 110706
 
