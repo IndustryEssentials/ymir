@@ -533,7 +533,9 @@ class Task(google.protobuf.message.Message):
     """/ auto generated unique id"""
 
     timestamp: builtins.int = ...
-    """/ execution time of this task"""
+    """/ execution time of this task
+    RFC 3339 date strings
+    """
 
     @property
     def model(self) -> global___ModelMeta:

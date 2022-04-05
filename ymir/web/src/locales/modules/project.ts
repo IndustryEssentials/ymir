@@ -69,6 +69,15 @@ const project = {
   'project.mining.strategy.custom': { en: 'Customer Mining', cn: '自定义挖掘（在迭代中不对挖掘数据进行额外处理）', },
   'project.detail.info.iteration': { en: 'iterations: {current}/{target}', cn: '您当前处于项目迭代的{current}/{target}次迭代', },
   'project.iteration.initmodel': { en: 'Initial Model Setting', cn: '初始模型设置', },
+  'iteration.round.label': { en: 'Round {round}', cn: '第 {round} 次', },
+  'iteration.column.round': { en: 'Iteration Round', cn: '迭代轮次', },
+  'iteration.column.premining': { en: 'Mining Data', cn: '待挖掘数据', },
+  'iteration.column.mining': { en: 'Mining Result', cn: '挖掘结果', },
+  'iteration.column.label': { en: 'Labelling Result', cn: '标注结果', },
+  'iteration.column.merging': { en: 'Training Dataset', cn: '训练数据', },
+  'iteration.column.training': { en: 'Model', cn: '训练结果|mAP', },
+  'project.detail.desc': { en: 'Description', cn: '描述', },
+  'project.target.dataset': { en: 'Training Dataset\'s Assets', cn: '目标训练集大小', },
 }
 
 export default project

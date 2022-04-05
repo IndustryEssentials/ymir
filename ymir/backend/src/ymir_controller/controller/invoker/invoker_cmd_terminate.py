@@ -34,14 +34,14 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
                 backend_pb2.TaskType.TaskTypeTraining,
                 backend_pb2.TaskType.TaskTypeMining,
         ]:
-            container_command = ['docker', 'rm', '-f', self._request.executor_instance]
+            container_command = ['docker', 'rm', '-f', self._request.executant_name]
             container_response = utils.run_command(container_command)
             if container_response.code != CTLResponseCode.CTR_OK:
                 logging.warning(container_response.message)
                 sentry_sdk.capture_message(container_response.message)
                 return container_response
         elif self._request.terminated_task_type == backend_pb2.TaskType.TaskTypeLabel:
-            project_id = self.get_project_id_by_task_id(self._request.executor_instance)
+            project_id = self.get_project_id_by_task_id(self._request.executant_name)
             LabelStudio().delete_unlabeled_task(project_id)
         else:
             logging.info(f"Do nothing to terminate task_type:{self._request.req_type}")
