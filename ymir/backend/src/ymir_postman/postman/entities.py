@@ -2,8 +2,6 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from postman.settings import constants
-
 
 class TaskStateExtra(BaseModel):
     user_id: str
