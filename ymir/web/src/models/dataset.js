@@ -45,8 +45,13 @@ export default {
         return datasets || []
       }
     },
-    *getDataset({ payload }, { call, put }) {
-      const { code, result } = yield call(getDataset, payload)
+    *getDataset({ payload }, { call, put, select }) {
+      const datasetId = payload
+      const dataset = yield select(state => state.dataset.dataset[datasetId])
+      if (dataset) {
+        return dataset
+      }
+      const { code, result } = yield call(getDataset, datasetId)
       if (code === 0) {
         const dataset = transferDataset(result)
 

@@ -166,7 +166,8 @@ describe("models: dataset", () => {
     const recieved = ds(1)
     const expected = transferDataset(recieved)
 
-    const generator = saga(creator, { put, call })
+    const generator = saga(creator, { put, call, select })
+    generator.next()
     generator.next()
     const calls = generator.next({
       code: 0,
