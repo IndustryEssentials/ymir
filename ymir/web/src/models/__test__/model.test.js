@@ -135,7 +135,8 @@ describe("models: model", () => {
     const recieved = md(modelId)
     const expected = transferModel(recieved)
 
-    const generator = saga(creator, { put, call })
+    const generator = saga(creator, { put, call, select })
+    generator.next()
     generator.next()
     generator.next({
       code: 0,

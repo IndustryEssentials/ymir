@@ -91,8 +91,13 @@ export default {
         return models
       }
     },
-    *getModel({ payload }, { call, put }) {
-      const { code, result } = yield call(getModel, payload)
+    *getModel({ payload }, { call, put, select }) {
+      const modelId = payload
+      const modelCache = yield select(state => state.model.model[modelId])
+      if (modelCache) {
+        return modelCache
+      }
+      const { code, result } = yield call(getModel, modelId)
       if (code === 0) {
         let model = transferModel(result)
         if (model.projectId) {
