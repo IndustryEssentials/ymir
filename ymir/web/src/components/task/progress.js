@@ -17,7 +17,7 @@ const labelStyle = {
   justifyContent: "flex-end",
 }
 
-function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
+function TaskProgress({ state, task = {}, fresh=() => {}, progress = 0, duration = "" }) {
   const terminateRef = useRef(null)
 
   function terminate(task) {
@@ -25,9 +25,9 @@ function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
   }
 
   function terminateOk() {
-    // todo notice parent component for refresh page state
+    console.log('update data.')
+    fresh()
   }
-  console.log('progress: ', progress, state, task)
 
   return (
     <div className={s.taskDetail}>
@@ -40,6 +40,7 @@ function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
         <Item label={t("task.detail.state.current")}>
           <Row>
             <Col>
+              { task.is_terminated ? t('task.state.terminated') : null}
               <StateTag state={state} />
               {state === states.VALID
                 ? t("task.column.duration") + ": " + duration

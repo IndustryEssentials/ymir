@@ -18,11 +18,15 @@ function ModelDetail({ getModel }) {
   const [model, setModel] = useState({ id })
 
   useEffect(async () => {
+    id && fetchModel()
+  }, [id])
+
+  async function fetchModel() {
     const result = await getModel(id)
     if (result) {
       setModel(result)
     }
-  }, [id])
+  }
 
   function renderTitle() {
     return (
@@ -41,10 +45,10 @@ function ModelDetail({ getModel }) {
           <Item label={t('model.detail.label.name')}>{model.name}</Item>
           <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
         </Descriptions>
-        <TaskProgress state={model.state} task={model.task} duration={model.durationLabel} progress={model.progress} />
+        <TaskProgress state={model.state} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel()} />
         <TaskDetail task={model.task}></TaskDetail>
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-          { model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null }
+          {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
           <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
