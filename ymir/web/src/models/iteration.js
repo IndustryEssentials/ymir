@@ -27,18 +27,23 @@ export default {
       const { code, result } = yield call(getIterations, id)
       if (code === 0) {
         let iterations = result.map((iteration) => transferIteration(iteration))
-        console.log('iterations:', iterations)
-        if (more) {
+        if (more && iterations.length) {
           const datasetIds = [...new Set(iterations.map(i => [i.miningSet, i.miningResult, i.labelSet, i.trainUpdateSet]).flat())].filter(id => id)
           const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
-          const datasets = yield put.resolve({
-            type: 'dataset/batchDatasets',
-            payload: datasetIds,
-          })
-          const models = yield put.resolve({
-            type: 'model/batchModels',
-            payload: modelIds,
-          })
+          let datasets = []
+          let models = []
+          if (datasetIds?.length) {
+            datasets = yield put.resolve({
+              type: 'dataset/batchDatasets',
+              payload: datasetIds,
+            })
+          }
+          if (models?.length) {
+            models = yield put.resolve({
+              type: 'model/batchModels',
+              payload: modelIds,
+            })
+          }
           iterations = iterations.map(i => {
             const ds = id => datasets.find(d => d.id === id)
             return {
@@ -55,7 +60,6 @@ export default {
           type: "UPDATE_ITERATIONS",
           payload: { id, iterations },
         })
-        console.log('return iterations:', iterations)
         return iterations
       }
     },
