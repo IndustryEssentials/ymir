@@ -226,9 +226,9 @@ def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> 
 
     with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
-    model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
-                                 executor_config=ymir_info_dict.get(mir_settings.EXECUTOR_CONFIG_KEY, {}),
-                                 task_context=ymir_info_dict.get(mir_settings.TASK_CONTEXT_KEY, {}))
+    model_storage = ModelStorage(models=ymir_info_dict['models'],
+                                 executor_config=ymir_info_dict[mir_settings.EXECUTOR_CONFIG_KEY],
+                                 task_context=ymir_info_dict[mir_settings.TASK_CONTEXT_KEY])
 
     return model_storage
 
