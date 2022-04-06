@@ -19,6 +19,7 @@ export default {
     query: initQuery,
     iterations: {},
     iteration: {},
+    currentStageResult: {},
   },
   effects: {
     *getIterations({ payload }, { call, put }) {
@@ -84,19 +85,28 @@ export default {
       }
     },
     *getStageResult({ payload }, { call, put }) {
-      const { id, stage } = payload
+      const { id, stage, force } = payload
       const isModel = stage === Stages.training
       const type = isModel ? 'model/getModel' : 'dataset/getDataset'
       const result = yield put.resolve({
         type,
-        payload: id,
+        payload: { id, force },
       })
       if (result) {
-        return {
-          ...result,
-        }
+        yield put({ type: 'UPDATE_CURRENT_STAGE_RESULT', payload: result })
+        return result
       }
-    }
+    },
+    *updateCurrentStageResult({ payload }, { put }) {
+      const result = yield select(state => state.model.currentStageResult)
+      const tasks = payload || {}
+      const updated = updateResultState(result, tasks)
+
+      yield put({
+        type: 'UPDATE_CURRENT_STAGE_RESULT',
+        payload: { ...updated },
+      })
+    },
   },
   reducers: {
     UPDATE_ITERATIONS(state, { payload }) {
@@ -113,6 +123,12 @@ export default {
       return {
         ...state,
         iteration,
+      }
+    },
+    UPDATE_CURRENT_STAGE_RESULT(state, { payload }) {
+      return {
+        ...state,
+        currentStageResult: payload,
       }
     },
   },

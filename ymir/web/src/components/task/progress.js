@@ -27,6 +27,7 @@ function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
   function terminateOk() {
     // todo notice parent component for refresh page state
   }
+  console.log('progress: ', progress, state, task)
 
   return (
     <div className={s.taskDetail}>
@@ -44,25 +45,21 @@ function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
                 ? t("task.column.duration") + ": " + duration
                 : null}
             </Col>
-            <Col flex={1}>
-              {task.state === TASKSTATES.DOING ? (
-                <Progress
-                  strokeColor={"#FAD337"}
-                  percent={toFixed(progress * 100, 2)}
-                />
-              ) : null}
+            <Col hidden={state !== states.READY} flex={1}>
+              <Progress
+                strokeColor={"#FAD337"}
+                percent={toFixed(progress * 100, 2)}
+              />
             </Col>
-            {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ? (
-              <Col>
-                <Button onClick={() => terminate(task)}>
-                  {t("task.action.terminate")}
-                </Button>
-              </Col>
-            ) : null}
+            <Col hidden={state !== states.READY}>
+              <Button onClick={() => terminate(task)}>
+                {t("task.action.terminate")}
+              </Button>
+            </Col>
           </Row>
         </Item>
-        <Terminate ref={terminateRef} ok={terminateOk} />
       </Descriptions>
+      <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }

@@ -6,7 +6,6 @@ import { useParams, Link, useHistory } from "umi"
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import TaskDetail from "@/components/task/detail"
-import TripleRates from "@/components/form/tripleRates"
 import styles from "./detail.less"
 import { percent } from "../../utils/number"
 import TaskProgress from "@/components/task/progress"
@@ -38,10 +37,8 @@ function ModelDetail({ getModel }) {
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
       <Card title={renderTitle()}>
-        {/* {<h3 className={styles.title}>{t("dataset.detail.title")}</h3> } */}
         <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className={styles.infoTable}>
           <Item label={t('model.detail.label.name')}>{model.name}</Item>
-          {/* <Item label={t('model.detail.label.id')}>{model.id}</Item> */}
           <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
         </Descriptions>
         <TaskProgress state={model.state} task={model.task} duration={model.durationLabel} progress={model.progress} />
@@ -66,10 +63,10 @@ const props = (state) => {
 
 const actions = (dispatch) => {
   return {
-    getModel(payload) {
+    getModel(id, force) {
       return dispatch({
         type: 'model/getModel',
-        payload,
+        payload: { id, force },
       })
     },
   }

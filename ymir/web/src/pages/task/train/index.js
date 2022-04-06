@@ -463,10 +463,10 @@ const dis = (dispatch) => {
         payload: { pid, force },
       })
     },
-    getDataset(id) {
+    getDataset(id, force) {
       return dispatch({
         type: "dataset/getDataset",
-        payload: id,
+        payload: { id, force },
       })
     },
     clearCache() {
