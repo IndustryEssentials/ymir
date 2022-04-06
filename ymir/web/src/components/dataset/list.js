@@ -232,6 +232,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   
   const delOk = (id) => {
     getVersions(id, true)
+    getData()
   }
 
   const delGroupOk = () => {
