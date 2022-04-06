@@ -337,14 +337,12 @@ def update_dataset_name(
     """
     if not dataset_in.name:
         raise FieldValidationFailed()
-
-    dataset = crud.dataset.get_by_user_and_name(db, user_id=current_user.id, name=dataset_in.name)
-    if dataset:
-        raise DuplicateDatasetError()
-
     dataset = crud.dataset.get(db, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
+    if crud.dataset.is_duplicated_name_in_project(db, project_id=dataset.project_id, name=dataset_in.name):
+        raise DuplicateDatasetError()
+
     dataset = crud.dataset.update(db, db_obj=dataset, obj_in=dataset_in)
     return {"result": dataset}
 

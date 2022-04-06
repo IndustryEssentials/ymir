@@ -290,12 +290,11 @@ def update_model_name(
     """
     Update model name
     """
-    model = crud.model.get_by_user_and_name(db, user_id=current_user.id, name=model_in.name)
-    if model:
-        raise DuplicateModelError()
-
     model = crud.model.get(db, id=model_id)
     if not model:
         raise ModelNotFound()
+    if crud.model.is_duplicated_name_in_project(db, project_id=model.project_id, name=model_in.name):
+        raise DuplicateModelError()
+
     model = crud.model.update(db, db_obj=model, obj_in=model_in)
     return {"result": model}
