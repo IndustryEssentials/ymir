@@ -119,7 +119,9 @@ class CmdInfer(base.BaseCommand):
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_storage = mir_utils.prepare_model(model_location, model_hash, work_model_path)
+        model_storage = mir_utils.prepare_model(model_location=model_location,
+                                                model_hash=model_hash,
+                                                dst_model_path=work_model_path)
         model_names = model_storage.models
         class_names = model_storage.class_names
         if not class_names:
