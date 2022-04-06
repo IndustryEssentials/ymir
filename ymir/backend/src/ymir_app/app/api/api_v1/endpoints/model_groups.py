@@ -60,7 +60,7 @@ def create_model_group(
     """
     Create model group
     """
-    if crud.model_group.is_duplicated_name(db, user_id=current_user.id, name=obj_in.name):
+    if crud.model_group.is_duplicated_name_in_project(db, project_id=obj_in.project_id, name=obj_in.name):
         raise DuplicateModelGroupError()
     model_group = crud.model_group.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create modelgroup] model group record created: %s", model_group)
