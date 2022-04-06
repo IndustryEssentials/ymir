@@ -293,6 +293,7 @@ def delete_dataset(
     _, total = crud.dataset.get_multi_datasets(
         db,
         user_id=current_user.id,
+        group_id=dataset_group_id,
     )
     if not total:
         crud.dataset_group.soft_remove(db, id=dataset_group_id)
