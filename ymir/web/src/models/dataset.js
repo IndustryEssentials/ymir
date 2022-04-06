@@ -191,13 +191,12 @@ export default {
           return { ...updatedDataset }
         })
         versions[gid] = updatedDatasets
-        console.log('versions: ', datasets, updatedDatasets, gid)
-        return versions
       })
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
       })
+      return { ...versions }
     },
     *updateDatasetState({ payload }, { put, select }) {
       const datasetCache = yield select(state => state.dataset.dataset)
