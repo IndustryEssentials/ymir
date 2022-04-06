@@ -201,55 +201,33 @@ def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> 
 
     Args:
         model_location (str): model storage dir
-        model_hash (str): hash to model package
+        model_hash (str): hash or name of model package
         dst_model_path (str): path to destination model directory
+
+    Raises:
+        MirRuntimeError: if dst_model_path is not a directory
+        MirRuntimeError: if model not found
+        MirRuntimeError: if model package is invalid (lacks params, json or config file)
 
     Returns:
         ModelStorage: rel path to params, json, weights file and config file (start from dest_root)
     """
-    model_id_rel_paths = store_assets_to_dir(asset_ids=[model_hash],
-                                             out_root=dst_model_path,
-                                             sub_folder='.',
-                                             asset_location=model_location,
-                                             create_prefix=False,
-                                             need_suffix=False)
-    model_file = os.path.join(dst_model_path, model_id_rel_paths[model_hash])
-    model_storage = _unpack_models(tar_file=model_file, dest_root=dst_model_path)
-    os.remove(model_file)
-    return model_storage
-
-
-def _unpack_models(tar_file: str, dest_root: str) -> ModelStorage:
-    """
-    unpack model to dest root directory
-
-    Args:
-        tar_file (str): path to model package
-        dest_root (str): destination save directory
-
-    Raises:
-        MirRuntimeError: if dest_root is not a directory
-        MirRuntimeError: if tar_file is not a file
-        MirRuntimeError: if model package is invalid (lacks params, json or config file)
-
-    Returns:
-        ModelStorage: model names (start from dest_root), executor config and task context
-    """
-    if not os.path.isdir(dest_root):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"dest_root is not a directory: {dest_root}")
+    # model_storage = _unpack_models(tar_file=os.path.join(model_location, model_hash), dest_root=dst_model_path)
+    # return model_storage
+    if not os.path.isdir(dst_model_path):
+        os.makedirs(dst_model_path, exist_ok=True)
+    tar_file = os.path.join(model_location, model_hash)
     if not os.path.isfile(tar_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message=f"tar_file is not a file: {tar_file}")
 
-    # params_file, json_file, weights_file, config_file = '', '', '', ''
     logging.info(f"extracting models from {tar_file}")
     with tarfile.open(tar_file, 'r') as tar_gz:
         for item in tar_gz:
-            logging.info(f"extracting {item} -> {dest_root}")
-            tar_gz.extract(item, dest_root)
+            logging.info(f"extracting {item} -> {dst_model_path}")
+            tar_gz.extract(item, dst_model_path)
 
-    with open(os.path.join(dest_root, 'ymir-info.yaml'), 'r') as f:
+    with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
     model_storage = ModelStorage(models=ymir_info_dict.get('models', []),
                                  executor_config=ymir_info_dict.get(mir_settings.EXECUTOR_CONFIG_KEY, {}),
