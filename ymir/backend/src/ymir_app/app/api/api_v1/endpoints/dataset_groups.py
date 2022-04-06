@@ -10,6 +10,7 @@ from app.api import deps
 from app.api.errors.errors import (
     DatasetGroupNotFound,
     DuplicateDatasetGroupError,
+    RejectDeleteProtectedDataset,
 )
 from app.utils.ymir_controller import ControllerClient
 
@@ -129,6 +130,7 @@ def delete_dataset_group(
     if not dataset_group:
         raise DatasetGroupNotFound()
 
+    if not crud.dataset.remove_group_resources(db, group_id=group_id):
+        raise RejectDeleteProtectedDataset()
     dataset_group = crud.dataset_group.soft_remove(db, id=group_id)
-    crud.dataset.remove_group_resources(db, group_id=group_id)
     return {"result": dataset_group}
