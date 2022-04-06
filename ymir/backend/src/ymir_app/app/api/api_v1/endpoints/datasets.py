@@ -26,7 +26,7 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
-from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir
+from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir, InvalidFileStructure
 from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -214,7 +214,7 @@ def import_dataset_in_background(
 ) -> None:
     try:
         _import_dataset(db, controller_client, pre_dataset, user_id, task_hash)
-    except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound):
+    except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound, InvalidFileStructure):
         logger.exception("[import dataset] failed to import dataset")
         crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
 
