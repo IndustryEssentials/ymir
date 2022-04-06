@@ -23,7 +23,7 @@ from app.api.errors.errors import (
     NoDatasetPermission,
     FailedtoCreateTask,
     DatasetGroupNotFound,
-    RejectDeleteDataset,
+    RejectDeleteProtectedDataset,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
@@ -283,7 +283,7 @@ def delete_dataset(
     if not dataset:
         raise DatasetNotFound()
     if dataset.is_protected:
-        raise RejectDeleteDataset()
+        raise RejectDeleteProtectedDataset()
     if dataset.user_id != current_user.id:
         raise NoDatasetPermission()
     dataset_group_id = dataset.dataset_group_id
