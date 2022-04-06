@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import TaskState, TaskType, ResultType, IterationStage
+from app.constants.state import TaskState, TaskType, ResultState, ResultType, IterationStage
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -151,6 +151,7 @@ class TaskInternal(TaskInDBBase):
 
 class TaskResult(BaseModel):
     id: int
+    result_state: ResultState
 
     class Config:
         orm_mode = True
