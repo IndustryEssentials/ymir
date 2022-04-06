@@ -263,7 +263,7 @@ export default {
       vs[id] = versions
       return {
         ...state,
-        versions: vs,
+        versions: { ...vs },
       }
     },
     UPDATE_ALL_VERSIONS(state, { payload }) {
