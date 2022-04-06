@@ -57,6 +57,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         - model import
         """
         task_hash = hash_ or gen_task_hash(user_id, project_id)
+        # for a placeholder task, task state and percent are closely related
+        percent = 1 if state_ is TaskState.done else 0
         db_obj = Task(
             name=task_hash,
             type=int(type_),
@@ -64,7 +66,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             hash=task_hash,
             user_id=user_id,
             state=int(state_),
-            percent=1,  # type: ignore
+            percent=percent,  # type: ignore
             parameters=parameters,
         )
         db.add(db_obj)
