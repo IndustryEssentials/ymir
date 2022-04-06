@@ -23,6 +23,9 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }, [stage.result])
 
   useEffect(() => {
+    if (stageResult.id !== stage.result) {
+      return
+    }
     if (stageResult.needReload) {
       fetchStageResult(true)
     } else {
