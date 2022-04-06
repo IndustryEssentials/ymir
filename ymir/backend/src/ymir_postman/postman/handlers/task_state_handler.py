@@ -4,7 +4,7 @@ import json
 import logging
 import requests
 import time
-from typing import Any, Dict, List, Set, Optional, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
@@ -54,7 +54,7 @@ def on_task_state(ed: event_dispatcher.EventDispatcher, mid_and_msgs: list, **kw
     # delay and retry
     if update_db_result.retry_tids:
         time.sleep(settings.RETRY_SECONDS)
-        ed.add_event(event_name=ed._event_name, event_topic=constants.EVENT_TOPIC_INNER, event_body='')
+        ed.add_event(event_name=ed._event_name, event_topic=constants.EVENT_TOPIC_INNER, event_body="")
 
 
 def _aggregate_msgs(mid_and_msgs: List[Tuple[str, dict]]) -> entities.TaskStateDict:
@@ -64,14 +64,16 @@ def _aggregate_msgs(mid_and_msgs: List[Tuple[str, dict]]) -> entities.TaskStateD
     tid_to_taskstates_latest: entities.TaskStateDict = _load_retry()
     if mid_and_msgs:
         for _, msg in mid_and_msgs:
-            msg_topic = msg['topic']
+            msg_topic = msg["topic"]
             if msg_topic != constants.EVENT_TOPIC_RAW:
                 continue
 
-            tid_to_taskstates = parse_raw_as(entities.TaskStateDict, msg['body'])
+            tid_to_taskstates = parse_raw_as(entities.TaskStateDict, msg["body"])
             for tid, taskstate in tid_to_taskstates.items():
-                if (tid not in tid_to_taskstates_latest
-                        or tid_to_taskstates_latest[tid].percent_result.timestamp < taskstate.percent_result.timestamp):
+                if (
+                    tid not in tid_to_taskstates_latest
+                    or tid_to_taskstates_latest[tid].percent_result.timestamp < taskstate.percent_result.timestamp
+                ):
                     tid_to_taskstates_latest[tid] = taskstate
     return tid_to_taskstates_latest
 
@@ -113,24 +115,33 @@ def _update_db(tid_to_tasks: entities.TaskStateDict) -> _UpdateDbResult:
 
     Returns:
         _UpdateDbResult: update db result (success, retry and drop tids)
+
+    Side Effects:
+        update task in tid_to_tasks in place
     """
     update_db_result = _UpdateDbResult()
-    custom_headers = {'api-key': settings.APP_API_KEY}
+    custom_headers = {"api-key": settings.APP_API_KEY}
     for task_id, task in tid_to_tasks.items():
-        app_task_id, *_, code = _update_db_single_task(task_id, task, custom_headers)
-        if code == _UpdateDbConclusion.SUCCESS:
-            update_db_result.success_tids.add(task_id)
-            task.percent_result.app_task_id = app_task_id
-        elif code == _UpdateDbConclusion.RETRY:
+        try:
+            resp = _update_db_single_task(task_id, task, custom_headers)
+        except requests.exceptions.RequestException:
+            logging.exception("update db single task error ignored: {tid}", task_id)
             update_db_result.retry_tids.add(task_id)
+            continue
+
+        code = _conclusion_from_return_code(int(resp["code"]))
+        if code == _UpdateDbConclusion.SUCCESS:
+            # fixme
+            #  adhoc append dataset or model info into task
+            task.percent_result.update_with_app_response(resp["result"])
+            update_db_result.success_tids.add(task_id)
         else:
             update_db_result.drop_tids.add(task_id)
 
     return update_db_result
 
 
-def _update_db_single_task(tid: str, task: entities.TaskState,
-                           custom_headers: dict) -> Tuple[Optional[int], str, _UpdateDbConclusion]:
+def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Dict:
     """
     update db for single task
 
@@ -146,28 +157,18 @@ def _update_db_single_task(tid: str, task: entities.TaskState,
 
     # task_data: see api: /api/v1/tasks/status
     task_data = {
-        'hash': tid,
-        'timestamp': task.percent_result.timestamp,
-        'state': task.percent_result.state,
-        'percent': task.percent_result.percent,
-        'state_code': task.percent_result.state_code,
-        'state_message': task.percent_result.state_message,
+        "hash": tid,
+        "timestamp": task.percent_result.timestamp,
+        "state": task.percent_result.state,
+        "percent": task.percent_result.percent,
+        "state_code": task.percent_result.state_code,
+        "state_message": task.percent_result.state_message,
     }
 
     logging.debug(f"update db single task request: {task_data}")
-    try:
-        response = requests.post(url=url, headers=custom_headers, json=task_data)
-        response.raise_for_status()
-    except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
-        logging.exception(msg=f"update db single task error ignored: {tid}, {e}")
-        return (0, f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
-
-    response_obj = json.loads(response.text)
-    return_code = int(response_obj['code'])
-    return_msg = response_obj.get('message', '')
-    app_task_id = int(response_obj['result']['id']) if return_code == constants.RC_OK else None
-
-    return (app_task_id, return_msg, _conclusion_from_return_code(return_code))
+    response = requests.post(url=url, headers=custom_headers, json=task_data)
+    response.raise_for_status()
+    return response.json()
 
 
 # private: socketio
@@ -181,7 +182,7 @@ def _update_sio(tids: Set[str], tid_to_taskstates: entities.TaskStateDict) -> No
     try:
         requests.post(url=url, json=jsonable_encoder(event_payloads))
     except requests.exceptions.RequestException:
-        logging.exception('update sio error ignored')
+        logging.exception("update sio error ignored")
 
 
 def _remap_payloads_by_uid(tid_to_taskstates: entities.TaskStateDict) -> entities.EventPayloadList:
@@ -192,8 +193,8 @@ def _remap_payloads_by_uid(tid_to_taskstates: entities.TaskStateDict) -> entitie
         uid_to_taskdatas[uid][tid] = taskstate.percent_result
 
     # get event payloads
-    event_payloads = []
-    for uid, tid_to_taskdatas in uid_to_taskdatas.items():
-        event_payloads.append(
-            entities.EventPayload(event='update_taskstate', namespace=f"/{uid}", data=tid_to_taskdatas))
+    event_payloads = [
+        entities.EventPayload(event="update_taskstate", namespace=f"/{uid}", data=tid_to_taskdatas)
+        for uid, tid_to_taskdatas in uid_to_taskdatas.items()
+    ]
     return event_payloads
