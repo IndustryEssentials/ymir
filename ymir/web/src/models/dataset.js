@@ -326,13 +326,4 @@ export default {
       return { ...initState }
     },
   },
-  subscriptions: {
-    setup({ dispatch, history }) {
-      history.listen(location => {
-        dispatch({
-          type: 'clearCache',
-        })
-      })
-    },
-  }
 }
