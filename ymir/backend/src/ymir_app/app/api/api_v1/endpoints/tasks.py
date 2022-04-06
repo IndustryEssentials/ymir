@@ -323,12 +323,11 @@ class TaskResult:
             return
 
         if task_result.state is TaskState.done:
-            # import model has no parameters, only update this task
             if isinstance(self.result_info, ModelMetaData):
                 crud.task.update_parameters_and_config(
                     self.db,
                     task=task_in_db,
-                    parameters=json.dumps(self.result_info.task_parameters),
+                    parameters=self.result_info.task_parameters,
                     config=json.dumps(self.result_info.executor_config),
                 )
             crud_func.finish(

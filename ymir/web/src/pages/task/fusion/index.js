@@ -20,7 +20,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { query } = useLocation()
-  const { did, iterationId, currentStage, outputKey, chunk, strategy, merging } = query
+  const { iterationId, currentStage, outputKey, chunk, strategy, merging } = query
+  const did = Number(query.did)
   const history = useHistory()
   const [form] = Form.useForm()
   const [dataset, setDataset] = useState({})
@@ -38,13 +39,13 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
 
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
-    samples: chunk || 0,
+    samples: chunk,
     include_datasets: merging ? [Number(merging)] : [],
     strategy: strategy || 2,
   }
 
   useEffect(() => {
-    pid && func.getDatasets(dataset.projectId)
+    pid && func.getDatasets(pid)
   }, [pid])
 
   useEffect(() => {
@@ -61,7 +62,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   }, [datasets, includeDatasets])
 
   useEffect(() => {
-    setDatasets(allDatasets.filter(dataset => dataset.keywords.length))
+    setDatasets(allDatasets)
   }, [allDatasets])
 
   useEffect(() => {
@@ -151,6 +152,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
         onChange={onChange}
         showArrow
       >
+        {console.log('datasets:', datasets, datasets.filter(ds => ![did, ...filter].includes(ds.id)), did, filter)}
         {datasets.filter(ds => ![did, ...filter].includes(ds.id)).map(item => (
           <Option value={item.id} key={item.id}>
             {item.name}({item.assetCount})
@@ -190,7 +192,6 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
               <Tip hidden={true}>
                 <Form.Item name='strategy'
                   hidden={includeDatasets.length < 1}
-                  initialValue={2}
                   label={t('task.train.form.repeatdata.label')}>
                   <Radio.Group options={[
                     { value: 2, label: t('task.train.form.repeatdata.latest') },
@@ -243,7 +244,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
           <Panel label={t('task.fusion.header.sampling')} visible={visibles['sampling']} setVisible={(value) => setVisibles(old => ({ ...old, sampling: value }))}>
             <Tip content={t('tip.task.fusion.sampling')}>
               <Form.Item label={t('task.fusion.form.sampling')} name='samples'>
-                <InputNumber step={1} min={0} style={{ width: '100%' }} />
+                <InputNumber step={1} min={1} style={{ width: '100%' }} />
               </Form.Item>
             </Tip>
           </Panel>

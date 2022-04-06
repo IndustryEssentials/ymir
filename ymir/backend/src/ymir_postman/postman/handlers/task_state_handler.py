@@ -4,7 +4,7 @@ import json
 import logging
 import requests
 import time
-from typing import Any, List, Set, Dict, Tuple
+from typing import Any, Dict, List, Set, Optional, Tuple
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import parse_raw_as
@@ -116,19 +116,21 @@ def _update_db(tid_to_tasks: entities.TaskStateDict) -> _UpdateDbResult:
     """
     update_db_result = _UpdateDbResult()
     custom_headers = {'api-key': settings.APP_API_KEY}
-    for tid, task in tid_to_tasks.items():
-        *_, code = _update_db_single_task(tid, task, custom_headers)
+    for task_id, task in tid_to_tasks.items():
+        app_task_id, *_, code = _update_db_single_task(task_id, task, custom_headers)
         if code == _UpdateDbConclusion.SUCCESS:
-            update_db_result.success_tids.add(tid)
+            update_db_result.success_tids.add(task_id)
+            task.percent_result.app_task_id = app_task_id
         elif code == _UpdateDbConclusion.RETRY:
-            update_db_result.retry_tids.add(tid)
+            update_db_result.retry_tids.add(task_id)
         else:
-            update_db_result.drop_tids.add(tid)
+            update_db_result.drop_tids.add(task_id)
 
     return update_db_result
 
 
-def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: dict) -> Tuple[str, _UpdateDbConclusion]:
+def _update_db_single_task(tid: str, task: entities.TaskState,
+                           custom_headers: dict) -> Tuple[Optional[int], str, _UpdateDbConclusion]:
     """
     update db for single task
 
@@ -158,13 +160,14 @@ def _update_db_single_task(tid: str, task: entities.TaskState, custom_headers: d
         response.raise_for_status()
     except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
         logging.exception(msg=f"update db single task error ignored: {tid}, {e}")
-        return (f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
+        return (0, f"{type(e).__name__}: {e}", _UpdateDbConclusion.RETRY)
 
     response_obj = json.loads(response.text)
     return_code = int(response_obj['code'])
     return_msg = response_obj.get('message', '')
+    app_task_id = int(response_obj['result']['id']) if return_code == constants.RC_OK else None
 
-    return (return_msg, _conclusion_from_return_code(return_code))
+    return (app_task_id, return_msg, _conclusion_from_return_code(return_code))
 
 
 # private: socketio

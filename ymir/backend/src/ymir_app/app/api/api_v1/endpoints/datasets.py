@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     AssetNotFound,
     DatasetNotFound,
     DuplicateDatasetError,
+    DuplicateDatasetGroupError,
     FailedtoCreateDataset,
     FieldValidationFailed,
     NoDatasetPermission,
@@ -145,8 +146,10 @@ def import_dataset(
     - stop_upon_unknown_annotations = 3
     """
     # 1. check if dataset group name is available
-    if crud.dataset_group.is_duplicated_name(db, user_id=current_user.id, name=dataset_import.dataset_group_name):
-        raise DuplicateDatasetError()
+    if crud.dataset_group.is_duplicated_name_in_project(
+        db, project_id=dataset_import.project_id, name=dataset_import.dataset_group_name
+    ):
+        raise DuplicateDatasetGroupError()
 
     # 2. create placeholder task
     if dataset_import.input_dataset_id:

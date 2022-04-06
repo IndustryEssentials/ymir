@@ -37,7 +37,6 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const [dataset, setDataset] = useState({ id })
   const [assets, setAssets] = useState([])
   const [total, setTotal] = useState(0)
-  const [keywords, setKeywords] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [assetVisible, setAssetVisible] = useState(false)
   const [currentAsset, setCurrentAsset] = useState({
@@ -73,10 +72,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   }
   const filter = async (param) => {
     setAssets([])
-    const { items, keywords, total } = await getAssetsOfDataset(param)
+    const { items, total } = await getAssetsOfDataset(param)
     setTotal(total)
     setAssets(items)
-    setKeywords(Object.keys(keywords).map((key) => ({ key, count: keywords[key] })))
   }
   const goAsset = (hash, index) => {
     setCurrentAsset({ hash, index: filterParams.offset + index})
@@ -91,7 +89,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   }
 
   const getRate = (count) => {
-    return percent(count / dataset.asset_count)
+    return percent(count / dataset.assetCount)
   }
 
   const randomPageButton = (
@@ -121,15 +119,15 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
               />
               <span
                 className={styles.item_keywords_count}
-                title={asset.keywords.join(",")}
+                title={dataset.keywords.join(",")}
               >
                 {t("dataset.detail.assets.keywords.total", {
-                  total: asset.keywords.length,
+                  total: dataset.keywordCount,
                 })}
               </span>
               <span className={styles.item_keywords}>
-                {asset.keywords.slice(0, 4).map(key => <Tag className={styles.item_keyword} key={key} title={key}>{key}</Tag>)}
-                {asset.keywords.length > 4 ? <Tag className={styles.item_keyword} style={{ width: '10px' }}>...</Tag> : null}
+                {dataset.keywords.slice(0, 4).map(key => <Tag className={styles.item_keyword} key={key} title={key}>{key}</Tag>)}
+                {dataset.keywords.length > 4 ? <Tag className={styles.item_keyword} style={{ width: '10px' }}>...</Tag> : null}
               </span>
             </div>
           </Col>
@@ -157,9 +155,11 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         <Option value={0} key="all">
           {t("common.all")}
         </Option>
-        {keywords.map((kw) => (
-          <Option value={kw.key} key={kw.key} title={`${kw.key} (${kw.count})`}>
-            {kw.key} ({kw.count}, {getRate(kw.count)})
+        
+        {console.log('dataset:', dataset)}
+        {dataset?.keywords?.map((key) => (
+          <Option value={key} key={key} title={`${key} (${dataset.keywordsCount[key]})`}>
+            {key} ({dataset.keywordsCount[key]}, {getRate(dataset.keywordsCount[key])})
           </Option>
         ))}
       </Select>

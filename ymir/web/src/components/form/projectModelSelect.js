@@ -11,7 +11,7 @@ const ProjectSelect = ({ pid, value, projects = [], onChange = () => { }, getPro
   }, [])
 
   useEffect(() => {
-    const opts = projects.filter(project => project.id !== pid).map(project => {
+    const opts = projects.filter(project => project.id !== Number(pid)).map(project => {
       return {
         label: project.name,
         value: project.id,

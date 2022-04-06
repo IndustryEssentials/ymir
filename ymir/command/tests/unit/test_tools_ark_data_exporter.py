@@ -197,7 +197,9 @@ class TestArkDataExporter(unittest.TestCase):
             lines = idx_f.readlines()
             self.assertEqual(len(lines), len(asset_ids))
             for line in lines:
-                os.path.isfile(os.path.join(export_path, line))
+                asset_rel_path, annotation_rel_path = line.split()
+                self.assertTrue(os.path.isfile(os.path.join(export_path, asset_rel_path)))
+                self.assertTrue(os.path.isfile(os.path.join(export_path, annotation_rel_path)))
 
     def __check_ark_annotations(self, asset_id: str, export_path: str, expected_first_two_cols: List[Tuple[int, int]]):
         annotation_path = os.path.join(export_path, asset_id + '.txt')
@@ -230,7 +232,7 @@ class TestArkDataExporter(unittest.TestCase):
                              base_task_id='a',
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(train_path, 'index.tsv'),
-                             index_prefix=None)
+                             index_assets_prefix='')
 
         # check result
         self.__check_result(asset_ids=asset_ids,
@@ -261,7 +263,7 @@ class TestArkDataExporter(unittest.TestCase):
                              base_task_id='a',
                              format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC,
                              index_file_path=os.path.join(train_path, 'index.tsv'),
-                             index_prefix=None)
+                             index_assets_prefix='')
 
         # check result
         self.__check_result(asset_ids=asset_ids,

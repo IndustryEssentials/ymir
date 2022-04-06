@@ -110,7 +110,7 @@ message GeneralReq {
     string asset_dir = 15;
     string docker_image_config = 16;
     bool check_only=18;
-    string executor_instance = 19;
+    string executant_name = 19;
     MergeStrategy merge_strategy = 20;
     TaskType terminated_task_type = 21;
     oneof sampling {

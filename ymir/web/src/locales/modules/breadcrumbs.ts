@@ -14,6 +14,7 @@ const breadcrumbs = {
   'breadcrumbs.datasets.copy': { cn: '数据集复制', en: 'Dataset Copy', },
   'breadcrumbs.dataset': { cn: '数据集详情', en: 'Dataset Detail', },
   'breadcrumbs.dataset.add': { cn: '导入数据集', en: 'Dataset Import', },
+  'breadcrumbs.dataset.assets': { cn: '数据列表', en: 'Assets List', },
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
   'breadcrumbs.model.add': { cn: '导入模型', en: 'Model Import', },
   'breadcrumbs.models.search': { cn: '模型搜索', en: 'Model Search', },
@@ -28,7 +29,7 @@ const breadcrumbs = {
   'breadcrumbs.projects': { cn: '项目管理', en: 'Project', },
   'breadcrumbs.project': { cn: '项目详情', en: 'Detail', },
   'breadcrumbs.project.add': { cn: '项目设置', en: 'Settings', },
-  'breadcrumbs.project.iterations': { cn: '项目迭代', en: 'Iterations', },
+  'breadcrumbs.project.iterations': { cn: '迭代列表', en: 'Iterations', },
   'breadcrumbs.project.initmodel': { cn: '初始模型准备', en: 'Initial Model Setting', },
 }
 
