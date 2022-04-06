@@ -212,15 +212,12 @@ def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> 
     Returns:
         ModelStorage: rel path to params, json, weights file and config file (start from dest_root)
     """
-    # model_storage = _unpack_models(tar_file=os.path.join(model_location, model_hash), dest_root=dst_model_path)
-    # return model_storage
-    if not os.path.isdir(dst_model_path):
-        os.makedirs(dst_model_path, exist_ok=True)
     tar_file = os.path.join(model_location, model_hash)
     if not os.path.isfile(tar_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message=f"tar_file is not a file: {tar_file}")
 
+    os.makedirs(dst_model_path, exist_ok=True)
     logging.info(f"extracting models from {tar_file}")
     with tarfile.open(tar_file, 'r') as tar_gz:
         for item in tar_gz:
