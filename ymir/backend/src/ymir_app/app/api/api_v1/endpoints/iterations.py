@@ -81,4 +81,7 @@ def update_iteration(
     if not iteration:
         raise IterationNotFound()
     crud.iteration.update_iteration(db, iteration_id=iteration_id, iteration_update=iteration_updates)
+
+    if iteration_updates.training_input_dataset_id:
+        crud.dataset.set_datasets_protected([iteration_updates.training_input_dataset_id])
     return {"result": iteration}
