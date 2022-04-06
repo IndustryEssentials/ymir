@@ -119,6 +119,10 @@ export default {
     *delModel({ payload }, { call, put }) {
       const { code, result } = yield call(delModel, payload)
       if (code === 0) {
+        yield put({
+          type: 'UPDATE_MODEL',
+          payload: {},
+        })
         return result
       }
     },

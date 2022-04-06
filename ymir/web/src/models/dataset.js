@@ -141,6 +141,10 @@ export default {
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
       if (code === 0) {
+        yield put({
+          type: "UPDATE_DATASET",
+          payload: {},
+        })
         return result
       }
     },
