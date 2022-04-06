@@ -23,5 +23,5 @@ def main() -> int:
 
 
 if __name__ == '__main__':
-    # usage: python sio_client.py <url without http> <namespace>
+    # usage: python sio_client.py <url with http> <namespace begin with slash>
     sys.exit(main())
