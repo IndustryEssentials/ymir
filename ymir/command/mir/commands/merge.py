@@ -4,7 +4,7 @@ mir merge: merge contents from another guest branch to current branch
 
 import argparse
 import logging
-from typing import Any, Mapping, Tuple
+from typing import Any, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -127,44 +127,6 @@ def _get_union_keywords(host_keywords: Any, guest_keywords: Any, strategy: str) 
     return merged_keywords_set
 
 
-def _merge_keywords(host_mir_keywords: Mapping, guest_mir_keywords: Mapping, id_guest_only: set, id_joint: set,
-                    strategy: str) -> None:
-    if host_mir_keywords is None or guest_mir_keywords is None:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR, error_message='Invalid keywords message map.')
-
-    for asset_id in id_guest_only:
-        if asset_id not in guest_mir_keywords:
-            continue
-        host_mir_keywords[asset_id].predifined_keyids[:] = guest_mir_keywords[asset_id].predifined_keyids
-        host_mir_keywords[asset_id].customized_keywords[:] = guest_mir_keywords[asset_id].customized_keywords
-
-    for asset_id in id_joint:
-        if asset_id not in guest_mir_keywords:
-            continue
-
-        merged_keywords_set_predifined = _get_union_keywords(host_mir_keywords[asset_id].predifined_keyids,
-                                                             guest_mir_keywords[asset_id].predifined_keyids, strategy)
-
-        if merged_keywords_set_predifined:
-            host_mir_keywords[asset_id].predifined_keyids[:] = merged_keywords_set_predifined
-
-        merged_keywords_set_customized = _get_union_keywords(host_mir_keywords[asset_id].customized_keywords,
-                                                             guest_mir_keywords[asset_id].customized_keywords, strategy)
-
-        if merged_keywords_set_customized:
-            host_mir_keywords[asset_id].customized_keywords[:] = merged_keywords_set_customized
-
-
-def _merge_tasks(host_mir_tasks: mirpb.MirTasks, guest_mir_tasks: mirpb.MirTasks) -> None:
-    if not host_mir_tasks or not guest_mir_tasks:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                              error_message='input host/guest mir_tasks is invalid')
-
-    for guest_task_id, guest_task in guest_mir_tasks.tasks.items():
-        if guest_task_id not in host_mir_tasks.tasks:
-            host_mir_tasks.tasks[guest_task_id].CopyFrom(guest_task)
-
-
 def _tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
     if typ == "tr":
         return mirpb.TvtTypeTraining
@@ -179,16 +141,13 @@ def _tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
 
 
 def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                  host_mir_keywords: mirpb.MirKeywords, host_mir_tasks: mirpb.MirTasks, mir_root: str,
-                  guest_typ_rev_tid: revs_parser.TypRevTid, strategy: str) -> int:
+                  mir_root: str, guest_typ_rev_tid: revs_parser.TypRevTid, strategy: str) -> int:
     """
     merge contents in `guest_typ_rev_tid` to `host_mir_xxx`
 
     Args:
         host_mir_metadatas (mirpb.MirMetadatas): host metadatas
         host_mir_annotations (mirpb.MirAnnotations): host annotations
-        host_mir_keywords (mirpb.MirKeywords): host keywords
-        host_mir_tasks (mirpb.MirTasks): host tasks
         mir_root (str): path to mir repo
         guest_typ_rev_tid (revs_parser.TypRevTid): guest typ:rev@tid
         strategy (str): host / guest / stop
@@ -233,21 +192,11 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
 
-    # TODO: auto gen, so need no more merge on k and t
-    if not guest_mir_keywords:
-        logging.warning(f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no keywords.")
-    _merge_keywords(host_mir_keywords.keywords, guest_mir_keywords.keywords, id_guest_only, id_joint, strategy)
-
-    if not guest_mir_tasks:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                              error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no tasks.")
-    _merge_tasks(host_mir_tasks, guest_mir_tasks)
-
     return MirCode.RC_OK
 
 
 def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                      host_mir_keywords: mirpb.MirKeywords, mir_root: str, branch_id: str, task_id: str) -> int:
+                      mir_root: str, branch_id: str, task_id: str) -> int:
     if not branch_id:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty branch id')
     if not host_mir_metadatas:
@@ -266,8 +215,6 @@ def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
 
         if asset_id in host_mir_annotations.task_annotations[host_mir_annotations.head_task_id].image_annotations:
             del host_mir_annotations.task_annotations[host_mir_annotations.head_task_id].image_annotations[asset_id]
-        if asset_id in host_mir_keywords.keywords:
-            del host_mir_keywords.keywords[asset_id]
     return MirCode.RC_OK
 
 
@@ -295,16 +242,12 @@ class CmdMerge(base.BaseCommand):
         # Read host id mir data.
         host_mir_metadatas = mirpb.MirMetadatas()
         host_mir_annotations = mirpb.MirAnnotations()
-        host_mir_keywords = mirpb.MirKeywords()
-        host_mir_tasks = mirpb.MirTasks()
 
         host_mir_annotations.head_task_id = dst_typ_rev_tid.tid
 
         for typ_rev_tid in src_typ_rev_tids:
             ret = _merge_to_mir(host_mir_metadatas=host_mir_metadatas,
                                 host_mir_annotations=host_mir_annotations,
-                                host_mir_keywords=host_mir_keywords,
-                                host_mir_tasks=host_mir_tasks,
                                 mir_root=mir_root,
                                 guest_typ_rev_tid=typ_rev_tid,
                                 strategy=strategy)
@@ -315,7 +258,6 @@ class CmdMerge(base.BaseCommand):
         for typ_rev_tid in ex_typ_rev_tids:
             ret = _exclude_from_mir(host_mir_metadatas=host_mir_metadatas,
                                     host_mir_annotations=host_mir_annotations,
-                                    host_mir_keywords=host_mir_keywords,
                                     mir_root=mir_root,
                                     branch_id=typ_rev_tid.rev,
                                     task_id=typ_rev_tid.tid)
