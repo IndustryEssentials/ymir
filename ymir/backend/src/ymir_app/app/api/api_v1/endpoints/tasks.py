@@ -103,7 +103,7 @@ def create_task(
     """
     # 1. validation
     logger.debug("[create task] create task with payload: %s", jsonable_encoder(task_in))
-    if crud.task.is_duplicated_name(db, user_id=current_user.id, name=task_in.name):
+    if crud.task.is_duplicated_name_in_project(db, project_id=task_in.project_id, name=task_in.name):
         raise DuplicateTaskError()
 
     # 2. prepare keywords and task parameters
@@ -476,13 +476,11 @@ def update_task_name(
     """
     Update task name
     """
-    task = crud.task.get_by_user_and_name(db, user_id=current_user.id, name=task_in.name)
-    if task:
-        raise DuplicateTaskError()
-
     task = crud.task.get(db, id=task_id)
     if not task:
         raise TaskNotFound()
+    if crud.task.is_duplicated_name_in_project(db, project_id=task.project_id, name=task_in.name):
+        raise DuplicateTaskError()
     task = crud.task.update(db, db_obj=task, obj_in=task_in)
     return {"result": task}
 
