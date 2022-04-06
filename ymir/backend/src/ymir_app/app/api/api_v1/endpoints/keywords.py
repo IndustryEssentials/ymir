@@ -34,7 +34,11 @@ def get_keywords(
     """
     Get keywords and aliases
     """
-    items = list(user_labels.filter_labels(q))
+    try:
+        items = list(user_labels.filter_labels(q))
+    except KeyError:
+        logger.info("found no keywords for query: %s", q)
+        items = []
     if settings.REVERSE_KEYWORDS_OUTPUT:
         items.reverse()
 
@@ -44,12 +48,12 @@ def get_keywords(
 
 @router.post("/", response_model=KeywordsCreateOut)
 def create_keywords(
-        *,
-        keywords_input: KeywordsCreate,
-        current_user: models.User = Depends(deps.get_current_active_user),
-        controller_client: ControllerClient = Depends(deps.get_controller_client),
-        cache: CacheClient = Depends(deps.get_cache),
-        user_labels: UserLabels = Depends(deps.get_user_labels),
+    *,
+    keywords_input: KeywordsCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    cache: CacheClient = Depends(deps.get_cache),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Batch create given keywords and aliases to keywords list
@@ -75,13 +79,13 @@ def create_keywords(
     response_model=KeywordsCreateOut,
 )
 def update_keyword_aliases(
-        *,
-        keyword: str,
-        aliases_in: KeywordUpdate,
-        current_user: models.User = Depends(deps.get_current_active_user),
-        controller_client: ControllerClient = Depends(deps.get_controller_client),
-        cache: CacheClient = Depends(deps.get_cache),
-        user_labels: UserLabels = Depends(deps.get_user_labels),
+    *,
+    keyword: str,
+    aliases_in: KeywordUpdate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    cache: CacheClient = Depends(deps.get_cache),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     updated_label = SingleLabel(name=keyword, aliases=aliases_in.aliases)
     new_user_labels = UserLabels(labels=[updated_label])

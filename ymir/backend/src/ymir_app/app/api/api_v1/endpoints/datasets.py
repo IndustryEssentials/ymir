@@ -23,10 +23,11 @@ from app.api.errors.errors import (
     NoDatasetPermission,
     FailedtoCreateTask,
     DatasetGroupNotFound,
+    RejectDeleteProtectedDataset,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
-from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir
+from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir, InvalidFileStructure
 from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -214,7 +215,7 @@ def import_dataset_in_background(
 ) -> None:
     try:
         _import_dataset(db, controller_client, pre_dataset, user_id, task_hash)
-    except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound):
+    except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound, InvalidFileStructure):
         logger.exception("[import dataset] failed to import dataset")
         crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
 
@@ -281,9 +282,22 @@ def delete_dataset(
     dataset = crud.dataset.get(db, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
+    if dataset.is_protected:
+        raise RejectDeleteProtectedDataset()
     if dataset.user_id != current_user.id:
         raise NoDatasetPermission()
+    dataset_group_id = dataset.dataset_group_id
     dataset = crud.dataset.soft_remove(db, id=dataset_id)
+
+    # remove dataset group if all dataset is deleted
+    _, total = crud.dataset.get_multi_datasets(
+        db,
+        user_id=current_user.id,
+        group_id=dataset_group_id,
+    )
+    if not total:
+        crud.dataset_group.soft_remove(db, id=dataset_group_id)
+
     return {"result": dataset}
 
 
@@ -323,14 +337,12 @@ def update_dataset_name(
     """
     if not dataset_in.name:
         raise FieldValidationFailed()
-
-    dataset = crud.dataset.get_by_user_and_name(db, user_id=current_user.id, name=dataset_in.name)
-    if dataset:
-        raise DuplicateDatasetError()
-
     dataset = crud.dataset.get(db, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
+    if crud.dataset.is_duplicated_name_in_project(db, project_id=dataset.project_id, name=dataset_in.name):
+        raise DuplicateDatasetError()
+
     dataset = crud.dataset.update(db, db_obj=dataset, obj_in=dataset_in)
     return {"result": dataset}
 

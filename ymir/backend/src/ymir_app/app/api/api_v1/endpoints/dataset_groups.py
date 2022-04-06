@@ -10,6 +10,7 @@ from app.api import deps
 from app.api.errors.errors import (
     DatasetGroupNotFound,
     DuplicateDatasetGroupError,
+    RejectDeleteProtectedDataset,
 )
 from app.utils.ymir_controller import ControllerClient
 
@@ -60,7 +61,7 @@ def create_dataset_group(
     """
     Create dataset group
     """
-    if crud.dataset_group.is_duplicated_name(db, user_id=current_user.id, name=obj_in.name):
+    if crud.dataset_group.is_duplicated_name_in_project(db, project_id=obj_in.project_id, name=obj_in.name):
         raise DuplicateDatasetGroupError()
     dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create datasetgroup] dataset group record created: %s", dataset_group)
@@ -104,6 +105,9 @@ def update_dataset_group(
     if not dataset_group:
         raise DatasetGroupNotFound()
 
+    if crud.dataset.is_duplicated_name_in_project(db, project_id=dataset_group.project_id, name=obj_update.name):
+        raise DuplicateDatasetGroupError()
+
     dataset_group = crud.dataset_group.update(db, db_obj=dataset_group, obj_in=obj_update)
     return {"result": dataset_group}
 
@@ -126,6 +130,7 @@ def delete_dataset_group(
     if not dataset_group:
         raise DatasetGroupNotFound()
 
+    if not crud.dataset.remove_group_resources(db, group_id=group_id):
+        raise RejectDeleteProtectedDataset()
     dataset_group = crud.dataset_group.soft_remove(db, id=group_id)
-    crud.dataset.remove_group_resources(db, group_id=group_id)
     return {"result": dataset_group}
