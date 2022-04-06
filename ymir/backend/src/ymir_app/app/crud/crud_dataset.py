@@ -72,8 +72,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         *,
         dataset_ids: List[int],
     ) -> Optional[List[Dataset]]:
-        if not dataset_ids:
-            return None
         objs = db.query(self.model).filter(self.model.id.in_(dataset_ids)).all()
         for obj in objs:
             obj.is_deleted = True
