@@ -18,13 +18,13 @@ ymir 系统有两种用户交互方式：web 方式和命令行方式。
 
 模型的训练过程分为以下几个步骤：
 
-1. ymir 导出对应的训练集，验证集与测试集至指定的工作目录，并准备 `config.yaml` 文件；
+1. ymir 导出对应的训练集与验证集至指定的工作目录，并准备 `config.yaml` 文件；
 
 2. ymir 通过 `nvidia-run` 将指定的工作目录，以及训练所需要的全部配置文件挂载至 4.3 节所述的位置，启动训练镜像，并等待完成；
 
 3. 在此过程中，镜像完成以下事务：
 
-    3.1. 读取 `/in/train/index.tsv`， `/in/val/index.tsv`，`/in/test/index.tsv` 中的训练集，验证集和测试集中的图片和标注信息；
+    3.1. 读取 `/in/train-index.tsv` 及 `/in/val-index.tsv` 中的训练集与验证集中的图片和标注信息；
 
     3.2. 启动训练流程；
 
@@ -52,7 +52,7 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
 3. 在此过程中，镜像完成以下事务：
 
-    3.1. 从 `/in/candidate/index.tsv` 中读取所有图像资源；
+    3.1. 从 `/in/candidate-index.tsv` 中读取所有图像资源；
 
     3.2. 使用 `/in/models` 位置的模型及预先写好的前后处理代码，完成推理，并将结果写入到 `/out/infer-result.json`中。
 
@@ -68,7 +68,7 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
 3. 在此过程中，镜像完成以下事务：
 
-    3.1 从 `/in/candidate/index.tsv` 中读取所有图像资源；
+    3.1 从 `/in/candidate-index.tsv` 中读取所有图像资源；
     
     3.2 使用上述模型以及合适的算法，对传入的每张图片进行打分，并将打分结果保存至 `/out/result.tsv` 中;
 
@@ -191,10 +191,11 @@ task_0    1622552975    1    done
 
 | 路径 | 说明 |
 | ---- | ---- |
-| /in/train | 必要，训练用图像资源及标注对所在的目录，有一个索引文件index.tsv，每一行都是图片文件路径<br>* 图片文件为jpg，png等常用格式（但不保证一定有扩展名）；<br>* 标注文件可以是csv，txt，xml，json格式，拥有和图片相同的主文件名。 |
-| /in/val | 必要，验证用图像资源及标注对所在的目录，格式同/in/train |
-| /in/test | 非必要，测试用图像资源及标注对所在的目录，格式同/in/train |
-| /in/config.yaml | 必要，配置项所在的文件，YAML格式，具体配置项由调用双方商定，注1中列出了几个固定的键 |
+| /in/train-index.tsv | 必要，训练集图像及标注的索引文件，每一行都是图片文件路径和标注路径<br>* 图片文件为jpg，png等常用格式（但不保证一定有扩展名）；<br>* 标注文件可以是csv，txt，xml，json格式，拥有和图片相同的主文件名。 |
+| /in/val-index.tsv | 必要，验证集图像及标注的索引文件，格式同/in/train-index.tsv |
+| /in/config.yaml | 必要，配置项所在的文件，YAML 格式，具体配置项由调用双方商定，注1中列出了几个固定的键 |
+| /in/assets | 必要，图像资源所在的目录，只读 |
+| /in/annotations | 必要，图像标注所在的目录 |
 
 注1. `config.yaml` 文件的固定保留键
 
@@ -230,9 +231,9 @@ model:
 
 | 路径 | 说明 |
 | ---- | ---- |
-| /in/candidate | 必要，图片资源，有一个索引文件 `index.tsv`，此文件的每一行内容都是一个指向图片的路径，图片文件为jpg，png等常用格式（但不保证一定有扩展名） |
-| /in/model | 推理时使用的模型 |
-| /in/config.yaml | 必要，配置项所在的文件，YAML格式，具体配置项由调用双方商定，注1中列出了几个固定的键 |
+| /in/candidate-index.tsv | 必要，图片索引文件，此文件的每一行内容都是一个指向图片的路径，图片文件为jpg，png等常用格式（但不保证一定有扩展名） |
+| /in/models | 推理时使用的模型所在的目录 |
+| /in/config.yaml | 必要，配置项所在的文件，YAML 格式，具体配置项由调用双方商定，注1中列出了几个固定的键 |
 
 注1: `config.yaml` 文件的固定保留键
 
@@ -282,7 +283,7 @@ model:
 
 其中：
 
-* asset-name-0, asset-name-1就是 `/in/candidate/index.tsv` 里面的资源名称 (base name)
+* asset-name-0, asset-name-1就是 `/in/candidate-index.tsv` 里面的资源名称 (base name)
 
 * box的结构为：x, y, w, h，参考系为图片坐标系，左上角为原点
 

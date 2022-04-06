@@ -561,7 +561,7 @@ and start the training process with the following command:
 mir train -w /tmp/ymir/training/train-0 \
           --media-location ~/ymir-assets \ # assets storage dir
           --model-location ~/ymir-models \ # model storage dir
-          --config-file ~/training-config.yaml \ # training config file, get it from training docker image
+          --task-config-file ~/training-config.yaml \ # training config file, get it from training docker image
           --src-revs tr-va@filtered \
           --dst-rev training-0@trained \
           --executor industryessentials/executor-det-yolov4-training:release-0.1.2 # docker image name
@@ -582,7 +582,7 @@ mir mining --src-revs dataset-mining@import \ # mining dataset branch
            --media-location ~/ymir-assets \
            --model-hash <hash> \ # model id
            --cache /tmp/ymir/cache \ # asset cache
-           --config-file ~/mining-config.yaml \ # mining config file, get it from mining docker image
+           --task-config-file ~/mining-config.yaml \ # mining config file, get it from mining docker image
            --executor industryessentials/executor-det-yolov4-mining:release-0.1.2 # mining docker image name
 ```
 
@@ -630,7 +630,7 @@ Now branch tr-va-1 contains the previous training and validation set and 200 new
 mir train -w /tmp/ymir/training/train-1 \ # different working directory for each different training and mining task
           --media-location ~/ymir-assets \
           --model-location ~/ymir-models \
-          --config-file ~/training-config.yaml \
+          --task-config-file ~/training-config.yaml \
           --src-revs tr-va-1@merged \ # use new-merged branch
           --dst-rev training-1@trained \
           --executor industryessentials/executor-det-yolov4-training:release-0.1.2

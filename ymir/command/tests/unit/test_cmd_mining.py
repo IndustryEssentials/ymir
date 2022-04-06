@@ -151,7 +151,7 @@ class TestMiningCmd(unittest.TestCase):
         args.dst_rev = 'a@mining-task-id'
         args.model_hash = 'xyz'
         args.work_dir = os.path.join(self._storage_root, "mining-task-id")
-        args.media_cache = ''
+        args.asset_cache_dir = ''
         args.model_location = self._storage_root
         args.media_location = self._storage_root
         args.topk = 1
@@ -159,20 +159,20 @@ class TestMiningCmd(unittest.TestCase):
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
-        args.executor_instance = 'executor-instance'
+        args.executant_name = 'executor-instance'
         mining_instance = CmdMining(args)
         mining_instance.run()
 
         mock_run.assert_called_once_with(work_dir=args.work_dir,
-                                         media_path=os.path.join(args.work_dir, 'in', 'candidate'),
+                                         media_path=os.path.join(args.work_dir, 'in', 'assets'),
                                          model_location=args.model_location,
                                          model_hash=args.model_hash,
-                                         index_file=os.path.join(args.work_dir, 'in', 'candidate', 'src-index.tsv'),
+                                         index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
                                          config_file=args.config_file,
                                          task_id='mining-task-id',
                                          shm_size='16G',
                                          executor=args.executor,
-                                         executor_instance=args.executor_instance,
+                                         executant_name=args.executant_name,
                                          run_infer=False,
                                          run_mining=True)
 

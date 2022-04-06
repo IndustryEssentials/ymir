@@ -20,17 +20,17 @@ class CmdMining(base.BaseCommand):
     mining command
 
     About path mappings:
-        a. work_dir/in/candidate or cache -> /in/candidate
-        b: work_dir/in/model -> /in/model
+        a. work_dir/in/assets or cache -> /in/assets
+        b: work_dir/in/models -> /in/models
         c: work_dir/out -> out
-        d: work_dir/in/candidate/index.tsv -> /in/candidate/index.tsv
+        d: work_dir/in/candidate-index.tsv -> /in/candidate-index.tsv
         e: work_dir/in/config.yaml -> /in/config.yaml
     """
     def run(self) -> int:
         logging.debug(f"command mining: {self.args}")
 
         return CmdMining.run_with_args(work_dir=self.args.work_dir,
-                                       media_cache=self.args.media_cache,
+                                       asset_cache_dir=self.args.asset_cache_dir,
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
@@ -41,12 +41,12 @@ class CmdMining(base.BaseCommand):
                                        topk=self.args.topk,
                                        add_annotations=self.args.add_annotations,
                                        executor=self.args.executor,
-                                       executor_instance=self.args.executor_instance)
+                                       executant_name=self.args.executant_name)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
-                      media_cache: Optional[str],
+                      asset_cache_dir: Optional[str],
                       src_revs: str,
                       dst_rev: str,
                       mir_root: str,
@@ -55,14 +55,14 @@ class CmdMining(base.BaseCommand):
                       model_location: str,
                       config_file: str,
                       executor: str,
-                      executor_instance: str,
+                      executant_name: str,
                       topk: int = None,
                       add_annotations: bool = False) -> int:
         """
         runs a mining task \n
         Args:
             work_dir: mining docker container's work directory
-            media_cache: media cache directory
+            asset_cache_dir: media cache directory
             src_revs: data branch name and base task id
             dst_rev: destination branch name and task id
             mir_root: mir repo path, in order to run in non-mir folder.
@@ -70,7 +70,7 @@ class CmdMining(base.BaseCommand):
             media_location, model_location: location of assets.
             config_file: path to the config file
             executor: executor name, currently, the docker image name
-            executor_instance: docker container name
+            executant_name: docker container name
             topk: top k assets you want to select in the result workspace, positive integer or None (no mining)
             add_annotations: if true, write new annotations into annotations.mir
         Returns:
@@ -92,10 +92,10 @@ class CmdMining(base.BaseCommand):
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         if not config_file:
-            logging.warning('empty --config-file, abort')
+            logging.warning('empty --task-config-file, abort')
             return MirCode.RC_CMD_INVALID_ARGS
         if not os.path.isfile(config_file):
-            logging.error(f"invalid --config-file {config_file}, not a file, abort")
+            logging.error(f"invalid --task-config-file {config_file}, not a file, abort")
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not executor:
@@ -126,10 +126,10 @@ class CmdMining(base.BaseCommand):
         # topk can be None (means no mining), or in interval (0, assets_count) (means mining and select topk)
 
         work_in_path = os.path.join(work_dir, 'in')  # docker container's input data directory
+        work_asset_path = asset_cache_dir or os.path.join(work_in_path, 'assets')
+        work_model_path = os.path.join(work_in_path, 'models')
+        work_index_file = os.path.join(work_in_path, 'candidate-src-index.tsv')
         work_out_path = os.path.join(work_dir, 'out')  # docker container's output data directory
-        work_asset_path = media_cache or os.path.join(work_in_path, 'candidate')
-        work_model_path = os.path.join(work_in_path, 'model')
-        work_index_file = os.path.join(work_in_path, 'candidate', 'src-index.tsv')
 
         ret = _prepare_env(export_root=work_dir,
                            work_in_path=work_in_path,
@@ -144,7 +144,6 @@ class CmdMining(base.BaseCommand):
                         mir_root=mir_root,
                         src_rev_tid=src_typ_rev_tid,
                         media_location=media_location,
-                        path_prefix_in_index_file=work_asset_path,
                         work_asset_path=work_asset_path,
                         work_index_file=work_index_file)
 
@@ -157,7 +156,7 @@ class CmdMining(base.BaseCommand):
                                      task_id=dst_typ_rev_tid.tid,
                                      shm_size=_get_shm_size(config_file),
                                      executor=executor,
-                                     executor_instance=executor_instance,
+                                     executant_name=executant_name,
                                      run_infer=add_annotations,
                                      run_mining=(topk is not None))
 
@@ -307,11 +306,7 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
 
 
 def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_tid: revs_parser.TypRevTid,
-                    media_location: str, path_prefix_in_index_file: str, work_asset_path: str,
-                    work_index_file: str) -> None:
-    os.makedirs(work_asset_path, exist_ok=True)
-    os.makedirs(os.path.dirname(work_index_file), exist_ok=True)
-
+                    media_location: str, work_asset_path: str, work_index_file: str) -> None:
     img_list = set(mir_metadatas.attributes.keys())
     data_exporter.export(mir_root=mir_root,
                          assets_location=media_location,
@@ -325,7 +320,7 @@ def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_ti
                          base_task_id=src_rev_tid.tid,
                          format_type=data_exporter.ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
                          index_file_path=work_index_file,
-                         index_prefix=path_prefix_in_index_file)
+                         index_assets_prefix=work_asset_path)
 
 
 def _get_shm_size(mining_config_file_path: str) -> str:
@@ -347,9 +342,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='work_dir',
                                    type=str,
                                    help='work place for mining and monitoring')
-    mining_arg_parser.add_argument('--cache',
+    mining_arg_parser.add_argument('--asset-cache-dir',
                                    required=False,
-                                   dest='media_cache',
+                                   dest='asset_cache_dir',
                                    type=str,
                                    help='media cache directory')
     mining_arg_parser.add_argument('--model-location',
@@ -387,7 +382,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    type=str,
                                    required=True,
                                    help='rev@tid: destination branch name and task id')
-    mining_arg_parser.add_argument('--config-file',
+    mining_arg_parser.add_argument('--task-config-file',
                                    dest='config_file',
                                    type=str,
                                    required=True,
@@ -397,9 +392,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='executor',
                                    type=str,
                                    help='docker image name for mining')
-    mining_arg_parser.add_argument('--executor-instance',
+    mining_arg_parser.add_argument('--executant-name',
                                    required=False,
-                                   dest='executor_instance',
+                                   dest='executant_name',
                                    type=str,
                                    help='docker container name for mining')
     mining_arg_parser.set_defaults(func=CmdMining)

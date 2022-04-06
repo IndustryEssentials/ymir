@@ -87,13 +87,23 @@ export default {
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
-        return result
+        const models = result.map(model => transferModel(model))
+        return models
       }
     },
     *getModel({ payload }, { call, put }) {
       const { code, result } = yield call(getModel, payload)
       if (code === 0) {
         let model = transferModel(result)
+        if (model.projectId) {
+          const presult = yield put.resolve({
+            type: 'project/getProject',
+            payload: { id: model.projectId },
+          })
+          if (presult) {
+            model.project = presult
+          }
+        }
         yield put({
           type: "UPDATE_MODEL",
           payload: model,
