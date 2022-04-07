@@ -47,5 +47,9 @@ class Dataset(Base):
     )
 
     @property
+    def group_name(self) -> str:
+        return self.group.name  # type: ignore
+
+    @property
     def name(self) -> str:
-        return "_".join([self.group.name, str(self.version_num)])  # type: ignore
+        return "_".join([self.group_name, str(self.version_num)])
