@@ -139,12 +139,6 @@ const mapDispatchToProps = (dispatch) => {
     clearCache() {
       return dispatch({ type: "dataset/clearCache", })
     },
-    createFusionTask(payload) {
-      return dispatch({
-        type: "task/createFusionTask",
-        payload,
-      })
-    },
   }
 }
 
