@@ -67,7 +67,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
         strategy: miningStrategy || 0,
-        chunkSize: miningStrategy === 0 ? chunkSize : undefined,
+        chunkSize: miningStrategy === 0 && chunkSize ? chunkSize : undefined,
       })
     }
   }

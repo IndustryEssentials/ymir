@@ -1,4 +1,5 @@
 const errors = {
+  'error.timeout': { cn: '请求超时', en: 'Request Timeout', },
   'error110101': { cn: '接口错误', en: 'API_ERROR: API Error', },
   'error110102': { cn: '参数校验失败', en: 'Parammeters Validation Failed', },
   'error110103': { cn: '未知错误', en: 'UNKNOWN_ERROR: Unkown Error', },
