@@ -158,15 +158,6 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.portal',
   },
   {
-    path: "/home/image_center",
-    name: "imageCenter",
-    component: "@/pages/image/center",
-    title: "images.center.title",
-    pid: 19,
-    id: 20,
-    breadcrumbLabel: 'breadcrumbs.images',
-  },
-  {
     path: "/home/image/detail/:id",
     name: "imageDetail",
     component: "@/pages/image/detail",
