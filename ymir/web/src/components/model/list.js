@@ -24,7 +24,7 @@ import { ArrowDownIcon, ArrowRightIcon, ImportIcon } from "../common/icons"
 const { confirm } = Modal
 const { useForm } = Form
 
-function Model({ pid, modelList, versions, getModels, getVersions, delModel, updateModel, query, updateQuery, resetQuery }) {
+function Model({ pid, modelList, versions, getModels, getVersions, updateModel, query, updateQuery, resetQuery }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
@@ -47,6 +47,14 @@ function Model({ pid, modelList, versions, getModels, getVersions, delModel, upd
     setModels(modelList.items)
     setTotal(modelList.total)
   }, [modelList])
+
+  useEffect(() => {
+    const hasModel = Object.keys(versions).length
+    const emptyModel = Object.values(versions).some(models => !models.length)
+    if (hasModel && emptyModel) {
+      getData()
+    }
+  }, [versions])
 
 
   useEffect(async () => {
@@ -351,12 +359,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'model/getModelVersions',
         payload: { gid, force },
-      })
-    },
-    delModel: (payload) => {
-      return dispatch({
-        type: 'model/delModel',
-        payload,
       })
     },
     updateModel: (id, name) => {

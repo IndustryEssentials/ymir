@@ -3,8 +3,8 @@ import {
   getAssetsOfDataset, getAsset, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { isFinalState } from '@/constants/task'
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
+import { updateResultState } from '@/constants/common'
 
 let loading = false
 
@@ -45,8 +45,15 @@ export default {
         return datasets || []
       }
     },
-    *getDataset({ payload }, { call, put }) {
-      const { code, result } = yield call(getDataset, payload)
+    *getDataset({ payload }, { call, put, select }) {
+      const {id, force } = payload
+      if (!force) {
+        const dataset = yield select(state => state.dataset.dataset[id])
+        if (dataset) {
+          return dataset
+        }
+      }
+      const { code, result } = yield call(getDataset, id)
       if (code === 0) {
         const dataset = transferDataset(result)
 
@@ -61,7 +68,7 @@ export default {
         }
         yield put({
           type: "UPDATE_DATASET",
-          payload: dataset,
+          payload: { id: dataset.id, dataset },
         })
         return dataset
       }
@@ -136,6 +143,10 @@ export default {
     *delDataset({ payload }, { call, put }) {
       const { code, result } = yield call(delDataset, payload)
       if (code === 0) {
+        yield put({
+          type: "UPDATE_DATASET",
+          payload: { id: payload, dataset: null },
+        })
         return result
       }
     },
@@ -172,22 +183,34 @@ export default {
     },
     *updateDatasets({ payload }, { put, select }) {
       const versions = yield select(state => state.dataset.versions)
-      const updateList = payload || {}
+      const tasks = payload || {}
       Object.keys(versions).forEach(gid => {
         const datasets = versions[gid]
-        const updatedDatsets = datasets.map(dataset => {
-          const updateItem = updateList[dataset.hash]
-          if (updateItem) {
-            dataset.state = updateItem.state
-            dataset.progress = updateItem.percent
-          }
-          return { ...dataset }
+        let updatedDatasets = datasets.map(dataset => {
+          const updatedDataset = updateResultState(dataset, tasks)
+          return { ...updatedDataset }
         })
-        versions[gid] = updatedDatsets
+        versions[gid] = updatedDatasets
       })
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
-        payload: versions,
+        payload: { ...versions },
+      })
+      return { ...versions }
+    },
+    *updateDatasetState({ payload }, { put, select }) {
+      const datasetCache = yield select(state => state.dataset.dataset)
+      const tasks = payload || {}
+      Object.keys(datasetCache).forEach(did => {
+        const dataset = datasetCache[did]
+        const updatedDataset = updateResultState(dataset, tasks)
+        console.log('updatedDataset:', updatedDataset, tasks, dataset)
+        datasetCache[did] = updatedDataset
+      })
+
+      yield put({
+        type: 'UPDATE_ALL_DATASET',
+        payload: { ...datasetCache },
       })
     },
     *getHotDatasets({ payload }, { call, put }) {
@@ -254,7 +277,6 @@ export default {
         versions: { ...vs },
       }
     },
-    
     UPDATE_ALL_VERSIONS(state, { payload }) {
       return {
         ...state,
@@ -262,11 +284,18 @@ export default {
       }
     },
     UPDATE_DATASET(state, { payload }) {
-      const ds = payload
-      const dss = { ...state.dataset, [ds.id]: ds, }
+      const { id, dataset } = payload
+      const dss = { ...state.dataset, [id]: dataset, }
       return {
         ...state,
         dataset: dss,
+      }
+    },
+    UPDATE_ALL_DATASET(state, { payload }) {
+      const dataset = payload
+      return {
+        ...state,
+        dataset,
       }
     },
     UPDATE_ASSETS(state, { payload }) {
@@ -297,13 +326,4 @@ export default {
       return { ...initState }
     },
   },
-  subscriptions: {
-    setup({ dispatch, history }) {
-      history.listen(location => {
-        dispatch({
-          type: 'clearCache',
-        })
-      })
-    },
-  }
 }

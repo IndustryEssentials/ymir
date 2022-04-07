@@ -3,7 +3,7 @@ import confirm from '@/components/common/dangerConfirm'
 import { connect } from "dva"
 import { forwardRef, useImperativeHandle } from "react"
 
-const Del = forwardRef(({ delDataset, ok = () => {} }, ref) => {
+const Del = forwardRef(({ delModel, ok = () => {} }, ref) => {
   useImperativeHandle(ref, () => {
     return {
       del,
@@ -14,9 +14,9 @@ const Del = forwardRef(({ delDataset, ok = () => {} }, ref) => {
     confirm({
       content: t("model.action.del.confirm.content", { name }),
       onOk: async () => {
-        const result = await delDataset(id)
+        const result = await delModel(id)
         if (result) {
-          ok(result.dataset_group_id)
+          ok(result.model_group_id)
         }
       },
       okText: t('common.del'),
@@ -28,7 +28,7 @@ const Del = forwardRef(({ delDataset, ok = () => {} }, ref) => {
 
 const actions = (dispatch) => {
   return {
-    delDataset(id) {
+    delModel(id) {
       return dispatch({
         type: 'model/delModel',
         payload: id,

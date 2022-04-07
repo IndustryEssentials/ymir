@@ -11,7 +11,8 @@ import {
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
-import { transferModelGroup, transferModel, states, } from '@/constants/model'
+import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
+import { updateResultState } from '@/constants/common'
 
 const initQuery = {
   name: "",
@@ -91,8 +92,15 @@ export default {
         return models
       }
     },
-    *getModel({ payload }, { call, put }) {
-      const { code, result } = yield call(getModel, payload)
+    *getModel({ payload }, { call, put, select }) {
+      const { id, force } = payload
+      if (!force) {
+        const modelCache = yield select(state => state.model.model[id])
+        if (modelCache) {
+          return modelCache
+        }
+      }
+      const { code, result } = yield call(getModel, id)
       if (code === 0) {
         let model = transferModel(result)
         if (model.projectId) {
@@ -114,6 +122,10 @@ export default {
     *delModel({ payload }, { call, put }) {
       const { code, result } = yield call(delModel, payload)
       if (code === 0) {
+        yield put({
+          type: 'UPDATE_MODEL',
+          payload: {},
+        })
         return result
       }
     },
@@ -145,25 +157,28 @@ export default {
     },
     *updateModelsStates({ payload }, { put }) {
       const versions = yield select(state => state.model.versions)
-      const updateList = payload || {}
+      const tasks = payload || {}
       Object.keys(versions).forEach(gid => {
         const models = versions[gid]
-        const needUpdate = false
         const updatedModels = models.map(model => {
-          const updateItem = updateList[model.hash]
-          if (updateItem) {
-            needUpdate = true
-            model.state = updateItem.state
-            model.progress = updateItem.percent
-          }
-          return { ...model }
+          const updatedModel = updateResultState(model, tasks)
+          return { ...updatedModel }
         })
-        if (needUpdate) {
-          put({
-            type: 'UPDATE_VERSIONS',
-            payload: { id: gid, versions: updatedModels },
-          })
-        }
+        versions[gid] = updatedModels
+      })
+      put({
+        type: 'UPDATE_ALL_VERSIONS',
+        payload: { ...versions },
+      })
+    },
+    *updateModelState({ payload }, { put, select }) {
+      const dataset = yield select(state => state.model.model)
+      const tasks = payload || {}
+      const updatedModel = updateResultState(dataset, tasks)
+
+      yield put({
+        type: 'UPDATE_DATASET',
+        payload: { ...updatedModel },
       })
     },
     *getModelsByRef({ payload }, { call, put }) {
@@ -248,7 +263,13 @@ export default {
       vs[id] = versions
       return {
         ...state,
-        versions: vs,
+        versions: { ...vs },
+      }
+    },
+    UPDATE_ALL_VERSIONS(state, { payload }) {
+      return {
+        ...state,
+        versions: { ...payload },
       }
     },
     UPDATE_ALL_MODELS(state, { payload }) {
