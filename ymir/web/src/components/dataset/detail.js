@@ -3,6 +3,7 @@ import { useHistory } from "umi"
 import { Button, Col, Descriptions, Row, Tag } from "antd"
 
 import t from "@/utils/t"
+import { states } from '@/constants/common'
 import styles from "./detail.less"
 import { SearchIcon } from "@/components/common/icons"
 
@@ -22,8 +23,17 @@ function DatasetDetail({ dataset = {} }) {
         className={styles.infoTable}
       >
         <Item label={t("dataset.detail.label.name")}>
-          <Row><Col flex={1}>{dataset.name}</Col>
-            <Col><Button type='primary' icon={<SearchIcon />} onClick={() => history.push(`/home/project/${pid}/dataset/${dataset.id}/assets`)}>{t('common.view')}</Button></Col></Row></Item>
+          <Row>
+            <Col flex={1}>{dataset.name}</Col>
+            <Col hidden={dataset.state !== states.VALID}>
+              <Button
+                type='primary'
+                icon={<SearchIcon />}
+                onClick={() => history.push(`/home/project/${dataset.projectId}/dataset/${dataset.id}/assets`)}
+              >{t('common.view')}</Button>
+            </Col>
+          </Row>
+        </Item>
         <Item label={t("dataset.detail.label.assets")}>{dataset.assetCount}</Item>
         <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
       </Descriptions>
