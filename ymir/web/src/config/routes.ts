@@ -95,7 +95,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset',
   },
   {
-    path: "/home/dataset/assets/:id",
+    path: "/home/project/:id/dataset/:did/assets",
     name: "datasetDetail",
     component: "@/pages/dataset/assets",
     title: "assets.title",

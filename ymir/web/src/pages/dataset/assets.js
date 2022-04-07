@@ -25,7 +25,7 @@ function rand(n, m, exclude) {
 }
 
 const Dataset = ({ getDataset, getAssetsOfDataset }) => {
-  const { id } = useParams()
+  const { did: id } = useParams()
   const initQuery = {
     id,
     keyword: null,

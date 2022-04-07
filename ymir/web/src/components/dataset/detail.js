@@ -23,7 +23,7 @@ function DatasetDetail({ dataset = {} }) {
       >
         <Item label={t("dataset.detail.label.name")}>
           <Row><Col flex={1}>{dataset.name}</Col>
-            <Col><Button type='primary' icon={<SearchIcon />} onClick={() => history.push(`/home/dataset/assets/${dataset.id}`)}>{t('common.view')}</Button></Col></Row></Item>
+            <Col><Button type='primary' icon={<SearchIcon />} onClick={() => history.push(`/home/project/${pid}/dataset/${dataset.id}/assets`)}>{t('common.view')}</Button></Col></Row></Item>
         <Item label={t("dataset.detail.label.assets")}>{dataset.assetCount}</Item>
         <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
       </Descriptions>
