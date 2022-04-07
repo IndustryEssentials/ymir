@@ -104,7 +104,7 @@ function Image() {
   return (
     <div className={styles.image}>
       <Breadcrumbs />
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { history.replace({ state: { type: key }} )}} tabBarExtraContent={active === 'my' ? searchPanel : null}>
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { history.replace({ state: { type: key }} ); resetQuery()}} tabBarExtraContent={active === 'my' ? searchPanel : null}>
         {contents[active]}
       </Card>
     </div>
