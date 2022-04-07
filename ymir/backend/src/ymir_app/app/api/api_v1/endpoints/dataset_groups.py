@@ -105,7 +105,7 @@ def update_dataset_group(
     if not dataset_group:
         raise DatasetGroupNotFound()
 
-    if crud.dataset.is_duplicated_name_in_project(db, project_id=dataset_group.project_id, name=obj_update.name):
+    if crud.dataset_group.is_duplicated_name_in_project(db, project_id=dataset_group.project_id, name=obj_update.name):
         raise DuplicateDatasetGroupError()
 
     dataset_group = crud.dataset_group.update(db, db_obj=dataset_group, obj_in=obj_update)
