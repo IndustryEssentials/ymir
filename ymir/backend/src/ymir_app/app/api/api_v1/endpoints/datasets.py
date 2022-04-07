@@ -16,10 +16,8 @@ from app.api import deps
 from app.api.errors.errors import (
     AssetNotFound,
     DatasetNotFound,
-    DuplicateDatasetError,
     DuplicateDatasetGroupError,
     FailedtoCreateDataset,
-    FieldValidationFailed,
     NoDatasetPermission,
     FailedtoCreateTask,
     DatasetGroupNotFound,
@@ -70,7 +68,6 @@ class SortField(enum.Enum):
 )
 def list_datasets(
     db: Session = Depends(deps.get_db),
-    name: str = Query(None, description="search by dataset's name"),
     source: TaskType = Query(None, description="type of related task"),
     project_id: int = Query(None),
     group_id: int = Query(None),
@@ -90,7 +87,6 @@ def list_datasets(
     datasets, total = crud.dataset.get_multi_datasets(
         db,
         user_id=current_user.id,
-        name=name,
         project_id=project_id,
         group_id=group_id,
         source=source,
@@ -180,7 +176,6 @@ def import_dataset(
         dataset_group.id,
     )
     dataset_in = schemas.DatasetCreate(
-        name=f"{dataset_import.dataset_group_name}_initial",
         hash=task.hash,
         description=dataset_import.description,
         dataset_group_id=dataset_group.id,
@@ -317,33 +312,6 @@ def get_dataset(
     dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
-    return {"result": dataset}
-
-
-@router.patch(
-    "/{dataset_id}",
-    response_model=schemas.DatasetOut,
-    responses={404: {"description": "Dataset Not Found"}},
-)
-def update_dataset_name(
-    *,
-    db: Session = Depends(deps.get_db),
-    dataset_id: int = Path(..., example="12"),
-    dataset_in: schemas.DatasetUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Update dataset name
-    """
-    if not dataset_in.name:
-        raise FieldValidationFailed()
-    dataset = crud.dataset.get(db, id=dataset_id)
-    if not dataset:
-        raise DatasetNotFound()
-    if crud.dataset.is_duplicated_name_in_project(db, project_id=dataset.project_id, name=dataset_in.name):
-        raise DuplicateDatasetError()
-
-    dataset = crud.dataset.update(db, db_obj=dataset, obj_in=dataset_in)
     return {"result": dataset}
 
 
@@ -545,7 +513,6 @@ def create_dataset_fusion(
     if not dataset_group:
         raise DatasetGroupNotFound()
     dataset_in = schemas.DatasetCreate(
-        name=task.hash,
         hash=task.hash,
         dataset_group_id=task_in.dataset_group_id,
         project_id=task.project_id,

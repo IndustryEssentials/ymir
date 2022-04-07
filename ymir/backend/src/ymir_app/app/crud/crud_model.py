@@ -17,7 +17,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         self,
         db: Session,
         *,
-        name: Optional[str],
         user_id: int,
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
@@ -42,10 +41,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                     self.model.create_datetime <= _end_time,
                 )
             )
-
-        if name:
-            # basic fuzzy search
-            query = query.filter(self.model.name.like(f"%{name}%"))
 
         if source:
             query = query.filter(self.model.source == int(source))
@@ -83,13 +78,8 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         # fixme
         #  add mutex lock to protect latest_version
         version_num = self.next_available_version(db, obj_in.model_group_id)
-        if dest_group_name:
-            name = f"{dest_group_name}_{version_num}"
-        else:
-            name = obj_in.name
 
         db_obj = Model(
-            name=name,
             version_num=version_num,
             hash=obj_in.hash,
             source=int(obj_in.source),
@@ -108,7 +98,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
     ) -> Model:
         model_in = ModelCreate(
-            name=task.hash,
             hash=task.hash,
             source=task.type,
             result_state=ResultState.processing,
