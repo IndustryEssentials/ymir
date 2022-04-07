@@ -11,6 +11,12 @@ export enum Stages {
   training = 4,
   next = 5,
 }
+export enum MiningStrategy {
+  block = 0,
+  unique = 1,
+  free = 2,
+}
+
 type stageObject = {
   value: Stages,
   result?: string,

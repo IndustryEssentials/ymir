@@ -284,7 +284,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
           <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
             <span className={styles.groupName}>{group.name}</span></Col>
           <Col><Space>
-            <a onClick={edit} title={t('common.modify')}><EditIcon /></a>
+            <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
             <a onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
@@ -332,17 +332,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
 
         {renderGroups}
       </div>
-      <EditBox record={current} max={80} action={saveName}>
-        {current.source ? <Form.Item label={t('model.column.source')}>
-          <TypeTag types={types} type={current.source} id={current.id} name={current.task_name} />
-        </Form.Item> : null}
-        {current.keywords ? <Form.Item label={t('model.column.target')}>
-          {t('dataset.column.keyword.label', { keywords: current.keywords.join(', '), total: current.keywords.length })}
-        </Form.Item> : null}
-        <Form.Item label={t('model.column.map')}>
-          {current.map}
-        </Form.Item>
-      </EditBox>
+      <EditBox record={current} max={80} action={saveName}></EditBox>
       <DelGroup ref={delGroupRef} ok={delGroupOk} />
       <Del ref={delRef} ok={delOk} />
     </div>

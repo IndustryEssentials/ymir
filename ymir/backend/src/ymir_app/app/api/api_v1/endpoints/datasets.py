@@ -143,7 +143,7 @@ def import_dataset(
     """
     # 1. check if dataset group name is available
     if crud.dataset_group.is_duplicated_name_in_project(
-        db, project_id=dataset_import.project_id, name=dataset_import.dataset_group_name
+        db, project_id=dataset_import.project_id, name=dataset_import.group_name
     ):
         raise DuplicateDatasetGroupError()
 
@@ -167,7 +167,7 @@ def import_dataset(
     # 3. create dataset record
     dataset_group = crud.dataset_group.create_dataset_group(
         db,
-        name=dataset_import.dataset_group_name,
+        name=dataset_import.group_name,
         user_id=current_user.id,
         project_id=dataset_import.project_id,
     )

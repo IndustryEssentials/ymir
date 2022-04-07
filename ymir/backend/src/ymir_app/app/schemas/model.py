@@ -59,6 +59,7 @@ class ModelUpdate(BaseModel):
 
 class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):
     name: str
+    group_name: str
     version_num: int
     related_task: Optional[TaskInternal]
 
