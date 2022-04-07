@@ -73,7 +73,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     const ds = datasets[id]
     const name = ds ? `${ds.name} ${ds.versionName}` : id
     return (
-      <Link key={id} to={`/home/dataset/detail/${id}`}>
+      <Link key={id} to={`/home/project/${task.project_id}/dataset/${id}`}>
         {name}
       </Link>
     )

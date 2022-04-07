@@ -7,7 +7,7 @@ const pageMaps = [
   { path: '/home/project/detail/\\d+', method: 'iteration/updateCurrentStageResult' },
   { path: '/home/project/detail/\\d+', method: 'model/updateModels' },
   { path: '/home/model/detail/\\d+', method: 'model/updateModelState' },
-  { path: '/home/dataset/detail/\\d+', method: 'dataset/updateDatasetState' },
+  { path: '/home/project/\\d+/dataset/\\d+', method: 'dataset/updateDatasetState' },
 ]
 
 export default {

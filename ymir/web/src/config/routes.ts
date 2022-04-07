@@ -86,7 +86,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.add',
   },
   {
-    path: "/home/dataset/detail/:id",
+    path: "/home/project/:id/dataset/:did",
     name: "datasetDetail",
     component: "@/pages/dataset/detail",
     title: "dataset.title",
