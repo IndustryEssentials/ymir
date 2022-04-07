@@ -49,7 +49,7 @@ class DatasetBase(BaseModel):
 
 # Properties required for a client to create a dataset
 class DatasetImport(BaseModel):
-    dataset_group_name: str = Field(description="Dataset Group Name")
+    group_name: str = Field(description="Dataset Group Name")
     description: Optional[str]
     project_id: int
     input_url: Optional[str] = Field(description="from url")
