@@ -28,7 +28,6 @@ class MergeStrategy(enum.IntEnum):
 
 
 class DatasetBase(BaseModel):
-    name: str = Field(description="Dataset Name")
     source: TaskType
     description: Optional[str]
     result_state: ResultState = ResultState.processing
@@ -83,7 +82,6 @@ class DatasetCreate(DatasetBase):
 
 # Properties that can be changed
 class DatasetUpdate(BaseModel):
-    name: Optional[str]
     description: Optional[str]
     result_state: Optional[ResultState]
     keywords: Optional[str]
@@ -94,6 +92,7 @@ class DatasetUpdate(BaseModel):
 
 
 class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase):
+    name: str
     hash: str = Field(description="related task hash")
     version_num: int = Field(description="version num from related dataset group")
     task_id: int

@@ -1,8 +1,8 @@
-"""update
+"""init tables
 
-Revision ID: 01c4db230f02
+Revision ID: 33b051f9d73f
 Revises:
-Create Date: 2022-04-02 15:11:03.193254
+Create Date: 2022-04-07 14:09:31.771517
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "01c4db230f02"
+revision = "33b051f9d73f"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,6 @@ def upgrade() -> None:
         "dataset",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("hash", sa.String(length=100), nullable=False),
-        sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("source", sa.SmallInteger(), nullable=False),
         sa.Column("description", sa.String(length=100), nullable=True),
         sa.Column("version_num", sa.Integer(), nullable=False),
@@ -45,7 +44,6 @@ def upgrade() -> None:
     op.create_index(op.f("ix_dataset_dataset_group_id"), "dataset", ["dataset_group_id"], unique=False)
     op.create_index(op.f("ix_dataset_hash"), "dataset", ["hash"], unique=True)
     op.create_index(op.f("ix_dataset_id"), "dataset", ["id"], unique=False)
-    op.create_index(op.f("ix_dataset_name"), "dataset", ["name"], unique=False)
     op.create_index(op.f("ix_dataset_project_id"), "dataset", ["project_id"], unique=False)
     op.create_index(op.f("ix_dataset_result_state"), "dataset", ["result_state"], unique=False)
     op.create_index(op.f("ix_dataset_source"), "dataset", ["source"], unique=False)
@@ -139,7 +137,6 @@ def upgrade() -> None:
         "model",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("hash", sa.String(length=100), nullable=True),
-        sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("source", sa.SmallInteger(), nullable=False),
         sa.Column("description", sa.String(length=100), nullable=True),
         sa.Column("version_num", sa.Integer(), nullable=False),
@@ -158,7 +155,6 @@ def upgrade() -> None:
     op.create_index(op.f("ix_model_hash"), "model", ["hash"], unique=False)
     op.create_index(op.f("ix_model_id"), "model", ["id"], unique=False)
     op.create_index(op.f("ix_model_model_group_id"), "model", ["model_group_id"], unique=False)
-    op.create_index(op.f("ix_model_name"), "model", ["name"], unique=False)
     op.create_index(op.f("ix_model_project_id"), "model", ["project_id"], unique=False)
     op.create_index(op.f("ix_model_result_state"), "model", ["result_state"], unique=False)
     op.create_index(op.f("ix_model_source"), "model", ["source"], unique=False)
@@ -321,7 +317,6 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_model_source"), table_name="model")
     op.drop_index(op.f("ix_model_result_state"), table_name="model")
     op.drop_index(op.f("ix_model_project_id"), table_name="model")
-    op.drop_index(op.f("ix_model_name"), table_name="model")
     op.drop_index(op.f("ix_model_model_group_id"), table_name="model")
     op.drop_index(op.f("ix_model_id"), table_name="model")
     op.drop_index(op.f("ix_model_hash"), table_name="model")
@@ -356,7 +351,6 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_dataset_source"), table_name="dataset")
     op.drop_index(op.f("ix_dataset_result_state"), table_name="dataset")
     op.drop_index(op.f("ix_dataset_project_id"), table_name="dataset")
-    op.drop_index(op.f("ix_dataset_name"), table_name="dataset")
     op.drop_index(op.f("ix_dataset_id"), table_name="dataset")
     op.drop_index(op.f("ix_dataset_hash"), table_name="dataset")
     op.drop_index(op.f("ix_dataset_dataset_group_id"), table_name="dataset")

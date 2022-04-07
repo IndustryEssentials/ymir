@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
-    DuplicateModelError,
     ModelNotFound,
     DuplicateModelGroupError,
     FailedtoImportModel,
@@ -47,7 +46,6 @@ class SortField(enum.Enum):
 @router.get("/", response_model=schemas.ModelPaginationOut)
 def list_models(
     db: Session = Depends(deps.get_db),
-    name: str = Query(None, description="search by model's name"),
     source: TaskType = Query(None, description="type of related task"),
     state: ResultState = Query(None),
     project_id: int = Query(None),
@@ -67,7 +65,6 @@ def list_models(
     pagination is supported by means of offset and limit
 
     filters:
-    - name
     - state
     - project_id
     - start_time, end_time
@@ -77,7 +74,6 @@ def list_models(
         user_id=current_user.id,
         project_id=project_id,
         group_id=group_id,
-        name=name,
         source=source,
         state=state,
         offset=offset,
@@ -106,7 +102,7 @@ def import_model(
 
     # 1. validation model group name
     if crud.model_group.is_duplicated_name_in_project(
-        db=db, project_id=model_import.project_id, name=model_import.name
+        db=db, project_id=model_import.project_id, name=model_import.group_name
     ):
         raise DuplicateModelGroupError()
 
@@ -124,7 +120,7 @@ def import_model(
 
     # 3. create model group
     model_group_in = schemas.ModelGroupCreate(
-        name=model_import.name,
+        name=model_import.group_name,
         project_id=model_import.project_id,
         description=model_import.description,
     )
@@ -132,9 +128,7 @@ def import_model(
 
     # 4. create model record
     model_in = schemas.ModelCreate(
-        name=task.hash,
         description=model_import.description,
-        hash=None,
         source=task.type,
         result_state=ResultState.processing,
         model_group_id=model_group.id,
@@ -142,7 +136,7 @@ def import_model(
         user_id=current_user.id,
         task_id=task.id,
     )
-    model = crud.model.create_with_version(db=db, obj_in=model_in, dest_group_name=model_import.name)
+    model = crud.model.create_with_version(db=db, obj_in=model_in, dest_group_name=model_import.group_name)
     logger.info("[import model] model record created: %s", model)
 
     # 5. run background task
@@ -272,29 +266,4 @@ def get_model(
     model = crud.model.get_by_user_and_id(db, user_id=current_user.id, id=model_id)
     if not model:
         raise ModelNotFound()
-    return {"result": model}
-
-
-@router.patch(
-    "/{model_id}",
-    response_model=schemas.ModelOut,
-    responses={404: {"description": "Model Not Found"}},
-)
-def update_model_name(
-    *,
-    db: Session = Depends(deps.get_db),
-    model_id: int = Path(..., example="12"),
-    model_in: schemas.ModelUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Update model name
-    """
-    model = crud.model.get(db, id=model_id)
-    if not model:
-        raise ModelNotFound()
-    if crud.model.is_duplicated_name_in_project(db, project_id=model.project_id, name=model_in.name):
-        raise DuplicateModelError()
-
-    model = crud.model.update(db, db_obj=model, obj_in=model_in)
     return {"result": model}
