@@ -127,7 +127,7 @@ class AssetsModel:
         elements = []
         for asset_id, asset_detail in zip(asset_ids, assets_detail):
             elements.append(dict(asset_id=asset_id, class_ids=yaml.safe_load(asset_detail)["class_ids"]))
-        total = redis_cache.llen(f"{viz_settings.VIZ_ALL_INDEX_CLASSIDS}:{class_id}")
+        total = redis_cache.llen(f"{self.key_asset_index}:{class_id}")
         result = dict(elements=elements, limit=limit, offset=offset, total=total)
 
         return result
