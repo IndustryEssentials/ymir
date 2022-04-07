@@ -1,11 +1,12 @@
 import React, { useState, useEffect, memo, useMemo } from "react"
 import { connect } from "dva"
-import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio, Row, Col, InputNumber } from "antd"
+import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio, Row, Col, InputNumber, Checkbox } from "antd"
 import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
 import { randomNumber } from "@/utils/number"
+import { MiningStrategy } from '@/constants/project'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import s from "./index.less"
@@ -20,7 +21,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { query } = useLocation()
-  const { iterationId, currentStage, outputKey, chunk, strategy, merging } = query
+  const { iterationId, currentStage, outputKey, chunk, strategy = '', merging } = query
   const did = Number(query.did)
   const history = useHistory()
   const [form] = Form.useForm()
@@ -28,6 +29,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const [datasets, setDatasets] = useState([])
   const [includeDatasets, setIncludeDatasets] = useState([])
   const [excludeDatasets, setExcludeDatasets] = useState([])
+  const [miningStrategy, setMiningStrategy] = useState(strategy || 0)
+  const [excludeResult, setExcludeResult] = useState(true)
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [selectedExcludeKeywords, setExcludeKeywords] = useState([])
@@ -40,8 +43,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
     samples: chunk,
-    include_datasets: merging ? [Number(merging)] : [],
-    strategy: strategy || 2,
+    include_datasets: Number(merging) ? [Number(merging)] : [],
+    strategy: 2,
   }
 
   useEffect(() => {
@@ -70,14 +73,14 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
 
     if (state?.record) {
       const { parameters, name, } = state.record
-      const { include_classes, include_datasets, exclude_classes, strategy } = parameters
+      const { include_classes, include_datasets, exclude_classes, include_strategy } = parameters
       //do somethin
       form.setFieldsValue({
         name: `${name}_${randomNumber()}`,
         datasets: include_datasets,
         inc: include_classes,
         exc: exclude_classes,
-        strategy,
+        strategy: include_strategy,
       })
       setSelectedKeywords(include_classes)
       setExcludeKeywords(exclude_classes)
@@ -103,7 +106,9 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
       dataset: did,
       include: selectedKeywords,
       exclude: selectedExcludeKeywords,
-      strategy: Number(values.strategy) || 2,
+      mining_strategy: miningStrategy,
+      exclude_result: excludeResult,
+      include_strategy: Number(values.strategy) || 2,
     }
     if (iterationId) {
       params.iteration = iterationId
@@ -138,6 +143,15 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
     // todo inter keywords
   }
 
+  function miningStrategyChanged({ target: { checked }}) {
+    if (strategy == MiningStrategy.free) {
+      setMiningStrategy(checked ? 1 : 2)
+      setExcludeResult(true)
+    } else {
+      setExcludeResult(checked)
+    }
+  }
+
   function selectRecommendKeywords(keyword) {
     const kws = [...new Set([...selectedKeywords, keyword])]
     setSelectedKeywords(kws)
@@ -152,7 +166,6 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
         onChange={onChange}
         showArrow
       >
-        {console.log('datasets:', datasets, datasets.filter(ds => ![did, ...filter].includes(ds.id)), did, filter)}
         {datasets.filter(ds => ![did, ...filter].includes(ds.id)).map(item => (
           <Option value={item.id} key={item.id}>
             {item.name}({item.assetCount})
@@ -200,6 +213,15 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
                   ]} />
                 </Form.Item>
               </Tip>
+              { strategy.length ? <Tip hidden={true}>
+                <Form.Item noStyle>
+                  <Row><Col offset={8} flex={1}>
+                    <Checkbox defaultChecked={Number(strategy) !== MiningStrategy.free} onChange={miningStrategyChanged}>
+                      {t(`project.mining.strategy.${strategy}.label`)}
+                    </Checkbox>
+                  </Col></Row>
+                </Form.Item>
+              </Tip> : null }
               <Tip hidden={true}>
                 <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
                   {datasetSelect(includeDatasets, onExcludeDatasetChange)}

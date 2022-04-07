@@ -56,6 +56,7 @@ describe("models: task", () => {
       code: 0,
       result: expected,
     })
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toBe(expected)
@@ -75,6 +76,7 @@ describe("models: task", () => {
       code: 0,
       result: expected,
     })
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toBe(expected)
@@ -94,6 +96,7 @@ describe("models: task", () => {
       code: 0,
       result: expected,
     })
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toBe(expected)
@@ -173,6 +176,7 @@ describe("models: task", () => {
       result: expected,
     })
     
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toBe(expected)

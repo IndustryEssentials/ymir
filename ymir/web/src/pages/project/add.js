@@ -5,6 +5,7 @@ import { useParams, useHistory, useLocation } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
+import { MiningStrategy } from '@/constants/project'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Tip from '@/components/form/tip'
 import EmptyState from '@/components/empty/dataset'
@@ -12,6 +13,13 @@ import DatasetSelect from '../../components/form/datasetSelect'
 import Panel from '../../components/form/panel'
 
 const { useForm } = Form
+
+const strategyOptions = Object.values(MiningStrategy)
+  .filter(key => Number.isInteger(key))
+  .map(value => ({
+    value,
+    label: t(`project.mining.strategy.${value}`),
+  }))
 
 const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func }) => {
   const { id } = useParams()
@@ -48,7 +56,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
   }, [project])
 
   function initForm(project = {}) {
-    const { name, keywords: kws, targetMap, targetDataset, targetIteration, 
+    const { name, keywords: kws, targetMap, targetDataset, targetIteration,
       description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
     if (name) {
       form.setFieldsValue({
@@ -59,7 +67,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
         strategy: miningStrategy || 0,
-        chunkSize: miningStrategy === 0 ? chunkSize : undefined,
+        chunkSize: miningStrategy === 0 && chunkSize ? chunkSize : undefined,
       })
     }
   }
@@ -104,7 +112,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
         <div className={s.formContainer}>
           <Form form={form} labelCol={{ span: 4 }} onFinish={submit} scrollToFirstError>
             {!settings ? <Panel hasHeader={false}>
-              <Tip content={t('tip.project.add.name')}>
+              <Tip hidden={true}>
                 <Form.Item
                   label={t('project.add.form.name')}
                   name='name'
@@ -116,7 +124,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
                 </Form.Item>
               </Tip>
-              <Tip content={t('tip.project.add.type')}>
+              <Tip hidden={true}>
                 <Form.Item
                   label={t('project.add.form.type')}
                   name='type'
@@ -127,7 +135,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   </Radio.Group>
                 </Form.Item>
               </Tip>
-              <Tip content={t('tip.project.add.keyword')}>
+              <Tip hidden={true}>
                 <Form.Item
                   label={t('project.add.form.keyword.label')}
                   name="keywords"
@@ -149,7 +157,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   </Select>
                 </Form.Item>
               </Tip>
-              <Tip content={t('tip.project.add.target')}>
+              <Tip hidden={true}>
                 <Form.Item label={t('project.add.form.target')}>
                   <div className={s.targetPanel}>
                     <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='targetMap'>
@@ -164,7 +172,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   </div>
                 </Form.Item>
               </Tip>
-              <Tip content={t('tip.project.add.desc')}>
+              <Tip hidden={true}>
                 <Form.Item label={t('project.add.form.desc')} name='description'
                   rules={[
                     { max: 500 },
@@ -195,23 +203,15 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Form.Item label={t('project.add.form.mining.strategy')}>
                     <Row>
                       <Col flex={1}>
-                        <Form.Item
-                          name='strategy'
-                          noStyle
-                          initialValue={0}
-                        >
-                          <Select options={[
-                            { value: 0, label: t('project.mining.strategy.block') },
-                            { value: 1, label: t('project.mining.strategy.unique') },
-                            { value: 2, label: t('project.mining.strategy.custom') },
-                          ]} onChange={value => setStrategy(value)} />
+                        <Form.Item name='strategy' noStyle>
+                          <Select options={strategyOptions} onChange={value => setStrategy(value)} />
                         </Form.Item>
                       </Col>
-                      { strategy === 0 ? <Col flex={'100px'} offset={1}>
-                        <Form.Item noStyle name='chunkSize' required={strategy === 0}>
+                      {strategy === 0 ? <Col flex={'200px'} offset={1}>
+                        <Form.Item label={t('project.add.form.mining.chunksize')} wrapperCol={{ span: 12 }} labelCol={{ span: 12 }} name='chunkSize' required={strategy === 0}>
                           <InputNumber step={1} min={1} style={{ width: '100%' }} />
                         </Form.Item>
-                      </Col> : null }
+                      </Col> : null}
                     </Row>
                   </Form.Item>
                 </Tip>
