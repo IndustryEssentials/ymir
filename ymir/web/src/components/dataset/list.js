@@ -92,7 +92,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
       key: "name",
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, state }) => <Link to={`/home/dataset/detail/${id}`}>{name}</Link>,
+      render: (name, { id, state }) => <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>,
       ellipsis: true,
     },
     {

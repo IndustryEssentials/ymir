@@ -86,7 +86,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
       dataIndex: "versionName",
       className: styles[`column_name`],
       render: (name, { id }) => (
-        <Link to={`/home/model/detail/${id}`}>{name}</Link>
+        <Link to={`/home/project/${pid}/model/${id}`}>{name}</Link>
       ),
       ellipsis: true,
     },
@@ -164,7 +164,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
       {
         key: "verify",
         label: t("model.action.verify"),
-        onclick: () => history.push(`/home/model/verify/${id}`),
+        onclick: () => history.push(`/home/project/${pid}/model/${id}/verify`),
         icon: <ShieldIcon />,
       },
       {
