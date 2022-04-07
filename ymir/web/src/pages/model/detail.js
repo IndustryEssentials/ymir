@@ -49,7 +49,7 @@ function ModelDetail({ getModel }) {
         <TaskDetail task={model.task}></TaskDetail>
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
           {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
-          <Button onClick={() => history.push(`/home/model/verify/${model.id}`)}>{t('model.action.verify')}</Button>
+          <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
         </Space>

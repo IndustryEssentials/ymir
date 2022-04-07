@@ -25,7 +25,7 @@ function rand(n, m, exclude) {
 }
 
 const Dataset = ({ getDataset, getAssetsOfDataset }) => {
-  const { id } = useParams()
+  const { did: id } = useParams()
   const initQuery = {
     id,
     keyword: null,
@@ -119,15 +119,15 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
               />
               <span
                 className={styles.item_keywords_count}
-                title={dataset.keywords.join(",")}
+                title={asset?.keywords.join(",")}
               >
                 {t("dataset.detail.assets.keywords.total", {
-                  total: dataset.keywordCount,
+                  total: asset?.keywords?.length,
                 })}
               </span>
               <span className={styles.item_keywords}>
-                {dataset.keywords.slice(0, 4).map(key => <Tag className={styles.item_keyword} key={key} title={key}>{key}</Tag>)}
-                {dataset.keywords.length > 4 ? <Tag className={styles.item_keyword} style={{ width: '10px' }}>...</Tag> : null}
+                {asset.keywords.slice(0, 4).map(key => <Tag className={styles.item_keyword} key={key} title={key}>{key}</Tag>)}
+                {asset.keywords.length > 4 ? <Tag className={styles.item_keyword} style={{ width: '10px' }}>...</Tag> : null}
               </span>
             </div>
           </Col>
@@ -156,7 +156,6 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
           {t("common.all")}
         </Option>
         
-        {console.log('dataset:', dataset)}
         {dataset?.keywords?.map((key) => (
           <Option value={key} key={key} title={`${key} (${dataset.keywordsCount[key]})`}>
             {key} ({dataset.keywordsCount[key]}, {getRate(dataset.keywordsCount[key])})

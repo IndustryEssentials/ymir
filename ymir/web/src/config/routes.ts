@@ -86,7 +86,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.add',
   },
   {
-    path: "/home/dataset/detail/:id",
+    path: "/home/project/:id/dataset/:did",
     name: "datasetDetail",
     component: "@/pages/dataset/detail",
     title: "dataset.title",
@@ -95,7 +95,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset',
   },
   {
-    path: "/home/dataset/assets/:id",
+    path: "/home/project/:id/dataset/:did/assets",
     name: "datasetDetail",
     component: "@/pages/dataset/assets",
     title: "assets.title",
@@ -104,7 +104,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.assets',
   },
   {
-    path: "/home/model/detail/:id",
+    path: "/home/project/:id/model/:mid",
     name: "modelDetail",
     component: "@/pages/model/detail",
     title: "model.title",
@@ -122,7 +122,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.model.add',
   },
   {
-    path: "/home/model/verify/:id",
+    path: "/home/project/:id/model/:mid/verify",
     name: "modelVerify",
     component: "@/pages/model/verify",
     title: "model.verify.title",
@@ -155,15 +155,6 @@ export const homeRoutes = [
     title: "images.title",
     pid: 2,
     id: 19,
-    breadcrumbLabel: 'breadcrumbs.images',
-  },
-  {
-    path: "/home/image_center",
-    name: "imageCenter",
-    component: "@/pages/image/center",
-    title: "images.center.title",
-    pid: 19,
-    id: 20,
     breadcrumbLabel: 'breadcrumbs.images',
   },
   {
