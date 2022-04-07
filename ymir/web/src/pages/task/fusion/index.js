@@ -40,7 +40,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
     samples: chunk,
-    include_datasets: merging ? [Number(merging)] : [],
+    include_datasets: Number(merging) ? [Number(merging)] : [],
     strategy: strategy || 2,
   }
 
