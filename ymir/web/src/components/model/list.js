@@ -56,7 +56,16 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
     }
   }, [versions])
 
-
+  useEffect(() => {
+    Object.keys(versions).forEach(gid => {
+      const vss = versions[gid]
+      const needReload = vss.some(ds => ds.neeReload)
+      if (needReload) {
+        fetchVersions(gid)
+      }
+    })
+  }, [versions])
+  
   useEffect(async () => {
     if (name) {
       await updateQuery({ ...query, name })
@@ -137,10 +146,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
 
   async function showVersions(id) {
     if (!models.some(item => item.id === id && item.showVersions)) {
-      const result = await getVersions(id)
-      if (!result) {
-        return
-      }
+      fetchVersions(id)
     }
     setModels(models.map(item => {
       if (item.id === id) {
@@ -148,6 +154,11 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
       }
       return item
     }))
+  }
+
+  
+  async function fetchVersions(id) {
+    await getVersions(id)
   }
 
   function showTitle(str) {

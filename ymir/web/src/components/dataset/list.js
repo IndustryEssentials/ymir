@@ -55,10 +55,20 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
 
   useEffect(() => {
     const hasDataset = Object.keys(versions).length
-    const emptyDataset = Object.values(versions).some(models => !models.length)
+    const emptyDataset = Object.values(versions).some(dss => !dss.length)
     if (hasDataset && emptyDataset) {
       getData()
     }
+  }, [versions])
+
+  useEffect(() => {
+    Object.keys(versions).forEach(gid => {
+      const vss = versions[gid]
+      const needReload = vss.some(ds => ds.neeReload)
+      if (needReload) {
+        fetchVersions(gid)
+      }
+    })
   }, [versions])
 
   useEffect(async () => {
@@ -218,10 +228,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
 
   async function showVersions(id) {
     if (!datasets.some(item => item.id === id && item.showVersions)) {
-      const result = await getVersions(id)
-      if (!result) {
-        return
-      }
+      fetchVersions(id)
     }
     setDatasets(datasets.map(item => {
       if (item.id === id) {
@@ -231,13 +238,17 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     }))
   }
 
+  async function fetchVersions(id) {
+    await getVersions(id)
+  }
+
   const delGroup = (id, name) => {
     delGroupRef.current.del(id, name)
   }
   const del = (id, name) => {
     delRef.current.del(id, name)
   }
-  
+
   const delOk = (id) => {
     getVersions(id, true)
     getData()
