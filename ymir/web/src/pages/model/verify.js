@@ -316,10 +316,10 @@ function Verify({ getModel, verify }) {
 }
 
 const actions = (dispatch) => ({
-  getModel(payload) {
+  getModel(id, force) {
     return dispatch({
       type: 'model/getModel',
-      payload,
+      payload: { id, force },
     })
   },
   verify(id, urls, image, config) {

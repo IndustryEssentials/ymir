@@ -1,12 +1,13 @@
-import { Button, Col, Row, Space } from "antd"
+import { Button, Col, Popover, Row, Space } from "antd"
 import { useHistory, connect } from "umi"
 
 import t from '@/utils/t'
 import { states, statesLabel } from '@/constants/dataset'
 import s from './iteration.less'
 import { useEffect, useState } from "react"
+import RenderProgress from "../../../components/common/progress"
 
-function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...func }) {
+function Stage({ pid, stage, stageResult, current = 0, end = false, callback = () => { }, ...func }) {
   // console.log('stage: ', stage, end)
   const history = useHistory()
   const [result, setResult] = useState({})
@@ -20,6 +21,17 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   useEffect(() => {
     currentStage() && stage.result && fetchStageResult()
   }, [stage.result])
+
+  useEffect(() => {
+    if (stageResult.id !== stage.result) {
+      return
+    }
+    if (stageResult.needReload) {
+      fetchStageResult(true)
+    } else {
+      setResult(stageResult)
+    }
+  }, [stageResult])
 
   function skip() {
     callback({
@@ -65,10 +77,8 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
     stage.url && history.push(stage.url)
   }
 
-  async function fetchStageResult() {
-    const resp = await func.getStageResult(stage.result, stage.current)
-    console.log('resp:', resp, stage)
-    resp && setResult(resp)
+  async function fetchStageResult(force) {
+    await func.getStageResult(stage.result, stage.current, force)
   }
 
   const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
@@ -86,9 +96,12 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
 
   const renderMainBtn = () => {
     // show by task state and result
+    const content = RenderProgress(result.state, result, true)
     const disabled = isReady() || isInvalid()
     const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
-    return <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
+    const btn = <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
+    const pop = <Popover content={content}>{btn}</Popover>
+    return result.id ? pop : btn
   }
 
   const renderReactBtn = () => {
@@ -130,15 +143,16 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
 const props = (state) => {
   return {
     userId: state.user.id,
+    stageResult: state.iteration.currentStageResult,
   }
 }
 
 const actions = (dispacth) => {
   return {
-    getStageResult(id, stage) {
+    getStageResult(id, stage, force) {
       return dispacth({
         type: 'iteration/getStageResult',
-        payload: { id, stage },
+        payload: { id, stage, force },
       })
     },
     createIteration(params) {

@@ -63,14 +63,13 @@ function Iterations({ ...func }) {
   function renderPop(label, dataset = {}) {
     dataset.project = project
     const content = <KeywordRates dataset={dataset} progressWidth={0.6}></KeywordRates>
-    return <Popover content={content} overlayInnerStyle={{ minWidth: 400 }}>
+    return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <span>{label}</span>
     </Popover>
   }
 
   async function fetchIterations() {
     const result = await func.getIterations(id)
-    console.log('result: ', result)
     if (result) {
       const iters = result.map(i => {
         return {
@@ -88,7 +87,6 @@ function Iterations({ ...func }) {
 
   async function fetchProject() {
     const result = await func.getProject(id)
-    console.log('project: ', result)
     result && setProject(result)
   }
 
@@ -125,13 +123,11 @@ function Iterations({ ...func }) {
           {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
         </Space>
         <div className={s.table}>
-          <ConfigProvider renderEmpty={() => <EmptyState />}>
-            <Table
-              dataSource={iterations}
-              pagination={false}
-              columns={columns}
-            ></Table>
-          </ConfigProvider>
+          <Table
+            dataSource={iterations}
+            pagination={false}
+            columns={columns}
+          ></Table>
         </div>
       </Card>
     </div>

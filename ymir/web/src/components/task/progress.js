@@ -17,7 +17,7 @@ const labelStyle = {
   justifyContent: "flex-end",
 }
 
-function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
+function TaskProgress({ state, task = {}, fresh=() => {}, progress = 0, duration = "" }) {
   const terminateRef = useRef(null)
 
   function terminate(task) {
@@ -25,7 +25,8 @@ function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
   }
 
   function terminateOk() {
-    // todo notice parent component for refresh page state
+    console.log('update data.')
+    fresh()
   }
 
   return (
@@ -39,30 +40,27 @@ function TaskProgress({ state, task = {}, progress = 0, duration = "" }) {
         <Item label={t("task.detail.state.current")}>
           <Row>
             <Col>
+              { task.is_terminated ? t('task.state.terminated') : null}
               <StateTag state={state} />
               {state === states.VALID
                 ? t("task.column.duration") + ": " + duration
                 : null}
             </Col>
-            <Col flex={1}>
-              {task.state === TASKSTATES.DOING ? (
-                <Progress
-                  strokeColor={"#FAD337"}
-                  percent={toFixed(progress * 100, 2)}
-                />
-              ) : null}
+            <Col hidden={state !== states.READY} flex={1}>
+              <Progress
+                strokeColor={"#FAD337"}
+                percent={toFixed(progress * 100, 2)}
+              />
             </Col>
-            {[TASKSTATES.PENDING, TASKSTATES.DOING].indexOf(task.state) > -1 ? (
-              <Col>
-                <Button onClick={() => terminate(task)}>
-                  {t("task.action.terminate")}
-                </Button>
-              </Col>
-            ) : null}
+            <Col hidden={state !== states.READY}>
+              <Button onClick={() => terminate(task)}>
+                {t("task.action.terminate")}
+              </Button>
+            </Col>
           </Row>
         </Item>
-        <Terminate ref={terminateRef} ok={terminateOk} />
       </Descriptions>
+      <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }

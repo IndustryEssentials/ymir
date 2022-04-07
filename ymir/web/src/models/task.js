@@ -104,30 +104,45 @@ export default {
     *createFusionTask({ payload }, { call, put }) {
       let { code, result } = yield call(createFusionTask, payload)
       if (code === 0) {
+        yield put({
+          type: 'dataset/clearCache'
+        })
         return result
       }
     },
     *createTrainTask({ payload }, { call, put }) {
       let { code, result } = yield call(createTrainTask, payload)
       if (code === 0) {
+        yield put({
+          type: 'model/clearCache'
+        })
         return result
       }
     },
     *createMiningTask({ payload }, { call, put }) {
       let { code, result } = yield call(createMiningTask, payload)
       if (code === 0) {
+        yield put({
+          type: 'dataset/clearCache'
+        })
         return result
       }
     },
     *createLabelTask({ payload }, { call, put }) {
       let { code, result } = yield call(createLabelTask, payload)
       if (code === 0) {
+        yield put({
+          type: 'dataset/clearCache'
+        })
         return result
       }
     },
     *createInferenceTask({ payload }, { call, put }) {
       let { code, result } = yield call(createInferenceTask, payload)
       if (code === 0) {
+        yield put({
+          type: 'dataset/clearCache'
+        })
         return result
       }
     },

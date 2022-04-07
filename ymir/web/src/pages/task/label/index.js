@@ -244,10 +244,10 @@ function Label({ datasets, keywords, ...func }) {
 
 const dis = (dispatch) => {
   return {
-    getDataset(id) {
+    getDataset(id, force) {
       return dispatch({
         type: "dataset/getDataset",
-        payload: id,
+        payload: { id, force },
       })
     },
     createLabelTask(payload) {
