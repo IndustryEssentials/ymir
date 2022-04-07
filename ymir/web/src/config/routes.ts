@@ -104,7 +104,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.assets',
   },
   {
-    path: "/home/model/detail/:id",
+    path: "/home/project/:id/model/:mid",
     name: "modelDetail",
     component: "@/pages/model/detail",
     title: "model.title",
@@ -122,7 +122,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.model.add',
   },
   {
-    path: "/home/model/verify/:id",
+    path: "/home/project/:id/model/:mid/verify",
     name: "modelVerify",
     component: "@/pages/model/verify",
     title: "model.verify.title",
