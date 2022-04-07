@@ -21,7 +21,6 @@ class Model(Base):
     __tablename__ = "model"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     hash = Column(String(settings.STRING_LEN_LIMIT), index=True)
-    name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
     source = Column(SmallInteger, index=True, nullable=False)
     description = Column(String(settings.STRING_LEN_LIMIT))
     version_num = Column(Integer, index=True, nullable=False)
@@ -52,3 +51,7 @@ class Model(Base):
         nullable=False,
     )
     __table_args__ = (UniqueConstraint("project_id", "hash", name="uniq_project_hash"),)
+
+    @property
+    def name(self) -> str:
+        return "_".join([self.group.name, str(self.version_num)])  # type: ignore

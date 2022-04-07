@@ -61,9 +61,12 @@ class TestListDatasets:
         db: Session,
         user_id: int,
     ):
+        group = create_dataset_group_record(db, user_id)
         for _ in range(3):
-            create_dataset_record(db, user_id=user_id)
-        r = client.get(f"{settings.API_V1_STR}/datasets/", headers=normal_user_token_headers)
+            create_dataset_record(db, user_id=user_id, dataset_group_id=group.id)
+        r = client.get(
+            f"{settings.API_V1_STR}/datasets/", headers=normal_user_token_headers, params={"group_id": group.id}
+        )
         datasets = r.json()["result"]["items"]
         total = r.json()["result"]["total"]
         assert len(datasets) == total != 0
@@ -86,14 +89,16 @@ class TestBatchGetDatasets:
         db: Session,
         user_id: int,
     ):
-        create_dataset_record(db, user_id=user_id)
+        group = create_dataset_group_record(db, user_id=user_id)
+        datasets = [create_dataset_record(db, user_id=user_id, dataset_group_id=group.id) for _ in range(3)]
+        ids = ",".join([str(d.id) for d in datasets])
         r = client.get(
             f"{settings.API_V1_STR}/datasets/batch",
             headers=normal_user_token_headers,
-            params={"ids": "1,200,300"},
+            params={"ids": ids},
         )
         datasets = r.json()["result"]
-        assert len(datasets) == 1
+        assert len(datasets) == 3
 
 
 class TestCreateDataset:
@@ -135,37 +140,6 @@ class TestDeleteDatasets:
 
     def test_delete_dataset_not_found(self, client: TestClient, normal_user_token_headers, mocker):
         r = client.delete(f"{settings.API_V1_STR}/datasets/20000", headers=normal_user_token_headers)
-        assert r.status_code == 404
-
-
-class TestPatchDatasets:
-    def test_update_dataset_name_succeed(
-        self,
-        client: TestClient,
-        normal_user_token_headers,
-        mocker,
-        db: Session,
-        user_id: int,
-    ):
-        r = create_dataset_record(db, user_id=user_id)
-        dataset_id = r.id
-        dataset_name = r.name
-
-        new_name = random_lower_string(5)
-
-        r = client.patch(
-            f"{settings.API_V1_STR}/datasets/{dataset_id}",
-            headers=normal_user_token_headers,
-            json={"name": new_name},
-        )
-        assert r.json()["result"]["name"] == new_name != dataset_name
-
-    def test_update_dataset_name_not_found(self, client: TestClient, normal_user_token_headers, mocker):
-        r = client.patch(
-            f"{settings.API_V1_STR}/datasets/23333333",
-            headers=normal_user_token_headers,
-            json={"name": "x"},
-        )
         assert r.status_code == 404
 
 

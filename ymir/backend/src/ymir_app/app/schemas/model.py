@@ -17,8 +17,7 @@ def get_model_url(model_hash: str) -> str:
 
 
 class ModelBase(BaseModel):
-    hash: Optional[str]
-    name: str
+    hash: Optional[str] = None
     source: TaskType
     description: Optional[str]
     map: Optional[float] = Field(description="Mean Average Precision")
@@ -31,7 +30,7 @@ class ModelBase(BaseModel):
 
 class ModelImport(BaseModel):
     project_id: int
-    name: str = Field(description="Model Group Name")
+    group_name: str = Field(description="Model Group Name")
     description: Optional[str]
     input_model_path: Optional[str] = Field(description="from uploaded file url")
     input_model_id: Optional[int] = Field(description="from model of other user")
@@ -59,6 +58,7 @@ class ModelUpdate(BaseModel):
 
 
 class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):
+    name: str
     version_num: int
     related_task: Optional[TaskInternal]
 
