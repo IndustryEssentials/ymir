@@ -21,6 +21,7 @@ class ModelGroup(Base):
     models = relationship(
         "Model",
         primaryjoin="foreign(Model.model_group_id)==ModelGroup.id",
+        backref="group",
         uselist=True,
         viewonly=True,
     )

@@ -20,6 +20,7 @@ class DatasetGroup(Base):
     datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.dataset_group_id)==DatasetGroup.id",
+        backref="group",
         uselist=True,
         viewonly=True,
     )

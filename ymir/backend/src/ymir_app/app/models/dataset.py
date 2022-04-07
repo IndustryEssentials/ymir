@@ -12,7 +12,6 @@ class Dataset(Base):
     __tablename__ = "dataset"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     hash = Column(String(settings.STRING_LEN_LIMIT), index=True, unique=True, nullable=False)
-    name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
     source = Column(SmallInteger, index=True, nullable=False)
     description = Column(String(settings.STRING_LEN_LIMIT))
     version_num = Column(Integer, index=True, nullable=False)
@@ -46,3 +45,7 @@ class Dataset(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+    @property
+    def name(self) -> str:
+        return "_".join([self.group.name, str(self.version_num)])  # type: ignore
