@@ -38,7 +38,7 @@ function Breadcrumbs({ suffix = '', titles = {} }) {
     <Breadcrumb className={s.breadcrumbContent} separator='/'>
       {crumbItems.map((crumb, index) => {
         const last = index === crumbItems.length - 1
-        const link = crumb.path.replace(/:([^\/]+)/m, (str, key) => {
+        const link = crumb.path.replace(/:([^\/]+)/g, (str, key) => {
           return params[key] ? params[key] : ''
         })
         const label = titles[index] ? titles[index] : t(crumb.label)

@@ -15,7 +15,7 @@ const taskTypes = ["fusion", "train", "mining", "label"]
 
 function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
-  const { id } = useParams()
+  const { id: pid, did: id } = useParams()
   const [dataset, setDataset] = useState({})
 
   useEffect(() => {
