@@ -2,6 +2,7 @@ import { List, Skeleton, Space, Col, Row, Popover } from "antd"
 import t from "@/utils/t"
 import s from "./list.less"
 import { useHistory } from "umi"
+import { getStageLabel } from '@/constants/project'
 
 export const Lists = ({ projects=[], more=''}) => {
   const history = useHistory()
@@ -12,7 +13,7 @@ export const Lists = ({ projects=[], more=''}) => {
           <span className={s.name}>{item.name}</span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}%</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item.currentStage}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{t(getStageLabel(item.currentStage))}</span></span>
         </Space>
       </Col>
       <Col>{more}</Col>
