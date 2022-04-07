@@ -280,8 +280,32 @@ FROM
         TO toRelativeMonthNum(toDate(%(end_at)s)) STEP {step}
 )
 ORDER BY time ASC"""
+        elif precision == "week":
+            sql = f"""\
+WITH
+    toDate(0) AS start_date,
+    toRelativeWeekNum(start_date) AS relative_week_of_start_date
+SELECT
+    training_type,
+    project_count,
+    addWeeks(start_date, relative_week - relative_week_of_start_date) AS time
+FROM
+(
+    SELECT
+        toRelativeWeekNum(created_time) AS relative_week,
+        training_type,
+        count(training_type) AS project_count
+    FROM project
+    WHERE user_id = %(user_id)s
+    GROUP BY
+        training_type,
+        relative_week
+    ORDER BY relative_week ASC WITH FILL
+        FROM toRelativeWeekNum(toDate(%(start_at)s))
+        TO toRelativeWeekNum(toDate(%(end_at)s)) STEP {step}
+)
+ORDER BY time ASC"""
         else:
-            step = 7 if precision == "week" else 1
             sql = f"""\
 SELECT
     training_type,

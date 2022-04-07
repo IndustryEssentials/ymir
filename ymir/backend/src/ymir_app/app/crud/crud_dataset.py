@@ -19,7 +19,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db: Session,
         *,
         user_id: int,
-        name: Optional[str] = None,
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
         source: Optional[TaskType] = None,
@@ -46,8 +45,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
                 )
             )
 
-        if name:
-            query = query.filter(self.model.name.like(f"%{name}%"))
         if state:
             query = query.filter(self.model.result_state == int(state))
         if source:
@@ -114,13 +111,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         # fixme
         #  add mutex lock to protect latest_version
         version_num = self.next_available_version(db, obj_in.dataset_group_id)
-        if dest_group_name:
-            name = f"{dest_group_name}_{version_num}"
-        else:
-            name = obj_in.name
 
         db_obj = Dataset(
-            name=name,
             version_num=version_num,
             hash=obj_in.hash,
             source=int(obj_in.source),
@@ -140,7 +132,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
     ) -> Dataset:
         dataset_in = DatasetCreate(
-            name=task.hash,
             hash=task.hash,
             source=task.type,
             dataset_group_id=dest_group_id,

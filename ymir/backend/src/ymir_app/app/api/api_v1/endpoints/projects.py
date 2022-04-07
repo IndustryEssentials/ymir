@@ -163,7 +163,7 @@ def get_project(
     """
     Get a project detail
     """
-    project = crud.project.get(db, id=project_id)
+    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
     return {"result": project}
@@ -211,7 +211,7 @@ def delete_project(
     Delete project
     (soft delete actually)
     """
-    project = crud.project.get(db, id=project_id)
+    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
 

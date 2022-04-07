@@ -38,7 +38,7 @@ class TestPostInference:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = create_model(db, client, user_id)
+        model = create_model(db, user_id)
         j = {
             "model_id": model.id,
             "docker_image": random_lower_string(),
@@ -60,7 +60,7 @@ class TestPostInference:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
-        model = create_model(db, client, user_id)
+        model = create_model(db, user_id)
         image, config = create_docker_image_and_configs(db, image_type=9)
         j = {
             "model_id": model.id,

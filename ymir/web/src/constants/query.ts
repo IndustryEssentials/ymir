@@ -47,4 +47,5 @@ export const getImageTypes = () => [
   { key: "all", value: undefined, label: t("common.all") },
   { key: "train", value: TYPES.TRAINING, label: t("image.type.train") },
   { key: "mining", value: TYPES.MINING, label: t("image.type.mining") },
+  { key: "inference", value: TYPES.INFERENCE, label: t("image.type.inference") },
 ]

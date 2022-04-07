@@ -135,10 +135,11 @@ describe("models: project", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
     equalObject(expected, end.value)
     expect(end.done).toBe(true)
