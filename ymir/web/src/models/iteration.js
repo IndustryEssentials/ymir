@@ -19,6 +19,7 @@ export default {
     query: initQuery,
     iterations: {},
     iteration: {},
+    currentStageResult: {},
   },
   effects: {
     *getIterations({ payload }, { call, put }) {
@@ -26,18 +27,23 @@ export default {
       const { code, result } = yield call(getIterations, id)
       if (code === 0) {
         let iterations = result.map((iteration) => transferIteration(iteration))
-        console.log('iterations:', iterations)
-        if (more) {
+        if (more && iterations.length) {
           const datasetIds = [...new Set(iterations.map(i => [i.miningSet, i.miningResult, i.labelSet, i.trainUpdateSet]).flat())].filter(id => id)
           const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
-          const datasets = yield put.resolve({
-            type: 'dataset/batchDatasets',
-            payload: datasetIds,
-          })
-          const models = yield put.resolve({
-            type: 'model/batchModels',
-            payload: modelIds,
-          })
+          let datasets = []
+          let models = []
+          if (datasetIds?.length) {
+            datasets = yield put.resolve({
+              type: 'dataset/batchDatasets',
+              payload: datasetIds,
+            })
+          }
+          if (models?.length) {
+            models = yield put.resolve({
+              type: 'model/batchModels',
+              payload: modelIds,
+            })
+          }
           iterations = iterations.map(i => {
             const ds = id => datasets.find(d => d.id === id)
             return {
@@ -54,7 +60,6 @@ export default {
           type: "UPDATE_ITERATIONS",
           payload: { id, iterations },
         })
-        console.log('return iterations:', iterations)
         return iterations
       }
     },
@@ -84,19 +89,28 @@ export default {
       }
     },
     *getStageResult({ payload }, { call, put }) {
-      const { id, stage } = payload
+      const { id, stage, force } = payload
       const isModel = stage === Stages.training
       const type = isModel ? 'model/getModel' : 'dataset/getDataset'
       const result = yield put.resolve({
         type,
-        payload: id,
+        payload: { id, force },
       })
       if (result) {
-        return {
-          ...result,
-        }
+        yield put({ type: 'UPDATE_CURRENT_STAGE_RESULT', payload: result })
+        return result
       }
-    }
+    },
+    *updateCurrentStageResult({ payload }, { put }) {
+      const result = yield select(state => state.model.currentStageResult)
+      const tasks = payload || {}
+      const updated = updateResultState(result, tasks)
+
+      yield put({
+        type: 'UPDATE_CURRENT_STAGE_RESULT',
+        payload: { ...updated },
+      })
+    },
   },
   reducers: {
     UPDATE_ITERATIONS(state, { payload }) {
@@ -113,6 +127,12 @@ export default {
       return {
         ...state,
         iteration,
+      }
+    },
+    UPDATE_CURRENT_STAGE_RESULT(state, { payload }) {
+      return {
+        ...state,
+        currentStageResult: payload,
       }
     },
   },

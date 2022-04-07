@@ -123,7 +123,6 @@ function ImageDetail({ role, getImage }) {
           <Item label={t('image.detail.label.state')} span={2}> <StateTag state={image.state} /> </Item>
          
           <Item label={''} span={2}><Space>
-            {isDone(image.state) ? renderTaskBtn() : null} 
             <Button hidden={!isAdmin() || !isDone()} onClick={share}>{t('image.action.share')}</Button>
             <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del}>{t('common.del')}</Button>
           </Space></Item>

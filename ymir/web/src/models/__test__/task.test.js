@@ -52,10 +52,11 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, call })
     const start = generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
@@ -70,10 +71,11 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, putResolve, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
@@ -88,10 +90,11 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
@@ -165,10 +168,12 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)

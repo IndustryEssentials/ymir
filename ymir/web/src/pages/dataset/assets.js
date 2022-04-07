@@ -227,10 +227,10 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getDataset(payload) {
+    getDataset(id, force) {
       return dispatch({
         type: "dataset/getDataset",
-        payload,
+        payload: { id, force },
       })
     },
     getAssetsOfDataset(payload) {

@@ -82,10 +82,10 @@ function KeywordRates({ id, dataset = {}, progressWidth = 0.8, getKeywordRates }
 
 const actions = (dispatch) => {
   return {
-    getKeywordRates(id) {
+    getKeywordRates(id, force) {
       return dispatch({
         type: 'dataset/getDataset',
-        payload: id,
+        payload: { id, force },
       })
     }
   }
