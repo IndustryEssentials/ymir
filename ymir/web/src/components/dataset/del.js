@@ -30,7 +30,7 @@ const actions = (dispatch) => {
   return {
     delDataset(id) {
       return dispatch({
-        type: 'model/delDataset',
+        type: 'dataset/delDataset',
         payload: id,
       })
     }

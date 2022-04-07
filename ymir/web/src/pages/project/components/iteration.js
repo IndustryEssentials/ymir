@@ -15,7 +15,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
 
   useEffect(() => {
     initStages()
-  }, [])
+  }, [project])
   useEffect(() => {
     if (project.id && project.currentIteration) {
       setIteration(project.currentIteration)

@@ -13,7 +13,7 @@ import TaskProgress from "@/components/task/progress"
 
 const taskTypes = ["fusion", "train", "mining", "label"]
 
-function DatasetDetail({ getDataset }) {
+function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
   const { id } = useParams()
   const [dataset, setDataset] = useState({})
@@ -22,11 +22,16 @@ function DatasetDetail({ getDataset }) {
     fetchDataset()
   }, [id])
 
-  async function fetchDataset() {
-    const result = await getDataset(id)
-    if (result) {
-      setDataset(result)
+  useEffect(() => {
+    if (datasetCache[id]?.needReload) {
+      fetchDataset(true)
+    } else {
+      datasetCache[id] && setDataset(datasetCache[id])
     }
+  }, [datasetCache])
+
+  async function fetchDataset(force) {
+    await getDataset(id, force)
   }
 
   return (
@@ -37,7 +42,7 @@ function DatasetDetail({ getDataset }) {
         className={s.datasetDetail}
       >
         <Detail dataset={dataset} />
-        <TaskProgress state={dataset.state} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} />
+        <TaskProgress state={dataset.state} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset()} />
         <TaskDetail
           task={dataset.task}
           ignore={dataset.ignoredKeywords}
@@ -65,15 +70,21 @@ function DatasetDetail({ getDataset }) {
   )
 }
 
+const props = (state) => {
+  return {
+    datasetCache: state.dataset.dataset,
+  }
+}
+
 const actions = (dispatch) => {
   return {
-    getDataset: (id) => {
+    getDataset: (id, force) => {
       return dispatch({
         type: "dataset/getDataset",
-        payload: id,
+        payload: { id, force },
       })
     },
   }
 }
 
-export default connect(null, actions)(DatasetDetail)
+export default connect(props, actions)(DatasetDetail)

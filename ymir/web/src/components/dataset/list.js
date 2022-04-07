@@ -53,6 +53,14 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     setTotal(datasetList.total)
   }, [datasetList])
 
+  useEffect(() => {
+    const hasDataset = Object.keys(versions).length
+    const emptyDataset = Object.values(versions).some(models => !models.length)
+    if (hasDataset && emptyDataset) {
+      getData()
+    }
+  }, [versions])
+
   useEffect(async () => {
     if (name) {
       await updateQuery({ ...query, name })
@@ -84,9 +92,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
       key: "name",
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, state }) => state === states.VALID ? (
-        <Link to={`/home/dataset/detail/${id}`}>{name}</Link>
-      ) : name,
+      render: (name, { id, state }) => <Link to={`/home/dataset/detail/${id}`}>{name}</Link>,
       ellipsis: true,
     },
     {
@@ -234,6 +240,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   
   const delOk = (id) => {
     getVersions(id, true)
+    getData()
   }
 
   const delGroupOk = () => {

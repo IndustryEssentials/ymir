@@ -156,10 +156,10 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                       <InputNumber min={0} max={100} step={1} formatter={value => `${value}%`} parser={value => value.replace('%', '')} style={{ width: '100%' }} placeholder={t('project.add.form.target.map.placeholder')} allowClear />
                     </Form.Item>
                     <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.iterations')} name='targetIteration'>
-                      <InputNumber min={1} step={1} max={100} placeholder={t('project.add.form.target.iterations.placeholder')} style={{ width: '100%' }} allowClear />
+                      <InputNumber min={1} step={1} precision={0} max={100} placeholder={t('project.add.form.target.iterations.placeholder')} style={{ width: '100%' }} allowClear />
                     </Form.Item>
                     <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='targetDataset'>
-                      <InputNumber min={1} step={1} max={100000000} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} allowClear />
+                      <InputNumber min={1} step={1} precision={0} max={100000000} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} allowClear />
                     </Form.Item>
                   </div>
                 </Form.Item>

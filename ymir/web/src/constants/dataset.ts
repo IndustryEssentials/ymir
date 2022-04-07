@@ -1,5 +1,5 @@
 import { getLocale } from "umi"
-import { OriginDatasetGroup, DatasetGroup, OriginDataset, Dataset } from "@/interface/dataset"
+import { DatasetGroup, Dataset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
 import { getIterationVersion } from "./project"
 import { BackendData } from "@/interface/common"
@@ -19,7 +19,7 @@ export const statesLabel = (state: states) => {
   return maps[state]
 } 
 
-export function transferDatasetGroup (data: OriginDatasetGroup) {
+export function transferDatasetGroup (data: BackendData) {
   const group: DatasetGroup = {
     id: data.id,
     projectId: data.project_id,

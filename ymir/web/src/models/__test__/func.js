@@ -1,12 +1,11 @@
 import { put, call, select } from "redux-saga/effects"
 
-export function errorCode(module, func, expected = null) {
+export function errorCode(module, func, payload = 10024, expected = null) {
   it(`effects: ${func} -> error code`, () => {
     const saga = module.effects[func]
-    const id = 10024
     const creator = {
       type: func,
-      payload: id,
+      payload,
     }
     const error = saga(creator, { put, call, select})
     error.next()
