@@ -53,9 +53,9 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
     if (name) {
       form.setFieldsValue({
         name, keywords: kws, description,
-        map_target: targetMap,
-        iteration_target: targetIteration,
-        training_dataset_count_target: targetDataset,
+        targetMap,
+        targetIteration,
+        targetDataset,
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
         strategy: miningStrategy || 0,
