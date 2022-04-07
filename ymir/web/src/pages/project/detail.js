@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { Card, Col, Row, Space } from "antd"
-import { useLocation, useParams, connect, Link } from "umi"
+import { useLocation, useParams, connect, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
@@ -18,6 +18,7 @@ const tabsTitle = [
 ]
 
 function ProjectDetail(func) {
+  const history = useHistory()
   const location = useLocation()
   const { id } = useParams()
   const [project, setProject] = useState({})
@@ -33,9 +34,9 @@ function ProjectDetail(func) {
 
   useEffect(() => {
     const locationHash = location.hash.replace(/^#/, '')
-    if (locationHash) {
-      setActive(locationHash)
-    }
+    // if (locationHash) {
+      setActive(locationHash || tabsTitle[0].key)
+    // }
   }, [location.hash])
 
   async function fetchProject(force) {
@@ -47,6 +48,10 @@ function ProjectDetail(func) {
   const fresh = useCallback(() => {
     fetchProject(true)
   }, [])
+
+  function tabChange(key) {
+    history.push(`#${key}`)
+  }
 
   return (
     <div className={s.projectDetail}>
@@ -73,7 +78,7 @@ function ProjectDetail(func) {
         {project.round > 0 ?
           <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
       </div>
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => setActive(key)}
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px' }}
         bodyStyle={{ padding: '0 5vw' }}>
