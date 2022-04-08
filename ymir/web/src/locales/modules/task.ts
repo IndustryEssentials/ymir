@@ -193,6 +193,7 @@ const task = {
   "task.train.form.training.datasets.placeholder": { cn: "请选择数据集", en: "Please select a dataset", },
   "task.train.form.testset.required": { cn: "测试集为必选项", en: "Test dataset is required", },
   "task.train.form.trainset.required": { cn: "训练集为必选项", en: "Training dataset is required", },
+  "task.train.form.miningset.required": { cn: "挖掘集为必选项", en: "Mining dataset is required", },
   "task.train.form.test.datasets.placeholder": { cn: "请选择测试集", en: "Please select a test dataset", },
   "task.origin.dataset": { cn: "来源数据集", en: "Original Dataset", },
   "task.detail.include_datasets.label": { cn: "合并数据集", en: "Merge Datasets", },
