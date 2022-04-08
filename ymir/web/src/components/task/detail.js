@@ -30,7 +30,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
 
   useEffect(() => {
     task.id && !isImport(task.type) && fetchDatasets()
-    isModel(task.type) && task?.parameters?.model_id && fetchModel(task.parameters.model_id)
+    hasValidModel(task.type) && task?.parameters?.model_id && fetchModel(task.parameters.model_id)
   }, [task.id])
 
   async function fetchDatasets() {
@@ -67,6 +67,9 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
 
   function isModel(type) {
     return [TASKTYPES.TRAINING, TASKTYPES.MODELCOPY, TASKTYPES.MODELIMPORT].includes(type)
+  }
+  function hasValidModel(type) {
+    return [TASKTYPES.TRAINING, TASKTYPES.MINING, TASKTYPES.INFERENCE].includes(type)
   }
 
   function isImport(type) {

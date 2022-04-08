@@ -49,6 +49,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   }, [modelList])
 
   useEffect(() => {
+    console.log('list versions:', versions)
     const hasModel = Object.keys(versions).length
     const emptyModel = Object.values(versions).some(models => !models.length)
     if (hasModel && emptyModel) {

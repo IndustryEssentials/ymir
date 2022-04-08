@@ -12,8 +12,8 @@ import TaskProgress from "@/components/task/progress"
 
 const { Item } = Descriptions
 
-function ModelDetail({ getModel }) {
-  const { id } = useParams()
+function ModelDetail({ modelCache, getModel }) {
+  const { mid: id } = useParams()
   const history = useHistory()
   const [model, setModel] = useState({ id })
 
@@ -21,11 +21,16 @@ function ModelDetail({ getModel }) {
     id && fetchModel()
   }, [id])
 
-  async function fetchModel() {
-    const result = await getModel(id)
-    if (result) {
-      setModel(result)
+  useEffect(() => {
+    if (modelCache[id]?.needReload) {
+      fetchModel(true)
+    } else {
+      modelCache[id] && setModel(modelCache[id])
     }
+  }, [modelCache])
+
+  async function fetchModel() {
+    await getModel(id)
   }
 
   function renderTitle() {
@@ -59,10 +64,9 @@ function ModelDetail({ getModel }) {
   )
 }
 
-
 const props = (state) => {
   return {
-    logined: state.user.logined,
+    modelCache: state.model.model,
   }
 }
 
