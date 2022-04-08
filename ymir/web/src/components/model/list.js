@@ -59,9 +59,9 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   useEffect(() => {
     Object.keys(versions).forEach(gid => {
       const vss = versions[gid]
-      const needReload = vss.some(ds => ds.neeReload)
+      const needReload = vss.some(ds => ds.needReload)
       if (needReload) {
-        fetchVersions(gid)
+        fetchVersions(gid, true)
       }
     })
   }, [versions])
@@ -157,8 +157,8 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   }
 
   
-  async function fetchVersions(id) {
-    await getVersions(id)
+  async function fetchVersions(id, force) {
+    await getVersions(id, force)
   }
 
   function showTitle(str) {

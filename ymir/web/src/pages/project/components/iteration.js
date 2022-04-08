@@ -187,7 +187,6 @@ const actions = (dispacth) => {
       })
     },
     queryFirstTrainDataset(group_id) {
-      console.log('group id: ', group_id)
       return dispacth({
         type: 'dataset/queryDatasets',
         payload: { group_id, is_desc: false, limit: 1 }
