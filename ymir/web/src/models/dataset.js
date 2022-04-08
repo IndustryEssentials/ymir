@@ -204,7 +204,6 @@ export default {
       Object.keys(datasetCache).forEach(did => {
         const dataset = datasetCache[did]
         const updatedDataset = updateResultState(dataset, tasks)
-        console.log('updatedDataset:', updatedDataset, tasks, dataset)
         datasetCache[did] = updatedDataset
       })
 
