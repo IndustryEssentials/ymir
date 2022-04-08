@@ -87,7 +87,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
     if (finishStage() || (currentStage() && isValid())) {
       return '√' // finish state
     } else {
-      return stage.value
+      return stage.value + 1
     }
   }
   const renderMain = () => {
