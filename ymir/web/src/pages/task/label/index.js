@@ -73,7 +73,6 @@ function Label({ datasets, keywords, ...func }) {
       ...values,
       projectId: pid,
       datasetId: Number(did) ? Number(did) : undefined,
-      name: values.name.trim(),
       labellers: emails,
       doc,
       name: 'task_label_' + randomNumber(),
