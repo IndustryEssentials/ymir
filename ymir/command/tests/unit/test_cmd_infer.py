@@ -70,7 +70,10 @@ class TestCmdInfer(unittest.TestCase):
 
         model_storage = mir_utils.ModelStorage(models=['model.params', 'model.json'],
                                                executor_config=training_config,
-                                               task_context={'src_revs': 'master', 'dst_rev': 'a'})
+                                               task_context={
+                                                   'src_revs': 'master',
+                                                   'dst_rev': 'a'
+                                               })
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
             yaml.dump(model_storage.as_dict(), f)
@@ -101,7 +104,7 @@ class TestCmdInfer(unittest.TestCase):
         pass
 
     # public: test cases
-    @mock.patch('mir.commands.infer.run_docker_cmd', side_effect=_mock_run_docker_cmd)
+    @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
     @mock.patch('mir.commands.infer._process_infer_results', side_effect=_mock_process_results)
     def test_00(self, mock_process, mock_run):
         fake_args = type('', (), {})()
@@ -117,16 +120,28 @@ class TestCmdInfer(unittest.TestCase):
 
         # check running result
         self.assertEqual(MirCode.RC_OK, cmd_result)
-        mock_run.assert_called_once_with(asset_path=fake_args.work_dir,
-                                         index_file_path=os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'),
-                                         model_path=os.path.join(fake_args.work_dir, 'in', 'models'),
-                                         config_file_path=os.path.join(fake_args.work_dir, 'in', 'config.yaml'),
-                                         out_path=os.path.join(fake_args.work_dir, 'out'),
-                                         executor=fake_args.executor,
-                                         executant_name=fake_args.executant_name,
-                                         shm_size=None,
-                                         task_type=mock.ANY,
-                                         gpu_id='')
+
+        expected_cmd = ['nvidia-docker', 'run', '--rm']
+        expected_cmd.append(f"-v{fake_args.work_dir}:/in/assets:ro")
+        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'models')}:/in/models:ro")
+        expected_cmd.append(
+            f"-v{os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv')}:/in/candidate-index.tsv")
+        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'config.yaml')}:/in/config.yaml")
+        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'out')}:/out")
+        expected_cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
+        expected_cmd.extend(['--name', fake_args.executant_name])
+        expected_cmd.append(fake_args.executor)
+        mock_run.assert_called_once_with(expected_cmd, check=True, stdout=mock.ANY, stderr=mock.ANY, text=True)
+        # mock_run.assert_called_once_with(asset_path=fake_args.work_dir,
+        #                                  index_file_path=os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'),
+        #                                  model_path=os.path.join(fake_args.work_dir, 'in', 'models'),
+        #                                  config_file_path=os.path.join(fake_args.work_dir, 'in', 'config.yaml'),
+        #                                  out_path=os.path.join(fake_args.work_dir, 'out'),
+        #                                  executor=fake_args.executor,
+        #                                  executant_name=fake_args.executant_name,
+        #                                  shm_size=None,
+        #                                  task_type=mock.ANY,
+        #                                  gpu_id='')
         mock_process.assert_called_once_with(infer_result_file=os.path.join(fake_args.work_dir, 'out',
                                                                             'infer-result.json'),
                                              max_boxes=50)

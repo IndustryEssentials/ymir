@@ -16,5 +16,6 @@ exclude_lines =
     def run\(self\)
     bind_to_subparsers
     class CmdReset
+    _process_infer_results
 
 ignore_errors = True
