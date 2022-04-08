@@ -96,7 +96,9 @@ const Add = ({ importModel }) => {
             {isType(TYPES.COPY) ?
               <>
                 <Tip hidden={true}>
-                  <Form.Item label={t('model.add.form.project')} name='modelId'>
+                  <Form.Item label={t('model.add.form.project')} name='modelId' rules={[
+                    { required: true, }
+                  ]}>
                     <ProjectSelect pid={pid} />
                   </Form.Item>
                 </Tip>
