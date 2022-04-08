@@ -219,7 +219,7 @@ function Mining({ datasetCache, datasets, ...func }) {
                   >
                     {datasets.map(item =>
                       <Option value={item.id} key={item.id}>
-                        {item.name}(assets: {item.assetCount})
+                        {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>)}
                   </Select>
                 </Form.Item>

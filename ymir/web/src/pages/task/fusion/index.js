@@ -168,7 +168,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
       >
         {datasets.filter(ds => ![did, ...filter].includes(ds.id)).map(item => (
           <Option value={item.id} key={item.id}>
-            {item.name}({item.assetCount})
+            {item.name} {item.versionName}({item.assetCount})
           </Option>
         ))}
       </Select>
