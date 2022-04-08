@@ -6,7 +6,10 @@ services:
       - .env
     ports:
       - ${LABEL_TOOL_PORT}::80
-
+    networks:
+      - labelfreenetwork
+    restart: always
+  
   label_api:
     image: labelfree/open:latest
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/labelfree app:app
@@ -19,10 +22,12 @@ services:
       REDIS_HOST: label_redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: labelfree2022
-      S3_ENDPOINT_URL: http://${LABEL_HOST}:9099
+      S3_ENDPOINT_URL: ${LABEL_HOST}:9099
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
       LABEL_BUILD: pro
+    networks:
+      - labelfreenetwork
     restart: always
 
   label_celery_worker:
@@ -32,9 +37,11 @@ services:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:root!2345@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
       REDIS_PASSWORD: labelfree2022
-      S3_ENDPOINT_URL: http://${LABEL_HOST}:9099
+      S3_ENDPOINT_URL: ${LABEL_HOST}:9099
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
+    networks:
+      - labelfreenetwork
     restart: always
 
   label_mysql:
@@ -51,13 +58,17 @@ services:
       --max_allowed_packet=128M
       --sql-mode="STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO"
     volumes:
-      - mysql-pro-data:/var/lib/mysql
+      - ${YMIR_PATH}/labelfree/mysql_data:/var/lib/mysql
+    networks:
+      - labelfreenetwork
     restart: always
 
   label_redis:
     image: bitnami/redis:5.0.4
     environment:
       REDIS_PASSWORD: labelfree2022
+    networks:
+      - labelfreenetwork
     restart: always
 
   label_minio:
@@ -70,13 +81,11 @@ services:
       - 9099:9000
       - 9090:9001
     volumes:
-      - ./minio_data:/data
+      - ${YMIR_PATH}/labelfree/minio_data:/data
+    networks:
+      - labelfreenetwork 
 
     restart: always
-
-volumes:
-  mysql-pro-data:
-
 
 networks:
   labelfreenetwork:
