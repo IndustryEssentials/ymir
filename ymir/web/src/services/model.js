@@ -100,7 +100,7 @@ export function importModel({ projectId, name, description, url, modelId, }) {
     input_model_path: url,
     input_model_id: modelId,
     description,
-    name,
+    group_name: name,
   })
 }
 
