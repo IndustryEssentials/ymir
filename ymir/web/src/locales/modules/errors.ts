@@ -48,6 +48,7 @@ const errors = {
   'error111106': { cn: '分享镜像配置获取失败', en: 'SHARED_IMAGE_CONFIG_ERROR', },
   'error111201': { cn: '无法获取GPU个数信息', en: 'Can not get server\'s GPU count', },
   'error111301': { cn: 'ClickHouse连接失败，无法获取统计数据', en: 'ClickHouse connect error, then get statstics data failed', },
+  'error111401': { cn: '找不到项目', en: 'Project Not Found', },
   'error111402': { cn: '项目名称重复', en: 'Duplicated project name', },
   'error111502': { cn: '数据集名称重复', en: 'Duplicated dataset name', },
   'error140400': { cn: 'viz 一般错误', en: 'viz: general_error', },

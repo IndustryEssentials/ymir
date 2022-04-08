@@ -42,8 +42,12 @@ const Add = ({ importModel }) => {
       ...values,
       projectId: pid,
     }
-    if (url) {
-      params.url = url
+    if (isType(TYPES.LOCAL)) {
+      if (url) {
+        params.url = url
+      } else {
+        return message.error(t('model.file.required'))
+      }
     }
     if (values.modelId) {
       params.modelId = values.modelId[values.modelId.length - 1]
@@ -73,7 +77,8 @@ const Add = ({ importModel }) => {
                 label={t('model.add.form.name')}
                 name='name'
                 rules={[
-                  { required: true, message: t('model.add.form.name.placeholder') }
+                  { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
+                  { type: 'string', min: 2, max: 80 },
                 ]}
               >
                 <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
@@ -91,7 +96,9 @@ const Add = ({ importModel }) => {
             {isType(TYPES.COPY) ?
               <>
                 <Tip hidden={true}>
-                  <Form.Item label={t('model.add.form.project')} name='modelId'>
+                  <Form.Item label={t('model.add.form.project')} name='modelId' rules={[
+                    { required: true, }
+                  ]}>
                     <ProjectSelect pid={pid} />
                   </Form.Item>
                 </Tip>

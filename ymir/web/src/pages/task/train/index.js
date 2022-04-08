@@ -237,7 +237,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   required
                   name="datasetId"
                   rules={[
-                    { required: true, message: t('task.train.form.datasets.required') },
+                    { required: true, message: t('task.train.form.trainset.required') },
                   ]}
                 >
                   <Select
@@ -260,7 +260,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   label={t('task.train.form.testsets.label')}
                   name="testset"
                   rules={[
-                    { required: true, message: t('task.train.form.datasets.required') },
+                    { required: true, message: t('task.train.form.testset.required') },
                   ]}
                 >
                   <Select

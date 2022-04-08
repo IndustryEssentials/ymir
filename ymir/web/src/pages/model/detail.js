@@ -12,8 +12,8 @@ import TaskProgress from "@/components/task/progress"
 
 const { Item } = Descriptions
 
-function ModelDetail({ getModel }) {
-  const { id } = useParams()
+function ModelDetail({ modelCache, getModel }) {
+  const { mid: id } = useParams()
   const history = useHistory()
   const [model, setModel] = useState({ id })
 
@@ -21,11 +21,16 @@ function ModelDetail({ getModel }) {
     id && fetchModel()
   }, [id])
 
-  async function fetchModel() {
-    const result = await getModel(id)
-    if (result) {
-      setModel(result)
+  useEffect(() => {
+    if (modelCache[id]?.needReload) {
+      fetchModel(true)
+    } else {
+      modelCache[id] && setModel(modelCache[id])
     }
+  }, [modelCache])
+
+  async function fetchModel() {
+    await getModel(id)
   }
 
   function renderTitle() {
@@ -51,6 +56,7 @@ function ModelDetail({ getModel }) {
           {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
           <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
+          <Button type='primary' onClick={() => history.push(`/home/task/inference/${model.projectId}?mid=${id}`)}>{t('dataset.action.inference')}</Button>
           <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
         </Space>
       </Card>
@@ -58,10 +64,9 @@ function ModelDetail({ getModel }) {
   )
 }
 
-
 const props = (state) => {
   return {
-    logined: state.user.logined,
+    modelCache: state.model.model,
   }
 }
 

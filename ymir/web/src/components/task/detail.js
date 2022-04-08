@@ -29,8 +29,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const [model, setModel] = useState({})
 
   useEffect(() => {
-    task.id && fetchDatasets()
-    isModel(task.type) && task?.parameters?.model_id && fetchModel(task.parameters.model_id)
+    task.id && !isImport(task.type) && fetchDatasets()
+    hasValidModel(task.type) && task?.parameters?.model_id && fetchModel(task.parameters.model_id)
   }, [task.id])
 
   async function fetchDatasets() {
@@ -65,8 +65,15 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     justifyContent: "flex-end",
   }
 
-  function isModel (type) {
+  function isModel(type) {
     return [TASKTYPES.TRAINING, TASKTYPES.MODELCOPY, TASKTYPES.MODELIMPORT].includes(type)
+  }
+  function hasValidModel(type) {
+    return [TASKTYPES.TRAINING, TASKTYPES.MINING, TASKTYPES.INFERENCE].includes(type)
+  }
+
+  function isImport(type) {
+    return [TASKTYPES.MODELCOPY, TASKTYPES.MODELIMPORT].includes(type)
   }
 
   function renderDatasetName(id) {
@@ -98,7 +105,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   }
 
   function renderImportSource(pa = {}) {
-    return <Item label={t("task.origin.dataset")}>{pa.input_url || pa.input_path || pa.input_group_name }</Item>
+    return <Item label={t("task.origin.dataset")}>{pa.input_url || pa.input_path || pa.input_group_name || pa.input_dataset_name}</Item>
   }
 
   function renderCreateTime(time) {
@@ -113,7 +120,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       [TASKTYPES.MINING]: renderMining,
       [TASKTYPES.LABEL]: renderLabel,
       [TASKTYPES.IMPORT]: renderImport,
-      [TASKTYPES.COPY]: renderImport,
+      [TASKTYPES.COPY]: renderCopy,
       [TASKTYPES.INFERENCE]: renderInference,
       [TASKTYPES.FUSION]: renderFusion,
       [TASKTYPES.MODELCOPY]: renderModelCopy,
@@ -226,13 +233,22 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     </Item>
   </>
   const renderModelCopy = () => <>
-      <Item label={t("dataset.column.source")}>{t('task.type.modelcopy')}</Item>
+    <Item label={t("dataset.column.source")}>{t('task.type.modelcopy')}</Item>
     {renderCreateTime(task.create_datetime)}
     <Item label={t("task.detail.label.hyperparams")} span={2}>
       {renderConfig(task.config)}
     </Item>
   </>
   const renderImport = () => (
+    <>
+      {renderImportSource(task?.parameters)}
+      {renderCreateTime(task.create_datetime)}
+      <Item label={t("dataset.column.ignored_keyword")}>
+        <IgnoreKeywords keywords={ignore} />
+      </Item>
+    </>
+  )
+  const renderCopy = () => (
     <>
       {renderImportSource(task?.parameters)}
       {renderCreateTime(task.create_datetime)}
@@ -298,10 +314,10 @@ const actions = (dispatch) => {
         payload: ids,
       })
     },
-    getModel(id) {
+    getModel(id, force) {
       return dispatch({
         type: "model/getModel",
-        payload: id,
+        payload: { id, force },
       })
     },
   }

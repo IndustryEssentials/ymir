@@ -155,7 +155,7 @@ export default {
         return result
       }
     },
-    *updateModelsStates({ payload }, { put }) {
+    *updateModelsStates({ payload }, { put, select }) {
       const versions = yield select(state => state.model.versions)
       const tasks = payload || {}
       Object.keys(versions).forEach(gid => {
@@ -166,7 +166,7 @@ export default {
         })
         versions[gid] = updatedModels
       })
-      put({
+      yield put({
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
       })

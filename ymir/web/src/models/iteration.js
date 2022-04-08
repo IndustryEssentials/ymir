@@ -5,6 +5,7 @@ import {
   updateIteration,
 } from "@/services/iteration"
 import { Stages, transferIteration } from "@/constants/project"
+import { updateResultState } from '@/constants/common'
 
 
 const initQuery = {
@@ -101,8 +102,8 @@ export default {
         return result
       }
     },
-    *updateCurrentStageResult({ payload }, { put }) {
-      const result = yield select(state => state.model.currentStageResult)
+    *updateCurrentStageResult({ payload }, { put, select }) {
+      const result = yield select(state => state.iteration.currentStageResult)
       const tasks = payload || {}
       const updated = updateResultState(result, tasks)
 

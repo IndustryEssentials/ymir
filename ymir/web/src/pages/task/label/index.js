@@ -73,7 +73,6 @@ function Label({ datasets, keywords, ...func }) {
       ...values,
       projectId: pid,
       datasetId: Number(did) ? Number(did) : undefined,
-      name: values.name.trim(),
       labellers: emails,
       doc,
       name: 'task_label_' + randomNumber(),
@@ -98,7 +97,7 @@ function Label({ datasets, keywords, ...func }) {
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
-    keep_annotations: true,
+    keepAnnotations: true,
     labelType: getCheckedValue(LabelTypes()),
   }
   return (

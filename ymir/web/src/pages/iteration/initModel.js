@@ -43,7 +43,7 @@ const InitModel = ({ projects = {}, ...props }) => {
     }
     const result = await props.updateProject(params)
     if (result) {
-      message.success(t('dataset.add.success.msg'))
+      message.success(t('project.initmodel.success.msg'))
       history.push(`/home/project/detail/${id}`)
     }
   }

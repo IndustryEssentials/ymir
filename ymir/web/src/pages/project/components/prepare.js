@@ -11,7 +11,6 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const [stages, setStages] = useState([])
 
   useEffect(() => {
-    console.log('project init stages:', project)
     project.id && initStages()
   }, [project])
 
@@ -83,7 +82,6 @@ const actions = (dispacth) => {
       })
     },
     queryTrainDataset(group_id) {
-      console.log('group id: ', group_id)
       return dispacth({
         type: 'dataset/queryDatasets',
         payload: { group_id, is_desc: false, limit: 1 }

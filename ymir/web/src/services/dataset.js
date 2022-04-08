@@ -22,18 +22,20 @@ export function getDatasetByGroup(group_id) {
 /**
  * get datasets
  * @param {object} param1 {
- *   {number} project_id
- *   {number} group_id
- *   {number} type task type
- *   {number} state dataset state
- *   {string} name dataset name
- *   {number} offset  query start
- *   {number} limit query count 
+ *   {number}   project_id
+ *   {number}   group_id
+ *   {number}   type        task type
+ *   {number}   state       dataset state
+ *   {string}   name        dataset name
+ *   {number}   offset      query start
+ *   {number}   limit       query count 
+ *   {boolean}  is_desc     default as true
+ *   {string}   order_by    value as: id, create_datetime, asset_count, source. default as id
  * }
  * @returns 
  */
-export function queryDatasets({ project_id, group_id, type, state, name, offset = 0, limit = 10 }) {
-  return request.get("datasets/", { params: { project_id, group_id, type, state, name, offset, limit } })
+export function queryDatasets({ project_id, group_id, type, state, name, offset = 0, limit = 10, is_desc, order_by }) {
+  return request.get("datasets/", { params: { project_id, group_id, type, state, name, offset, limit, is_desc, order_by } })
 }
 /**
  * get dataset groups
