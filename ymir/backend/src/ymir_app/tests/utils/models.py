@@ -1,3 +1,4 @@
+from typing import Optional
 from random import randint
 
 from sqlalchemy.orm import Session
@@ -10,8 +11,9 @@ from tests.utils.utils import random_lower_string
 def create_model_group_record(
     db: Session,
     user_id: int,
-    project_id: int,
+    project_id: Optional[int] = None,
 ):
+    project_id = project_id or randint(1000, 2000)
     j = {
         "name": random_lower_string(),
         "user_id": user_id,
