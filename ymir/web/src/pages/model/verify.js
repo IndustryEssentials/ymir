@@ -27,7 +27,7 @@ const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magen
 
 function Verify({ getModel, verify }) {
   const history = useHistory()
-  const { id } = useParams()
+  const { mid: id } = useParams()
   const [model, setModel] = useState({})
   const [url, setUrl] = useState('')
   const [confidence, setConfidence] = useState(20)
