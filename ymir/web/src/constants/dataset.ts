@@ -35,7 +35,7 @@ export function transferDataset (data: BackendData): Dataset {
     id: data.id,
     groupId: data.dataset_group_id,
     projectId: data.project_id,
-    name: data.name,
+    name: data.group_name,
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
     assetCount: data.asset_count || 0,

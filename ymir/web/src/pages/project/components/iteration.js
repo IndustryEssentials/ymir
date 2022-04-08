@@ -39,15 +39,14 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   const callback = useCallback(iterationHandle, [iteration])
 
   function initStages() {
-    const labels = ['ready', 'mining', 'label', 'merge', 'training', 'next']
     const stageList = StageList()
-    const ss = stageList.list.map(({ value, url, output, input }) => {
-      const label = `project.iteration.stage.${labels[value]}`
+    const ss = stageList.list.map(({ label, value, url, output, input }) => {
+      const slabel = `project.iteration.stage.${label}`
       return {
         value: value,
         label,
-        act: label,
-        react: `${label}.react`,
+        act: slabel,
+        react: `${slabel}.react`,
         state: -1,
         next: stageList[value].next,
         temp: url,

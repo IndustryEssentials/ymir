@@ -5,6 +5,7 @@ import { useHistory, Link } from "umi"
 import { List, Skeleton, Space, Pagination, Col, Row, Card, Button, Form, Input, } from "antd"
 
 import t from "@/utils/t"
+import { getStageLabel } from '@/constants/project'
 import Del from './del'
 import s from "./list.less"
 import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/icons"
@@ -115,7 +116,7 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
           <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
           <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{item.currentStage}</span></span>
+          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{t(getStageLabel(item.currentStage))}</span></span>
         </Space>
       </Col>
       <Col>{more(item)}</Col>
