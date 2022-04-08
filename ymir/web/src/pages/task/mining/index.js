@@ -279,7 +279,7 @@ function Mining({ datasetCache, datasets, ...func }) {
               >
                 <Form.Item
                   name='filter_strategy'
-                  initialValue={topk}
+                  initialValue={true}
                   noStyle
                 >
                   <Radio.Group onChange={filterStrategyChange}>
@@ -288,7 +288,7 @@ function Mining({ datasetCache, datasets, ...func }) {
                     <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
                       { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
                     ] : null}>
-                      <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} disabled={!topk} />
+                      <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
                     </Form.Item>
                   </Radio.Group>
                 </Form.Item>
