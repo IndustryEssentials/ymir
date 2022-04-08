@@ -326,7 +326,6 @@ def get_assets_of_dataset(
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
     keyword: Optional[str] = Query(None),
-    keyword_id: Optional[int] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -339,9 +338,7 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    if keyword:
-        keyword_id = user_labels.get_class_ids(keyword)[0]
-
+    keyword_id = user_labels.get_class_ids(keyword)[0] if keyword else None
     viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
