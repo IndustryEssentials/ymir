@@ -4,7 +4,7 @@ env = os.environ.get
 
 # start labelling model env
 LABEL_STUDIO = "label_studio"
-AIOS = "aios"
+LABEL_FREE = "label_free"
 # set your label tool
 LABEL_TOOL = env("LABEL_TOOL", LABEL_STUDIO)
 LABEL_TOOL_URL = env("LABEL_TOOL_URL")
