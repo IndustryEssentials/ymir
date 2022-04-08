@@ -73,7 +73,8 @@ const Add = ({ importModel }) => {
                 label={t('model.add.form.name')}
                 name='name'
                 rules={[
-                  { required: true, message: t('model.add.form.name.placeholder') }
+                  { required: true, message: t('model.add.form.name.placeholder') },
+                  { type: 'string', min: 2, max: 80 },
                 ]}
               >
                 <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
