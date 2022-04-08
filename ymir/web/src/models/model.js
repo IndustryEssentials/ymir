@@ -114,7 +114,7 @@ export default {
         }
         yield put({
           type: "UPDATE_MODEL",
-          payload: model,
+          payload: { id, model },
         })
         return model
       }
@@ -124,7 +124,7 @@ export default {
       if (code === 0) {
         yield put({
           type: 'UPDATE_MODEL',
-          payload: {},
+          payload: { id: payload, model: {} },
         })
         return result
       }
@@ -279,9 +279,11 @@ export default {
       }
     },
     UPDATE_MODEL(state, { payload }) {
+      const { id, model } = payload
+      const models = { ...state.model, [id]: model }
       return {
         ...state,
-        model: payload
+        model: models,
       }
     },
     UPDATE_QUERY(state, { payload }) {
