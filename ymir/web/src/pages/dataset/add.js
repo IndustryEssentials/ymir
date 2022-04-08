@@ -359,7 +359,7 @@ const Add = (props) => {
             ) : null}
             {isType(TYPES.LOCAL) ? (
               <Tip hidden={true}>
-              <Form.Item label={t('dataset.add.form.upload.btn')}>
+              <Form.Item label={t('dataset.add.form.upload.btn')} required>
                 <Uploader
                   onChange={(files, result) => { setFileToken(result) }}
                   max={1024}
