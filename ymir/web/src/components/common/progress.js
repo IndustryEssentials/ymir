@@ -11,7 +11,6 @@ function RenderProgress(state, { id, progress, createTime, taskState }, simple =
   if (!taskState) {
     return
   }
-  console.log('progress: ', progress, state, taskState)
   const stateTag = <StateTag mode={simple ? 'icon' : 'text'} state={state} />
   return state === states.READY ? (
     <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px', textAlign: 'left' }}>

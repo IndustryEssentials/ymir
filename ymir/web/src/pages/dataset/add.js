@@ -120,8 +120,12 @@ const Add = (props) => {
       strategy,
       projectId: pid,
     }
-    if (currentType === TYPES.LOCAL && fileToken) {
-      params.url = fileToken
+    if (currentType === TYPES.LOCAL) {
+      if (fileToken) {
+        params.url = fileToken
+      } else {
+        return message.error(t('dataset.add.local.file.empty'))
+      }
     }
     const result = await props.createDataset(params)
     if (result) {

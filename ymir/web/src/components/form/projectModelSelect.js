@@ -37,14 +37,14 @@ const ProjectSelect = ({ pid, value, projects = [], onChange = () => { }, getPro
     const result = await getModels(target.value)
     
     target.loading = false
-    if (result?.length) {
+    if (result) {
       target.children = result.map(model => {
         return {
           label: model.name + model.versionName,
           value: model.id,
           isLeaf: true,
         }
-      })
+      }) || []
       setOptions([...options])
     }
   }

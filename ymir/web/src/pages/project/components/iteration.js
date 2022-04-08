@@ -7,7 +7,7 @@ import { templateString } from '@/utils/string'
 import Stage from './stage'
 import s from "./iteration.less"
 
-function Iteration({ project, fresh = () => {}, ...func }) {
+function Iteration({ project, fresh = () => { }, ...func }) {
   const [iteration, setIteration] = useState({})
   const [stages, setStages] = useState([])
   const [prevIteration, setPrevIteration] = useState({})
@@ -28,11 +28,10 @@ function Iteration({ project, fresh = () => {}, ...func }) {
     } else {
       fetchFirstTrainSet()
     }
-    
+
   }, [iteration])
 
   useEffect(() => {
-    console.log('rerender iteration: ', iteration, firstTrainSet)
     iteration.id && rerenderStages()
   }, [iteration, firstTrainSet])
 
@@ -64,7 +63,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   function rerenderStages() {
     const ss = stages.map(stage => {
       const result = iteration[stage.output]
-      const url = templateString(stage.temp || '', {
+      const urlParams = {
         s0d: project.miningSet.id || 0,
         s0s: project.miningStrategy,
         s0c: project.chunkSize || undefined,
@@ -79,7 +78,8 @@ function Iteration({ project, fresh = () => {}, ...func }) {
         pid: project.id,
         stage: iteration.currentStage,
         output: stage.output,
-      })
+      }
+      const url = templateString(stage.temp || '', urlParams)
       return {
         ...stage,
         iterationId: iteration.id,
@@ -92,7 +92,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
     setStages(ss)
   }
 
-  function iterationHandle({ type = 'update', data = {}}) {
+  function iterationHandle({ type = 'update', data = {} }) {
     if (type === 'create') {
       createIteration(data)
     } else if (type === 'skip') {
@@ -112,7 +112,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
   async function fetchFirstTrainSet() {
     const result = await func.queryFirstTrainDataset(project.trainSet.id)
     if (result) {
-      const { items: [ds]} = result
+      const { items: [ds] } = result
       ds && setFirstTrainSet(ds)
     }
   }
@@ -138,7 +138,7 @@ function Iteration({ project, fresh = () => {}, ...func }) {
       setIteration(result)
     }
   }
-  async function skipStage({ stage = {}}) {
+  async function skipStage({ stage = {} }) {
     const params = {
       id: iteration.id,
       currentStage: stage.value,
@@ -187,7 +187,6 @@ const actions = (dispacth) => {
       })
     },
     queryFirstTrainDataset(group_id) {
-      console.log('group id: ', group_id)
       return dispacth({
         type: 'dataset/queryDatasets',
         payload: { group_id, is_desc: false, limit: 1 }
