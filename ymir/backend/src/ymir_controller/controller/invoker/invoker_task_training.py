@@ -32,7 +32,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
 
     @classmethod
     def subtask_weights(cls) -> List[float]:
-        return [0.99, 0.01]
+        return [1.0, 0.0]
 
     @classmethod
     def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
