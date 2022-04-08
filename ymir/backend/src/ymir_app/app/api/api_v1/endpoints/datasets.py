@@ -339,6 +339,9 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
+    if keyword:
+        keyword_id = user_labels.get_class_ids(keyword)[0]
+
     viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
