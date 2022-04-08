@@ -98,7 +98,7 @@ function Label({ datasets, keywords, ...func }) {
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
-    keep_annotations: true,
+    keepAnnotations: true,
     labelType: getCheckedValue(LabelTypes()),
   }
   return (
