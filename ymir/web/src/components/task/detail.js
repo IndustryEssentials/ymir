@@ -65,7 +65,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     justifyContent: "flex-end",
   }
 
-  function isModel (type) {
+  function isModel(type) {
     return [TASKTYPES.TRAINING, TASKTYPES.MODELCOPY, TASKTYPES.MODELIMPORT].includes(type)
   }
 
@@ -102,7 +102,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   }
 
   function renderImportSource(pa = {}) {
-    return <Item label={t("task.origin.dataset")}>{pa.input_url || pa.input_path || pa.input_group_name }</Item>
+    return <Item label={t("task.origin.dataset")}>{pa.input_url || pa.input_path || pa.input_group_name || pa.input_dataset_name}</Item>
   }
 
   function renderCreateTime(time) {
@@ -117,7 +117,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       [TASKTYPES.MINING]: renderMining,
       [TASKTYPES.LABEL]: renderLabel,
       [TASKTYPES.IMPORT]: renderImport,
-      [TASKTYPES.COPY]: renderImport,
+      [TASKTYPES.COPY]: renderCopy,
       [TASKTYPES.INFERENCE]: renderInference,
       [TASKTYPES.FUSION]: renderFusion,
       [TASKTYPES.MODELCOPY]: renderModelCopy,
@@ -230,13 +230,22 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     </Item>
   </>
   const renderModelCopy = () => <>
-      <Item label={t("dataset.column.source")}>{t('task.type.modelcopy')}</Item>
+    <Item label={t("dataset.column.source")}>{t('task.type.modelcopy')}</Item>
     {renderCreateTime(task.create_datetime)}
     <Item label={t("task.detail.label.hyperparams")} span={2}>
       {renderConfig(task.config)}
     </Item>
   </>
   const renderImport = () => (
+    <>
+      {renderImportSource(task?.parameters)}
+      {renderCreateTime(task.create_datetime)}
+      <Item label={t("dataset.column.ignored_keyword")}>
+        <IgnoreKeywords keywords={ignore} />
+      </Item>
+    </>
+  )
+  const renderCopy = () => (
     <>
       {renderImportSource(task?.parameters)}
       {renderCreateTime(task.create_datetime)}
