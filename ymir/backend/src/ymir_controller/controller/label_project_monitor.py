@@ -10,7 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_importing import TaskImportingInvoker
-from controller.label_model.aios import AIOS
+from controller.label_model.label_free import LabelFree
 from controller.label_model.label_studio import LabelStudio
 from controller.utils.redis import rds
 
@@ -40,7 +40,7 @@ def _gen_index_file(des_annotation_path: str) -> str:
                     json_content = json.load(f)
                     pic_path = json_content["task"]["data"]["image"].replace("data/local-files/?d=", "")
                     media_files.append(pic_path)
-    elif label_task_config.AIOS == label_task_config.LABEL_TOOL:
+    elif label_task_config.LABEL_FREE == label_task_config.LABEL_TOOL:
         des_annotation_path = os.path.join(des_annotation_path, "images")
         for one_file in os.listdir(des_annotation_path):
             if one_file.endswith(".jpeg") or one_file.endswith(".jpg") or one_file.endswith(".png"):
@@ -58,8 +58,8 @@ def _gen_index_file(des_annotation_path: str) -> str:
 def lable_task_monitor() -> None:
     if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
         label_instance = LabelStudio()
-    elif label_task_config.LABEL_TOOL == label_task_config.AIOS:
-        label_instance = AIOS()  # type: ignore
+    elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
+        label_instance = LabelFree()  # type: ignore
     else:
         raise ValueError("Error! Please setting your label tools")
 

@@ -4,7 +4,7 @@ from typing import Tuple, List
 
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
-from controller.label_model.aios import AIOS
+from controller.label_model.label_free import LabelFree
 from controller.label_model.label_studio import LabelStudio
 from controller.label_model.request_handler import RequestHandler
 from controller.utils import utils
@@ -64,8 +64,8 @@ def start_label_task(
     )
     if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
         label_instance = LabelStudio(request_handler)
-    elif label_task_config.LABEL_TOOL == label_task_config.AIOS:
-        label_instance = AIOS(request_handler)  # type: ignore
+    elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
+        label_instance = LabelFree(request_handler)  # type: ignore
     else:
         raise ValueError("Error! Please setting your label tools")
 
