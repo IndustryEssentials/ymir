@@ -14,8 +14,6 @@ services:
     image: labelfree/open:latest
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/labelfree app:app
     volumes:
-      - ${YMIR_PATH}/ymir-storage:/ymir-storage
-      - ${YMIR_PATH}/importing_pic:/data/sharing
       - ${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}
     environment:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:root!2345@label_mysql:3306/labelfree
