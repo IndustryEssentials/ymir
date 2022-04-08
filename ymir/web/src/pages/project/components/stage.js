@@ -112,7 +112,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }
   const renderState = () => {
     const pending = 'project.stage.state.pending'
-    return !finishStage() ? (isPending() ? t(pending) : (isValid() ? result.name : t(statesLabel(state)))) : null
+    return !finishStage() ? (isPending() ? t(pending) : (isValid() ? `${result.name} ${result.versionName}` : t(statesLabel(state)))) : null
   }
 
   const renderSkip = () => {
