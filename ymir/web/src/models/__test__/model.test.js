@@ -65,13 +65,13 @@ describe("models: model", () => {
 
     const expectedId = 1001
     const daction = {
-      payload: { id: expectedId }
+      payload: { id: expectedId, model: { id: expectedId } }
     }
     const result = model.reducers.UPDATE_MODEL(
       state,
       daction
     )
-    expect(result.model.id).toBe(expectedId)
+    expect(result.model[expectedId].id).toBe(expectedId)
   })
 
   errorCode(model, 'getModelGroups')
