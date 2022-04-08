@@ -12,7 +12,7 @@ from controller.label_model.base import LabelBase, catch_label_task_error
 from controller.label_model.request_handler import RequestHandler
 
 
-class AIOS(LabelBase):
+class LabelFree(LabelBase):
     def __init__(self, request_handler: RequestHandler = RequestHandler()) -> None:
         self._requests = request_handler
 
@@ -158,7 +158,7 @@ class AIOS(LabelBase):
         import_work_dir: str,
         use_pre_annotation: bool,
     ) -> None:
-        logging.info("start AIOS run()")
+        logging.info("start LABELFREE run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
         exported_storage_id = self.set_export_storage(project_id, export_path)
