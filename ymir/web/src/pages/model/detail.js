@@ -27,10 +27,10 @@ function ModelDetail({ modelCache, getModel }) {
     } else {
       modelCache[id] && setModel(modelCache[id])
     }
-  }, [modelCache])
+  }, [modelCache[id]])
 
-  async function fetchModel() {
-    await getModel(id)
+  async function fetchModel(force) {
+    await getModel(id, force)
   }
 
   function renderTitle() {
