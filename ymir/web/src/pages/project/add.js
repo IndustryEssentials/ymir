@@ -222,7 +222,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
                     <Button type="primary" size="large" htmlType="submit">
-                      {isEdit ? t('project.update.submit') : t('project.add.submit')}
+                      {isEdit ? t('common.confirm') : t('project.add.submit')}
                     </Button>
                   </Form.Item>
                   <Form.Item name='backBtn' noStyle>
