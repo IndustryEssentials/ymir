@@ -190,12 +190,17 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
-                  <Form.Item label={t('project.add.form.test.set')} name="testSet" required>
+                  <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
+                    { required: true, message: t('task.train.form.testset.required') },
+                  ]}>
                     <DatasetSelect disabled={project.testSet} pid={id} filter={[miningSet]} onChange={(value) => value && setTestSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
-                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet" required>
+                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet" 
+                  rules={[
+                    { required: true, message: t('task.train.form.miningset.required') },
+                  ]}>
                     <DatasetSelect pid={id} filter={[project?.trainSet?.id, testSet]} onChange={(value) => value && setMiningSet(value)} />
                   </Form.Item>
                 </Tip>
@@ -208,7 +213,11 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                         </Form.Item>
                       </Col>
                       {strategy === 0 ? <Col flex={'200px'} offset={1}>
-                        <Form.Item label={t('project.add.form.mining.chunksize')} wrapperCol={{ span: 12 }} labelCol={{ span: 12 }} name='chunkSize' required={strategy === 0}>
+                        <Form.Item label={t('project.add.form.mining.chunksize')} 
+                          wrapperCol={{ span: 12 }} labelCol={{ span: 12 }} name='chunkSize'
+                          rules={[
+                            { required: strategy === 0 }
+                          ]}>
                           <InputNumber step={1} min={1} style={{ width: '100%' }} />
                         </Form.Item>
                       </Col> : null}
@@ -222,7 +231,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
                     <Button type="primary" size="large" htmlType="submit">
-                      {isEdit ? t('project.update.submit') : t('project.add.submit')}
+                      {isEdit ? t('common.confirm') : t('project.add.submit')}
                     </Button>
                   </Form.Item>
                   <Form.Item name='backBtn' noStyle>

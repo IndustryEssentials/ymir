@@ -104,7 +104,7 @@ export default {
     *createFusionTask({ payload }, { call, put }) {
       let { code, result } = yield call(createFusionTask, payload)
       if (code === 0) {
-        yield put({
+        yield put.resolve({
           type: 'dataset/clearCache'
         })
         yield put({
