@@ -42,8 +42,12 @@ const Add = ({ importModel }) => {
       ...values,
       projectId: pid,
     }
-    if (url) {
-      params.url = url
+    if (isType(TYPES.LOCAL)) {
+      if (url) {
+        params.url = url
+      } else {
+        return message.error(t('model.file.required'))
+      }
     }
     if (values.modelId) {
       params.modelId = values.modelId[values.modelId.length - 1]

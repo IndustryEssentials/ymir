@@ -63,6 +63,7 @@ const model = {
   'model.add.form.share.valid.msg': { en: 'Please input user shared ID', cn: '请输入用户分享的模型ID', },
   'model.add.form.share.placeholder': { en: 'Shared ID', cn: '请输入待分享的数据集ID', },
   'model.add.form.upload.btn': { en: 'Upload', cn: '上传文件', },
+  'model.file.required': { en: 'Please upload model', cn: '请上传模型', },
   'model.add.form.upload.info': { en: `1. Only support model generating on YMIR; {br} 2. Size <= {max}M.`, cn: `1. 仅支持YMIR系统产生的模型；{br} 2. 上传文件应小于 {max}MB 。`, },
   'model.verify.upload.info': {cn: '支持jpg, png, bmp格式, 图片大小 < {size}M', en: 'Support *.jpg, *.png, *.bmp, size < {size}M'},
   'model.verify.confidence': { cn: '置信度', en: 'Confidence' },
