@@ -49,7 +49,7 @@ class DatasetBase(BaseModel):
 
 # Properties required for a client to create a dataset
 class DatasetImport(BaseModel):
-    dataset_group_name: str = Field(description="Dataset Group Name")
+    group_name: str = Field(description="Dataset Group Name")
     description: Optional[str]
     project_id: int
     input_url: Optional[str] = Field(description="from url")
@@ -93,6 +93,7 @@ class DatasetUpdate(BaseModel):
 
 class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetBase):
     name: str
+    group_name: str
     hash: str = Field(description="related task hash")
     version_num: int = Field(description="version num from related dataset group")
     task_id: int

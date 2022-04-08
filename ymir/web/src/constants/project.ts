@@ -11,6 +11,17 @@ export enum Stages {
   training = 4,
   next = 5,
 }
+export enum MiningStrategy {
+  block = 0,
+  unique = 1,
+  free = 2,
+}
+
+export function getStageLabel(stage: Stages) {
+  const labels = StageList().list.map(item => item.label)
+  return `project.iteration.stage.${labels[stage]}`
+}
+
 type stageObject = {
   value: Stages,
   result?: string,
@@ -19,12 +30,12 @@ type stageObject = {
 export const StageList = () => {
   const iterationParams = 'iterationId={id}&currentStage={stage}&outputKey={output}'
   const list = [
-    { value: Stages.prepareMining, output: 'miningSet', input: '', url: `/home/task/fusion/{pid}?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}` },
-    { value: Stages.mining, output: 'miningResult', input: 'miningSet', url: `/home/task/mining/{pid}?did={s1d}&mid={s1m}&${iterationParams}` },
-    { value: Stages.labelling, output: 'labelSet', input: 'miningResult', url: `/home/task/label/{pid}?did={s2d}&${iterationParams}` },
-    { value: Stages.merging, output: 'trainUpdateSet', input: 'labelSet', url: `/home/task/fusion/{pid}?did={s3d}&merging={s3m}&${iterationParams}` },
-    { value: Stages.training, output: 'model', input: 'trainUpdateSet', url: `/home/task/train/{pid}?did={s4d}&test={s4t}&${iterationParams}` },
-    { value: Stages.next, output: '', input: 'trainSet', },
+    { label: 'ready', value: Stages.prepareMining, output: 'miningSet', input: '', url: `/home/task/fusion/{pid}?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}` },
+    { label: 'mining', value: Stages.mining, output: 'miningResult', input: 'miningSet', url: `/home/task/mining/{pid}?did={s1d}&mid={s1m}&${iterationParams}` },
+    { label: 'label', value: Stages.labelling, output: 'labelSet', input: 'miningResult', url: `/home/task/label/{pid}?did={s2d}&${iterationParams}` },
+    { label: 'merge', value: Stages.merging, output: 'trainUpdateSet', input: 'labelSet', url: `/home/task/fusion/{pid}?did={s3d}&merging={s3m}&${iterationParams}` },
+    { label: 'training', value: Stages.training, output: 'model', input: 'trainUpdateSet', url: `/home/task/train/{pid}?did={s4d}&test={s4t}&${iterationParams}` },
+    { label: 'next', value: Stages.next, output: '', input: 'trainSet', },
   ]
   return { list, ...singleList(list) }
 }
@@ -35,7 +46,7 @@ export function getIterationVersion(version: number) {
 
 export function transferProject(data: BackendData) {
   const iteration = transferIteration(data.current_iteration)
-  const project : Project = {
+  const project: Project = {
     id: data.id,
     name: data.name,
     keywords: data.training_keywords,

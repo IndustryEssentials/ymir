@@ -107,6 +107,9 @@ export default {
         yield put({
           type: 'dataset/clearCache'
         })
+        yield put({
+          type: 'project/clearCache'
+        })
         return result
       }
     },
@@ -115,6 +118,9 @@ export default {
       if (code === 0) {
         yield put({
           type: 'model/clearCache'
+        })
+        yield put({
+          type: 'project/clearCache'
         })
         return result
       }
@@ -125,6 +131,9 @@ export default {
         yield put({
           type: 'dataset/clearCache'
         })
+        yield put({
+          type: 'project/clearCache'
+        })
         return result
       }
     },
@@ -134,6 +143,9 @@ export default {
         yield put({
           type: 'dataset/clearCache'
         })
+        yield put({
+          type: 'project/clearCache'
+        })
         return result
       }
     },
@@ -142,6 +154,9 @@ export default {
       if (code === 0) {
         yield put({
           type: 'dataset/clearCache'
+        })
+        yield put({
+          type: 'project/clearCache'
         })
         return result
       }

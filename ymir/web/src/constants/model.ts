@@ -23,7 +23,7 @@ export function transferModelGroup (data: BackendData) {
 export function transferModel (data: BackendData): ModelVersion {
   return {
     id: data.id,
-    name: data.name,
+    name: data.group_name,
     groupId: data.model_group_id,
     projectId: data.project_id,
     hash: data.hash,

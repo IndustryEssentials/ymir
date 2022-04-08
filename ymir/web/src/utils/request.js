@@ -49,7 +49,7 @@ request.interceptors.response.use(
     if (authrized.includes(err.request.status)) {
       return logout()
     } else if (err.request.status === 504) {
-      message.error('Request Timeout')
+      message.error(t('error.timeout'))
     } else {
       const res = err.response
       if (res && res.data && res.data.code) {

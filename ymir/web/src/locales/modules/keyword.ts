@@ -4,7 +4,7 @@ const keyword = {
   "keyword.column.action": { en: "Actions", cn: "操作", },
   "keyword.query.name.placeholder": { en: "Please input keyword name", cn: "请输入标签名称", },
   "keyword.pager.total.label": { en: "Total {total} keywords", cn: "共 {total} 个标签", },
-  "keyword.add.label": { en: "Add Keywords", cn: "添加标签", },
+  "keyword.add.label": { en: "Add Keyword", cn: "添加标签", },
   "keyword.empty.label": { en: "Add Keywords", cn: "添加标签", },
   "keyword.empty.btn.label": { en: "Add", cn: "添加", },
   "keyword.add.name.label": { en: "Keyword", cn: "标签", },

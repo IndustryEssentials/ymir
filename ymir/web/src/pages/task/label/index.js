@@ -76,6 +76,7 @@ function Label({ datasets, keywords, ...func }) {
       name: values.name.trim(),
       labellers: emails,
       doc,
+      name: 'task_label_' + randomNumber(),
     }
     const result = await func.createLabelTask(params)
     if (result) {
@@ -97,7 +98,6 @@ function Label({ datasets, keywords, ...func }) {
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
-    name: 'task_label_' + randomNumber(),
     keep_annotations: true,
     labelType: getCheckedValue(LabelTypes()),
   }
@@ -119,18 +119,6 @@ function Label({ datasets, keywords, ...func }) {
           >
             <Tip hidden={true}>
               <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName}</span></Form.Item>
-            </Tip>
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.common.dataset.name')}
-                name='name'
-                rules={[
-                  { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
-                  { type: 'string', min: 2, max: 50 },
-                ]}
-              >
-                <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
-              </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.labelmember')}>
               <Form.Item
