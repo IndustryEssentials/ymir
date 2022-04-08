@@ -10,7 +10,7 @@ function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ id, dataset = {}, progressWidth = 0.8, getKeywordRates }) {
+function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }) {
   const [data, setData] = useState(null)
   const [list, setList] = useState([])
 
