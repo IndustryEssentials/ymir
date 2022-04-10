@@ -10,7 +10,7 @@ const DatasetSelect = ({ pid, filter = [], value, datasets = [], onChange = () =
   }, [pid])
 
   function fetchDatasets() {
-    getDatasets(pid)
+    getDatasets(pid, true)
   }
 
   return (
