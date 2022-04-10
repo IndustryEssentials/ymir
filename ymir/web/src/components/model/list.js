@@ -122,7 +122,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
         <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
         <Col flex={'50px'}>
           {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-          {iterationLabel ? <div className={styles.extraTag}>{iterationLabel}</div> : null}
+          {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
         </Col>
       </Row>,
       ellipsis: true,

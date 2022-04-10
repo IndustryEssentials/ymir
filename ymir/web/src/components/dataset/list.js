@@ -129,7 +129,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
         <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
         <Col flex={'50px'}>
           {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-          {iterationLabel ? <div className={styles.extraTag}>{iterationLabel}</div> : null}
+          {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
         </Col>
       </Row>,
       ellipsis: true,
