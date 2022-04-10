@@ -79,13 +79,12 @@ function Mining({ datasetCache, datasets, ...func }) {
     const state = location.state
 
     if (state?.record) {
-      const { parameters, name, config, } = state.record
+      const { parameters, config, } = state.record
       const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations, docker_image, docker_image_id } = parameters
       const sets = include_datasets || []
       const xsets = exclude_datasets || []
       setTopk(!!top_k)
       form.setFieldsValue({
-        name: `${name}_${randomNumber()}`,
         datasetId: dataset_id,
         filter_strategy: !!top_k,
         inference: generate_annotations,
@@ -146,7 +145,7 @@ function Mining({ datasetCache, datasets, ...func }) {
     const image = img[1]
     const params = {
       ...values,
-      name: values.name.trim(),
+      name: 'task_mining_' + randomNumber(),
       topk: values.filter_strategy ? values.topk : 0,
       projectId: pid,
       imageId,
@@ -177,7 +176,6 @@ function Mining({ datasetCache, datasets, ...func }) {
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
-    name: 'task_mining_' + randomNumber(),
     model: mid ? parseInt(mid) : undefined,
     image: image ? parseInt(image) : undefined,
     datasetId: Number(did) ? Number(did) : undefined,
@@ -202,19 +200,6 @@ function Mining({ datasetCache, datasets, ...func }) {
             colon={false}
             scrollToFirstError
           >
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.common.dataset.name')}
-                name='name'
-                rules={[
-                  { required: true, whitespace: true, message: t('task.common.dataset.name.required') },
-                  { type: 'string', min: 2, max: 50 },
-                ]}
-              >
-                <Input placeholder={t('task.common.dataset.name.placeholder')} autoComplete='off' allowClear />
-              </Form.Item>
-            </Tip>
-
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
               <Tip hidden={true}>
@@ -234,7 +219,7 @@ function Mining({ datasetCache, datasets, ...func }) {
                   >
                     {datasets.map(item =>
                       <Option value={item.id} key={item.id}>
-                        {item.name}(assets: {item.assetCount})
+                        {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>)}
                   </Select>
                 </Form.Item>

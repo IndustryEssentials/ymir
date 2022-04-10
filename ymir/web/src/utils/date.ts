@@ -25,7 +25,7 @@ export function calTimeLeft(progress: number, time: string, locale: string) {
   }
   const endTime = Number(moment().format('x'))
   const startTime = Number(moment(time).format('x'))
-  const result = Math.round((endTime - startTime) * (1 - progress) / progress)
+  const result = Math.round((endTime - startTime) * (100 - progress) / progress)
   const temp = moment.duration(result).locale(locale)
   return temp.humanize({ s: 0 })
 }
