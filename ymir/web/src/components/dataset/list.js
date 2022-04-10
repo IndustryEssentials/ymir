@@ -325,7 +325,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
         iteration.trainSet,
       ].filter(id => id)
       if (ids.includes(item.id)) {
-        item.iterationLabel = t('iteration.round.label', iteration)
+        item.iterationLabel = t('iteration.tag.round', iteration)
       }
     })
     return item

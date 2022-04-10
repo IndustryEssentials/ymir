@@ -87,6 +87,7 @@ const project = {
   'project.tag.train': { en: 'Training Dataset', cn: '训练集', },
   'project.tag.test': { en: 'Testing Dataset {version}', cn: '测试集 {version}', },
   'project.tag.mining': { en: 'Mining Dataset {version}', cn: '挖掘集 {version}', },
+  'project.tag.model': { en: 'Initial Model {version}', cn: '初始模型 {version}', },
   'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
 }
 

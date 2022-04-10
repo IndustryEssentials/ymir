@@ -24,13 +24,16 @@ import { ArrowDownIcon, ArrowRightIcon, ImportIcon } from "../common/icons"
 const { confirm } = Modal
 const { useForm } = Form
 
-function Model({ pid, modelList, versions, getModels, getVersions, updateModel, query, updateQuery, resetQuery }) {
+function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
+  const [modelVersions, setModelVersions] = useState({})
+  const [iterations, setIterations] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
+  const [visibles, setVisibles] = useState({})
   let [lock, setLock] = useState(true)
   const delRef = useRef(null)
   const delGroupRef = useRef(null)
@@ -44,12 +47,12 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   }, [history.location])
 
   useEffect(() => {
-    setModels(modelList.items)
+    const mds = setGroupLabelsByProject(modelList.items, project)
+    setModels(mds)
     setTotal(modelList.total)
-  }, [modelList])
+  }, [modelList, project])
 
   useEffect(() => {
-    console.log('list versions:', versions)
     const hasModel = Object.keys(versions).length
     const emptyModel = Object.values(versions).some(models => !models.length)
     if (hasModel && emptyModel) {
@@ -66,10 +69,30 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
       }
     })
   }, [versions])
-  
+
+  useEffect(() => {
+    Object.keys(visibles).map(key => {
+      if (visibles[key]) {
+        fetchVersions(key)
+      }
+    })
+  }, [visibles])
+
+  useEffect(() => {
+    let dvs = setVersionLabelsByProject(versions, project)
+    if (iterations.length) {
+      dvs = setVersionLabelsByIterations(versions, iterations)
+    }
+    setModelVersions(dvs)
+  }, [versions, project, iterations])
+
+  useEffect(() => {
+    pid && fetchIterations(pid)
+  }, [pid])
+
   useEffect(async () => {
     if (name) {
-      await updateQuery({ ...query, name })
+      await func.updateQuery({ ...query, name })
       form.setFieldsValue({ name })
     }
     setLock(false)
@@ -82,7 +105,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   }, [query, lock])
 
   async function initState() {
-    await resetQuery()
+    await func.resetQuery()
     form.resetFields()
   }
 
@@ -95,9 +118,13 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
       title: showTitle("model.column.name"),
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id }) => (
-        <Link to={`/home/project/${pid}/model/${id}`}>{name}</Link>
-      ),
+      render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
+        <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
+        <Col flex={'50px'}>
+          {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+          {iterationLabel ? <div className={styles.extraTag}>{iterationLabel}</div> : null}
+        </Col>
+      </Row>,
       ellipsis: true,
     },
     {
@@ -141,25 +168,73 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   const listChange = ({ current, pageSize }) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, limit, offset })
   }
 
 
   async function showVersions(id) {
-    if (!models.some(item => item.id === id && item.showVersions)) {
-      fetchVersions(id)
-    }
-    setModels(models.map(item => {
-      if (item.id === id) {
-        item.showVersions = !item.showVersions
-      }
-      return item
-    }))
+    setVisibles((old) => ({ ...old, [id]: !old[id] }))
   }
 
-  
+
+  function setVersionLabelsByIterations(versions, iterations) {
+    Object.keys(versions).forEach(gid => {
+      const list = versions[gid]
+      const updatedList = list.map(item => {
+        item = setLabelByIterations(item, iterations)
+        return { ...item }
+      })
+      versions[gid] = updatedList
+    })
+    return { ...versions }
+  }
+
+  function setLabelByIterations(item, iterations) {
+    iterations.forEach(iteration => {
+      if (iteration.model && iteration.model === item.id) {
+        item.iterationLabel = t('iteration.tag.round', iteration)
+      }
+    })
+    return item
+  }
+
+  function setVersionLabelsByProject(versions, project) {
+    Object.keys(versions).forEach(gid => {
+      const list = versions[gid]
+      const updatedList = list.map(item => {
+        item = setLabelByProject(project?.model, 'isInitModel', item)
+        return { ...item }
+      })
+      versions[gid] = updatedList
+    })
+    return { ...versions }
+  }
+
+  function setGroupLabelsByProject(items, project) {
+    return items.map(item => {
+      item = setLabelByProject(project?.model, 'isInitModel', item)
+      return { ...item }
+    })
+  }
+
+  function setLabelByProject(id, label, item, version = '') {
+    const maps = {
+      isInitModel: 'project.tag.model',
+    }
+    item[label] = id && item.id === id
+    item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
+    return item
+  }
+
   async function fetchVersions(id, force) {
-    await getVersions(id, force)
+    await func.getVersions(id, force)
+  }
+
+  async function fetchIterations(pid) {
+    const iterations = await func.getIterations(pid)
+    if (iterations) {
+      setIterations(iterations)
+    }
   }
 
   function showTitle(str) {
@@ -167,7 +242,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   }
 
   async function getData() {
-    await getModels(pid, query)
+    await func.getModels(pid, query)
   }
 
   const actionMenus = (record) => {
@@ -204,7 +279,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
         onclick: () => history.push(`/home/task/inference/${pid}?mid=${id}`),
         icon: <WajueIcon />,
       },
-      
+
     ]
     const delAction = {
       key: "del",
@@ -229,7 +304,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   }
 
   const delOk = (id) => {
-    getVersions(id, true)
+    func.getVersions(id, true)
   }
 
   const delGroupOk = () => {
@@ -238,7 +313,7 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
 
 
   const saveName = async (record, name) => {
-    const result = await updateModel(record.id, name)
+    const result = await func.updateModel(record.id, name)
     if (result) {
       setModels((models) =>
         models.map((model) => {
@@ -254,11 +329,11 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      updateQuery({ ...query, ...values, })
+      func.updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         if (name === form.getFieldValue('name')) {
-          updateQuery({ ...query, name, })
+          func.updateQuery({ ...query, name, })
         }
       }, 1000)
     }
@@ -282,16 +357,19 @@ function Model({ pid, modelList, versions, getModels, getVersions, updateModel, 
     <div className={styles.groupList}>
       {models.length ? models.map(group => <div className={styles.groupItem} key={group.id}>
         <Row className={styles.groupTitle}>
-          <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
-            <span className={styles.groupName}>{group.name}</span></Col>
+          <Col flex={1} onClick={() => showVersions(group.id)}>
+            <span className={styles.foldBtn}>{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+            <span className={styles.groupName}>{group.name}</span>
+            {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
+          </Col>
           <Col><Space>
             <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
             <a onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
-        <div className={styles.groupTable} hidden={!group.showVersions}>
+        <div className={styles.groupTable} hidden={!visibles[group.id]}>
           <Table
-            dataSource={versions[group.id]}
+            dataSource={modelVersions[group.id]}
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
@@ -367,6 +445,12 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'model/updateModel',
         payload: { id, name },
+      })
+    },
+    getIterations(id) {
+      return dispatch({
+        type: 'iteration/getIterations',
+        payload: { id, },
       })
     },
     updateQuery: (query) => {
