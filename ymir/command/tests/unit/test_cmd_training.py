@@ -5,11 +5,12 @@ import unittest
 from unittest import mock
 
 from google.protobuf import json_format
+from mir.tools.errors import MirRuntimeError
 import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils, mir_storage_ops, settings as mir_settings, utils as mir_utils
+from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -159,9 +160,7 @@ class TestCmdTraining(unittest.TestCase):
         json_format.ParseDict(keywords_dict, mir_keywords)
 
         # save and commit
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
-                                           task_id='a',
-                                           message='import')
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='master',
@@ -170,7 +169,6 @@ class TestCmdTraining(unittest.TestCase):
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
                                                       },
                                                       task=task)
-
 
     def __prepare_assets(self):
         """
@@ -228,3 +226,32 @@ class TestCmdTraining(unittest.TestCase):
 
         # check result
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
+
+    def test_abnormal_00(self):
+        """ no class names in config file """
+        with open(self._config_file, 'r') as f:
+            config = yaml.safe_load(f.read())
+        config['class_names'] = []
+        with open(self._config_file, 'w') as f:
+            yaml.safe_dump(config, f)
+
+        fake_args = type('', (), {})()
+        fake_args.src_revs = "a@a"
+        fake_args.dst_rev = "b@test_training_cmd"
+        fake_args.mir_root = self._mir_root
+        fake_args.model_path = self._models_location
+        fake_args.media_location = self._assets_location
+        fake_args.model_hash = ''
+        fake_args.work_dir = self._working_root
+        fake_args.force = True
+        fake_args.force_rebuild = False
+        fake_args.executor = "executor"
+        fake_args.executant_name = 'executor-instance'
+        fake_args.tensorboard_dir = ''
+        fake_args.config_file = self._config_file
+        fake_args.asset_cache_dir = ''
+
+        cmd = training.CmdTrain(fake_args)
+        with self.assertRaises(MirRuntimeError):
+            cmd_run_result = cmd.run()
+        self.assertTrue(mir_repo_utils.mir_check_branch_exists(self._mir_root, 'b@test_training_cmd'))
