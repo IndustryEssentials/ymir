@@ -193,7 +193,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
                     { required: true, message: t('task.train.form.testset.required') },
                   ]}>
-                    <DatasetSelect disabled={project.testSet} pid={id} filter={[miningSet]} onChange={(value) => value && setTestSet(value)} />
+                    <DatasetSelect pid={id} filter={[miningSet]} onChange={(value) => value && setTestSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>

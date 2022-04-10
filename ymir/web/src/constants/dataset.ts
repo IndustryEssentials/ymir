@@ -43,6 +43,7 @@ export function transferDataset (data: BackendData): Dataset {
     keywordCount: data.keyword_count || 0,
     keywordsCount: data.keywords || {},
     nagetiveCount: negative_images_cnt,
+    isProtected: data.is_protected || false,
     projectNagetiveCount: project_negative_images_cnt,
     ignoredKeywords: Object.keys(data.ignored_keywords || {}),
     hash: data.hash,

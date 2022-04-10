@@ -29,7 +29,7 @@ function ProjectDetail(func) {
   }
 
   useEffect(() => {
-    id && fetchProject()
+    id && fetchProject(true)
   }, [id])
 
   useEffect(() => {
