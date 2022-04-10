@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import tarfile
@@ -28,6 +29,7 @@ class TestCmdInfer(unittest.TestCase):
         self._prepare_assets()
         self._prepare_model()
         self._prepare_config_file()
+        self._prepare_infer_result_file()
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -39,6 +41,7 @@ class TestCmdInfer(unittest.TestCase):
         os.makedirs(self._test_root, exist_ok=True)
         os.makedirs(self._models_location, exist_ok=True)
         os.makedirs(self._working_root, exist_ok=True)
+        os.makedirs(os.path.join(self._working_root, 'out'), exist_ok=True)
         os.makedirs(self._src_assets_root, exist_ok=True)
 
     def _deprepare_dir(self):
@@ -91,6 +94,29 @@ class TestCmdInfer(unittest.TestCase):
             executor_config = yaml.safe_load(f)
         with open(self._config_file, 'w') as f:
             yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config}, f)
+            
+    def _prepare_infer_result_file(self):
+        fake_infer_output_dict = {
+            'detection': {
+                '2007_000032.jpg': {
+                    'annotations': [
+                        {
+                            'box': {
+                                'x': 0,
+                                'y': 0,
+                                'w': 30,
+                                'h': 30
+                            },
+                            'score': 0.5,
+                            'class_name': 'cat',
+                        },
+                    ],
+                },
+            },
+        }
+        infer_output_file = os.path.join(self._working_root, 'out', 'infer-result.json')
+        with open(infer_output_file, 'w') as f:
+            f.write(json.dumps(fake_infer_output_dict))
 
     @staticmethod
     def _test_assets_root() -> str:
@@ -100,13 +126,9 @@ class TestCmdInfer(unittest.TestCase):
     def _mock_run_docker_cmd(*args, **kwargs):
         pass
 
-    def _mock_process_results(*args, **kwargs):
-        pass
-
     # public: test cases
     @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
-    @mock.patch('mir.commands.infer._process_infer_results', side_effect=_mock_process_results)
-    def test_00(self, mock_process, mock_run):
+    def test_00(self, mock_run):
         fake_args = type('', (), {})()
         fake_args.work_dir = self._working_root
         fake_args.model_location = self._models_location
@@ -132,19 +154,6 @@ class TestCmdInfer(unittest.TestCase):
         expected_cmd.extend(['--name', fake_args.executant_name])
         expected_cmd.append(fake_args.executor)
         mock_run.assert_called_once_with(expected_cmd, check=True, stdout=mock.ANY, stderr=mock.ANY, text=True)
-        # mock_run.assert_called_once_with(asset_path=fake_args.work_dir,
-        #                                  index_file_path=os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'),
-        #                                  model_path=os.path.join(fake_args.work_dir, 'in', 'models'),
-        #                                  config_file_path=os.path.join(fake_args.work_dir, 'in', 'config.yaml'),
-        #                                  out_path=os.path.join(fake_args.work_dir, 'out'),
-        #                                  executor=fake_args.executor,
-        #                                  executant_name=fake_args.executant_name,
-        #                                  shm_size=None,
-        #                                  task_type=mock.ANY,
-        #                                  gpu_id='')
-        mock_process.assert_called_once_with(infer_result_file=os.path.join(fake_args.work_dir, 'out',
-                                                                            'infer-result.json'),
-                                             max_boxes=50)
 
         # check assets and index.tsv
         with open(os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'), 'r') as f:
