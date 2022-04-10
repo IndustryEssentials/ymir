@@ -3,14 +3,14 @@ import { connect } from 'umi'
 import { useEffect, useState } from 'react'
 import t from '@/utils/t'
 
-const DatasetSelect = ({ pid, filter = [], value, datasets = [], onChange = () => { }, getDatasets, ...resProps }) => {
+const DatasetSelect = ({ pid, filter = [], filterGroup = [], value, datasets = [], onChange = () => { }, getDatasets, ...resProps }) => {
 
   useEffect(() => {
     pid && fetchDatasets()
   }, [pid])
 
   function fetchDatasets() {
-    getDatasets(pid)
+    getDatasets(pid, true)
   }
 
   return (
@@ -22,7 +22,7 @@ const DatasetSelect = ({ pid, filter = [], value, datasets = [], onChange = () =
       showArrow
       {...resProps}
     >
-      {datasets.filter(ds => !filter.includes(ds.id)).map(item =>
+      {datasets.filter(ds => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId)).map(item =>
         <Select.Option value={item.id} key={item.id}>
           {item.name} {item.versionName}(assets: {item.assetCount})
         </Select.Option>

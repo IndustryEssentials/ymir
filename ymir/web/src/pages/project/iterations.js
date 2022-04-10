@@ -33,25 +33,28 @@ function Iterations({ ...func }) {
     {
       title: showTitle("iteration.column.premining"),
       dataIndex: "miningDatasetLabel",
-      render: (label, { miningDataset }) => renderPop(label, miningDataset),
+      render: (label, { versionName, miningDataset }) => renderPop(label, miningDataset),
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.mining"),
       dataIndex: "miningResultDatasetLabel",
       render: (label, { miningResultDataset }) => renderPop(label, miningResultDataset),
+      ellipsis: true,
     },
     {
       title: showTitle("iteration.column.label"),
       dataIndex: "labelDatasetLabel",
       render: (label, { labelDataset }) => renderPop(label, labelDataset),
       align: 'center',
+      ellipsis: true,
     },
     {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
       render: (label, { trainUpdateDataset }) => renderPop(label, trainUpdateDataset),
       align: 'center',
+      ellipsis: true,
     },
     {
       title: showTitle("iteration.column.training"),
@@ -91,7 +94,7 @@ function Iterations({ ...func }) {
   }
 
   function renderDatasetLabel(dataset) {
-    return dataset ? `${dataset.name} (${dataset.assetCount})` : ''
+    return dataset ? `${dataset.name} ${dataset.versionName} (${dataset.assetCount})` : ''
   }
 
   function renderModelLabel(model) {

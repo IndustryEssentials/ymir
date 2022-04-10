@@ -133,11 +133,10 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const renderSys = () => <Item label={t("dataset.column.source")}>{t('task.detail.source.sys')}</Item>
   const renderTraining = () => (
     <>
-      {renderDatasetSource(task?.parameters.dataset_id)}
-      {renderCreateTime(task.create_datetime)}
       <Item label={t("task.train.form.trainsets.label")}>
         {renderDatasetName(task.parameters.dataset_id)}
       </Item>
+      {renderCreateTime(task.create_datetime)}
       <Item label={t("task.train.form.testsets.label")}>
         {renderDatasetName(task.parameters.validation_dataset_id)}
       </Item>
@@ -161,13 +160,13 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       <Item label={t("task.train.form.traintype.label")}>
         {t('task.train.form.traintypes.detect')}
       </Item>
-      <Item label={t("task.detail.label.hyperparams")} span={2}>
-        {renderConfig(task.config)}
-      </Item>
-      <Item label={"TensorBoard"} span={2}>
+      <Item label={"TensorBoard"}>
         <Link target="_blank" to={getTensorboardLink(task.hash)}>
           {t("task.detail.tensorboard.link.label")}
         </Link>
+      </Item>
+      <Item label={t("task.detail.label.hyperparams")} span={2}>
+        {renderConfig(task.config)}
       </Item>
     </>
   )
