@@ -36,6 +36,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
+  const [visibles, setVisibles] = useState({})
   const delRef = useRef(null)
   const delGroupRef = useRef(null)
   let [lock, setLock] = useState(true)
@@ -53,6 +54,14 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
     setDatasets(list)
     setTotal(datasetList.total)
   }, [datasetList, project])
+
+  useEffect(() => {
+    Object.keys(visibles).map(key => {
+      if (visibles[key]) {
+        fetchVersions(key)
+      }
+    })
+  }, [visibles])
 
   useEffect(() => {
     const hasDataset = Object.keys(versions).length
@@ -246,16 +255,8 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
     func.getDatasets(pid, query)
   }
 
-  async function showVersions(id) {
-    if (!datasets.some(item => item.id === id && item.showVersions)) {
-      fetchVersions(id)
-    }
-    setDatasets(datasets.map(item => {
-      if (item.id === id) {
-        item.showVersions = !item.showVersions
-      }
-      return item
-    }))
+  function showVersions(id) {
+    setVisibles((old) => ({ ...old, [id]: !old[id] }))
   }
 
   async function fetchVersions(id, force) {
@@ -399,7 +400,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
       {datasets.map(group => <div className={styles.groupItem} key={group.id}>
         <Row className={styles.groupTitle}>
           <Col flex={1} onClick={() => showVersions(group.id)}>
-            <span className={styles.foldBtn}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+            <span className={styles.foldBtn}>{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
             <span className={styles.groupName}>{group.name}</span>
             {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
           </Col>
@@ -408,7 +409,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
             <a onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
-        <div className={styles.groupTable} hidden={!group.showVersions}>
+        <div className={styles.groupTable} hidden={!visibles[group.id]}>
           <Table
             dataSource={datasetVersions[group.id]}
             onChange={tableChange}
