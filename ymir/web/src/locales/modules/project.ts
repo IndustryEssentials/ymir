@@ -42,6 +42,7 @@ const project = {
   'project.add.form.desc': { en: 'Description', cn: '备注', },
   'project.update.submit': { en: 'Update Project', cn: '设置项目', },
   'project.add.submit': { en: 'Create Project', cn: '创建项目', },
+  'project.iteration.stage.prepare': { en: 'Iterations Prepare', cn: '迭代准备中', },
   'project.iteration.stage.datasets': { en: 'Dataset Settings', cn: '迭代数据准备', },
   'project.iteration.stage.model': { en: 'Select Model', cn: '迭代模型准备', },
   'project.iteration.stage.start': { en: 'Create Iteration', cn: '开启迭代', },

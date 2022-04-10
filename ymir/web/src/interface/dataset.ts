@@ -21,6 +21,7 @@ export interface Dataset {
   keywords: Array<string>,
   keywordCount: number,
   keywordsCount: Keywords,
+  isProtected: Boolean,
   nagetiveCount?: number,
   projectNagetiveCount?: number,
   state: number,

@@ -19,7 +19,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }, [result, stage])
 
   useEffect(() => {
-    currentStage() && stage.result && fetchStageResult()
+    currentStage() && stage.result && fetchStageResult(true)
   }, [stage.result])
 
   useEffect(() => {
@@ -87,7 +87,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
     if (finishStage() || (currentStage() && isValid())) {
       return '√' // finish state
     } else {
-      return stage.value
+      return stage.value + 1
     }
   }
   const renderMain = () => {
@@ -112,7 +112,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }
   const renderState = () => {
     const pending = 'project.stage.state.pending'
-    return !finishStage() ? (isPending() ? t(pending) : (isValid() ? result.name : t(statesLabel(state)))) : null
+    return !finishStage() ? (isPending() ? t(pending) : (isValid() ?  (result.name ?`${result.name} ${result.versionName}` : t('common.done')) : t(statesLabel(state)))) : null
   }
 
   const renderSkip = () => {
