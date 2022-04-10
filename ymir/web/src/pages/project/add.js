@@ -201,7 +201,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   rules={[
                     { required: true, message: t('task.train.form.miningset.required') },
                   ]}>
-                    <DatasetSelect pid={id} filter={[project?.trainSet?.id, testSet]} onChange={(value) => value && setMiningSet(value)} />
+                    <DatasetSelect pid={id} filter={[testSet]} filterGroup={[project?.trainSet?.id]} onChange={(value) => value && setMiningSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
