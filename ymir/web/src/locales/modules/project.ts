@@ -83,6 +83,10 @@ const project = {
   'project.detail.desc': { en: 'Description', cn: '描述', },
   'project.target.dataset': { en: 'Training Dataset\'s Assets', cn: '目标训练集大小', },
   'project.initmodel.success.msg': { en: 'Initial model prepared', cn: '设置初始模型成功', },
+  'project.tag.train': { en: 'Training Dataset', cn: '训练集', },
+  'project.tag.test': { en: 'Testing Dataset {version}', cn: '测试集 {version}', },
+  'project.tag.mining': { en: 'Mining Dataset {version}', cn: '挖掘集 {version}', },
+  'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
 }
 
 export default project

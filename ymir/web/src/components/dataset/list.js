@@ -1,13 +1,11 @@
-import React, { useEffect, useRef, useState, version } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
-import { Link, useHistory, useLocation, useParams } from "umi"
-import { Form, Button, Input, Table, Space, Modal, ConfigProvider, Row, Col, Radio, Tooltip, Pagination, } from "antd"
+import { Link, useHistory, useLocation } from "umi"
+import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, } from "antd"
 
-import { format, getUnixTimeStamp } from "@/utils/date"
 import t from "@/utils/t"
-
-import { TASKSTATES } from '@/constants/task'
+import { templateString } from '@/utils/string'
 import { states } from '@/constants/dataset'
 
 import StateTag from "@/components/task/stateTag"
@@ -18,7 +16,7 @@ import Actions from "@/components/table/actions"
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
-  TipsIcon, EditIcon, DeleteIcon, TreeIcon, CopyIcon
+  EditIcon, DeleteIcon, CopyIcon
 } from "@/components/common/icons"
 import { humanize } from "@/utils/number"
 import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
@@ -28,11 +26,13 @@ import DelGroup from "./delGroup"
 const { confirm } = Modal
 const { useForm } = Form
 
-function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, updateDataset, updateQuery, resetQuery, getVersions, }) {
+function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) {
   const location = useLocation()
   const { name } = location.query
   const history = useHistory()
   const [datasets, setDatasets] = useState([])
+  const [datasetVersions, setDatasetVersions] = useState({})
+  const [iterations, setIterations] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
@@ -49,32 +49,45 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }, [history.location])
 
   useEffect(() => {
-    setDatasets(datasetList.items)
+    const list = setGroupLabelsByProject(datasetList.items, project)
+    setDatasets(list)
     setTotal(datasetList.total)
-  }, [datasetList])
+  }, [datasetList, project])
 
   useEffect(() => {
     const hasDataset = Object.keys(versions).length
     const emptyDataset = Object.values(versions).some(dss => !dss.length)
     if (hasDataset && emptyDataset) {
-      getData()
+      fetchDatasets()
     }
   }, [versions])
+
+  useEffect(() => {
+    let dvs = setVersionLabelsByProject(versions, project)
+    if (iterations.length) {
+      dvs = setVersionLabelsByIterations(versions, iterations)
+    }
+    setDatasetVersions(dvs)
+  }, [versions, project, iterations])
 
   useEffect(() => {
     Object.keys(versions).forEach(gid => {
       const vss = versions[gid]
       const needReload = vss.some(ds => ds.needReload)
-      
+
       if (needReload) {
         fetchVersions(gid, true)
       }
     })
   }, [versions])
 
+  useEffect(() => {
+    pid && fetchIterations(pid)
+  }, [pid])
+
   useEffect(async () => {
     if (name) {
-      await updateQuery({ ...query, name })
+      await func.updateQuery({ ...query, name })
       form.setFieldsValue({ name })
     }
     setLock(false)
@@ -82,7 +95,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
 
   useEffect(() => {
     if (!lock) {
-      getData()
+      fetchDatasets()
     }
   }, [query, lock])
 
@@ -93,7 +106,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }, [location.state])
 
   async function initState() {
-    await resetQuery()
+    await func.resetQuery()
     form.resetFields()
   }
 
@@ -103,7 +116,13 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
       key: "name",
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, state }) => <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>,
+      render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
+        <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
+        <Col flex={'50px'}>
+          {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+          {iterationLabel ? <div className={styles.extraTag}>{iterationLabel}</div> : null}
+        </Col>
+      </Row>,
       ellipsis: true,
     },
     {
@@ -216,15 +235,15 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   const listChange = ({ current, pageSize }) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, limit, offset })
   }
 
   function showTitle(str) {
     return <strong>{t(str)}</strong>
   }
 
-  async function getData() {
-    getDatasets(pid, query)
+  async function fetchDatasets() {
+    func.getDatasets(pid, query)
   }
 
   async function showVersions(id) {
@@ -240,7 +259,75 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }
 
   async function fetchVersions(id, force) {
-    await getVersions(id, force)
+    await func.getVersions(id, force)
+  }
+
+  async function fetchIterations(pid) {
+    const iterations = await func.getIterations(pid)
+    if (iterations) {
+      setIterations(iterations)
+    }
+  }
+
+  function setGroupLabelsByProject(datasets, project) {
+    return datasets.map(item => {
+      item = setLabelByProject(project?.trainSet?.id, 'isTrainSet', item)
+      item = setLabelByProject(project?.testSet?.groupId, 'isTestSet', item, project?.testSet?.versionName)
+      item = setLabelByProject(project?.miningSet?.groupId, 'isMiningSet', item, project?.miningSet?.versionName)
+      return { ...item }
+    })
+  }
+
+  function setVersionLabelsByProject(versions, project) {
+    Object.keys(versions).forEach(gid => {
+      const list = versions[gid]
+      const updatedList = list.map(item => {
+        item = setLabelByProject(project?.testSet?.id, 'isTestSet', item)
+        item = setLabelByProject(project?.miningSet?.id, 'isMiningSet', item)
+        return { ...item }
+      })
+      versions[gid] = updatedList
+    })
+    return { ...versions }
+  }
+
+  function setVersionLabelsByIterations(versions, iterations) {
+    Object.keys(versions).forEach(gid => {
+      const list = versions[gid]
+      const updatedList = list.map(item => {
+        item = setLabelByIterations(item, iterations)
+        return { ...item }
+      })
+      versions[gid] = updatedList
+    })
+    return { ...versions }
+  }
+
+  function setLabelByProject(id, label, item, version = '') {
+    const maps = {
+      isTrainSet: 'project.tag.train',
+      isTestSet: 'project.tag.test',
+      isMiningSet: 'project.tag.mining',
+    }
+    item[label] = id && item.id === id
+    item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
+    return item
+  }
+
+  function setLabelByIterations(item, iterations) {
+    iterations.forEach(iteration => {
+      const ids = [
+        iteration.miningSet,
+        iteration.miningResult,
+        iteration.labelSet,
+        iteration.trainUpdateSet,
+        iteration.trainSet,
+      ].filter(id => id)
+      if (ids.includes(item.id)) {
+        item.iterationLabel = t('iteration.round.label', iteration)
+      }
+    })
+    return item
   }
 
   const delGroup = (id, name) => {
@@ -251,12 +338,12 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }
 
   const delOk = (id) => {
-    getVersions(id, true)
-    getData()
+    func.getVersions(id, true)
+    fetchDatasets()
   }
 
   const delGroupOk = () => {
-    getData()
+    fetchDatasets()
   }
 
   const edit = (record) => {
@@ -265,7 +352,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   }
 
   const saveName = async (record, name) => {
-    const result = await updateDataset(record.id, name)
+    const result = await func.updateDataset(record.id, name)
     if (result) {
       setDatasets((datasets) =>
         datasets.map((dataset) => {
@@ -286,11 +373,11 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      updateQuery({ ...query, ...values, })
+      func.updateQuery({ ...query, ...values, })
     } else {
       setTimeout(() => {
         if (name === form.getFieldValue('name')) {
-          updateQuery({ ...query, name, })
+          func.updateQuery({ ...query, name, })
         }
       }, 1000)
     }
@@ -311,8 +398,11 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
     <div className={styles.groupList}>
       {datasets.map(group => <div className={styles.groupItem} key={group.id}>
         <Row className={styles.groupTitle}>
-          <Col flex={1}><span className={styles.foldBtn} onClick={() => showVersions(group.id)}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
-            <span className={styles.groupName}>{group.name}</span></Col>
+          <Col flex={1} onClick={() => showVersions(group.id)}>
+            <span className={styles.foldBtn}>{group.showVersions ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+            <span className={styles.groupName}>{group.name}</span>
+            {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
+          </Col>
           <Col><Space>
             <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
             <a onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
@@ -320,7 +410,7 @@ function Datasets({ pid, datasetList, query, versions, getDatasets, delDataset, 
         </Row>
         <div className={styles.groupTable} hidden={!group.showVersions}>
           <Table
-            dataSource={versions[group.id]}
+            dataSource={datasetVersions[group.id]}
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
@@ -392,31 +482,37 @@ const props = (state) => {
 
 const actions = (dispatch) => {
   return {
-    getDatasets: (pid, query) => {
+    getDatasets(pid, query) {
       return dispatch({
         type: 'dataset/getDatasetGroups',
         payload: { pid, query },
       })
     },
-    getVersions: (gid, force = false) => {
+    getVersions(gid, force = false) {
       return dispatch({
         type: 'dataset/getDatasetVersions',
         payload: { gid, force },
       })
     },
-    delDataset: (id) => {
+    delDataset(id) {
       return dispatch({
         type: 'dataset/delDataset',
         payload: id,
       })
     },
-    updateDataset: (id, name) => {
+    updateDataset(id, name) {
       return dispatch({
         type: 'dataset/updateDataset',
         payload: { id, name },
       })
     },
-    updateQuery: (query) => {
+    getIterations(id) {
+      return dispatch({
+        type: 'iteration/getIterations',
+        payload: { id, },
+      })
+    },
+    updateQuery(query) {
       return dispatch({
         type: 'dataset/updateQuery',
         payload: query,
