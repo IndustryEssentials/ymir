@@ -44,8 +44,12 @@ class TestCmdTraining(unittest.TestCase):
         test_utils.remake_dirs(self._models_location)
         test_utils.remake_dirs(self._mir_root)
         test_utils.remake_dirs(self._working_root)
-
+        
     def __prepare_mir_repo(self):
+        self.__prepare_mir_repo_branch_a()
+        self.__prepare_mir_repo_branch_b()
+
+    def __prepare_mir_repo_branch_a(self):
         """
         creates mir repo, assumes that `self._mir_root` already created
         """
@@ -143,22 +147,6 @@ class TestCmdTraining(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
 
-        # keywords
-        keywords_dict = {
-            "keywords": {
-                "430df22960b0f369318705800139fcc8ec38a3e4": {
-                    "predifined_keyids": [2, 3],
-                    "customized_keywords": ["pascal"]
-                },
-                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
-                    "predifined_keyids": [3],
-                    "customized_keywords": ["pascal"]
-                },
-            }
-        }
-        mir_keywords = mirpb.MirKeywords()
-        json_format.ParseDict(keywords_dict, mir_keywords)
-
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
@@ -167,6 +155,41 @@ class TestCmdTraining(unittest.TestCase):
                                                       mir_datas={
                                                           mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                                      },
+                                                      task=task)
+
+    def __prepare_mir_repo_branch_b(self):
+        # a@b: no training set
+        # metadatas
+        metadatas_dict = {
+            'attributes': {
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'assetType': 'AssetTypeImageJpeg',
+                    'tvtType': 'TvtTypeValidation',
+                    'width': 500,
+                    'height': 281,
+                    'imageChannels': 3
+                },
+                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                    'assetType': 'AssetTypeImageJpeg',
+                    'tvtType': 'TvtTypeValidation',
+                    'width': 500,
+                    'height': 333,
+                    'imageChannels': 3
+                }
+            }
+        }
+        mir_metadatas = mirpb.MirMetadatas()
+        json_format.ParseDict(metadatas_dict, mir_metadatas)
+
+        # save and commit
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='b', message='import')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
                                                       },
                                                       task=task)
 
@@ -228,15 +251,9 @@ class TestCmdTraining(unittest.TestCase):
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
 
     def test_abnormal_00(self):
-        """ no class names in config file """
-        with open(self._config_file, 'r') as f:
-            config = yaml.safe_load(f.read())
-        config['class_names'] = []
-        with open(self._config_file, 'w') as f:
-            yaml.safe_dump(config, f)
-
+        """ no training set """
         fake_args = type('', (), {})()
-        fake_args.src_revs = "a@a"
+        fake_args.src_revs = "a@b"
         fake_args.dst_rev = "b@test_training_cmd"
         fake_args.mir_root = self._mir_root
         fake_args.model_path = self._models_location
