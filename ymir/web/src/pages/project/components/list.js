@@ -114,9 +114,18 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
       <Col flex={1}>
         <Space>
           <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.train_classes')}:</span><span className={s.titleContent}>{item.keywords.join(',')}</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.target.map')}:</span><span className={s.titleContent}>{item?.targetMap}</span></span>
-          <span className={s.titleItem}><span className={s.titleLabel}>{t('project.iteration.current')}:</span><span className={s.titleContent}>{t(getStageLabel(item.currentStage))}</span></span>
+          <span className={s.titleItem}>
+            <span className={s.titleLabel}>{t('project.train_classes')}:</span>
+            <span className={s.titleContent}>{item.keywords.join(',')}</span>
+          </span>
+          <span className={s.titleItem}>
+            <span className={s.titleLabel}>{t('project.target.map')}:</span>
+            <span className={s.titleContent}>{item?.targetMap}</span>
+          </span>
+          <span className={s.titleItem}>
+            <span className={s.titleLabel}>{t('project.iteration.current')}:</span>
+            <span className={s.titleContent}>{t(getStageLabel(item.currentStage, item.round))}</span>
+          </span>
         </Space>
       </Col>
       <Col>{more(item)}</Col>

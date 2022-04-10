@@ -106,7 +106,7 @@ const Add = ({ importModel }) => {
               : null}
             {isType(TYPES.LOCAL) ?
               <Tip hidden={true}>
-                <Form.Item label={t('model.add.form.upload.btn')} name='url'>
+                <Form.Item label={t('model.add.form.upload.btn')} name='url' required>
                   <Uploader
                     onChange={(files, result) => { setUrl(result) }}
                     max={1024}
