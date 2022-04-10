@@ -8,7 +8,7 @@ const dataset = {
   "dataset.type.label": { cn: "标注", en: "Label Data", },
   "dataset.type.fusion": { cn: "融合", en: "Fusion", },
   "dataset.type.import": { cn: "导入", en: "Import", },
-  "dataset.state.ready": { cn: "准备中", en: "Ready", },
+  "dataset.state.ready": { cn: "进行中", en: "Ready", },
   "dataset.state.valid": { cn: "可用", en: "Valid", },
   "dataset.state.invalid": { cn: "不可用", en: "Invalid", },
   "dataset.column.name": { cn: "名称", en: "Dataset Name", },
