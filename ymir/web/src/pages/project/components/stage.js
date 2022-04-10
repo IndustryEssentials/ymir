@@ -19,7 +19,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }, [result, stage])
 
   useEffect(() => {
-    currentStage() && stage.result && fetchStageResult()
+    currentStage() && stage.result && fetchStageResult(true)
   }, [stage.result])
 
   useEffect(() => {
