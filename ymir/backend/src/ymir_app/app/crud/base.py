@@ -6,6 +6,7 @@ from sqlalchemy import not_
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.constants.state import ResultState
 from app.db.base_class import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -134,6 +135,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.commit()
         db.refresh(obj)
         return obj
+
+    def set_result_state_to_error(self, db: Session, id: int) -> None:
+        obj = db.query(self.model).get(id)
+        if not obj:
+            return None
+        obj.result_state = int(ResultState.error)  # type: ignore
+        db.add(obj)
+        db.commit()
+        db.refresh(obj)
 
     def total(self, db: Session) -> int:
         return db.query(self.model).count()
