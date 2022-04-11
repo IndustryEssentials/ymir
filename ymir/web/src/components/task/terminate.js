@@ -11,13 +11,17 @@ const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
   const [id, setId] = useState(null)
   const [name, setName] = useState('')
   const [type, setType] = useState(null)
+  const [result, setResult] = useState({})
 
   useEffect(() => {
     id && terminate()
   }, [id])
 
   useImperativeHandle(ref, () => ({
-    confirm: ({ id, name, type }) => {
+    confirm: (result) => {
+      const name = result.name + result.versionName
+      const { id, type } = result.task
+      setResult(result)
       setId(id)
       setName(name)
       setType(type)
@@ -51,9 +55,9 @@ const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
     setVisible(false)
   }
 
-  function handle(result) {
-    if (result) {
-      ok()
+  function handle(res) {
+    if (res) {
+      ok(res, result)
     }
     setVisible(false)
     setId(null)

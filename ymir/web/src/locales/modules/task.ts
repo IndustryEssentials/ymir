@@ -17,6 +17,7 @@ const task = {
   "task.state.finish": { cn: "完成", en: "Finish", },
   "task.state.failure": { cn: "失败", en: "Failure", },
   "task.state.terminated": { cn: '终止', en: 'Terminated', },
+  "task.state.terminating": { cn: '正在终止，请耐心等待结果', en: 'Terminating', },
   "task.column.name": { cn: "任务名称", en: "Task Name", },
   "task.column.type": { cn: "任务类型", en: "Type", },
   "task.column.state": { cn: "任务进度", en: "Progress", },
