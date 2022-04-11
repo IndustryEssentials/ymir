@@ -33,7 +33,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
 
   useEffect(() => {
     iteration.id && rerenderStages()
-  }, [iteration, firstTrainSet])
+  }, [iteration, firstTrainSet, prevIteration])
 
   const callback = useCallback(iterationHandle, [iteration])
 
