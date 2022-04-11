@@ -240,7 +240,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
       key: "del",
       label: t("dataset.action.del"),
       onclick: () => del(id, `${name} ${versionName}`),
-      hidden: () => isProtected,
+      disabled: isProtected,
       icon: <DeleteIcon />,
     }
     const terminateMenu = {
