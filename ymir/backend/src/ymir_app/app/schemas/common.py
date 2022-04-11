@@ -32,7 +32,7 @@ class IsDeletedModelMixin(BaseModel):
 
 
 class IterationContext(BaseModel):
-    iteration_id: Optional[int]
+    iteration_id: int
     exclude_last_result: bool = True
     mining_strategy: MiningStrategy = MiningStrategy.customize
 
