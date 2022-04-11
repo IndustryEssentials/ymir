@@ -6,6 +6,7 @@ import {
   updateProject,
 } from "@/services/project"
 import { transferProject } from '@/constants/project'
+import { deepClone } from '@/utils/object'
 
 const initQuery = {
   name: "",
@@ -23,7 +24,7 @@ const initState = {
 
 export default {
   namespace: "project",
-  state: initState,
+  state: deepClone(initState),
   effects: {
     *getProjects({ payload }, { call, put }) {
       const { code, result } = yield call(getProjects, payload)
@@ -94,7 +95,7 @@ export default {
         payload: initQuery,
       })
     },
-    *clearCache({}, { put }) {
+    *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL' })
     },
   },
@@ -121,7 +122,7 @@ export default {
       }
     },
     CLEAR_ALL() {
-      return { ...initState }
+      return deepClone(initState)
     },
   },
 }
