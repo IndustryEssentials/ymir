@@ -4,6 +4,7 @@ import { useIntl, Link } from "umi"
 import { Form, Input, Button, Checkbox, Layout, Row, Col, message } from "antd"
 
 import t from "@/utils/t"
+import { STATES } from '@/constants/user'
 import { layout420 } from "@/config/antd"
 import HeaderNav from "@/components/nav"
 import Foot from "@/components/common/footer"
@@ -33,7 +34,11 @@ const Signup = ({ signupApi, loginApi, history }) => {
     const res = await signupApi(params)
     if (res) {
       history.push("/login")
-      message.warn(t('user.signup.success'))
+      if (res.state === STATES.ACTIVE) {
+        message.success(t('user.signup.success.active'))
+      } else {
+        message.warn(t('user.signup.success'))
+      }
     }
   }
 

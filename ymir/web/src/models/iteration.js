@@ -39,7 +39,7 @@ export default {
               payload: datasetIds,
             })
           }
-          if (models?.length) {
+          if (modelIds?.length) {
             models = yield put.resolve({
               type: 'model/batchModels',
               payload: modelIds,

@@ -108,11 +108,11 @@ export function createFusionTask({
 }) {
   return request.post('/datasets/fusion', {
     project_id, include_datasets, exclude_datasets,
-    iteration_context: {
+    iteration_context: iteration ? {
       iteration_id: iteration,
       mining_strategy,
       exclude_last_result: exclude_result,
-    },
+    } : undefined,
     dataset_group_id: group_id,
     main_dataset_id: dataset,
     include_strategy,
@@ -219,7 +219,7 @@ export function createMiningTask({
       dataset_id: datasetId,
       mining_algorithm: algorithm,
       top_k: topk,
-      generate_annotations: inference,
+      generate_annotations: false,
       docker_image: image,
       docker_image_id: imageId,
     }
@@ -252,7 +252,7 @@ export function createInferenceTask({
 }) {
   return createTask({
     name,
-    type: TASKTYPES.MINING,
+    type: TASKTYPES.INFERENCE,
     project_id: projectId,
     description,
     docker_image_config: config,

@@ -7,7 +7,10 @@ import StateTag from "../task/stateTag"
 import { calTimeLeft } from "@/utils/date"
 import { InprogressIcon } from "./icons"
 
-function RenderProgress(state, { id, progress, createTime, taskState }, simple = false) {
+function RenderProgress(state, { id, progress, createTime, taskState, task = {} }, simple = false) {
+  if (states.READY === state && task?.is_terminated) {
+    return t('task.state.terminating')
+  }
   if (!taskState) {
     return
   }

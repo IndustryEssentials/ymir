@@ -6,7 +6,7 @@ export enum TASKTYPES {
   LABEL = 3,
   IMPORT = 5,
   COPY = 7,
-  INFERENCE = 9,
+  INFERENCE = 15,
   FUSION = 11,
   MODELIMPORT = 13,
   MODELCOPY = 14,
