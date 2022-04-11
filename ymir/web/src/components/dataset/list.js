@@ -5,7 +5,8 @@ import { Link, useHistory, useLocation } from "umi"
 import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, } from "antd"
 
 import t from "@/utils/t"
-import { templateString } from '@/utils/string'
+import { diffTime } from '@/utils/date'
+import { getTaskTypeLabel } from '@/constants/task'
 import { states } from '@/constants/dataset'
 
 import StateTag from "@/components/task/stateTag"
@@ -119,7 +120,8 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
     form.resetFields()
   }
 
-  const columns = [
+  const columns = (gid) => {
+    return [
     {
       title: showTitle("dataset.column.name"),
       key: "name",
@@ -132,18 +134,24 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
           {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
         </Col>
       </Row>,
+      filters: getRoundFilter(gid),
+      onFilter: (round, { iterationRound }) => round === iterationRound,
       ellipsis: true,
     },
     {
       title: showTitle("dataset.column.source"),
       dataIndex: "taskType",
       render: (type) => <TypeTag type={type} />,
+      filters: getTypeFilter(gid),
+      onFilter: (type, { taskType }) => type === taskType,
+      sorter: (a, b) => a.taskType - b.taskType,
       ellipsis: true,
     },
     {
       title: showTitle("dataset.column.asset_count"),
       dataIndex: "assetCount",
       render: (num) => humanize(num),
+      sorter: (a, b) => a.assetCount - b.assetCount,
       width: 120,
     },
     {
@@ -169,7 +177,9 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
     {
       title: showTitle("dataset.column.create_time"),
       dataIndex: "createTime",
-      // sorter: true,
+      sorter: (a, b) => diffTime(a.createTime, b.createTime),
+      sortDirections: ['ascend', 'descend', 'ascend'],
+      defaultSortOrder: 'descend',
       width: 180,
     },
     {
@@ -181,7 +191,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
       align: "center",
       width: 300,
     },
-  ]
+  ]}
 
   const actionMenus = (record) => {
     const { id, name, state, versionName } = record
@@ -239,6 +249,21 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
+  }
+
+  const getTypeFilter = gid => {
+    return getFilters(gid, 'taskType', (type) => t(getTaskTypeLabel(type)))
+  }
+
+  const getRoundFilter = gid => {
+    return getFilters(gid, 'iterationRound', (round) => t('iteration.tag.round', { round }))
+  }
+  const getFilters = (gid, field, label = () => {}) => {
+    const vs = datasetVersions[gid]
+    if (vs?.length) {
+      const filters = new Set(vs.map(ds => ds[field]).filter(item => item))
+      return [...filters].map(value => ({ text: label(value), value }))
+    }
   }
 
   const listChange = ({ current, pageSize }) => {
@@ -326,6 +351,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
       ].filter(id => id)
       if (ids.includes(item.id)) {
         item.iterationLabel = t('iteration.tag.round', iteration)
+        item.iterationRound = iteration.round
       }
     })
     return item
@@ -415,7 +441,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
-            columns={columns}
+            columns={columns(group.id)}
             pagination={false}
           />
         </div>
