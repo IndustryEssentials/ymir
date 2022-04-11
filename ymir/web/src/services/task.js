@@ -98,7 +98,7 @@ export function updateTask(id, name) {
  * {array<number>} [exclude_datasets]
  * {array<string>} [include_labels]
  * {array<string>} [exclude_labels]
- * {number} [sampling_count]
+ * {number} [sampling_count] default: 0
  * }
  * @returns 
  */
@@ -118,7 +118,7 @@ export function createFusionTask({
     include_strategy,
     include_labels: include,
     exclude_labels: exclude,
-    sampling_count: samples,
+    sampling_count: samples || 0,
   })
 }
 
