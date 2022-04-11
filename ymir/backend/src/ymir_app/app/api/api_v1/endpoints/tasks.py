@@ -275,8 +275,6 @@ class TaskResult:
 
     def update(
         self,
-        viz: VizClient,
-        controller: ControllerClient,
         task_result: schemas.TaskUpdateStatus,
     ) -> models.Task:
         task_in_db = crud.task.get(self.db, id=self.task.id)
@@ -509,8 +507,13 @@ def terminate_task(
     controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
     task = crud.task.terminate(db, task=task)
     if not terminate_info.fetch_result:
-        # task that is terminated without result is in final terminate state
+        # task reachs final state right away
+        # set result to error as well
         task = crud.task.update_state(db, task=task, new_state=TaskState.terminate)
+        if task.result_model:  # type: ignore
+            crud.model.set_result_state_to_error(db, id=task.result_model.id)  # type: ignore
+        if task.result_dataset:  # type: ignore
+            crud.dataset.set_result_state_to_error(db, id=task.result_dataset.id)  # type: ignore
     return {"result": task}
 
 
@@ -557,7 +560,7 @@ def update_task_status(
     # 3. Update task and task_result(could be dataset or model)
     task_result = TaskResult(db=db, controller=controller_client, viz=viz_client, task_in_db=task_in_db)
     try:
-        task_in_db = task_result.update(viz=viz_client, controller=controller_client, task_result=task_update)
+        task_in_db = task_result.update(task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
         logger.error("Failed to update update task status")
         raise FailedToUpdateTaskStatus()
