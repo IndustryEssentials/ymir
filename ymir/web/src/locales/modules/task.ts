@@ -168,7 +168,7 @@ const task = {
   "task.train.parameter.add.label": { cn: '添加自定义参数', en: 'Add Custom Parameter', },
   "task.label.bottomtip": { cn: '没有标注人员账号or邮箱，我要{link}', en: 'None of labeller account, {link}', },
   "task.label.bottomtip.link.label": { cn: '注册标注平台账号>>', en: 'sign up Label Platform Account >>', },
-  "task.btn.back": { cn: '返回', en: 'BACK', },
+  "task.btn.back": { cn: '返回', en: 'Back', },
   "task.gpu.count": { cn: 'GPU个数', en: 'GPU Count', },
   "task.train.gpu.invalid": { cn: 'GPU个数必须在{min}-{max}之间', en: 'GPU Count must between {min} - {max}', },
   "task.gpu.tip": { cn: '当前可用GPU个数为 {count}', en: 'Valid GPU count: {count}', },
