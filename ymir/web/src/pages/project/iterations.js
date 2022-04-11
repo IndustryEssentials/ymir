@@ -52,38 +52,44 @@ function Iterations({ ...func }) {
     {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
-      render: (label, { trainUpdateDataset }) => renderPop(label, trainUpdateDataset),
+      render: (label, { trainEffect, trainUpdateDataset }) => renderPop(label, trainUpdateDataset,
+        <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.training"),
       dataIndex: "trainingModelLabel",
+      render: (map, { mapEffect }) => <div className={s.td}>
+        <span>{percent(map)}</span>
+        <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
+      </div>,
       align: 'center',
     },
   ]
 
-  function renderPop(label, dataset = {}) {
+  function renderPop(label, dataset = {}, extra) {
     dataset.project = project
     const content = <KeywordRates dataset={dataset} progressWidth={0.6}></KeywordRates>
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
-      <span>{label}</span>
+      {/* <div className={s.td}> */}
+        <span>{label}</span>
+        {extra}
+      {/* </div> */}
     </Popover>
+  }
+
+  function renderExtra(value, showPercent = false) {
+    const cls = value < 0 ? s.negative : s.positive
+    const label = showPercent ? percent(value) : value
+    return value ? <span className={cls}>{label}</span> : null
   }
 
   async function fetchIterations() {
     const result = await func.getIterations(id)
     if (result) {
-      const iters = result.map(i => {
-        return {
-          ...i,
-          trainUpdateDatasetLabel: renderDatasetLabel(i.trainUpdateDataset),
-          miningDatasetLabel: renderDatasetLabel(i.miningDataset),
-          miningResultDatasetLabel: renderDatasetLabel(i.miningResultDataset),
-          labelDatasetLabel: renderDatasetLabel(i.labelDataset),
-          trainingModelLabel: renderModelLabel(i.trainingModel),
-        }
-      })
+      const iters = fetchHandle(result)
+      console.log('fetch iteration iters:', iters)
       setIterations(iters)
     }
   }
@@ -91,6 +97,30 @@ function Iterations({ ...func }) {
   async function fetchProject() {
     const result = await func.getProject(id)
     result && setProject(result)
+  }
+
+  function fetchHandle(iterations) {
+    const iters = iterations.map(iteration => {
+      return {
+        ...iteration,
+        trainUpdateDatasetLabel: renderDatasetLabel(iteration.trainUpdateDataset),
+        miningDatasetLabel: renderDatasetLabel(iteration.miningDataset),
+        miningResultDatasetLabel: renderDatasetLabel(iteration.miningResultDataset),
+        labelDatasetLabel: renderDatasetLabel(iteration.labelDataset),
+        trainingModelLabel: renderModelLabel(iteration.trainingModel),
+      }
+    })
+    console.log('iters:', JSON.parse(JSON.stringify(iters)))
+    iters.reduce((prev, current) => {
+      const prevMap = prev.map || 0
+      const prevUpdatedTrainSetCount = prev?.trainUpdateDataset?.assetCount || 0
+      const currentMap = current.map
+      const currentUpdatedTrainSetCount = current?.trainUpdateDataset?.assetCount || 0
+      current.mapEffect = prevMap ? (currentMap - prevMap) : 0
+      current.trainEffect = prevUpdatedTrainSetCount ? (currentUpdatedTrainSetCount - prevUpdatedTrainSetCount) : 0
+      return current
+    }, {})
+    return iters
   }
 
   function renderDatasetLabel(dataset) {
