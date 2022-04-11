@@ -13,6 +13,7 @@ import {
 import { getStats } from "../services/common"
 import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
 import { updateResultState } from '@/constants/common'
+import { deepClone } from '@/utils/object'
 
 const initQuery = {
   name: "",
@@ -34,7 +35,7 @@ const initState = {
 
 export default {
   namespace: "model",
-  state: initState,
+  state: deepClone(initState),
   effects: {
     *getModelGroups({ payload }, { call, put }) {
       const { pid, query } = payload
@@ -293,7 +294,7 @@ export default {
       }
     },
     CLEAR_ALL() {
-      return { ...initState }
+      return deepClone(initState)
     },
   },
 }
