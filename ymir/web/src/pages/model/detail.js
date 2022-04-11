@@ -47,7 +47,7 @@ function ModelDetail({ modelCache, getModel }) {
       <Breadcrumbs suffix={model.name} />
       <Card title={renderTitle()}>
         <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className={styles.infoTable}>
-          <Item label={t('model.detail.label.name')}>{model.name}</Item>
+          <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
           <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
         </Descriptions>
         <TaskProgress state={model.state} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel()} />

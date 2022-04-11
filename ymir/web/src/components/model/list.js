@@ -7,7 +7,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons"
 
-import { format } from "@/utils/date"
+import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
@@ -136,6 +136,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
       title: showTitle("model.column.map"),
       dataIndex: "map",
       render: map => <span title={map}>{percent(map)}</span>,
+      sorter: (a, b) => a - b,
       align: 'center',
     },
     {
@@ -147,7 +148,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
     {
       title: showTitle("model.column.create_time"),
       dataIndex: "createTime",
-      sorter: true,
+      sorter: (a, b) => diffTime(a.createTime, b.createTime),
       width: 200,
       align: 'center',
     },

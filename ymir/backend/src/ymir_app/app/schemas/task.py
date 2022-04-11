@@ -37,7 +37,7 @@ class TaskParameter(BaseModel):
     backbone: Optional[str]
     hyperparameter: Optional[str]
 
-    # mining
+    # mining & dataset_infer
     model_id: Optional[int]
     mining_algorithm: Optional[str]
     top_k: Optional[int]
@@ -136,6 +136,7 @@ class TaskInternal(TaskInDBBase):
             return ResultType.model
         elif task_type in [
             TaskType.mining,
+            TaskType.dataset_infer,
             TaskType.label,
             TaskType.import_data,
             TaskType.copy_data,

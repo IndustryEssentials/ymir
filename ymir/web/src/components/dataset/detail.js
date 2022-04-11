@@ -24,7 +24,7 @@ function DatasetDetail({ dataset = {} }) {
       >
         <Item label={t("dataset.detail.label.name")}>
           <Row>
-            <Col flex={1}>{dataset.name}</Col>
+            <Col flex={1}>{dataset.name} {dataset.versionName}</Col>
             <Col hidden={dataset.state !== states.VALID}>
               <Button
                 type='primary'
