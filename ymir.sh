@@ -70,6 +70,7 @@ while true; do
     read -p "You choose (Y/n)?" yn
     case $yn in
         [Yy]*|'' ) start_label_free; break;;
+        [Nn]* ) break;;
         * ) echo "Please answer (y)es or (n)o.";;
     esac
 done
