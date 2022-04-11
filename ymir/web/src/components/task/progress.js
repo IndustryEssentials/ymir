@@ -17,15 +17,20 @@ const labelStyle = {
   justifyContent: "flex-end",
 }
 
-function TaskProgress({ state, task = {}, fresh=() => {}, progress = 0, duration = "" }) {
+function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progress = 0, duration = "" }) {
   const terminateRef = useRef(null)
 
-  function terminate(task) {
-    terminateRef.current.confirm(task)
+  function terminate() {
+    terminateRef.current.confirm(result)
+  }
+
+  function terminateVisible() {
+    const resultReady = state === states.READY
+    const isTerminated = task.is_terminated
+    return resultReady && !isTerminated
   }
 
   function terminateOk() {
-    console.log('update data.')
     fresh()
   }
 
@@ -40,19 +45,21 @@ function TaskProgress({ state, task = {}, fresh=() => {}, progress = 0, duration
         <Item label={t("task.detail.state.current")}>
           <Row>
             <Col>
-              { task.is_terminated ? t('task.state.terminated') : null}
-              <StateTag state={state} />
-              {state === states.VALID
-                ? t("task.column.duration") + ": " + duration
-                : null}
+              {task.is_terminated ? t('task.state.terminating') : <>
+                <StateTag state={state} />
+                {state === states.VALID
+                  ? t("task.column.duration") + ": " + duration
+                  : null}
+              </>}
             </Col>
-            <Col hidden={state !== states.READY} flex={1}>
+            <Col hidden={!terminateVisible()} flex={1}>
               <Progress
+                width={'90%'}
                 strokeColor={"#FAD337"}
                 percent={toFixed(progress * 100, 2)}
               />
             </Col>
-            <Col hidden={state !== states.READY}>
+            <Col hidden={!terminateVisible()}>
               <Button onClick={() => terminate(task)}>
                 {t("task.action.terminate")}
               </Button>

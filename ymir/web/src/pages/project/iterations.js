@@ -7,7 +7,6 @@ import { Form, Table, Modal, ConfigProvider, Card, Space, Row, Col, Button, Popo
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyState from '@/components/empty/model'
 import KeywordRates from "@/components/dataset/keywordRates"
 
 function Iterations({ ...func }) {
@@ -28,7 +27,6 @@ function Iterations({ ...func }) {
       title: showTitle("iteration.column.round"),
       dataIndex: "round",
       render: (round) => (t('iteration.round.label', { round })),
-      ellipsis: true,
     },
     {
       title: showTitle("iteration.column.premining"),
@@ -52,38 +50,41 @@ function Iterations({ ...func }) {
     {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
-      render: (label, { trainUpdateDataset }) => renderPop(label, trainUpdateDataset),
+      render: (label, { trainEffect, trainUpdateDataset }) => renderPop(label, trainUpdateDataset,
+        <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.training"),
-      dataIndex: "trainingModelLabel",
+      dataIndex: 'map',
+      render: (map, { mapEffect }) => <div className={s.td}>
+        <span>{map >= 0 ? percent(map) : null}</span>
+        <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
+      </div>,
       align: 'center',
     },
   ]
 
-  function renderPop(label, dataset = {}) {
+  function renderPop(label, dataset = {}, extra) {
     dataset.project = project
-    const content = <KeywordRates dataset={dataset} progressWidth={0.6}></KeywordRates>
+    const content = <KeywordRates dataset={dataset} progressWidth={0.4}></KeywordRates>
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
-      <span>{label}</span>
+        <span>{label}</span>
+        {extra}
     </Popover>
+  }
+
+  function renderExtra(value, showPercent = false) {
+    const cls = value < 0 ? s.negative : s.positive
+    const label = showPercent ? percent(value) : value
+    return value ? <span className={cls}>{label}</span> : null
   }
 
   async function fetchIterations() {
     const result = await func.getIterations(id)
     if (result) {
-      const iters = result.map(i => {
-        return {
-          ...i,
-          trainUpdateDatasetLabel: renderDatasetLabel(i.trainUpdateDataset),
-          miningDatasetLabel: renderDatasetLabel(i.miningDataset),
-          miningResultDatasetLabel: renderDatasetLabel(i.miningResultDataset),
-          labelDatasetLabel: renderDatasetLabel(i.labelDataset),
-          trainingModelLabel: renderModelLabel(i.trainingModel),
-        }
-      })
+      const iters = fetchHandle(result)
       setIterations(iters)
     }
   }
@@ -93,12 +94,31 @@ function Iterations({ ...func }) {
     result && setProject(result)
   }
 
-  function renderDatasetLabel(dataset) {
-    return dataset ? `${dataset.name} ${dataset.versionName} (${dataset.assetCount})` : ''
+  function fetchHandle(iterations) {
+    const iters = iterations.map(iteration => {
+      return {
+        ...iteration,
+        trainUpdateDatasetLabel: renderDatasetLabel(iteration.trainUpdateDataset),
+        miningDatasetLabel: renderDatasetLabel(iteration.miningDataset),
+        miningResultDatasetLabel: renderDatasetLabel(iteration.miningResultDataset),
+        labelDatasetLabel: renderDatasetLabel(iteration.labelDataset),
+        map: iteration?.trainingModel?.map,
+      }
+    })
+    iters.reduce((prev, current) => {
+      const prevMap = prev.map
+      const prevUpdatedTrainSetCount = prev?.trainUpdateDataset?.assetCount || 0
+      const currentMap = current.map
+      const currentUpdatedTrainSetCount = current?.trainUpdateDataset?.assetCount || 0
+      current.mapEffect = prevMap >= 0 ? (currentMap - prevMap) : 0
+      current.trainEffect = prevUpdatedTrainSetCount ? (currentUpdatedTrainSetCount - prevUpdatedTrainSetCount) : 0
+      return current
+    }, {})
+    return iters
   }
 
-  function renderModelLabel(model) {
-    return model ? `${model.name} ${model.versionName} | ${percent(model.map)}` : ''
+  function renderDatasetLabel(dataset) {
+    return dataset ? `${dataset.name} ${dataset.versionName} (${dataset.assetCount})` : ''
   }
 
   function showTitle(str) {
@@ -129,6 +149,7 @@ function Iterations({ ...func }) {
           <Table
             dataSource={iterations}
             pagination={false}
+            rowKey={(record) => record.id}
             columns={columns}
           ></Table>
         </div>

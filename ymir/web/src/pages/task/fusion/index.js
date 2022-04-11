@@ -14,6 +14,7 @@ import commonStyles from "../common.less"
 import Tip from "@/components/form/tip"
 import RecommendKeywords from "@/components/common/recommendKeywords"
 import Panel from "@/components/form/panel"
+import DatasetSelect from "@/components/form/datasetSelect"
 
 const { Option } = Select
 
@@ -143,7 +144,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
     // todo inter keywords
   }
 
-  function miningStrategyChanged({ target: { checked }}) {
+  function miningStrategyChanged({ target: { checked } }) {
     if (strategy == MiningStrategy.free) {
       setMiningStrategy(checked ? 1 : 2)
       setExcludeResult(true)
@@ -156,23 +157,6 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
     const kws = [...new Set([...selectedKeywords, keyword])]
     setSelectedKeywords(kws)
     form.setFieldsValue({ inc: kws })
-  }
-  const datasetSelect = (filter = [], onChange = () => { }) => {
-    return (
-      <Select
-        placeholder={t('task.fusion.form.datasets.placeholder')}
-        mode='multiple'
-        filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
-        onChange={onChange}
-        showArrow
-      >
-        {datasets.filter(ds => ![did, ...filter].includes(ds.id)).map(item => (
-          <Option value={item.id} key={item.id}>
-            {item.name} {item.versionName}({item.assetCount})
-          </Option>
-        ))}
-      </Select>
-    )
   }
 
   return (
@@ -199,7 +183,14 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${dataset.projectId}`)} />}>
               <Tip hidden={true}>
                 <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
-                  {datasetSelect(excludeDatasets, onIncludeDatasetChange)}
+                  <DatasetSelect
+                    placeholder={t('task.fusion.form.datasets.placeholder')}
+                    mode='multiple'
+                    pid={pid}
+                    filter={[...excludeDatasets, did]}
+                    onChange={onIncludeDatasetChange}
+                    showArrow
+                  />
                 </Form.Item>
               </Tip>
               <Tip hidden={true}>
@@ -213,7 +204,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
                   ]} />
                 </Form.Item>
               </Tip>
-              { strategy.length ? <Tip hidden={true}>
+              {strategy.length ? <Tip hidden={true}>
                 <Form.Item noStyle>
                   <Row><Col offset={8} flex={1}>
                     <Checkbox defaultChecked={Number(strategy) !== MiningStrategy.free} onChange={miningStrategyChanged}>
@@ -221,10 +212,17 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
                     </Checkbox>
                   </Col></Row>
                 </Form.Item>
-              </Tip> : null }
+              </Tip> : null}
               <Tip hidden={true}>
                 <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
-                  {datasetSelect(includeDatasets, onExcludeDatasetChange)}
+                  <DatasetSelect
+                    placeholder={t('task.fusion.form.datasets.placeholder')}
+                    mode='multiple'
+                    pid={pid}
+                    filter={[...includeDatasets, did]}
+                    onChange={onExcludeDatasetChange}
+                    showArrow
+                  />
                 </Form.Item>
               </Tip>
             </ConfigProvider>

@@ -43,7 +43,8 @@ function Mining({ datasetCache, datasets, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, mid, image, iterationId, currentStage, outputKey } = location.query
+  const { mid, image, iterationId, currentStage, outputKey } = location.query
+  const did = Number(location.query.did)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
@@ -178,7 +179,7 @@ function Mining({ datasetCache, datasets, ...func }) {
   const initialValues = {
     model: mid ? parseInt(mid) : undefined,
     image: image ? parseInt(image) : undefined,
-    datasetId: Number(did) ? Number(did) : undefined,
+    datasetId: did ? did : undefined,
     algorithm: getCheckedValue(Algorithm()),
     topk: 0,
     gpu_count: 0,
@@ -280,20 +281,6 @@ function Mining({ datasetCache, datasets, ...func }) {
                 <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
               </Form.Item>
             </Tip>
-
-            <Tip content={t('tip.task.filter.newlable')}>
-              <Form.Item
-                label={t('task.mining.form.label.label')}
-                name='inference'
-                initialValue={false}
-              >
-                <Radio.Group options={[
-                  { value: true, label: t('common.yes') },
-                  { value: false, label: t('common.no') },
-                ]} />
-              </Form.Item>
-            </Tip>
-
             <Tip content={t('tip.task.filter.mgpucount')}>
               <Form.Item
                 label={t('task.gpu.count')}
