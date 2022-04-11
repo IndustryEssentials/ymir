@@ -107,7 +107,7 @@ export default {
         yield put.resolve({
           type: 'dataset/clearCache'
         })
-        yield put({
+        yield put.resolve({
           type: 'project/clearCache'
         })
         return result
@@ -116,10 +116,10 @@ export default {
     *createTrainTask({ payload }, { call, put }) {
       let { code, result } = yield call(createTrainTask, payload)
       if (code === 0) {
-        yield put({
+        yield put.resolve({
           type: 'model/clearCache'
         })
-        yield put({
+        yield put.resolve({
           type: 'project/clearCache'
         })
         return result
@@ -140,10 +140,10 @@ export default {
     *createLabelTask({ payload }, { call, put }) {
       let { code, result } = yield call(createLabelTask, payload)
       if (code === 0) {
-        yield put({
+        yield put.resolve({
           type: 'dataset/clearCache'
         })
-        yield put({
+        yield put.resolve({
           type: 'project/clearCache'
         })
         return result
@@ -152,10 +152,10 @@ export default {
     *createInferenceTask({ payload }, { call, put }) {
       let { code, result } = yield call(createInferenceTask, payload)
       if (code === 0) {
-        yield put({
+        yield put.resolve({
           type: 'dataset/clearCache'
         })
-        yield put({
+        yield put.resolve({
           type: 'project/clearCache'
         })
         return result

@@ -5,13 +5,14 @@ import {
 import { getStats } from "../services/common"
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
 import { updateResultState } from '@/constants/common'
+import { deepClone } from '@/utils/object'
 
 let loading = false
 
 const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
 
 const initState = {
-  query: initQuery,
+  query: { ...initQuery },
   datasets: { items: [], total: 0, },
   versions: {},
   dataset: {},
@@ -23,7 +24,7 @@ const initState = {
 
 export default {
   namespace: "dataset",
-  state: { ...initState },
+  state: deepClone(initState),
   effects: {
     *getDatasetGroups({ payload }, { call, put }) {
       const { pid, query } = payload
@@ -322,7 +323,7 @@ export default {
       }
     },
     CLEAR_ALL() {
-      return { ...initState }
+      return deepClone(initState)
     },
   },
 }
