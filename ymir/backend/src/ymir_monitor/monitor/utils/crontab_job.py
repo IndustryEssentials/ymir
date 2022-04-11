@@ -1,8 +1,8 @@
+import json
 import logging
 import sys
 from typing import List
 
-import requests
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -14,16 +14,19 @@ from monitor.libs.services import TaskService
 from monitor.schemas.task import TaskSetStorageStructure
 
 
-def send_updated_task(updated_info: TaskSetStorageStructure) -> None:
-    requests.post(url=f"{settings.POSTMAN_URL}/events/taskstates", json=updated_info.dict())
-    logging.info(f"send_updated_task: {updated_info.dict()}")
+def send_updated_task(redis_client: RedisHandler, updated_info: TaskSetStorageStructure) -> None:
+    for event in updated_info.dict().values():
+        logging.info("send_updated_task: %s to redis stream", event)
+        redis_client.xadd(settings.APP_REDIS_STREAM, {"payload": json.dumps(event)})
 
 
-def deal_updated_task(
-    redis_client: RedisHandler, task_updated_model: TaskSetStorageStructure, task_id_finished: List[str],
+def process_updated_task(
+    redis_client: RedisHandler,
+    task_updated_model: TaskSetStorageStructure,
+    task_id_finished: List[str],
 ) -> None:
     # sentry will catch Exception
-    send_updated_task(task_updated_model)
+    send_updated_task(redis_client, task_updated_model)
     task_updated = task_updated_model.dict()
     redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_updated)
     if task_id_finished:
@@ -74,7 +77,7 @@ def update_monitor_percent_log() -> None:
 
     if len(task_updated):
         task_updated_model = TaskSetStorageStructure.parse_obj(task_updated)
-        deal_updated_task(redis_client, task_updated_model, task_id_finished)
+        process_updated_task(redis_client, task_updated_model, task_id_finished)
 
 
 if __name__ == "__main__":
