@@ -8,7 +8,7 @@ from controller.config import label_task as label_task_config
 class RequestHandler:
     def __init__(
         self,
-        url: str = label_task_config.LABEL_TOOL_URL,
+        url: str = label_task_config.LABEL_TOOL_HOST_URL,
         headers: Dict[str, str] = {"Authorization": label_task_config.LABEL_TOOL_TOKEN},
     ):
         self.url = url

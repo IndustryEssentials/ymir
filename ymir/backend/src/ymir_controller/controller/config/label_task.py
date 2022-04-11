@@ -7,7 +7,7 @@ LABEL_STUDIO = "label_studio"
 LABEL_FREE = "label_free"
 # set your label tool
 LABEL_TOOL = env("LABEL_TOOL", LABEL_STUDIO)
-LABEL_TOOL_URL = env("LABEL_TOOL_URL")
+LABEL_TOOL_HOST_URL = env("LABEL_TOOL_HOST_URL")
 LABEL_TOOL_TOKEN = env("LABEL_TOOL_TOKEN")
 
 # task_monitor_file
