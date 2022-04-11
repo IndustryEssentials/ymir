@@ -1,4 +1,4 @@
-version: '3.1'
+version: "3.1"
 services:
   label_nginx:
     image: labelfree/open_frontend:latest
@@ -9,7 +9,7 @@ services:
     networks:
       - labelfreenetwork
     restart: always
-  
+
   label_api:
     image: labelfree/open:latest
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/labelfree app:app
@@ -18,11 +18,12 @@ services:
     volumes:
       - ${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}
     environment:
-      SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:root!2345@label_mysql:3306/labelfree
+      SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: labelfree2022
+      REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       S3_ENDPOINT_URL: ${LABEL_HOST}:9099
+      S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
       LABEL_BUILD: pro
@@ -32,14 +33,15 @@ services:
 
   label_celery_worker:
     image: labelfree/open:latest
-    command: celery -A labelfree.app.celery worker -l info -f celery.logs
+    command: celery -A labelfree.app.celery worker -l info 
     env_file:
       - .env
     environment:
-      SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:root!2345@label_mysql:3306/labelfree
+      SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
-      REDIS_PASSWORD: labelfree2022
+      REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       S3_ENDPOINT_URL: ${LABEL_HOST}:9099
+      S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
     networks:
@@ -52,10 +54,9 @@ services:
       - .env
     environment:
       TZ: Asia/Shanghai
-      MYSQL_ROOT_PASSWORD: root!2345
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: labelfree
-    command:
-      --character-set-server=utf8mb4
+    command: --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
       --explicit_defaults_for_timestamp=true
       --lower_case_table_names=1
@@ -70,7 +71,7 @@ services:
   label_redis:
     image: bitnami/redis:5.0.4
     environment:
-      REDIS_PASSWORD: labelfree2022
+      REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
       - labelfreenetwork
     restart: always
@@ -80,7 +81,7 @@ services:
     env_file:
       - .env
     environment:
-      MINIO_ROOT_PASSWORD: labelfree2022
+      MINIO_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MINIO_ROOT_USER: labelfree
     command: server /data --console-address ":9001"
     ports:
@@ -89,7 +90,7 @@ services:
     volumes:
       - ${YMIR_PATH}/labelfree/minio_data:/data
     networks:
-      - labelfreenetwork 
+      - labelfreenetwork
 
     restart: always
 
