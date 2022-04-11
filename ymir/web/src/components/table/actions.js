@@ -18,9 +18,9 @@ const moreActions = (menus) => {
   )
 }
 
-function action({ key, onclick = () => { }, icon, label, link, target }, last) {
+function action({ key, onclick = () => { }, icon, label, link, target, disabled }, last) {
   const btn = (
-    <Button key={key} type='link' className={`${s.action} ${last ? s.last : ''}`} onClick={onclick}>
+    <Button key={key} type='link' disabled={disabled} className={`${s.action} ${last ? s.last : ''}`} onClick={onclick}>
       {icon}{label}
     </Button>
   )

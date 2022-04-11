@@ -59,7 +59,7 @@ const project = {
   'project.iteration.stage.label.react': { en: 'Re-process', cn: '重新标注', },
   'project.iteration.stage.merge.react': { en: 'Re-process', cn: '重新更新', },
   'project.iteration.stage.training.react': { en: 'Re-process', cn: '重新训练', },
-  'project.stage.state.pending': { en: 'Pending', cn: '未完成', },
+  'project.stage.state.pending': { en: 'Unfinished', cn: '未完成', },
   'project.iteration.settings.title': { en: 'Iterations Settings', cn: '迭代设置', },
   'project.add.form.training.set': { en: 'Training Dataset', cn: '训练集', },
   'project.add.form.test.set': { en: 'Test Dataset', cn: '测试集', },

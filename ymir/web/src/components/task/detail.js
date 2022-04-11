@@ -256,7 +256,29 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       </Item>
     </>
   )
-  const renderInference = () => <></>
+  const renderInference = () => (
+    <>
+      {renderDatasetSource(task?.parameters.dataset_id)}
+      {renderCreateTime(task.create_datetime)}
+      <Item label={t("task.mining.form.model.label")}>
+        <Link to={`/home/project/${task.project_id}/model/${task.parameters.model_id}`}>
+          {model?.name || task.parameters.model_id}
+        </Link>
+      </Item>
+      <Item label={t("task.mining.form.algo.label")}>
+        {task.parameters.mining_algorithm}
+      </Item>
+      <Item label={t("task.mining.form.topk.label")}>
+        {task.parameters.top_k}
+      </Item>
+      <Item label={t("task.detail.label.mining.image")}>
+        {task.parameters.docker_image}
+      </Item>
+      <Item label={t("task.detail.label.hyperparams")} span={2}>
+        {renderConfig(task.config)}
+      </Item>
+    </>
+  )
   const renderFusion = () => (
     <>
       {renderDatasetSource(task?.parameters?.main_dataset_id)}

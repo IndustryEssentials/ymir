@@ -11,13 +11,14 @@ import { states } from '@/constants/dataset'
 
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
+import Terminate from "@/components/task/terminate"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
-  EditIcon, DeleteIcon, CopyIcon
+  EditIcon, DeleteIcon, CopyIcon, StopIcon,
 } from "@/components/common/icons"
 import { humanize } from "@/utils/number"
 import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
@@ -41,6 +42,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   const delRef = useRef(null)
   const delGroupRef = useRef(null)
   let [lock, setLock] = useState(true)
+  const terminateRef = useRef(null)
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -194,7 +196,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   ]}
 
   const actionMenus = (record) => {
-    const { id, name, state, versionName } = record
+    const { id, name, state, versionName, isProtected } = record
     let actions = []
     const menus = [
       {
@@ -238,12 +240,19 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
       key: "del",
       label: t("dataset.action.del"),
       onclick: () => del(id, `${name} ${versionName}`),
+      disabled: isProtected,
       icon: <DeleteIcon />,
+    }
+    const terminateMenu = {
+      key: "stop",
+      label: t("task.action.terminate"),
+      onclick: () => stop(record),
+      icon: <StopIcon />,
     }
     if (isValidDataset(state)) {
       actions = [...menus, delMenu]
     } else {
-      actions = [delMenu]
+      actions = [terminateMenu]
     }
     return actions
   }
@@ -372,6 +381,14 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   const delGroupOk = () => {
     fetchDatasets()
   }
+  
+  const stop = (dataset) => {
+    terminateRef.current.confirm(dataset)
+  }
+
+  function terminateOk({ }, { groupId }) {
+    groupId && func.getVersions(groupId, true)
+  }
 
   const edit = (record) => {
     setCurrent({})
@@ -493,7 +510,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
       </EditBox>
       <DelGroup ref={delGroupRef} ok={delGroupOk} />
       <Del ref={delRef} ok={delOk} />
-
+      <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }

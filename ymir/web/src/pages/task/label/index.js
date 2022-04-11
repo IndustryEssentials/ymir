@@ -11,6 +11,7 @@ import Uploader from "@/components/form/uploader"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
+import DatasetSelect from "../../../components/form/datasetSelect"
 
 const LabelTypes = () => [
   { id: "part", label: t('task.label.form.type.newer'), checked: true },
@@ -21,7 +22,8 @@ function Label({ datasets, keywords, ...func }) {
   const pageParams = useParams()
   const { query } = useLocation()
   const pid = Number(pageParams.id)
-  const { did, iterationId, outputKey, currentStage } = query
+  const { iterationId, outputKey, currentStage } = query
+  const did = Number(query.did)
   const history = useHistory()
   const [dataset, setDataset] = useState({})
   const [doc, setDoc] = useState(undefined)
@@ -97,6 +99,7 @@ function Label({ datasets, keywords, ...func }) {
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
+    dataset: did || undefined,
     keepAnnotations: true,
     labelType: getCheckedValue(LabelTypes()),
   }
@@ -117,7 +120,9 @@ function Label({ datasets, keywords, ...func }) {
             colon={false}
           >
             <Tip hidden={true}>
-              <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName}</span></Form.Item>
+              <Form.Item label={t('task.fusion.form.dataset')} name='dataset'>
+                <DatasetSelect pid={pid} disabled={did} />
+                </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.labelmember')}>
               <Form.Item

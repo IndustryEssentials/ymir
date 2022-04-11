@@ -7,7 +7,7 @@ describe("constants: task", () => {
     expect(TASKTYPES.LABEL).toBe(3)
     expect(TASKTYPES.IMPORT).toBe(5)
     expect(TASKTYPES.COPY).toBe(7)
-    expect(TASKTYPES.INFERENCE).toBe(9)
+    expect(TASKTYPES.INFERENCE).toBe(15)
     expect(TASKTYPES.FUSION).toBe(11)
 
   })
