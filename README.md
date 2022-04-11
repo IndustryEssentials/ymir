@@ -88,20 +88,29 @@ A typical model development process can usually be summarized in a few steps: de
 
 *  Deploy model: Models are developed and trained based on previously available data (possibly test data). After a satisfactory model is obtained, it will be applied to real data to make predictions at scale.
 
-The YMIR platform mainly meets the needs of users for developing models at scale. The platform provides users an easy-to-use user interface, it is consists of four parts: home page, task management, dataset management, and model management, which have the following main functions:
+YMIR platform mainly meets the needs of users to produce models at scale, provides users with a good and easy-to-use display interface, and facilitates the management and viewing of data and models. The platform contains main functional modules such as project management, tag management, system configuration, etc. It supports the realization of the following main functions.
 
-| Function Module    | Primary Function  | Function Description                                         |
-| ------------------ | ----------------- | ------------------------------------------------------------ |
-| Dataset management | Dataset importing | Copy public datasets, URL addresses, path imports, and local imports to assist users in importing prepared datasets |
-| Dataset management | Dataset viewing   | Visualization of image data and annotations, and check history information |
-| Dataset management | Dataset editing   | Operations like dataset edit, delete, etc.                   |
-| Task management    | Filter task       | Filtering the data by tags                                   |
-| Task management    | Training task     | Support self-selected datasets, labels, adjust training parameters for model training, check corresponding results after task completion |
-| Task management    | Mining task       | Find the most beneficial data for model optimization         |
-| Task management    | Labeling task     | Add annotations to image data                                |
-| Model management   | Model validation  | Upload an image to check the performance of a model          |
-
-
+| Function Module | Primary Function | Secondary Function | Function Description |
+|----------|-----------|------------|-----------------------------------------|
+|Project Management|Project Management|Project Editing|Supports adding, deleting, and editing projects and project information|
+|Project Management|Iteration Management|Iteration Preparation|Supports setting up the dataset and model information needed for iteration|
+|Project Management|Iteration Management|Iteration Steps|Support to populate the data from the previous round to the next step corresponding to the task parameters|
+|Project Management|Iteration Management|Iteration Charts|Support to display the datasets and models generated during the iterative process in the interface as a graphical comparison|
+|Project Management|Dataset Management|Import datasets|Support users to import prepared datasets by copying public datasets, url addresses, paths and local imports|
+|Project Management|Data Set Management|View Data Sets|Supports visualization of image data and annotations, and viewing of historical information|
+|Project Management|Data Set Management|Edit Data Set|Support editing and deleting data sets
+|Project Management|Dataset Management|Dataset Versions|Support creating new dataset versions on the source dataset, with the version number incremented by time|
+|Project Management|Data Set Management|Data Preprocessing|Support image data fusion, filtering, sampling operations|
+|Project Management|Dataset Management|Data Mining|Supports finding the most beneficial data for model optimization in a large number of datasets|
+|Project Management|Data Set Management|Data Annotation|Support for adding annotations to image data|
+|Project Management|Data Set Management|Data Inference|Supports adding annotations to a data set by specifying a model|
+|Project Management|Model Management|Model Import|Support local import of model files to the platform|
+|Project Management|Model Management|Training Models|Supports training models by selecting datasets, labels, and adjusting training parameters according to requirements, and viewing the corresponding model results after completion
+|Project Management|Model Management|Model Validation|Support uploading a single image to check the performance of the model in real images through visualization to verify the accuracy of the model|
+|Tag management|Tag management|Add tags|Support adding primary names and aliases of training tags|
+|System configuration|Mirror management|My mirrors|Support adding custom mirrors to the system (available for administrators only)|
+|System Configuration|Mirror Management|Public Mirror|Support to view public mirrors uploaded by others and copy them to your own system|
+|System Configuration|Permissions Configuration|Permissions Management|Support for configuring user permissions (available only to administrators)|
 
 ## 1.2. Apply for trial
 
@@ -221,6 +230,12 @@ This section uses a complete model iteration process as an example to illustrate
 
 As shown in the figure above, YMIR divides the model development process into multiple steps. Details about how to run each step are listed in the subsequent sections.
 
+Data and labels are necessary for the training of deep learning, and the training requires a large amount of data with labels. However, what exists in reality is a large amount of unlabeled data, which is too costly in terms of labor and time if all of them are manually labeled.
+
+Therefore, YMIR platform, through active learning, first attains an initial model by local import or a small amount of labeled data, and uses this initial model to mine the most beneficial data for model capability improvement from a large amount of data. After the mining is completed, only this part of the data is labeled and the original training dataset is expanded efficiently.
+
+The updated dataset is used to train the model again to improve the model capability. The YMIR platform provides a more efficient approach than labeling the entire data and then training it, reducing the cost of labeling low-quality data. Through the cycle of mining, labeling, and training, high quality data is expanded and the model capability is improved.
+
 ## 3.1. Label management
 
 When you need to import a dataset with annotation files, please make sure the annotation type belongs to the existing label list of the system, otherwise you need to go to the label management interface to add custom labels in order to import the data. The following figure shows:
@@ -230,9 +245,13 @@ When you need to import a dataset with annotation files, please make sure the an
 
 The primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
 
-## 3.2. Raw data preparation
+## 3.2. Project management
 
-The user prepares a dataset with training targets (training set and test set) for training an initial model. Before importing, please ensure that the format of the dataset meets the following requirements:
+Users create projects according to their training goals and set the target information such as mAP value, iteration rounds, etc. of the goals. As shown in the figure below：
+
+## 3.2.1. Iteration data preparation
+
+The user prepares the mining set to be used for data mining (which may not need to contain annotation files) and datasets with training targets (training set and test set) for training an initial model. Before importing, please ensure that the format of the dataset meets the following requirements:
 
 *  The dataset is in.zip format, it should contain two folders named as "images" and "annotations" respectively;
 *  Images: create an ''images'' folder and place images in it. The formats currently supported by this platform are limited to jpg, jpeg, and png;
@@ -269,25 +288,25 @@ Users can download the example **Sample.zip** for reference as follows:
 
 ![path import](docs/images/path-import.jpeg)
 
-## 3.3. Data labeling
+After finishing the import of the initial dataset, click [Iterative Data Preparation] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
 
-If the imported training set or test set does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the Create Data Annotation Task interface as shown in the following figure.
+## 3.2.2. Initial model preparation
 
-![label1](docs/images/label1.jpeg)
+The user prepares the model for the initial iteration, either by local import or by model training, which is described in ##3.2.6.
 
-The user must enter the task name, the dataset, the email address of the annotator, and the labeling target (person, car). If you want to check the labeling platform by yourself, please click "View on labeling platform" and fill in your labeling platform account. If you have more detailed requirements for the annotation, you can upload the annotation description document for the annotator's reference. You must register with the labeling system in advance. You can click "Register Labeling Platform Account" at the bottom to jump to the Label Studio labeling platform to register their labeling account. Click on Create Task, as shown in the figure below:
+For local import, it is necessary to ensure that the model is in the required format.
 
-![label2](docs/images/label2.jpeg)
+* Only models generated by the YMIR system are supported.
+* The uploaded file should be less than 1024 MB.
+* the detection target of the uploaded model file should be consistent with the project target.
 
-After successful creation, users can view the corresponding task progress and other information on the task management interface. After the task is completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
+After finishing the import or training of the initial model, click [Iterative Model Preparation] to select the initial model and finish the setup.After both the iteration data and the model are prepared, the iteration is started.
 
-## 3.4. Model training
-
-Click the [Train] button in the task management interface to jump to the Create Model Training Task interface, as shown in the following figure:
+Model training can be done by clicking the [Training] operation button on the dataset list interface to jump to the Create Model Training interface, as shown in the following figure：
 
 ![train1](docs/images/train1.jpeg)
 
-The user needs to enter the needed information in the form above to configure a training task. The training parameters (a.k.a. hyper-parameters) are populated with default values and can be changed if necessary. Users can also add parameters by themselves. Then, click the [Create Task]. As shown in the figure below, the initial model is trained.
+Select the training set (VOC2012_train), select the test set (VOC2012_val), select the training target (person, car), select the pre-training model (not required), training type, algorithm framework, backbone network structure, number of GPUs and configure the training parameters (training parameters provide default values, the default parameters in the key value can not be modified, the value value can be modified, if you want to add parameters can be added), click create task. If you want to add parameters, you can add them yourself), click Create Task. As shown in the figure below, the initial model is trained.
 
 ![train2](docs/images/train2.jpeg)
 
@@ -295,7 +314,11 @@ After successful creation, users can view the corresponding task progress and in
 
 - **Model iterations (Improve accuracy through iteration)**
 
-## 3.5. Data mining
+## 3.2.3. Mining data preparation
+
+
+
+## 3.2.4. Data mining
 
 YMIR provides data mining algorithms that support million-level data mining to quickly find the most favorite data for model optimization.
 
@@ -309,7 +332,26 @@ The user needs to enter the task name, select the data set (VOC2012_mining), and
 
 After a task is created, users can view the task progress and the result of the mining task on the task management page.
 
-## 3.6. Model iteration
+## 3.2.5. Data labeling
+
+If the imported training set or test set does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the Create Data Annotation Task interface as shown in the following figure.
+
+![label1](docs/images/label1.jpeg)
+
+The user must enter the task name, the dataset, the email address of the annotator, and the labeling target (person, car). If you want to check the labeling platform by yourself, please click "View on labeling platform" and fill in your labeling platform account. If you have more detailed requirements for the annotation, you can upload the annotation description document for the annotator's reference. You must register with the labeling system in advance. You can click "Register Labeling Platform Account" at the bottom to jump to the Label Studio labeling platform to register their labeling account. Click on Create Task, as shown in the figure below:
+
+![label2](docs/images/label2.jpeg)
+
+After successful creation, users can view the corresponding task progress and other information on the task management interface. After the task is completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
+
+## 3.2.6. Update trainingset
+
+
+
+
+
+
+## 3.2.7. Model iteration
 
 ![process-en](docs/images/process-en.jpeg)
 
@@ -321,7 +363,7 @@ After the labeling task is completed, the training task should be created again.
 
 ![merge train](docs/images/merge-train3.jpeg)
 
-## 3.7. Model validation
+## 3.2.8. Model validation
 
 After training the model, users can validate the model. On the [Model Management] page, you can click the [Verify] button of the corresponding model to jump to the [Model Validation] page. As shown in the following figure:
 
@@ -335,7 +377,7 @@ The user can click the [Upload Image] button and select a local image to upload.
 
 Users can choose to download the trained model. Users can also choose to continue to use the model for mining. So as to enter the next round of data mining, data labeling, model training cycle, and further optimize the model.
 
-## 3.8. Model download
+## 3.2.9. Model download
 
 Users can click the [Download] button on the [Model List] page. The downloaded file is a tar package, which contains the network structure of the model, network weights, hyper-parameter configuration files, training environment parameters, and results. As shown below:
 
