@@ -37,7 +37,7 @@ class TaskParameter(BaseModel):
     backbone: Optional[str]
     hyperparameter: Optional[str]
 
-    # mining
+    # mining & dataset_infer
     model_id: Optional[int]
     mining_algorithm: Optional[str]
     top_k: Optional[int]
