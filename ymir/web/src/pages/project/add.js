@@ -193,7 +193,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
                     { required: true, message: t('task.train.form.testset.required') },
                   ]}>
-                    <DatasetSelect pid={id} filter={[miningSet]} filterGroup={[project?.trainSet?.id, project?.testSet?.id]} onChange={(value) => value && setTestSet(value)} />
+                    <DatasetSelect pid={id} filter={[miningSet]} filterGroup={[project?.trainSet?.id, project?.miningSet?.id]} onChange={(value) => value && setTestSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
@@ -201,7 +201,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   rules={[
                     { required: true, message: t('task.train.form.miningset.required') },
                   ]}>
-                    <DatasetSelect pid={id} filter={[testSet]} filterGroup={[project?.trainSet?.id, project?.miningSet?.id]} onChange={(value) => value && setMiningSet(value)} />
+                    <DatasetSelect pid={id} filter={[testSet]} filterGroup={[project?.trainSet?.id, project?.testSet?.id]} onChange={(value) => value && setMiningSet(value)} />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
