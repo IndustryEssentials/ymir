@@ -136,6 +136,7 @@ class TaskInternal(TaskInDBBase):
             return ResultType.model
         elif task_type in [
             TaskType.mining,
+            TaskType.dataset_infer,
             TaskType.label,
             TaskType.import_data,
             TaskType.copy_data,
