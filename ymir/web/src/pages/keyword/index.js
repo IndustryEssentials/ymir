@@ -107,7 +107,7 @@ function Keyword({ getKeywords }) {
       limit: query.limit,
     }
     if (query.name) {
-      params.q = query.name
+      params.q = query.name.toLowerCase()
     }
     const { items, total } = await getKeywords(params)
     if (items) {
