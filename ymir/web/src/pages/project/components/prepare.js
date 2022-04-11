@@ -23,14 +23,14 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     const ss = labels.map(({ value, state, url, }, index) => {
       const act = `project.iteration.stage.${value}`
       const stage = {
-        value: index + 1,
+        value: index,
         label: value,
         act,
         // react: `${act}.react`,
         // next: index + 2,
         url,
         state,
-        current: index + 1,
+        current: index,
         unskippable: true,
         callback: fresh,
       }

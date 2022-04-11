@@ -42,6 +42,7 @@ const project = {
   'project.add.form.desc': { en: 'Description', cn: '备注', },
   'project.update.submit': { en: 'Update Project', cn: '设置项目', },
   'project.add.submit': { en: 'Create Project', cn: '创建项目', },
+  'project.iteration.stage.prepare': { en: 'Iterations Prepare', cn: '迭代准备中', },
   'project.iteration.stage.datasets': { en: 'Dataset Settings', cn: '迭代数据准备', },
   'project.iteration.stage.model': { en: 'Select Model', cn: '迭代模型准备', },
   'project.iteration.stage.start': { en: 'Create Iteration', cn: '开启迭代', },
@@ -83,6 +84,11 @@ const project = {
   'project.detail.desc': { en: 'Description', cn: '描述', },
   'project.target.dataset': { en: 'Training Dataset\'s Assets', cn: '目标训练集大小', },
   'project.initmodel.success.msg': { en: 'Initial model prepared', cn: '设置初始模型成功', },
+  'project.tag.train': { en: 'Training Dataset', cn: '训练集', },
+  'project.tag.test': { en: 'Testing Dataset {version}', cn: '测试集 {version}', },
+  'project.tag.mining': { en: 'Mining Dataset {version}', cn: '挖掘集 {version}', },
+  'project.tag.model': { en: 'Initial Model {version}', cn: '初始模型 {version}', },
+  'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
 }
 
 export default project

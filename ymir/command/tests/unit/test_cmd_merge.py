@@ -241,7 +241,7 @@ class TestMergeCmd(unittest.TestCase):
 
     # public: test cases
     def test_all(self):
-        self._test_exclude_no_tvt_stop_00()
+        self._test_exclude_no_tvt_host_00()
         self._test_no_tvt_stop_00()
         self._test_tvt_guest_00()
         self._test_tvt_host_00()
@@ -433,14 +433,14 @@ class TestMergeCmd(unittest.TestCase):
 
         self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
 
-    def _test_exclude_no_tvt_stop_00(self):
-        """ a - d """
+    def _test_exclude_no_tvt_host_00(self):
+        """ a - d with host strategy """
         mir_root = self._mir_root
         fake_args = type('', (), {})()
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a'
         fake_args.ex_src_revs = 'd'
-        fake_args.dst_rev = '_test_exclude_no_tvt_stop_00@merge-task-id'
+        fake_args.dst_rev = '_test_exclude_no_tvt_host_00@merge-task-id'
         fake_args.strategy = 'host'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)

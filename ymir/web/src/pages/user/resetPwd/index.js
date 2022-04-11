@@ -87,7 +87,7 @@ const ResetPwd = ({ resetPwd }) => {
                   },
                 ]}
               >
-                <Input.Password allowClear placeholder={t('reset_pwd.pwd.placeholder')} />
+                <Input.Password visibilityToggle={false} allowClear placeholder={t('reset_pwd.pwd.placeholder')} />
               </Form.Item>
               <Form.Item
                 label={t("signup.repwd")}
@@ -101,7 +101,7 @@ const ResetPwd = ({ resetPwd }) => {
                   pwdRepeat,
                 ]}
               >
-                <Input.Password allowClear placeholder={t('reset_pwd.repwd.placeholder')} />
+                <Input.Password visibilityToggle={false} allowClear placeholder={t('reset_pwd.repwd.placeholder')} />
               </Form.Item>
 
               <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>

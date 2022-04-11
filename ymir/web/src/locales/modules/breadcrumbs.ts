@@ -4,7 +4,7 @@ const breadcrumbs = {
   'breadcrumbs.models': { cn: '模型列表', en: 'Model List', },
   'breadcrumbs.datasets': { cn: '数据集列表', en: 'Dataset List', },
   'breadcrumbs.task.search': { cn: '任务搜索', en: 'Task Search', },
-  'breadcrumbs.task.fusion': { cn: '数据融合', en: 'Data Fusion', },
+  'breadcrumbs.task.fusion': { cn: '数据预处理', en: 'Data Pretreatment', },
   'breadcrumbs.task.training': { cn: '新建训练任务', en: 'New Training Task', },
   'breadcrumbs.task.label': { cn: '新建标注任务', en: 'New Label Task', },
   'breadcrumbs.task.mining': { cn: '新建挖掘任务', en: 'New Mining Task', },

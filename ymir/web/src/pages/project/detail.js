@@ -24,12 +24,12 @@ function ProjectDetail(func) {
   const [project, setProject] = useState({})
   const [active, setActive] = useState(tabsTitle[0].key)
   const content = {
-    'set': <Datasets pid={id} />,
-    'model': <Models pid={id} />
+    'set': <Datasets pid={id} project={project} />,
+    'model': <Models pid={id} project={project} />
   }
 
   useEffect(() => {
-    id && fetchProject()
+    id && fetchProject(true)
   }, [id])
 
   useEffect(() => {
