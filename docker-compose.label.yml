@@ -5,7 +5,7 @@ services:
     env_file:
       - .env
     ports:
-      - ${LABEL_TOOL_PORT}:80
+      - ${LABEL_TOOL_HOST_PORT}:80
     networks:
       - labelfreenetwork
     restart: always
@@ -22,7 +22,7 @@ services:
       REDIS_HOST: label_redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      S3_ENDPOINT_URL: ${HOST_IP}:9099
+      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:9099
       S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
@@ -40,7 +40,7 @@ services:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
       REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      S3_ENDPOINT_URL: ${HOST_IP}:9099
+      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:9099
       S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev

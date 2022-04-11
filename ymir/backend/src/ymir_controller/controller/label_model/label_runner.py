@@ -60,7 +60,7 @@ def start_label_task(
     logging.info("start label task!!!")
     # set your lable tools name
     request_handler = RequestHandler(
-        url=label_task_config.LABEL_TOOL_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
+        url=label_task_config.LABEL_TOOL_HOST_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
     )
     if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
         label_instance = LabelStudio(request_handler)

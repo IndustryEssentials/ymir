@@ -54,10 +54,6 @@ done
 }
 
 start_label_free () {
-local_ip=`ifconfig -a|grep inet|grep -v -E "*.*.*.1 "|grep -v inet6|awk '{print $2}'|tr -d "addr:"`
-
-sed -i.bk "s-^HOST_IP=.*-HOST_IP=http://${local_ip}-" ${ENV_FILE} && rm -f *.bk
-
 docker-compose -f docker-compose.label.yml up -d
 }
 
