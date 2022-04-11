@@ -280,20 +280,6 @@ function Mining({ datasetCache, datasets, ...func }) {
                 <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
               </Form.Item>
             </Tip>
-
-            <Tip content={t('tip.task.filter.newlable')}>
-              <Form.Item
-                label={t('task.mining.form.label.label')}
-                name='inference'
-                initialValue={false}
-              >
-                <Radio.Group options={[
-                  { value: true, label: t('common.yes') },
-                  { value: false, label: t('common.no') },
-                ]} />
-              </Form.Item>
-            </Tip>
-
             <Tip content={t('tip.task.filter.mgpucount')}>
               <Form.Item
                 label={t('task.gpu.count')}
