@@ -43,7 +43,8 @@ function Mining({ datasetCache, datasets, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, mid, image, iterationId, currentStage, outputKey } = location.query
+  const { mid, image, iterationId, currentStage, outputKey } = location.query
+  const did = Number(location.query.did)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
@@ -178,7 +179,7 @@ function Mining({ datasetCache, datasets, ...func }) {
   const initialValues = {
     model: mid ? parseInt(mid) : undefined,
     image: image ? parseInt(image) : undefined,
-    datasetId: Number(did) ? Number(did) : undefined,
+    datasetId: did ? did : undefined,
     algorithm: getCheckedValue(Algorithm()),
     topk: 0,
     gpu_count: 0,
