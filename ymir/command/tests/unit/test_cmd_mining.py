@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -46,6 +47,28 @@ class TestMiningCmd(unittest.TestCase):
         output_file = os.path.join(kwargs['work_dir'], 'out', 'result.tsv')
         with open(output_file, 'w') as f:
             f.writelines("d4e4a60147f1e35bc7f5bc89284aa16073b043c9\t0.1")
+
+        fake_infer_output_dict = {
+            'detection': {
+                'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
+                    'annotations': [
+                        {
+                            'box': {
+                                'x': 0,
+                                'y': 0,
+                                'w': 30,
+                                'h': 30
+                            },
+                            'score': 0.5,
+                            'class_name': 'cat',
+                        },
+                    ],
+                },
+            },
+        }
+        infer_output_file = os.path.join(kwargs['work_dir'], 'out', 'infer-result.json')
+        with open(infer_output_file, 'w') as f:
+            f.write(json.dumps(fake_infer_output_dict))
         return 0
 
     def _mock_prepare_model(*args, **kwargs):
@@ -155,7 +178,7 @@ class TestMiningCmd(unittest.TestCase):
         args.model_location = self._storage_root
         args.media_location = self._storage_root
         args.topk = 1
-        args.add_annotations = False
+        args.add_annotations = True
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
@@ -173,7 +196,7 @@ class TestMiningCmd(unittest.TestCase):
                                          shm_size='16G',
                                          executor=args.executor,
                                          executant_name=args.executant_name,
-                                         run_infer=False,
+                                         run_infer=args.add_annotations,
                                          run_mining=True)
 
         if os.path.isdir(self._sandbox_root):
