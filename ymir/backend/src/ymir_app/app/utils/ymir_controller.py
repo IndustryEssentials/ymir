@@ -280,6 +280,10 @@ class ControllerRequest:
 
         return request
 
+    def prepare_dataset_infer(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        # need different app type for web, controller use same endpoint
+        return self.prepare_mining(request, args)
+
 
 class ControllerClient:
     def __init__(self, channel: str) -> None:
