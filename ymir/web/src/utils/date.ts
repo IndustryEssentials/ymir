@@ -34,3 +34,13 @@ export function calDuration(seconds: number, locale: string) {
   const duration = moment.duration(seconds * 1000).locale(locale)
   return seconds ? duration.humanize({ s: 0 }) : ''
 }
+
+/**
+ * get diff from tow time
+ * @param a local time
+ * @param b local time
+ * @returns {number}
+ */
+export function diffTime(a: string, b: string) {
+  return moment(a).diff(moment(b))
+}

@@ -25,6 +25,7 @@ class CreateTaskInvokerFactory(BaseMirControllerInvoker):
         backend_pb2.TaskTypeFusion: TaskFusionInvoker,
         backend_pb2.TaskTypeImportModel: TaskModelImportingInvoker,
         backend_pb2.TaskTypeCopyModel: TaskCopyInvoker,
+        backend_pb2.TaskTypeDatasetInfer: TaskMiningInvoker,
     }
 
     def __new__(cls, request: backend_pb2.GeneralReq, *args, **kwargs) -> Any:  # type: ignore
