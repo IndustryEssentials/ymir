@@ -7,7 +7,6 @@ import { Form, Table, Modal, ConfigProvider, Card, Space, Row, Col, Button, Popo
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyState from '@/components/empty/model'
 import KeywordRates from "@/components/dataset/keywordRates"
 
 function Iterations({ ...func }) {
@@ -28,7 +27,6 @@ function Iterations({ ...func }) {
       title: showTitle("iteration.column.round"),
       dataIndex: "round",
       render: (round) => (t('iteration.round.label', { round })),
-      ellipsis: true,
     },
     {
       title: showTitle("iteration.column.premining"),
@@ -59,9 +57,9 @@ function Iterations({ ...func }) {
     },
     {
       title: showTitle("iteration.column.training"),
-      dataIndex: "trainingModelLabel",
+      dataIndex: 'map',
       render: (map, { mapEffect }) => <div className={s.td}>
-        <span>{percent(map)}</span>
+        <span>{map >= 0 ? percent(map) : null}</span>
         <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
       </div>,
       align: 'center',
@@ -87,7 +85,6 @@ function Iterations({ ...func }) {
     const result = await func.getIterations(id)
     if (result) {
       const iters = fetchHandle(result)
-      console.log('fetch iteration iters:', iters)
       setIterations(iters)
     }
   }
@@ -105,16 +102,15 @@ function Iterations({ ...func }) {
         miningDatasetLabel: renderDatasetLabel(iteration.miningDataset),
         miningResultDatasetLabel: renderDatasetLabel(iteration.miningResultDataset),
         labelDatasetLabel: renderDatasetLabel(iteration.labelDataset),
-        trainingModelLabel: renderModelLabel(iteration.trainingModel),
+        map: iteration?.trainingModel?.map,
       }
     })
-    console.log('iters:', JSON.parse(JSON.stringify(iters)))
     iters.reduce((prev, current) => {
-      const prevMap = prev.map || 0
+      const prevMap = prev.map
       const prevUpdatedTrainSetCount = prev?.trainUpdateDataset?.assetCount || 0
       const currentMap = current.map
       const currentUpdatedTrainSetCount = current?.trainUpdateDataset?.assetCount || 0
-      current.mapEffect = prevMap ? (currentMap - prevMap) : 0
+      current.mapEffect = prevMap >= 0 ? (currentMap - prevMap) : 0
       current.trainEffect = prevUpdatedTrainSetCount ? (currentUpdatedTrainSetCount - prevUpdatedTrainSetCount) : 0
       return current
     }, {})
@@ -123,10 +119,6 @@ function Iterations({ ...func }) {
 
   function renderDatasetLabel(dataset) {
     return dataset ? `${dataset.name} ${dataset.versionName} (${dataset.assetCount})` : ''
-  }
-
-  function renderModelLabel(model) {
-    return model ? `${model.name} ${model.versionName} | ${percent(model.map)}` : ''
   }
 
   function showTitle(str) {
@@ -157,6 +149,7 @@ function Iterations({ ...func }) {
           <Table
             dataSource={iterations}
             pagination={false}
+            rowKey={(record) => record.id}
             columns={columns}
           ></Table>
         </div>
