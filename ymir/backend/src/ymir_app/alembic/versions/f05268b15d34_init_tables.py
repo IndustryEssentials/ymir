@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: 33b051f9d73f
+Revision ID: f05268b15d34
 Revises:
-Create Date: 2022-04-07 14:09:31.771517
+Create Date: 2022-04-11 10:36:26.806240
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "33b051f9d73f"
+revision = "f05268b15d34"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -120,6 +120,7 @@ def upgrade() -> None:
         sa.Column("label_output_dataset_id", sa.Integer(), nullable=True),
         sa.Column("training_input_dataset_id", sa.Integer(), nullable=True),
         sa.Column("training_output_model_id", sa.Integer(), nullable=True),
+        sa.Column("testing_dataset_id", sa.Integer(), nullable=True),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
