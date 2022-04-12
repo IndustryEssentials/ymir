@@ -24,6 +24,7 @@ const errors = {
   'error110402': { cn: '重复的数据集名称', en: 'Duplicated dataset name', },
   'error110403': { cn: '数据集未授权访问', en: 'Dataset inaccessable', },
   'error110404': { cn: '数据集创建失败', en: 'DATASET_FAILED_TO_CREATE: failed to create dataset', },
+  'error110405': { cn: '数据集被系统保护不可删除', en: 'DATASET_FAILED_TO_DELETE: failed to delete dataset', },
   'error110501': { cn: '找不到该数据', en: 'Asset is not found', },
   'error110601': { cn: '找不到该模型', en: 'Model is not found', },
   'error110602': { cn: '重复的模型名称', en: 'Duplicated model name', },
