@@ -31,7 +31,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const [includeDatasets, setIncludeDatasets] = useState([])
   const [excludeDatasets, setExcludeDatasets] = useState([])
   const [miningStrategy, setMiningStrategy] = useState(strategy || 0)
-  const [excludeResult, setExcludeResult] = useState(true)
+  const [excludeResult, setExcludeResult] = useState(strategy === '' ? false : true)
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [selectedExcludeKeywords, setExcludeKeywords] = useState([])
@@ -145,8 +145,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   }
 
   function miningStrategyChanged({ target: { checked } }) {
-    if (strategy == MiningStrategy.free) {
-      setMiningStrategy(checked ? 1 : 2)
+    if (Number(strategy) === MiningStrategy.free) {
+      setMiningStrategy(checked ? MiningStrategy.unique : MiningStrategy.free)
       setExcludeResult(true)
     } else {
       setExcludeResult(checked)
