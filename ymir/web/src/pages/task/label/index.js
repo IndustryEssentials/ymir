@@ -25,47 +25,13 @@ function Label({ datasets, keywords, ...func }) {
   const { iterationId, outputKey, currentStage } = query
   const did = Number(query.did)
   const history = useHistory()
-  const [dataset, setDataset] = useState({})
   const [doc, setDoc] = useState(undefined)
   const [form] = Form.useForm()
   const [asChecker, setAsChecker] = useState(false)
 
-
-  useEffect(() => {
-    did && func.getDataset(did)
-  }, [did])
-
   useEffect(() => {
     func.getKeywords({ limit: 100000 })
   }, [])
-
-  useEffect(() => {
-    datasets[did] && setDataset(datasets[did])
-  }, [datasets])
-
-  useEffect(() => {
-    const state = history.location.state
-
-    if (state?.record) {
-      const { parameters, name, } = state.record
-      const { include_classes, include_datasets, labellers, extra_url, keep_annotations } = parameters
-
-      const fvalue = {
-        name: name.replace(/\w{6}$/, randomNumber()),
-        labellers: labellers[0],
-        keepAnnotations: keep_annotations,
-        checker: labellers.length > 1 ? labellers[1] : '',
-      }
-      if (extra_url) {
-        fvalue.desc = [{ uid: -1, status: 'done', name: extra_url.replace(/.*\/([^\/]+)$/, '$1'), url: extra_url }]
-      }
-      form.setFieldsValue(fvalue)
-      setDoc(extra_url)
-      setAsChecker(labellers.length > 1)
-
-      history.replace({ state: {} })
-    }
-  }, [history.location.state])
 
   const onFinish = async (values) => {
     const { labellers, checker } = values
@@ -74,7 +40,6 @@ function Label({ datasets, keywords, ...func }) {
     const params = {
       ...values,
       projectId: pid,
-      datasetId: Number(did) ? Number(did) : undefined,
       labellers: emails,
       doc,
       name: 'task_label_' + randomNumber(),
@@ -120,7 +85,7 @@ function Label({ datasets, keywords, ...func }) {
             colon={false}
           >
             <Tip hidden={true}>
-              <Form.Item label={t('task.fusion.form.dataset')} name='dataset'>
+              <Form.Item label={t('task.fusion.form.dataset')} name='datasetId'>
                 <DatasetSelect pid={pid} disabled={did} />
                 </Form.Item>
             </Tip>
