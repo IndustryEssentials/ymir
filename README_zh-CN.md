@@ -164,11 +164,11 @@ LABEL_TOOL_PORT=set_your_label_tool_port
 
 2. 启动安装label studio命令如下：
 
-`docker-compose -f docker-compose-component.yml up -d`
+`docker-compose -f docker-compose.label_studio.yml up -d`
 
 3. 完成后查看label studio状态命令如下：
 
-`docker-compose -f docker-compose-component.yml ps`（默认端口为12007）
+`docker-compose -f docker-compose.label_studio.yml ps`（默认端口为12007）
 
 可以登录默认地址 [http://localhost:12007/](http://localhost:12007/) 显示登录界面即安装成功。
 
@@ -192,7 +192,7 @@ LABEL_TASK_LOOP_SECONDS=60
 
 5. 停止label studio服务命令如下：
 
-`docker-compose -f docker-compose-component.yml down`
+`docker-compose -f docker-compose.label_studio.yml down`
 
 # 3. GUI使用-典型模型生产流程
 

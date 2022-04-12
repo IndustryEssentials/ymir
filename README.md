@@ -174,13 +174,13 @@ LABEL_TOOL_PORT=set_your_label_tool_port
 2. Start the installation command:
 
   ```sh
-docker-compose -f docker-compose-component.yml up -d
+docker-compose -f docker-compose.label_studio.yml up -d
   ```
 
 3. Check the status of label studio:
 
   ```sh
-docker-compose -f docker-compose-component.yml ps
+docker-compose -f docker-compose.label_studio.yml ps
   ```
 
 The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
@@ -206,7 +206,7 @@ The user can access label studio through the default URL [http://localhost:12007
 5. The command to stop the label studio service is:
 
   ```sh
-docker-compose -f docker-compose-component.yml down
+docker-compose -f docker-compose.label_studio.yml down
   ```
 
 # 3. Use YMIR-GUI: typical model production process
