@@ -17,7 +17,7 @@ ENV_FILE='.env'
 
 stop() {
 docker-compose down
-docker-compose -f docker-compose.label.yml down
+docker-compose -f docker-compose.labelfree.yml down
 }
 
 pre_start() {
@@ -54,7 +54,7 @@ done
 }
 
 start_label_free () {
-docker-compose -f docker-compose.label.yml up -d
+docker-compose -f docker-compose.labelfree.yml up -d
 }
 
 label_free() {
