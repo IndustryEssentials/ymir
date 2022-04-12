@@ -69,6 +69,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
         strategy: miningStrategy || 0,
         chunkSize: miningStrategy === 0 && chunkSize ? chunkSize : undefined,
       })
+      setStrategy(miningStrategy)
     }
   }
 
