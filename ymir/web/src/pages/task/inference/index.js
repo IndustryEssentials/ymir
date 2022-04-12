@@ -183,7 +183,7 @@ function Inference({ datasetCache, datasets, ...props }) {
                 { required: true, message: t('task.inference.form.dataset.required') },
               ]}
             >
-              <DatasetSelect pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} onChange={setsChange} disabled={did} showArrow />
+              <DatasetSelect pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} onChange={setsChange} showArrow />
             </Form.Item>
             </Tip>
             </ConfigProvider>
@@ -198,7 +198,7 @@ function Inference({ datasetCache, datasets, ...props }) {
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
                 >
-                  <ModelSelect placeholder={t('task.inference.form.model.required')} disabled={mid} onChange={modelChange} pid={pid} />
+                  <ModelSelect placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>

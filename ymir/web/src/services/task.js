@@ -219,7 +219,7 @@ export function createMiningTask({
       dataset_id: datasetId,
       mining_algorithm: algorithm,
       top_k: topk,
-      generate_annotations: false,
+      generate_annotations: inference,
       docker_image: image,
       docker_image_id: imageId,
     }
