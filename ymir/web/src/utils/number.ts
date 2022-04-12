@@ -79,3 +79,7 @@ export const toFixed = (value: number, len: number) => {
 export const percent = (num: number, keep = 2) => {
   return toFixed(num * 100.0, keep) + '%'
 }
+
+export function isNumber(x: any): x is number {
+  return typeof x === "number"
+}
