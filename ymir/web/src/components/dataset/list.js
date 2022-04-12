@@ -5,6 +5,7 @@ import { Link, useHistory, useLocation } from "umi"
 import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, } from "antd"
 
 import t from "@/utils/t"
+import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel } from '@/constants/task'
 import { states } from '@/constants/dataset'
@@ -12,18 +13,16 @@ import { states } from '@/constants/dataset'
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
 import Terminate from "@/components/task/terminate"
+import Del from "./del"
+import DelGroup from "./delGroup"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
-  EditIcon, DeleteIcon, CopyIcon, StopIcon,
+  EditIcon, DeleteIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon,
 } from "@/components/common/icons"
-import { humanize } from "@/utils/number"
-import { ArrowDownIcon, ArrowRightIcon } from "../common/icons"
-import Del from "./del"
-import DelGroup from "./delGroup"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -197,64 +196,66 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
 
   const actionMenus = (record) => {
     const { id, name, state, versionName, isProtected } = record
-    let actions = []
     const menus = [
       {
         key: "fusion",
         label: t("dataset.action.fusion"),
+        hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/task/fusion/${pid}?did=${id}`),
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
+        hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/task/train/${pid}?did=${id}`),
         icon: <TrainIcon />,
       },
       {
         key: "mining",
         label: t("dataset.action.mining"),
+        hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/task/mining/${pid}?did=${id}`),
         icon: <VectorIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
+        hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/task/inference/${pid}?did=${id}`),
         icon: <WajueIcon />,
       },
       {
         key: "label",
         label: t("dataset.action.label"),
+        hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/task/label/${pid}?did=${id}`),
         icon: <TaggingIcon />,
       },
       {
         key: "copy",
         label: t("task.action.copy"),
+        hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/task/copy/${pid}?did=${id}`),
         icon: <CopyIcon />,
       },
+      {
+        key: "stop",
+        label: t("task.action.terminate"),
+        onclick: () => stop(record),
+        hidden: () => !isRunning(state),
+        icon: <StopIcon />,
+      },
+      // {
+      //   key: "del",
+      //   label: t("dataset.action.del"),
+      //   onclick: () => del(id, `${name} ${versionName}`),
+      //   disabled: isProtected,
+      //   hidden: () => isRunning(state),
+      //   icon: <DeleteIcon />,
+      // },
     ]
-    const delMenu = {
-      key: "del",
-      label: t("dataset.action.del"),
-      onclick: () => del(id, `${name} ${versionName}`),
-      disabled: isProtected,
-      icon: <DeleteIcon />,
-    }
-    const terminateMenu = {
-      key: "stop",
-      label: t("task.action.terminate"),
-      onclick: () => stop(record),
-      icon: <StopIcon />,
-    }
-    if (isValidDataset(state)) {
-      actions = [...menus, delMenu]
-    } else {
-      actions = [terminateMenu]
-    }
-    return actions
+    return menus
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
@@ -430,6 +431,10 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
 
   function isValidDataset(state) {
     return states.VALID === state
+  }
+
+  function isRunning(state) {
+    return state === states.READY
   }
 
   const addBtn = (

@@ -50,7 +50,7 @@ function ModelDetail({ modelCache, getModel }) {
           <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
           <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
         </Descriptions>
-        <TaskProgress state={model.state} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel()} />
+        <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
         <TaskDetail task={model.task}></TaskDetail>
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
           {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
