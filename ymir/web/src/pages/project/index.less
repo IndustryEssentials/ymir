@@ -39,11 +39,10 @@
       line-height: 12px;
       color: #fff;
       text-align: right;
-      .negative, .positive {
+      .negative, .positive, .neutral {
         display: inline-block;
         padding: 2px 4px;
-        width: 50px;
-        border-radius: 10px;
+        border-radius: 4px;
         &::after {
           display: inline-block;
           margin-left: 4px;
@@ -60,6 +59,9 @@
           content: '\2191';
         }
         background-color: darkgreen;
+      }
+      .neutral {
+        background-color: darkgray;
       }
     }
   // }

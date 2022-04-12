@@ -5,7 +5,7 @@ import { useHistory, useParams } from "umi"
 import { Form, Table, Modal, ConfigProvider, Card, Space, Row, Col, Button, Popover, } from "antd"
 
 import t from "@/utils/t"
-import { percent } from '@/utils/number'
+import { percent, isNumber } from '@/utils/number'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import KeywordRates from "@/components/dataset/keywordRates"
 
@@ -76,9 +76,9 @@ function Iterations({ ...func }) {
   }
 
   function renderExtra(value, showPercent = false) {
-    const cls = value < 0 ? s.negative : s.positive
+    const cls = value < 0 ? s.negative : (value > 0 ? s.positive : s.neutral)
     const label = showPercent ? percent(value) : value
-    return value ? <span className={cls}>{label}</span> : null
+    return isNumber(value) ? <span className={cls}>{label}</span> : null
   }
 
   async function fetchIterations() {
@@ -106,12 +106,16 @@ function Iterations({ ...func }) {
       }
     })
     iters.reduce((prev, current) => {
-      const prevMap = prev.map
+      const prevMap = prev.map || 0
+      const currentMap = current.map || 0
+      const validModels = prev.trainingModel && current.trainingModel
+      current.mapEffect = validModels ? (currentMap - prevMap) : null
+
+      const validTrainSet = prev.trainUpdateDataset && current.trainUpdateDataset
       const prevUpdatedTrainSetCount = prev?.trainUpdateDataset?.assetCount || 0
-      const currentMap = current.map
       const currentUpdatedTrainSetCount = current?.trainUpdateDataset?.assetCount || 0
-      current.mapEffect = prevMap >= 0 ? (currentMap - prevMap) : 0
-      current.trainEffect = prevUpdatedTrainSetCount ? (currentUpdatedTrainSetCount - prevUpdatedTrainSetCount) : 0
+      current.trainEffect = validTrainSet ? (currentUpdatedTrainSetCount - prevUpdatedTrainSetCount) : null
+
       return current
     }, {})
     return iters
