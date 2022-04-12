@@ -52,6 +52,7 @@ function Mining({ datasetCache, datasets, ...func }) {
   const [hpVisible, setHpVisible] = useState(false)
   const [topk, setTopk] = useState(false)
   const [gpu_count, setGPU] = useState(0)
+  const [imageHasInference, setImageHasInference] = useState(false)
 
   useEffect(() => {
     fetchSysInfo()
@@ -127,6 +128,9 @@ function Mining({ datasetCache, datasets, ...func }) {
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
     const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
+    const hasInference = configs.some(conf => conf.type === TYPES.INFERENCE)
+    setImageHasInference(hasInference)
+    !hasInference && form.setFieldsValue({ inference: false })
     setConfig(configObj.config)
   }
 
@@ -246,7 +250,8 @@ function Mining({ datasetCache, datasets, ...func }) {
               <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
                 { required: true, message: t('task.train.form.image.required') }
               ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
+                <ImageSelect placeholder={t('task.train.form.image.placeholder')}
+                  relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
@@ -281,6 +286,20 @@ function Mining({ datasetCache, datasets, ...func }) {
                 <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
               </Form.Item>
             </Tip>
+
+            <Tip content={t('tip.task.filter.newlable')}>
+              <Form.Item
+                label={t('task.mining.form.label.label')}
+                name='inference'
+                initialValue={imageHasInference}
+              >
+                <Radio.Group options={[
+                  { value: true, label: t('common.yes'), disabled: !imageHasInference },
+                  { value: false, label: t('common.no') },
+                ]} />
+              </Form.Item>
+            </Tip>
+
             <Tip content={t('tip.task.filter.mgpucount')}>
               <Form.Item
                 label={t('task.gpu.count')}
