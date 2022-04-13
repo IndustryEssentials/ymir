@@ -47,7 +47,7 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
             if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
                 label_instance = LabelStudio()
             elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
-                label_instance = LabelFree()
+                label_instance = LabelFree()  # type: ignore
             else:
                 raise ValueError("Error! Please setting your label tools")
 

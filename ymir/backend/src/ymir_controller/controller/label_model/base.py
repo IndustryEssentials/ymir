@@ -49,7 +49,7 @@ class LabelBase(ABC):
         pass
 
     @abstractmethod
-    def set_import_storage(self, project_id: int, import_path: str, use_pre_annotation: bool = False) -> int:
+    def set_import_storage(self, project_id: int, import_path: str) -> int:
         # Create import storage to label tool
         pass
 

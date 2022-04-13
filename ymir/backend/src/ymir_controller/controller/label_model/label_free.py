@@ -57,7 +57,7 @@ class LabelFree(LabelBase):
 
         return project_id
 
-    def set_import_storage(self, project_id: int, import_path: str, use_pre_annotation: bool=False) -> int:
+    def set_import_storage(self, project_id: int, import_path: str, use_pre_annotation: bool = False) -> int:
         # Create a new local file import storage connection
         url_path = "/api/storages/localfiles"
         data = dict(
