@@ -124,7 +124,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 1.普通用户推荐安装GUI，支持模型的训练、优化完整流程；
 
-2.如需要修改系统默认的配置，如自定义标签、更换镜像，推荐安装CMD；
+2.如需要修改系统默认的配置，推荐安装CMD；
 
 本章节为YMIR-GUI的安装说明，如需使用CMD，请参考[Ymir-CMD line使用指南](#4-进阶版ymir-cmd-line使用指南)。
 
@@ -151,17 +151,34 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 将部署项目YMIR下拉到本地服务器，克隆仓库地址命令：
 `git clone git@github.com:IndustryEssentials/ymir.git`
 
-2. 无需修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`，建议不要使用```sudo```命令，否则可能会造成权限不足。
-
-服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
-
-   如无可用显卡，需要安装CPU模式，请修改为CPU启动模式，修改.env文件将SERVER_RUNTIME参数修改为runc：
+2. 如无可用显卡，用户需要安装CPU模式，请修改为CPU启动模式，修改.env文件将SERVER_RUNTIME参数修改为runc：
 
 `# nvidia for gpu, runc for cpu.`
 
 `SERVER_RUNTIME=runc`
 
-修改后重启服务即可。
+3. 如用户不需要使用label free标注平台，则不需要修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`
+
+*  建议不要使用```sudo```命令，否则可能会造成权限不足。
+
+*  服务启动时会询问用户是否愿意发送使用报告到YMIR开发团队，不输入默认为愿意。
+
+*  当询问用户是否需要启动label free标注平台时，填n即可。
+
+如用户需要使用label free标注平台，则需要在.env配置文件中将ip和port信息改为用户当前所部署的标注工具地址及端口号。
+
+```
+# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
+LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
+LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
+
+```
+
+*  修改完成后直接执行启动命令：`bash ymir.sh start`
+
+*  当询问用户是否需要启动label free标注平台时，填y即可。
+
+4. 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
 ## 2.3. 安装配置LabelStudio （可选）
 
@@ -170,16 +187,20 @@ label studio为YMIR外接的标注系统，选择安装可以完成数据标注�
 1. 在上一节的YMIR目录下，修改.env文件，配置label studio端口：
 
 ```
-LABEL_TOOL_PORT=set_your_label_tool_port
+LABEL_TOOL=label_studio
+# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
+LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
+LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
+
 ```
 
-2. 启动安装label studio命令如下，建议不要使用```sudo```命令，否则可能会造成权限不足。：
+2. 配置好标注工具（LABEL_TOOL）、IP（LABEL_TOOL_HOST_IP）、端口（LABEL_TOOL_HOST_PORT）后启动安装label studio命令如下：
 
-`docker-compose -f docker-compose-component.yml up -d`
+`docker-compose -f docker-compose.label_studio.yml up -d`
 
 3. 完成后查看label studio状态命令如下：
 
-`docker-compose -f docker-compose-component.yml ps`（默认端口为12007）
+`docker-compose -f docker-compose.label_studio.yml ps`（默认端口为12007）
 
 可以登录默认地址 [http://localhost:12007/](http://localhost:12007/) 显示登录界面即安装成功。
 
@@ -188,22 +209,14 @@ LABEL_TOOL_PORT=set_your_label_tool_port
 注册登录label studio后，在页面右上角个人信息图标，选择"Account & Settings"获取Token值并复制，粘贴到YMIR项目的.env配置文件对应的位置（LABEL_STUDIO_TOKEN）。实例如下：
 
 ```
-label studio env
-
-LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
-
-LABEL_TOOL_PORT=set_your_label_tool_port
-
 LABEL_TOOL_TOKEN="Token token_value"
-
-LABEL_TASK_LOOP_SECONDS=60
 ```
 
-配置好Host地址（LABEL_STUDIO_OPEN_HOST）和Token值（LABEL_STUDIO_TOKEN）后重启YMIR即可。
+配置好Token值（LABEL_STUDIO_TOKEN）后重启YMIR即可。
 
 5. 停止label studio服务命令如下：
 
-`docker-compose -f docker-compose-component.yml down`
+`docker-compose -f docker-compose.label_studio.yml down`
 
 # 3. GUI使用-典型模型生产流程
 
@@ -223,11 +236,11 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ![标签管理](docs/images/%E6%96%B0%E5%A2%9E%E6%A0%87%E7%AD%BE.jpg)
 
-其中标签的主名与别名表示同一类标签，当某些数据集的标注包含别名时，会在导入时合并变更为主名。如，标签列表中包含标签bike（别名bicycle），导入某数据集A（仅包含标签bicycle），则导入后在数据集详情显示标注为bike。
+本次我们在标签列表中添加标签helmet_head、no_helmet_head，其中标签的主名与别名表示同一类标签，当某些数据集的标注包含别名时，会在导入时合并变更为主名。如，标签列表中包含标签bike（别名bicycle），导入某数据集A（仅包含标签bicycle），则导入后在数据集详情显示标注为bike。
 
 ## 3.2. 项目管理
 
-用户根据自己的训练目标创建项目，并设置目标的mAP值、迭代轮次等目标信息。如下图所示：
+用户根据自己的训练目标(helmet_head，no_helmet_head)创建项目，并设置目标的mAP值、迭代轮次等目标信息。如下图所示：
 
 ## 3.2.1 迭代数据准备
 
@@ -277,7 +290,7 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ## 3.2.2 初始模型准备
 
-用户准备用于初始迭代的模型，可以通过本地导入和模型训练两种方式，本地导入则需要保证模型的格式符合要求：
+用户准备用于初始迭代的模型，可以通过本地导入和模型训练两种方式，本地导入需要保证模型的格式符合要求：
 
 *  仅支持YMIR系统产生的模型；
 *  上传文件应小于1024MB；
@@ -287,7 +300,7 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ![训练1](docs/images/%E8%AE%AD%E7%BB%831.jpeg)
 
-选择训练集（VOC2012_train），选择测试集（VOC2012_val），选择训练目标（person，car），选择前置预训练模型（非必填）、训练类型、算法框架、骨干网络结构、GPU个数以及配置训练参数（训练参数提供默认值，默认参数中key值不可修改，value值可修改，如需添加参数可以自行添加），点击创建任务。如下图所示，训练初始模型：
+选择训练集（train1 V1），选择测试集（val V1），选择训练目标（helmet_head，no_helmet_head），选择前置预训练模型（非必填）、训练镜像、训练类型、算法框架、骨干网络结构、GPU个数以及配置训练参数（训练参数提供默认值，默认参数中key值不可修改，value值可修改，如需添加参数可以自行添加）。如下图所示，训练初始模型：
 
 ![训练2](docs/images/%E8%AE%AD%E7%BB%832.jpeg)
 
@@ -297,49 +310,55 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ## 模型迭代（通过迭代提升模型精度）
 
-## 3.2.3. 挖掘数据准备
+开启迭代后，YMIR提供标准化的模型迭代流程，并且会在每一步操作中帮助用户默认填入上一次的操作结果，普通用户按照既定步骤操作，即可完成完整的模型迭代流程。
 
-## 3.2.4. 数据挖掘
+## 3.2.3. 挖掘数据准备
 
 由于在模型训练的初期，很难一次性找到大量的优质数据来进行训练，导致初始模型的精度不够。因此，寻找有利于模型训练的数据一直是人工智能算法开发的一大问题，在这个过程中，往往会对算法工程师的人力资源产生很大消耗。在此基础上，YMIR提供成熟的挖掘算法，支持百万级数据挖掘，在海量数据中快速寻找到对模型优化最有利的数据，降低标注成本，减少迭代时间，保障模型的持续迭代。
 
-接下来使用初始训练得到的模型，对待挖掘的数据集进行数据挖掘。点击任务管理界面的【新建挖掘任务】按钮，跳转至创建数据挖掘任务界面，如下图所示：
+【挖掘数据准备】为用户提供待挖掘的数据，这里的原数据集默认为项目设置的挖掘集。操作流程如下图示：
+
+
+操作完成后点击【下一步】，开启【数据挖掘】流程。
+
+## 3.2.4. 数据挖掘
+
+接下来使用在迭代模型准备时选择的模型，对待挖掘的数据集进行数据挖掘。点击【数据挖掘】按钮，跳转至数据挖掘界面，如下图所示：
 
 ![挖掘1](docs/images/%E6%8C%96%E6%8E%981.jpeg)
 
-输入任务名称（必填），选择数据集（VOC2012_mining），选择模型（上次训练出的初始模型），输入筛选测试TOPK=500（前500张成功挖掘的图像）和设定自定义参数（自定义参数提供默认值，默认参数中key值不可修改，value值可修改，如需添加参数可以自行添加）。
+默认原数据集为上次挖掘数据准备的结果数据集，默认模型为迭代准备中设置的初始模型，输入筛选测试TOPK=500（前500张成功挖掘的图像）和设定自定义参数（自定义参数提供默认值，默认参数中key值不可修改，value值可修改，如需添加参数可以自行添加）。
 
 ![挖掘2](docs/images/%E6%8C%96%E6%8E%982.jpeg)
 
-创建成功后，跳转到任务管理界面，可以查看到相应的任务进度和信息，任务完成后可查挖掘出的结果数据集。
+创建成功后，跳转到数据集管理界面，可以查看到相应的挖掘进度和信息，挖掘完成后可查挖掘出的结果数据集。
 
 ## 3.2.5. 数据标注
 
-如果导入的训练集或测试集没有标签，则需要进行标注。点击任务管理界面的【新建标注任务】按钮，跳转至创建数据标注任务界面，如下图所示：
+如果上一步中挖掘出来的数据没有标签，则需要进行标注。点击【数据标注】按钮，跳转至数据标注界面，如下图所示：
 
 ![标注1](docs/images/%E6%A0%87%E6%B3%A81.jpeg)
 
-输入任务名称（必填），选择数据集（必填），输入标注人员邮箱（需要提前去标注系统注册，点击最下方“注册标注平台账号”即可跳转到Label Studio标注平台注册标注账号），选择标注目标（person，car），如需自行到标注平台查看，请勾选“到标注平台查看”，填写自己的标注平台账号（同样需要提前注册），如对标注有更详细的要求，则可以上传标注说明文档供标注人员参考。点击创建任务，如下图所示：
+默认原数据集为上次挖掘得到的结果数据集，输入标注人员邮箱（需要提前去标注系统注册，点击最下方“注册标注平台账号”即可跳转到Label Studio标注平台注册标注账号），选择标注目标（helmet_head， no_helmet_head），如需自行到标注平台查看，请勾选“到标注平台查看”，填写自己的标注平台账号（同样需要提前注册），如对标注有更详细的要求，则可以上传标注说明文档供标注人员参考。点击创建，如下图所示：
 
 [](docs/images/%E6%A0%87%E6%B3%A82-1.jpeg)
 
-创建成功后，跳转到任务管理界面，可以查看到相应的任务进度和信息，任务完成后，系统自动获取标注完成的结果，生成带有新标注的数据集。
+创建成功后，跳转到数据集管理界面，可以查看到相应的标注进度和信息，标注完成后，系统自动获取完成结果，生成带有新标注的数据集。
 
 ## 3.2.6. 更新训练集
 
+标注完成后，将已标注好的数据集合并到训练集中，并将合并结果生成为一个新的训练集版本。如下图所示：
 
 
 ## 3.2.7. 合并训练
 
 ![流程-中文](docs/images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
 
-挖掘任务完成后，从待挖掘的数据集（VOC2012_mining）中得到挖掘数据集（mine-voc, 500张），通过重复步骤【3.2 数据标注】，对挖掘到的数据集（mine-voc, 500张）进行标注，得到标注数据集（mine-voc-label, 500张）。如下图所示：
-
-![合并1](docs/images/%E5%90%88%E5%B9%B61.jpeg)
-
-标注完成后，再次创建训练任务，将挖掘后标注完成的数据集（mine-voc-label, 500张）和原始数据集（VOC2012_train, 8815张）合并后再训练，如下图所示：
+合并完成后，再次进行模型训练，生成新的模型版本，如下图所示：
 
 ![合并2](docs/images/%E5%90%88%E5%B9%B62-1.jpeg)
+
+用户可对达到预期的模型进行下载。或继续进入下一轮迭代，进一步优化模型。
 
 ## 3.2.8. 模型验证
 
@@ -349,11 +368,9 @@ LABEL_TASK_LOOP_SECONDS=60
 
 ![模型验证2](docs/images/%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%812.jpeg)
 
-点击【上传图片】按钮，选择本地图片上传，显示结果如下：
+选择验证镜像，调整参数，点击【上传图片】按钮，选择本地图片上传，点击【模型验证】，显示结果如下：
 
 ![模型验证3](docs/images/%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%813.jpeg)
-
-用户可对达到预期的模型进行下载。或继续用该模型挖掘，进入下一轮数据挖掘-数据标注-模型训练，进一步优化模型。
 
 ## 3.2.9. 模型下载
 
