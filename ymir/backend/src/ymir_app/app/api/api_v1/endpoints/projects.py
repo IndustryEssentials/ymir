@@ -222,6 +222,7 @@ def delete_project(
         db,
         states=RunningStates,
         including_deleted=True,
+        project_id=project_id,
     )
     for task in unfinished_tasks:
         try:
