@@ -345,6 +345,10 @@ class ControllerClient:
         # parse project_id from task_hash
         project_id = TaskId.from_task_id(task_hash).repo_id
 
+        # hardcode map dataset_infer back to mining
+        if task_type == TaskType.dataset_infer:
+            task_type = int(TaskType.mining)
+
         req = ControllerRequest(
             type=ExtraRequestType.kill,
             user_id=user_id,
