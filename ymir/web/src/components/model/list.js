@@ -392,7 +392,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
           </Col>
           <Col><Space>
             <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
-            <a onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
+            <a hidden={true} onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
         <div className={styles.groupTable} hidden={!visibles[group.id]}>
