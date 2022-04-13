@@ -160,15 +160,10 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 
 `SERVER_RUNTIME=runc`
 
-3. 如用户不需要使用label free标注平台，则不需要修改相应配置，使用默认配置情况下可以直接执行启动命令：`bash ymir.sh start`
-
-*  建议不要使用```sudo```命令，否则可能会造成权限不足。
+3. 执行启动命令：`bash ymir.sh start`，建议不要使用```sudo```命令，否则可能会造成权限不足。
 
 *  服务启动时会询问用户是否愿意发送使用报告到YMIR开发团队，不输入默认为愿意。
-
-*  当询问用户是否需要启动label free标注平台时，填n即可。
-
-如用户需要使用label free标注平台，则需要在.env配置文件中将ip和port信息改为用户当前所部署的标注工具地址及端口号。
+*  当询问用户是否需要启动label free标注平台时，如果用户需要启动，则需要前往.env配置文件中将ip和port信息改为用户当前所部署的标注工具地址及端口号。
 
 ```
 # Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
@@ -177,9 +172,7 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 ```
 
-*  修改完成后直接执行启动命令：`bash ymir.sh start`
-
-*  当询问用户是否需要启动label free标注平台时，填y即可。
+修改完成后再执行启动命令：`bash ymir.sh start`。
 
 4. 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
