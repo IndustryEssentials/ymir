@@ -121,7 +121,7 @@ We provide an online trial version for your convenience. If you need, please fil
 
 # 2. Installation
 
-![process](docs/images/process.jpeg)
+![processing](docs/images/processing.png)
 
 How do users choose to install GUI or CMD?
 
