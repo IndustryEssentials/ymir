@@ -50,7 +50,7 @@ const ProjectSelect = ({ pid, value, projects = [], onChange = () => { }, getPro
   }
 
   return (
-    <Cascader value={value} options={options} {...resProps} loadData={loadData} onChange={onChange} changeOnSelect allowClear></Cascader>
+    <Cascader value={value} options={options} {...resProps} loadData={loadData} onChange={onChange} allowClear></Cascader>
   )
 }
 
