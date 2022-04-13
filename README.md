@@ -124,7 +124,7 @@ How do users choose to install GUI or CMD?
 
 1. The GUI verision with the supports of model training and model iteration is more suitable for ordinary users.
 
-2. If you need to modify the default configuration of the system, such as customizing labels and replacing training algorithms, it is recommended to install CMD;
+2. If you need to modify the default configuration of the system, it is recommended to install CMD;
 
 This chapter contains the installation instructions for YMIR-GUI. If you need to use CMD, please refer to the [Ymir-CMD user guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide).
 
@@ -154,23 +154,34 @@ The YMIR-GUI project package is on DockerHub and the steps to install and deploy
 git clone git@github.com:IndustryEssentials/ymir.git
   ```
 
-2. In the cloned YMIR folder, install and start the service by typing:
-
-  ```sh
-bash ymir.sh start
-  ```
-
-It is recommended not to use the ```sudo``` command, as it may result in insufficient privileges.
-
-After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
-
-If there is no available graphics card and you need to install CPU mode, please change it to CPU boot mode by modifying the .env file to change the SERVER_RUNTIME parameter to runc: 
+2. If there is no available graphics card and you need to install CPU mode, please change it to CPU boot mode by modifying the .env file to change the SERVER_RUNTIME parameter to runc: 
 
 `# nvidia for gpu, runc for cpu.`
 
 `SERVER_RUNTIME=runc`
 
-Restart YMIR after the modification.
+3. If you do not need to use the label free labeling platform, you do not need to modify the corresponding configuration, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.
+
+* It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
+
+* When the service starts, it asks the user if they want to send usage reports to the YMIR development team, the default is yes if you do not enter it.
+
+* When the user is asked if they want to start the label free labeling platform, just fill in ‘n’.
+
+If the user needs to use the label free labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
+
+```
+# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
+LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
+LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
+
+```
+
+* Execute the start command directly after the modification: `bash ymir.sh start`
+
+* When the user is asked if he wants to start the label free labeling platform, just fill in ‘y’.
+
+4. After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
 ## 2.3. Installation of label studio (optional)
 
@@ -179,10 +190,13 @@ Label Studio is an external labeling system that works with YMIR. Install it if 
 1. In the YMIR directory, modification Env file, configure label studio port：
 
 ```
-LABEL_TOOL_PORT=set_your_label_tool_port
+LABEL_TOOL=label_studio
+# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
+LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
+LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 ```
 
-2. Start the installation command:
+2. After configuring the label tool (LABEL_TOOL), IP (LABEL_TOOL_HOST_IP), and port (LABEL_TOOL_HOST_PORT) start the installation of label studio command:
 
   ```sh
 docker-compose -f docker-compose-component.yml up -d
@@ -214,7 +228,7 @@ The user can access label studio through the default URL [http://localhost:12007
   LABEL_TASK_LOOP_SECONDS=60
   ```
 
-  Restart ymir after configuring the host address (LABEL_STUDIO_OPEN_HOST) and the token (LABEL_STUDIO_TOKEN).
+  Restart ymir after configuring the token (LABEL_STUDIO_TOKEN).
 
 5. The command to stop the label studio service is:
 
@@ -242,12 +256,11 @@ When you need to import a dataset with annotation files, please make sure the an
 
 ![Label management](docs/images/Label%20management.jpg)
 
-
-The primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
+This time we add the tags 'helmet_head' 'no_helmet_head' to the list, the primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
 
 ## 3.2. Project management
 
-Users create projects according to their training goals and set the target information such as mAP value, iteration rounds, etc. of the goals. As shown in the figure below：
+Users create projects according to their training goals(helmet_head，no_helmet_head) and set the target information such as mAP value, iteration rounds, etc. of the goals. As shown in the figure below：
 
 ## 3.2.1. Iteration data preparation
 
@@ -288,80 +301,78 @@ Users can download the example **Sample.zip** for reference as follows:
 
 ![path import](docs/images/path-import.jpeg)
 
-After finishing the import of the initial dataset, click [Iterative Data Preparation] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
+After finishing the import of the initial dataset, click [Dataset Setting] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
 
 ## 3.2.2. Initial model preparation
 
-The user prepares the model for the initial iteration, either by local import or by model training, which is described in ##3.2.6.
-
-For local import, it is necessary to ensure that the model is in the required format.
+The user prepares the model for the initial iteration, either by local import or by model training. For local import, it is necessary to ensure that the model is in the required format.
 
 * Only models generated by the YMIR system are supported.
 * The uploaded file should be less than 1024 MB.
 * the detection target of the uploaded model file should be consistent with the project target.
 
-After finishing the import or training of the initial model, click [Iterative Model Preparation] to select the initial model and finish the setup.After both the iteration data and the model are prepared, the iteration is started.
-
 Model training can be done by clicking the [Training] operation button on the dataset list interface to jump to the Create Model Training interface, as shown in the following figure：
 
 ![train1](docs/images/train1.jpeg)
 
-Select the training set (VOC2012_train), select the test set (VOC2012_val), select the training target (person, car), select the pre-training model (not required), training type, algorithm framework, backbone network structure, number of GPUs and configure the training parameters (training parameters provide default values, the default parameters in the key value can not be modified, the value value can be modified, if you want to add parameters can be added), click create task. If you want to add parameters, you can add them yourself), click Create Task. As shown in the figure below, the initial model is trained.
+Select the training set (train1 V1), select the test set (val V1), select the training target (helmet_head, no_helmet_head), select the pre-training model (not required), training docker, training type, algorithm framework, backbone network structure, number of GPUs and configure the training parameters (training parameters provide default values, the default parameters in the key value can not be modified, the value value can be modified, if you want to add parameters can be added), click create task. If you want to add parameters, you can add them yourself), click Create Task. As shown in the figure below, the initial model is trained.
 
 ![train2](docs/images/train2.jpeg)
 
 After successful creation, users can view the corresponding task progress and information on the task management page. Users can view the accuracy of the trained model (mAP value) after the task is completed.
 
+After finishing the import or training of the initial model, click [Select Model] to select the initial model and finish the setup.After both the iteration data and the model are prepared, the iteration is started.
+
 - **Model iterations (Improve accuracy through iteration)**
+
+When iteration is enabled, YMIR provides a standardized model iteration process and helps users fill in the results of the previous operation by default in each step of the operation, so that ordinary users can follow the established steps to complete the complete model iteration process.
 
 ## 3.2.3. Mining data preparation
 
+YMIR provides data mining algorithms that support million-level data mining to quickly find the most favorite data for model optimization.
 
+[Mining Data Preparation] provides users with the data to be mined, and the original data set here is the mining set set set by project setting by default. The operation process is shown in the following figure.
+
+Click [Next] after the operation is completed to open the [Data Mining] process.
 
 ## 3.2.4. Data mining
 
-YMIR provides data mining algorithms that support million-level data mining to quickly find the most favorite data for model optimization.
-
-The user can use the model obtained from the initial training to perform data mining on the dataset to be mined. Click the [Mining] button on the task management interface to jump to the Create Data Mining Task interface, as shown in the following figure:
+The user can use the model obtained from the initial training to perform data mining on the dataset to be mined. Click the [Data Mining] button to jump to the data mining interface, as shown in the following figure.
 
 ![mine1](docs/images/mine1.jpeg)
 
-The user needs to enter the task name, select the data set (VOC2012_mining), and select the model (the initial model trained as illustrated in previous section). The user must also enter the filter TOPK as 500 (the first 500 successfully mined images), and set custom parameters if necessary.
+The default original dataset is the result dataset prepared from the last mining data, and the default model is the initial model set in the iterative preparation. The user must also enter the filter TOPK as 500 (the first 500 successfully mined images), and set custom parameters if necessary.
 
 ![mine2](docs/images/mine2.jpeg)
 
-After a task is created, users can view the task progress and the result of the mining task on the task management page.
+After successful creation, users can view the mining progress and the result on the dataset management page.
 
 ## 3.2.5. Data labeling
 
-If the imported training set or test set does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the Create Data Annotation Task interface as shown in the following figure.
+If the data mined in the previous step does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the data annotation interface as shown in the following figure.
 
 ![label1](docs/images/label1.jpeg)
 
-The user must enter the task name, the dataset, the email address of the annotator, and the labeling target (person, car). If you want to check the labeling platform by yourself, please click "View on labeling platform" and fill in your labeling platform account. If you have more detailed requirements for the annotation, you can upload the annotation description document for the annotator's reference. You must register with the labeling system in advance. You can click "Register Labeling Platform Account" at the bottom to jump to the Label Studio labeling platform to register their labeling account. Click on Create Task, as shown in the figure below:
+The default original dataset is the result dataset obtained from the last mining. The user must also ente rthe email address of the annotator, and the labeling target (helmet_head, no_helmet_head). If you want to check the labeling platform by yourself, please click "View on labeling platform" and fill in your labeling platform account. If you have more detailed requirements for the annotation, you can upload the annotation description document for the annotator's reference. You must register with the labeling system in advance. You can click "Register Labeling Platform Account" at the bottom to jump to the Label Studio labeling platform to register their labeling account. Click on Create Task, as shown in the figure below:
 
 ![label2](docs/images/label2.jpeg)
 
-After successful creation, users can view the corresponding task progress and other information on the task management interface. After the task is completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
+After successful creation, users can view the labeling progress and other information on the dataset management interface. After the operation completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
 
 ## 3.2.6. Update trainingset
 
-
-
-
+After the labeling is completed, the labeled data set is merged into the training set and the merged results are generated into a new version of the training set. The following figure shows.
 
 
 ## 3.2.7. Model iteration
 
 ![process-en](docs/images/process-en.jpeg)
 
-After the mining task is completed, the mined dataset (mine-voc, 500 images) is obtained from the dataset to be mined (VOC2012_mining). The mined dataset (mine-voc, 500 sheets) is labeled by repeating step [3.2 Data labeling](#32-data-labeling)to obtain the labeled dataset (mine-voc-label, 500 sheets). The following figure shows:
-
-![mine success](docs/images/merge-train2.jpeg)
-
-After the labeling task is completed, the training task should be created again. The labeled dataset (mine-voc-label, 500 sheets) is merged with the original dataset (VOC2012_train, 8815 sheets). The process of creating training is shown in the figure below:
+After the merging is completed, the model is trained again to generate a new version of the model, as shown below.
 
 ![merge train](docs/images/merge-train3.jpeg)
+
+Users can download the models that meet their expectations. Or continue to the next iteration to further optimize the model.
 
 ## 3.2.8. Model validation
 
@@ -371,11 +382,9 @@ After training the model, users can validate the model. On the [Model Management
 
 ![model val2](docs/images/model-val2.jpeg)
 
-The user can click the [Upload Image] button and select a local image to upload. The result will be displayed as follows:
+Select the validation mirror, adjust the parameters, click the [Upload Image] button, select the local image to upload, click [Model Validation], and display the results as follows.
 
 ![model val3](docs/images/model-val3.jpeg)
-
-Users can choose to download the trained model. Users can also choose to continue to use the model for mining. So as to enter the next round of data mining, data labeling, model training cycle, and further optimize the model.
 
 ## 3.2.9. Model download
 
