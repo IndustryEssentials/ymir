@@ -15,9 +15,10 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
 )
 from app.constants.state import ResultState
+from app.constants.state import RunningStates
 from app.constants.state import TaskType, TrainingType
-from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.clickhouse import YmirClickHouse
+from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -205,15 +206,29 @@ def delete_project(
     *,
     db: Session = Depends(deps.get_db),
     project_id: int = Path(...),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Delete project
-    (soft delete actually)
+    Delete project, and terminate all tasks
     """
     project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
 
     project = crud.project.soft_remove(db, id=project_id)
+
+    unfinished_tasks = crud.task.get_tasks_by_states(
+        db,
+        states=RunningStates,
+        including_deleted=True,
+        project_id=project_id,
+    )
+    for task in unfinished_tasks:
+        try:
+            controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
+        except Exception:
+            logger.info(f"Failed to terminate task: {task.hash} of project_id: {project_id}")
+            continue
+
     return {"result": project}
