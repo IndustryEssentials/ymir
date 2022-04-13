@@ -157,21 +157,16 @@ The YMIR-GUI project package is on DockerHub and the steps to install and deploy
 git clone git@github.com:IndustryEssentials/ymir.git
   ```
 
-2. If there is no available graphics card and you need to install CPU mode, please change it to CPU boot mode by modifying the .env file to change the SERVER_RUNTIME parameter to runc: 
+2. If there is no available GPU and you need to install CPU mode, please change it to CPU boot mode by modifying the .env file to change the SERVER_RUNTIME parameter to runc: 
 
 `# nvidia for gpu, runc for cpu.`
 
 `SERVER_RUNTIME=runc`
 
-3. If you do not need to use the label free labeling platform, you do not need to modify the corresponding configuration, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.
-
-* It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
+3. If you do not need to use the label free labeling platform, you do not need to modify the corresponding configuration, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
 
 * When the service starts, it asks the user if they want to send usage reports to the YMIR development team, the default is yes if you do not enter it.
-
-* When the user is asked if they want to start the label free labeling platform, just fill in ‘n’.
-
-If the user needs to use the label free labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
+* If the user needs to use the label free labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
 
 ```
 # Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
@@ -180,9 +175,7 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 ```
 
-* Execute the start command directly after the modification: `bash ymir.sh start`
-
-* When the user is asked if he wants to start the label free labeling platform, just fill in ‘y’.
+Execute the start command directly after the modification: `bash ymir.sh start`.
 
 4. After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
