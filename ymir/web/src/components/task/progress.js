@@ -45,7 +45,7 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
         <Item label={t("task.detail.state.current")}>
           <Row>
             <Col>
-              {task.is_terminated ? t('task.state.terminating') : <>
+              {task.is_terminated && state === states.READY ? t('task.state.terminating') : <>
                 <StateTag state={state} />
                 {state === states.VALID
                   ? t("task.column.duration") + ": " + duration
@@ -54,7 +54,7 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
             </Col>
             <Col hidden={!terminateVisible()} flex={1}>
               <Progress
-                width={'90%'}
+                style={{ width: '90%'}}
                 strokeColor={"#FAD337"}
                 percent={toFixed(progress * 100, 2)}
               />

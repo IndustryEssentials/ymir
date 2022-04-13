@@ -244,7 +244,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
                     placeholder={t('task.train.form.training.datasets.placeholder')}
                     filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={trainSetChange}
-                    disabled={did}
                     showArrow
                   >
                     {datasets.filter(ds => ds.id !== testSet).map(item =>

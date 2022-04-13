@@ -33,7 +33,8 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
 
         if self._request.terminated_task_type in [
                 backend_pb2.TaskType.TaskTypeTraining,
-                 backend_pb2.TaskType.TaskTypeMining,
+                backend_pb2.TaskType.TaskTypeMining,
+                backend_pb2.TaskType.TaskTypeDatasetInfer,
         ]:
             container_command = ['docker', 'rm', '-f', self._request.executant_name]
             container_response = utils.run_command(container_command)

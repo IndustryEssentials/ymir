@@ -42,7 +42,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
         className={s.datasetDetail}
       >
         <Detail dataset={dataset} />
-        <TaskProgress state={dataset.state} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset()} />
+        <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
         <TaskDetail
           task={dataset.task}
           ignore={dataset.ignoredKeywords}

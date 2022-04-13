@@ -12,16 +12,19 @@ import { states } from '@/constants/model'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 import { getTimes, getModelImportTypes } from '@/constants/query'
-import RenderProgress from "@/components/common/progress"
-import EditBox from "@/components/form/editBox"
-import { ShieldIcon, VectorIcon, TipsIcon, TreeIcon, EditIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon } from "@/components/common/icons"
+
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
+import RenderProgress from "@/components/common/progress"
+import Terminate from "@/components/task/terminate"
 import Del from "./del"
 import DelGroup from "./delGroup"
-import { ArrowDownIcon, ArrowRightIcon, ImportIcon } from "../common/icons"
+import EditBox from "@/components/form/editBox"
 
-const { confirm } = Modal
+import { ShieldIcon, VectorIcon, EditIcon,
+   DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, 
+   ArrowDownIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
+
 const { useForm } = Form
 
 function Model({ pid, project = {}, modelList, versions, query, ...func }) {
@@ -37,6 +40,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   let [lock, setLock] = useState(true)
   const delRef = useRef(null)
   const delGroupRef = useRef(null)
+  const terminateRef = useRef(null)
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -247,11 +251,12 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, versionName } = record
+    const { id, name, url, state, versionName, isProtected } = record
     const actions = [
       {
         key: "verify",
         label: t("model.action.verify"),
+        hidden: () => !isValidModel(state),
         onclick: () => history.push(`/home/project/${pid}/model/${id}/verify`),
         icon: <ShieldIcon />,
       },
@@ -260,36 +265,47 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
         label: t("model.action.download"),
         link: url,
         target: '_blank',
+        hidden: () => !isValidModel(state),
         icon: <FileDownloadIcon />,
       },
       {
         key: "mining",
         label: t("dataset.action.mining"),
+        hidden: () => !isValidModel(state),
         onclick: () => history.push(`/home/task/mining/${pid}?mid=${id}`),
         icon: <VectorIcon />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
+        hidden: () => !isValidModel(state),
         onclick: () => history.push(`/home/task/train/${pid}?mid=${id}`),
         icon: <TrainIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
+        hidden: () => !isValidModel(state),
         onclick: () => history.push(`/home/task/inference/${pid}?mid=${id}`),
         icon: <WajueIcon />,
       },
-
+      {
+        key: "stop",
+        label: t("task.action.terminate"),
+        onclick: () => stop(record),
+        hidden: () => !isRunning(state),
+        icon: <StopIcon />,
+      },
     ]
-    const delAction = {
-      key: "del",
-      label: t("dataset.action.del"),
-      onclick: () => del(id, `${name} ${versionName}`),
-      className: styles.action_del,
-      icon: <DeleteIcon />,
-    }
-    return isValidModel(state) ? [...actions, delAction] : [delAction]
+    // const delAction = {
+    //   key: "del",
+    //   label: t("dataset.action.del"),
+    //   onclick: () => del(id, `${name} ${versionName}`),
+    //   className: styles.action_del,
+    //   disabled: isProtected,
+    //   icon: <DeleteIcon />,
+    // }
+    return actions
   }
 
   const edit = (record) => {
@@ -312,6 +328,13 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
     getData()
   }
 
+  const stop = (dataset) => {
+    terminateRef.current.confirm(dataset)
+  }
+
+  function terminateOk({ }, { groupId }) {
+    groupId && func.getVersions(groupId, true)
+  }
 
   const saveName = async (record, name) => {
     const result = await func.updateModel(record.id, name)
@@ -342,6 +365,10 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
 
   function isValidModel(state) {
     return states.VALID === state
+  }
+
+  function isRunning(state) {
+    return states.READY === state
   }
 
   function add() {
@@ -415,6 +442,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
       <EditBox record={current} max={80} action={saveName}></EditBox>
       <DelGroup ref={delGroupRef} ok={delGroupOk} />
       <Del ref={delRef} ok={delOk} />
+      <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
 }

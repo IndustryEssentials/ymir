@@ -64,7 +64,7 @@ function Label({ datasets, keywords, ...func }) {
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
-    dataset: did || undefined,
+    datasetId: did || undefined,
     keepAnnotations: true,
     labelType: getCheckedValue(LabelTypes()),
   }
@@ -86,7 +86,7 @@ function Label({ datasets, keywords, ...func }) {
           >
             <Tip hidden={true}>
               <Form.Item label={t('task.fusion.form.dataset')} name='datasetId'>
-                <DatasetSelect pid={pid} disabled={did} />
+                <DatasetSelect pid={pid} />
                 </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.labelmember')}>
