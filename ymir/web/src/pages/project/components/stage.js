@@ -1,0 +1,167 @@
+import { Button, Col, Popover, Row, Space } from "antd"
+import { useHistory, connect } from "umi"
+
+import t from '@/utils/t'
+import { states, statesLabel } from '@/constants/dataset'
+import s from './iteration.less'
+import { useEffect, useState } from "react"
+import RenderProgress from "../../../components/common/progress"
+
+function Stage({ pid, stage, stageResult, current = 0, end = false, callback = () => { }, ...func }) {
+  // console.log('stage: ', stage, end)
+  const history = useHistory()
+  const [result, setResult] = useState({})
+  const [state, setState] = useState(-1)
+
+  useEffect(() => {
+    const st = typeof result.state !== 'undefined' ? result.state : stage.state
+    setState(st)
+  }, [result, stage])
+
+  useEffect(() => {
+    currentStage() && stage.result && fetchStageResult(true)
+  }, [stage.result])
+
+  useEffect(() => {
+    if (stageResult.id !== stage.result) {
+      return
+    }
+    if (stageResult.needReload) {
+      fetchStageResult(true)
+    } else {
+      setResult(stageResult)
+    }
+  }, [stageResult])
+
+  function skip() {
+    callback({
+      type: 'skip',
+      data: { stage: stage.next },
+    })
+  }
+
+  function next() {
+    if (isValid()) {
+      callback({
+        type: 'update',
+        data: { stage: stage.next },
+      })
+    } else {
+      act()
+    }
+  }
+
+  function ending() {
+    if (end) {
+      callback({
+        type: 'create',
+        data: {
+          round: stage.round + 1,
+        },
+      })
+    } else {
+      act()
+    }
+  }
+
+  const currentStage = () => stage.value === stage.current
+  const finishStage = () => stage.value < stage.current
+  const pendingStage = () => stage.value > stage.current
+
+  const isPending = () => state < 0
+  const isReady = () => state === states.READY
+  const isValid = () => state === states.VALID
+  const isInvalid = () => state === states.INVALID
+
+  function act() {
+    stage.url && history.push(stage.url)
+  }
+
+  async function fetchStageResult(force) {
+    await func.getStageResult(stage.result, stage.current, force)
+  }
+
+  const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
+
+  const renderCount = () => {
+    if (finishStage() || (currentStage() && isValid())) {
+      return '√' // finish state
+    } else {
+      return stage.value + 1
+    }
+  }
+  const renderMain = () => {
+    return currentStage() ? renderMainBtn() : <span>{t(stage.act)}</span>
+  }
+
+  const renderMainBtn = () => {
+    // show by task state and result
+    const content = RenderProgress(result.state, result, true)
+    const disabled = isReady() || isInvalid()
+    const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
+    const btn = <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
+    const pop = <Popover content={content}>{btn}</Popover>
+    return result.id ? pop : btn
+  }
+
+  const renderReactBtn = () => {
+    return stage.react && currentStage()
+      && (isInvalid() || isValid())
+      ? <Button className={s.react} onClick={() => act()}>{t(stage.react)}</Button>
+      : null
+  }
+  const renderState = () => {
+    const pending = 'project.stage.state.pending'
+    return !finishStage() ? (isPending() ? t(pending) : (isValid() ?  (result.name ?`${result.name} ${result.versionName}` : t('common.done')) : t(statesLabel(state)))) : null
+  }
+
+  const renderSkip = () => {
+    return !stage.unskippable && !end && currentStage() ? <span className={s.skip} onClick={() => skip()}>{t('common.skip')}</span> : null
+  }
+  return (
+    <div className={stateClass}>
+      <Row className={s.row} align='middle' wrap={false}>
+        <Col flex={"30px"}><span className={s.num}>{renderCount()}</span></Col>
+        <Col>
+          <Space>
+            {renderMain()}
+            {renderReactBtn()}
+          </Space>
+        </Col>
+        {!end ? <Col className={s.lineContainer} hidden={end} flex={1}><span className={s.line}></span></Col> : null}
+      </Row>
+      <Row className={s.row}>
+        <Col flex={"30px"}>&nbsp;</Col>
+        <Col className={s.state} flex={1}>
+          {renderState()} {renderSkip()}
+        </Col>
+      </Row>
+    </div>
+  )
+}
+
+const props = (state) => {
+  return {
+    userId: state.user.id,
+    stageResult: state.iteration.currentStageResult,
+  }
+}
+
+const actions = (dispacth) => {
+  return {
+    getStageResult(id, stage, force) {
+      return dispacth({
+        type: 'iteration/getStageResult',
+        payload: { id, stage, force },
+      })
+    },
+    createIteration(params) {
+      return dispacth({
+        type: 'iteration/createIteration',
+        payload: params,
+      })
+    }
+  }
+}
+
+export default connect(props, actions)(Stage)

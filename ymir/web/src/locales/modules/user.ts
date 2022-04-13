@@ -61,6 +61,7 @@ const user = {
   "user.state.declined": { cn: "未通过", en: "Denied", },
   "user.state.deactived": { cn: "已注销", en: "Closed", },
   "user.signup.success": { cn: "注册成功，正在等待管理员审核", en: "Registry success, please waiting for approving.", },
+  "user.signup.success.active": { cn: "注册成功，请登录", en: "Registry success, please login.", },
 }
 
 export default user

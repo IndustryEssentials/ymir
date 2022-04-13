@@ -1,5 +1,4 @@
 import argparse
-import datetime
 import logging
 import json
 import os
@@ -41,18 +40,11 @@ class CmdImport(base.BaseCommand):
         if anno_abs and not os.path.isdir(anno_abs):
             logging.error(f"annotations dir invalid: {anno_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if not dst_rev:
-            logging.error("empty --dst-rev")
-            return MirCode.RC_CMD_INVALID_ARGS
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+
         if not dataset_name:
             dataset_name = dst_typ_rev_tid.tid
-        if not src_revs:
-            logging.error('empty --src-revs')
-            return MirCode.RC_CMD_INVALID_ARGS
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='import',
                                                monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
@@ -103,27 +95,22 @@ class CmdImport(base.BaseCommand):
                 raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
 
         # create and write tasks
-        mir_tasks = mirpb.MirTasks()
-        task = mirpb.Task()
-        task.type = mirpb.TaskTypeImportData
-        task.name = f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}"
-        task.task_id = dst_typ_rev_tid.tid
-        task.timestamp = int(datetime.datetime.now().timestamp())
-        for type_name, count in unknown_types.items():
-            task.unknown_types[type_name] = count
-        mir_storage_ops.add_mir_task(mir_tasks, task)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeImportData,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}",
+                                           unknown_types=unknown_types,
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotation,
-            mirpb.MirStorage.MIR_TASKS: mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       mir_datas=mir_data,
-                                                      commit_message=dst_typ_rev_tid.tid)
+                                                      task=task)
 
         # cleanup
         os.remove(sha1_index_abs)
@@ -168,8 +155,7 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
     return MirCode.RC_OK
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     importing_arg_parser = subparsers.add_parser("import",
                                                  parents=[parent_parser],
                                                  description="use this command to import data from img/anno folder",

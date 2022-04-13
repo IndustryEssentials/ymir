@@ -1,4 +1,5 @@
 const errors = {
+  'error.timeout': { cn: '请求超时', en: 'Request Timeout', },
   'error110101': { cn: '接口错误', en: 'API_ERROR: API Error', },
   'error110102': { cn: '参数校验失败', en: 'Parammeters Validation Failed', },
   'error110103': { cn: '未知错误', en: 'UNKNOWN_ERROR: Unkown Error', },
@@ -23,6 +24,7 @@ const errors = {
   'error110402': { cn: '重复的数据集名称', en: 'Duplicated dataset name', },
   'error110403': { cn: '数据集未授权访问', en: 'Dataset inaccessable', },
   'error110404': { cn: '数据集创建失败', en: 'DATASET_FAILED_TO_CREATE: failed to create dataset', },
+  'error110405': { cn: '数据集被系统保护不可删除', en: 'DATASET_FAILED_TO_DELETE: failed to delete dataset', },
   'error110501': { cn: '找不到该数据', en: 'Asset is not found', },
   'error110601': { cn: '找不到该模型', en: 'Model is not found', },
   'error110602': { cn: '重复的模型名称', en: 'Duplicated model name', },
@@ -47,6 +49,9 @@ const errors = {
   'error111106': { cn: '分享镜像配置获取失败', en: 'SHARED_IMAGE_CONFIG_ERROR', },
   'error111201': { cn: '无法获取GPU个数信息', en: 'Can not get server\'s GPU count', },
   'error111301': { cn: 'ClickHouse连接失败，无法获取统计数据', en: 'ClickHouse connect error, then get statstics data failed', },
+  'error111401': { cn: '找不到项目', en: 'Project Not Found', },
+  'error111402': { cn: '项目名称重复', en: 'Duplicated project name', },
+  'error111502': { cn: '数据集名称重复', en: 'Duplicated dataset name', },
   'error140400': { cn: 'viz 一般错误', en: 'viz: general_error', },
   'error140401': { cn: 'viz 分支不存在', en: 'viz: branch_not_exists', },
   'error140500': { cn: 'viz 内部错误', en: 'viz: internal_error', },

@@ -1,246 +1,90 @@
 import React, { useEffect, useState } from "react"
-import { useParams, useHistory } from "umi"
 import { connect } from "dva"
-import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag, Modal } from "antd"
+import { useHistory, useParams, Link } from "umi"
+import { Button, Card, Space } from "antd"
 
-import styles from "./detail.less"
 import t from "@/utils/t"
+import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
 import Breadcrumbs from "@/components/common/breadcrumb"
-import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "@/components/common/icons"
-import Asset from "./components/asset"
-import { randomBetween } from '@/utils/number'
-import { percent } from "../../utils/number"
+import TaskDetail from "@/components/task/detail"
+import Detail from "@/components/dataset/detail"
+import s from "./detail.less"
+import TaskProgress from "@/components/task/progress"
 
-const { Option } = Select
+const taskTypes = ["fusion", "train", "mining", "label"]
 
-function rand(n, m, exclude) {
-  const result = Math.min(m, n) + Math.floor(Math.random() * Math.abs(m - n))
-
-  if (result === exclude) {
-    return rand(n, m, exclude)
-  }
-  if (result < 0) {
-    return 0
-  }
-  return result
-}
-
-const Dataset = ({ getDataset, getAssetsOfDataset }) => {
-  const { id } = useParams()
-  const initQuery = {
-    id,
-    keyword: null,
-    offset: 0,
-    limit: 20,
-  }
+function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
-  const [filterParams, setFilterParams] = useState(initQuery)
-  const [dataset, setDataset] = useState({ id })
-  const [assets, setAssets] = useState([])
-  const [total, setTotal] = useState(0)
-  const [keywords, setKeywords] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [assetVisible, setAssetVisible] = useState(false)
-  const [currentAsset, setCurrentAsset] = useState({
-    hash: null,
-    index: 0,
-  })
+  const { id: pid, did: id } = useParams()
+  const [dataset, setDataset] = useState({})
 
-  useEffect(async () => {
-    const data = await getDataset(id)
-    if (data) {
-      setDataset(data)
-    }
+  useEffect(() => {
+    fetchDataset()
   }, [id])
 
   useEffect(() => {
-    setCurrentPage((filterParams.offset / filterParams.limit) + 1)
-    filter(filterParams)
-  }, [filterParams])
-
-  const filterKw = (kw) => {
-    const keyword = kw ? kw : undefined
-    setFilterParams((params) => ({
-      ...params,
-      keyword,
-      offset: initQuery.offset,
-    }))
-  }
-  const filterPage = (page, pageSize) => {
-    setCurrentPage(page)
-    const limit = pageSize
-    const offset = limit * (page - 1)
-    setFilterParams((params) => ({ ...params, offset, limit }))
-  }
-  const filter = async (param) => {
-    setAssets([])
-    const { items, keywords, total } = await getAssetsOfDataset(param)
-    setTotal(total)
-    setAssets(items)
-    setKeywords(Object.keys(keywords).map((key) => ({ key, count: keywords[key] })))
-  }
-  const goAsset = (hash, index) => {
-    setCurrentAsset({ hash, index: filterParams.offset + index})
-    setAssetVisible(true)
-  }
-
-  const randomPage = () => {
-    const { limit, offset } = filterParams
-    setCurrentPage(offset / limit + 1)
-    const page = randomBetween(Math.ceil(total / limit), 1, currentPage)
-    filterPage(page, limit)
-  }
-
-  const getRate = (count) => {
-    return percent(count / dataset.asset_count)
-  }
-
-  const randomPageButton = (
-    <Button type="primary" onClick={randomPage}>
-      {t("dataset.detail.randompage.label")}
-    </Button>
-  )
-
-  const renderList = (list, row = 5) => {
-    let r = 0, result = []
-    while (r < list.length) {
-      result.push(list.slice(r, r + row))
-      r += row
+    if (datasetCache[id]?.needReload) {
+      fetchDataset(true)
+    } else {
+      datasetCache[id] && setDataset(datasetCache[id])
     }
+  }, [datasetCache])
 
-    return result.map((rows, index) => (
-      <Row gutter={10} wrap={false} key={index} className={styles.dataset_container}>
-        {rows.map((asset, rowIndex) => (
-          <Col flex={100 / row + '%'} key={asset.hash} className={styles.dataset_item}>
-            <div
-              className={styles.dataset_img}
-              onClick={() => goAsset(asset.hash, index * row + rowIndex)}
-            >
-              <img
-                src={asset.url}
-                style={{ width: "auto", maxWidth: "100%", maxHeight: "100%" }}
-              />
-              <span
-                className={styles.item_keywords_count}
-                title={asset.keywords.join(",")}
-              >
-                {t("dataset.detail.assets.keywords.total", {
-                  total: asset.keywords.length,
-                })}
-              </span>
-              <span className={styles.item_keywords}>
-                {asset.keywords.slice(0, 4).map(key => <Tag className={styles.item_keyword} key={key} title={key}>{key}</Tag>)}
-                {asset.keywords.length > 4 ? <Tag className={styles.item_keyword} style={{ width: '10px' }}>...</Tag> : null}
-              </span>
-            </div>
-          </Col>
-        ))}
-      </Row>
-    ))
+  async function fetchDataset(force) {
+    await getDataset(id, force)
   }
-
-  const renderTitle = <Row className={styles.labels}>
-    <Col flex={1}>
-      <Space>
-        <strong>{dataset.name}</strong>
-        <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.asset_count })}</span>
-      </Space>
-    </Col>
-    <Col>
-      <span>{t("dataset.detail.keyword.label")}</span>
-      <Select
-        showSearch
-        defaultValue={0}
-        style={{ width: 160 }}
-        onChange={filterKw}
-        filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-      >
-        <Option value={0} key="all">
-          {t("common.all")}
-        </Option>
-        {keywords.map((kw) => (
-          <Option value={kw.key} key={kw.key} title={`${kw.key} (${kw.count})`}>
-            {kw.key} ({kw.count}, {getRate(kw.count)})
-          </Option>
-        ))}
-      </Select>
-    </Col>
-  </Row>
-
-  const assetDetail = <Modal className={styles.assetDetail} 
-    title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
-    width={null} footer={null}>
-    <Asset id={id} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
-  </Modal>
 
   return (
-    <div className={styles.datasetDetail}>
+    <div>
       <Breadcrumbs />
-      {assetDetail}
-      <div className={styles.actions}>
-        <Space>
-          <Button
-            hidden={!dataset.keyword_count}
-            icon={<ScreenIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/filter/${id}`)}
-          >{t('dataset.detail.action.filter')} </Button>
-          <Button
-            icon={<TrainIcon className={styles.addBtnIcon} />}
-            type='primary'
-            onClick={() => history.push(`/home/task/train/${id}`)}
-          >{t('dataset.detail.action.train')}</Button>
-          <Button icon={<VectorIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/mining/${id}`)}>{t('dataset.detail.action.mining')}</Button>
-          <Button icon={<TaggingIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/label/${id}`)}>{t('dataset.detail.action.label')}</Button>
-        </Space>
-      </div>
-      <Card className={styles.list} title={renderTitle}>
-
-        {renderList(assets)}
-        <Space className={styles.pagi}>
-          <Pagination
-            key={'pager'}
-            className={styles.pager}
-            showQuickJumper
-            showSizeChanger
-            defaultCurrent={1}
-            current={currentPage}
-            defaultPageSize={20}
-            total={total}
-            showTotal={(total, range) =>
-              t("dataset.detail.pager.total", { total })
-            }
-            onChange={filterPage}
-          />
-          {randomPageButton}
+      <Card
+        title={t("dataset.detail.title") + ">" + t(getTaskTypeLabel(dataset.taskType))}
+        className={s.datasetDetail}
+      >
+        <Detail dataset={dataset} />
+        <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
+        <TaskDetail
+          task={dataset.task}
+          ignore={dataset.ignoredKeywords}
+        ></TaskDetail>
+        <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+          {dataset.taskType === TASKTYPES.LABEL ? (
+            <div style={{ textAlign: "right" }}>
+              <Link target="_blank" to="/label_tool/">
+                {t("task.detail.label.go.platform")}
+              </Link>
+            </div>
+          ) : null}
+          {taskTypes.map((type) => (
+            <Button
+              key={type}
+              type="primary"
+              onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
+            >
+              {t(`task.type.${type}`)}
+            </Button>
+          ))}
         </Space>
       </Card>
     </div>
   )
 }
 
-const mapStateToProps = (state) => {
+const props = (state) => {
   return {
-    logined: state.user.logined,
+    datasetCache: state.dataset.dataset,
   }
 }
 
-const mapDispatchToProps = (dispatch) => {
+const actions = (dispatch) => {
   return {
-    getDataset(payload) {
+    getDataset: (id, force) => {
       return dispatch({
         type: "dataset/getDataset",
-        payload,
-      })
-    },
-    getAssetsOfDataset(payload) {
-      return dispatch({
-        type: "dataset/getAssetsOfDataset",
-        payload,
+        payload: { id, force },
       })
     },
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Dataset)
+export default connect(props, actions)(DatasetDetail)

@@ -18,10 +18,10 @@ describe("utils: date", () => {
     expect(getUnixTimeStamp(time)).toBe(expected)
   })
   it("function: calTimeLeft. calculate left time to 100%", () => {
-    const time = moment().subtract({ months: 6 })
+    const time = moment().subtract({ months: 2 })
     const locale = 'zh-CN'
-    const expected = '6 个月'
-    expect(calTimeLeft(51, time, locale)).toBe(expected)
+    const expected = '4 个月'
+    expect(calTimeLeft(33, time, locale)).toBe(expected)
     expect(calTimeLeft(0, time, locale)).toBe('...')
     expect(calTimeLeft(undefined, time, locale)).toBe('...')
   })

@@ -1,6 +1,16 @@
 import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
 import { errorCode } from './func'
+import { format } from '@/utils/date'
+import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
+
+jest.mock('umi', () => {
+  return {
+    getLocale() {
+      return 'en-US'
+    }
+  }
+})
 
 put.resolve = putResolve
 
@@ -9,8 +19,50 @@ function equalObject(obj1, obj2) {
 }
 
 describe("models: dataset", () => {
-  errorCode(dataset, 'getDatasets')
-  errorCode(dataset, 'getDataset')
+
+  const createTime = "2022-03-10T03:39:09"
+  const task = {
+    "name": "t00000020000013277a01646883549",
+    "type": 105,
+    "project_id": 1,
+    "is_deleted": false,
+    "create_datetime": createTime,
+    "update_datetime": createTime,
+    "id": 1,
+    "hash": "t00000020000013277a01646883549",
+    "state": 3,
+    "error_code": null,
+    "duration": null,
+    "percent": 1,
+    "parameters": {},
+    "config": {},
+    "user_id": 2,
+    "last_message_datetime": "2022-03-10T03:39:09.033206",
+    "is_terminated": false,
+    "result_type": null
+  }
+
+  const ds = id => ({
+    "name": "p0001_training_dataset",
+    "result_state": 1,
+    "dataset_group_id": 1,
+    state: 1,
+    "keywords": {},
+    "ignored_keywords": {},
+    "asset_count": null,
+    "keyword_count": null,
+    "is_deleted": false,
+    "create_datetime": createTime,
+    "update_datetime": createTime,
+    "id": id,
+    "hash": "t00000020000012afef21646883528",
+    "version_num": 0,
+    "task_id": 1,
+    "user_id": 2,
+    "related_task": task,
+  })
+  errorCode(dataset, 'getDatasetGroups')
+  errorCode(dataset, 'getDataset', { id: 120034, force: true })
   errorCode(dataset, 'batchDatasets')
   errorCode(dataset, 'getAssetsOfDataset')
   errorCode(dataset, 'getAsset')
@@ -18,7 +70,7 @@ describe("models: dataset", () => {
   errorCode(dataset, 'createDataset')
   errorCode(dataset, 'updateDataset')
   errorCode(dataset, 'getInternalDataset')
-  errorCode(dataset, 'getHotDatasets', [])
+  errorCode(dataset, 'getHotDatasets', 10034, [])
 
   it("reducers: UPDATE_DATASETS", () => {
     const state = {
@@ -35,12 +87,13 @@ describe("models: dataset", () => {
     const state = {
       dataset: {},
     }
-    const expected = { id: 1001 }
+    const id = 10001
+    const expected = { id }
     const action = {
-      payload: expected,
+      payload: { id, dataset: expected },
     }
     const result = dataset.reducers.UPDATE_DATASET(state, action)
-    expect(result.dataset.id).toBe(expected.id)
+    expect(result.dataset[expected.id].id).toBe(expected.id)
   })
   it("reducers: UPDATE_ASSETS", () => {
     const state = {
@@ -76,60 +129,73 @@ describe("models: dataset", () => {
     expect(result.publicDatasets.join(',')).toBe(expected.join(','))
   })
 
-  it("effects: getDatasets", () => {
-    const saga = dataset.effects.getDatasets
+  it("effects: getDatasetGroups", () => {
+    const saga = dataset.effects.getDatasetGroups
     const creator = {
-      type: "getDatasets",
+      type: "getDatasetGroups",
       payload: {},
     }
-    const expected = { items: [1, 2, , 3, 4], total: 4 }
+    const datetime = '2022-02-14T10:03:49'
+    const origin = [1, 2, 3, 4].map(item => {
+      return {
+        id: item,
+        project_id: 1000 + item,
+        name: 'name' + item,
+        create_datetime: datetime,
+      }
+    })
+    const recieved = origin.map(item => transferDatasetGroup(item))
+    const expected = { items: recieved, total: recieved.length }
 
     const generator = saga(creator, { put, call })
     generator.next()
     const response = generator.next({
       code: 0,
-      result: expected,
+      result: { items: origin, total: origin.length },
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getDataset", () => {
     const saga = dataset.effects.getDataset
     const creator = {
       type: "getDataset",
-      payload: {},
+      payload: { gid: 10002 },
     }
-    const expected = { id: 1001, name: 'dataset001' }
+    const recieved = ds(1)
+    const expected = transferDataset(recieved)
 
-    const generator = saga(creator, { put, call })
+    const generator = saga(creator, { put, call, select })
     generator.next()
-    generator.next({
+    generator.next()
+    const calls = generator.next({
       code: 0,
-      result: expected,
+      result: recieved,
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: batchDatasets", () => {
     const saga = dataset.effects.batchDatasets
     const creator = {
       type: "batchDatasets",
-      payload: { ids: '1,2,3,4' },
+      payload: { ids: '1,2' },
     }
-    const expected = [1, 2, 3, 4]
+    const recieved = [1, 3, 4].map(id => ds(id))
+    const expected = recieved.map(item => transferDataset(item))
 
     const generator = saga(creator, { put, call })
     generator.next()
     const end = generator.next({
       code: 0,
-      result: expected,
+      result: recieved,
     })
 
-    equalObject(expected, end.value)
+    expect(expected).toEqual(end.value)
     expect(end.done).toBe(true)
   })
   it("effects: getAssetsOfDataset", () => {
@@ -193,12 +259,13 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: createDataset", () => {
@@ -239,40 +306,39 @@ describe("models: dataset", () => {
   })
   it("effects: updateDatasets -> normal success", () => {
     const saga = dataset.effects.updateDatasets
-    const datasets = {
-      items: [
-        { id: 34, hash: 'hash1', state: 2, progress: 20 },
-        { id: 35, hash: 'hash2', state: 3, progress: 100 },
-        { id: 36, hash: 'hash3', state: 2, progress: 96 },
-      ], total: 3
+    const ds = (id, state, result_state, progress) => ({ id, task: { hash: `hash${id}`, state, percent: progress, }, taskState: state, state: result_state, progress })
+
+    const versions = {
+      '34': [ds(1, 2, 0, 0.20), ds(2, 3, 1, 1), ds(3, 3, 1, 1)],
+      '35': [ds(4, 3, 1, 1), ds(5, 3, 1, 1), ds(6, 3, 1, 1)],
+      '36': [ds(7, 2, 0, 0.96), ds(8, 3, 1, 1)],
     }
     const creator = {
       type: "updateDatasets",
-      payload: { hash1: { id: 34, state: 2, percent: 0.45 }, hash3: { id: 36, state: 3, percent: 1 } },
+      payload: { hash1: { id: 1, state: 2, result_state: 0, percent: 0.45 }, hash7: { id: 7, state: 3, result_state: 1, percent: 1 } },
     }
-    const expected = [
-      { id: 34, hash: 'hash1', state: 2, progress: 45 },
-      { id: 35, hash: 'hash2', state: 3, progress: 100 },
-      { id: 36, hash: 'hash3', state: 3, progress: 100, forceUpdate: true },
-    ]
+    const expected = {
+      '34': [ds(1, 2, 0, 0.45), ds(2, 3, 1, 1), ds(3, 3, 1, 1)],
+      '35': [ds(4, 3, 1, 1), ds(5, 3, 1, 1), ds(6, 3, 1, 1)],
+      '36': [{ ...ds(7, 3, 1, 1), needReload: true }, ds(8, 3, 1, 1)],
+    }
 
     const generator = saga(creator, { put, call, select })
     generator.next()
-    const d = generator.next(datasets)
+    const d = generator.next(versions)
     const end = generator.next()
-    const updated = d.value.payload.action.payload.items
+    const updated = d.value.payload.action.payload
 
-    expect(updated).toEqual(expected)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: updateDatasets -> empty success", () => {
     const saga = dataset.effects.updateDatasets
-    const datasets = {
-      items: [
-        { id: 34, hash: 'hash1', state: 2, progress: 20 },
-        { id: 35, hash: 'hash2', state: 3, progress: 100 },
-        { id: 36, hash: 'hash3', state: 2, progress: 96 },
-      ], total: 3
+    const ds = (id, state, result_state, progress) => ({ id, task: { hash: `hash${id}` }, result_state, state, progress })
+    const versions = {
+      '34': [ds(1, 2, 0.20), ds(2, 3, 1), ds(3, 3, 1)],
+      '35': [ds(4, 3, 1), ds(5, 3, 1), ds(6, 3, 1)],
+      '36': [ds(7, 2, 0.96), ds(8, 3, 1)],
     }
     const creator = {
       type: "updateDatasets",
@@ -280,11 +346,11 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call, select })
     generator.next()
-    const d = generator.next(datasets)
+    const d = generator.next(versions)
     const end = generator.next()
     const updated = d.value.payload.action.payload
 
-    expect(updated).toEqual(datasets)
+    expect(updated).toEqual(versions)
     expect(end.done).toBe(true)
   })
   it("effects: getHotDatasets -> get stats result success-> batch datasets success", () => {
@@ -354,17 +420,18 @@ describe("models: dataset", () => {
       type: "getInternalDataset",
       payload: {},
     }
-    const expected = { items: [1, 2, , 3, 4], total: 4 }
+    const recieved = [1, 3, 4, 5, 6].map(id => ds(id))
+    const expected = { items: recieved.map(item => transferDataset(item)), total: recieved.length }
 
     const generator = saga(creator, { put, call })
     generator.next()
     generator.next({
       code: 0,
-      result: expected,
+      result: { items: recieved, total: recieved.length },
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
 })

@@ -34,19 +34,9 @@ function Sets({ title, count = 2, getPublicDataset }) {
     <>
       <Row style={{ flexWrap: 'nowrap' }}>
         <Col flex={1} title={set.name} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{set.name}</Col>
-        <Col>
-          <span
-            title={t('portal.dataset.origin.copy.title')}
-            onClick={(ev) => history.push(`/home/dataset/add/${set.id}`)}
-            style={{ cursor: 'pointer' }}
-            className={styles.copeIcon}
-          >
-            <CopyIcon />
-          </span>
-        </Col>
       </Row>
       <Descriptions className={styles.setInfo} column={2}>
-        <Descriptions.Item label={t('portal.dataset.asset.count')}>{humanize(set.asset_count)}</Descriptions.Item>
+        <Descriptions.Item label={t('portal.dataset.asset.count')}>{humanize(set.assetCount)}</Descriptions.Item>
         <Descriptions.Item label={t('portal.dataset.keyword.count')}>
           {set?.keywords.length}
         </Descriptions.Item>
@@ -91,8 +81,7 @@ const actions = (dispatch) => {
   return {
     getPublicDataset(ids) {
       return dispatch({
-        type: "dataset/getDataset",
-        payload: 'public',
+        type: "dataset/getInternalDataset",
       })
     },
   }

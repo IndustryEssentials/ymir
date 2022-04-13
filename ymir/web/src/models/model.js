@@ -1,13 +1,19 @@
-import { 
-  getModels, 
+import {
+  getModels,
+  getModelVersions,
   batchModels,
+  queryModels,
   getModel,
   delModel,
-  createModel,
+  delModelGroup,
+  importModel,
   updateModel,
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
+import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
+import { updateResultState } from '@/constants/common'
+import { deepClone } from '@/utils/object'
 
 const initQuery = {
   name: "",
@@ -16,65 +22,122 @@ const initQuery = {
   limit: 20,
 }
 
+const initState = {
+  query: initQuery,
+  models: {
+    items: [],
+    total: 0,
+  },
+  versions: {},
+  model: {},
+  allModels: [],
+}
+
 export default {
   namespace: "model",
-  state: {
-    query: initQuery,
-    models: {
-      items: [],
-      total: 0,
-    },
-    model: {},
-  },
+  state: deepClone(initState),
   effects: {
-    *getModels({ payload }, { call, put }) {
-      const { code, result } = yield call(getModels, payload)
+    *getModelGroups({ payload }, { call, put }) {
+      const { pid, query } = payload
+      const { code, result } = yield call(getModels, pid, query)
       if (code === 0) {
+        const groups = result.items.map(item => transferModelGroup(item))
+        const models = { items: groups, total: result.total }
         yield put({
           type: "UPDATE_MODELS",
-          payload: result,
+          payload: models,
         })
-        return result
+        return models
+      }
+    },
+    *getModelVersions({ payload }, { select, call, put }) {
+      const { gid, force } = payload
+      if (!force) {
+        const versions = yield select(({ model }) => model.versions)
+        if (versions[gid]) {
+          return versions[gid]
+        }
+      }
+      const { code, result } = yield call(getModelVersions, gid)
+      if (code === 0) {
+        const ms = result.items.map(model => transferModel(model))
+        const vs = { id: gid, versions: ms }
+        yield put({
+          type: "UPDATE_VERSIONS",
+          payload: vs,
+        })
+        return ms
+      }
+    },
+    *queryModels({ payload }, { select, call, put }) {
+      const { code, result } = yield call(queryModels, payload)
+      if (code === 0) {
+        return { items: result.items.map(ds => transferModel(ds)), total: result.total }
+      }
+    },
+    *queryAllModels({ payload }, { select, call, put }) {
+      const pid = payload
+      const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
+      if (dss) {
+        yield put({
+          type: "UPDATE_ALL_MODELS",
+          payload: dss.items,
+        })
+        return dss.items
       }
     },
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
-        return result
+        const models = result.map(model => transferModel(model))
+        return models
       }
     },
-    *getModel({ payload }, { call, put }) {
-      const { code, result } = yield call(getModel, payload)
+    *getModel({ payload }, { call, put, select }) {
+      const { id, force } = payload
+      if (!force) {
+        const modelCache = yield select(state => state.model.model[id])
+        if (modelCache) {
+          return modelCache
+        }
+      }
+      const { code, result } = yield call(getModel, id)
       if (code === 0) {
-        const pa = result.parameters || {}
-        const trainSets = pa?.include_train_datasets || []
-        const testSets = pa?.include_validation_datasets || []
-        const ids = [
-          ...trainSets,
-          ...testSets,
-        ]
-        if (ids.length) {
-          const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: ids })
-          if (datasets && datasets.length) {
-            result['trainSets'] = trainSets.map(sid => datasets.find(ds => ds.id === sid))
-            result['testSets'] = testSets.map(sid => datasets.find(ds => ds.id === sid))
+        let model = transferModel(result)
+        if (model.projectId) {
+          const presult = yield put.resolve({
+            type: 'project/getProject',
+            payload: { id: model.projectId },
+          })
+          if (presult) {
+            model.project = presult
           }
         }
         yield put({
           type: "UPDATE_MODEL",
-          payload: result,
+          payload: { id, model },
         })
-        return result
+        return model
       }
     },
     *delModel({ payload }, { call, put }) {
       const { code, result } = yield call(delModel, payload)
       if (code === 0) {
+        yield put({
+          type: 'UPDATE_MODEL',
+          payload: { id: payload, model: {} },
+        })
         return result
       }
     },
-    *createModel({ payload }, { call, put }) {
-      const { code, result } = yield call(createModel, payload)
+    *delModelGroup({ payload }, { call, put }) {
+      const { code, result } = yield call(delModelGroup, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *importModel({ payload }, { call, put }) {
+      const { code, result } = yield call(importModel, payload)
       if (code === 0) {
         return result
       }
@@ -87,11 +150,37 @@ export default {
       }
     },
     *verify({ payload }, { call }) {
-      const { id, urls, image } = payload
-      const { code, result } = yield call(verify, id, urls, image)
+      const { id, urls, image, config } = payload
+      const { code, result } = yield call(verify, id, urls, image, config)
       if (code === 0) {
         return result
       }
+    },
+    *updateModelsStates({ payload }, { put, select }) {
+      const versions = yield select(state => state.model.versions)
+      const tasks = payload || {}
+      Object.keys(versions).forEach(gid => {
+        const models = versions[gid]
+        const updatedModels = models.map(model => {
+          const updatedModel = updateResultState(model, tasks)
+          return { ...updatedModel }
+        })
+        versions[gid] = updatedModels
+      })
+      yield put({
+        type: 'UPDATE_ALL_VERSIONS',
+        payload: { ...versions },
+      })
+    },
+    *updateModelState({ payload }, { put, select }) {
+      const dataset = yield select(state => state.model.model)
+      const tasks = payload || {}
+      const updatedModel = updateResultState(dataset, tasks)
+
+      yield put({
+        type: 'UPDATE_DATASET',
+        payload: { ...updatedModel },
+      })
     },
     *getModelsByRef({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'hms' })
@@ -152,11 +241,14 @@ export default {
         }
       })
     },
-    *resetQuery({}, { put }) {
+    *resetQuery({ }, { put }) {
       yield put({
         type: 'UPDATE_QUERY',
         payload: initQuery,
       })
+    },
+    *clearCache({ }, { put }) {
+      yield put({ type: 'CLEAR_ALL', })
     },
   },
   reducers: {
@@ -166,10 +258,33 @@ export default {
         models: payload
       }
     },
-    UPDATE_MODEL(state, { payload }) {
+    UPDATE_VERSIONS(state, { payload }) {
+      const { id, versions } = payload
+      const vs = state.versions
+      vs[id] = versions
       return {
         ...state,
-        model: payload
+        versions: { ...vs },
+      }
+    },
+    UPDATE_ALL_VERSIONS(state, { payload }) {
+      return {
+        ...state,
+        versions: { ...payload },
+      }
+    },
+    UPDATE_ALL_MODELS(state, { payload }) {
+      return {
+        ...state,
+        allModels: payload
+      }
+    },
+    UPDATE_MODEL(state, { payload }) {
+      const { id, model } = payload
+      const models = { ...state.model, [id]: model }
+      return {
+        ...state,
+        model: models,
       }
     },
     UPDATE_QUERY(state, { payload }) {
@@ -177,6 +292,9 @@ export default {
         ...state,
         query: payload,
       }
+    },
+    CLEAR_ALL() {
+      return deepClone(initState)
     },
   },
 }
