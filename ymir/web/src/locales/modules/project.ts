@@ -89,6 +89,8 @@ const project = {
   'project.tag.mining': { en: 'Mining Dataset {version}', cn: '挖掘集 {version}', },
   'project.tag.model': { en: 'Initial Model {version}', cn: '初始模型 {version}', },
   'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
+  'project.del.confirm.content': { en: 'Remove all datasets and models in this project, confirm?', 
+    cn: '删除项目会将项目中的所有资源（数据集、模型）删除，请谨慎操作！', },
 }
 
 export default project
