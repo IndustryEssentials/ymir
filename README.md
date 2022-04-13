@@ -341,7 +341,7 @@ Click [Next] after the operation is completed to open the [Data Mining] process.
 The user can use the model obtained from the initial training to perform data mining on the dataset to be mined. Click the [Data Mining] button to jump to the data mining interface, as shown in the following figure.
 
 ![mine1](docs/images/mining1.jpg)
-![mine2](docs/images/mining2.jpeg)
+![mine2](docs/images/mining2.jpg)
 
 The default original dataset is the result dataset prepared from the last mining data, and the default model is the initial model set in the iterative preparation. The user must also enter the filter TOPK as 500 (the first 500 successfully mined images), and set custom parameters if necessary.
 
