@@ -121,7 +121,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 # 2. 安装
 
-![YMIR总流程图](docs/images/YMIR%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B.jpeg)
+![YMIR总流程图](docs/images/processing.png)
 
 **用户如何选择安装GUI or CMD：**
 
@@ -218,7 +218,7 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 本次使用一次模型迭代的完整流程来说明YMIR平台的操作过程。
 
-[](docs/images/%E6%B5%81%E7%A8%8B%E4%B8%AD%E6%96%871.jpeg)
+![YMIR-GUI process](docs/images/YMIR-GUI-process.jpeg)
 
 数据和标签是深度学习模型训练的必要条件，模型的训练需要大量带标签的数据。然而在实际情况下，现实中存在的是大量没有标签的数据，如果全部由标注人员手工打上标签，人力和时间成本过高。
 
@@ -283,6 +283,8 @@ LABEL_TOOL_TOKEN="Token token_value"
 ![voc训练集测试集](docs/images/voc%E8%AE%AD%E7%BB%83%E9%9B%86%E6%B5%8B%E8%AF%95%E9%9B%86.jpeg)
 
 完成初始数据集的导入后，点击【迭代数据准备】，完成对应的数据集和挖掘策略设置。其中训练集已设置为创建项目时默认的系统训练集，不可变更。
+
+
 
 ## 3.2.2 初始模型准备
 
