@@ -268,7 +268,7 @@ The user prepares the mining set to be used for data mining (which may not need 
 
 The platform supports four kinds of dataset importing: public dataset replication, network importing, local importing, and path importing.
 
-![import guide](docs/images/import-guide.jpeg)
+![import guide](docs/images/import1.jpg)
 
 (1) public dataset replication: the user can copy the built-in dataset of the super administrator to the current operating user. The user can filter and import the label categories they need, as shown in the figure below:
 ![public dataset](docs/images/public-dataset.jpeg)
@@ -299,6 +299,8 @@ Users can download the example **Sample.zip** for reference as follows:
 
 After finishing the import of the initial dataset, click [Dataset Setting] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
 
+![Iteration data prepare](docs/images/iteration%20data%20prepare.jpg)
+
 ## 3.2.2. Initial model preparation
 
 The user prepares the model for the initial iteration, either by local import or by model training. For local import, it is necessary to ensure that the model is in the required format.
@@ -309,11 +311,11 @@ The user prepares the model for the initial iteration, either by local import or
 
 Model training can be done by clicking the [Training] operation button on the dataset list interface to jump to the Create Model Training interface, as shown in the following figure：
 
-![train1](docs/images/train1.jpeg)
+![training1](docs/images/training1.jpg)
 
 Select the training set (train1 V1), select the test set (val V1), select the training target (helmet_head, no_helmet_head), select the pre-training model (not required), training docker, training type, algorithm framework, backbone network structure, number of GPUs and configure the training parameters (training parameters provide default values, the default parameters in the key value can not be modified, the value value can be modified, if you want to add parameters can be added), click create task. If you want to add parameters, you can add them yourself), click Create Task. As shown in the figure below, the initial model is trained.
 
-![train2](docs/images/train2.jpeg)
+![training2](docs/images/training2.jpg)
 
 After successful creation, users can view the corresponding task progress and information on the task management page. Users can view the accuracy of the trained model (mAP value) after the task is completed.
 
@@ -329,17 +331,19 @@ YMIR provides data mining algorithms that support million-level data mining to q
 
 [Mining Data Preparation] provides users with the data to be mined, and the original data set here is the mining set set set by project setting by default. The operation process is shown in the following figure.
 
+![mining data preparation 1](docs/images/miningdata%20preparation.jpg)
+![mining data preparation 2](docs/images/miningdata%20preparation2.jpg)
+
 Click [Next] after the operation is completed to open the [Data Mining] process.
 
 ## 3.2.4. Data mining
 
 The user can use the model obtained from the initial training to perform data mining on the dataset to be mined. Click the [Data Mining] button to jump to the data mining interface, as shown in the following figure.
 
-![mine1](docs/images/mine1.jpeg)
+![mine1](docs/images/mining1.jpg)
+![mine2](docs/images/mining2.jpeg)
 
 The default original dataset is the result dataset prepared from the last mining data, and the default model is the initial model set in the iterative preparation. The user must also enter the filter TOPK as 500 (the first 500 successfully mined images), and set custom parameters if necessary.
-
-![mine2](docs/images/mine2.jpeg)
 
 After successful creation, users can view the mining progress and the result on the dataset management page.
 
@@ -347,11 +351,11 @@ After successful creation, users can view the mining progress and the result on 
 
 If the data mined in the previous step does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the data annotation interface as shown in the following figure.
 
-![label1](docs/images/label1.jpeg)
+![label1](docs/images/labeling1.jpg)
 
 The default original dataset is the result dataset obtained from the last mining. The user must also ente rthe email address of the annotator, and the labeling target (helmet_head, no_helmet_head). If you want to check the labeling platform by yourself, please click "View on labeling platform" and fill in your labeling platform account. If you have more detailed requirements for the annotation, you can upload the annotation description document for the annotator's reference. You must register with the labeling system in advance. You can click "Register Labeling Platform Account" at the bottom to jump to the Label Studio labeling platform to register their labeling account. Click on Create Task, as shown in the figure below:
 
-![label2](docs/images/label2.jpeg)
+![label2](docs/images/labeling2.jpg)
 
 After successful creation, users can view the labeling progress and other information on the dataset management interface. After the operation completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
 
@@ -359,6 +363,8 @@ After successful creation, users can view the labeling progress and other inform
 
 After the labeling is completed, the labeled data set is merged into the training set and the merged results are generated into a new version of the training set. The following figure shows.
 
+![update1](docs/images/update1.jpg)
+![update2](docs/images/update2.jpg)
 
 ## 3.2.7. Model iteration
 
@@ -366,7 +372,8 @@ After the labeling is completed, the labeled data set is merged into the trainin
 
 After the merging is completed, the model is trained again to generate a new version of the model, as shown below.
 
-![merge train](docs/images/merge-train3.jpeg)
+![model iteration1](docs/images/model%20iteration1.jpg)
+![model iteration2](docs/images/model%20iteration2.jpg)
 
 Users can download the models that meet their expectations. Or continue to the next iteration to further optimize the model.
 
