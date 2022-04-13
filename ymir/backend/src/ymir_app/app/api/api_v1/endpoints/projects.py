@@ -223,7 +223,6 @@ def delete_project(
         states=RunningStates,
         including_deleted=True,
     )
-
     for task in unfinished_tasks:
         try:
             controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
