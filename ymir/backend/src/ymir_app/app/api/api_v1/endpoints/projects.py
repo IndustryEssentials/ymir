@@ -221,7 +221,7 @@ def delete_project(
     unfinished_tasks = crud.task.get_tasks_by_states(
         db,
         states=RunningStates,
-        including_deleted=True,
+        filter_deleted=True,
         project_id=project_id,
     )
     for task in unfinished_tasks:

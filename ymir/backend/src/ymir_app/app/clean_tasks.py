@@ -18,7 +18,7 @@ def list_unfinished_tasks(db: Session) -> List[Task]:
     tasks = crud.task.get_tasks_by_states(
         db,
         states=RunningStates,
-        including_deleted=True,
+        filter_deleted=True,
     )
     return tasks
 
