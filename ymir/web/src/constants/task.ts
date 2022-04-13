@@ -1,37 +1,63 @@
-import t from '@/utils/t'
+import { states } from './dataset'
 
-export const TASKTYPES = Object.freeze({
-  TRAINING: 1,
-  MINING: 2,
-  LABEL: 3,
-  FILTER: 4,
-  IMPORT: 5,
-  SHARE: 6,
-  PUBLIC: 7,
-})
-
-export const TASKSTATES = Object.freeze({
-  UNKOWN: 0,
-  PENDING: 1,
-  DOING: 2,
-  FINISH: 3,
-  FAILURE: 4,
-  TERMINATED: 100,
-})
-
-export const isFinalState = (state: number) => {
-  return [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].indexOf(state) >= 0
+export enum TASKTYPES {
+  TRAINING = 1,
+  MINING = 2,
+  LABEL = 3,
+  IMPORT = 5,
+  COPY = 7,
+  INFERENCE = 15,
+  FUSION = 11,
+  MODELIMPORT = 13,
+  MODELCOPY = 14,
+  SYS = 105,
 }
 
-export const getTaskTypeLabel = (type: number) => {
+export enum TASKSTATES {
+  PENDING = 1,
+  DOING = 2,
+  FINISH = 3,
+  FAILURE = 4,
+  TERMINATED = 100,
+}
 
-  const labels = {
-    [TASKTYPES.TRAINING]: t('task.type.train'),
-    [TASKTYPES.MINING]: t('task.type.mine'),
-    [TASKTYPES.LABEL]: t('task.type.label'),
-    [TASKTYPES.FILTER]: t('task.type.filter'),
-    [TASKTYPES.IMPORT]: t('task.type.import'),
+export const isFinalState = (state: TASKSTATES) => {
+  return [TASKSTATES.FINISH, TASKSTATES.FAILURE, TASKSTATES.TERMINATED].includes(state)
+}
+
+export const getTaskTypeLabel = (type: TASKTYPES) => {
+  const maps = {
+    [TASKTYPES.TRAINING]: 'task.type.train',
+    [TASKTYPES.MINING]: 'task.type.mining',
+    [TASKTYPES.LABEL]: 'task.type.label',
+    [TASKTYPES.FUSION]: 'task.type.fusion',
+    [TASKTYPES.COPY]: 'task.type.copy',
+    [TASKTYPES.INFERENCE]: 'task.type.inference',
+    [TASKTYPES.IMPORT]: 'task.type.import',
+    [TASKTYPES.MODELIMPORT]: 'task.type.modelimport',
+    [TASKTYPES.MODELCOPY]: 'task.type.modelcopy',
+    [TASKTYPES.SYS]: 'task.type.sys',
   }
+  return maps[type] ? maps[type] : type
+}
+export const getTaskStateLabel = (state: TASKSTATES) => {
+  return {
+    [TASKSTATES.PENDING]: 'task.state.pending',
+    [TASKSTATES.DOING]: 'task.state.doing',
+    [TASKSTATES.FINISH]: 'task.state.finish',
+    [TASKSTATES.FAILURE]: 'task.state.failure',
+    [TASKSTATES.TERMINATED]: 'task.state.terminated',
+  }[state]
+}
 
-  return labels[type]
+export const getResultStateFromTask = (taskState: TASKSTATES) => {
+  const maps = {
+    [TASKSTATES.DOING]: states.READY,
+    [TASKSTATES.PENDING]: states.READY,
+    [TASKSTATES.FINISH]: states.VALID,
+    [TASKSTATES.FAILURE]: states.INVALID,
+    [TASKSTATES.TERMINATED]: states.VALID,
+  }
+  console.log('maps[taskState]:', maps, taskState)
+  return maps[taskState]
 }

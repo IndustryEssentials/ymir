@@ -9,7 +9,7 @@ from typing import Any, Tuple, Optional
 import yaml
 
 from mir.commands import base
-from mir.tools import utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -21,16 +21,16 @@ class CmdInfer(base.BaseCommand):
     Steps:
         a. prepare_env: make dirs
         b. prepare_assets: copy assets in orig index.tsv into work_dir/in/candidate, and make candidate index.tsv
-        c. prepare_model: copy model to work_dir/in/model and unpack
+        c. prepare_model: copy model to work_dir/in/models and unpack
         d. prepare_config_file: generate work_dir/in/config.yaml
         e. run_docker_cmd: bind paths and run docker cmd
 
-    About path mappings:
-        a. work_dir/in/candidate -> /in/candidate
-        b. work_dir/in/model -> /in/model
-        c: work_dir/out -> out
-        d: work_dir/in/candidate/index.tsv -> /in/candidate/index.tsv
-        e: work_dir/in/config.yaml -> /in/config.yaml
+    About path bindings:
+        a. work_dir/in/assets or cache -> /in/assets
+        b. work_dir/in/models -> /in/models
+        c. work_dir/in/candidate-index.tsv -> /in/candidate-index.tsv
+        d. work_dir/in/config.yaml -> /in/config.yaml
+        e. work_dir/out -> out
     """
     def run(self) -> int:
         logging.debug("command infer: %s", self.args)
@@ -42,7 +42,7 @@ class CmdInfer(base.BaseCommand):
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
-                                      executor_instance=self.args.executor_instance,
+                                      executant_name=self.args.executant_name,
                                       run_infer=True,
                                       run_mining=False)
 
@@ -54,7 +54,7 @@ class CmdInfer(base.BaseCommand):
                       index_file: str,
                       config_file: str,
                       executor: str,
-                      executor_instance: str,
+                      executant_name: str,
                       task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
                       run_infer: bool = False,
@@ -72,7 +72,7 @@ class CmdInfer(base.BaseCommand):
             index_file (str): index file, each line means an image abs path
             config_file (str): configuration file passed to infer executor
             executor (str): docker image name used to infer
-            executor_instance (str): docker container name
+            executant_name (str): docker container name
             task_id (str, optional): id of this infer (or mining) task. Defaults to 'default-infer' + timestamp.
             shm_size (str, optional): shared memory size used to start the infer docker. Defaults to None.
             run_infer (bool, optional): run or not run infer. Defaults to False.
@@ -96,10 +96,10 @@ class CmdInfer(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not config_file:
-            logging.error("empty --config-file")
+            logging.error("empty --task-config-file")
             return MirCode.RC_CMD_INVALID_ARGS
         if not os.path.isfile(config_file):
-            logging.error(f"invalid --config-file {config_file}, not a file, abort")
+            logging.error(f"invalid --task-config-file {config_file}, not a file, abort")
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not run_infer and not run_mining:
@@ -110,28 +110,36 @@ class CmdInfer(base.BaseCommand):
             logging.error('empty --executor, abort')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        if not executor_instance:
-            executor_instance = task_id
+        if not executant_name:
+            executant_name = task_id
 
         _, work_model_path, work_out_path = _prepare_env(work_dir)
-        work_index_file = os.path.join(work_dir, 'in', 'candidate', 'index.tsv')
+        work_index_file = os.path.join(work_dir, 'in', 'candidate-index.tsv')
         work_config_file = os.path.join(work_dir, 'in', 'config.yaml')
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_storage = mir_utils.prepare_model(model_location, model_hash, work_model_path)
+        model_storage = mir_utils.prepare_model(model_location=model_location,
+                                                model_hash=model_hash,
+                                                dst_model_path=work_model_path)
         model_names = model_storage.models
         class_names = model_storage.class_names
         if not class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                                   error_message=f"empty class names in model: {model_hash}")
-        config = prepare_config_file(config_file=config_file,
-                                     dst_config_file=work_config_file,
-                                     class_names=class_names,
-                                     task_id=task_id,
-                                     model_params_path=[os.path.join('/in/model', name) for name in model_names],
-                                     run_infer=run_infer,
-                                     run_mining=run_mining)
+
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+
+        prepare_config_file(config=config,
+                            dst_config_file=work_config_file,
+                            class_names=class_names,
+                            task_id=task_id,
+                            model_params_path=[os.path.join('/in/models', name) for name in model_names],
+                            run_infer=run_infer,
+                            run_mining=run_mining)
+
+        available_gpu_id: str = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
 
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
@@ -139,10 +147,10 @@ class CmdInfer(base.BaseCommand):
                        config_file_path=work_config_file,
                        out_path=work_out_path,
                        executor=executor,
-                       executor_instance=executor_instance,
+                       executant_name=executant_name,
                        shm_size=shm_size,
                        task_type=task_id,
-                       gpu_id=config.get('gpu_id', ''))
+                       gpu_id=available_gpu_id)
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
@@ -156,8 +164,8 @@ def _prepare_env(work_dir: str) -> Tuple[str, str, str]:
     make the following dir structures:
     * work_dir
             * in
-                    * candidate
-                    * model
+                    * assets
+                    * models
             * out
 
     if work_dir already exists, do nothing
@@ -166,8 +174,8 @@ def _prepare_env(work_dir: str) -> Tuple[str, str, str]:
         work_dir (str): work dir root
     """
     os.makedirs(os.path.join(work_dir, 'in'), exist_ok=True)
-    work_assets_path = os.path.join(work_dir, 'in', 'candidate')
-    work_model_path = os.path.join(work_dir, 'in', 'model')
+    work_assets_path = os.path.join(work_dir, 'in', 'assets')
+    work_model_path = os.path.join(work_dir, 'in', 'models')
     work_out_path = os.path.join(work_dir, 'out')
     os.makedirs(work_assets_path, exist_ok=True)
     os.makedirs(work_model_path, exist_ok=True)
@@ -215,7 +223,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
             media_keys_set.add(media_key)
 
             # write in-container index file
-            f.write(f"/in/candidate/{media_key}\n")
+            f.write(f"/in/assets/{media_key}\n")
 
     if not media_keys_set:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -255,32 +263,26 @@ def _get_max_boxes(config_file: str) -> int:
 
 # might used both by mining and infer
 # public: general
-def prepare_config_file(config_file: str, dst_config_file: str, **kwargs: Any) -> dict:
-    with open(config_file, 'r') as f:
-        infer_config = yaml.safe_load(f)
+def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> None:
+    executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
 
     for k, v in kwargs.items():
-        infer_config[k] = v
+        executor_config[k] = v
 
-    container_config = infer_config.copy()
-    container_config['gpu_id'] = mir_utils.map_gpus_zero_index(infer_config.get('gpu_id', ''))
-    logging.info(f"container config: {container_config}")
+    logging.info(f"container config: {executor_config}")
 
     with open(dst_config_file, 'w') as f:
-        yaml.dump(container_config, f)
-
-    return infer_config
+        yaml.dump(executor_config, f)
 
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
-                   executor: str, executor_instance: str, shm_size: Optional[str], task_type: str,
-                   gpu_id: str) -> int:
+                   executor: str, executant_name: str, shm_size: Optional[str], task_type: str, gpu_id: str) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
-    cmd.append(f"-v{asset_path}:/in/candidate")
-    cmd.append(f"-v{model_path}:/in/model")
-    cmd.append(f"-v{index_file_path}:/in/candidate/index.tsv")
+    cmd.append(f"-v{asset_path}:/in/assets:ro")
+    cmd.append(f"-v{model_path}:/in/models:ro")
+    cmd.append(f"-v{index_file_path}:/in/candidate-index.tsv")
     cmd.append(f"-v{config_file_path}:/in/config.yaml")
     cmd.append(f"-v{out_path}:/out")
     # permissions and shared memory
@@ -289,7 +291,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
         cmd.extend(['--gpus', f"\"device={gpu_id}\""])
     if shm_size:
         cmd.append(f"--shm-size={shm_size}")
-    cmd.extend(['--name', executor_instance])
+    cmd.extend(['--name', executant_name])
     cmd.append(executor)
 
     out_log_path = os.path.join(out_path, 'ymir-executor-out.log')
@@ -302,8 +304,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
 
 
 # public: cli bind
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     infer_arg_parser = subparsers.add_parser('infer',
                                              description='use this command to inference images',
                                              help='inference images')
@@ -323,7 +324,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   type=str,
                                   required=True,
                                   help='model hash to be used')
-    infer_arg_parser.add_argument('--config-file',
+    infer_arg_parser.add_argument('--task-config-file',
                                   dest='config_file',
                                   type=str,
                                   required=True,
@@ -333,9 +334,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                   dest='executor',
                                   type=str,
                                   help="docker image name for infer or mining")
-    infer_arg_parser.add_argument('--executor-instance',
+    infer_arg_parser.add_argument('--executant-name',
                                   required=False,
-                                  dest='executor_instance',
+                                  dest='executant_name',
                                   type=str,
                                   help='docker container name for infer or mining')
     infer_arg_parser.set_defaults(func=CmdInfer)

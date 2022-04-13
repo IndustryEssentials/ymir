@@ -49,7 +49,7 @@ function ModelHot({ getLatestModels, getHotModels }) {
       <Row gutter={10}>
         {models.length ? (<>
           {models.map(model => <Col key={model.id} span={6}>
-            <Card className={styles.boxItem} hoverable title={model.name} onClick={() => { history.push(`/home/model/detail/${model.id}`) }}>
+            <Card className={styles.boxItem} hoverable title={model.name} onClick={() => { history.push(`/home/project/${model.projectId}/model/${model.id}`) }}>
               <Descriptions column={1} colon={false} labelStyle={{ justifyContent: 'flex-end', width: '68px' }}>
                 <Descriptions.Item className={styles.mapValue} label={'mAP'}><span title={model.map}>{percent(model.map)}</span></Descriptions.Item>
                 { model.count ? <Descriptions.Item label={t('portal.cited')}>{model.count}</Descriptions.Item> : null }

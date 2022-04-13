@@ -72,6 +72,7 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => { } }, ref) => {
         rules={[
           { required: true }
         ]}
+        help={t('keyword.multiadd.kws.placeholder')}
       >
         <Input.TextArea allowClear placeholder={t('keyword.multiadd.kws.placeholder')} autoSize={{ minRows: 6, maxRows: 10 }}>
         </Input.TextArea>

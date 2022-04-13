@@ -10,7 +10,6 @@ import { randomNumber } from '@/utils/number'
 import s from './add.less'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import { TipsIcon } from '@/components/common/icons'
-import options from '@antv/graphin/lib/layout/utils/options'
 import { getKeywords } from '../../services/keyword'
 import Tip from "@/components/form/tip"
 
@@ -26,9 +25,11 @@ const TYPES = Object.freeze({
 })
 
 
-const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
+const Add = (props) => {
   const history = useHistory()
-  const { id } = useParams()
+  const pageParams = useParams()
+  const pid = Number(pageParams.pid)
+  const { id } = history.location.query
   const types = [
     { id: TYPES.INTERNAL, label: t('dataset.add.types.internal') },
     // { id: TYPES.SHARE, label: t('dataset.add.types.share') },
@@ -62,7 +63,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     // form.resetFields()
     // initState()
     if (!publicDataset.length) {
-      const result = await getInternalDataset()
+      const result = await props.getInternalDataset()
       if (result) {
         setPublicDataset(result.items)
       }
@@ -109,7 +110,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     const kws = form.getFieldValue('new_keywords')
     if (kws && kws.length && kStrategy === 1 && isType(TYPES.INTERNAL)) {
       const addKwParams = kws.filter(k => k.type === 0).map(k => ({ name: k.name }))
-      const kResult = await updateKeywords({ keywords: addKwParams })
+      const kResult = await props.updateKeywords({ keywords: addKwParams })
       if (!kResult) {
         return message.error(t('keyword.add.failure'))
       }
@@ -117,14 +118,20 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
     var params = {
       ...values,
       strategy,
+      projectId: pid,
     }
-    if (currentType === TYPES.LOCAL && fileToken) {
-      params.input_url = fileToken
+    if (currentType === TYPES.LOCAL) {
+      if (fileToken) {
+        params.url = fileToken
+      } else {
+        return message.error(t('dataset.add.local.file.empty'))
+      }
     }
-    const result = await createDataset(params)
+    const result = await props.createDataset(params)
     if (result) {
       message.success(t('dataset.add.success.msg'))
-      history.push('/home/dataset')
+      props.clearCache()
+      history.push(`/home/project/detail/${pid}`)
     }
   }
 
@@ -144,7 +151,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
   async function renderKeywords() {
     const kws = getSelectedDatasetKeywords()
     // const kws = ['cat', 'catty', 'dog', 'tree', 'people']
-    const result = await updateKeywords({ keywords: kws.map(k => ({ name: k })), dry_run: true })
+    const result = await props.updateKeywords({ keywords: kws.map(k => ({ name: k })), dry_run: true })
     if (result) {
       const repeated = result.failed || []
       const unique = kws.filter(k => repeated.indexOf(k) < 0).map(k => ({ name: k, type: 0 }))
@@ -237,7 +244,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               <Tip content={t('tip.task.filter.datasets')}>
                 <Form.Item
                   label={t('dataset.add.form.internal.label')}
-                  name='input_dataset_id'
+                  name='datasetId'
                   initialValue={selectedDataset}
                   rules={isType(TYPES.INTERNAL) ? [
                     { required: true, message: t('dataset.add.form.internal.required') }
@@ -245,7 +252,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                 >
                   <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
                     {filterDataset().map(dataset => (
-                      <Option value={dataset.id} key={dataset.id}>{dataset.name} (Total: {dataset.asset_count})</Option>
+                      <Option value={dataset.id} key={dataset.id}>{dataset.name} (Total: {dataset.assetCount})</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -307,21 +314,6 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                                   <Select.Option value={2}>{t('dataset.add.newkw.ignore')}</Select.Option>
                                 </Select>
                               </Form.Item>
-                              {/* <Form.Item
-                                {...field}
-                                dependencies={['new_keywords', field.name, 'type']}
-                                name={[field.name, 'key']}
-                                fieldKey={[field.fieldKey, 'key']}
-                                style={{ marginLeft: 10, width: 120, display: 'inline-block' }}
-                              >
-                                <Select
-                                  showSearch
-                                  onSearch={searchKeywords}
-                                  notFoundContent
-                                >
-                                  {currentKeywords.map(k => <Select.Option key={k.name} value={k.name}>{k.name}</Select.Option>)}
-                                </Select>
-                              </Form.Item> */}
                             </Col>
                           </Row>
                           </Col>
@@ -333,26 +325,11 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
                   : t('dataset.add.newkeyword.empty')}
               </Form.Item>
               </Tip>
-
-
-            {isType(TYPES.SHARE) ? (
-              <Tip hidden={true}>
-              <Form.Item
-                label={t('dataset.add.form.share.label')}
-                name='input_dataset_id'
-                rules={[
-                  { required: true, message: t('dataset.add.form.share.required') }
-                ]}
-              >
-                <Input placeholder={t('dataset.add.form.share.placeholder')} allowClear />
-              </Form.Item>
-              </Tip>
-            ) : null}
             {isType(TYPES.NET) ? (
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.net.label')} required>
                 <Form.Item
-                  name='input_url'
+                  name='url'
                   noStyle
                   rules={[
                     { required: true, message: t('dataset.add.form.net.tip') },
@@ -370,7 +347,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.path.label')} required>
                 <Form.Item
-                  name='input_path'
+                  name='path'
                   noStyle
                   rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
                 >
@@ -382,7 +359,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
             ) : null}
             {isType(TYPES.LOCAL) ? (
               <Tip hidden={true}>
-              <Form.Item label={t('dataset.add.form.upload.btn')}>
+              <Form.Item label={t('dataset.add.form.upload.btn')} required>
                 <Uploader
                   onChange={(files, result) => { setFileToken(result) }}
                   max={1024}
@@ -397,7 +374,7 @@ const Add = ({ getInternalDataset, createDataset, updateKeywords }) => {
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
-                    {t('task.filter.create')}
+                    {t('task.create')}
                   </Button>
                 </Form.Item>
                 <Form.Item name='backBtn' noStyle>
@@ -429,6 +406,9 @@ const actions = (dispatch) => {
         type: 'dataset/createDataset',
         payload,
       })
+    },
+    clearCache() {
+      return dispatch({ type: "dataset/clearCache", })
     },
     updateKeywords: (payload) => {
       return dispatch({

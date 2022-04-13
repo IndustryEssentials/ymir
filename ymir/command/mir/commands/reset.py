@@ -20,12 +20,6 @@ class CmdReset(base.BaseCommand):
         if output_str:
             logging.info("\n%s" % output_str)
 
-        if reset_hard:
-            repo_dvc = scm.Scm(mir_root, scm_executable="dvc")
-            output_str = repo_dvc.checkout()
-            if output_str:
-                logging.info("\n%s" % output_str)
-
         return MirCode.RC_OK
 
     def run(self) -> int:

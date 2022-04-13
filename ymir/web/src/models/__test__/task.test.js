@@ -11,7 +11,7 @@ describe("models: task", () => {
   errorCode(task, 'getTask')
   errorCode(task, 'deleteTask')
   errorCode(task, 'updateTask')
-  errorCode(task, 'createFilterTask')
+  errorCode(task, 'createFusionTask')
   errorCode(task, 'createLabelTask')
   errorCode(task, 'createTrainTask')
   errorCode(task, 'createMiningTask')
@@ -42,20 +42,22 @@ describe("models: task", () => {
     expect(result.task.id).toBe(expectedId)
   })
 
-  it("effects: createFilterTask", () => {
-    const saga = task.effects.createFilterTask
+  it("effects: createFusionTask", () => {
+    const saga = task.effects.createFusionTask
     const creator = {
-      type: "createFilterTask",
+      type: "createFusionTask",
       payload: {},
     }
     const expected = "ok"
 
     const generator = saga(creator, { put, call })
     const start = generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    generator.next()
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
@@ -70,10 +72,12 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, putResolve, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    generator.next()
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
@@ -88,10 +92,12 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    generator.next()
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
@@ -165,10 +171,13 @@ describe("models: task", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    
+    generator.next()
+    const end = generator.next()
 
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)

@@ -2,7 +2,6 @@ import argparse
 import json
 import logging
 import os
-import time
 from typing import Dict, Optional, Set
 
 from google.protobuf import json_format
@@ -10,7 +9,7 @@ import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, data_exporter, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -21,17 +20,17 @@ class CmdMining(base.BaseCommand):
     mining command
 
     About path mappings:
-        a. work_dir/in/candidate or cache -> /in/candidate
-        b: work_dir/in/model -> /in/model
+        a. work_dir/in/assets or cache -> /in/assets
+        b: work_dir/in/models -> /in/models
         c: work_dir/out -> out
-        d: work_dir/in/candidate/index.tsv -> /in/candidate/index.tsv
+        d: work_dir/in/candidate-index.tsv -> /in/candidate-index.tsv
         e: work_dir/in/config.yaml -> /in/config.yaml
     """
     def run(self) -> int:
         logging.debug(f"command mining: {self.args}")
 
         return CmdMining.run_with_args(work_dir=self.args.work_dir,
-                                       media_cache=self.args.media_cache,
+                                       asset_cache_dir=self.args.asset_cache_dir,
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
@@ -42,12 +41,12 @@ class CmdMining(base.BaseCommand):
                                        topk=self.args.topk,
                                        add_annotations=self.args.add_annotations,
                                        executor=self.args.executor,
-                                       executor_instance=self.args.executor_instance)
+                                       executant_name=self.args.executant_name)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
-                      media_cache: Optional[str],
+                      asset_cache_dir: Optional[str],
                       src_revs: str,
                       dst_rev: str,
                       mir_root: str,
@@ -56,14 +55,14 @@ class CmdMining(base.BaseCommand):
                       model_location: str,
                       config_file: str,
                       executor: str,
-                      executor_instance: str,
+                      executant_name: str,
                       topk: int = None,
                       add_annotations: bool = False) -> int:
         """
         runs a mining task \n
         Args:
             work_dir: mining docker container's work directory
-            media_cache: media cache directory
+            asset_cache_dir: media cache directory
             src_revs: data branch name and base task id
             dst_rev: destination branch name and task id
             mir_root: mir repo path, in order to run in non-mir folder.
@@ -71,7 +70,7 @@ class CmdMining(base.BaseCommand):
             media_location, model_location: location of assets.
             config_file: path to the config file
             executor: executor name, currently, the docker image name
-            executor_instance: docker container name
+            executant_name: docker container name
             topk: top k assets you want to select in the result workspace, positive integer or None (no mining)
             add_annotations: if true, write new annotations into annotations.mir
         Returns:
@@ -89,21 +88,14 @@ class CmdMining(base.BaseCommand):
             logging.error('model_hash is required.')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        if not src_revs or not dst_rev:
-            logging.error('invalid --src-revs or --dst-rev; abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs)
-        if checker.check_src_revs(src_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         if not config_file:
-            logging.warning('empty --config-file, abort')
+            logging.warning('empty --task-config-file, abort')
             return MirCode.RC_CMD_INVALID_ARGS
         if not os.path.isfile(config_file):
-            logging.error(f"invalid --config-file {config_file}, not a file, abort")
+            logging.error(f"invalid --task-config-file {config_file}, not a file, abort")
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not executor:
@@ -115,10 +107,11 @@ class CmdMining(base.BaseCommand):
             return return_code
 
         # check `topk` and `add_annotations`
-        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(mir_root=mir_root,
-                                                                                      mir_branch=src_typ_rev_tid.rev,
-                                                                                      mir_task_id=src_typ_rev_tid.tid,
-                                                                                      ms=mirpb.MirStorage.MIR_METADATAS)
+        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=mir_root,
+            mir_branch=src_typ_rev_tid.rev,
+            mir_task_id=src_typ_rev_tid.tid,
+            ms=mirpb.MirStorage.MIR_METADATAS)
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
@@ -133,10 +126,10 @@ class CmdMining(base.BaseCommand):
         # topk can be None (means no mining), or in interval (0, assets_count) (means mining and select topk)
 
         work_in_path = os.path.join(work_dir, 'in')  # docker container's input data directory
+        work_asset_path = asset_cache_dir or os.path.join(work_in_path, 'assets')
+        work_model_path = os.path.join(work_in_path, 'models')
+        work_index_file = os.path.join(work_in_path, 'candidate-src-index.tsv')
         work_out_path = os.path.join(work_dir, 'out')  # docker container's output data directory
-        work_asset_path = media_cache or os.path.join(work_in_path, 'candidate')
-        work_model_path = os.path.join(work_in_path, 'model')
-        work_index_file = os.path.join(work_in_path, 'candidate', 'src-index.tsv')
 
         ret = _prepare_env(export_root=work_dir,
                            work_in_path=work_in_path,
@@ -151,7 +144,6 @@ class CmdMining(base.BaseCommand):
                         mir_root=mir_root,
                         src_rev_tid=src_typ_rev_tid,
                         media_location=media_location,
-                        path_prefix_in_index_file=work_asset_path,
                         work_asset_path=work_asset_path,
                         work_index_file=work_index_file)
 
@@ -164,7 +156,7 @@ class CmdMining(base.BaseCommand):
                                      task_id=dst_typ_rev_tid.tid,
                                      shm_size=_get_shm_size(config_file),
                                      executor=executor,
-                                     executor_instance=executor_instance,
+                                     executant_name=executant_name,
                                      run_infer=add_annotations,
                                      run_mining=(topk is not None))
 
@@ -174,7 +166,8 @@ class CmdMining(base.BaseCommand):
                          src_typ_rev_tid=src_typ_rev_tid,
                          model_hash=model_hash,
                          topk=topk,
-                         add_annotations=add_annotations)
+                         add_annotations=add_annotations,
+                         executor=executor)
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
@@ -183,16 +176,16 @@ class CmdMining(base.BaseCommand):
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
                      src_typ_rev_tid: revs_parser.TypRevTid, model_hash: str, topk: Optional[int],
-                     add_annotations: bool) -> int:
+                     add_annotations: bool, executor: str) -> int:
     # step 1: build topk results:
     #   read old
-    mir_datas = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                   mir_branch=src_typ_rev_tid.rev,
-                                                   mir_task_id=src_typ_rev_tid.tid,
-                                                   mir_storages=mir_storage.get_all_mir_storage())
-    mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
-    mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
-    mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
+    [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_root=mir_root,
+        mir_branch=src_typ_rev_tid.rev,
+        mir_task_id=src_typ_rev_tid.tid,
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        as_dict=False,
+    )
 
     #   parse new: topk and new annotations (both optional)
     topk_result_file_path = os.path.join(export_out, 'result.tsv')
@@ -229,26 +222,24 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     #   mir_keywords: auto generated from mir_annotations, so do nothing
 
     #   update_mir_task
-    task = mirpb.Task()
-    task.type = mirpb.TaskTypeMining
-    task.name = 'mining'
-    task.task_id = dst_typ_rev_tid.tid
-    task.timestamp = int(time.time())
-    task.model.model_hash = model_hash
-    mir_storage_ops.add_mir_task(mir_tasks, task)
+    task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
+                                       task_id=dst_typ_rev_tid.tid,
+                                       message='mining',
+                                       model_hash=model_hash,
+                                       src_revs=src_typ_rev_tid.rev_tid,
+                                       dst_rev=dst_typ_rev_tid.rev_tid,
+                                       executor=executor)
 
     # step 3: store results and commit.
     mir_datas = {
         mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
         mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-        mirpb.MirStorage.MIR_TASKS: mir_tasks,
     }
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   his_branch=src_typ_rev_tid.rev,
                                                   mir_branch=dst_typ_rev_tid.rev,
-                                                  task_id=dst_typ_rev_tid.tid,
                                                   mir_datas=mir_datas,
-                                                  commit_message=dst_typ_rev_tid.tid)
+                                                  task=task)
 
     return MirCode.RC_OK
 
@@ -315,11 +306,7 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
 
 
 def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_tid: revs_parser.TypRevTid,
-                    media_location: str, path_prefix_in_index_file: str, work_asset_path: str,
-                    work_index_file: str) -> None:
-    os.makedirs(work_asset_path, exist_ok=True)
-    os.makedirs(os.path.dirname(work_index_file), exist_ok=True)
-
+                    media_location: str, work_asset_path: str, work_index_file: str) -> None:
     img_list = set(mir_metadatas.attributes.keys())
     data_exporter.export(mir_root=mir_root,
                          assets_location=media_location,
@@ -333,7 +320,7 @@ def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_ti
                          base_task_id=src_rev_tid.tid,
                          format_type=data_exporter.ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
                          index_file_path=work_index_file,
-                         index_prefix=path_prefix_in_index_file)
+                         index_assets_prefix=work_asset_path)
 
 
 def _get_shm_size(mining_config_file_path: str) -> str:
@@ -345,8 +332,7 @@ def _get_shm_size(mining_config_file_path: str) -> str:
 
 
 # public: arg parser
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     mining_arg_parser = subparsers.add_parser('mining',
                                               parents=[parent_parser],
                                               description='use this command to mine in current workspace',
@@ -356,9 +342,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                    dest='work_dir',
                                    type=str,
                                    help='work place for mining and monitoring')
-    mining_arg_parser.add_argument('--cache',
+    mining_arg_parser.add_argument('--asset-cache-dir',
                                    required=False,
-                                   dest='media_cache',
+                                   dest='asset_cache_dir',
                                    type=str,
                                    help='media cache directory')
     mining_arg_parser.add_argument('--model-location',
@@ -396,7 +382,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                    type=str,
                                    required=True,
                                    help='rev@tid: destination branch name and task id')
-    mining_arg_parser.add_argument('--config-file',
+    mining_arg_parser.add_argument('--task-config-file',
                                    dest='config_file',
                                    type=str,
                                    required=True,
@@ -406,9 +392,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction,
                                    dest='executor',
                                    type=str,
                                    help='docker image name for mining')
-    mining_arg_parser.add_argument('--executor-instance',
+    mining_arg_parser.add_argument('--executant-name',
                                    required=False,
-                                   dest='executor_instance',
+                                   dest='executant_name',
                                    type=str,
                                    help='docker container name for mining')
     mining_arg_parser.set_defaults(func=CmdMining)

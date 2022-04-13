@@ -15,7 +15,6 @@ class CmdCheckout(base.BaseCommand):
             return return_code
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
-        repo_dvc = scm.Scm(root_dir=mir_root, scm_executable='dvc')
 
         # git options
         cmd_opts = []
@@ -24,10 +23,6 @@ class CmdCheckout(base.BaseCommand):
         cmd_opts.append(commit_id)
 
         output_str = repo_git.checkout(cmd_opts)
-        if output_str:
-            logging.info("\n%s" % output_str)
-
-        output_str = repo_dvc.checkout("-f")
         if output_str:
             logging.info("\n%s" % output_str)
 

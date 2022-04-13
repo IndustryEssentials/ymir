@@ -8,7 +8,7 @@ from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, data_exporter, hash_utils
+from mir.tools import data_exporter, hash_utils, mir_storage_ops
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -24,7 +24,7 @@ class TestCmdExport(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__prepare_dirs()
-        self.__prepare_labels_csv()
+        test_utils.prepare_labels(mir_root=self._mir_root, names=['freshbee', 'type1', 'person', 'airplane,aeroplane'])
         self.__prepare_mir_repo()
         self.__prepare_assets()
         return super().setUp()
@@ -43,13 +43,6 @@ class TestCmdExport(unittest.TestCase):
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
-
-    def __prepare_labels_csv(self):
-        with open(class_ids.ids_file_path(self._mir_root), 'w') as f:
-            f.write('# commented lines\n')
-            f.write('0,,freshbee\n')
-            f.write('2,,person\n')
-            f.write('52,,airplane,aeroplane\n')
 
     def __prepare_assets(self):
         '''
@@ -102,7 +95,7 @@ class TestCmdExport(unittest.TestCase):
                                     'w': 272,
                                     'h': 105
                                 },
-                                'class_id': 52,
+                                'class_id': 3,
                                 'score': 1,
                             }, {
                                 'index': 1,
@@ -112,7 +105,7 @@ class TestCmdExport(unittest.TestCase):
                                     'w': 65,
                                     'h': 36
                                 },
-                                'class_id': 52,
+                                'class_id': 3,
                                 'score': 1,
                             }, {
                                 'index': 2,
@@ -145,7 +138,7 @@ class TestCmdExport(unittest.TestCase):
                                     'w': 94,
                                     'h': 67
                                 },
-                                'class_id': 52,
+                                'class_id': 3,
                                 'score': 1,
                             }]
                         },
@@ -160,11 +153,11 @@ class TestCmdExport(unittest.TestCase):
         keywords_dict = {
             'keywords': {
                 '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'predifined_keyids': [2, 52],
+                    'predifined_keyids': [2, 3],
                     'customized_keywords': ['pascal']
                 },
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'predifined_keyids': [52],
+                    'predifined_keyids': [3],
                     'customized_keywords': ['pascal']
                 },
             }
@@ -173,28 +166,20 @@ class TestCmdExport(unittest.TestCase):
         json_format.ParseDict(keywords_dict, mir_keywords)
 
         # tasks
-        tasks_dict = {
-            'tasks': {
-                'a': {
-                    'type': 'TaskTypeImportData',
-                    'name': 'import',
-                    'task_id': 'a',
-                    'timestamp': 17020362735,
-                }
-            }
-        }
-        mir_tasks = mirpb.MirTasks()
-        json_format.ParseDict(tasks_dict, mir_tasks)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
+                                           task_id='a',
+                                           message='test_tools_data_exporter_branch_a')
 
         # save and commit
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='a',
-                                       no_space_message='test_tools_data_exporter_branch_a')
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+        }
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas=mir_datas,
+                                                      task=task)
 
     # private: mocked
     def __mock_export(*args, **kwargs) -> Dict[str, Tuple[str, str]]:
@@ -238,7 +223,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.annotation_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = ''
+        fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one
         fake_args.format = 'voc'
         fake_args.in_cis = 'person'
         fake_args.work_dir = ''

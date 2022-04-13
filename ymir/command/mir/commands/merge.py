@@ -3,9 +3,8 @@ mir merge: merge contents from another guest branch to current branch
 """
 
 import argparse
-import datetime
 import logging
-from typing import Any, Mapping, Tuple
+from typing import Any, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -90,8 +89,7 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
                                                                 set(guest_image_annotations.keys()))
 
     if strategy == "stop" and joint_ids:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
-                              error_message='found conflicts in strategy stop')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR, error_message='found conflicts in strategy stop')
 
     for asset_id in host_only_ids:
         host_mir_annotations.task_annotations[task_id].image_annotations[asset_id].CopyFrom(
@@ -129,44 +127,6 @@ def _get_union_keywords(host_keywords: Any, guest_keywords: Any, strategy: str) 
     return merged_keywords_set
 
 
-def _merge_keywords(host_mir_keywords: Mapping, guest_mir_keywords: Mapping, id_guest_only: set, id_joint: set,
-                    strategy: str) -> None:
-    if host_mir_keywords is None or guest_mir_keywords is None:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR, error_message='Invalid keywords message map.')
-
-    for asset_id in id_guest_only:
-        if asset_id not in guest_mir_keywords:
-            continue
-        host_mir_keywords[asset_id].predifined_keyids[:] = guest_mir_keywords[asset_id].predifined_keyids
-        host_mir_keywords[asset_id].customized_keywords[:] = guest_mir_keywords[asset_id].customized_keywords
-
-    for asset_id in id_joint:
-        if asset_id not in guest_mir_keywords:
-            continue
-
-        merged_keywords_set_predifined = _get_union_keywords(host_mir_keywords[asset_id].predifined_keyids,
-                                                             guest_mir_keywords[asset_id].predifined_keyids, strategy)
-
-        if merged_keywords_set_predifined:
-            host_mir_keywords[asset_id].predifined_keyids[:] = merged_keywords_set_predifined
-
-        merged_keywords_set_customized = _get_union_keywords(host_mir_keywords[asset_id].customized_keywords,
-                                                             guest_mir_keywords[asset_id].customized_keywords, strategy)
-
-        if merged_keywords_set_customized:
-            host_mir_keywords[asset_id].customized_keywords[:] = merged_keywords_set_customized
-
-
-def _merge_tasks(host_mir_tasks: mirpb.MirTasks, guest_mir_tasks: mirpb.MirTasks) -> None:
-    if not host_mir_tasks or not guest_mir_tasks:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                              error_message='input host/guest mir_tasks is invalid')
-
-    for guest_task_id, guest_task in guest_mir_tasks.tasks.items():
-        if guest_task_id not in host_mir_tasks.tasks:
-            host_mir_tasks.tasks[guest_task_id].CopyFrom(guest_task)
-
-
 def _tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
     if typ == "tr":
         return mirpb.TvtTypeTraining
@@ -181,16 +141,13 @@ def _tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
 
 
 def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                  host_mir_keywords: mirpb.MirKeywords, host_mir_tasks: mirpb.MirTasks, mir_root: str,
-                  guest_typ_rev_tid: revs_parser.TypRevTid, strategy: str) -> int:
+                  mir_root: str, guest_typ_rev_tid: revs_parser.TypRevTid, strategy: str) -> int:
     """
     merge contents in `guest_typ_rev_tid` to `host_mir_xxx`
 
     Args:
         host_mir_metadatas (mirpb.MirMetadatas): host metadatas
         host_mir_annotations (mirpb.MirAnnotations): host annotations
-        host_mir_keywords (mirpb.MirKeywords): host keywords
-        host_mir_tasks (mirpb.MirTasks): host tasks
         mir_root (str): path to mir repo
         guest_typ_rev_tid (revs_parser.TypRevTid): guest typ:rev@tid
         strategy (str): host / guest / stop
@@ -198,12 +155,13 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
     Raises:
         RuntimeError: when guest branch has no metadatas, or guest branch has no tasks
     """
-    mir_data = mir_storage_ops.MirStorageOps.load(mir_root=mir_root,
-                                                  mir_branch=guest_typ_rev_tid.rev,
-                                                  mir_task_id=guest_typ_rev_tid.tid,
-                                                  mir_storages=mir_storage.get_all_mir_storage())
+    [guest_mir_metadatas, guest_mir_annotations, guest_mir_keywords, guest_mir_tasks,
+     _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
+                                                               mir_branch=guest_typ_rev_tid.rev,
+                                                               mir_task_id=guest_typ_rev_tid.tid,
+                                                               ms_list=mir_storage.get_all_mir_storage(),
+                                                               as_dict=False)
 
-    guest_mir_metadatas: mirpb.MirMetadatas = mir_data.get(mirpb.MirStorage.MIR_METADATAS, None)
     if not guest_mir_metadatas:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
@@ -228,35 +186,23 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
                      suggested_tvt_type=_tvt_type_from_str(guest_typ_rev_tid.typ),
                      strategy=strategy)
 
-    guest_mir_annotations: mirpb.MirAnnotations = mir_data.get(mirpb.MirStorage.MIR_ANNOTATIONS, None)
     if not guest_mir_annotations:
         logging.warning("guest repo {}:{} has no annotations.".format(mir_root, guest_typ_rev_tid.rev))
     _merge_annotations(host_mir_annotations=host_mir_annotations,
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
 
-    guest_mir_keywords: mirpb.MirKeywords = mir_data.get(mirpb.MirStorage.MIR_KEYWORDS, None)
-    if not guest_mir_keywords:
-        logging.warning(f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no keywords.")
-    _merge_keywords(host_mir_keywords.keywords, guest_mir_keywords.keywords, id_guest_only, id_joint, strategy)
-
-    guest_mir_tasks = mir_data.get(mirpb.MirStorage.MIR_TASKS, None)
-    if not guest_mir_tasks:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                              error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no tasks.")
-    _merge_tasks(host_mir_tasks, guest_mir_tasks)
-
     return MirCode.RC_OK
 
 
 def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                      host_mir_keywords: mirpb.MirKeywords, mir_root: str, branch_id: str, task_id: str) -> int:
+                      mir_root: str, branch_id: str, task_id: str) -> int:
     if not branch_id:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty branch id')
     if not host_mir_metadatas:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid host_mir_metadatas')
 
-    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single(
+    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=branch_id, mir_task_id=task_id, ms=mirpb.MirStorage.MIR_METADATAS)
     if not guest_mir_metadatas:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
@@ -269,8 +215,6 @@ def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
 
         if asset_id in host_mir_annotations.task_annotations[host_mir_annotations.head_task_id].image_annotations:
             del host_mir_annotations.task_annotations[host_mir_annotations.head_task_id].image_annotations[asset_id]
-        if asset_id in host_mir_keywords.keywords:
-            del host_mir_keywords.keywords[asset_id]
     return MirCode.RC_OK
 
 
@@ -288,15 +232,8 @@ class CmdMerge(base.BaseCommand):
     @command_run_in_out
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str,
                       work_dir: str) -> int:
-        if not src_revs or not dst_rev:
-            logging.error("empty --src-revs or --dst-rev")
-            return MirCode.RC_CMD_INVALID_ARGS
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
-        if checker.check_src_revs(src_typ_rev_tids) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
-        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev)
-        if checker.check_dst_rev(dst_typ_rev_tid) != MirCode.RC_OK:
-            return MirCode.RC_CMD_INVALID_ARGS
+        dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
@@ -305,30 +242,22 @@ class CmdMerge(base.BaseCommand):
         # Read host id mir data.
         host_mir_metadatas = mirpb.MirMetadatas()
         host_mir_annotations = mirpb.MirAnnotations()
-        host_mir_keywords = mirpb.MirKeywords()
-        host_mir_tasks = mirpb.MirTasks()
 
         host_mir_annotations.head_task_id = dst_typ_rev_tid.tid
 
         for typ_rev_tid in src_typ_rev_tids:
             ret = _merge_to_mir(host_mir_metadatas=host_mir_metadatas,
                                 host_mir_annotations=host_mir_annotations,
-                                host_mir_keywords=host_mir_keywords,
-                                host_mir_tasks=host_mir_tasks,
                                 mir_root=mir_root,
                                 guest_typ_rev_tid=typ_rev_tid,
                                 strategy=strategy)
             if ret != MirCode.RC_OK:
                 return ret
 
-        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs)
+        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
         for typ_rev_tid in ex_typ_rev_tids:
-            if checker.check_src_revs(typ_rev_tid) != MirCode.RC_OK:
-                return MirCode.RC_CMD_INVALID_ARGS
-
             ret = _exclude_from_mir(host_mir_metadatas=host_mir_metadatas,
                                     host_mir_annotations=host_mir_annotations,
-                                    host_mir_keywords=host_mir_keywords,
                                     mir_root=mir_root,
                                     branch_id=typ_rev_tid.rev,
                                     task_id=typ_rev_tid.tid)
@@ -337,33 +266,29 @@ class CmdMerge(base.BaseCommand):
                 return ret
 
         # create and write tasks
-        task = mirpb.Task()
-        task.type = mirpb.TaskTypeMerge
-        task.name = f"merge: {src_revs} - {ex_src_revs} to {dst_rev}"
-        task.task_id = dst_typ_rev_tid.tid
-        task.timestamp = int(datetime.datetime.now().timestamp())
-        mir_storage_ops.add_mir_task(host_mir_tasks, task)
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMerge,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}",
+                                           src_revs=src_revs,
+                                           dst_rev=dst_rev)
 
         host_typ_rev_tid = src_typ_rev_tids[0]
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: host_mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: host_mir_annotations,
-            mirpb.MirStorage.MIR_TASKS: host_mir_tasks,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      task_id=dst_typ_rev_tid.tid,
                                                       his_branch=host_typ_rev_tid.rev,
                                                       mir_datas=mir_data,
-                                                      commit_message=task.name)
+                                                      task=task)
 
         logging.debug("mir merge: write files done")
 
         return MirCode.RC_OK
 
 
-def bind_to_subparsers(subparsers: argparse._SubParsersAction,
-                       parent_parser: argparse.ArgumentParser) -> None:
+def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     merge_arg_parser = subparsers.add_parser("merge",
                                              parents=[parent_parser],
                                              description="use this command to merge contents from other branch",

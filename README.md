@@ -202,7 +202,7 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 2. After configuring the label tool (LABEL_TOOL), IP (LABEL_TOOL_HOST_IP), and port (LABEL_TOOL_HOST_PORT) start the installation of label studio command:
 
   ```sh
-docker-compose -f docker-compose-component.yml up -d
+docker-compose -f docker-compose.label_studio.yml up -d
   ```
 
 It is recommended not to use the ```sudo``` command, as it may result in insufficient privileges.
@@ -210,7 +210,7 @@ It is recommended not to use the ```sudo``` command, as it may result in insuffi
 3. Check the status of label studio:
 
   ```sh
-docker-compose -f docker-compose-component.yml ps
+docker-compose -f docker-compose.label_studio.yml ps
   ```
 
 The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
@@ -236,7 +236,7 @@ The user can access label studio through the default URL [http://localhost:12007
 5. The command to stop the label studio service is:
 
   ```sh
-docker-compose -f docker-compose-component.yml down
+docker-compose -f docker-compose.label_studio.yml down
   ```
 
 # 3. Use YMIR-GUI: typical model production process
@@ -404,7 +404,7 @@ This chapter contains the instructions for the YMIR-CMD. If you need to use the 
 **Mode I. Pip Installation**
 
 ```
-# Requires >= Python3.7
+# Requires >= Python3.8.10
 $ pip install ymir-cmd
 $ mir --vesion
 ```
@@ -412,8 +412,8 @@ $ mir --vesion
 **Mode II. Installation from the source**
 
 ```
-$ git clone --recursive git@github.com:IndustryEssentials/ymir-cmd.git
-$ cd ymir-cmd
+$ git clone --recursive git@github.com:IndustryEssentials/ymir.git
+$ cd ymir/command
 $ python setup.py clean --all install
 $ mir --version
 ```
@@ -624,7 +624,7 @@ and start the training process with the following command:
 mir train -w /tmp/ymir/training/train-0 \
           --media-location ~/ymir-assets \ # assets storage dir
           --model-location ~/ymir-models \ # model storage dir
-          --config-file ~/training-config.yaml \ # training config file, get it from training docker image
+          --task-config-file ~/training-config.yaml \ # training config file, get it from training docker image
           --src-revs tr-va@filtered \
           --dst-rev training-0@trained \
           --executor industryessentials/executor-det-yolov4-training:release-0.1.2 # docker image name
@@ -645,7 +645,7 @@ mir mining --src-revs dataset-mining@import \ # mining dataset branch
            --media-location ~/ymir-assets \
            --model-hash <hash> \ # model id
            --cache /tmp/ymir/cache \ # asset cache
-           --config-file ~/mining-config.yaml \ # mining config file, get it from mining docker image
+           --task-config-file ~/mining-config.yaml \ # mining config file, get it from mining docker image
            --executor industryessentials/executor-det-yolov4-mining:release-0.1.2 # mining docker image name
 ```
 
@@ -693,7 +693,7 @@ Now branch tr-va-1 contains the previous training and validation set and 200 new
 mir train -w /tmp/ymir/training/train-1 \ # different working directory for each different training and mining task
           --media-location ~/ymir-assets \
           --model-location ~/ymir-models \
-          --config-file ~/training-config.yaml \
+          --task-config-file ~/training-config.yaml \
           --src-revs tr-va-1@merged \ # use new-merged branch
           --dst-rev training-1@trained \
           --executor industryessentials/executor-det-yolov4-training:release-0.1.2

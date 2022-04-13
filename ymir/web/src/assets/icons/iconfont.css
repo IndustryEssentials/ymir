@@ -1,6 +1,6 @@
 @font-face {
   font-family: "iconfont"; /* Project id  */
-  src: url('iconfont.ttf?t=1639447169094') format('truetype');
+  src: url('iconfont.ttf?t=1647937649188') format('truetype');
 }
 
 .iconfont {
@@ -353,5 +353,45 @@
 
 .icon-tv:before {
   content: "\e6ea";
+}
+
+.icon-Iterative:before {
+  content: "\e6eb";
+}
+
+.icon-bar-chart-2-line:before {
+  content: "\e6ec";
+}
+
+.icon-artboard-2-line:before {
+  content: "\e6ed";
+}
+
+.icon-repeat-2-line:before {
+  content: "\e6ee";
+}
+
+.icon-skip-back-mini-line:before {
+  content: "\e6ef";
+}
+
+.icon-terminal-box-line:before {
+  content: "\e6f0";
+}
+
+.icon-bug-line:before {
+  content: "\e6f1";
+}
+
+.icon-questionnaire-line:before {
+  content: "\e6f2";
+}
+
+.icon-brackets-line:before {
+  content: "\e6f3";
+}
+
+.icon-global-line:before {
+  content: "\e6f4";
 }
 

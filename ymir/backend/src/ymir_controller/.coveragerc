@@ -1,0 +1,5 @@
+[run]
+omit =
+    src/ymir_controller/controller/server.py
+    src/ymir_controller/controller/server_impl.py
+    src/ymir_controller/controller/utils/sandbox_database.py

@@ -3,12 +3,12 @@ import {
   getTask,
   deleteTask,
   updateTask,
-  createTask,
   stopTask,
-  createFilterTask,
+  createFusionTask,
   createMiningTask,
   createTrainTask,
   createLabelTask,
+  createInferenceTask,
 } from "@/services/task"
 import { isFinalState } from '@/constants/task'
 
@@ -101,27 +101,63 @@ export default {
         return result
       }
     },
-    *createFilterTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createFilterTask, payload)
+    *createFusionTask({ payload }, { call, put }) {
+      let { code, result } = yield call(createFusionTask, payload)
       if (code === 0) {
+        yield put.resolve({
+          type: 'dataset/clearCache'
+        })
+        yield put.resolve({
+          type: 'project/clearCache'
+        })
         return result
       }
     },
     *createTrainTask({ payload }, { call, put }) {
       let { code, result } = yield call(createTrainTask, payload)
       if (code === 0) {
+        yield put.resolve({
+          type: 'model/clearCache'
+        })
+        yield put.resolve({
+          type: 'project/clearCache'
+        })
         return result
       }
     },
     *createMiningTask({ payload }, { call, put }) {
       let { code, result } = yield call(createMiningTask, payload)
       if (code === 0) {
+        yield put({
+          type: 'dataset/clearCache'
+        })
+        yield put({
+          type: 'project/clearCache'
+        })
         return result
       }
     },
     *createLabelTask({ payload }, { call, put }) {
       let { code, result } = yield call(createLabelTask, payload)
       if (code === 0) {
+        yield put.resolve({
+          type: 'dataset/clearCache'
+        })
+        yield put.resolve({
+          type: 'project/clearCache'
+        })
+        return result
+      }
+    },
+    *createInferenceTask({ payload }, { call, put }) {
+      let { code, result } = yield call(createInferenceTask, payload)
+      if (code === 0) {
+        yield put.resolve({
+          type: 'dataset/clearCache'
+        })
+        yield put.resolve({
+          type: 'project/clearCache'
+        })
         return result
       }
     },
