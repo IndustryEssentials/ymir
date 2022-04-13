@@ -5,7 +5,7 @@ const model = {
   "model.asset.title": { en: "Model Assets", cn: "数据详情", },
   "model.type.import": { en: "Import", cn: "导入", },
   "model.type.share": { en: "Share", cn: "用户共享", },
-  "model.type.train": { en: "Train Task", cn: "训练任务", },
+  "model.type.train": { en: "Train", cn: "训练", },
   "model.column.name": { en: "Model Name", cn: "模型名称", },
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },

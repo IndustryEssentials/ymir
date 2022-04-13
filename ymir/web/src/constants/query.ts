@@ -29,8 +29,6 @@ export const getTimes = () => [
 
 export const getModelImportTypes = () => [
   { key: "all", value: "", label: t("common.all") },
-  // { key: "import", value: 5, label: t("model.type.import") },
-  // { key: "share", value: 6, label: t("model.type.share") },
   { key: "train", value: 1, label: t("model.type.train") },
 ]
 

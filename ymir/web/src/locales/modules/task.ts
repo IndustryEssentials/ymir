@@ -1,7 +1,4 @@
 const task = {
-  "task.list.title": { cn: "任务列表", en: "Task List", },
-  "task.list.actions.detail": { cn: "详情", en: "Detail", },
-  "task.detail.title": { cn: "任务详情", en: "Task Detail", },
   "task.asset.title": { cn: "数据详情", en: "Task Assets", },
   "task.type.train": { cn: "训练", en: "Train", },
   "task.type.mining": { cn: "挖掘", en: "Mining", },

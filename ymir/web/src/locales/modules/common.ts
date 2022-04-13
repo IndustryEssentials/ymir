@@ -17,7 +17,7 @@ const common = {
   'common.top.search.item.dataset': { cn: '包含 {searchValue} 的数据集', en: 'Dataset Name include: {searchValue}', },
   'common.top.search.item.model': { cn: '包含 {searchValue} 的模型', en: 'Model Name include: {searchValue}', },
   'common.top.search.item.task': { cn: '包含 {searchValue} 的任务', en: 'Task Name include: {searchValue}', },
-  'common.top.search.placeholder': { cn: '任务、数据集、模型的名称', en: 'Task, Dataset or Model Name', },
+  'common.top.search.placeholder': { cn: '数据集、模型的名称', en: 'Task, Dataset or Model Name', },
   'common.history.node.title': { cn: '节点详情', en: 'Node Detail', },
   'common.history.task.mining': { cn: '挖掘', en: 'Mining', },
   'common.history.task.training': { cn: '训练', en: 'Training', },
@@ -74,6 +74,13 @@ const common = {
   'common.skip': {cn: '跳过', en: 'Skip', },
   'common.confirm': {cn: '确定', en: 'OK', },
   'common.done': {cn: '已完成', en: 'Done', },
+  'common.action.train': {cn: '训练', en: 'Train', },
+  'common.action.mine': {cn: '挖掘', en: 'Mine', },
+  'common.action.fusion': {cn: '预处理', en: 'Pretreat', },
+  'common.action.label': {cn: '标注', en: 'Label', },
+  'common.action.infer': {cn: '推理', en: 'Infer', },
+  'common.action.copy': {cn: '复制', en: 'Copy', },
+  'common.action.import': {cn: '导入', en: 'Import', },
 }
 
 export default common

@@ -1,7 +1,5 @@
 const portal = {
   'portal.btn.more': { cn: '管理', en: 'More', },
-  'portal.task.my.title': { cn: '我的任务', en: 'My Task', },
-  'portal.task.static.title': { cn: '任务统计', en: 'Task Stastics', },
   'portal.project.static.title': { cn: '项目统计', en: 'Project Stastics', },
   'portal.project': { cn: '项目', en: 'Project', },
   'portal.model.best.title': { cn: '最优模型', en: 'Best Model', },
