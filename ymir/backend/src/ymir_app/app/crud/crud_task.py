@@ -75,10 +75,10 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         return db_obj
 
     def get_tasks_by_states(
-        self, db: Session, states: List[TaskState], filter_deleted: bool = False, project_id: int = None
+        self, db: Session, states: List[TaskState], including_deleted: bool = False, project_id: int = None
     ) -> List[Task]:
         query = db.query(self.model)
-        if not filter_deleted:
+        if not including_deleted:
             query = query.filter(not_(self.model.is_deleted))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
