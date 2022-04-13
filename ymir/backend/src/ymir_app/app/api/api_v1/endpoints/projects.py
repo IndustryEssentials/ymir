@@ -228,7 +228,7 @@ def delete_project(
         try:
             controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
         except Exception:
-            logger.info("Failed to terminate legacy task: %s", task.hash)
+            logger.info(f"Failed to terminate task: {task.hash} of project_id: {project_id}")
             continue
 
     return {"result": project}
