@@ -2,7 +2,7 @@ const signup = {
   "signup.username": { cn: "用户名", en: "Username", },
   "signup.email": { cn: "邮箱", en: "Email", },
   "signup.pwd": { cn: "密码", en: "Password", },
-  "signup.repwd": { cn: "确认密码", en: "Confirm Password", },
+  "signup.repwd": { cn: "确认密码", en: "Confirm", },
   "signup.phone": { cn: "手机", en: "Phone", },
   "signup.login": { cn: "登录", en: "Login", },
   "signup.signup": { cn: "注册", en: "Sign Up", },

@@ -9,10 +9,15 @@ from google.protobuf import json_format
 from mir.commands import filter as cmd_filter
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import utils as mir_utils
-from mir.tools import class_ids
+from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
+from mir.tools.mir_storage_ops import MirStorageOps
 
 from tests import utils as test_utils
+
+# Python 3.8 in macOS switches to the spawn start method in multiprocessing as default,
+# this fix makes sure the same behaviour on both unix/mac system.
+mp.set_start_method('fork')
 
 
 class TestCmdFilter(unittest.TestCase):
@@ -22,7 +27,8 @@ class TestCmdFilter(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__prepare_dir(self._mir_root)
-        self.__prepare_labels_csv(self._mir_root)
+        test_utils.prepare_labels(mir_root=self._mir_root,
+                                  names=['frisbee', 'type1', 'person', 'type3', 'cat', 'chair'])
         self.__prepare_mir_repo(self._mir_root)
         return super().setUp()
 
@@ -39,15 +45,6 @@ class TestCmdFilter(unittest.TestCase):
     def __deprepare_dir(self, mir_root: str):
         if os.path.isdir(mir_root):
             shutil.rmtree(mir_root)
-
-    def __prepare_labels_csv(self, mir_root: str):
-        with open(class_ids.ids_file_path(mir_root), 'w') as f:
-            f.write('0,,frisbee\n')
-            f.write('1,,type1\n')
-            f.write('2,,person\n')
-            f.write('3,,type3\n')
-            f.write('4,,cat\n')
-            f.write('15,,chair\n')
 
     def __prepare_mir_repo(self, mir_root: str):
         test_utils.mir_repo_init(self._mir_root)
@@ -111,18 +108,18 @@ class TestCmdFilter(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
 
-        mir_tasks = mirpb.MirTasks()
-        mir_tasks.tasks["t0"].name = "import"
-        mir_tasks.head_task_id = 't0'
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
+                                           task_id='t0',
+                                           message='import')
 
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='t0',
-                                       no_space_message="test_cmd_filter_branch_a")
+        MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                      mir_branch='a',
+                                      his_branch='master',
+                                      mir_datas={
+                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                      },
+                                      task=task)
 
     @staticmethod
     def __annotations_for_single_image(type_ids: List[int]) -> Dict[str, list]:
@@ -196,7 +193,7 @@ class TestCmdFilter(unittest.TestCase):
         self.assertEqual(expected_asset_ids, set(mir_keywords.keywords.keys()))
         self.assertEqual(1, len(mir_annotations.task_annotations))
         self.assertEqual(expected_asset_ids, set(mir_annotations.task_annotations['t1'].image_annotations.keys()))
-        self.assertEqual(2, len(mir_tasks.tasks))
+        self.assertEqual(1, len(mir_tasks.tasks))
         self.assertEqual('t1', mir_tasks.head_task_id)
         self.assertEqual('t1', mir_annotations.head_task_id)
 

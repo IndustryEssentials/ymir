@@ -17,6 +17,7 @@ ENV_FILE='.env'
 
 stop() {
 docker-compose down
+docker-compose -f docker-compose.labelfree.yml down
 }
 
 pre_start() {
@@ -52,6 +53,25 @@ while true; do
 done
 }
 
+start_label_free () {
+docker-compose -f docker-compose.labelfree.yml up -d
+}
+
+label_free() {
+cat <<- EOF
+Would you like to start LabelFree?
+EOF
+
+while true; do
+    read -p "You choose (Y/n)?" yn
+    case $yn in
+        [Yy]*|'' ) start_label_free; break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer (y)es or (n)o.";;
+    esac
+done
+}
+
 start() {
 check_permission
 pre_start
@@ -72,6 +92,7 @@ else
     printf '\nin prod mode, pulling images.\n'
     docker-compose pull
 fi
+label_free
 docker-compose up -d
 }
 

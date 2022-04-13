@@ -1,11 +1,14 @@
+import logging
 import os
 import shutil
+from typing import Type
 import unittest
+import zlib
 
 import google.protobuf.json_format as pb_format
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import exodus
+from mir.tools import exodus, mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 import tests.utils as test_utils
@@ -28,10 +31,10 @@ class TestExodus(unittest.TestCase):
 
     # public: test cases
     def test_open_normal_cases(self):
-        self._test_open_normal_cases("metadatas.mir", "a")
-        self._test_open_normal_cases("tasks.mir", "a")
-        self._test_open_normal_cases("annotations.mir", "a")
-        self._test_open_normal_cases("keywords.mir", "a")
+        self._test_open_normal_cases("metadatas.mir", "a", mirpb.MirMetadatas)
+        self._test_open_normal_cases("tasks.mir", "a", mirpb.MirTasks)
+        self._test_open_normal_cases("annotations.mir", "a", mirpb.MirAnnotations)
+        self._test_open_normal_cases("keywords.mir", "a", mirpb.MirKeywords)
 
     def test_open_abnormal_cases(self):
         # wrong branches
@@ -47,17 +50,15 @@ class TestExodus(unittest.TestCase):
         self._test_open_abnormal_cases(None, None, MirCode.RC_CMD_INVALID_ARGS)
 
     # protected: test cases
-    def _test_open_normal_cases(self, file_name: str, branch: str):
-        with exodus.open_mir(mir_root=self._mir_root, file_name=file_name, rev=branch, mode="rb") as f:
-            self.assertIsNotNone(f)
-            contents = f.read()
-            self.assertNotEqual(len(contents), 0)
+    def _test_open_normal_cases(self, file_name: str, branch: str, pb_class: Type):
+        contents = exodus.read_mir(mir_root=self._mir_root, rev=branch, file_name=file_name)
+        pb_instance = pb_class()
+        pb_instance.ParseFromString(contents)
 
     def _test_open_abnormal_cases(self, file_name: str, branch: str, expected_code: int):
         actual_exception = None
         try:
-            with exodus.open_mir(mir_root=self._mir_root, file_name=file_name, rev=branch, mode="rb"):
-                pass
+            exodus.read_mir(mir_root=self._mir_root, rev=branch, file_name=file_name)
         except (TypeError, ValueError) as e:
             actual_exception = e
         except MirRuntimeError as e:
@@ -82,8 +83,6 @@ class TestExodus(unittest.TestCase):
 
         mir_metadatas = mirpb.MirMetadatas()
         mir_annotations = mirpb.MirAnnotations()
-        mir_keywords = mirpb.MirKeywords()
-        mir_tasks = mirpb.MirTasks()
 
         dict_metadatas = {
             'attributes': {
@@ -97,57 +96,17 @@ class TestExodus(unittest.TestCase):
         }
         pb_format.ParseDict(dict_metadatas, mir_metadatas)
 
-        dict_annotations = {
-            "task_annotations": {
-                "5928508c-1bc0-43dc-a094-0352079e39b5": {
-                    "image_annotations": {
-                        "d4e4a60147f1e35bc7f5bc89284aa16073b043c9": {
-                            'annotations': [{
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 2
-                            }]
-                        }
-                    }
-                }
-            }
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
-
-        pb_format.ParseDict(dict_annotations, mir_annotations)
-
-        dict_keywords = {
-            'keywords': {
-                'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
-                    'predifined_keyids': [1],
-                    'customized_keywords': ["abc"]
-                }
-            }
-        }
-        pb_format.ParseDict(dict_keywords, mir_keywords)
-
-        dict_tasks = {
-            'tasks': {
-                '5928508c-1bc0-43dc-a094-0352079e39b5': {
-                    'type': 'TaskTypeMining',
-                    'name': 'mining',
-                    'task_id': 'mining-task-id',
-                    'timestamp': '1624376173'
-                }
-            }
-        }
-        pb_format.ParseDict(dict_tasks, mir_tasks)
-
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
-                                       no_space_message="branch_a_for_test_exodus")
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
+                                           task_id='mining-task-id',
+                                           message='branch_a_for_test_exodus')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas=mir_datas,
+                                                      task=task)
 
         test_utils.mir_repo_checkout(self._mir_root, "master")

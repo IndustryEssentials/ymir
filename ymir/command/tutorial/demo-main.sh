@@ -6,7 +6,7 @@ set -e # stop when any step fails.
 CUR_DIR="$PWD"
 WORK_DIR_ROOT_ABS="$CUR_DIR/ymir-demo-work"
 # Requirement:
-# 1. git/dvc/mir installed.
+# 1. git/mir installed.
 # 2. docker images for training (mx_train:0.1.1.210804) and mining (al:0.0.1.b)
 # 3. set up following:
 # 3.0. this script will create ymir-demo-work under current folder as working dir.
@@ -82,10 +82,10 @@ MINING_IMAGE='al:0.0.1.b'
 
 
 check_env () {
-    # check mir, dvc, git, docker installeed.
-    if ! [ -x "$(command -v mir)" ] || ! [ -x "$(command -v dvc)" ] || \
+    # check mir, git, docker installeed.
+    if ! [ -x "$(command -v mir)" ] || \
     ! [ -x "$(command -v git)" ] || ! [ -x "$(command -v docker)" ]; then
-        echo 'mir/dvc/git/docker non exist';
+        echo 'mir/git/docker non exist';
         exit 1;
     fi
 
@@ -167,7 +167,7 @@ import_data_coco() {
 process_filter() {
     if ! [ `git rev-parse --quiet --verify refs/heads/$DEMO_PASCAL_BRANCH_FILTER` ]; then
         printf '%s\n' "filtering pascal as branch $DEMO_PASCAL_BRANCH_FILTER";
-        $MIR_EXE checkout $DEMO_PASCAL_BRANCH --no-dvc-pull
+        $MIR_EXE checkout $DEMO_PASCAL_BRANCH
         $MIR_EXE filter -p $MATCHED_KEYWORDS -e $EXCLUDE_KEYWORDS -t $DEMO_PASCAL_BRANCH_FILTER --base-task-id $DEMO_PASCAL_BRANCH
     else
         printf '%s\n' "Branch name $DEMO_PASCAL_BRANCH_FILTER already exists.";

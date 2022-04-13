@@ -1,0 +1,29 @@
+.header {
+  background: #fff;
+  margin: -20px -5vw 0;
+  padding: 0 5vw 20px;
+}
+.detailPanel {
+  margin-bottom: 10px;
+}
+.title {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
+  font-weight: bold;
+}
+
+:global(.ant-card-body){
+  .infoTable {
+    margin-bottom: 20px;
+    :global(.ant-descriptions-view){
+      border: none;
+    }
+    tr,th,td {
+      border: none;
+    }
+    tr {
+      margin-bottom: 1px;
+      border-bottom: 1px solid #fff;
+    }
+  }
+}

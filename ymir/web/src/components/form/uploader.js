@@ -13,6 +13,7 @@ const fileSuffix = {
   avatar: ['jpeg', 'jpg', 'png', 'gif', 'bmp'],
   zip: ['zip'],
   doc: ['doc', 'docx', 'txt', 'pdf'],
+  all: ['*'],
 }
 
 function Uploader({ className, value=null, format="zip", label, max = 200, 
@@ -37,7 +38,8 @@ function Uploader({ className, value=null, format="zip", label, max = 200,
   }
 
   function validFile(file) {
-    const isValid = fileSuffix[format].indexOf(file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()) > -1
+    const fix = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()
+    const isValid = format === 'all' ? true : fileSuffix[format].indexOf(fix) > -1
     if (!isValid) {
       message.error(t('common.uploader.format.error'))
     }
@@ -64,7 +66,7 @@ function Uploader({ className, value=null, format="zip", label, max = 200,
         action={getUploadUrl()}
         name='file'
         headers={{ "Authorization": `Bearer ${storage.get("access_token")}` }}
-        accept={format}
+        // accept={fileSuffix[format].join(',')}
         onChange={onFileChange}
         onRemove={onRemove}
         beforeUpload={beforeUpload}

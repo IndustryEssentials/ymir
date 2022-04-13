@@ -1,0 +1,21 @@
+SERVICE:
+  port: "50066"
+ASSETS:
+  assetskvlocation: ${ASSETS_PATH}
+  assetskvprotocol: file
+  assetsuploadlocation: ${ASSETS_PATH}
+  assetsuploadprotocol: file
+  modelskvlocation: ${MODELS_PATH}
+  modelskvprotocol: file
+  modelsuploadlocation: ${MODELS_PATH}
+  modelsuploadprotocol: file
+  tensorboard_root: ${TENSORBOARD_ROOT}
+SANDBOX:
+  sandboxowner: ymir-root
+  sandboxownergroup: ymir-root
+  sandboxroot: ${BACKEND_SANDBOX_ROOT}
+METRICS:
+  allow_feedback: ${ALLOW_ANONYMOUS_FEEDBACK}
+  anonymous_uuid: ${ANONYMOUS_UUID}
+  server_host: ymir.ai
+  server_port: "9125"

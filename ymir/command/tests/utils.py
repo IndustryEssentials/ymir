@@ -1,11 +1,14 @@
 import os
 import shutil
 import subprocess
-from typing import Type, List
+from typing import List, Type
+
+import yaml
 
 from mir.commands.init import CmdInit
 from mir.commands.checkout import CmdCheckout
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import class_ids
 from mir.tools.code import MirCode
 from mir.tools.mir_storage_ops import MirStorageOps
 
@@ -17,15 +20,14 @@ def dir_test_root(sub_dirs: List[str]) -> str:
 # check enviroment
 def check_commands():
     """
-    test if mir, dvc, git command available
+    test if git command available
     """
-    subprocess.run("dvc --version".split(" "), stdout=subprocess.DEVNULL)
     subprocess.run("git --version".split(" "), stdout=subprocess.DEVNULL)
 
 
 # mir repo operations
-def mir_repo_init(mir_root: str):
-    return_code = CmdInit.run_with_args(mir_root)
+def mir_repo_init(mir_root: str, project_class_names: str = ''):
+    return_code = CmdInit.run_with_args(mir_root, project_class_names=project_class_names, empty_rev='')
     assert return_code == MirCode.RC_OK, "init failed"
 
 
@@ -41,22 +43,6 @@ def mir_repo_checkout(mir_root: str, branch_name: str):
     assert return_code == MirCode.RC_OK, "checkout commit failed"
 
 
-def mir_repo_commit_all(mir_root: str, mir_metadatas, mir_annotations, mir_tasks, no_space_message: str, task_id: str,
-                        src_branch: str, dst_branch: str):
-    mir_datas = {
-        mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
-        mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-        mirpb.MirStorage.MIR_TASKS: mir_tasks,
-    }
-    return_code = MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                mir_branch=dst_branch,
-                                                task_id=task_id,
-                                                his_branch=src_branch,
-                                                mir_datas=mir_datas,
-                                                commit_message=no_space_message)
-    assert return_code == MirCode.RC_OK, "commit all failed"
-
-
 def read_mir_pb(mir_root: str, mir_pb_type: Type):
     mir_pb_instance = mir_pb_type()
     with open(mir_root, "rb") as f:
@@ -68,3 +54,14 @@ def remake_dirs(path: str):
     if os.path.isdir(path):
         shutil.rmtree(path)
     os.makedirs(path, exist_ok=True)
+
+
+def prepare_labels(mir_root: str, names: List[str]):
+    labels: List[class_ids._SingleLabel] = []
+    for idx, name in enumerate(names):
+        components = name.split(',')
+        labels.append(class_ids._SingleLabel(id=idx, name=components[0], aliases=components[1:]))
+    label_storage = class_ids._LabelStorage(labels=labels)
+
+    with open(class_ids.ids_file_path(mir_root=mir_root), 'w') as f:
+        yaml.safe_dump(label_storage.dict(), f)

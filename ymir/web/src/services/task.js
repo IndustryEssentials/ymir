@@ -86,113 +86,182 @@ export function updateTask(id, name) {
   })
 }
 
-export function createFilterTask({
-  name,
-  datasets,
-  include = [],
-  exclude = [],
-  strategy,
+/**
+ * create fusion task
+ * @param {object} param0 
+ * {
+ * {number} project_id
+ * {number} dataset_group_id
+ * {number} main_dataset_id 
+ * {array<number>} [include_datasets]
+ * {number} [include_strategy]
+ * {array<number>} [exclude_datasets]
+ * {array<string>} [include_labels]
+ * {array<string>} [exclude_labels]
+ * {number} [sampling_count] default: 0
+ * }
+ * @returns 
+ */
+export function createFusionTask({
+  iteration, project_id, group_id, dataset, include_datasets = [], mining_strategy, include_strategy = 2,
+  exclude_result, exclude_datasets = [], include = [], exclude = [], samples,
 }) {
-  return createTask({
-    type: TASKTYPES.FILTER,
-    name,
-    parameters: {
-      name,
-      strategy,
-      include_datasets: datasets,
-      include_classes: include,
-      exclude_classes: exclude,
-    },
+  return request.post('/datasets/fusion', {
+    project_id, include_datasets, exclude_datasets,
+    iteration_context: iteration ? {
+      iteration_id: iteration,
+      mining_strategy,
+      exclude_last_result: exclude_result,
+    } : undefined,
+    dataset_group_id: group_id,
+    main_dataset_id: dataset,
+    include_strategy,
+    include_labels: include,
+    exclude_labels: exclude,
+    sampling_count: samples || 0,
   })
 }
 
-
+/**
+ * create label task
+ * @param {object} task {
+ * {number} projectId
+ * {string} name
+ * {number} datasetId
+ * {array<string>} labellers
+ * {boolean} keepAnnotations
+ * {string} doc
+ * } 
+ * @returns 
+ */
 export function createLabelTask({
-  name,
-  datasets,
-  label_members,
-  keywords,
-  with_labels,
-  keep_annotations,
-  doc,
+  projectId, iteration, stage,
+  groupId, name, datasetId, keywords,
+  labellers, keepAnnotations, doc,
 }) {
   return createTask({
     name,
     type: TASKTYPES.LABEL,
+    project_id: projectId,
+    iteration_id: iteration,
+    iteration_stage: stage,
     parameters: {
-      with_labels,
-      include_datasets: [datasets],
-      labellers: label_members,
-      include_classes: keywords,
+      dataset_group_id: groupId,
+      dataset_id: datasetId,
+      keywords,
+      labellers,
       extra_url: doc,
-      keep_annotations,
-      with_labels,
+      keep_annotations: keepAnnotations,
     },
   })
 }
 
+/**
+ * create training task
+ * @param {object} task {
+ * {string} name
+ * {number} projectId
+ * {number} datasetId
+ * {number} testset
+ * {string} backbone
+ * {object} config
+ * {string} network
+ * {number} trainType
+ * {number} strategy
+ * {number} model
+ * {string} image
+ * } 
+ * @returns 
+ */
 export function createTrainTask({
-  name,
-  train_sets,
-  validation_sets,
-  backbone,
-  hyperparameter,
-  config,
-  network,
-  keywords,
-  train_type,
-  strategy,
-  model,
-  docker_image,
-  docker_image_id,
+  iteration, stage,
+  name, projectId, datasetId, keywords, testset,
+  backbone, config, network, trainType, strategy,
+  model, image, imageId,
 }) {
   return createTask({
     name,
+    project_id: projectId,
+    iteration_id: iteration,
+    iteration_stage: stage,
     type: TASKTYPES.TRAINING,
-    config,
+    docker_image_config: config,
     parameters: {
       strategy,
-      include_train_datasets: train_sets,
-      include_validation_datasets: validation_sets,
-      include_classes: keywords,
+      dataset_id: datasetId,
+      validation_dataset_id: testset,
+      keywords,
       backbone,
-      hyperparameter,
       network,
-      train_type,
+      train_type: trainType,
       model_id: model,
-      docker_image,
-      docker_image_id,
+      docker_image: image,
+      docker_image_id: imageId,
     }
   })
 }
 
 export function createMiningTask({
-  model,
-  topk,
-  datasets,
-  exclude_sets,
-  algorithm,
-  config,
-  strategy,
-  inference,
-  name,
-  docker_image,
-  docker_image_id,
+  iteration, stage,
+  projectId, datasetId, model, topk, algorithm,
+  config, strategy, inference, name, image, imageId,
 }) {
   return createTask({
     type: TASKTYPES.MINING,
+    project_id: projectId,
+    iteration_id: iteration,
+    iteration_stage: stage,
     name,
-    config,
+    docker_image_config: config,
     parameters: {
       strategy,
       model_id: model,
-      include_datasets: datasets,
-      exclude_datasets: exclude_sets,
+      dataset_id: datasetId,
       mining_algorithm: algorithm,
       top_k: topk,
       generate_annotations: inference,
-      docker_image,
-      docker_image_id,
+      docker_image: image,
+      docker_image_id: imageId,
+    }
+  })
+}
+
+/**
+ * create inference task
+ * @param {object} task {
+ * {string} name
+ * {number} projectId
+ * {number} datasetId
+ * {object} config
+ * {number} model
+ * {string} image
+ * {string} imageId
+ * {string} description
+ * } 
+ * @returns 
+ */
+export function createInferenceTask({
+  name,
+  projectId,
+  datasetId,
+  model,
+  config,
+  image,
+  imageId,
+  description,
+}) {
+  return createTask({
+    name,
+    type: TASKTYPES.INFERENCE,
+    project_id: projectId,
+    description,
+    docker_image_config: config,
+    parameters: {
+      model_id: model,
+      generate_annotations: true,
+      dataset_id: datasetId,
+      docker_image: image,
+      docker_image_id: imageId,
     }
   })
 }

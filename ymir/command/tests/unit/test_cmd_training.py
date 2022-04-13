@@ -5,11 +5,12 @@ import unittest
 from unittest import mock
 
 from google.protobuf import json_format
+from mir.tools.errors import MirRuntimeError
 import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, hash_utils
+from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -27,7 +28,7 @@ class TestCmdTraining(unittest.TestCase):
 
     def setUp(self) -> None:
         self.__prepare_dirs()
-        self.__prepare_labels_csv()
+        test_utils.prepare_labels(mir_root=self._mir_root, names=['freshbee', 'person', 'airplane,aeroplane'])
         self.__prepare_assets()
         self.__prepare_mir_repo()
         return super().setUp()
@@ -43,15 +44,12 @@ class TestCmdTraining(unittest.TestCase):
         test_utils.remake_dirs(self._models_location)
         test_utils.remake_dirs(self._mir_root)
         test_utils.remake_dirs(self._working_root)
-
-    def __prepare_labels_csv(self):
-        with open(class_ids.ids_file_path(self._mir_root), 'w') as f:
-            f.write('# commented lines\n')
-            f.write('0,,freshbee\n')
-            f.write('2,,person\n')
-            f.write('52,,airplane,aeroplane\n')
-
+        
     def __prepare_mir_repo(self):
+        self.__prepare_mir_repo_branch_a()
+        self.__prepare_mir_repo_branch_b()
+
+    def __prepare_mir_repo_branch_a(self):
         """
         creates mir repo, assumes that `self._mir_root` already created
         """
@@ -94,7 +92,7 @@ class TestCmdTraining(unittest.TestCase):
                                     "w": 272,
                                     "h": 105
                                 },
-                                "class_id": 52,
+                                "class_id": 3,
                                 "score": 1,
                             }, {
                                 "index": 1,
@@ -104,7 +102,7 @@ class TestCmdTraining(unittest.TestCase):
                                     "w": 65,
                                     "h": 36
                                 },
-                                "class_id": 52,
+                                "class_id": 3,
                                 "score": 1,
                             }, {
                                 "index": 2,
@@ -137,7 +135,7 @@ class TestCmdTraining(unittest.TestCase):
                                     "w": 94,
                                     "h": 67
                                 },
-                                "class_id": 52,
+                                "class_id": 3,
                                 "score": 1,
                             }]
                         },
@@ -149,46 +147,51 @@ class TestCmdTraining(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
 
-        # keywords
-        keywords_dict = {
-            "keywords": {
-                "430df22960b0f369318705800139fcc8ec38a3e4": {
-                    "predifined_keyids": [2, 52],
-                    "customized_keywords": ["pascal"]
+        # save and commit
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+                                                      },
+                                                      task=task)
+
+    def __prepare_mir_repo_branch_b(self):
+        # a@b: no training set
+        # metadatas
+        metadatas_dict = {
+            'attributes': {
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'assetType': 'AssetTypeImageJpeg',
+                    'tvtType': 'TvtTypeValidation',
+                    'width': 500,
+                    'height': 281,
+                    'imageChannels': 3
                 },
                 "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
-                    "predifined_keyids": [52],
-                    "customized_keywords": ["pascal"]
-                },
+                    'assetType': 'AssetTypeImageJpeg',
+                    'tvtType': 'TvtTypeValidation',
+                    'width': 500,
+                    'height': 333,
+                    'imageChannels': 3
+                }
             }
         }
-        mir_keywords = mirpb.MirKeywords()
-        json_format.ParseDict(keywords_dict, mir_keywords)
-
-        # tasks
-        tasks_dict = {
-            "tasks": {
-                "a": {
-                    "type": "TaskTypeImportData",
-                    "name": "import",
-                    "task_id": "a",
-                    "timestamp": 17020362735,
-                }
-            },
-            'head_task_id': 'a'
-        }
-        mir_tasks = mirpb.MirTasks()
-        json_format.ParseDict(tasks_dict, mir_tasks)
+        mir_metadatas = mirpb.MirMetadatas()
+        json_format.ParseDict(metadatas_dict, mir_metadatas)
 
         # save and commit
-        test_utils.mir_repo_commit_all(mir_root=self._mir_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='a',
-                                       no_space_message="test_cmd_training_branch_a")
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='b', message='import')
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
+                                                      },
+                                                      task=task)
 
     def __prepare_assets(self):
         """
@@ -202,9 +205,10 @@ class TestCmdTraining(unittest.TestCase):
 
         shutil.copyfile('tests/assets/training-template.yaml', self._config_file)
         with open(self._config_file, 'r') as f:
-            config = yaml.safe_load(f.read())
-        config['class_names'] = ['airplane']
-        config['gpu_id'] = '0'
+            executor_config = yaml.safe_load(f.read())
+        executor_config['class_names'] = ['airplane']
+        executor_config['gpu_id'] = '0'
+        config = {mir_settings.EXECUTOR_CONFIG_KEY: executor_config}
         with open(self._config_file, 'w') as f:
             yaml.dump(config, f)
 
@@ -235,12 +239,36 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.force = True
         fake_args.force_rebuild = False
         fake_args.executor = "executor"
-        fake_args.executor_instance = 'executor-instance'
+        fake_args.executant_name = 'executor-instance'
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file
+        fake_args.asset_cache_dir = ''
 
         cmd = training.CmdTrain(fake_args)
         cmd_run_result = cmd.run()
 
         # check result
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
+
+    def test_abnormal_00(self):
+        """ no training set """
+        fake_args = type('', (), {})()
+        fake_args.src_revs = "a@b"
+        fake_args.dst_rev = "b@test_training_cmd"
+        fake_args.mir_root = self._mir_root
+        fake_args.model_path = self._models_location
+        fake_args.media_location = self._assets_location
+        fake_args.model_hash = ''
+        fake_args.work_dir = self._working_root
+        fake_args.force = True
+        fake_args.force_rebuild = False
+        fake_args.executor = "executor"
+        fake_args.executant_name = 'executor-instance'
+        fake_args.tensorboard_dir = ''
+        fake_args.config_file = self._config_file
+        fake_args.asset_cache_dir = ''
+
+        cmd = training.CmdTrain(fake_args)
+        with self.assertRaises(MirRuntimeError):
+            cmd_run_result = cmd.run()
+        self.assertTrue(mir_repo_utils.mir_check_branch_exists(self._mir_root, 'b@test_training_cmd'))

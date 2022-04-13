@@ -22,37 +22,15 @@ enum TaskType {
     TaskTypeCopyData = 7;
     TaskTypeMerge = 8;
     TaskTypeInfer = 9;
+    TaskTypeSampling = 10;
+    /// merge -> filter -> sampling
+    TaskTypeFusion = 11;
+    TaskTypeImportModel = 13;
+    TaskTypeCopyModel = 14;
+    TaskTypeDatasetInfer = 15;
+
+    reserved 12;
 };
-
-//  deprecated
-enum TaskState {
-    TaskStateUnknown = 0;
-    TaskStatePending = 1;
-    TaskStateRunning = 2;
-    TaskStateDone = 3;
-    TaskStateError = 4;
-    TaskStateMiss = 5;
-};
-
-//  deprecated
-enum RCode {
-    //grpc status codes
-    RC_OK = 0;
-    RC_ERROR_UNKNOWN = 1;
-
-    RC_SERVICE_ERROR_UNKNOWN = 1000;
-    RC_SERVICE_INVALID_REQ = 1001;
-    RC_SERVICE_INVOKE_ERROR = 1002;
-    RC_SERVICE_UNKOWN_RESPONSE = 1003;
-    RC_SERVICE_TASK_INVOKER_ERROR = 1004;
-    RC_SERVICE_INFO_INVOKER_ERROR = 1005;
-    RC_SERVICE_DOCKER_IMAGE_ERROR = 1006;
-
-    // app state_code
-    RC_TASK_UNKNOWN_ERROR = 2000;
-    RC_TASK_LABEL_CONFLICT_ERROR = 2001;
-
-}
 
 enum LabelFormat {
     NO_ANNOTATION = 0;
@@ -90,9 +68,9 @@ enum RequestType {
     CMD_LABEL_ADD = 12;
     CMD_LABEL_GET = 13;
     CMD_TERMINATE = 14;
-    CMD_LABLE_TASK_TERMINATE = 15 [deprecated = true];
     CMD_PULL_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
+    CMD_SAMPLING = 18;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -104,7 +82,8 @@ enum RequestType {
 
     // Long task
     TASK_CREATE = 1001;
-    TASK_INFO = 1002 [deprecated = true];
+
+    reserved 15, 1002;
 }
 
 message GeneralReq {
@@ -117,7 +96,7 @@ message GeneralReq {
     // ancestor task id that initiates this task from.
     string his_task_id = 6;
     // dest branch id to store current task result.
-    string dst_task_id = 7;
+    string dst_dataset_id = 7;
     // branches you want to concat the data from
     repeated string in_dataset_ids = 8;
     // branches you want to exclude the data from
@@ -131,13 +110,19 @@ message GeneralReq {
     string model_hash = 14;
     string asset_dir = 15;
     string docker_image_config = 16;
-    repeated string private_labels = 17;
     bool check_only=18;
-    string executor_instance = 19;
+    string executant_name = 19;
     MergeStrategy merge_strategy = 20;
     TaskType terminated_task_type = 21;
+    oneof sampling {
+        int32 sampling_count = 22;
+        float sampling_rate = 23;
+    }
+    string task_parameters = 24;
+    LabelCollection label_collection = 25;
     ReqCreateTask req_create_task = 1001;
-    ReqGetTaskInfo req_get_task_info = 1002 [deprecated = true];
+
+    reserved 17, 1002;
 }
 
 message GeneralResp {
@@ -145,12 +130,13 @@ message GeneralResp {
     string req_task_id = 2;
     string message = 3;
     repeated string ext_strs = 4;
-    repeated string csv_labels = 5;
     string hash_id = 6;
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
-    RespGetTaskInfo resp_get_task_info = 1000 [deprecated = true];
+    LabelCollection label_collection = 9;
     RespCMDInference detection = 1001;
+
+    reserved 5, 1000;
 }
 
 // base args for create task request
@@ -160,7 +146,7 @@ message ReqCreateTask {
     float sampling_rate = 2;
     bool no_task_monitor = 3;
 
-    TaskReqFilter filter = 101;
+    TaskReqFilter filter = 101 [deprecated=true];
     TaskReqTraining training = 102;
     TaskReqMining mining = 103;
     TaskReqImporting importing = 104;
@@ -168,6 +154,8 @@ message ReqCreateTask {
     TaskReqInference inference = 106;
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
+    TaskReqFusion fusion = 109;
+    TaskReqModelImporting model_importing = 110;
 }
 
 message TaskReqFilter {
@@ -183,16 +171,17 @@ message TaskReqTraining {
     }
     repeated TrainingDatasetType in_dataset_types = 1;
     repeated int32 in_class_ids = 2;
-    string training_config = 3 [deprecated = true];
+
+    reserved 3;
 }
 
 message TaskReqMining {
     repeated string in_dataset_ids = 1;
     repeated string ex_dataset_ids = 2;
-    string model_hash = 3 [deprecated = true];
     int32 top_k = 4;  // > 0, will keep all if set to 0.
-    string mining_config = 5 [deprecated = true];
     bool generate_annotations = 6;
+
+    reserved 3, 5;
 }
 
 message TaskReqImporting {
@@ -229,32 +218,20 @@ message TaskReqLabeling {
     bool export_annotation = 6;
 }
 
-message ReqGetTaskInfo {
-    repeated string task_ids = 1 [deprecated = true];
+message TaskReqFusion {
+    repeated string in_dataset_ids = 1;
+    repeated string ex_dataset_ids = 2;
+    MergeStrategy merge_strategy = 3;
+    repeated int32 in_class_ids = 4;
+    repeated int32 ex_class_ids = 5;
+    oneof sampling {
+        int32 count = 6;
+        float rate = 7;
+    }
 }
 
-// deprecated = true
-message RespGetTaskInfo {
-    // key: task id, value: task info
-    map<string, TaskInfoItem> task_infos = 1;
-}
-
-// sub for `TaskMonitorStorageItem_`  deprecated = true
-message TaskInfoItem {
-    string task_id = 1; // Copy of task id.
-    string base_task_id = 2;
-    string user_id = 3;
-    string repo_id = 4;
-    TaskType type = 5;
-    TaskState state = 6;
-    int64 start_timestamp = 7;
-    int64 finish_timestamp = 8;
-    int64 update_timestamp = 9;
-    float percent = 10;
-    // last_error is trace_stack_message
-    string last_error = 11;
-    int32 state_code = 12;
-    string state_message = 13;
+message TaskReqModelImporting {
+    string model_package_path = 1;
 }
 
 message RespCMDInference {
@@ -282,20 +259,18 @@ message Rect {
     int32 h = 4;
 };
 
+message LabelCollection {
+    repeated Label labels = 1;
+}
 
-/// task monitor storage   deprecated = true
-message TaskMonitorStorage {
-    map<string, TaskMonitorStorageItem> tasks = 1;
-};
+message Label {
+    int32 id = 1;
+    string name = 2;
+    repeated string aliases = 3;
+    string create_time = 4;  // RFC 3339 date strings
+    string update_time = 5;  // RFC 3339 date strings
+}
 
-message TaskMonitorStorageItem {
-    TaskInfoItem general_info = 1;
-    string monitor_file_path = 2;
-    string storage_file_path = 3;
-    string repo_root = 4;
-    string branch_name = 5;
-    GeneralReq request = 100;
-};
 
 service mir_controller_service {
     /*
