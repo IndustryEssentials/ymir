@@ -230,7 +230,7 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 当用户需要导入的数据集带有标注文件时，请确保标注类型属于系统已有的标签列表，否则需要用户前往标签管理界面新增自定义标签，以便导入数据。如下图所示：
 
-![标签管理](docs/images/%E6%96%B0%E5%A2%9E%E6%A0%87%E7%AD%BE.jpg)
+![标签管理](docs/images/%E6%A0%87%E7%AD%BE%E7%AE%A1%E7%90%86.jpg)
 
 本次我们在标签列表中添加标签helmet_head、no_helmet_head，其中标签的主名与别名表示同一类标签，当某些数据集的标注包含别名时，会在导入时合并变更为主名。如，标签列表中包含标签bike（别名bicycle），导入某数据集A（仅包含标签bicycle），则导入后在数据集详情显示标注为bike。
 
