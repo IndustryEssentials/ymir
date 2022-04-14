@@ -71,7 +71,7 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 
 As a streamlined model development product, YMIR(You Mine In Recursion) focuses on the dataset versioning and model iteration in the AI SUITE open-source series.
 
-AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs, and long iteration cycles.
+AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs and long iteration cycles.
 
 As a platform, YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
 
@@ -81,7 +81,7 @@ The YMIR platform provides effective model development capabilities with a data-
 
 A typical model development process can usually be summarized in a few steps: defining the task, preparing the data, training the model, evaluating the model, and deploying the model.
 
-*  Define the task: Before starting an AI development project, it is important to be clear about what is to be analyzed. This will help developers correctly convert the problem into several typical ML modeling tasks, such as image classification, object detection, etc. Different tasks have different data requirements.
+*  Define the target: Before starting an AI development project, it is important to be clear about what is to be analyzed. This will help developers correctly convert the problem into several typical ML modeling tasks, such as image classification, object detection, etc. Different tasks have different data requirements.
 
 *  Prepare data: Data preparation is the foundation of a successful AI project. The most important task in this step is to ensure the quality of data and its annotations. Collect all the required data at the beginning is the optimal situation for many projects. Therefore, the project developer may find that some data is missing in subsequent stages. Additional data could be necessary upon the project  needs.
 
@@ -93,7 +93,7 @@ A typical model development process can usually be summarized in a few steps: de
 
 YMIR platform mainly meets the needs of users to produce models at scale, provides users with a good and easy-to-use display interface, and facilitates the management and viewing of data and models. The platform contains main functional modules such as project management, tag management, system configuration, etc. It supports the realization of the following main functions.
 
-| Function Module | Primary Function | Secondary Function | Function Description |
+|Function Module|Primary Function|Secondary Function|Function Description|
 |----------|-----------|------------|-----------------------------------------|
 |Project Management|Project Management|Project Editing|Supports adding, deleting, and editing projects and project information|
 |Project Management|Iteration Management|Iteration Preparation|Supports setting up the dataset and model information needed for iteration|
@@ -163,10 +163,10 @@ git clone git@github.com:IndustryEssentials/ymir.git
 
 `SERVER_RUNTIME=runc`
 
-3. If you do not need to use the label free labeling platform, you do not need to modify the corresponding configuration, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
+3. If you do not need to use the **label free** labeling platform, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
 
 * When the service starts, it asks the user if they want to send usage reports to the YMIR development team, the default is yes if you do not enter it.
-* If the user needs to use the label free labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
+* If the user needs to use the **label free** labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
 
 ```
 # Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
@@ -175,13 +175,13 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 ```
 
-Execute the start command directly after the modification: `bash ymir.sh start`.
+Execute the start command after the modification: `bash ymir.sh start`.
 
-4. After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
+4. After the service successfully started, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
-## 2.3. Installation of label studio (optional)
+## 2.3. Installation of **Label Studio** (optional)
 
-Label Studio is an external labeling system that works with YMIR. Install it if you plan to label data in the development process.
+**Label Sudio** is also an external labeling system supported by YMIR and can be installed as an alternative labeling tool.
 
 1. In the YMIR directory, modification Env file, configure label studio port：
 
@@ -208,7 +208,7 @@ docker-compose -f docker-compose.label_studio.yml ps
 
 The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
 
-4. Configure the label studio authorization token
+4. Configure the **Label Studio** authorization token
 
   After the user registers and log in to Label Studio, select "Account & Settings" in the upper right corner of the page. Then, copy the token value and paste it into the corresponding location (LABEL_STUDIO_TOKEN) in the .env configuration file of the YMIR project. An example is as follows:
 
@@ -250,7 +250,7 @@ The updated dataset is used to train the model again to improve the model capabi
 
 When you need to import a dataset with annotation files, please make sure the annotation type belongs to the existing label list of the system, otherwise you need to go to the label management interface to add custom labels in order to import the data. The following figure shows:
 
-![Label management](docs/images/Label%20management.jpg)
+![Label management](docs/images/label%20management.jpg)
 
 This time we add the tags 'helmet_head' 'no_helmet_head' to the list, the primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
 
@@ -271,21 +271,20 @@ The platform supports four kinds of dataset importing: public dataset replicatio
 ![import guide](docs/images/import1.jpg)
 
 (1) public dataset replication: the user can copy the built-in dataset of the super administrator to the current operating user. The user can filter and import the label categories they need, as shown in the figure below:
-![public dataset](docs/images/public-dataset.jpeg)
 
-![public dataset2](docs/images/public-dataset2.jpeg)
+![public dataset](docs/images/public%20dataset.jpg)
 
 Select the dataset and choose whether you want to synchronize the labels contained in the public dataset, click [OK] to start copying.
 
 (2) Network import: users need to enter the URL path corresponding to the dataset as shown in the following:
 
-![inter import](docs/images/inter-import.jpeg)
+![inter import](docs/images/net%20import.jpg)
 
 (3) Local import: users needs to upload a zip file of the local dataset in the following format. The zip size is recommended to be no more than 200MB.
 
 Users can download the example **Sample.zip** for reference as follows:
 
-![local import](docs/images/local-import.jpeg)
+![local import](docs/images/local%20import.jpg)
 
 (4) Path Import:
 
@@ -295,9 +294,11 @@ Users can download the example **Sample.zip** for reference as follows:
 
 3. Select 'path import' and enter the absolute path address of the dataset in the server: /data/sharing/voc2012, as shown in the figure below:
 
-![path import](docs/images/path-import.jpeg)
+![path import](docs/images/path%20import.jpg)
 
 After finishing the import of the initial dataset, click [Dataset Setting] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
+
+![dataset list](docs/images/dataset%20list.jpg)
 
 ![Iteration data prepare](docs/images/iteration%20data%20prepare.jpg)
 
@@ -381,13 +382,11 @@ Users can download the models that meet their expectations. Or continue to the n
 
 After training the model, users can validate the model. On the [Model Management] page, you can click the [Verify] button of the corresponding model to jump to the [Model Validation] page. As shown in the following figure:
 
-![model val1](docs/images/model-val1.jpeg)
-
-![model val2](docs/images/model-val2.jpeg)
+![model val1](docs/images/model%20ver1.jpg)
 
 Select the validation mirror, adjust the parameters, click the [Upload Image] button, select the local image to upload, click [Model Validation], and display the results as follows.
 
-![model val3](docs/images/model-val3.jpeg)
+![model val2](docs/images/model%20ver2.jpg)
 
 ## 3.2.9. Model download
 
