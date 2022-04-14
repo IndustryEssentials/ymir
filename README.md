@@ -298,8 +298,6 @@ Users can download the example **Sample.zip** for reference as follows:
 
 After finishing the import of the initial dataset, click [Dataset Setting] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
 
-![dataset list](docs/images/dataset%20list.jpg)
-
 ![Iteration data prepare](docs/images/iteration%20data%20prepare.jpg)
 
 ## 3.2.2. Initial model preparation
