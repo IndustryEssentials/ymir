@@ -4,7 +4,7 @@ from mir.cli import create_main_parser
 
 def main(argv: List[str] = None) -> int:
     """
-    Run dvc CLI command.
+    Run CLI command.
     Args:
         argv: optional list of arguments to parse.
     Returns:
