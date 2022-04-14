@@ -276,10 +276,6 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 3.选择路径导入，填上路径地址/data/sharing/voc2012_train。
 
-如下图所示：
-
-![数据集列表](docs/images/%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%97%E8%A1%A8.jpg)
-
 完成初始数据集的导入后，点击【迭代数据准备】，完成对应的数据集和挖掘策略设置。其中训练集已设置为创建项目时默认的系统训练集，不可变更。
 
 ![迭代数据准备](docs/images/%E8%BF%AD%E4%BB%A3%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87.jpg)
