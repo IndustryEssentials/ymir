@@ -118,7 +118,7 @@ class CmdScm(BaseScm):
            directory as returned by os.getcwd().
            It is meant to be the working tree directory if available, or the
            .git directory in case of bare repositories.
-        :param scm_excutable: either git or dvc.
+        :param scm_excutable: either git.
         """
 
         self._working_dir = find_root(working_dir)
