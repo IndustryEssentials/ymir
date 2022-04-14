@@ -22,7 +22,7 @@ services:
       REDIS_HOST: label_redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:9099
+      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:${LABEL_TOOL_S3_PORT}
       S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
@@ -40,7 +40,7 @@ services:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
       REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:9099
+      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:${LABEL_TOOL_S3_PORT}
       S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
@@ -85,8 +85,7 @@ services:
       MINIO_ROOT_USER: labelfree
     command: server /data --console-address ":9001"
     ports:
-      - 9099:9000
-      - 9090:9001
+      - ${LABEL_TOOL_S3_PORT}:9000
     volumes:
       - ${YMIR_PATH}/labelfree/minio_data:/data
     networks:
