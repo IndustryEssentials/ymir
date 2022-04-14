@@ -1,0 +1,17 @@
+.wrapper {
+  height: 100%;
+}
+.container {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+  :global(.ant-card-body) {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+.targetPanel {
+  padding: 20px 20px 1px;
+  background-color: #fafafa;
+}

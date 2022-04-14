@@ -3,7 +3,7 @@ import {
   getTask,
   deleteTask,
   updateTask,
-  createFilterTask,
+  createFusionTask,
   createLabelTask,
   createTrainTask,
   createMiningTask,
@@ -29,23 +29,39 @@ describe("service: tasks", () => {
     requestExample(getTask, id, expected, 'get')
   })
 
-  it("createFilterTask -> success, no include classes", () => {
+  it("createFusionTask -> success, no include classes", () => {
     const params = {
-      name: 'taskname',
-      datasets: [34, 56, 348],
-      exclude: ['k3']
+      project_id: 2436,
+      dataset_group_id: 2345,
+      main_dataset_id: 435,
     }
     const expected = { id: 612 }
-    requestExample(createFilterTask, params, expected, 'post')
+    requestExample(createFusionTask, params, expected, 'post')
   })
-  it("createFilterTask -> success, no exclude classes", () => {
+  it("createFusionTask -> success, no exclude classes", () => {
     const params = {
-      name: 'taskname',
-      datasets: [34, 56, 348],
-      include: ['k1', 'k2'],
+      project_id: 2436,
+      dataset_group_id: 2340,
+      main_dataset_id: 432,
+      include_datasets: [454, 457],
     }
     const expected = { id: 612 }
-    requestExample(createFilterTask, params, expected, 'post')
+    requestExample(createFusionTask, params, expected, 'post')
+  })
+  it("createFusionTask -> success, all params", () => {
+    const params = {
+      project_id: 2436,
+      dataset_group_id: 2340,
+      main_dataset_id: 432,
+      include_datasets: [454, 457],
+      include_strategy: [1, 2, 3],
+      exclude_datasets: [4,5],
+      include_labels: ['person'],
+      exclude_labels: ['cat', 'dog', 'tree'],
+      sampling_count: 1000,
+    }
+    const expected = { id: 612 }
+    requestExample(createFusionTask, params, expected, 'post')
   })
 
   it("createTrainTask -> success", () => {

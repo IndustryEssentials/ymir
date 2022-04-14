@@ -42,7 +42,7 @@ const ImageList = ({ role, filter, getImages }) => {
     JSON.stringify(filter) !== JSON.stringify(query) && setQuery({ ...query, ...filter })
   }, [filter])
 
-  const pageChange = ({ current, pageSize }) => {
+  const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     setQuery((old) => ({ ...old, limit, offset }))
@@ -174,12 +174,6 @@ const ImageList = ({ role, filter, getImages }) => {
       </Space>
       {isTrain(item.functions) && item.related?.length ? <div className={s.related}><span>{t('image.list.item.related')}</span><ImagesLink images={item.related} /></div> : null}
     </Col>
-      {isDone(item.state) ?
-        <Col>
-          <Button key={type} onClick={() => history.push(`/home/task/${type}?image=${item.id}`)}>
-            {isTrain(item.functions) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
-          </Button>
-        </Col> : null}
     </Row>
 
     return <List.Item className={item.state ? 'success' : 'failure'}>

@@ -10,6 +10,7 @@ import {
 } from "@ant-design/icons"
 
 import t from "@/utils/t"
+import { format } from '@/utils/date'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/keyword'
 import Actions from "@/components/table/actions"
@@ -54,7 +55,6 @@ function Keyword({ getKeywords }) {
     {
       title: showTitle("keyword.column.name"),
       dataIndex: "name",
-      className: styles[`column_name`],
       ellipsis: true,
     },
     {
@@ -70,6 +70,16 @@ function Keyword({ getKeywords }) {
       ellipsis: {
         showTitle: false,
       },
+    },
+    {
+      title: showTitle('keyword.column.update_time'),
+      dataIndex: 'update_time',
+      render: (time) => time ? format(time) : null,
+    },
+    {
+      title: showTitle('keyword.column.create_time'),
+      dataIndex: 'create_time',
+      render: (time) => time ? format(time) : null,
     },
     {
       title: showTitle("keyword.column.action"),
@@ -97,7 +107,7 @@ function Keyword({ getKeywords }) {
       limit: query.limit,
     }
     if (query.name) {
-      params.q = query.name
+      params.q = query.name.toLowerCase()
     }
     const { items, total } = await getKeywords(params)
     if (items) {
@@ -168,7 +178,7 @@ function Keyword({ getKeywords }) {
   )
 
   return (
-    <div className={styles.model}>
+    <div className={styles.keyword}>
       <Breadcrumbs />
 
       <Space className={styles.actions}>

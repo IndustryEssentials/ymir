@@ -35,7 +35,8 @@ export function getStats({ q, limit = 8, type='day' }) {
     'hms': { path: 'models/hot', },
     'hkw': { path: 'keywords/hot', },
     'ds': { path: 'datasets/hot', },
-    'ts': { path: 'tasks/count', query: { precision: type } }
+    'ts': { path: 'tasks/count', query: { precision: type } },
+    'ps': { path: 'projects/count', query: { precision: type } }
   }
   return request.get(`/stats/${maps[q].path}`, { params: { limit, ...(maps[q].query || {}) }})
 }

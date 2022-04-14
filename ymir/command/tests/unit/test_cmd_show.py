@@ -6,15 +6,15 @@ from google.protobuf.json_format import ParseDict
 
 from mir.commands.show import CmdShow
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
 
 class TestCmdShow(unittest.TestCase):
     def _prepare_mir_repo_branch_mining(self, mir_repo_root):
-        mir_annotations = mirpb.MirAnnotations()
         mir_metadatas = mirpb.MirMetadatas()
-        mir_tasks = mirpb.MirTasks()
+        mir_annotations = mirpb.MirAnnotations()
 
         dict_metadatas = {
             'attributes': {
@@ -28,26 +28,18 @@ class TestCmdShow(unittest.TestCase):
         }
         ParseDict(dict_metadatas, mir_metadatas)
 
-        dict_tasks = {
-            'tasks': {
-                '5928508c-1bc0-43dc-a094-0352079e39b5': {
-                    'type': 'TaskTypeMining',
-                    'name': 'mining',
-                    'task_id': 'mining-task-id',
-                    'timestamp': '1624376173'
-                }
-            }
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
+                                           task_id='mining-task-id',
+                                           message='prepare_branch_status')
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
-        ParseDict(dict_tasks, mir_tasks)
-
-        test_utils.mir_repo_commit_all(mir_root=mir_repo_root,
-                                       mir_metadatas=mir_metadatas,
-                                       mir_annotations=mir_annotations,
-                                       mir_tasks=mir_tasks,
-                                       src_branch='master',
-                                       dst_branch='a',
-                                       task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
-                                       no_space_message="prepare_branch_status")
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_repo_root,
+                                                      mir_branch='a',
+                                                      his_branch='master',
+                                                      mir_datas=mir_datas,
+                                                      task=task)
 
     def test_show_00(self):
         mir_root = test_utils.dir_test_root(self.id().split(".")[-3:])
@@ -63,7 +55,7 @@ class TestCmdShow(unittest.TestCase):
         args = type('', (), {})()
         args.mir_root = mir_root
         args.verbose = False
-        args.src_revs = "a@5928508c-1bc0-43dc-a094-0352079e39b5"
+        args.src_revs = "a@mining-task-id"
         cmd_instance = CmdShow(args)
         ret = cmd_instance.run()
         assert ret == MirCode.RC_OK
@@ -71,7 +63,7 @@ class TestCmdShow(unittest.TestCase):
         args = type('', (), {})()
         args.mir_root = mir_root
         args.verbose = True
-        args.src_revs = "a@5928508c-1bc0-43dc-a094-0352079e39b5"
+        args.src_revs = "a@mining-task-id"
         cmd_instance = CmdShow(args)
         ret = cmd_instance.run()
         assert ret == MirCode.RC_OK

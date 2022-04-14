@@ -202,7 +202,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
               { min: 8, max: 16, message: t("signup.pwd.length.msg", { min: 8, max: 16 }), },
             ]}
           >
-            <Input.Password allowClear placeholder={t('user.info.pwd.form.old')} prefix={<KeyIcon />} />
+            <Input.Password visibilityToggle={false} allowClear placeholder={t('user.info.pwd.form.old')} prefix={<KeyIcon />} />
           </Form.Item>
           <Form.Item
             name="password"
@@ -211,7 +211,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
               { type: 'string', min: 8, max: 16, message: t("signup.pwd.length.msg", { min: 8, max: 16 }), },
             ]}
           >
-            <Input.Password allowClear placeholder={t('user.info.pwd.form.new')} prefix={<LockIcon />} />
+            <Input.Password visibilityToggle={false} allowClear placeholder={t('user.info.pwd.form.new')} prefix={<LockIcon />} />
           </Form.Item>
           <Form.Item
             name="repwd"
@@ -221,7 +221,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
               pwdRepeat,
             ]}
           >
-            <Input.Password allowClear placeholder={t('user.info.pwd.form.renew')} prefix={<LockIcon />} />
+            <Input.Password visibilityToggle={false} allowClear placeholder={t('user.info.pwd.form.renew')} prefix={<LockIcon />} />
           </Form.Item>
         </Form>
       </Modal>

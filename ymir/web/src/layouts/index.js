@@ -55,8 +55,8 @@ function BasicLayout(props) {
       </Layout>
       {/* </Layout> */}
       <Loading />
-      <QuickActions />
-      <Guide />
+      {/* <QuickActions />
+      <Guide /> */}
     </ConfigProvider>
   )
 }

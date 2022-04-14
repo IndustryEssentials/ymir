@@ -38,7 +38,7 @@ const ModelList = ({ getModelsByMap }) => {
     <List className={styles.boxItem} bordered={false}>
       {kmodels[current]?.length ? kmodels[current]?.filter(model => model).map((model, index) =>
         <List.Item key={model.id} actions={[<span className={styles.action} title={model.map}>{percent(model.map)}</span>]} title={model.name}>
-          <Link className={styles.modelListItem} to={`/home/model/detail/${model.id}`}>
+          <Link className={styles.modelListItem} to={`/home/project/${model.projectId}/model/${model.id}`}>
             <span className={`${styles['ol' + index]} ${styles.ol}`}>{index + 1}</span>
             {model.name}
           </Link>

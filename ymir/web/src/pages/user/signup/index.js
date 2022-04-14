@@ -4,6 +4,7 @@ import { useIntl, Link } from "umi"
 import { Form, Input, Button, Checkbox, Layout, Row, Col, message } from "antd"
 
 import t from "@/utils/t"
+import { STATES } from '@/constants/user'
 import { layout420 } from "@/config/antd"
 import HeaderNav from "@/components/nav"
 import Foot from "@/components/common/footer"
@@ -33,7 +34,11 @@ const Signup = ({ signupApi, loginApi, history }) => {
     const res = await signupApi(params)
     if (res) {
       history.push("/login")
-      message.warn(t('user.signup.success'))
+      if (res.state === STATES.ACTIVE) {
+        message.success(t('user.signup.success.active'))
+      } else {
+        message.warn(t('user.signup.success'))
+      }
     }
   }
 
@@ -125,7 +130,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                   },
                 ]}
               >
-                <Input.Password allowClear placeholder={t('signup.pwd.placeholder')} prefix={<LockIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+                <Input.Password allowClear visibilityToggle={false} placeholder={t('signup.pwd.placeholder')} prefix={<LockIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
               <Form.Item
                 label={t("signup.repwd")}
@@ -139,7 +144,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
                   pwdRepeat,
                 ]}
               >
-                <Input.Password allowClear placeholder={t('signup.repwd.placeholder')} prefix={<KeyIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+                <Input.Password allowClear visibilityToggle={false} placeholder={t('signup.repwd.placeholder')} prefix={<KeyIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
 
               <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
