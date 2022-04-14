@@ -2,7 +2,7 @@
 
 English | [Simplified Chinese](README_zh-CN.md)
 
-![YMIR](docs/images/YMIR.jpeg)
+![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpeg)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -71,7 +71,7 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 
 As a streamlined model development product, YMIR(You Mine In Recursion) focuses on the dataset versioning and model iteration in the AI SUITE open-source series.
 
-AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs, and long iteration cycles.
+AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs and long iteration cycles.
 
 As a platform, YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
 
@@ -81,7 +81,7 @@ The YMIR platform provides effective model development capabilities with a data-
 
 A typical model development process can usually be summarized in a few steps: defining the task, preparing the data, training the model, evaluating the model, and deploying the model.
 
-*  Define the task: Before starting an AI development project, it is important to be clear about what is to be analyzed. This will help developers correctly convert the problem into several typical ML modeling tasks, such as image classification, object detection, etc. Different tasks have different data requirements.
+*  Define the target: Before starting an AI development project, it is important to be clear about what is to be analyzed. This will help developers correctly convert the problem into several typical ML modeling tasks, such as image classification, object detection, etc. Different tasks have different data requirements.
 
 *  Prepare data: Data preparation is the foundation of a successful AI project. The most important task in this step is to ensure the quality of data and its annotations. Collect all the required data at the beginning is the optimal situation for many projects. Therefore, the project developer may find that some data is missing in subsequent stages. Additional data could be necessary upon the project  needs.
 
@@ -93,7 +93,7 @@ A typical model development process can usually be summarized in a few steps: de
 
 YMIR platform mainly meets the needs of users to produce models at scale, provides users with a good and easy-to-use display interface, and facilitates the management and viewing of data and models. The platform contains main functional modules such as project management, tag management, system configuration, etc. It supports the realization of the following main functions.
 
-| Function Module | Primary Function | Secondary Function | Function Description |
+|Function Module|Primary Function|Secondary Function|Function Description|
 |----------|-----------|------------|-----------------------------------------|
 |Project Management|Project Management|Project Editing|Supports adding, deleting, and editing projects and project information|
 |Project Management|Iteration Management|Iteration Preparation|Supports setting up the dataset and model information needed for iteration|
@@ -121,7 +121,7 @@ We provide an online trial version for your convenience. If you need, please fil
 
 # 2. Installation
 
-![processing](docs/images/processing.png)
+![processing](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png)
 
 How do users choose to install GUI or CMD?
 
@@ -163,10 +163,10 @@ git clone git@github.com:IndustryEssentials/ymir.git
 
 `SERVER_RUNTIME=runc`
 
-3. If you do not need to use the label free labeling platform, you do not need to modify the corresponding configuration, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
+3. If you do not need to use the **label free** labeling platform, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
 
 * When the service starts, it asks the user if they want to send usage reports to the YMIR development team, the default is yes if you do not enter it.
-* If the user needs to use the label free labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
+* If the user needs to use the **label free** labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
 
 ```
 # Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
@@ -175,13 +175,13 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 ```
 
-Execute the start command directly after the modification: `bash ymir.sh start`.
+Execute the start command after the modification: `bash ymir.sh start`.
 
-4. After the service is started successfully, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
+4. After the service successfully started, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
-## 2.3. Installation of label studio (optional)
+## 2.3. Installation of **Label Studio** (optional)
 
-Label Studio is an external labeling system that works with YMIR. Install it if you plan to label data in the development process.
+**Label Sudio** is also an external labeling system supported by YMIR and can be installed as an alternative labeling tool.
 
 1. In the YMIR directory, modification Env file, configure label studio port：
 
@@ -208,7 +208,7 @@ docker-compose -f docker-compose.label_studio.yml ps
 
 The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
 
-4. Configure the label studio authorization token
+4. Configure the **Label Studio** authorization token
 
   After the user registers and log in to Label Studio, select "Account & Settings" in the upper right corner of the page. Then, copy the token value and paste it into the corresponding location (LABEL_STUDIO_TOKEN) in the .env configuration file of the YMIR project. An example is as follows:
 
@@ -236,7 +236,7 @@ docker-compose -f docker-compose.label_studio.yml down
 
 This section uses a complete model iteration process as an example to illustrate how to use the YMIR platform.
 
-![YMIR-GUI process](docs/images/YMIR-GUI-process.jpeg)
+![YMIR-GUI process](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR-GUI-process.jpeg)
 
 As shown in the figure above, YMIR divides the model development process into multiple steps. Details about how to run each step are listed in the subsequent sections.
 
@@ -250,7 +250,7 @@ The updated dataset is used to train the model again to improve the model capabi
 
 When you need to import a dataset with annotation files, please make sure the annotation type belongs to the existing label list of the system, otherwise you need to go to the label management interface to add custom labels in order to import the data. The following figure shows:
 
-![Label management](docs/images/Label%20management.jpg)
+![Label management](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/label%20management.jpg)
 
 This time we add the tags 'helmet_head' 'no_helmet_head' to the list, the primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
 
@@ -268,24 +268,23 @@ The user prepares the mining set to be used for data mining (which may not need 
 
 The platform supports four kinds of dataset importing: public dataset replication, network importing, local importing, and path importing.
 
-![import guide](docs/images/import1.jpg)
+![import guide](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/import1.jpg)
 
 (1) public dataset replication: the user can copy the built-in dataset of the super administrator to the current operating user. The user can filter and import the label categories they need, as shown in the figure below:
-![public dataset](docs/images/public-dataset.jpeg)
 
-![public dataset2](docs/images/public-dataset2.jpeg)
+![public dataset](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/public%20dataset.jpg)
 
 Select the dataset and choose whether you want to synchronize the labels contained in the public dataset, click [OK] to start copying.
 
 (2) Network import: users need to enter the URL path corresponding to the dataset as shown in the following:
 
-![inter import](docs/images/inter-import.jpeg)
+![inter import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/net%20import.jpg)
 
 (3) Local import: users needs to upload a zip file of the local dataset in the following format. The zip size is recommended to be no more than 200MB.
 
 Users can download the example **Sample.zip** for reference as follows:
 
-![local import](docs/images/local-import.jpeg)
+![local import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/local%20import.jpg)
 
 (4) Path Import:
 
@@ -295,11 +294,11 @@ Users can download the example **Sample.zip** for reference as follows:
 
 3. Select 'path import' and enter the absolute path address of the dataset in the server: /data/sharing/voc2012, as shown in the figure below:
 
-![path import](docs/images/path-import.jpeg)
+![path import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/path%20import.jpg)
 
 After finishing the import of the initial dataset, click [Dataset Setting] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
 
-![Iteration data prepare](docs/images/iteration%20data%20prepare.jpg)
+![Iteration data prepare](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/iteration%20data%20prepare.jpg)
 
 ## 3.2.2. Initial model preparation
 
@@ -311,11 +310,11 @@ The user prepares the model for the initial iteration, either by local import or
 
 Model training can be done by clicking the [Training] operation button on the dataset list interface to jump to the Create Model Training interface, as shown in the following figure：
 
-![training1](docs/images/training1.jpg)
+![training1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/training1.jpg)
 
 Select the training set (train1 V1), select the test set (val V1), select the training target (helmet_head, no_helmet_head), select the pre-training model (not required), training docker, training type, algorithm framework, backbone network structure, number of GPUs and configure the training parameters (training parameters provide default values, the default parameters in the key value can not be modified, the value value can be modified, if you want to add parameters can be added), click create task. If you want to add parameters, you can add them yourself), click Create Task. As shown in the figure below, the initial model is trained.
 
-![training2](docs/images/training2.jpg)
+![training2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/training2.jpg)
 
 After successful creation, users can view the corresponding task progress and information on the task management page. Users can view the accuracy of the trained model (mAP value) after the task is completed.
 
@@ -331,8 +330,8 @@ YMIR provides data mining algorithms that support million-level data mining to q
 
 [Mining Data Preparation] provides users with the data to be mined, and the original data set here is the mining set set set by project setting by default. The operation process is shown in the following figure.
 
-![mining data preparation 1](docs/images/miningdata%20preparation.jpg)
-![mining data preparation 2](docs/images/miningdata%20preparation2.jpg)
+![mining data preparation 1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/miningdata%20preparation.jpg)
+![mining data preparation 2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/miningdata%20preparation2.jpg)
 
 Click [Next] after the operation is completed to open the [Data Mining] process.
 
@@ -340,8 +339,8 @@ Click [Next] after the operation is completed to open the [Data Mining] process.
 
 The user can use the model obtained from the initial training to perform data mining on the dataset to be mined. Click the [Data Mining] button to jump to the data mining interface, as shown in the following figure.
 
-![mine1](docs/images/mining1.jpg)
-![mine2](docs/images/mining2.jpg)
+![mine1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/mining1.jpg)
+![mine2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/mining2.jpg)
 
 The default original dataset is the result dataset prepared from the last mining data, and the default model is the initial model set in the iterative preparation. The user must also enter the filter TOPK as 500 (the first 500 successfully mined images), and set custom parameters if necessary.
 
@@ -351,11 +350,11 @@ After successful creation, users can view the mining progress and the result on 
 
 If the data mined in the previous step does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the data annotation interface as shown in the following figure.
 
-![label1](docs/images/labeling1.jpg)
+![label1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/labeling1.jpg)
 
 The default original dataset is the result dataset obtained from the last mining. The user must also ente rthe email address of the annotator, and the labeling target (helmet_head, no_helmet_head). If you want to check the labeling platform by yourself, please click "View on labeling platform" and fill in your labeling platform account. If you have more detailed requirements for the annotation, you can upload the annotation description document for the annotator's reference. You must register with the labeling system in advance. You can click "Register Labeling Platform Account" at the bottom to jump to the Label Studio labeling platform to register their labeling account. Click on Create Task, as shown in the figure below:
 
-![label2](docs/images/labeling2.jpg)
+![label2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/labeling2.jpg)
 
 After successful creation, users can view the labeling progress and other information on the dataset management interface. After the operation completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
 
@@ -363,17 +362,17 @@ After successful creation, users can view the labeling progress and other inform
 
 After the labeling is completed, the labeled data set is merged into the training set and the merged results are generated into a new version of the training set. The following figure shows.
 
-![update1](docs/images/update1.jpg)
-![update2](docs/images/update2.jpg)
+![update1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/update1.jpg)
+![update2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/update2.jpg)
 
 ## 3.2.7. Model iteration
 
-![process-en](docs/images/process-en.jpeg)
+![process-en](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images//process-en.jpeg)
 
 After the merging is completed, the model is trained again to generate a new version of the model, as shown below.
 
-![model iteration1](docs/images/model%20iteration1.jpg)
-![model iteration2](docs/images/model%20iteration2.jpg)
+![model iteration1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model%20iteration1.jpg)
+![model iteration2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model%20iteration2.jpg)
 
 Users can download the models that meet their expectations. Or continue to the next iteration to further optimize the model.
 
@@ -381,19 +380,17 @@ Users can download the models that meet their expectations. Or continue to the n
 
 After training the model, users can validate the model. On the [Model Management] page, you can click the [Verify] button of the corresponding model to jump to the [Model Validation] page. As shown in the following figure:
 
-![model val1](docs/images/model-val1.jpeg)
-
-![model val2](docs/images/model-val2.jpeg)
+![model val1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images//model%20ver1.jpg)
 
 Select the validation mirror, adjust the parameters, click the [Upload Image] button, select the local image to upload, click [Model Validation], and display the results as follows.
 
-![model val3](docs/images/model-val3.jpeg)
+![model val2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model%20ver2.jpg)
 
 ## 3.2.9. Model download
 
 Users can click the [Download] button on the [Model List] page. The downloaded file is a tar package, which contains the network structure of the model, network weights, hyper-parameter configuration files, training environment parameters, and results. As shown below:
 
-![model download](docs/images/model-download.jpeg)
+![model download](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model-download.jpeg)
 
 # 4. For advanced users: YMIR-CMD (command line) user's guide
 
@@ -420,7 +417,7 @@ $ mir --version
 
 ## 4.2 Typical model production process
 
-![process-en](docs/images/process-en.jpeg)
+![process-en](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/process-en.jpeg)
 
 The above figure shows a typical process of model training: 1) the user prepares external data, 2) imports it into the system, 3) appropriately filters the data, and 4) begins training to obtain a model (possibly with low accuracy). 5) selects images in a dataset to be mined that are suitable for further training based on this model, 6) annotates these images, 7) merges the annotated results with the original training set, and 8) uses the merged results to run the training process again to obtain a better model.
 This section implement the process shown above using the command line.
@@ -804,7 +801,7 @@ From the above description, it can be seen that the management of metadata is si
 
 **The first scene**: Directly from the very first metadata, a filtering process is carried out to select and use the data that meets the requirements, as shown in the following figure:
 
-![Scenario1](docs/images/Scenario1.jpeg)
+![Scenario1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/Scenario1.jpeg)
 
 Whenever the user needs to start a new task,
 :: The user checks out a new feature branch from within the current master branch, getting the metadata in feature#1 state.
@@ -815,7 +812,7 @@ Whenever the user needs to start a new task,
 
 **The second scene**: Search for certain metadata by label or keyword. The user starts the screening process until the data meets the requirements, and then the data is used. As shown below:
 
-![Scenario2](docs/images/Scenario2.jpeg)
+![Scenario2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/Scenario2.jpeg)
 
 At this point, whenever a user needs to carry out a new task,
 :: Users can search for metadata that basically matches the user's requirements by means of keywords, labels, and so on.
@@ -825,7 +822,7 @@ At this point, whenever a user needs to carry out a new task,
 
 **The third scene**: incremental merging. Suppose the user has completed the training task of the model using certain metadata. At this point, there is an update to the metadata of the repository and the master branch. The user wishes to merge this part of the update into the currently used metadata.
 
-![Scenario3]docs/images/Scenario3.jpeg)
+![Scenario3](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/Scenario3.jpeg)
 
 Suppose the user is now in FEATURE#2 and needs to do the following:
 :: You need switch back to master branch master.
@@ -841,7 +838,7 @@ The discussion in this section is based on the following assumptions:
 :: Master branch is always empty.
 This management approach is shown in the following figure:
 
-![branch and dataset](docs/images/branch-and-dataset.jpeg)
+![branch and dataset](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/branch-and-dataset.jpeg)
 
 We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform.
 

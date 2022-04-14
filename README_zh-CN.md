@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-![YMIR](docs/images/YMIR.jpeg)
+![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpeg)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -108,7 +108,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 |项目管理|数据集管理|数据标注|支持为图片数据添加标注|
 |项目管理|数据集管理|数据推理|支持通过指定模型为数据集添加标注|
 |项目管理|模型管理|模型导入|支持本地导入模型文件到平台|
-|项目管理|模型管理|训练模型|持自选数据集、标签，并根据需求调整训练参数来训练模型，完成后可查看对应的模型效果|
+|项目管理|模型管理|训练模型|支持自选数据集、标签，并根据需求调整训练参数来训练模型，完成后可查看对应的模型效果|
 |项目管理|模型管理|模型验证|支持上传单张图片，通过可视化的方式查看模型在真实图片中的表现，以校验模型的精确度|
 |标签管理|标签管理|新增标签|支持训练标签的主名和别名的添加|
 |系统配置|镜像管理|我的镜像|支持添加自定义镜像到系统中（仅管理员可用）|
@@ -121,7 +121,8 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 # 2. 安装
 
-![YMIR总流程图](docs/images/processing.png)
+![YMIR总流程图](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png)
+
 
 **用户如何选择安装GUI or CMD：**
 
@@ -178,7 +179,7 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 ## 2.3. 安装配置LabelStudio （可选）
 
-label studio为YMIR外接的标注系统，选择安装可以完成数据标注的操作流程。
+label studio同时也是YMIR所支持的外接标注系统，可以作为备选标注工具安装。
 
 1. 在上一节的YMIR目录下，修改.env文件，配置label studio端口：
 
@@ -218,7 +219,7 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 本次使用一次模型迭代的完整流程来说明YMIR平台的操作过程。
 
-![YMIR-GUI process](docs/images/YMIR-GUI-process.jpeg)
+![YMIR-GUI process](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR-GUI-process.jpeg)
 
 数据和标签是深度学习模型训练的必要条件，模型的训练需要大量带标签的数据。然而在实际情况下，现实中存在的是大量没有标签的数据，如果全部由标注人员手工打上标签，人力和时间成本过高。
 
@@ -230,7 +231,7 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 当用户需要导入的数据集带有标注文件时，请确保标注类型属于系统已有的标签列表，否则需要用户前往标签管理界面新增自定义标签，以便导入数据。如下图所示：
 
-![标签管理](docs/images/%E6%96%B0%E5%A2%9E%E6%A0%87%E7%AD%BE.jpg)
+![标签管理](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%A0%87%E7%AD%BE%E7%AE%A1%E7%90%86.jpg)
 
 本次我们在标签列表中添加标签helmet_head、no_helmet_head，其中标签的主名与别名表示同一类标签，当某些数据集的标注包含别名时，会在导入时合并变更为主名。如，标签列表中包含标签bike（别名bicycle），导入某数据集A（仅包含标签bicycle），则导入后在数据集详情显示标注为bike。
 
@@ -248,29 +249,27 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 数据集导入支持四种形式：公共数据集导入、网络导入、本地导入和路径导入,如下图所示：
 
-![数据导入引导](docs/images//%E5%AF%BC%E5%85%A51.jpg)
+![数据导入引导](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%AF%BC%E5%85%A51.jpg)
 
 (1) 公共数据集复制：导入公共用户内置的数据集，该数据集存储在公共用户上，以复制的形式导入到当前的操作用户上。如下图所示：
 
-![公共数据集导入1](docs/images/%E5%85%AC%E5%85%B1%E6%95%B0%E6%8D%AE%E9%9B%86%E5%AF%BC%E5%85%A51.jpeg)
-
-![公共数据集导入2](docs/images/%E5%85%AC%E5%85%B1%E6%95%B0%E6%8D%AE%E9%9B%86%E5%AF%BC%E5%85%A52.jpeg)
+![公共数据集导入](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%85%AC%E5%85%B1%E6%95%B0%E6%8D%AE%E9%9B%86%E5%AF%BC%E5%85%A5.jpg)
 
 选择数据集，可根据需求选择是否要同步导入公共数据集包含的标签，点击【确定】即可开始复制。
 
 (2) 网络导入：输入数据集对应的url路径，如下图所示：
 
-![网络导入](docs/images/%E7%BD%91%E7%BB%9C%E5%AF%BC%E5%85%A5.jpeg)
+![网络导入](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E7%BD%91%E7%BB%9C%E5%AF%BC%E5%85%A5.jpg)
 
 (3) 本地导入：上传本地数据集的压缩包，压缩包大小建议不超过200M。
 
 用户可以下载示例**Sample.zip**作为参考，如下图所示：
 
-![本地导入](docs/images/%E6%9C%AC%E5%9C%B0%E5%AF%BC%E5%85%A5.jpeg)
+![本地导入](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%9C%AC%E5%9C%B0%E5%AF%BC%E5%85%A5.jpg)
 
 (4)路径导入：输入数据集在服务器中的绝对路径。如下图所示：
 
-![路径导入](docs/images/%E8%B7%AF%E5%BE%84%E5%AF%BC%E5%85%A5.jpeg)
+![路径导入](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E8%B7%AF%E5%BE%84%E5%AF%BC%E5%85%A5.jpg)
 
 1.通过在网络中下载开源数据集VOC2012([点击下载VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar))，解压缩后按要求修改文件夹名称，再分别压缩为符合导入要求的zip包；
 
@@ -278,13 +277,9 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 3.选择路径导入，填上路径地址/data/sharing/voc2012_train。
 
-如下图所示：
-
-![voc训练集测试集](docs/images/voc%E8%AE%AD%E7%BB%83%E9%9B%86%E6%B5%8B%E8%AF%95%E9%9B%86.jpeg)
-
 完成初始数据集的导入后，点击【迭代数据准备】，完成对应的数据集和挖掘策略设置。其中训练集已设置为创建项目时默认的系统训练集，不可变更。
 
-![迭代数据准备](docs/images/%E8%BF%AD%E4%BB%A3%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87.jpg)
+![迭代数据准备](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E8%BF%AD%E4%BB%A3%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87.jpg)
 
 ## 3.2.2 初始模型准备
 
@@ -296,11 +291,11 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 模型训练可以点击数据集列表界面的【训练】操作按钮，跳转至创建模型训练界面，如下图所示：
 
-![训练1](docs/images/training1.jpg)
+![训练1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B1.jpg)
 
 选择训练集（train1 V1），选择测试集（val V1），选择训练目标（helmet_head，no_helmet_head），选择前置预训练模型（非必填）、训练镜像、训练类型、算法框架、骨干网络结构、GPU个数以及配置训练参数（训练参数提供默认值，默认参数中key值不可修改，value值可修改，如需添加参数可以自行添加）。如下图所示，训练初始模型：
 
-![训练2](docs/images/training2.jpg)
+![训练2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B2.jpg)
 
 训练成功后，跳转到模型列表界面，可以查看到相应的训练进度和信息，完成后可查看模型的效果（mAP值）。
 
@@ -316,8 +311,8 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 【挖掘数据准备】为用户提供待挖掘的数据，这里的原数据集默认为项目设置的挖掘集。操作流程如下图示：
 
-![挖掘数据准备1](docs/images/%E5%87%86%E5%A4%87%E6%8C%96%E6%8E%98%E6%95%B0%E6%8D%AE.jpg)
-![挖掘数据准备2](docs/images/%E5%87%86%E5%A4%87%E6%8C%96%E6%8E%98%E6%95%B0%E6%8D%AE2.jpg)
+![挖掘数据准备1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%87%86%E5%A4%87%E6%8C%96%E6%8E%98%E6%95%B0%E6%8D%AE.jpg)
+![挖掘数据准备2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%87%86%E5%A4%87%E6%8C%96%E6%8E%98%E6%95%B0%E6%8D%AE2.jpg)
 
 操作完成后点击【下一步】，开启【数据挖掘】流程。
 
@@ -325,8 +320,8 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 接下来使用在迭代模型准备时选择的模型，对待挖掘的数据集进行数据挖掘。点击【数据挖掘】按钮，跳转至数据挖掘界面，如下图所示：
 
-![挖掘1](docs/images/%E6%8C%96%E6%8E%981.jpg)
-![挖掘2](docs/images/%E6%8C%96%E6%8E%982.jpg)
+![挖掘1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%8C%96%E6%8E%981.jpg)
+![挖掘2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%8C%96%E6%8E%982.jpg)
 
 默认原数据集为上次挖掘数据准备的结果数据集，默认模型为迭代准备中设置的初始模型，输入筛选测试TOPK=500（前500张成功挖掘的图像）和设定自定义参数（自定义参数提供默认值，默认参数中key值不可修改，value值可修改，如需添加参数可以自行添加）。
 
@@ -336,11 +331,11 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 如果上一步中挖掘出来的数据没有标签，则需要进行标注。点击【数据标注】按钮，跳转至数据标注界面，如下图所示：
 
-![标注1](docs/images/%E6%A0%87%E6%B3%A81.jpg)
+![标注1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%A0%87%E6%B3%A81.jpg)
 
 默认原数据集为上次挖掘得到的结果数据集，输入标注人员邮箱（需要提前去标注系统注册，点击最下方“注册标注平台账号”即可跳转到Label Studio标注平台注册标注账号），选择标注目标（helmet_head， no_helmet_head），如需自行到标注平台查看，请勾选“到标注平台查看”，填写自己的标注平台账号（同样需要提前注册），如对标注有更详细的要求，则可以上传标注说明文档供标注人员参考。点击创建，如下图所示：
 
-![标注2](docs/images/%E6%A0%87%E6%B3%A82.jpg)
+![标注2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%A0%87%E6%B3%A82.jpg)
 
 创建成功后，跳转到数据集管理界面，可以查看到相应的标注进度和信息，标注完成后，系统自动获取完成结果，生成带有新标注的数据集。
 
@@ -348,17 +343,17 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 标注完成后，将已标注好的数据集合并到训练集中，并将合并结果生成为一个新的训练集版本。如下图所示：
 
-![更新1](docs/images/%E6%9B%B4%E6%96%B01.jpg)
-![更新2](docs/images/%E6%9B%B4%E6%96%B02.jpg)
+![更新1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%9B%B4%E6%96%B01.jpg)
+![更新2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%9B%B4%E6%96%B02.jpg)
 
 ## 3.2.7. 合并训练
 
-![流程-中文](docs/images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
+![流程-中文](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
 
 合并完成后，再次进行模型训练，生成新的模型版本，如下图所示：
 
-![合并训练1](docs/images/%E5%90%88%E5%B9%B6%E8%AE%AD%E7%BB%831.jpg)
-![合并训练2](docs/images/%E5%90%88%E5%B9%B6%E8%AE%AD%E7%BB%832.jpg)
+![合并训练1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%90%88%E5%B9%B6%E8%AE%AD%E7%BB%831.jpg)
+![合并训练2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%90%88%E5%B9%B6%E8%AE%AD%E7%BB%832.jpg)
 
 用户可对达到预期的模型进行下载。或继续进入下一轮迭代，进一步优化模型。
 
@@ -366,19 +361,17 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 每次训练模型后，可以对模型结果进行验证，即通过可视化的方式查看模型在真实图片中的表现。在【模型管理】页面，点击对应模型的【验证】按钮，跳转到【模型验证】页面，如下图所示：
 
-![模型验证1](docs/images/%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%811.jpeg)
-
-![模型验证2](docs/images/%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%812.jpeg)
+![模型验证1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%811.jpg)
 
 选择验证镜像，调整参数，点击【上传图片】按钮，选择本地图片上传，点击【模型验证】，显示结果如下：
 
-![模型验证3](docs/images/%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%813.jpeg)
+![模型验证2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%A8%A1%E5%9E%8B%E9%AA%8C%E8%AF%812.jpg)
 
 ## 3.2.9. 模型下载
 
 在【模型列表】页面，点击【下载】按钮，下载文件格式为tar包，包含模型的网络结构、为网络权重、超参数配置文件、训练的环境参数及结果，如下图所示：
 
-![模型下载](docs/images/%E6%A8%A1%E5%9E%8B%E4%B8%8B%E8%BD%BD.jpeg)
+![模型下载](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%A8%A1%E5%9E%8B%E4%B8%8B%E8%BD%BD.jpeg)
 
 # 4. 进阶版：Ymir-CMD line使用指南
 
@@ -404,7 +397,7 @@ $ mir --version
 
 ## 4.2 典型模型生产流程
 
-![流程-中文](docs/images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
+![流程-中文](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
 
 上图所示的是模型训练的一个典型流程：用户准备好外部数据，导入本系统，对数据进行适当筛选，开始训练得到一个（可能是粗精度的）模型，并依据这个模型，在一个待挖掘数据集中挑选适合进一步训练的图片，将这些图片进行标注，标注完成的结果与原训练集合并，用合并以后的结果再次执行训练过程，得到效果更好的模型。
 在这一节里，我们需要使用命令行实现上图所示的流程，其他流程也可以类似实现。
@@ -775,7 +768,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 **场景一**: 直接从最开始的metadata，进行筛选过程，选出并使用符合要求的数据，如下图所示：
 
-![场景一](docs/images/%E5%9C%BA%E6%99%AF%E4%B8%80.jpeg)
+![场景一](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%9C%BA%E6%99%AF%E4%B8%80.jpeg)
 
 每当用户需要开始一项新任务时：
 * 用户从当前的主分支内签出一个新的feature分支，得到处于feature#1状态的metadata；
@@ -785,7 +778,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 **场景二**：通过tag或keywords搜索到某个metadata，并开始筛选过程，直到得出符合要求的数据，然后使用该数据，如下图所示：
 
-![场景二](docs/images/%E5%9C%BA%E6%99%AF%E4%BA%8C.jpeg)
+![场景二](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%9C%BA%E6%99%AF%E4%BA%8C.jpeg)
 
 此时，每当用户需要开展一项新任务时：
 * 通过keywords和tag等方式，搜索到一个基本符合自己要求的metadata
@@ -795,7 +788,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 **场景三**：增量合并。假设用户已经使用某个metadata完成了模型的训练任务，此时资源库与主分支的metadata有更新，用户希望将这一部分更新合并到当前使用的metadata中：
 
-![场景三](docs/images/%E5%9C%BA%E6%99%AF%E4%B8%89.jpeg)
+![场景三](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%9C%BA%E6%99%AF%E4%B8%89.jpeg)
 
 假设用户现在在feature#2，用户需要进行如下操作：
 * 切回主分支master
@@ -811,7 +804,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 * master分支始终为空。
 这种管理方式如下图所示：
 
-![分支及数据集管理](docs/images/%E5%88%86%E6%94%AF%E5%8F%8A%E6%95%B0%E6%8D%AE%E9%9B%86%E7%AE%A1%E7%90%86.jpeg)
+![分支及数据集管理](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%88%86%E6%94%AF%E5%8F%8A%E6%95%B0%E6%8D%AE%E9%9B%86%E7%AE%A1%E7%90%86.jpeg)
 
 我们使用Git中代码版本控制的概念来管理我们的数据和模型。我们使用分支的概念创建新项目，以便同一组映像上的不同任务可以并行运行。数据集的增加、检索、更新和删除以及基本操作都创建提交到分支。从逻辑上讲，每次提交都存储数据集或新模型的更新版本，以及导致此更改的操作的元数据。最后，只有数据更改被合并到主分支，这在概念上，聚合了该平台上许多项目注释的所有数据。
 
