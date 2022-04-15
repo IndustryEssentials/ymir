@@ -122,7 +122,7 @@ def create_project(
         result_state=ResultState.ready,
         task_id=task.id,
     )
-    crud.dataset.create_with_version(db, obj_in=dataset_in, is_protected=True)
+    crud.dataset.create_with_version(db, obj_in=dataset_in)
 
     # 5.update project info
     project = crud.project.update_resources(
@@ -189,12 +189,6 @@ def update_project(
         raise ProjectNotFound()
 
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
-
-    # set protected for mining_dataset_id and testing_dataset_id
-    protected_dataset_id = list(filter(None, [project_update.mining_dataset_id, project_update.testing_dataset_id]))
-    if protected_dataset_id:
-        crud.dataset.set_datasets_protected(db, dataset_ids=protected_dataset_id)
-
     return {"result": project}
 
 
