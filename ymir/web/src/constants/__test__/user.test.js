@@ -3,10 +3,6 @@ import { ROLES,
   getRolesLabel,
   getUserState } from '../user'
 
-jest.mock('@/utils/t', () => {
-  return jest.fn((str) => str)
-})
-
 describe("constants: user", () => {
   it("ROLES: user roles have right mapping and object is freeze", () => {
     expect(ROLES.SUPER).toBe(3)

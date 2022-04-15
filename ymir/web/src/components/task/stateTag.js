@@ -5,7 +5,6 @@ import s from './stateTag.less'
 import { InprogressIcon, SuccessIcon, FailIcon, } from '@/components/common/icons'
 
 export default function StateTag({ state = states.READY, size='normal', mode='all', iconStyle = {}, ...resProps }) {
-  // const states = getTaskStates()
   const maps = {
     [states.READY]: { icon: <InprogressIcon className={s.stateIcon} style={{...iconStyle, color: '#3BA0FF'}} />, },
     [states.VALID]: { icon: <SuccessIcon className={s.stateIcon} style={iconStyle} />, color: 'success' },
