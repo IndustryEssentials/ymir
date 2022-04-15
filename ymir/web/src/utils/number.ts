@@ -36,9 +36,8 @@ export function randomBetween(n: number, m: number, exclude: number): number {
   return result
 }
 
-export const toFixed = (value: number, len: number) => {
+export const toFixed = (value: number, len: number = 0) => {
   let s = value + ""
-  if (!len) len = 0
   if (s.indexOf(".") == -1) s += "."
   s += new Array(len + 1).join("0")
   const reg = new RegExp("^(-|\\+)?(\\d+(\\.\\d{0," + (len + 1) + "})?)\\d*$")
