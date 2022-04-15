@@ -25,3 +25,8 @@ class RequestHandler:
         )
         resp.raise_for_status()
         return resp.content
+
+    def put(self, url_path: str, params: Dict = {}) -> bytes:
+        resp = requests.put(url=f"{self.url}{url_path}", headers=self.headers, params=params)
+        resp.raise_for_status()
+        return resp.content
