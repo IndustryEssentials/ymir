@@ -13,6 +13,7 @@ from app.api.errors.errors import (
     DuplicateProjectError,
     FailedToCreateProject,
     FailedToConnectClickHouse,
+    NoDatasetPermission,
 )
 from app.constants.state import ResultState
 from app.constants.state import RunningStates
@@ -189,6 +190,10 @@ def update_project(
     project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
+    if project_update.initial_training_dataset_id is not None:
+        dataset = crud.dataset.get(db, id=project_update.initial_training_dataset_id)
+        if project.training_dataset_group_id != dataset.dataset_group_id:
+            raise NoDatasetPermission()
 
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
     return {"result": project}
