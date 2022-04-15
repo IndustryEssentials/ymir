@@ -126,9 +126,9 @@ const dataset = {
   'dataset.detail.label.name': { cn: '数据集名称', en: 'Dataset Name', },
   'dataset.detail.label.assets': { cn: '图片数', en: 'Assets Count', },
   'dataset.detail.label.keywords': { cn: '标签', en: 'Keywords', },
-  'dataset.add.form.copy.label': { cn: '源数据集', en: 'Keywords', },
-  'dataset.add.form.copy.required': { cn: '源数据集不能为空', en: 'Keywords', },
-  'dataset.add.form.copy.placeholder': { cn: '请选择待复制的数据集版本', en: 'Keywords', },
+  'dataset.add.form.copy.label': { cn: '源数据集', en: 'Original Dataset', },
+  'dataset.add.form.copy.required': { cn: '源数据集不能为空', en: 'Original dataset is required', },
+  'dataset.add.form.copy.placeholder': { cn: '请选择待复制的数据集版本', en: 'Select a dataset version for copy', },
 }
 
 export default dataset
