@@ -168,7 +168,7 @@ const ImageList = ({ role, filter, getImages }) => {
     const type = isTrain(item.functions) ? 'train' : 'mining'
     const desc = <Row><Col className={s.desc} flex={1}>
       <Space className={s.info}>
-        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{getImageTypeLabel(item.functions).join(', ')}</span>
+        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{getImageTypeLabel(item.functions).map(label => t(label)).join(', ')}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.url')}</span>{item.url}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
       </Space>

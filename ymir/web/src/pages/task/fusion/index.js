@@ -273,7 +273,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
-                    {t('task.create')}
+                    {t('common.confirm')}
                   </Button>
                 </Form.Item>
                 <Form.Item name='backBtn' noStyle>

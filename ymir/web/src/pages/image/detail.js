@@ -5,7 +5,7 @@ import { useParams, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
-import { TYPES, STATES, getImageTypeLabel, getImageStateLabel } from '@/constants/image'
+import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
 import { ROLES } from '@/constants/user'
 import LinkModal from "./components/relate"
 import ShareModal from "./components/share"
@@ -71,7 +71,7 @@ function ImageDetail({ role, getImage }) {
   function renderConfigs(configs = []) {
     return configs.map(({config, type }) => {
       return <>
-      <h3>{getImageTypeLabel([type])[0]}</h3>
+      <h3>{t(getImageTypeLabel([type])[0])}</h3>
       <div>{renderConfig(config)}</div>
       </>
     })
@@ -109,7 +109,7 @@ function ImageDetail({ role, getImage }) {
         <div className={styles.infoTable} >
         <Descriptions bordered column={2} labelStyle={{ width: '200px'}} title={t('image.detail.title')}>
           <Item label={t('image.detail.label.name')}>{image.name}</Item>
-          <Item label={t('image.detail.label.type')}>{getImageTypeLabel(image.functions).join(',')}</Item>
+          <Item label={t('image.detail.label.type')}>{getImageTypeLabel(image.functions).map(label => t(label)).join(',')}</Item>
           <Item label={t('image.detail.label.url')}>{image.url}</Item>
           <Item label={t('image.detail.label.share')}>{image.is_shared ? t('common.yes') : t('common.no')}</Item>
           <Item label={t('image.detail.label.related')} span={2}>

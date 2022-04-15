@@ -1,5 +1,6 @@
 import { Tag } from 'antd'
 import { STATES, getUserState } from '@/constants/user'
+import t from '@/utils/t'
 import s from './stateTag.less'
 import { SuccessIcon, FailIcon, ShutIcon, TipsIcon } from '../common/icons'
 
@@ -10,7 +11,7 @@ export default function StateTag({ state }) {
     [STATES.DECLINED]: { icon: <FailIcon className={s.stateIcon} />, color: 'error' },
     [STATES.DEACTIVED]: { icon: <ShutIcon className={s.stateIcon} style={{ color: 'rgba(0, 0, 0, 0.25)'}} /> },
   }
-  const target = { ...maps[state], label: getUserState(state) }
+  const target = { ...maps[state], label: t(getUserState(state)) }
   return (
     <Tag
       className={s.state}

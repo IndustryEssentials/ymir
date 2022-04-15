@@ -307,7 +307,7 @@ function Inference({ datasetCache, datasets, ...props }) {
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit" >
-                    {t('task.create')}
+                    {t('common.action.infer')}
                   </Button>
                 </Form.Item>
                 <Form.Item name='backBtn' noStyle>

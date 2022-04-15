@@ -15,8 +15,6 @@ const tip = {
   en: "Default Inferential image supported, and you can add your own image. Mining docker image have its own senior config, you can modify it for training task.", },
   "tip.task.filter.gpucount": { cn: "所选GPU个数越多，训练速度越快，请注意资源合理分配", en: "GPU number tips: The more GPUs you select, the faster the training speed will be, please allocate resources reasonably", },
   "tip.task.filter.hyperparams": { cn: "训练镜像中需传入的运行参数，默认为最佳推荐配置", en: "Hyperparameter tips: the operation parameters to be entered in the training docker, the default value is the best recommended configuration", },
-  "tip.task.filter.title": { cn: "通过挖掘在大量数据中选出最有利于模型优化的数据", en: "Getting data for model optimization by mining large amounts of data", },
-  "tip.task.filter.excludeset": { cn: "选中的数据集将不会出现在挖掘结果中", en: "The selected dataset will not appear in the mining results", },
   "tip.task.filter.model": { cn: "挖掘出来的数据一般用于该模型的效果优化", en: "The mined dataset is generally used for the optimization of the selected model", },
   "tip.task.filter.strategy": { cn: "用户自定义挖掘结果数据集的大小，即希望保留TopK个最有利于模型优化的数据。在选择多个数据集时，由于可能存在重复数据，合并后的结果小于所选数据集之和，当用户自定义TopK值大于合并后的数据集大小时，则返回全部数据。", en: "User-defined size of the mined result dataset, i.e., you want to keep the TopK data that are most conducive to model optimization.When multiple datasets are selected, the merged result may be smaller than the sum of the selected datasets due to the possible existence of duplicate data. When the user-defined TopK value is larger than the size of the merged dataset, all data are returned.", },
   "tip.task.filter.newlable": { cn: "通过所选模型对数据集进行推理，产生新的标注结果", en: "The selected model will be used to infer the dataset and generate new annotations", },
