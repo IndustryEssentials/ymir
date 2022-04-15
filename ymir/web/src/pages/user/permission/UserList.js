@@ -34,7 +34,7 @@ function UserList({ getUsers, setUserRole, off }) {
     {
       title: showTitle("user.column.role"),
       dataIndex: "role",
-      render: (role) => getRolesLabel(role),
+      render: (role) => t(getRolesLabel(role)),
     },
     {
       title: showTitle("user.column.email"),

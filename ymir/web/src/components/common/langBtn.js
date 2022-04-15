@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { setLocale, getLocale } from "umi"
-import { Button } from "antd"
 import { EnglishIcon, ChinaIcon } from '@/components/common/icons'
 
 function LangBtn({ dark = false }) {

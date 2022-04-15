@@ -11,7 +11,6 @@ import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
-import { getTimes, getModelImportTypes } from '@/constants/query'
 
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
@@ -113,10 +112,6 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
     form.resetFields()
   }
 
-  const types = getModelImportTypes()
-
-  const times = getTimes()
-
   const columns = [
     {
       title: showTitle("model.column.name"),
@@ -134,7 +129,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
     {
       title: showTitle("model.column.source"),
       dataIndex: "taskType",
-      render: (type) => <TypeTag types={getModelImportTypes()} type={type} />,
+      render: (type) => <TypeTag type={type} />,
     },
     {
       title: showTitle("model.column.map"),
