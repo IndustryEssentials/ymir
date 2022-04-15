@@ -10,8 +10,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_importing import TaskImportingInvoker
-from controller.label_model.label_free import LabelFree
-from controller.label_model.label_studio import LabelStudio
+from controller.utils import utils
 from controller.utils.redis import rds
 
 
@@ -56,13 +55,7 @@ def _gen_index_file(des_annotation_path: str) -> str:
 
 
 def lable_task_monitor() -> None:
-    if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
-        label_instance = LabelStudio()
-    elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
-        label_instance = LabelFree()  # type: ignore
-    else:
-        raise ValueError("Error! Please setting your label tools")
-
+    label_instance = utils.create_label_instance()
     project_mapping = rds.hgetall(label_task_config.MONITOR_MAPPING_KEY)
     for task_id, content in project_mapping.items():
         project_info = json.loads(content)

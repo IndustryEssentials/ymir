@@ -73,7 +73,30 @@ class LabelBase(ABC):
         pass
 
     @abstractmethod
-    def run(self, **kwargs: Dict) -> Any:
+    def delete_unlabeled_task(self, project_id: int) -> None:
+        pass
+
+    @abstractmethod
+    def sync_export_storage(self, storage_id: int) -> None:
+        # Sync tasks from a local file export storage connection
+        pass
+
+    @abstractmethod
+    def run(
+        self,
+        task_id: str,
+        project_name: str,
+        keywords: List,
+        collaborators: List,
+        expert_instruction: str,
+        input_asset_dir: str,
+        export_path: str,
+        monitor_file_path: str,
+        repo_root: str,
+        media_location: str,
+        import_work_dir: str,
+        use_pre_annotation: bool,
+    ) -> None:
         # start a label task
         pass
 
