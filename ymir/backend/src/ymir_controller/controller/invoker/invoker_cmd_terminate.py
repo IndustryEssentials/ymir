@@ -4,7 +4,6 @@ import sentry_sdk
 
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.label_model.label_studio import LabelStudio
 from controller.utils import checker, utils
 from controller.utils.redis import rds
 from id_definition.error_codes import CTLResponseCode
@@ -43,7 +42,8 @@ class CMDTerminateInvoker(BaseMirControllerInvoker):
                 return container_response
         elif self._request.terminated_task_type == backend_pb2.TaskType.TaskTypeLabel:
             project_id = self.get_project_id_by_task_id(self._request.executant_name)
-            LabelStudio().delete_unlabeled_task(project_id)
+            label_instance = utils.create_label_instance()
+            label_instance.delete_unlabeled_task(project_id)
         else:
             logging.info(f"Do nothing to terminate task_type:{self._request.req_type}")
 
