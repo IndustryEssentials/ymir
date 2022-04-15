@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: da15fdc60228
+Revision ID: a55ab001129f
 Revises:
-Create Date: 2022-04-14 16:23:15.608159
+Create Date: 2022-04-15 15:16:19.539758
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "da15fdc60228"
+revision = "a55ab001129f"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -195,6 +195,7 @@ def upgrade() -> None:
         sa.Column("mining_dataset_id", sa.Integer(), nullable=True),
         sa.Column("testing_dataset_id", sa.Integer(), nullable=True),
         sa.Column("initial_model_id", sa.Integer(), nullable=True),
+        sa.Column("initial_training_dataset_id", sa.Integer(), nullable=True),
         sa.Column("current_iteration_id", sa.Integer(), nullable=True),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
@@ -204,6 +205,9 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_project_id"), "project", ["id"], unique=False)
     op.create_index(op.f("ix_project_initial_model_id"), "project", ["initial_model_id"], unique=False)
+    op.create_index(
+        op.f("ix_project_initial_training_dataset_id"), "project", ["initial_training_dataset_id"], unique=False
+    )
     op.create_index(op.f("ix_project_mining_dataset_id"), "project", ["mining_dataset_id"], unique=False)
     op.create_index(op.f("ix_project_mining_strategy"), "project", ["mining_strategy"], unique=False)
     op.create_index(op.f("ix_project_name"), "project", ["name"], unique=False)
@@ -302,6 +306,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_project_name"), table_name="project")
     op.drop_index(op.f("ix_project_mining_strategy"), table_name="project")
     op.drop_index(op.f("ix_project_mining_dataset_id"), table_name="project")
+    op.drop_index(op.f("ix_project_initial_training_dataset_id"), table_name="project")
     op.drop_index(op.f("ix_project_initial_model_id"), table_name="project")
     op.drop_index(op.f("ix_project_id"), table_name="project")
     op.drop_table("project")
