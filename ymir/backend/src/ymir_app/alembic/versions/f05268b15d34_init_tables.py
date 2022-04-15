@@ -1,4 +1,4 @@
-"""mo
+"""init tables
 
 Revision ID: a55ab001129f
 Revises:

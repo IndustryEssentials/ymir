@@ -65,6 +65,7 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     initial_model_id: Optional[int]
+    initial_training_dataset_id: Optional[int]
 
     current_iteration: Optional[Iteration]
     training_dataset_group: Optional[DatasetGroup]
