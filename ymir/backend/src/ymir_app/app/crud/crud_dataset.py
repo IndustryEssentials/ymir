@@ -63,19 +63,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             return query.offset(offset).limit(limit).all(), query.count()
         return query.all(), query.count()
 
-    def set_datasets_protected(
-        self,
-        db: Session,
-        *,
-        dataset_ids: List[int],
-    ) -> Optional[List[Dataset]]:
-        objs = db.query(self.model).filter(self.model.id.in_(dataset_ids)).all()
-        for obj in objs:
-            obj.is_protected = True
-        db.bulk_save_objects(objs)
-        db.commit()
-        return objs
-
     def update_state(
         self,
         db: Session,
@@ -105,9 +92,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         latest_version = self.get_latest_version(db, group_id)
         return latest_version + 1 if latest_version is not None else 1
 
-    def create_with_version(
-        self, db: Session, obj_in: DatasetCreate, dest_group_name: Optional[str] = None, is_protected: bool = False
-    ) -> Dataset:
+    def create_with_version(self, db: Session, obj_in: DatasetCreate, dest_group_name: Optional[str] = None) -> Dataset:
         # fixme
         #  add mutex lock to protect latest_version
         version_num = self.next_available_version(db, obj_in.dataset_group_id)
@@ -121,7 +106,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             project_id=obj_in.project_id,
             user_id=obj_in.user_id,
             task_id=obj_in.task_id,
-            is_protected=is_protected,
         )
         db.add(db_obj)
         db.commit()
@@ -165,16 +149,13 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.refresh(dataset)
         return dataset
 
-    def remove_group_resources(self, db: Session, *, group_id: int) -> bool:
+    def remove_group_resources(self, db: Session, *, group_id: int) -> List[Dataset]:
         objs = db.query(self.model).filter(self.model.dataset_group_id == group_id).all()
         for obj in objs:
-            # if is_protected, not remove group resources
-            if obj.is_protected:
-                return False
             obj.is_deleted = True
         db.bulk_save_objects(objs)
         db.commit()
-        return True
+        return objs
 
 
 dataset = CRUDDataset(Dataset)

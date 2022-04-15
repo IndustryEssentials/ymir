@@ -330,11 +330,6 @@ class IterationNotFound(NotFound):
     message = "Iteration Not Found"
 
 
-class RejectDeleteProtectedDataset(APIError):
-    code = error_codes.DATASET_PROTECTED_TO_DELETE
-    message = "Reject to Delete Protected Dataset"
-
-
 class FailedToUpdateIterationStage(APIError):
     code = error_codes.ITERATION_COULD_NOT_UPDATE_STAGE
     message = "Failed to Update Iteration Stage"

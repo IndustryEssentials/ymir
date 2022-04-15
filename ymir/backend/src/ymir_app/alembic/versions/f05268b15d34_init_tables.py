@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: f05268b15d34
+Revision ID: da15fdc60228
 Revises:
-Create Date: 2022-04-11 10:36:26.806240
+Create Date: 2022-04-14 16:23:15.608159
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = "f05268b15d34"
+revision = "da15fdc60228"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -36,7 +36,6 @@ def upgrade() -> None:
         sa.Column("asset_count", sa.Integer(), nullable=True),
         sa.Column("keyword_count", sa.Integer(), nullable=True),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
-        sa.Column("is_protected", sa.Boolean(), nullable=False),
         sa.Column("create_datetime", sa.DateTime(), nullable=False),
         sa.Column("update_datetime", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
