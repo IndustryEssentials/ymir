@@ -53,6 +53,7 @@ class ProjectUpdate(BaseModel):
     testing_dataset_id: Optional[int]
     description: Optional[str]
     initial_model_id: Optional[int]
+    initial_training_dataset_id: Optional[int]
 
     class Config:
         use_enum_values = True
@@ -64,6 +65,7 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     initial_model_id: Optional[int]
+    initial_training_dataset_id: Optional[int]
 
     current_iteration: Optional[Iteration]
     training_dataset_group: Optional[DatasetGroup]

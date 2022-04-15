@@ -40,6 +40,7 @@ class Project(Base):
     mining_dataset_id = Column(Integer, index=True)
     testing_dataset_id = Column(Integer, index=True)
     initial_model_id = Column(Integer, index=True)
+    initial_training_dataset_id = Column(Integer, index=True)
 
     # for project haven't finish initialization, current_iteration_id is None
     current_iteration_id = Column(Integer)
