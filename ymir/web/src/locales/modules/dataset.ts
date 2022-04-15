@@ -45,7 +45,7 @@ const dataset = {
   "dataset.asset.annotation.hide": { cn: "隐藏所有标注", en: "Hide All", },
   "dataset.asset.annotation.show": { cn: "显示所有标注", en: "Show All", },
   "dataset.add.types.internal": { cn: "公共数据集", en: "Public Dataset", },
-  "dataset.add.types.share": { cn: "用户分享数据集", en: "Shared Dataset", },
+  "dataset.add.types.copy": { cn: "复制其他项目数据集", en: "Copy Dataset From Other Project", },
   "dataset.add.types.net": { cn: "网络导入", en: "Net Import", },
   "dataset.add.types.local": { cn: "本地导入", en: "Local Import", },
   "dataset.add.types.path": { cn: "路径导入", en: "Path Import", },
@@ -99,6 +99,9 @@ const dataset = {
   'dataset.detail.label.name': { cn: '数据集名称', en: 'Dataset Name', },
   'dataset.detail.label.assets': { cn: '图片数', en: 'Assets Count', },
   'dataset.detail.label.keywords': { cn: '标签', en: 'Keywords', },
+  'dataset.add.form.copy.label': { cn: '源数据集', en: 'Original Dataset', },
+  'dataset.add.form.copy.required': { cn: '源数据集不能为空', en: 'Original dataset is required', },
+  'dataset.add.form.copy.placeholder': { cn: '请选择待复制的数据集版本', en: 'Select a dataset version for copy', },
 }
 
 export default dataset

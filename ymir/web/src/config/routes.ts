@@ -77,7 +77,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.datasets.copy',
   },
   {
-    path: "/home/dataset/add/:pid",
+    path: "/home/dataset/add/:id",
     name: "datasetImport",
     component: "@/pages/dataset/add",
     title: "dataset.add.title",

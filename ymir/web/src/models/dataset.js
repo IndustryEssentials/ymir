@@ -118,6 +118,8 @@ export default {
           type: "UPDATE_ALL_DATASETS",
           payload: dss.items,
         })
+        loading = false
+        return dss.items
       }
       loading = false
     },
