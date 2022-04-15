@@ -14,6 +14,7 @@ from app.api.errors.errors import (
     FailedToCreateProject,
     FailedToConnectClickHouse,
     NoDatasetPermission,
+    DatasetNotFound,
 )
 from app.constants.state import ResultState
 from app.constants.state import RunningStates
@@ -192,6 +193,8 @@ def update_project(
         raise ProjectNotFound()
     if project_update.initial_training_dataset_id is not None:
         dataset = crud.dataset.get(db, id=project_update.initial_training_dataset_id)
+        if not dataset:
+            raise DatasetNotFound()
         if project.training_dataset_group_id != dataset.dataset_group_id:
             raise NoDatasetPermission()
 
