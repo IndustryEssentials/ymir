@@ -6,9 +6,9 @@ from functools import wraps
 from typing import Callable, Dict, List
 
 from controller.config import label_task as label_task_config
+from controller.label_model.base import LabelBase
 from controller.label_model.label_free import LabelFree
 from controller.label_model.label_studio import LabelStudio
-from controller.label_model.base import LabelBase
 from id_definition import task_id as task_id_proto
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2

@@ -82,7 +82,21 @@ class LabelBase(ABC):
         pass
 
     @abstractmethod
-    def run(self, **kwargs: Union[str, bool, List]) -> Any:
+    def run(
+        self,
+        task_id: str,
+        project_name: str,
+        keywords: List,
+        collaborators: List,
+        expert_instruction: str,
+        input_asset_dir: str,
+        export_path: str,
+        monitor_file_path: str,
+        repo_root: str,
+        media_location: str,
+        import_work_dir: str,
+        use_pre_annotation: bool,
+    ) -> None:
         # start a label task
         pass
 
