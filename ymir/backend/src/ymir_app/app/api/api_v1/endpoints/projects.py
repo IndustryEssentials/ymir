@@ -13,6 +13,8 @@ from app.api.errors.errors import (
     DuplicateProjectError,
     FailedToCreateProject,
     FailedToConnectClickHouse,
+    NoDatasetPermission,
+    DatasetNotFound,
 )
 from app.constants.state import ResultState
 from app.constants.state import RunningStates
@@ -122,13 +124,15 @@ def create_project(
         result_state=ResultState.ready,
         task_id=task.id,
     )
-    crud.dataset.create_with_version(db, obj_in=dataset_in)
+    initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
 
     # 5.update project info
     project = crud.project.update_resources(
         db,
         project_id=project.id,
-        project_update=schemas.ProjectUpdate(training_dataset_group_id=dataset_group.id),
+        project_update=schemas.ProjectUpdate(
+            training_dataset_group_id=dataset_group.id, initial_training_dataset_id=initial_dataset.id
+        ),
     )
 
     try:
@@ -187,6 +191,12 @@ def update_project(
     project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
+    if project_update.initial_training_dataset_id is not None:
+        dataset = crud.dataset.get(db, id=project_update.initial_training_dataset_id)
+        if not dataset:
+            raise DatasetNotFound()
+        if project.training_dataset_group_id != dataset.dataset_group_id:
+            raise NoDatasetPermission()
 
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
     return {"result": project}
