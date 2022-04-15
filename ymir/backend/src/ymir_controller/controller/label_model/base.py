@@ -2,7 +2,7 @@ import json
 import traceback
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List
 
 from requests.exceptions import ConnectionError
 
