@@ -53,6 +53,7 @@ class ProjectUpdate(BaseModel):
     testing_dataset_id: Optional[int]
     description: Optional[str]
     initial_model_id: Optional[int]
+    initial_training_dataset_id: Optional[int]
 
     class Config:
         use_enum_values = True

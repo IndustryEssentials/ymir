@@ -122,13 +122,15 @@ def create_project(
         result_state=ResultState.ready,
         task_id=task.id,
     )
-    crud.dataset.create_with_version(db, obj_in=dataset_in)
+    initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
 
     # 5.update project info
     project = crud.project.update_resources(
         db,
         project_id=project.id,
-        project_update=schemas.ProjectUpdate(training_dataset_group_id=dataset_group.id),
+        project_update=schemas.ProjectUpdate(
+            training_dataset_group_id=dataset_group.id, initial_training_dataset_id=initial_dataset.id
+        ),
     )
 
     try:
