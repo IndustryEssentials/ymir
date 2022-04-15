@@ -2,7 +2,7 @@ import json
 import traceback
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Union
 
 from requests.exceptions import ConnectionError
 
@@ -73,7 +73,16 @@ class LabelBase(ABC):
         pass
 
     @abstractmethod
-    def run(self, **kwargs: Dict) -> Any:
+    def delete_unlabeled_task(self, project_id: int) -> None:
+        pass
+
+    @abstractmethod
+    def sync_export_storage(self, storage_id: int) -> None:
+        # Sync tasks from a local file export storage connection
+        pass
+
+    @abstractmethod
+    def run(self, **kwargs: Union[str, bool, List]) -> Any:
         # start a label task
         pass
 
