@@ -81,12 +81,14 @@ class EnvInputConfig(BaseModel):
         file_path = self._index_file_for_dataset_type(dataset_type)
         with open(file_path, 'r') as f:
             for line in f:
-                components = line.split('\t')
+                # note: last char of line is \n
+                components = line[:-1].split('\t')
                 if len(components) == 2:
                     yield (components[0], components[1])
                 elif len(components) == 1:
-                    return (components[0], '')
+                    yield (components[0], '')
                 else:
+                    logging.info(f"len {len(components)}")  # for test
                     raise ValueError(f"irregular index file: {file_path}")
 
 
@@ -95,7 +97,7 @@ class EnvOutputConfig(BaseModel):
     models_dir: str = '/out/models'
     tensorboard_dir: str = '/out/tensorboard'
     training_result_file: str = '/out/models/result.yaml'
-    mining_result_file: str = '/out/result.txt'
+    mining_result_file: str = '/out/result.tsv'
     infer_result_file: str = '/out/infer-result.json'
     monitor_file: str = '/out/monitor.txt'
 
@@ -119,7 +121,7 @@ logging.basicConfig(stream=sys.stdout,
                     level=logging.INFO)
 
 
-def set_env(env_file_path: str) -> None:
+def set_env(env_file_path: str) -> EnvConfig:
     with open(env_file_path, 'r') as f: 
         global _env_config_
         _env_config_ = EnvConfig.parse_obj(yaml.safe_load(f.read()))

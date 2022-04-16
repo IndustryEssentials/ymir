@@ -58,17 +58,18 @@ class TestMonitor(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # protected: check results
-    def _check_monitor(self, percent: float, state: int, exception: Exception) -> None:
+    def _check_monitor(self, percent: float, exception: Exception) -> None:
         with open(self._monitor_file, 'r') as f:
             lines = f.read().splitlines()
         task_id, timestamp_str, percent_str, state_str, *_ = lines[0].split()
         self.assertEqual(task_id, env.get_current_env().task_id)
         self.assertTrue(float(timestamp_str) > 0)
         self.assertEqual(percent, float(percent_str))
-        self.assertEqual(state, int(state_str))
         if exception:
+            self.assertEqual(4, int(state_str))
             self.assertTrue(len(lines) > 1)
         else:
+            self.assertEqual(2, int(state_str))
             self.assertEqual(len(lines), 1)
 
     def _check_training_result(self, model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs) -> None:
@@ -84,6 +85,9 @@ class TestMonitor(unittest.TestCase):
         with open(self._mining_result_file, 'r') as f:
             lines = f.read().splitlines()
             self.assertEqual(len(lines), len(mining_result))
+            self.assertEqual(lines[0], 'b\t0.3')
+            self.assertEqual(lines[1], 'c\t0.2')
+            self.assertEqual(lines[2], 'a\t0.1')
 
     def _check_infer_result(self, infer_result: Dict[str, List[monitor.Annotation]]) -> None:
         with open(self._infer_result_file, 'r') as f:
@@ -92,11 +96,14 @@ class TestMonitor(unittest.TestCase):
 
     # public: test cases
     def test_write_monitor(self) -> None:
-        monitor.write_logger(info='a fake log info', percent=0.2, state=2)
-        self._check_monitor(percent=0.2, state=2, exception=None)
+        monitor.write_logger(info='a fake log info', percent=0.2)
+        self._check_monitor(percent=0.2, exception=None)
 
         exception = ValueError('a fake error')
-        monitor.write_logger(info='another fake log info', percent=0.4, state=4, exception=exception)
+        monitor.write_logger(info='another fake log info',
+                             percent=0.4,
+                             exception=exception)
+        self._check_monitor(percent=1.0, exception=exception)
 
     def test_write_training_result(self) -> None:
         model_names = ['model-symbols.json', 'model-0000.params']
@@ -106,14 +113,16 @@ class TestMonitor(unittest.TestCase):
         self._check_training_result(model_names=model_names, mAP=mAP, classAPs=classAPs, author='fake author')
 
     def test_write_mining_result(self) -> None:
-        mining_result = [('a', '0.5'), ('b', '0.3'), ('c', '0.2')]
+        mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]
         monitor.write_mining_result(mining_result=mining_result)
         self._check_mining_result(mining_result=mining_result)
 
     def test_write_infer_result(self) -> None:
         infer_result = {
-            'a': [monitor.Annotation(box=monitor.Box(x=0, y=0, w=50, h=50), class_name='cat', score=0.2),
-                  monitor.Annotation(box=monitor.Box(x=150, y=0, w=50, h=50), class_name='person', score=0.3)],
+            'a': [
+                monitor.Annotation(box=monitor.Box(x=0, y=0, w=50, h=50), class_name='cat', score=0.2),
+                monitor.Annotation(box=monitor.Box(x=150, y=0, w=50, h=50), class_name='person', score=0.3)
+            ],
             'b': [monitor.Annotation(box=monitor.Box(x=0, y=0, w=50, h=150), class_name='person', score=0.2)],
             'c': [],
         }
