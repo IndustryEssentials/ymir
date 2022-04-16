@@ -266,3 +266,52 @@ def repo_dot_mir_path(mir_root: str) -> str:
     dir = os.path.join(mir_root, '.mir')
     os.makedirs(dir, exist_ok=True)
     return dir
+
+
+def generate_training_env_config_file(task_id: str, env_config_file_path: str) -> None:
+    env_config = {
+        'task_id': task_id,
+        'run_training': True,
+        'input': {
+            'root_dir': '/in',
+            'assets_dir': '/in/assets',
+            'annotations_dir': '/in/annotations',
+            'models_dir': '/in/models',
+            'training_index_file': '/in/train-index.tsv',
+            'config_file': '/in/config.yaml',
+        },
+        'output': {
+            'root_dir': '/out',
+            'models_dir': '/out/models',
+            'tensorboard_dir': '/out/tensorboard',
+            'training_result_file': '/out/models/result.yaml',
+            'monitor_file': '/out/monitor.txt',
+        },
+    }
+    with open(env_config_file_path, 'w') as f:
+        yaml.safe_dump(env_config, f)
+
+
+def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_infer: bool,
+                                          env_config_file_path: str) -> None:
+    env_config = {
+        'task_id': task_id,
+        'run_mining': run_mining,
+        'run_infer': run_infer,
+        'input': {
+            'root_dir': '/in',
+            'assets_dir': '/in/assets',
+            'annotations_dir': '/in/annotations',
+            'models_dir': '/in/models',
+            'candidate_index_file': '/in/candidate-index.tsv',
+            'config_file': '/in/config.yaml',
+        },
+        'output': {
+            'root_dir': '/out',
+            'mining_result_file': '/out/result.tsv',
+            'infer_result_file': '/out/infer-result.json',
+            'monitor_file': '/out/monitor.txt',
+        },
+    }
+    with open(env_config_file_path, 'w') as f:
+        yaml.safe_dump(env_config, f)
