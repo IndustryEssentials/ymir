@@ -41,5 +41,6 @@ jobs:
       working-directory: ymir/command
     - name: Test with pytest - tmi-framework
       run: |
+        pip install -r ymir_tmi/requirements.txt
         python tests/__main__.py
       working-directory: docker_executor/sample_tmi_executor
