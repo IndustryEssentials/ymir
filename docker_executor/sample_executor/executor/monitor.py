@@ -23,7 +23,8 @@ def write_logger(info: str, percent: float = None, exception: Exception = None) 
             else:
                 state = _TaskState.ERROR.value
                 percent = 1.0
-                tb = ''.join(traceback.format_stack()[:-2])  # ignore the last 2 items: write_logger and _write_monitor_file
+                # ignore the last 2 items: write_logger and _write_monitor_file
+                tb = ''.join(traceback.format_stack()[:-2])
 
             f.write(f"{env_config.task_id}\t{time.time()}\t{percent:.2f}\t{state}\t{info}\n")
             f.write(f"{tb}")
