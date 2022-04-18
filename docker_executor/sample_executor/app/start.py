@@ -1,8 +1,9 @@
+import logging
 import os
 import sys
 from typing import List
 
-from ef import dataset_reader as dr, env, monitor, result_writer as rw
+from executor import dataset_reader as dr, env, monitor, result_writer as rw
 
 
 def start() -> int:
@@ -29,13 +30,14 @@ def _run_training(env_config: env.EnvConfig) -> None:
     """
     #! use `env.get_executor_config` to get config file for training
     executor_config = env.get_executor_config()
-    #! use `monitor.write_logger` to write log to console
-    monitor.write_logger(info=f"training config: {executor_config}")
+    #! use `logging` or `print` to write log to console
+    #   notice that logging.basicConfig is invoked at executor.env
+    logging.info(f"training config: {executor_config}")
 
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
-        monitor.write_logger(info=f"asset: {asset_path}, annotation: {annotation_path}")
+        logging.info(f"asset: {asset_path}, annotation: {annotation_path}")
 
     #! use `monitor.write_logger` to write log to console and write task process percent to monitor.txt
     monitor.write_logger(info='sample 50%% log', percent=0.5)
@@ -49,8 +51,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use `rw.write_training_result` to save training result
     rw.write_training_result(model_names=['model-0000.params', 'model-symbols.json'],
-                                  mAP=0.8,
-                                  classAPs={'person': 0.8, 'cat': 0.82})
+                             mAP=0.8,
+                             classAPs={'person': 0.8, 'cat': 0.82})
 
     #! if task done, write 100% percent log
     monitor.write_logger(info='training done', percent=1.0)
@@ -60,14 +62,14 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #! use `env.get_executor_config` to get config file for training
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
-    #! use `monitor.write_logger` to write log to console
-    monitor.write_logger(info=f"mining config: {executor_config}")
+    #! use `logging` or `print` to write log to console
+    logging.info(f"mining config: {executor_config}")
 
     #! use `dataset_reader.item_paths` to read candidate dataset items
     #   note that annotations path will be empty str if there's no annotations in that dataset
     asset_paths = []
     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
-        monitor.write_logger(info=f"asset: {asset_path}")
+        logging.info(f"asset: {asset_path}")
         asset_paths.append(asset_path)
 
     #! use `monitor.write_logger` to write log to console and write task process percent to monitor.txt
@@ -85,14 +87,14 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     #! use `env.get_executor_config` to get config file for training
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
-    #! use `monitor.write_logger` to write log to console
-    monitor.write_logger(info=f"infer config: {executor_config}")
+    #! use `logging` or `print` to write log to console
+    logging.info(f"infer config: {executor_config}")
 
     #! use `dataset_reader.item_paths` to read candidate dataset items
     #   note that annotations path will be empty str if there's no annotations in that dataset
     asset_paths: List[str] = []
     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
-        monitor.write_logger(info=f"asset: {asset_path}")
+        logging.info(f"asset: {asset_path}")
         asset_paths.append(asset_path)
 
     #! use `monitor.write_logger` to write log to console and write task process percent to monitor.txt
