@@ -52,6 +52,9 @@ from pydantic import BaseModel
 import yaml
 
 
+DEFAULT_ENV_FILE_PATH = '/in/env.yaml'
+
+
 class DatasetType(IntEnum):
     UNKNOWN = auto()
     TRAINING = auto()
@@ -90,22 +93,15 @@ class EnvConfig(BaseModel):
     output: EnvOutputConfig = EnvOutputConfig()
 
 
-_env_configs_dict_: Dict[str, EnvConfig] = {}
-
-
 logging.basicConfig(stream=sys.stdout,
                     format='%(levelname)-8s: [%(asctime)s] %(message)s',
                     datefmt='%Y%m%d-%H:%M:%S',
                     level=logging.INFO)
 
 
-def set_env(env_file_path: str) -> None:
-    with open(env_file_path, 'r') as f:
-        _env_configs_dict_['default'] = EnvConfig.parse_obj(yaml.safe_load(f.read()))
-
-
 def get_current_env() -> EnvConfig:
-    return _env_configs_dict_['default']
+    with open(DEFAULT_ENV_FILE_PATH, 'r') as f:
+        return EnvConfig.parse_obj(yaml.safe_load(f.read()))
 
 
 def get_executor_config() -> dict:

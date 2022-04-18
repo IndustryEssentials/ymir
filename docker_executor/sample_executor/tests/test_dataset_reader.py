@@ -16,6 +16,7 @@ class TestDatasetReader(unittest.TestCase):
         self._training_index_file = os.path.join(self._test_root, 'training-index.tsv')
 
     def setUp(self) -> None:
+        env.DEFAULT_ENV_FILE_PATH = self._custom_env_file
         self._prepare_dirs()
         self._prepare_assets()
         return super().setUp()
@@ -68,8 +69,6 @@ class TestDatasetReader(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     def test_00(self) -> None:
-        env.set_env(env_file_path=self._custom_env_file)
-
         training_list = list(dr.item_paths(dataset_type=dr.DatasetType.TRAINING))
         self.assertEqual(len(training_list), 3)  # have 3 items
         self.assertEqual(len(training_list[0]), 2)  # each item have asset and annotations

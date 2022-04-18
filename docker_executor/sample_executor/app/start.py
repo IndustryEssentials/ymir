@@ -7,7 +7,6 @@ from executor import dataset_reader as dr, env, monitor, result_writer as rw
 
 
 def start() -> int:
-    env.set_env('/in/env.yaml')
     env_config = env.get_current_env()
 
     if env_config.run_training:

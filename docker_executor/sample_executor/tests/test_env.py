@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from executor.env import get_current_env, get_executor_config, set_env
+from executor import env
 
 
 class TestEnv(unittest.TestCase):
@@ -21,6 +21,7 @@ class TestEnv(unittest.TestCase):
         }
 
     def setUp(self) -> None:
+        env.DEFAULT_ENV_FILE_PATH = self._custom_env_file
         self._prepare_dirs()
         self._prepare_assets()
         return super().setUp()
@@ -78,14 +79,13 @@ class TestEnv(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     def test_00(self) -> None:
-        set_env(env_file_path=self._custom_env_file)
+        env_config = env.get_current_env()
+        self.assertEqual(env_config.task_id, 'task0')
+        self.assertTrue(env_config.run_training)
+        self.assertFalse(env_config.run_mining)
+        self.assertFalse(env_config.run_infer)
+        self.assertEqual(env_config.input.root_dir, '/in1')
+        self.assertEqual(env_config.input.val_index_file, '')
 
-        self.assertEqual(get_current_env().task_id, 'task0')
-        self.assertTrue(get_current_env().run_training)
-        self.assertFalse(get_current_env().run_mining)
-        self.assertFalse(get_current_env().run_infer)
-        self.assertEqual(get_current_env().input.root_dir, '/in1')
-        self.assertEqual(get_current_env().input.val_index_file, '')
-
-        executor_config = get_executor_config()
+        executor_config = env.get_executor_config()
         self.assertEqual(executor_config, self._expected_executor_config)

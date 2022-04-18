@@ -21,6 +21,7 @@ class TestResultWriter(unittest.TestCase):
         self._monitor_file = os.path.join(self._test_root, 'out', 'monitor.txt')
 
     def setUp(self) -> None:
+        env.DEFAULT_ENV_FILE_PATH = self._custom_env_file
         self._prepare_dirs()
         self._prepare_env_config()
         return super().setUp()
@@ -50,8 +51,6 @@ class TestResultWriter(unittest.TestCase):
         }
         with open(self._custom_env_file, 'w') as f:
             yaml.safe_dump(env_obj, f)
-
-        env.set_env(self._custom_env_file)
 
     def _deprepare_dirs(self) -> None:
         if os.path.isdir(self._test_root):
