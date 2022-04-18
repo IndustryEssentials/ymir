@@ -27,11 +27,15 @@ def _write_monitor_file(info: str, percent: float = None, exception: Exception =
     env_config = env.get_current_env()
     with open(env_config.output.monitor_file, 'w') as f:
         if not exception:
-            f.write(f"{env_config.task_id}\t{time.time()}\t{percent}\t{_TaskState.RUNNING.value}\t{info}\n")
+            state = _TaskState.RUNNING.value
+            tb = ''
         else:
-            f.write(f"{env_config.task_id}\t{time.time()}\t1.0\t{_TaskState.ERROR.value}\t{info}\n")
-            # ignore the last 2 items: write_logger and _write_monitor_file
-            f.write(f"{''.join(traceback.format_stack()[:-2])}")
+            state = _TaskState.ERROR.value
+            percent = 1.0
+            tb = ''.join(traceback.format_stack()[:-2])  # ignore the last 2 items: write_logger and _write_monitor_file
+
+        f.write(f"{env_config.task_id}\t{time.time()}\t{percent:.2f}\t{state}\t{info}\n")
+        f.write(f"{tb}\n")
 
 
 def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs) -> None:
