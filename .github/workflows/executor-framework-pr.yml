@@ -27,12 +27,12 @@ jobs:
       working-directory: docker_executor/sample_executor
     - name: mypy
       run: |
-        mypy ymir_tmi
-      working-directory: docker_executor/sample_executor
+        mypy .
+      working-directory: docker_executor/sample_executor/ymir_tmi
     - name: flake8
       run: |
-        flake8 ymir_tmi
-      working-directory: docker_executor/sample_executor
+        flake8 .
+      working-directory: docker_executor/sample_executor/ymir_tmi
     - name: Test with pytest
       run: |
         python tests/__main__.py
