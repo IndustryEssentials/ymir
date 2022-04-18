@@ -1,4 +1,4 @@
-# a docker file for an sample training executor
+# a docker file for an sample training / mining / infer executor
 
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 
