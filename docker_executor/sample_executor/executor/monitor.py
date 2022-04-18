@@ -11,7 +11,7 @@ class _TaskState(IntEnum):
     ERROR = 4
 
 
-def write_logger(info: str, percent: float = None, exception: Exception = None) -> None:
+def write_monitor_logger(info: str, percent: float = None, exception: Exception = None) -> None:
     if percent is None and exception is None:
         raise ValueError('percent and exception should not be both none')
 

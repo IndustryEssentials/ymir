@@ -72,11 +72,9 @@ class TestMonitor(unittest.TestCase):
 
     # public: test cases
     def test_write_monitor(self) -> None:
-        monitor.write_logger(info='a fake log info', percent=0.2)
+        monitor.write_monitor_logger(info='a fake log info', percent=0.2)
         self._check_monitor(percent=0.2, exception=None)
 
         exception = ValueError('a fake error')
-        monitor.write_logger(info='another fake log info',
-                             percent=0.4,
-                             exception=exception)
+        monitor.write_monitor_logger(info='another fake log info', percent=0.4, exception=exception)
         self._check_monitor(percent=1.0, exception=exception)

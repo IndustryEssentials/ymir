@@ -39,8 +39,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
         logging.info(f"asset: {asset_path}, annotation: {annotation_path}")
 
-    #! use `monitor.write_logger` to write log to console and write task process percent to monitor.txt
-    monitor.write_logger(info='sample 50%% log', percent=0.5)
+    #! use `monitor.write_monitor_logger` to write log to console and write task process percent to monitor.txt
+    monitor.write_monitor_logger(info='sample 50%% log', percent=0.5)
 
     # suppose we have a long time training, and have saved the final model
     #! use `env_config.output.models_dir` to get model output dir
@@ -52,10 +52,13 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `rw.write_training_result` to save training result
     rw.write_training_result(model_names=['model-0000.params', 'model-symbols.json'],
                              mAP=0.8,
-                             classAPs={'person': 0.8, 'cat': 0.82})
+                             classAPs={
+                                 'person': 0.8,
+                                 'cat': 0.82
+                             })
 
     #! if task done, write 100% percent log
-    monitor.write_logger(info='training done', percent=1.0)
+    monitor.write_monitor_logger(info='training done', percent=1.0)
 
 
 def _run_mining(env_config: env.EnvConfig) -> None:
@@ -72,15 +75,15 @@ def _run_mining(env_config: env.EnvConfig) -> None:
         logging.info(f"asset: {asset_path}")
         asset_paths.append(asset_path)
 
-    #! use `monitor.write_logger` to write log to console and write task process percent to monitor.txt
-    monitor.write_logger(info=f"sample 50%% log, assets count: {len(asset_paths)}", percent=0.5)
+    #! use `monitor.write_monitor_logger` to write log to console and write task process percent to monitor.txt
+    monitor.write_monitor_logger(info=f"sample 50%% log, assets count: {len(asset_paths)}", percent=0.5)
 
     #! write mining result
     mining_result = [(asset_path, 0.9) for asset_path in asset_paths]
     rw.write_mining_result(mining_result=mining_result)
 
     #! if task done, write 100% percent log
-    monitor.write_logger(info='mining done', percent=1.0)
+    monitor.write_monitor_logger(info='mining done', percent=1.0)
 
 
 def _run_infer(env_config: env.EnvConfig) -> None:
@@ -97,8 +100,8 @@ def _run_infer(env_config: env.EnvConfig) -> None:
         logging.info(f"asset: {asset_path}")
         asset_paths.append(asset_path)
 
-    #! use `monitor.write_logger` to write log to console and write task process percent to monitor.txt
-    monitor.write_logger(info=f"sample 50%% log, assets count: {len(asset_paths)}", percent=0.5)
+    #! use `monitor.write_monitor_logger` to write log to console and write task process percent to monitor.txt
+    monitor.write_monitor_logger(info=f"sample 50%% log, assets count: {len(asset_paths)}", percent=0.5)
 
     #! write infer result
     fake_annotation = rw.Annotation(class_name='cat', score=0.9, box=rw.Box(x=50, y=50, w=150, h=150))
@@ -106,7 +109,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     rw.write_infer_result(infer_result=infer_result)
 
     #! if task done, write 100% percent log
-    monitor.write_logger(info='infer done', percent=1.0)
+    monitor.write_monitor_logger(info='infer done', percent=1.0)
 
 
 if __name__ == '__main__':
