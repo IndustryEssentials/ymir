@@ -5,6 +5,10 @@ import time
 from functools import wraps
 from typing import Callable, Dict, List
 
+from controller.config import label_task as label_task_config
+from controller.label_model.base import LabelBase
+from controller.label_model.label_free import LabelFree
+from controller.label_model.label_studio import LabelStudio
 from id_definition import task_id as task_id_proto
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
@@ -82,3 +86,14 @@ def time_it(f: Callable) -> Callable:
         return _ret
 
     return wrapper
+
+
+def create_label_instance() -> LabelBase:
+    if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
+        label_instance = LabelStudio()
+    elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
+        label_instance = LabelFree()  # type: ignore
+    else:
+        raise ValueError("Error! Please setting your label tools")
+
+    return label_instance

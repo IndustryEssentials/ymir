@@ -1,9 +1,5 @@
 import { TYPES, STATES, imageIsPending, getImageTypeLabel, getImageStateLabel } from '../image'
 
-jest.mock('@/utils/t', () => {
-  return jest.fn((str) => str)
-})
-
 describe("constants: image", () => {
   it("image type have right mapping and object is freeze", () => {
     expect(TYPES.TRAINING).toBe(1)
