@@ -1,5 +1,4 @@
 from enum import IntEnum, auto
-import logging
 from typing import Iterator, Tuple
 
 from executor import env
@@ -35,5 +34,4 @@ def item_paths(dataset_type: DatasetType) -> Iterator[Tuple[str, str]]:
             elif len(components) == 1:
                 yield (components[0], '')
             else:
-                logging.info(f"len {len(components)}")  # for test
                 raise ValueError(f"irregular index file: {file_path}")
