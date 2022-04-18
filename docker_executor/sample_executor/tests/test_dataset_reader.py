@@ -1,24 +1,20 @@
+import logging
 import os
 import shutil
 import unittest
 
 import yaml
 
-from ef.env import get_current_env, get_executor_config, EnvConfig, set_env
+from ef import dataset_reader as dr, env
 
 
-class TestEnv(unittest.TestCase):
+class TestDatasetReader(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
         self._test_root = os.path.join('/tmp', 'test_tmi', *self.id().split(".")[-3:])
         self._custom_env_file = os.path.join(self._test_root, 'env.yml')
         self._training_index_file = os.path.join(self._test_root, 'training-index.tsv')
-        self._executor_config_file = os.path.join(self._test_root, 'config.yaml')
-        self._expected_executor_config = {
-            'gpu_id': '0',
-            'image_size': 480,
-        }
 
     def setUp(self) -> None:
         self._prepare_dirs()
@@ -48,7 +44,6 @@ class TestEnv(unittest.TestCase):
                 'annotations_dir': '/in1/annotations',
                 'models_dir': '/in1/models',
                 'training_index_file': self._training_index_file,
-                'config_file': self._executor_config_file,
             },
             'output': {
                 'root_dir': '/out1',
@@ -63,10 +58,6 @@ class TestEnv(unittest.TestCase):
         with open(self._custom_env_file, 'w') as f:
             yaml.safe_dump(env_obj, f)
 
-        # executor config
-        with open(self._executor_config_file, 'w') as f:
-            yaml.safe_dump(self._expected_executor_config, f)
-
         # training index
         with open(self._training_index_file, 'w') as f:
             f.write('/in/assets/0.jpg\t/in/assets/0.txt\n')
@@ -78,14 +69,17 @@ class TestEnv(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     def test_00(self) -> None:
-        set_env(env_file_path=self._custom_env_file)
+        env.set_env(env_file_path=self._custom_env_file)
 
-        self.assertEqual(get_current_env().task_id, 'task0')
-        self.assertTrue(get_current_env().run_training)
-        self.assertFalse(get_current_env().run_mining)
-        self.assertFalse(get_current_env().run_infer)
-        self.assertEqual(get_current_env().input.root_dir, '/in1')
-        self.assertEqual(get_current_env().input.val_index_file, '')
+        training_list = list(dr.item_paths(dataset_type=dr.DatasetType.TRAINING))
+        self.assertEqual(len(training_list), 3)  # have 3 items
+        self.assertEqual(len(training_list[0]), 2)  # each item have asset and annotations
 
-        executor_config = get_executor_config()
-        self.assertEqual(executor_config, self._expected_executor_config)
+        try:
+            dr.item_paths(dataset_type=dr.DatasetType.VALIDATION)
+        except Exception as e:
+            self.assertTrue(isinstance(e, ValueError))
+        try:
+            dr.item_paths(dataset_type=dr.DatasetType.CANDIDATE)
+        except Exception as e:
+            self.assertTrue(isinstance(e, ValueError))

@@ -46,7 +46,6 @@ output:
 from enum import IntEnum, auto
 import logging
 import sys
-from typing import Iterator, Tuple
 
 from pydantic import BaseModel
 import yaml
@@ -68,28 +67,6 @@ class EnvInputConfig(BaseModel):
     val_index_file: str = ''
     candidate_index_file: str = ''
     config_file: str = '/in/config.yaml'
-
-    def _index_file_for_dataset_type(self, dataset_type: DatasetType) -> str:
-        mapping = {
-            DatasetType.TRAINING: self.training_index_file,
-            DatasetType.VALIDATION: self.val_index_file,
-            DatasetType.CANDIDATE: self.candidate_index_file,
-        }
-        return mapping[dataset_type]
-
-    def dataset_item_paths(self, dataset_type: DatasetType) -> Iterator[Tuple[str, str]]:
-        file_path = self._index_file_for_dataset_type(dataset_type)
-        with open(file_path, 'r') as f:
-            for line in f:
-                # note: last char of line is \n
-                components = line.strip().split('\t')
-                if len(components) == 2:
-                    yield (components[0], components[1])
-                elif len(components) == 1:
-                    yield (components[0], '')
-                else:
-                    logging.info(f"len {len(components)}")  # for test
-                    raise ValueError(f"irregular index file: {file_path}")
 
 
 class EnvOutputConfig(BaseModel):
