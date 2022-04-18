@@ -46,7 +46,6 @@ output:
 from enum import IntEnum, auto
 import logging
 import sys
-from typing import Dict
 
 from pydantic import BaseModel
 import yaml
