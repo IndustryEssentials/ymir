@@ -122,7 +122,7 @@ logging.basicConfig(stream=sys.stdout,
 
 
 def set_env(env_file_path: str) -> None:
-    with open(env_file_path, 'r') as f: 
+    with open(env_file_path, 'r') as f:
         global _env_config_
         _env_config_ = EnvConfig.parse_obj(yaml.safe_load(f.read()))
 
