@@ -38,7 +38,7 @@ def _write_monitor_file(info: str, percent: float = None, exception: Exception =
         f.write(f"{tb}\n")
 
 
-def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs) -> None:
+def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
     training_result = {
         'model': model_names,
         'map': mAP,
