@@ -294,6 +294,7 @@ def generate_training_env_config_file(task_id: str, env_config_file_path: str) -
 
 def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_infer: bool,
                                           env_config_file_path: str) -> None:
+    # TODO: seperate command mining and infer
     env_config = {
         'task_id': task_id,
         'run_mining': run_mining,
