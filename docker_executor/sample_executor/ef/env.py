@@ -46,6 +46,7 @@ output:
 from enum import IntEnum, auto
 import logging
 import sys
+from typing import Dict
 
 from pydantic import BaseModel
 import yaml
@@ -89,7 +90,7 @@ class EnvConfig(BaseModel):
     output: EnvOutputConfig = EnvOutputConfig()
 
 
-_env_config_: EnvConfig = EnvConfig()
+_env_configs_dict_: Dict[str, EnvConfig] = {}
 
 
 logging.basicConfig(stream=sys.stdout,
@@ -100,12 +101,11 @@ logging.basicConfig(stream=sys.stdout,
 
 def set_env(env_file_path: str) -> None:
     with open(env_file_path, 'r') as f:
-        global _env_config_
-        _env_config_ = EnvConfig.parse_obj(yaml.safe_load(f.read()))
+        _env_configs_dict_['default'] = EnvConfig.parse_obj(yaml.safe_load(f.read()))
 
 
 def get_current_env() -> EnvConfig:
-    return _env_config_
+    return _env_configs_dict_['default']
 
 
 def get_executor_config() -> dict:
