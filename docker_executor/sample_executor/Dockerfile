@@ -15,8 +15,8 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
 COPY app /app
 RUN mkdir /img-man
 COPY app/*-template.yaml /img-man/
-COPY ef /app/ef
-RUN pip3 install -r /app/ef/requirements.txt
+COPY executor /app/executor
+RUN pip3 install -r /app/executor/requirements.txt
 
 # dependencies: write other dependencies here (pytorch, mxnet, tensorboard-x, etc.)
 
