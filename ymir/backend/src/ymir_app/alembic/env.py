@@ -78,6 +78,8 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
+            # new feature, for sqlite alter
+            render_as_batch=True,
         )
 
         with context.begin_transaction():
