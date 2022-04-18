@@ -6,7 +6,7 @@ import unittest
 
 import yaml
 
-from executor import env, result_writer as rw
+from executor import result_writer as rw, settings
 
 
 class TestResultWriter(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestResultWriter(unittest.TestCase):
         self._monitor_file = os.path.join(self._test_root, 'out', 'monitor.txt')
 
     def setUp(self) -> None:
-        env.DEFAULT_ENV_FILE_PATH = self._custom_env_file
+        settings.DEFAULT_ENV_FILE_PATH = self._custom_env_file
         self._prepare_dirs()
         self._prepare_env_config()
         return super().setUp()

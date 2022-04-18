@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from executor import dataset_reader as dr, env
+from executor import dataset_reader as dr, env, settings
 
 
 class TestDatasetReader(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestDatasetReader(unittest.TestCase):
         self._training_index_file = os.path.join(self._test_root, 'training-index.tsv')
 
     def setUp(self) -> None:
-        env.DEFAULT_ENV_FILE_PATH = self._custom_env_file
+        settings.DEFAULT_ENV_FILE_PATH = self._custom_env_file
         self._prepare_dirs()
         self._prepare_assets()
         return super().setUp()

@@ -44,17 +44,11 @@ output:
 """
 
 from enum import IntEnum, auto
-import logging
-import sys
 
 from pydantic import BaseModel
 import yaml
 
-
-# default location of env yaml file
-# if your app is running inside docker image, env file is always at /in/env.yaml
-# you can change the location of this file IF AND ONLY IF you are doing test
-DEFAULT_ENV_FILE_PATH = '/in/env.yaml'
+from executor import settings
 
 
 class DatasetType(IntEnum):
@@ -95,14 +89,8 @@ class EnvConfig(BaseModel):
     output: EnvOutputConfig = EnvOutputConfig()
 
 
-logging.basicConfig(stream=sys.stdout,
-                    format='%(levelname)-8s: [%(asctime)s] %(message)s',
-                    datefmt='%Y%m%d-%H:%M:%S',
-                    level=logging.INFO)
-
-
 def get_current_env() -> EnvConfig:
-    with open(DEFAULT_ENV_FILE_PATH, 'r') as f:
+    with open(settings.DEFAULT_ENV_FILE_PATH, 'r') as f:
         return EnvConfig.parse_obj(yaml.safe_load(f.read()))
 
 

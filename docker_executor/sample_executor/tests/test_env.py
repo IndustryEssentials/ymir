@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from executor import env
+from executor import env, settings
 
 
 class TestEnv(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestEnv(unittest.TestCase):
         }
 
     def setUp(self) -> None:
-        env.DEFAULT_ENV_FILE_PATH = self._custom_env_file
+        settings.DEFAULT_ENV_FILE_PATH = self._custom_env_file
         self._prepare_dirs()
         self._prepare_assets()
         return super().setUp()
