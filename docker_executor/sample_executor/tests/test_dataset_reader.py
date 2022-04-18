@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from ef import dataset_reader as dr, env
+from executor import dataset_reader as dr, env
 
 
 class TestDatasetReader(unittest.TestCase):

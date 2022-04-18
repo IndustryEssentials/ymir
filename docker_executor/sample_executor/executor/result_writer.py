@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 from pydantic import BaseModel
 import yaml
 
-from ef import env
+from executor import env
 
 
 class Box(BaseModel):

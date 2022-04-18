@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from ef import env, monitor
+from executor import env, monitor
 
 
 class TestMonitor(unittest.TestCase):

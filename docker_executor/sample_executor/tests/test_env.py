@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from ef.env import get_current_env, get_executor_config, EnvConfig, set_env
+from executor.env import get_current_env, get_executor_config, set_env
 
 
 class TestEnv(unittest.TestCase):

@@ -2,7 +2,7 @@ from enum import IntEnum, auto
 import logging
 from typing import Iterator, Tuple
 
-from ef import env
+from executor import env
 
 
 class DatasetType(IntEnum):

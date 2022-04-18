@@ -6,7 +6,7 @@ import unittest
 
 import yaml
 
-from ef import env, result_writer as rw
+from executor import env, result_writer as rw
 
 
 class TestResultWriter(unittest.TestCase):
