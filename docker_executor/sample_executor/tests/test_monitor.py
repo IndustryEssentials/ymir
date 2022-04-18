@@ -6,7 +6,7 @@ import unittest
 
 import yaml
 
-from ymir_tmi import env, monitor
+from ef import env, monitor
 
 
 class TestMonitor(unittest.TestCase):

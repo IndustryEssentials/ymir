@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from ymir_tmi.env import DatasetType, get_current_env, get_executor_config, EnvConfig, set_env
+from ef.env import DatasetType, get_current_env, get_executor_config, EnvConfig, set_env
 
 
 class TestEnv(unittest.TestCase):

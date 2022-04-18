@@ -82,7 +82,7 @@ class EnvInputConfig(BaseModel):
         with open(file_path, 'r') as f:
             for line in f:
                 # note: last char of line is \n
-                components = line[:-1].split('\t')
+                components = line.strip().split('\t')
                 if len(components) == 2:
                     yield (components[0], components[1])
                 elif len(components) == 1:
