@@ -11,14 +11,14 @@ class _TaskState(IntEnum):
     ERROR = 4
 
 
-def write_monitor_logger(info: str, percent: float = None, exception: Exception = None) -> None:
-    if percent is None and exception is None:
-        raise ValueError('percent and exception should not be both none')
+def write_monitor_logger(info: str, percent: float = None, error_occured: bool = False) -> None:
+    if percent is None and not error_occured:
+        raise ValueError('percent and error_occured should not be both none')
 
     logging.info(info)
     env_config = env.get_current_env()
     with open(env_config.output.monitor_file, 'w') as f:
-        if not exception:
+        if not error_occured:
             state = _TaskState.RUNNING.value
             tb = ''
         else:

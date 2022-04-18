@@ -56,14 +56,14 @@ class TestMonitor(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # protected: check results
-    def _check_monitor(self, percent: float, exception: Exception) -> None:
+    def _check_monitor(self, percent: float, error_occured: bool) -> None:
         with open(self._monitor_file, 'r') as f:
             lines = f.read().splitlines()
         task_id, timestamp_str, percent_str, state_str, *_ = lines[0].split()
         self.assertEqual(task_id, env.get_current_env().task_id)
         self.assertTrue(float(timestamp_str) > 0)
         self.assertEqual(percent, float(percent_str))
-        if exception:
+        if error_occured:
             self.assertEqual(4, int(state_str))
             self.assertTrue(len(lines) > 1)
         else:
@@ -73,8 +73,7 @@ class TestMonitor(unittest.TestCase):
     # public: test cases
     def test_write_monitor(self) -> None:
         monitor.write_monitor_logger(info='a fake log info', percent=0.2)
-        self._check_monitor(percent=0.2, exception=None)
+        self._check_monitor(percent=0.2, error_occured=False)
 
-        exception = ValueError('a fake error')
-        monitor.write_monitor_logger(info='another fake log info', percent=0.4, exception=exception)
-        self._check_monitor(percent=1.0, exception=exception)
+        monitor.write_monitor_logger(info='another fake log info', percent=0.4, error_occured=True)
+        self._check_monitor(percent=1.0, error_occured=True)
