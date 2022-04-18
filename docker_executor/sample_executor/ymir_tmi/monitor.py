@@ -35,7 +35,7 @@ def _write_monitor_file(info: str, percent: float = None, exception: Exception =
             tb = ''.join(traceback.format_stack()[:-2])  # ignore the last 2 items: write_logger and _write_monitor_file
 
         f.write(f"{env_config.task_id}\t{time.time()}\t{percent:.2f}\t{state}\t{info}\n")
-        f.write(f"{tb}\n")
+        f.write(f"{tb}")
 
 
 def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
