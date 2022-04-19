@@ -28,7 +28,7 @@ class ProjectBase(BaseModel):
     iteration_target: Optional[int]
     map_target: Optional[float]
     training_dataset_count_target: Optional[int]
-    is_sample: Optional[bool]
+    is_example: Optional[bool]
 
 
 # Sufficient properties to create a project
