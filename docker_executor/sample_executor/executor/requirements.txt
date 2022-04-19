@@ -1,0 +1,2 @@
+pydantic>=1.8.2
+pyyaml>=5.4.1

@@ -1,0 +1,8 @@
+# mining template for your executor app
+# after build image, it should at /img-man/mining-template.yaml
+# key: gpu_id, task_id, model_params_path, class_names should be preserved
+
+gpu_id: '0'
+task_id: 'default-mining-task'
+model_params_path: []
+class_names: []
