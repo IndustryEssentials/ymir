@@ -21,6 +21,8 @@ const project = {
   "project.tab.set.title": { en: "Datasets", cn: "数据集", },
   "project.tab.model.title": { en: "Models", cn: "模型", },
   'project.add.form.name.invalid': { en: 'Project name allow letters, numbers, and underline, and start with letter', cn: '项目名称只允许大小写字母及下划线，且只能以字母开头', },
+  'project.create.success': { en: 'Project Created!', cn: '项目创建成功', },
+  'project.update.success': { en: 'Project Updated!', cn: '项目设置成功', },
   'project.add.form.name': { en: 'Project Name', cn: '项目名称', },
   'project.add.form.name.required': { en: 'Project name is required', cn: '项目名称为必填项', },
   'project.add.form.name.placeholder': { en: 'Please input your project name', cn: '请输入项目名称', },
@@ -86,6 +88,9 @@ const project = {
   'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
   'project.del.confirm.content': { en: 'Remove all datasets and models in this project, confirm?', 
     cn: '删除项目会将项目中的所有资源（数据集、模型）删除，请谨慎操作！', },
+  'project.add.confirm.title': { en: 'Whether this new keywords will add to your KEYWORD LIST?', cn: '标签管理列表未查询到下列标签，是否要添加至标签列表', },
+  'project.add.confirm.ok': { en: 'Add Keywords and Create Project', cn: '添加标签并创建项目', },
+  'project.add.confirm.cancel': { en: 'Cancel Create Project', cn: '取消创建项目', },
 }
 
 export default project

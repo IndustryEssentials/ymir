@@ -195,7 +195,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   ]}
 
   const actionMenus = (record) => {
-    const { id, name, state, versionName, isProtected } = record
+    const { id, name, state, versionName, isProtected, task: { is_terminated } } = record
     const menus = [
       {
         key: "fusion",
@@ -243,7 +243,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state),
+        hidden: () => !isRunning(state) || is_terminated,
         icon: <StopIcon />,
       },
       // {
