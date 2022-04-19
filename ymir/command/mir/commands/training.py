@@ -275,6 +275,8 @@ class CmdTrain(base.BaseCommand):
 
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_out, exist_ok=True)
+        out_model_dir = os.path.join(work_dir, 'out', 'models')
+        os.makedirs(out_model_dir, exist_ok=True)
 
         os.makedirs(asset_dir, exist_ok=True)
         os.makedirs(tensorboard_dir, exist_ok=True)
@@ -335,6 +337,8 @@ class CmdTrain(base.BaseCommand):
             out_config_path=out_config_path,
             task_id=task_id,
             pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
+        mir_utils.generate_training_env_config_file(task_id=task_id,
+                                                    env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
         # start train docker and wait
         path_binds = []

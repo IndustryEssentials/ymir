@@ -149,6 +149,7 @@ class TestCmdInfer(unittest.TestCase):
         expected_cmd.append(
             f"-v{os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv')}:/in/candidate-index.tsv")
         expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'config.yaml')}:/in/config.yaml")
+        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'env.yaml')}:/in/env.yaml")
         expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'out')}:/out")
         expected_cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
         expected_cmd.extend(['--name', fake_args.executant_name])
