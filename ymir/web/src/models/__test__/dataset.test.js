@@ -1,6 +1,6 @@
 import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
-import { errorCode } from './func'
+import { errorCode, normalReducer, product, products } from './func'
 import { format } from '@/utils/date'
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
 
@@ -71,62 +71,43 @@ describe("models: dataset", () => {
   errorCode(dataset, 'updateDataset')
   errorCode(dataset, 'getInternalDataset')
   errorCode(dataset, 'getHotDatasets', 10034, [])
+  const gid = 534234
+  const items = products(4)
+  const datasets = { items, total: items.length }
+  const allVersions = { 1: items, 2: [...items, product(8)] }
+  const allDatasets = { 1: items, 2: [...items, product(7)] }
+  normalReducer(dataset, 'UPDATE_DATASETS', datasets, datasets, 'datasets', { items: [], total: 0, })
+  normalReducer(dataset, 'UPDATE_ALL_DATASETS', allDatasets, allDatasets, 'allDatasets', [])
+  normalReducer(dataset, 'UPDATE_VERSIONS', { id: gid, versions: items }, { [gid]: items }, 'versions', {})
+  normalReducer(dataset, 'UPDATE_ALL_VERSIONS', allVersions, allVersions, 'versions', {})
+  normalReducer(dataset, 'UPDATE_DATASET', { id: gid, dataset: product(534) }, { [gid]: product(534) }, 'dataset', {})
+  normalReducer(dataset, 'UPDATE_ALL_DATASET', { [gid]: product(534), 644: product(644) }, { [gid]: product(534), 644: product(644) }, 'dataset', {})
+  normalReducer(dataset, 'UPDATE_ASSETS', datasets, datasets, 'assets', { items: [], total: 0, })
+  normalReducer(dataset, 'UPDATE_ASSET', product(6445), product(6445), 'asset', {})
+  normalReducer(dataset, 'UPDATE_PUBLICDATASETS', datasets, datasets, 'publicDatasets', { items: [], total: 0, })
+  normalReducer(dataset, 'UPDATE_QUERY', { limit: 20 }, { limit: 20 }, 'query', {})
 
-  it("reducers: UPDATE_DATASETS", () => {
+  it("reducers: CLEAR_ALL", () => {
     const state = {
       datasets: {},
     }
-    const expected = { items: [1, 2, 3, 4], total: 4 }
-    const action = {
-      payload: expected,
-    }
-    const result = dataset.reducers.UPDATE_DATASETS(state, action)
-    expect(result.datasets.total).toBe(expected.total)
-  })
-  it("reducers: UPDATE_DATASET", () => {
-    const state = {
+    const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
+
+    const expected = {
+      query: { ...initQuery },
+      datasets: { items: [], total: 0, },
+      versions: {},
       dataset: {},
-    }
-    const id = 10001
-    const expected = { id }
-    const action = {
-      payload: { id, dataset: expected },
-    }
-    const result = dataset.reducers.UPDATE_DATASET(state, action)
-    expect(result.dataset[expected.id].id).toBe(expected.id)
-  })
-  it("reducers: UPDATE_ASSETS", () => {
-    const state = {
-      assets: {},
-    }
-    const expected = { items: [1, 2, 3, 4], total: 4 }
-    const action = {
-      payload: expected,
-    }
-    const result = dataset.reducers.UPDATE_ASSETS(state, action)
-    expect(result.assets.total).toBe(expected.total)
-  })
-  it("reducers: UPDATE_ASSET", () => {
-    const state = {
-      asset: {},
-    }
-    const expected = { hash: 'test' }
-    const action = {
-      payload: expected,
-    }
-    const result = dataset.reducers.UPDATE_ASSET(state, action)
-    expect(result.asset.hash).toBe(expected.hash)
-  })
-  it("reducers: UPDATE_PUBLICDATASETS", () => {
-    const state = {
+      assets: { items: [], total: 0, },
+      asset: { annotations: [], },
+      allDatasets: [],
       publicDatasets: [],
     }
-    const expected = [1, 2, 3, 4]
     const action = {
-      payload: expected,
+      payload: null,
     }
-    const result = dataset.reducers.UPDATE_PUBLICDATASETS(state, action)
-    expect(result.publicDatasets.join(',')).toBe(expected.join(','))
+    const result = dataset.reducers.CLEAR_ALL(state, action)
+    expect(result).toEqual(expected)
   })
 
   it("effects: getDatasetGroups", () => {

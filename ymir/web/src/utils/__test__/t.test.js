@@ -30,4 +30,15 @@ describe("utils: t", () => {
     })
 
   })
+  it('t: with prefix.', () => {
+    jest.isolateModules(() => {
+      const t = require('../t').default
+      const prefix = 'hello'
+      const id = 'true.id.54333'
+      const expected = 'hello.true.id.54333'
+
+      const normal = t(id, undefined, prefix)
+      expect(normal.id).toBe(expected)
+    })
+  })
 })

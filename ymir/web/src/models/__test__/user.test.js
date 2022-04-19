@@ -6,13 +6,15 @@ jest.mock('@/utils/t', () => {
   return jest.fn()
 })
 
+const generateUser = (id) => ({
+  username: `name_${id}`,
+  email: `${id}@test.com`,
+  phone: "138${id}",
+  id,
+})
+
 describe("models: user", () => {
-  const Expected = {
-    username: "president",
-    email: "test@test.com",
-    phone: "13245678908",
-    id: 1345,
-  }
+  const Expected = generateUser(134565)
   it("reducers: UPDATE_USERINFO, UPDATE_LOGINED", () => {
     const state = {
       username: "",
@@ -208,7 +210,7 @@ describe("models: user", () => {
 
     expect(end.done).toBe(true)
   })
-  
+
   it("effects: setNeverShow", () => {
     const saga = user.effects.setNeverShow
     const creator = {
@@ -222,12 +224,12 @@ describe("models: user", () => {
 
     expect(end.done).toBe(true)
   })
-  
+
   it("effects: getToken", () => {
     const saga = user.effects.getToken
     const creator = {
       type: "getToken",
-      payload: {username: 'username007@test.com', password: '12345689' },
+      payload: { username: 'username007@test.com', password: '12345689' },
     }
     const expected = 'access_token'
 
@@ -244,7 +246,7 @@ describe("models: user", () => {
     expect(storage.get('access_token')).toBe(expected)
     expect(end.done).toBe(true)
   })
-  
+
   it("effects: modifyPwd", () => {
     const saga = user.effects.modifyPwd
     const newUser = { id: 346, password: 'newpassw0rd' }
@@ -265,10 +267,10 @@ describe("models: user", () => {
     expect(end.value.id).toBe(newUser.id)
     expect(end.done).toBe(true)
   })
-  
+
   it("effects: updateUserInfo", () => {
     const saga = user.effects.updateUserInfo
-    
+
     const newUser = { id: 347, name: 'newusername' }
     const creator = {
       type: "updateUserInfo",
@@ -286,6 +288,95 @@ describe("models: user", () => {
 
     expect(end.value.id).toBe(newUser.id)
     expect(end.value.name).toBe(newUser.name)
+    expect(end.done).toBe(true)
+  })
+
+  it('effects: getActiveUsers', () => {
+    const saga = user.effects.getActiveUsers
+
+    const creator = {
+      type: "getActiveUsers",
+      payload: {},
+    }
+
+    const users = [1, 2, 3, 4, 5].map(id => generateUser(id))
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next({ code: 0, result: users })
+    expect(end.value).toEqual(users)
+    expect(end.done).toBe(true)
+  })
+  it('effects: getUsers', () => {
+
+    const saga = user.effects.getUsers
+
+    const creator = {
+      type: "getUsers",
+      payload: {},
+    }
+
+    const users = [1, 2, 3, 4, 745].map(id => generateUser(id))
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next({ code: 0, result: users })
+    expect(end.value).toEqual(users)
+    expect(end.done).toBe(true)
+  })
+  it('effects: setUserRole', () => {
+
+    const saga = user.effects.setUserRole
+
+    const id = 52342
+    const role = 2
+    const creator = {
+      type: "setUserRole",
+      payload: { id, role },
+    }
+
+    const expected = 'ok'
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next({ code: 0, result: expected })
+    expect(end.value).toBe(expected)
+    expect(end.done).toBe(true)
+  })
+  it('effects: setUserState', () => {
+    const saga = user.effects.setUserState
+
+    const id = 52342
+    const role = 1
+    const creator = {
+      type: "setUserState",
+      payload: { id, role },
+    }
+
+    const expected = 'ok'
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next({ code: 0, result: expected })
+    expect(end.value).toBe(expected)
+    expect(end.done).toBe(true)
+  })
+  it('effects: off', () => {
+
+    const saga = user.effects.off
+
+    const id = 5242
+    const creator = {
+      type: "off",
+      payload: { id },
+    }
+
+    const expected = 'ok'
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next({ code: 0, result: expected })
+    expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
   })
 })

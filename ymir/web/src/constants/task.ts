@@ -40,24 +40,3 @@ export const getTaskTypeLabel = (type: TASKTYPES) => {
   }
   return maps[type] ? maps[type] : type
 }
-export const getTaskStateLabel = (state: TASKSTATES) => {
-  return {
-    [TASKSTATES.PENDING]: 'task.state.pending',
-    [TASKSTATES.DOING]: 'task.state.doing',
-    [TASKSTATES.FINISH]: 'task.state.finish',
-    [TASKSTATES.FAILURE]: 'task.state.failure',
-    [TASKSTATES.TERMINATED]: 'task.state.terminated',
-  }[state]
-}
-
-export const getResultStateFromTask = (taskState: TASKSTATES) => {
-  const maps = {
-    [TASKSTATES.DOING]: states.READY,
-    [TASKSTATES.PENDING]: states.READY,
-    [TASKSTATES.FINISH]: states.VALID,
-    [TASKSTATES.FAILURE]: states.INVALID,
-    [TASKSTATES.TERMINATED]: states.VALID,
-  }
-  console.log('maps[taskState]:', maps, taskState)
-  return maps[taskState]
-}

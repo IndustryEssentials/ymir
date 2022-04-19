@@ -22,3 +22,16 @@ export function errorCode(module, func, payload = 10024, expected = null) {
     expect(errorEnd.done).toBe(true)
   })
 }
+
+export function normalReducer(module, func, payload, expected, field, initState) {
+  it(`reducers: ${func}`, () => {
+    const action = {
+      payload,
+    }
+    const result = module.reducers[func]({[field]: initState}, action)
+    expect(result[field]).toEqual(expected)
+  })
+}
+
+export const product = (id) => ({ id })
+export const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
