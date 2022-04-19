@@ -165,5 +165,27 @@ app/start.py 展示了一个简单的镜像执行部分，此文档也将基于�
   * settings.DEFAULT_ENV_FILE_PATH 需要指向自己的 env.yaml 中，一个典型的 env.yaml 具有以下结构：
 
 ```
-task_id: 
+task_id: task0
+run_training: True
+run_mining: False
+run_infer: False
+input:
+    root_dir: /in
+    assets_dir: assets
+    annotations_dir: annotations
+    models_dir: models
+    training_index_file: train-index.tsv
+    val_index_file: val-index.tsv
+    candidate_index_file: candidate-index.tsv
+    config_file: config.yaml
+output:
+    root_dir: /out
+    models_dir: models
+    tensorboard_dir: tensorboard
+    training_result_file: result.yaml
+    mining_result_file: result.txt
+    infer_result_file: infer-result.yaml
+    monitor_file: monitor.txt
 ```
+
+  * 根据任务的类型，制作 `train-index.tsv`, `val-index.tsv` 和 `candidate-index.tsv`，此文件每一行都是一个图像和标注，之间以 `\t` 分隔
