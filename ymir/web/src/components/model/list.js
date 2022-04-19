@@ -246,7 +246,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, versionName, isProtected } = record
+    const { id, name, url, state, versionName, isProtected, task: { is_terminated } } = record
     const actions = [
       {
         key: "verify",
@@ -288,7 +288,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state),
+        hidden: () => !isRunning(state) || is_terminated,
         icon: <StopIcon />,
       },
     ]
