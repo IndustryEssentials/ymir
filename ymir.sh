@@ -98,7 +98,7 @@ if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
 fi
 
 # check label tool ip address.
-if ! cat ${ENV_FILE} | grep -oE "${FIELD_LABEL_TOOL_HOST_IP}=http://\b(\d{1,3}\.){3}\d{1,3}\b$"; then
+if ! cat ${ENV_FILE} | grep -oE "${FIELD_LABEL_TOOL_HOST_IP}=http://\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"; then
     echo "Label tool's IP is not set, expected format: http://xxx.xxx.xxx.xxx"
     exit
 fi
