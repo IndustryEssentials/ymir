@@ -13,10 +13,14 @@ DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
 
 FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
 FIELD_UUID='ANONYMOUS_UUID'
+FIELD_LABEL_TOOL='LABEL_TOOL'
+FIELD_LABEL_TOOL_LS='label_studio'
+FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
 
 stop() {
 docker-compose down
+docker-compose -f docker-compose.label_studio.yml down
 docker-compose -f docker-compose.labelfree.yml down
 }
 
@@ -27,17 +31,22 @@ stop
 }
 
 choose_yes () {
-sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE} && rm -f *.bk
+sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk
 
 uuid=$(uuidgen)
-sed -i.bk "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" .env && rm -f *.bk
+sed -i.bk "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" ${ENV_FILE} && rm -f *.bk
 }
 
 choose_no () {
-sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE} && rm -f *.bk
+sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk
 }
 
 check_permission() {
+if ! cat ${ENV_FILE} | grep "${FIELD_ALLOW_FEEDBACK}=$"; then
+    echo "permission already set"
+    return
+fi
+
 cat <<- EOF
 Would you allow YMIR to send us automatic reports helps us prioritize what to fix and improve in YMIR?
 These reports can include things like task type, how much resources you’re using. NO personal information collected.
@@ -53,23 +62,46 @@ while true; do
 done
 }
 
-start_label_free () {
-docker-compose -f docker-compose.labelfree.yml up -d
-}
+set_label_tool() {
+if ! cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
+    echo "label_tool already set"
+    return
+fi
 
-label_free() {
 cat <<- EOF
-Would you like to start LabelFree?
+Before proceed, make sure to set LABEL_TOOL_HOST_IP, LABEL_TOOL_HOST_PORT, LABEL_TOOL_TOKEN fields as needed.
+Which label-tool would you like to start (1/2/3)?
+1.Label Studio
+2.Label Free
+3.None
+
 EOF
 
 while true; do
-    read -p "You choose (Y/n)?" yn
+    read -p "You choose (1/2/3)?" yn
     case $yn in
-        [Yy]*|'' ) start_label_free; break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer (y)es or (n)o.";;
+        [1]* ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
+        [2]* ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
+        [3]* ) break;;
+        * ) echo "Please answer 1/2/3.";;
     esac
 done
+}
+
+start_label_tool() {
+set_label_tool
+if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
+    echo "no label_tool set, skip."
+    return
+elif cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}"; then
+    echo "label-studio set, starting..."
+    docker-compose -f docker-compose.labelfree.yml up -d
+    return
+elif cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}"; then
+    echo "label-free set, starting..."
+    docker-compose -f docker-compose.label_studio.yml up -d
+    return
+fi
 }
 
 start() {
@@ -87,12 +119,11 @@ if [[ $1 == 'dev' ]]; then
         -t ${DOCKER_WEB} \
         --build-arg NPM_REGISTRY=${DEV_SOURCE_WEB_NPM} \
         git@github.com:IndustryEssentials/ymir.git#dev:/ymir/web
-    sed -i.bk "s/^${FIELD_UUID}=.*$/${FIELD_UUID}=testdev/" .env && rm -f *.bk
+    sed -i.bk "s/^${FIELD_UUID}=.*$/${FIELD_UUID}=testdev/" ${ENV_FILE} && rm -f *.bk
 else
-    printf '\nin prod mode, pulling images.\n'
-    docker-compose pull
+    printf '\nin prod mode, starting service.\n'
 fi
-label_free
+start_label_tool
 docker-compose up -d
 }
 
