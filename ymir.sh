@@ -95,11 +95,11 @@ if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
     return
 elif cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}"; then
     echo "label-studio set, starting..."
-    docker-compose -f docker-compose.labelfree.yml up -d
+    docker-compose -f docker-compose.label_studio.yml up -d
     return
 elif cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}"; then
     echo "label-free set, starting..."
-    docker-compose -f docker-compose.label_studio.yml up -d
+    docker-compose -f docker-compose.labelfree.yml up -d
     return
 fi
 }
