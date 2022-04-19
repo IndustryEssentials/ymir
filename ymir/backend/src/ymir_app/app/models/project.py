@@ -89,6 +89,7 @@ class Project(Base):
         viewonly=True,
     )
 
+    is_example = Column(Boolean, default=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(
