@@ -49,6 +49,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
       iterationRound: 1,
       projectId: project.id,
       prevIteration: 0,
+      testSet: project?.testSet?.id,
     }
     const result = await func.createIteration(params)
     if (result) {
