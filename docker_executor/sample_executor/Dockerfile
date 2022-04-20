@@ -1,6 +1,5 @@
 # a docker file for an sample training / mining / infer executor
 
-# FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 FROM python:3.8.13-alpine
 
 # tmi framework and your app
