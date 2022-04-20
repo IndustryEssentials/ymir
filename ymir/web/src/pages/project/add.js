@@ -13,6 +13,7 @@ import DatasetSelect from '../../components/form/datasetSelect'
 import Panel from '../../components/form/panel'
 
 const { useForm } = Form
+const { confirm } = Modal
 
 const strategyOptions = Object.values(MiningStrategy)
   .filter(key => Number.isInteger(key))
@@ -86,14 +87,46 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       params.name = name.trim()
       params.description = description.trim()
     }
-    const result = await func[`${action}Project`](params)
-    if (result) {
-      const pid = result.id || id
-      message.success(t(`project.${action}.success`))
-      history.push(`/home/project/detail/${pid}`)
+
+    const send = async () => {
+      const result = await func[`${action}Project`](params)
+      if (result) {
+        const pid = result.id || id
+        message.success(t(`project.${action}.success`))
+        history.push(`/home/project/detail/${pid}`)
+      }
+    }
+    // edit project
+    if (isEdit) {
+      return send()
+    }
+    // create project
+    const { failed } = await func.checkKeywords(params.keywords)
+    const newKws = params.keywords.filter(keyword => !failed.includes(keyword))
+
+    if (newKws?.length) {
+      // confirm
+      confirm({
+        title: t('project.add.confirm.title'),
+        content: <ol>{newKws.map(keyword => <li>{keyword}</li>)}</ol>,
+        onOk: () => {
+          addNewKeywords(newKws, send)
+        },
+        okText: t('project.add.confirm.ok'),
+        cancelText: t('project.add.confirm.cancel'),
+      })
+    } else {
+      send()
     }
   }
 
+
+  const addNewKeywords = async (keywords, callback = () => { }) => {
+    const result = func.addKeywords(keywords)
+    if (result) {
+      setTimeout(() => callback(), 500)
+    }
+  }
   const checkProjectName = (_, value) => {
     const reg = /^[a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*$/
     if (!value || reg.test(value.trim())) {
@@ -144,7 +177,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     { required: true, message: t('project.add.form.keyword.required') }
                   ]}
                 >
-                  <Select mode="multiple" showArrow
+                  <Select mode="tags" showArrow
                     placeholder={t('project.add.form.keyword.placeholder')}
                     disabled={isEdit}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
@@ -198,10 +231,10 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
-                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet" 
-                  rules={[
-                    { required: true, message: t('task.train.form.miningset.required') },
-                  ]}>
+                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet"
+                    rules={[
+                      { required: true, message: t('task.train.form.miningset.required') },
+                    ]}>
                     <DatasetSelect pid={id} filter={[testSet]} filterGroup={[project?.trainSet?.id, project?.testSet?.groupId]} onChange={(value) => value && setMiningSet(value)} />
                   </Form.Item>
                 </Tip>
@@ -214,7 +247,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                         </Form.Item>
                       </Col>
                       {strategy === 0 ? <Col flex={'200px'} offset={1}>
-                        <Form.Item label={t('project.add.form.mining.chunksize')} 
+                        <Form.Item label={t('project.add.form.mining.chunksize')}
                           wrapperCol={{ span: 12 }} labelCol={{ span: 12 }} name='chunkSize'
                           rules={[
                             { required: strategy === 0 }
@@ -259,6 +292,18 @@ const props = (state) => {
 }
 
 const actions = (dispatch) => {
+  const updateKeywords = (dry_run = false) => {
+    return (keywords) => {
+      console.log('keywords:', keywords)
+
+      return dispatch({
+      type: 'keyword/updateKeywords',
+      payload: {
+        keywords: keywords.map(keyword => ({ name: keyword, aliases: [] })),
+        dry_run,
+      },
+    })}
+  }
   return {
     createProject: (payload) => {
       return dispatch({
@@ -284,6 +329,8 @@ const actions = (dispatch) => {
         payload,
       })
     },
+    checkKeywords: updateKeywords(true),
+    addKeywords: updateKeywords(),
   }
 }
 
