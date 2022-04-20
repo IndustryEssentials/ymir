@@ -1,20 +1,22 @@
-import logging
 import json
+import logging
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 from unittest import mock
 
 import pytest
 import requests
 
+import tests.utils as test_utils
 from common_utils import labels
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.label_model import label_studio
+from controller.label_model.label_free import LabelFree
+from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from proto import backend_pb2
-import tests.utils as test_utils
 
 
 @pytest.fixture()
@@ -80,6 +82,19 @@ class TestTaskLabelingInvoker:
         expected_ret = backend_pb2.GeneralResp()
         assert response == expected_ret
 
+        mocker.patch.object(utils, "create_label_instance", return_value=LabelFree())
+        response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
+                                         sandbox_root=sandbox_root,
+                                         assets_config=dict(assetskvlocation="fake_assetskvlocation"),
+                                         req_type=backend_pb2.TASK_CREATE,
+                                         user_id=user_name,
+                                         repo_id=mir_repo_name,
+                                         task_id=task_id,
+                                         req_create_task=req_create_task)
+        assert mock_post.call_count == 8
+        expected_ret = backend_pb2.GeneralResp()
+        assert response == expected_ret
+
         shutil.rmtree(working_dir)
         shutil.rmtree(mir_repo_root)
 
@@ -92,6 +107,9 @@ class TestTaskLabelingInvoker:
 
         res = label_studio.LabelStudio().get_task_completion_percent(1)
 
+        assert res == 0.1
+
+        res = LabelFree().get_task_completion_percent(1)
         assert res == 0.1
 
         mock_resp.content = json.dumps({"num_tasks_with_annotations": 0, "task_number": 0})
