@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import sys
 from typing import List
 
@@ -80,7 +81,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     monitor.write_monitor_logger(percent=0.5)
 
     #! write mining result
-    mining_result = [(asset_path, 0.9) for asset_path in asset_paths]
+    mining_result = [(asset_path, random.random()) for asset_path in asset_paths]
     rw.write_mining_result(mining_result=mining_result)
 
     #! if task done, write 100% percent log

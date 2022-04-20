@@ -78,6 +78,7 @@ const project = {
   'iteration.column.label': { en: 'Labelling Result', cn: '标注结果', },
   'iteration.column.merging': { en: 'Training Dataset', cn: '训练数据', },
   'iteration.column.training': { en: 'Model', cn: '训练结果|mAP', },
+  'iteration.column.test': { en: 'Testing Dataset', cn: '测试集', },
   'project.detail.desc': { en: 'Description', cn: '描述', },
   'project.target.dataset': { en: 'Training Dataset\'s Assets', cn: '目标训练集大小', },
   'project.initmodel.success.msg': { en: 'Initial model prepared', cn: '设置初始模型成功', },

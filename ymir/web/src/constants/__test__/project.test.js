@@ -96,8 +96,10 @@ describe("constants: project", () => {
         id: 1,
         projectId: 1,
         name: 'project002_training_dataset',
-        createTime: format(createTime)
+        createTime: format(createTime),
+        versions: [],
       },
+      trainSetVersion: 1,
       testSet: undefined,
       miningSet: undefined,
       setCount: 6,
@@ -150,6 +152,7 @@ describe("constants: project", () => {
       trainUpdateSet: null,
       model: null,
       trainSet: undefined,
+      testSet: 0,
       prevIteration: 0
     }
     expect(transferIteration(origin)).toEqual(expected)

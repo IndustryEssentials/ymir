@@ -67,6 +67,7 @@ describe("models: iteration", () => {
       miningResultDataset: product(i.id),
       labelDataset: product(i.id),
       trainingModel: product(i.id),
+      testDataset: product(i.id),
     }))
 
     const generator = saga(creator, { put, call })
@@ -216,11 +217,12 @@ describe("models: iteration", () => {
   })
   it("effects: updateIteration", () => {
     const saga = iteration.effects.updateIteration
+    const origin = { id: 10011, name: "new_iteration_name" }
     const creator = {
       type: "updateIteration",
-      payload: { id: 10011, name: "new_iteration_name" },
+      payload: { ...origin },
     }
-    const expected = { id: 10011, name: "new_iteration_name", "round": 0, "currentStage": 0, "prevIteration": 0 }
+    const expected = transferIteration(origin)
 
     const generator = saga(creator, { put, call })
     generator.next()

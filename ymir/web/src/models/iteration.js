@@ -29,7 +29,13 @@ export default {
       if (code === 0) {
         let iterations = result.map((iteration) => transferIteration(iteration))
         if (more && iterations.length) {
-          const datasetIds = [...new Set(iterations.map(i => [i.miningSet, i.miningResult, i.labelSet, i.trainUpdateSet]).flat())].filter(id => id)
+          const datasetIds = [...new Set(iterations.map(i => [
+            i.miningSet, 
+            i.miningResult, 
+            i.labelSet, 
+            i.trainUpdateSet,
+            i.testSet,
+          ]).flat())].filter(id => id)
           const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
           let datasets = []
           let models = []
@@ -53,6 +59,7 @@ export default {
               miningDataset: ds(i.miningSet),
               miningResultDataset: ds(i.miningResult),
               labelDataset: ds(i.labelSet),
+              testDataset: ds(i.testSet),
               trainingModel: models.find(m => m.id === i.model),
             }
           })
