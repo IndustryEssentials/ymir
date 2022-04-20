@@ -9,6 +9,7 @@ export interface DatasetGroup {
   name: string,
   projectId: number,
   createTime: string,
+  versions?: Array<Dataset>,
 }
 
 export interface Dataset {

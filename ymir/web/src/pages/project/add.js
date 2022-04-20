@@ -57,7 +57,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
   }, [project])
 
   function initForm(project = {}) {
-    const { name, keywords: kws, targetMap, targetDataset, targetIteration,
+    const { name, keywords: kws, targetMap, targetDataset, targetIteration, trainSetVersion,
       description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
     if (name) {
       form.setFieldsValue({
@@ -65,6 +65,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
         targetMap,
         targetIteration,
         targetDataset,
+        trainSetVersion,
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
         strategy: miningStrategy || 0,
@@ -221,6 +222,11 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 <Tip hidden={true}>
                   <Form.Item label={t('project.add.form.training.set')}>
                     {project.trainSet?.name}
+                    <Form.Item noStyle name='trainSetVersion'>
+                      <Select style={{ marginLeft: 20, width: 120 }} disabled={project.currentIteration}>
+                        {project?.trainSet?.versions?.map(({ id, versionName }) => <Select.Option key={id} value={id}>{versionName}</Select.Option>)}
+                      </Select>
+                    </Form.Item>
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
@@ -294,15 +300,14 @@ const props = (state) => {
 const actions = (dispatch) => {
   const updateKeywords = (dry_run = false) => {
     return (keywords) => {
-      console.log('keywords:', keywords)
-
       return dispatch({
-      type: 'keyword/updateKeywords',
-      payload: {
-        keywords: keywords.map(keyword => ({ name: keyword, aliases: [] })),
-        dry_run,
-      },
-    })}
+        type: 'keyword/updateKeywords',
+        payload: {
+          keywords: keywords.map(keyword => ({ name: keyword, aliases: [] })),
+          dry_run,
+        },
+      })
+    }
   }
   return {
     createProject: (payload) => {
