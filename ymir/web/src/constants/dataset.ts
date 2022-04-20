@@ -1,7 +1,7 @@
 import { getLocale } from "umi"
 import { DatasetGroup, Dataset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion } from "./project"
+import { getIterationVersion, transferIteration } from "./project"
 import { BackendData } from "@/interface/common"
 
 export enum states {
@@ -25,6 +25,7 @@ export function transferDatasetGroup (data: BackendData) {
     projectId: data.project_id,
     name: data.name,
     createTime: format(data.create_datetime),
+    versions: data.datasets ? data.datasets.map((ds: BackendData) => transferDataset(ds)) : [],
   }
   return group
 }

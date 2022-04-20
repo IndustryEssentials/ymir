@@ -54,6 +54,7 @@ export function transferProject(data: BackendData) {
     testSet: data.testing_dataset ? transferDataset(data.testing_dataset) : undefined,
     miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
     setCount: data.dataset_count,
+    trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,

@@ -13,6 +13,7 @@ export interface Project {
   testSet?: Dataset,
   miningSet?: Dataset,
   setCount: number,
+  trainSetVersion?: number,
   model?: number,
   modelCount: number,
   miningStrategy: number,
