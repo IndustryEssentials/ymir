@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import t from '@/utils/t'
 import { Descriptions } from 'antd'
-import { useState } from 'react'
+import {
+  ArrowDownIcon, ArrowUpIcon,
+} from "@/components/common/icons"
 import s from './detail.less'
 
 const { Item } = Descriptions
@@ -14,7 +17,7 @@ export default function Error({ code, msg = '' }) {
   const [visible, setVisible] = useState(false)
 
   function formatErrorMessage(message) {
-    return <div hidden={!visible} style={{ padding: 20 }}>
+    return <div hidden={!visible}>
       {message.split('\n').map((item, i) => <div key={i}>{item}</div>)}
     </div>
   }
@@ -28,7 +31,10 @@ export default function Error({ code, msg = '' }) {
       title={<div className={s.title}>{t("task.detail.error.title")}</div>}
       className={s.infoTable}
     >
-      <Item label={t("task.detail.error.code")}>{t(`error${code}`)}{msg ? <span className='more' onClick={() => setVisible(!visible)}>More</span> : null}</Item>
+      <Item label={t("task.detail.error.code")}>
+        {t(`error${code}`)} 
+        {msg ? <span className='more' onClick={() => setVisible(!visible)}>{visible ? <ArrowUpIcon /> : <ArrowDownIcon />}</span> : null}
+      </Item>
       {msg && visible ? <Item label={t('task.detail.error.desc')} style={{ lineHeight: 1.25 }}>
         {formatErrorMessage(msg)}
       </Item> : null}

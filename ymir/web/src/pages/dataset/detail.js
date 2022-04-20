@@ -44,7 +44,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
       >
         <Detail dataset={dataset} />
         <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
-        <Error code={dataset.task?.error_code || '110110'} msg={dataset.task?.error_message || 'asjdfajld safkjdsadlkfjas dlfkasjdalskdf alsdfkjassdf\naskjdfladfj\nasdjkfalsdfj'} />
+        { dataset?.task?.error_code ? <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} /> : null }
         <TaskDetail
           task={dataset.task}
           ignore={dataset.ignoredKeywords}
