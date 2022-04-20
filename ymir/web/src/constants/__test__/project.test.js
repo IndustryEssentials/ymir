@@ -150,6 +150,7 @@ describe("constants: project", () => {
       trainUpdateSet: null,
       model: null,
       trainSet: undefined,
+      testSet: 0,
       prevIteration: 0
     }
     expect(transferIteration(origin)).toEqual(expected)
