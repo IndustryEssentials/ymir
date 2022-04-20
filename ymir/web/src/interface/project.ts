@@ -32,6 +32,7 @@ export interface Iteration {
   name?: string,
   round: number,
   currentStage: number,
+  testSet?: DatasetId,
   trainSet?: DatasetId,
   trainUpdateSet: DatasetId,
   trainUpdateDataset?: Dataset,

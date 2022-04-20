@@ -83,6 +83,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
     name: data.name,
     round: data.iteration_round || 0,
     currentStage: data.current_stage || 0,
+    testSet: data.testing_dataset_id || 0,
     miningSet: data.mining_input_dataset_id,
     miningResult: data.mining_output_dataset_id,
     labelSet: data.label_output_dataset_id,
