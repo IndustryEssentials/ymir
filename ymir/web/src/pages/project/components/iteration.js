@@ -73,7 +73,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
         s3d: prevIteration.trainUpdateSet || firstTrainSet.id,
         s3m: iteration.labelSet,
         s4d: iteration.trainUpdateSet,
-        s4t: project?.testSet?.id,
+        s4t: iteration.testSet,
         id: iteration.id,
         pid: project.id,
         stage: iteration.currentStage,
@@ -122,6 +122,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
       iterationRound: data.round,
       projectId: project.id,
       prevIteration: iteration.id,
+      testSet: project.testSet.id,
     }
     const result = await func.createIteration(params)
     if (result) {

@@ -34,7 +34,7 @@ const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { },
   async function loadData(selected) {
     const target = selected[selected.length - 1]
     target.loading = true
-    const result = await getDatasets(target.value)
+    const result = await getDatasets(target.value, true)
     
     target.loading = false
     if (result) {
