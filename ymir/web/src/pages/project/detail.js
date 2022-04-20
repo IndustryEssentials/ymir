@@ -61,10 +61,15 @@ function ProjectDetail(func) {
           <Col flex={1}>
             <Space className={s.detailPanel}>
               <span className={s.name}>{project.name}</span>
-              <span>{t('project.train_classes')}: {project?.keywords?.join(',')}</span>
-              <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.round, target: project.targetIteration })}</span>
-              {project.targetMap ? <span>{t('project.target.map')}: {project.targetMap}%</span> : null}
-              {project.targetDataset ? <span>{t('project.target.dataset')}: {project.targetDataset}</span> : null}
+              <span className={s.iterationInfo}>
+                {t('project.detail.info.iteration', { 
+                  current: <span className={s.orange}>{project.round}</span>, 
+                  target: <span className={s.orange}>{project.targetIteration}</span> 
+                })}
+              </span>
+              <span>{t('project.train_classes')}: <span className={s.bold}>{project?.keywords?.join(',')}</span></span>
+              {project.targetMap ? <span>{t('project.target.map')}: <span className={s.target}>{project.targetMap}%</span></span> : null}
+              {project.targetDataset ? <span>{t('project.target.dataset')}: <span className={s.target}>{project.targetDataset}</span></span> : null}
               {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
             </Space>
           </Col>
