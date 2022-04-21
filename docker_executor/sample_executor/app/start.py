@@ -91,7 +91,6 @@ def _run_mining(env_config: env.EnvConfig) -> None:
 
     #! write mining result
     #   here we give a fake score to each assets
-    asset_paths.sort()
     total_length = len(asset_paths)
     mining_result = [(asset_path, index / total_length) for index, asset_path in enumerate(asset_paths)]
     rw.write_mining_result(mining_result=mining_result)
