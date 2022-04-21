@@ -24,6 +24,7 @@ export interface Project {
   createTime: string,
   updateTime: string,
   description?: string,
+  isExample?: boolean,
 }
 
 export interface Iteration {

@@ -29,7 +29,10 @@ const project = {
   'project.add.form.type': { en: 'Training Type', cn: '训练类型', },
   'project.add.form.keyword.label': { en: 'Training Classes', cn: '训练目标', },
   'project.add.form.keyword.required': { en: 'Training classes is required', cn: '训练目标为必选项', },
-  'project.add.form.keyword.placeholder': { en: 'Please select training classes', cn: '请输入训练目标', },
+  'project.add.form.keyword.placeholder': { 
+    en: 'Please select training classes, or input new classes, separated by comma', 
+    cn: '请输入训练目标，可选择已有的或输入新标签，英文逗号分隔', 
+  },
   'project.add.form.target': { en: 'Project Target', cn: '目标设置', },
   'project.add.form.target.map': { en: 'mAP', cn: 'mAP', },
   'project.add.form.target.map.placeholder': { en: 'Please input mAP as target', cn: '请输入目标mAP', },
@@ -92,6 +95,8 @@ const project = {
   'project.add.confirm.title': { en: 'Whether this new keywords will add to your KEYWORD LIST?', cn: '标签管理列表未查询到下列标签，是否要添加至标签列表', },
   'project.add.confirm.ok': { en: 'Add Keywords and Create Project', cn: '添加标签并创建项目', },
   'project.add.confirm.cancel': { en: 'Cancel Create Project', cn: '取消创建项目', },
+  'project.empty.label': { en: 'You can manage datasets, train models, and create data iterations.', cn: '在项目中可以管理数据集、训练模型、迭代数据', },
+  'project.new.example.label': { en: 'Create Example Project', cn: '创建示例项目', },
 }
 
 export default project
