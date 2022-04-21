@@ -6,3 +6,6 @@ gpu_id: '0'
 task_id: 'default-infer-task'
 model_params_path: []
 class_names: []
+
+# just for test, remove this key in your own docker image
+sleep_seconds: 30  # sleep seconds for each task

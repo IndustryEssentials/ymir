@@ -77,6 +77,8 @@ def _cleanup(work_dir: str) -> None:
             'monitor-log.txt',  # monitor detail file
             'tensorboard',  # default root directory for tensorboard event files
             'ymir-executor-out.log',  # container output
+            'result.tsv',  # mining result
+            'infer-result.json',  # infer result
         })
 
 
