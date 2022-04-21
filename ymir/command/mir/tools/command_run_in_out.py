@@ -80,6 +80,10 @@ def _cleanup(work_dir: str) -> None:
         })
 
 
+def _collect_tail_output(work_dir: str, tail_line_count: int = 30) -> str:
+    pass
+
+
 def command_run_in_out(f: Callable) -> Callable:
     """
     record monitor.txt and commit on errors
