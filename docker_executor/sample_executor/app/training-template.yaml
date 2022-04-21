@@ -9,4 +9,4 @@ class_names: []
 
 # just for test, remove this key in your own docker image
 expected_map: 0.983  # expected map for training task
-sleep_seconds: 60  # sleep seconds for each task
+idle_seconds: 60  # sleep seconds for each task

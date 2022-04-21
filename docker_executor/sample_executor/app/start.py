@@ -32,7 +32,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     executor_config = env.get_executor_config()
     class_names: List[str] = executor_config['class_names']
     expected_mAP: float = executor_config.get('expected_map', 0.6)
-    sleep_seconds: float = executor_config.get('sleep_seconds', 60)
+    idle_seconds: float = executor_config.get('idle_seconds', 60)
     #! use `logging` or `print` to write log to console
     #   notice that logging.basicConfig is invoked at executor.env
     logging.info(f"training config: {executor_config}")
@@ -45,7 +45,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
     monitor.write_monitor_logger(percent=0.5)
 
-    _sleep_and_work(sleep_seconds=sleep_seconds)
+    _dummy_work(idle_seconds=idle_seconds)
 
     # suppose we have a long time training, and have saved the final model
     #! use `env_config.output.models_dir` to get model output dir
@@ -69,7 +69,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #! use `env.get_executor_config` to get config file for training
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
-    sleep_seconds: float = executor_config.get('sleep_seconds', 60)
+    idle_seconds: float = executor_config.get('idle_seconds', 60)
     #! use `logging` or `print` to write log to console
     logging.info(f"mining config: {executor_config}")
 
@@ -87,7 +87,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     logging.info(f"assets count: {len(asset_paths)}")
     monitor.write_monitor_logger(percent=0.5)
 
-    _sleep_and_work(sleep_seconds=sleep_seconds)
+    _dummy_work(idle_seconds=idle_seconds)
 
     #! write mining result
     #   here we give a fake score to each assets
@@ -105,7 +105,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
     class_names = executor_config['class_names']
-    sleep_seconds: float = executor_config.get('sleep_seconds', 60)
+    idle_seconds: float = executor_config.get('idle_seconds', 60)
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
 
@@ -123,7 +123,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     logging.info(f"assets count: {len(asset_paths)}")
     monitor.write_monitor_logger(percent=0.5)
 
-    _sleep_and_work(sleep_seconds=sleep_seconds)
+    _dummy_work(idle_seconds=idle_seconds)
 
     #! write infer result
     fake_annotation = rw.Annotation(class_name=class_names[0], score=0.9, box=rw.Box(x=50, y=50, w=150, h=150))
@@ -135,9 +135,9 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     monitor.write_monitor_logger(percent=1.0)
 
 
-def _sleep_and_work(sleep_seconds: float, gpu_memory_size: int = 0) -> None:
-    if sleep_seconds > 0:
-        time.sleep(sleep_seconds)
+def _dummy_work(idle_seconds: float, gpu_memory_size: int = 0) -> None:
+    if idle_seconds > 0:
+        time.sleep(idle_seconds)
 
 
 if __name__ == '__main__':
