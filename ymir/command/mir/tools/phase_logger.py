@@ -101,7 +101,7 @@ class PhaseLogger:
                 f.write(f"\t{state_code}\t{state_content}")
             f.write("\n")
             if trace_message:
-                f.write(f"===== TRACE_MESSAGE =====\n{trace_message}\n")
+                f.write(f"{trace_message}\n")
             if executor_outlog_tail:
                 f.write(f"===== EXECUTOR_OUTLOG_TAIL =====\n{executor_outlog_tail}\n")
 
