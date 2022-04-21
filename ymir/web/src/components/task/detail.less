@@ -1,4 +1,4 @@
-.taskDetail {
+.taskDetail, .error {
   .infoTable {
     margin-bottom: 20px;
     :global(.ant-descriptions-view){
@@ -15,6 +15,8 @@
 }
 .title {
   line-height: 18px;
+  font-size: 16px;
+  font-weight: bold;
   &::before {
     content: ' ';
     display: inline-block;
@@ -24,4 +26,7 @@
     vertical-align: bottom;
     margin-right: 10px;
   }
+}
+.error {
+  margin-bottom: 20px;
 }

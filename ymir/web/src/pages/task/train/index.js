@@ -195,6 +195,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
     const count = Number(value)
     const min = 0
     const max = gpu_count
+    if (gpu_count <= 0) {
+      return Promise.reject(t('task.gpu.tip', { count: gpu_count }))
+    }
     if (count < min || count > max) {
       return Promise.reject(t('task.train.gpu.invalid', { min, max }))
     }

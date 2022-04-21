@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Dict, List, Tuple
 
 from pydantic import BaseModel
@@ -45,8 +46,9 @@ def write_mining_result(mining_result: List[Tuple[str, float]]) -> None:
 
 def write_infer_result(infer_result: Dict[str, List[Annotation]]) -> None:
     detection_result = {}
-    for asset_id, annotations in infer_result.items():
-        detection_result[asset_id] = {'annotations': [annotation.dict() for annotation in annotations]}
+    for asset_path, annotations in infer_result.items():
+        asset_basename = os.path.basename(asset_path)
+        detection_result[asset_basename] = {'annotations': [annotation.dict() for annotation in annotations]}
 
     result = {'detection': detection_result}
     env_config = env.get_current_env()
