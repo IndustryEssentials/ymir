@@ -32,7 +32,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     executor_config = env.get_executor_config()
     class_names: List[str] = executor_config['class_names']
     expected_mAP: float = executor_config.get('expected_map', 0.6)
-    sleep_seconds: float = executor_config.get('sleep_seconds', 0)
+    sleep_seconds: float = executor_config.get('sleep_seconds', 60)
     #! use `logging` or `print` to write log to console
     #   notice that logging.basicConfig is invoked at executor.env
     logging.info(f"training config: {executor_config}")
@@ -69,7 +69,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #! use `env.get_executor_config` to get config file for training
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
-    sleep_seconds: float = executor_config.get('sleep_seconds', 0)
+    sleep_seconds: float = executor_config.get('sleep_seconds', 60)
     #! use `logging` or `print` to write log to console
     logging.info(f"mining config: {executor_config}")
 
@@ -79,6 +79,9 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
         logging.info(f"asset: {asset_path}")
         asset_paths.append(asset_path)
+
+    if len(asset_paths) == 0:
+        raise ValueError('empty asset paths')
 
     #! use `monitor.write_monitor_logger` to write task process to monitor.txt
     logging.info(f"assets count: {len(asset_paths)}")
@@ -103,7 +106,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
     class_names = executor_config['class_names']
-    sleep_seconds: float = executor_config.get('sleep_seconds', 0)
+    sleep_seconds: float = executor_config.get('sleep_seconds', 60)
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
 
@@ -113,6 +116,9 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
         logging.info(f"asset: {asset_path}")
         asset_paths.append(asset_path)
+
+    if len(asset_paths) == 0 or len(class_names) == 0:
+        raise ValueError('empty asset paths or class names')
 
     #! use `monitor.write_monitor_logger` to write log to console and write task process percent to monitor.txt
     logging.info(f"assets count: {len(asset_paths)}")
