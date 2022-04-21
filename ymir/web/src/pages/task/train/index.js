@@ -422,7 +422,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
+                    <Button type="primary" size="large" htmlType="submit">
                       {t('common.action.train')}
                     </Button>
                   </Form.Item>
