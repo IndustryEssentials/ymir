@@ -2,12 +2,13 @@
 
 FROM python:3.8.13-alpine
 
+RUN pip3 install -r ./app/executor/requirements.txt
+
 # tmi framework and your app
 COPY app /app
 RUN mkdir /img-man
 COPY app/*-template.yaml /img-man/
 COPY executor /app/executor
-RUN pip3 install -r /app/executor/requirements.txt
 
 # dependencies: write other dependencies here (pytorch, mxnet, tensorboard-x, etc.)
 
