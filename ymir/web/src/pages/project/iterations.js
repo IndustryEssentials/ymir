@@ -48,6 +48,13 @@ function Iterations({ ...func }) {
       ellipsis: true,
     },
     {
+      title: showTitle("iteration.column.test"),
+      dataIndex: "testDatasetLabel",
+      render: (label, { testDataset }) => renderPop(label, testDataset),
+      align: 'center',
+      ellipsis: true,
+    },
+    {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
       render: (label, { trainEffect, trainUpdateDataset }) => renderPop(label, trainUpdateDataset,
@@ -102,6 +109,7 @@ function Iterations({ ...func }) {
         miningDatasetLabel: renderDatasetLabel(iteration.miningDataset),
         miningResultDatasetLabel: renderDatasetLabel(iteration.miningResultDataset),
         labelDatasetLabel: renderDatasetLabel(iteration.labelDataset),
+        testDatasetLabel: renderDatasetLabel(iteration.testDataset),
         map: iteration?.trainingModel?.map,
       }
     })
