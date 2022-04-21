@@ -19,7 +19,8 @@ def _get_task_name(dst_rev: str) -> str:
 
 
 @utils.time_it
-def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str, predefined_task: Any) -> None:
+def _commit_error(code: int, error_msg: str, executor_outlog_tail: str, mir_root: str, src_revs: str, dst_rev: str,
+                  predefined_task: Any) -> None:
     if not src_revs:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='empty src_revs',
@@ -37,6 +38,7 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                       message='task failed',
                                                       return_code=code,
                                                       return_msg=error_msg,
+                                                      executor_outlog_tail=executor_outlog_tail,
                                                       src_revs=src_revs,
                                                       dst_rev=dst_rev)
 
@@ -80,10 +82,6 @@ def _cleanup(work_dir: str) -> None:
         })
 
 
-def _collect_tail_output(work_dir: str, tail_line_count: int = 30) -> str:
-    pass
-
-
 def command_run_in_out(f: Callable) -> Callable:
     """
     record monitor.txt and commit on errors
@@ -124,9 +122,12 @@ def command_run_in_out(f: Callable) -> Callable:
 
             if ret == MirCode.RC_OK:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
+                # no need to call _commit_error, already committed inside command run function
             else:
+                executor_outlog_tail = utils.collect_executor_outlog_tail(work_dir=work_dir)
                 _commit_error(code=ret,
                               error_msg=trace_message,
+                              executor_outlog_tail=executor_outlog_tail,
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
@@ -135,7 +136,8 @@ def command_run_in_out(f: Callable) -> Callable:
                                                task_state=phase_logger.PhaseStateEnum.ERROR,
                                                state_code=ret,
                                                state_content=trace_message,
-                                               trace_message=trace_message)
+                                               trace_message=trace_message,
+                                               executor_outlog_tail=executor_outlog_tail)
 
             logging.info(f"command done: {dst_rev}, result: {ret}")
 
@@ -143,9 +145,11 @@ def command_run_in_out(f: Callable) -> Callable:
 
             return ret
 
+        executor_outlog_tail = utils.collect_executor_outlog_tail(work_dir=work_dir)
         if needs_new_commit:
             _commit_error(code=error_code,
                           error_msg=trace_message,
+                          executor_outlog_tail=executor_outlog_tail,
                           mir_root=mir_root,
                           src_revs=src_revs,
                           dst_rev=dst_rev,
@@ -154,7 +158,8 @@ def command_run_in_out(f: Callable) -> Callable:
                                        task_state=phase_logger.PhaseStateEnum.ERROR,
                                        state_code=error_code,
                                        state_content=state_message,
-                                       trace_message=trace_message)
+                                       trace_message=trace_message,
+                                       executor_outlog_tail=executor_outlog_tail)
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")

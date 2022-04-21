@@ -389,6 +389,7 @@ class CmdTrain(base.BaseCommand):
                                            model_hash=model_sha1,
                                            return_code=task_code,
                                            return_msg=task_error_msg,
+                                           executor_outlog_tail=mir_utils.collect_executor_outlog_tail(work_dir=work_dir),
                                            serialized_task_parameters=task_parameters,
                                            serialized_executor_config=yaml.safe_dump(executor_config),
                                            executor=executor,

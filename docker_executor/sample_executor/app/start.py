@@ -138,6 +138,8 @@ def _run_infer(env_config: env.EnvConfig) -> None:
 def _dummy_work(idle_seconds: float, gpu_memory_size: int = 0) -> None:
     if idle_seconds > 0:
         time.sleep(idle_seconds)
+    elif idle_seconds < 0:
+        raise ValueError(f"invalid idle seconds: {idle_seconds}")
 
 
 if __name__ == '__main__':
