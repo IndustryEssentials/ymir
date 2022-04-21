@@ -21,6 +21,7 @@ RUN mkdir -p /app_logs/
 
 COPY ./backend/requirements.txt ./
 RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
+RUN pip3 install -U /command
 
 COPY ./command /command
 RUN pip3 install -U /command
