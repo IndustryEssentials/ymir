@@ -64,6 +64,14 @@ export function createProject({
 }
 
 /**
+ * create an example project
+ * @returns
+ */
+export function addExampleProject() {
+  return request.post("/projects/samples")
+}
+
+/**
  * update project
  * @param {number} id 
  * @param {object} params 

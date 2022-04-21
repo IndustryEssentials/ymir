@@ -62,6 +62,7 @@ export function transferProject(data: BackendData) {
     currentIteration: iteration,
     currentStage: iteration?.currentStage || 0,
     round: iteration?.round || 0,
+    isExample: data.is_example || false,
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,
