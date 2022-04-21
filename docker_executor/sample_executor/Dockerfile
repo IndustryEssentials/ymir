@@ -2,7 +2,8 @@
 
 FROM python:3.8.13-alpine
 
-RUN pip3 install -r ./app/executor/requirements.txt
+COPY ./executor/requirements.txt ./
+RUN pip3 install -r requirements.txt
 
 # tmi framework and your app
 COPY app /app
