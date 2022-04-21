@@ -128,13 +128,6 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       setTimeout(() => callback(), 500)
     }
   }
-  const checkProjectName = (_, value) => {
-    const reg = /^[a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*$/
-    if (!value || reg.test(value.trim())) {
-      return Promise.resolve()
-    }
-    return Promise.reject(t('project.add.form.name.invalid'))
-  }
 
   async function fetchProject() {
     const result = await getProject(id)
@@ -152,8 +145,8 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   label={t('project.add.form.name')}
                   name='name'
                   rules={[
-                    { required: true, message: t('project.add.form.name.required') },
-                    { validator: checkProjectName },
+                    { required: true, whitespace: true, message: t('project.add.form.name.required') },
+                    {min: 1, max: 100 },
                   ]}
                 >
                   <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
