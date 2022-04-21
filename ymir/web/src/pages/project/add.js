@@ -216,8 +216,10 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Form.Item label={t('project.add.form.training.set')}>
                     {project.trainSet?.name}
                     <Form.Item noStyle name='trainSetVersion'>
-                      <Select style={{ marginLeft: 20, width: 120 }} disabled={project.currentIteration}>
-                        {project?.trainSet?.versions?.map(({ id, versionName }) => <Select.Option key={id} value={id}>{versionName}</Select.Option>)}
+                      <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
+                        {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) => 
+                          <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
+                        )}
                       </Select>
                     </Form.Item>
                   </Form.Item>
