@@ -30,6 +30,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     """
     #! use `env.get_executor_config` to get config file for training
     executor_config = env.get_executor_config()
+    class_names = executor_config['class_names']
+    expected_mAP = executor_config.get('expected_map', 0.6)
     #! use `logging` or `print` to write log to console
     #   notice that logging.basicConfig is invoked at executor.env
     logging.info(f"training config: {executor_config}")
@@ -51,11 +53,9 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use `rw.write_training_result` to save training result
     rw.write_training_result(model_names=['model-0000.params', 'model-symbols.json'],
-                             mAP=0.8,
-                             classAPs={
-                                 'person': 0.8,
-                                 'cat': 0.82
-                             })
+                             mAP=expected_mAP,
+                             classAPs={class_name: expected_mAP
+                                       for class_name in class_names})
 
     #! if task done, write 100% percent log
     logging.info('training done')
@@ -93,6 +93,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     #! use `env.get_executor_config` to get config file for training
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
+    class_names = executor_config['class_names']
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
 
@@ -108,7 +109,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     monitor.write_monitor_logger(percent=0.5)
 
     #! write infer result
-    fake_annotation = rw.Annotation(class_name='cat', score=0.9, box=rw.Box(x=50, y=50, w=150, h=150))
+    fake_annotation = rw.Annotation(class_name=class_names[0], score=0.9, box=rw.Box(x=50, y=50, w=150, h=150))
     infer_result = {asset_path: [fake_annotation] for asset_path in asset_paths}
     rw.write_infer_result(infer_result=infer_result)
 
