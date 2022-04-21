@@ -25,6 +25,9 @@ export const initIntl = (prefix: string = '') => {
 }
 
 const showIntl = (id: string, values = {}, prefix: string) => {
+  if (!id) {
+    return
+  }
   try {
     return initIntl(prefix)(id, values)
   } catch (err) {

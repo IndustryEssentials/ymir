@@ -79,6 +79,7 @@ describe("constants: dataset", () => {
       projectId: origin.project_id,
       name: origin.name,
       createTime: format(time),
+      versions: [],
     }
     expect(transferDatasetGroup(origin)).toEqual(expected)
   })

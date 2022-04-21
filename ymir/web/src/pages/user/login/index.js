@@ -1,7 +1,7 @@
 import React from "react"
 import { connect } from "dva"
 import { Form, Input, Button, Checkbox, Row, Col, Space } from "antd"
-import { Link, useHistory, useLocation } from "umi"
+import { Link, useHistory, useLocation, getLocale } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
@@ -37,7 +37,7 @@ const Login = ({ loginApi }) => {
   return (
     <div className={styles.login}>
       <Row>
-        <Col span={16} className={styles.slogan}>
+        <Col span={16} className={`${styles.slogan} slogan_${getLocale()}`}>
           <div className={styles.logo}><img src={loginBig} /></div>
           <div className={styles.footer}>
             <Foot></Foot>

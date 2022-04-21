@@ -4,6 +4,7 @@ WORKDIR /app
 ARG NPM_REGISTRY=https://registry.npmjs.org
 
 COPY package.json .
+COPY package-lock.json .
 RUN npm install --registry ${NPM_REGISTRY}
 COPY . .
 RUN npm run build:dev

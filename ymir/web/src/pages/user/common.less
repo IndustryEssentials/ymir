@@ -1,6 +1,6 @@
 .login {
   .slogan {
-    background-image: url(../../assets/slogan.svg), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
+    background-image: url(../../assets/slogan_en.svg), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: contain;
@@ -19,6 +19,12 @@
       padding: 20px 0;
       width: 100%;
     }
+  }
+  :global(.slogan_zh-CN) {
+    background-image: url(../../assets/slogan.svg), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
+  }
+  :global(.slogan_en-US) {
+    background-image: url(../../assets/slogan_en.svg), linear-gradient(295.04deg, #FCFCFD, #F0F2F5);
   }
   .content {
     background-color: #fff;

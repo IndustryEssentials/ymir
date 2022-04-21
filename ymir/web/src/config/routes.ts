@@ -207,7 +207,7 @@ export const homeRoutes = [
     name: "projectAdd",
     component: "@/pages/project/add",
     title: "project.add.title",
-    pid: 24,
+    pid: 25,
     id: 26,
     breadcrumbLabel: 'breadcrumbs.project.add',
   },

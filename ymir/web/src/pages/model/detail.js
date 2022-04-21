@@ -9,6 +9,7 @@ import TaskDetail from "@/components/task/detail"
 import styles from "./detail.less"
 import { percent } from "../../utils/number"
 import TaskProgress from "@/components/task/progress"
+import Error from "@/components/task/error"
 
 const { Item } = Descriptions
 
@@ -51,6 +52,7 @@ function ModelDetail({ modelCache, getModel }) {
           <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
         </Descriptions>
         <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
+        { model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null }
         <TaskDetail task={model.task}></TaskDetail>
         <Space style={{ width: "100%", justifyContent: "flex-end" }}>
           {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}

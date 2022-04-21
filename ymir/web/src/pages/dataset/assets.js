@@ -165,7 +165,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     </Col>
   </Row>
 
-  const assetDetail = <Modal className={styles.assetDetail} 
+  const assetDetail = <Modal className={styles.assetDetail} destroyOnClose
     title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
     width={null} footer={null}>
     <Asset id={id} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
