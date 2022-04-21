@@ -2,15 +2,16 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import { useHistory, Link } from "umi"
-import { List, Skeleton, Space, Pagination, Col, Row, Card, Button, Form, Input, } from "antd"
+import { List, Skeleton, Space, Pagination, Col, Row, Card, Button, Form, Input, message, ConfigProvider, } from "antd"
 
 import t from "@/utils/t"
 import { getStageLabel } from '@/constants/project'
+import ProjectEmpty from '@/components/empty/project'
 import Del from './del'
 import s from "./list.less"
 import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/icons"
 
-const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
+const ProjectList = ({ list, query, ...func }) => {
 
   const history = useHistory()
   const [projects, setProjects] = useState([])
@@ -31,11 +32,11 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, limit, offset })
   }
 
   async function getData() {
-    await getProjects(query)
+    await func.getProjects(query)
   }
 
   const moreList = (record) => {
@@ -64,13 +65,21 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
   }
 
   const search = (values) => {
-    updateQuery({ ...query, ...values })
+    func.updateQuery({ ...query, ...values })
   }
 
   const delOk = (id) => {
     setProjects(projects.filter(project => project.id !== id))
     setTotal(old => old - 1)
     getData()
+  }
+
+  const addExample = async () => {
+    const result = await func.addExampleProject()
+    if (result) {
+      message.success('project.create.success')
+      getData()
+    }
   }
 
   const more = (item) => {
@@ -92,7 +101,10 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
   }
 
   const addBtn = (
-    <Button className={s.addBtn} type="primary" onClick={() => history.push('/home/project/add')} icon={<AddIcon />}>{t('project.new.label')}</Button>
+    <Space className={s.actions}>
+      <Button className={s.addBtn} type="primary" onClick={() => history.push('/home/project/add')} icon={<AddIcon />}>{t('project.new.label')}</Button>
+      <Button className={s.addBtn} type="primary" onClick={() => addExample()} icon={<AddIcon />}>{t('project.new.example.label')}</Button>
+    </Space>
   )
 
   const searchPanel = (
@@ -168,11 +180,13 @@ const ProjectList = ({ getProjects, list, query, updateQuery, resetQuery }) => {
       <Space className={s.actions}>{addBtn}</Space>
       <Card>
         {searchPanel}
+        <ConfigProvider renderEmpty={() => <ProjectEmpty addExample={addExample} />}>
         <List
           className={s.list}
           dataSource={projects}
           renderItem={renderItem}
         />
+        </ConfigProvider>
         <Pagination className={s.pager} onChange={pageChange}
           defaultCurrent={1} defaultPageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
@@ -196,6 +210,11 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'project/getProjects',
         payload,
+      })
+    },
+    addExampleProject() {
+      return dispatch({
+        type: 'project/addExampleProject',
       })
     },
     updateQuery: (query) => {

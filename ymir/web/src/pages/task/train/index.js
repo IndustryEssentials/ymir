@@ -157,9 +157,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
     const gpuCount = form.getFieldValue('gpu_count')
-    if (gpuCount) {
-      config['gpu_count'] = gpuCount
-    }
+    // if (gpuCount) {
+      config['gpu_count'] = gpuCount || 0
+    // }
     const img = (form.getFieldValue('image') || '').split(',')
     const imageId = Number(img[0])
     const image = img[1]
@@ -193,7 +193,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   function validateGPU(_, value) {
     const count = Number(value)
-    const min = 1
+    const min = 0
     const max = gpu_count
     if (count < min || count > max) {
       return Promise.reject(t('task.train.gpu.invalid', { min, max }))
@@ -345,7 +345,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                     { validator: validateGPU }
                   ]}
                 >
-                  <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
+                  <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>

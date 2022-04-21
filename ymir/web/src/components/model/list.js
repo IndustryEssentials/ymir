@@ -9,6 +9,7 @@ import {
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
+import { TASKTYPES } from '@/constants/task'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 
@@ -19,10 +20,11 @@ import Terminate from "@/components/task/terminate"
 import Del from "./del"
 import DelGroup from "./delGroup"
 import EditBox from "@/components/form/editBox"
+import { getTensorboardLink } from "@/services/common"
 
 import { ShieldIcon, VectorIcon, EditIcon,
    DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, 
-   ArrowDownIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
+   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon } from "@/components/common/icons"
 
 const { useForm } = Form
 
@@ -246,7 +248,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, versionName, isProtected, task: { is_terminated } } = record
+    const { id, name, url, state, versionName, isProtected, taskType, task } = record
     const actions = [
       {
         key: "verify",
@@ -288,8 +290,16 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state) || is_terminated,
+        hidden: () => !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
+      },
+      {
+        key: "tensor",
+        label: 'Tensorboard',
+        target: '_blank',
+        link: getTensorboardLink(task.hash),
+        hidden: () => taskType !== TASKTYPES.TRAINING,
+        icon: <BarchartIcon />,
       },
     ]
     // const delAction = {

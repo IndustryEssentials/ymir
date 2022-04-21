@@ -113,6 +113,7 @@ describe("constants: project", () => {
       createTime: format(createTime),
       description: 'project002 desc',
       type: 1,
+      isExample: false,
       targetMap: 88,
       targetDataset: null,
       targetIteration: 0,

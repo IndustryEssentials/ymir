@@ -102,14 +102,15 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       return send()
     }
     // create project
-    const { failed } = await func.checkKeywords(params.keywords)
-    const newKws = params.keywords.filter(keyword => !failed.includes(keyword))
+    const kws = params.keywords.map(kw => (kw || '').trim()).filter(kw => kw)
+    const { failed } = await func.checkKeywords(kws)
+    const newKws = kws.filter(keyword => !failed.includes(keyword))
 
     if (newKws?.length) {
       // confirm
       confirm({
         title: t('project.add.confirm.title'),
-        content: <ol>{newKws.map(keyword => <li>{keyword}</li>)}</ol>,
+        content: <ol>{newKws.map(keyword => <li key={keyword}>{keyword}</li>)}</ol>,
         onOk: () => {
           addNewKeywords(newKws, send)
         },
@@ -171,7 +172,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     { required: true, message: t('project.add.form.keyword.required') }
                   ]}
                 >
-                  <Select mode="tags" showArrow
+                  <Select mode="tags" showArrow tokenSeparators={[',']}
                     placeholder={t('project.add.form.keyword.placeholder')}
                     disabled={isEdit}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
