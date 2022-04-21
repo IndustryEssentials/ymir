@@ -4,8 +4,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 ARG PIP_SOURCE=https://pypi.org/simple
 
-ARG SERVER_MODE=prod
-
 RUN apt-get update \
   && apt-get install -y git \
   && apt-get install -y vim \
