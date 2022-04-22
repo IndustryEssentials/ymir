@@ -7,7 +7,7 @@ import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
-import { getTaskTypeLabel } from '@/constants/task'
+import { getTaskTypeLabel, TASKSTATES } from '@/constants/task'
 import { states } from '@/constants/dataset'
 
 import StateTag from "@/components/task/stateTag"
@@ -196,7 +196,7 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
   }
 
   const actionMenus = (record) => {
-    const { id, name, state, versionName, isProtected, task: { is_terminated } } = record
+    const { id, state, taskState, task } = record
     const menus = [
       {
         key: "fusion",
@@ -244,7 +244,7 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state) || is_terminated,
+        hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
       // {

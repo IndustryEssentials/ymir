@@ -9,7 +9,7 @@ import {
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
-import { TASKTYPES } from '@/constants/task'
+import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 
@@ -250,7 +250,7 @@ function Model({ pid, project = {}, group, modelList, versions, query, ...func }
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, versionName, isProtected, taskType, task } = record
+    const { id, name, url, state, taskState, taskType, task } = record
     const actions = [
       {
         key: "verify",
@@ -292,7 +292,7 @@ function Model({ pid, project = {}, group, modelList, versions, query, ...func }
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state) || task.is_terminated,
+        hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
       {
