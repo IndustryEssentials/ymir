@@ -63,8 +63,7 @@ class Settings(BaseSettings):
 
     # RUNTIME
     RUNTIMES: Optional[
-        str
-    ] = '[{"name": "sample_image", "hash": "fcf7f1545483", "type": 1, "url": "industryessentials/executor-example:latest", "configs": [{"expected_map": 0.983, "sleep_seconds": 30, "type": 1}, {"sleep_seconds": 30, "type": 2}, {"sleep_seconds": 30, "type": 9}]}]'  # noqa: E501
+        str] = '[{"name": "sample_image", "hash": "6d30c27861c5", "type": 1, "url": "industryessentials/executor-example:latest", "configs": [{"expected_map": 0.983, "idle_seconds": 60, "type": 1}, {"idle_seconds": 60, "type": 2}, {"idle_seconds": 60, "type": 9}]}]'  # noqa: E501
 
     # Online Sheet
     SHARING_TIMEOUT: int = 10

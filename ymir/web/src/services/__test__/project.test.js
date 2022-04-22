@@ -4,6 +4,7 @@ import {
   delProject,
   createProject,
   updateProject,
+  addExampleProject,
 } from "../project"
 import { product, products, requestExample } from './func'
 
@@ -53,5 +54,18 @@ describe("service: projects", () => {
     }
     const expected = "ok"
     requestExample(createProject, project, expected, 'post')
+  })
+  it("addExampleProject -> success", () => {
+    const project = {
+      is_example: true,
+      description: 'memo',
+      iteration_target: 10,
+      keywords: ['cat', 'dog'],
+      name: 'newporjectname',
+      training_dataset_count_target: 0,
+      type: 0,
+    }
+    const expected = "ok"
+    requestExample(addExampleProject, project, expected, 'post')
   })
 })
