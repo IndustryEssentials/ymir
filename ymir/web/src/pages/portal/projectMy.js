@@ -47,7 +47,7 @@ const MyProject = ({ count = 6, ...func }) => {
             <span style={{ color: '#36cbcb', fontSize: 16, marginLeft: 10 }}>{t('portal.action.new.project')}</span>
           </Link>
         </div>
-        {!projects.length ? <Lists projects={projects} /> : 
+        {projects.length ? <Lists projects={projects} /> : 
         <div className={styles.addBtn} style={{ marginTop: 20 }}>
           <Link className={styles.emptyBoxAction}  onClick={() => addExample()}>
             <AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />
