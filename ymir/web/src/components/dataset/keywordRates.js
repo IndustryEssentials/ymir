@@ -18,9 +18,13 @@ function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }
     if (dataset.id) {
       setData(dataset)
     } else {
-      id && fetchRates()
+      if (id) {
+        fetchRates()
+      } else {
+        setList([])
+      }
     }
-  }, [id])
+  }, [id, dataset])
 
   useEffect(() => {
     if (data) {

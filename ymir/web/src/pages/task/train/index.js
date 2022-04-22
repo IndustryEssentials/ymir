@@ -63,8 +63,12 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [])
 
   useEffect(() => {
-    setDatasets(allDatasets)
-  }, [allDatasets])
+    setDatasets(allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))))
+    if (!datasets.some(ds => ds.id === Number(did))) {
+      setTrainSet(null)
+      form.setFieldsValue({ datasetId: null })
+    }
+  }, [allDatasets, project])
 
   useEffect(() => {
     if (did) {
@@ -85,27 +89,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
-
-  useEffect(() => {
-    const state = location.state
-
-    if (state?.record) {
-      const { parameters, name, config, } = state.record
-      const { validation_dataset_id, strategy, docker_image, docker_image_id, model_id } = parameters
-      form.setFieldsValue({
-        testset: validation_dataset_id,
-        gpu_count: config.gpu_count,
-        model: model_id,
-        image: docker_image_id + ',' + docker_image,
-        strategy,
-      })
-      setConfig(config)
-      setTestSet(validation_dataset_id)
-      setHpVisible(true)
-
-      history.replace({ state: {} })
-    }
-  }, [location.state])
 
   async function validHyperparam(rule, value) {
 
