@@ -142,9 +142,10 @@ def command_run_in_out(f: Callable) -> Callable:
             return ret
 
         executor_outlog_tail = utils.collect_executor_outlog_tail(work_dir=work_dir)
+        error_msg = executor_outlog_tail or trace_message
         if needs_new_commit:
             _commit_error(code=error_code,
-                          error_msg=executor_outlog_tail or trace_message,
+                          error_msg=error_msg,
                           mir_root=mir_root,
                           src_revs=src_revs,
                           dst_rev=dst_rev,
@@ -153,7 +154,7 @@ def command_run_in_out(f: Callable) -> Callable:
                                        task_state=phase_logger.PhaseStateEnum.ERROR,
                                        state_code=error_code,
                                        state_content=state_message,
-                                       trace_message=executor_outlog_tail or trace_message)
+                                       trace_message=error_msg)
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
