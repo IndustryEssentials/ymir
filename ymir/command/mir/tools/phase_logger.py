@@ -83,8 +83,7 @@ class PhaseLogger:
     def update_percent_info(self, local_percent: float, task_state: PhaseStateEnum,
                             state_code: int = 0,
                             state_content: str = None,
-                            trace_message: str = None,
-                            executor_outlog_tail: str = None) -> None:
+                            trace_message: str = None) -> None:
         # if no monitor_file assgned, no need to write monitor percent log
         _raise_if_false(local_percent >= 0 and local_percent <= 1, 'invalid local_percent')
         self._local_percent = local_percent
@@ -102,8 +101,6 @@ class PhaseLogger:
             f.write("\n")
             if trace_message:
                 f.write(f"{trace_message}\n")
-            if executor_outlog_tail:
-                f.write(f"===== EXECUTOR_OUTLOG_TAIL =====\n{executor_outlog_tail}\n")
 
     def create_children(self, deltas: List[float]) -> List['PhaseLogger']:
         """

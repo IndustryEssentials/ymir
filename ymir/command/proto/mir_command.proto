@@ -169,7 +169,6 @@ message Task {
     map<string, int32> unknown_types = 7;
     int32 return_code = 8;
     string return_msg = 9;
-    string executor_outlog_tail = 10;
 
     string serialized_task_parameters = 102;
     string serialized_executor_config = 103;

@@ -332,5 +332,8 @@ def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 20) -> st
         return ''
 
     tail_lines = linecache.getlines(out_log_path)[-1 * tail_line_count:]
+    if not tail_lines:
+        return ''
+
     joint_tail_lines = ''.join(tail_lines)
-    return f"FROM: {out_log_path}\n{joint_tail_lines}"
+    return f"EXECUTOR OUTLOG TAIL FROM: {out_log_path}\n{joint_tail_lines}"
