@@ -67,6 +67,7 @@ describe("models: dataset", () => {
   errorCode(dataset, 'getAssetsOfDataset')
   errorCode(dataset, 'getAsset')
   errorCode(dataset, 'delDataset')
+  errorCode(dataset, 'delDatasetGroup')
   errorCode(dataset, 'createDataset')
   errorCode(dataset, 'updateDataset')
   errorCode(dataset, 'getInternalDataset')
@@ -196,6 +197,73 @@ describe("models: dataset", () => {
     const end = generator.next()
 
     equalObject(expected, end.value)
+    expect(end.done).toBe(true)
+  })
+  it("effects: queryAllDatasets -> from remote", () => {
+    const saga = dataset.effects.queryAllDatasets
+    const creator = {
+      type: "queryAllDatasets",
+      payload: { pid: 132223, force: true },
+    }
+    const expected = { items: [1, 2, 3, 4], total: 4 }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    generator.next(expected)
+    const end = generator.next()
+
+    expect(end.value).toEqual(expected.items)
+    expect(end.done).toBe(true)
+  })
+  it("effects: queryAllDatasets -> from cache success", () => {
+    const saga = dataset.effects.queryAllDatasets
+    const creator = {
+      type: "queryAllDatasets",
+      payload: { pid: 132223, },
+    }
+    const expected = [1, 2, 3, 4]
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next(expected)
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it("effects: queryAllDatasets -> from remote when cache failed.", () => {
+    const saga = dataset.effects.queryAllDatasets
+    const creator = {
+      type: "queryAllDatasets",
+      payload: { pid: 132223, },
+    }
+    const expected = [1, 2, 3, 4]
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    generator.next([])
+    generator.next({ items: expected, total: items.length })
+    const end = generator.next()
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it("effects: delDatasetGroup -> success", () => {
+    const saga = dataset.effects.delDatasetGroup
+    const id = 133445
+    const creator = {
+      type: "delDatasetGroup",
+      payload: {id},
+    }
+    const expected = { id, name: 'del group' }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getAsset", () => {
