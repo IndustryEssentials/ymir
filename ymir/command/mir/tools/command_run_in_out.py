@@ -19,8 +19,7 @@ def _get_task_name(dst_rev: str) -> str:
 
 
 @utils.time_it
-def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str,
-                  predefined_task: Any) -> None:
+def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str, predefined_task: Any) -> None:
     if not src_revs:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='empty src_revs',
