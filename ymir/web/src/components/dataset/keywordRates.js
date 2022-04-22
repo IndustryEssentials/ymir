@@ -29,6 +29,7 @@ function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }
   useEffect(() => {
     if (data) {
       const klist = prepareList(data)
+      console.log('klist:', klist)
       setList(klist)
     }
   }, [data])
@@ -44,9 +45,13 @@ function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }
     const { assetCount, keywordsCount, nagetiveCount, projectNagetiveCount, project: { keywords = [] } } = data
     const filter = keywords.length ? keywords : Object.keys(keywordsCount)
     const neg = keywords.length ? projectNagetiveCount : nagetiveCount
-    return getKeywordList(keywordsCount, filter, neg).map(item => ({
+    const kwList = getKeywordList(keywordsCount, filter, neg)
+    const widthRate = assetCount / Math.max(...(kwList.map(item => item.count)))
+    const getWidth = (count) => percent(count * progressWidth * widthRate / assetCount)
+    return kwList.map(item => ({
       ...item,
-      percent: percent(item.count * progressWidth / assetCount),
+      width: getWidth(item.count),
+      percent: percent(item.count / assetCount),
       total: assetCount,
       color: randomColor(),
     }))
@@ -76,7 +81,7 @@ function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }
     <div className={s.rates}>
       {list.map(item => (
         <div key={item.keyword} className={s.rate}>
-          <span className={s.bar} style={{ width: item.percent, background: item.color }}>&nbsp;</span>
+          <span className={s.bar} style={{ width: item.width, background: item.color }}>&nbsp;</span>
           <span>{format(item)}</span>
         </div>
       ))}
