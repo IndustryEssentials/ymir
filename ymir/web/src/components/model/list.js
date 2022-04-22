@@ -22,13 +22,15 @@ import DelGroup from "./delGroup"
 import EditBox from "@/components/form/editBox"
 import { getTensorboardLink } from "@/services/common"
 
-import { ShieldIcon, VectorIcon, EditIcon,
-   DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, 
-   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon } from "@/components/common/icons"
+import {
+  ShieldIcon, VectorIcon, EditIcon,
+  DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,
+  ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
+} from "@/components/common/icons"
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, group, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
@@ -37,7 +39,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState({})
+  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
   let [lock, setLock] = useState(true)
   const delRef = useRef(null)
   const delGroupRef = useRef(null)

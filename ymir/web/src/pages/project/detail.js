@@ -21,11 +21,12 @@ function ProjectDetail(func) {
   const history = useHistory()
   const location = useLocation()
   const { id } = useParams()
+  const [group, setGroup] = useState(0)
   const [project, setProject] = useState({})
   const [active, setActive] = useState(tabsTitle[0].key)
   const content = {
-    'set': <Datasets pid={id} project={project} />,
-    'model': <Models pid={id} project={project} />
+    'set': <Datasets pid={id} project={project} group={group} />,
+    'model': <Models pid={id} project={project} group={group} />
   }
 
   useEffect(() => {
@@ -34,9 +35,9 @@ function ProjectDetail(func) {
 
   useEffect(() => {
     const locationHash = location.hash.replace(/^#/, '')
-    // if (locationHash) {
-      setActive(locationHash || tabsTitle[0].key)
-    // }
+    const [tabKey, gid] = (locationHash || '').split('_')
+    setGroup(gid)
+    setActive(tabKey || tabsTitle[0].key)
   }, [location.hash])
 
   async function fetchProject(force) {
