@@ -383,7 +383,7 @@ class CmdTrain(base.BaseCommand):
 
         # commit task
         executor_outlog_tail = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
-        return_msg = executor_outlog_tail or task_error_msg
+        return_msg = executor_outlog_tail if task_code != MirCode.RC_OK else ''
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',
