@@ -53,7 +53,7 @@ class LabelFree(LabelBase):
             expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
         )
         resp = self._requests.post(url_path=url_path, json_data=data)
-        project_id = json.loads(resp)["id"]
+        project_id = json.loads(resp).get("id")
         if not isinstance(project_id, int):
             raise ValueError(f"LabelFree return wrong id: {project_id} from {url_path}")
 
@@ -73,8 +73,9 @@ class LabelFree(LabelBase):
         )
 
         resp = self._requests.post(url_path=url_path, json_data=data)
-        storage_id = json.loads(resp)["id"]
-
+        storage_id = json.loads(resp).get("id")
+        if not isinstance(storage_id, int):
+            raise ValueError(f"LabelFree return wrong id: {storage_id} from {url_path}")
         return storage_id
 
     def set_export_storage(self, project_id: int, export_path: str) -> int:
@@ -90,7 +91,7 @@ class LabelFree(LabelBase):
         )
 
         resp = self._requests.post(url_path=url_path, json_data=data)
-        exported_storage_id = json.loads(resp)["id"]
+        exported_storage_id = json.loads(resp).get("id")
         if not isinstance(exported_storage_id, int):
             raise ValueError(f"LabelFree return wrong id: {exported_storage_id} from {url_path}")
 
