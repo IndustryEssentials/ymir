@@ -116,15 +116,15 @@ def command_run_in_out(f: Callable) -> Callable:
             exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
         else:
+            # if no exception
             state_message = f"cmd return: {ret}"
 
             if ret == MirCode.RC_OK:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
                 # no need to call _commit_error, already committed inside command run function
             else:
-                executor_outlog_tail = utils.collect_executor_outlog_tail(work_dir=work_dir)
                 _commit_error(code=ret,
-                              error_msg=executor_outlog_tail,
+                              error_msg=state_message,
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
@@ -133,7 +133,7 @@ def command_run_in_out(f: Callable) -> Callable:
                                                task_state=phase_logger.PhaseStateEnum.ERROR,
                                                state_code=ret,
                                                state_content=state_message,
-                                               trace_message=executor_outlog_tail)
+                                               trace_message='')
 
             logging.info(f"command done: {dst_rev}, result: {ret}")
 
@@ -141,6 +141,8 @@ def command_run_in_out(f: Callable) -> Callable:
 
             return ret
 
+        # if MirRuntimeError, CalledProcessError and BaseException occured
+        # exception saved in exc
         executor_outlog_tail = utils.collect_executor_outlog_tail(work_dir=work_dir)
         error_msg = executor_outlog_tail or trace_message
         if needs_new_commit:
