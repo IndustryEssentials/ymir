@@ -358,7 +358,7 @@ class CmdTrain(base.BaseCommand):
         task_code = MirCode.RC_OK
         task_error_msg = ''
         try:
-            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, 'ymir-executor-out.log'))
+            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists

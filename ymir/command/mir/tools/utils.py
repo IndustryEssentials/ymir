@@ -327,7 +327,7 @@ def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_in
 
 
 def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 20) -> str:
-    out_log_path = os.path.join(work_dir, 'out', 'ymir-executor-out.log')
+    out_log_path = os.path.join(work_dir, 'out', mir_settings.EXECUTOR_OUTLOG_NAME)
     if not os.path.isfile(out_log_path):
         return ''
 
