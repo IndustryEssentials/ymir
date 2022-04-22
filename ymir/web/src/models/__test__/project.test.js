@@ -39,6 +39,7 @@ describe("models: project", () => {
   // errorCode(project, "getProject")
   errorCode(project, "delProject")
   errorCode(project, "createProject")
+  errorCode(project, "addExampleProject")
   errorCode(project, "updateProject")
 
   it("effects: getProjects -> success", () => {
@@ -113,6 +114,25 @@ describe("models: project", () => {
     const creator = {
       type: "createProject",
       payload: { name: "new_project_name", type: 1 },
+    }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    equalObject(expected, end.value)
+    expect(end.done).toBe(true)
+  })
+  it("effects: addExampleProject", () => {
+    const saga = project.effects.addExampleProject
+    const id = 10019
+    const expected = { id, name: "example_project_name" }
+    const creator = {
+      type: "addExampleProject",
+      payload: { name: "example_project_name", type: 1 },
     }
 
     const generator = saga(creator, { put, call })

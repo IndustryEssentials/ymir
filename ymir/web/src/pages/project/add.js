@@ -102,14 +102,15 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       return send()
     }
     // create project
-    const { failed } = await func.checkKeywords(params.keywords)
-    const newKws = params.keywords.filter(keyword => !failed.includes(keyword))
+    const kws = params.keywords.map(kw => (kw || '').trim()).filter(kw => kw)
+    const { failed } = await func.checkKeywords(kws)
+    const newKws = kws.filter(keyword => !failed.includes(keyword))
 
     if (newKws?.length) {
       // confirm
       confirm({
         title: t('project.add.confirm.title'),
-        content: <ol>{newKws.map(keyword => <li>{keyword}</li>)}</ol>,
+        content: <ol>{newKws.map(keyword => <li key={keyword}>{keyword}</li>)}</ol>,
         onOk: () => {
           addNewKeywords(newKws, send)
         },
@@ -128,13 +129,6 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       setTimeout(() => callback(), 500)
     }
   }
-  const checkProjectName = (_, value) => {
-    const reg = /^[a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*$/
-    if (!value || reg.test(value.trim())) {
-      return Promise.resolve()
-    }
-    return Promise.reject(t('project.add.form.name.invalid'))
-  }
 
   async function fetchProject() {
     const result = await getProject(id)
@@ -152,8 +146,8 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   label={t('project.add.form.name')}
                   name='name'
                   rules={[
-                    { required: true, message: t('project.add.form.name.required') },
-                    { validator: checkProjectName },
+                    { required: true, whitespace: true, message: t('project.add.form.name.required') },
+                    {min: 1, max: 100 },
                   ]}
                 >
                   <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
@@ -178,7 +172,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     { required: true, message: t('project.add.form.keyword.required') }
                   ]}
                 >
-                  <Select mode="tags" showArrow
+                  <Select mode="tags" showArrow tokenSeparators={[',']}
                     placeholder={t('project.add.form.keyword.placeholder')}
                     disabled={isEdit}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
@@ -223,8 +217,10 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Form.Item label={t('project.add.form.training.set')}>
                     {project.trainSet?.name}
                     <Form.Item noStyle name='trainSetVersion'>
-                      <Select style={{ marginLeft: 20, width: 120 }} disabled={project.currentIteration}>
-                        {project?.trainSet?.versions?.map(({ id, versionName }) => <Select.Option key={id} value={id}>{versionName}</Select.Option>)}
+                      <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
+                        {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) => 
+                          <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
+                        )}
                       </Select>
                     </Form.Item>
                   </Form.Item>

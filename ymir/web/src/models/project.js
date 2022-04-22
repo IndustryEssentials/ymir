@@ -4,6 +4,7 @@ import {
   delProject,
   createProject,
   updateProject,
+  addExampleProject,
 } from "@/services/project"
 import { transferProject } from '@/constants/project'
 import { deepClone } from '@/utils/object'
@@ -64,6 +65,12 @@ export default {
     },
     *createProject({ payload }, { call, put }) {
       const { code, result } = yield call(createProject, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *addExampleProject({ payload }, { call, put }) {
+      const { code, result } = yield call(addExampleProject, payload)
       if (code === 0) {
         return result
       }

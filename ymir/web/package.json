@@ -1,6 +1,6 @@
 {
   "name": "ymir-web",
-  "version": "0.5.0.0413",
+  "version": "0.5.1.0422",
   "scripts": {
     "local": "APP_ROOT=../pages/demo1 umi dev",
     "analyze": "cross-env UMI_ENV=dev ANALYZE=1 umi dev",
