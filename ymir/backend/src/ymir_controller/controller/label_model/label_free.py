@@ -54,6 +54,8 @@ class LabelFree(LabelBase):
         )
         resp = self._requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp)["id"]
+        if not isinstance(project_id, int):
+            raise ValueError(f"LabelFree return wrong id: {project_id} from {url_path}")
 
         return project_id
 
@@ -89,6 +91,8 @@ class LabelFree(LabelBase):
 
         resp = self._requests.post(url_path=url_path, json_data=data)
         exported_storage_id = json.loads(resp)["id"]
+        if not isinstance(exported_storage_id, int):
+            raise ValueError(f"LabelFree return wrong id: {exported_storage_id} from {url_path}")
 
         return exported_storage_id
 
