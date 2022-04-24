@@ -12,7 +12,7 @@ import s from "./detail.less"
 import TaskProgress from "@/components/task/progress"
 import Error from "@/components/task/error"
 
-const taskTypes = ["fusion", "train", "mining", "label"]
+const taskTypes = ["fusion", "train", "mining", "label", 'inference', 'copy']
 
 function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
@@ -20,7 +20,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
   const [dataset, setDataset] = useState({})
 
   useEffect(() => {
-    fetchDataset()
+    fetchDataset(true)
   }, [id])
 
   useEffect(() => {

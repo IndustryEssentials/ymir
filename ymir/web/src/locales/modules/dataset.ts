@@ -45,7 +45,7 @@ const dataset = {
   "dataset.asset.annotation.hide": { cn: "隐藏所有标注", en: "Hide All", },
   "dataset.asset.annotation.show": { cn: "显示所有标注", en: "Show All", },
   "dataset.add.types.internal": { cn: "公共数据集", en: "Public Dataset", },
-  "dataset.add.types.copy": { cn: "复制其他项目数据集", en: "Copy Dataset From Other Project", },
+  "dataset.add.types.copy": { cn: "复制数据集", en: "Copy Dataset From Other Project", },
   "dataset.add.types.net": { cn: "网络导入", en: "Net Import", },
   "dataset.add.types.local": { cn: "本地导入", en: "Local Import", },
   "dataset.add.types.path": { cn: "路径导入", en: "Path Import", },
