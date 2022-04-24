@@ -46,13 +46,19 @@ const ProjectList = ({ list, query, ...func }) => {
       {
         key: "edit",
         label: t("project.action.edit"),
-        onclick: () => history.push(`/home/project/add/${id}`),
+        onclick: (e) => {
+          e.stopPropagation()
+          history.push(`/home/project/add/${id}`)
+        },
         icon: <EditIcon />,
       },
       {
         key: "del",
         label: t("project.action.del"),
-        onclick: () => del(id, name),
+        onclick: (e) => {
+          e.stopPropagation()
+          del(id, name)
+        },
         icon: <DeleteIcon />,
       },
     ]
@@ -125,7 +131,7 @@ const ProjectList = ({ list, query, ...func }) => {
     const title = <Row wrap={false} className={s.title}>
       <Col flex={1}>
         <Space>
-          <span className={s.name}><Link to={`/home/project/detail/${item.id}`}>{item.name}</Link></span>
+          <span className={s.name}><a>{item.name}</a></span>
           <span className={s.titleItem}>
             <span className={s.titleLabel}>{t('project.train_classes')}:</span>
             <span className={s.titleContent}>{item.keywords.join(',')}</span>
@@ -169,7 +175,7 @@ const ProjectList = ({ list, query, ...func }) => {
 
     return <List.Item className={item.state ? 'success' : 'failure'}>
       <Skeleton active loading={item.loading}>
-        <List.Item.Meta title={title} description={desc}>
+        <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/detail/${item.id}`)}>
         </List.Item.Meta>
       </Skeleton>
     </List.Item>

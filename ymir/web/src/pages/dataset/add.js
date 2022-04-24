@@ -286,6 +286,7 @@ const Add = (props) => {
                 />
               </Form.Item>
             </Tip>
+            { !isType(TYPES.COPY) ? <>
             {showLabelStrategy ?
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.newkw.label')}>
@@ -335,7 +336,7 @@ const Add = (props) => {
                   </Form.List>
                   : t('dataset.add.newkeyword.empty')}
               </Form.Item>
-              </Tip>
+              </Tip> </>: null }
             {isType(TYPES.NET) ? (
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.net.label')} required>

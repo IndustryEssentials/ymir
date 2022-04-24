@@ -4,14 +4,14 @@ import { connect } from 'dva'
 
 import t from '@/utils/t'
 import Title from "./components/boxTitle"
-import QuickCreate from "./components/quickCreate"
 import { AddtaskIcon, MydatasetIcon } from '@/components/common/icons'
 import { cardHead, cardBody } from "./components/styles"
 import styles from './index.less'
 
 import { Lists } from '@/components/project/list'
+import { Link } from "umi"
 
-const MyProject = ({ count = 6, getProjects }) => {
+const MyProject = ({ count = 6, ...func }) => {
 
   const [projects, setProjects] = useState([])
 
@@ -20,9 +20,17 @@ const MyProject = ({ count = 6, getProjects }) => {
   }, [])
 
   async function getData() {
-    const result = await getProjects(count)
+    const result = await func.getProjects(count)
     if (result) {
       setProjects(result.items)
+    }
+  }
+
+  const addExample = async () => {
+    const result = await func.addExampleProject()
+    if (result) {
+      message.success('project.create.success')
+      getData()
     }
   }
 
@@ -33,18 +41,20 @@ const MyProject = ({ count = 6, getProjects }) => {
       </Title>}
     >
       <div className={styles.rowContainer}>
-        <Row gutter={10} wrap='nowrap'>
-          <Col span={24}><QuickCreate style={{ height: 42 }}
-            icon={<AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />}
-            label={t('portal.action.new.project')}
-            link={'/home/project/add'}
-          /></Col>
-        </Row>
-        <Row gutter={10} wrap='nowrap'>
-          <Col span={24}>
-            {projects.length ? <Lists projects={projects}/> : null}
-          </Col>
-        </Row>
+        <div className={styles.addBtn}>
+          <Link className={styles.emptyBoxAction} to={'/home/project/add'}>
+            <AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />
+            <span style={{ color: '#36cbcb', fontSize: 16, marginLeft: 10 }}>{t('portal.action.new.project')}</span>
+          </Link>
+        </div>
+        {projects.length ? <Lists projects={projects} /> : 
+        <div className={styles.addBtn} style={{ marginTop: 20 }}>
+          <Link className={styles.emptyBoxAction}  onClick={() => addExample()}>
+            <AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />
+            <span style={{ color: '#36cbcb', fontSize: 16, marginLeft: 10 }}>{t('project.new.example.label')}</span>
+          </Link>
+        </div>
+        }
       </div>
     </Card>
   )
@@ -56,6 +66,11 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'project/getProjects',
         payload: { limit },
+      })
+    },
+    addExampleProject() {
+      return dispatch({
+        type: 'project/addExampleProject',
       })
     },
   }

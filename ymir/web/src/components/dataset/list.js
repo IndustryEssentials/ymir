@@ -7,7 +7,7 @@ import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
-import { getTaskTypeLabel } from '@/constants/task'
+import { getTaskTypeLabel, TASKSTATES } from '@/constants/task'
 import { states } from '@/constants/dataset'
 
 import StateTag from "@/components/task/stateTag"
@@ -27,7 +27,7 @@ import {
 const { confirm } = Modal
 const { useForm } = Form
 
-function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) {
+function Datasets({ pid, project = {}, group, datasetList, query, versions, ...func }) {
   const location = useLocation()
   const { name } = location.query
   const history = useHistory()
@@ -37,7 +37,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState({})
+  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
   const delRef = useRef(null)
   const delGroupRef = useRef(null)
   let [lock, setLock] = useState(true)
@@ -123,79 +123,80 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
 
   const columns = (gid) => {
     return [
-    {
-      title: showTitle("dataset.column.name"),
-      key: "name",
-      dataIndex: "versionName",
-      className: styles[`column_name`],
-      render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
-        <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
-        <Col flex={'50px'}>
-          {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-          {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-        </Col>
-      </Row>,
-      filters: getRoundFilter(gid),
-      onFilter: (round, { iterationRound }) => round === iterationRound,
-      ellipsis: true,
-    },
-    {
-      title: showTitle("dataset.column.source"),
-      dataIndex: "taskType",
-      render: (type) => <TypeTag type={type} />,
-      filters: getTypeFilter(gid),
-      onFilter: (type, { taskType }) => type === taskType,
-      sorter: (a, b) => a.taskType - b.taskType,
-      ellipsis: true,
-    },
-    {
-      title: showTitle("dataset.column.asset_count"),
-      dataIndex: "assetCount",
-      render: (num) => humanize(num),
-      sorter: (a, b) => a.assetCount - b.assetCount,
-      width: 120,
-    },
-    {
-      title: showTitle("dataset.column.keyword"),
-      dataIndex: "keywords",
-      render: (keywords) => {
-        const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
-        return <Tooltip title={label}
-          color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
-          mouseEnterDelay={0.5}
-        ><div>{label}</div></Tooltip>
+      {
+        title: showTitle("dataset.column.name"),
+        key: "name",
+        dataIndex: "versionName",
+        className: styles[`column_name`],
+        render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
+          <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
+          <Col flex={'50px'}>
+            {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+            {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+          </Col>
+        </Row>,
+        filters: getRoundFilter(gid),
+        onFilter: (round, { iterationRound }) => round === iterationRound,
+        ellipsis: true,
       },
-      ellipsis: {
-        showTitle: false,
+      {
+        title: showTitle("dataset.column.source"),
+        dataIndex: "taskType",
+        render: (type) => <TypeTag type={type} />,
+        filters: getTypeFilter(gid),
+        onFilter: (type, { taskType }) => type === taskType,
+        sorter: (a, b) => a.taskType - b.taskType,
+        ellipsis: true,
       },
-    },
-    {
-      title: showTitle('dataset.column.state'),
-      dataIndex: 'state',
-      render: (state, record) => RenderProgress(state, record, true),
-      // width: 60,
-    },
-    {
-      title: showTitle("dataset.column.create_time"),
-      dataIndex: "createTime",
-      sorter: (a, b) => diffTime(a.createTime, b.createTime),
-      sortDirections: ['ascend', 'descend', 'ascend'],
-      defaultSortOrder: 'descend',
-      width: 180,
-    },
-    {
-      title: showTitle("dataset.column.action"),
-      key: "action",
-      dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} />,
-      className: styles.tab_actions,
-      align: "center",
-      width: 300,
-    },
-  ]}
+      {
+        title: showTitle("dataset.column.asset_count"),
+        dataIndex: "assetCount",
+        render: (num) => humanize(num),
+        sorter: (a, b) => a.assetCount - b.assetCount,
+        width: 120,
+      },
+      {
+        title: showTitle("dataset.column.keyword"),
+        dataIndex: "keywords",
+        render: (keywords) => {
+          const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
+          return <Tooltip title={label}
+            color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
+            mouseEnterDelay={0.5}
+          ><div>{label}</div></Tooltip>
+        },
+        ellipsis: {
+          showTitle: false,
+        },
+      },
+      {
+        title: showTitle('dataset.column.state'),
+        dataIndex: 'state',
+        render: (state, record) => RenderProgress(state, record, true),
+        // width: 60,
+      },
+      {
+        title: showTitle("dataset.column.create_time"),
+        dataIndex: "createTime",
+        sorter: (a, b) => diffTime(a.createTime, b.createTime),
+        sortDirections: ['ascend', 'descend', 'ascend'],
+        defaultSortOrder: 'descend',
+        width: 180,
+      },
+      {
+        title: showTitle("dataset.column.action"),
+        key: "action",
+        dataIndex: "action",
+        render: (text, record) => <Actions menus={actionMenus(record)} />,
+        className: styles.tab_actions,
+        align: "center",
+        width: 300,
+      },
+    ]
+  }
 
   const actionMenus = (record) => {
-    const { id, name, state, versionName, isProtected, task: { is_terminated } } = record
+    const { id, state, taskState, task } = record
     const menus = [
       {
         key: "fusion",
@@ -243,7 +244,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state) || is_terminated,
+        hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
       // {
@@ -268,7 +269,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   const getRoundFilter = gid => {
     return getFilters(gid, 'iterationRound', (round) => t('iteration.tag.round', { round }))
   }
-  const getFilters = (gid, field, label = () => {}) => {
+  const getFilters = (gid, field, label = () => { }) => {
     const vs = datasetVersions[gid]
     if (vs?.length) {
       const filters = new Set(vs.map(ds => ds[field]).filter(item => item))
@@ -382,7 +383,7 @@ function Datasets({ pid, project = {}, datasetList, query, versions, ...func }) 
   const delGroupOk = () => {
     fetchDatasets()
   }
-  
+
   const stop = (dataset) => {
     terminateRef.current.confirm(dataset)
   }
