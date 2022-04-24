@@ -19,16 +19,17 @@ function ModelDetail({ modelCache, getModel }) {
   const [model, setModel] = useState({ id })
 
   useEffect(async () => {
-    id && fetchModel()
+    id && fetchModel(true)
   }, [id])
 
   useEffect(() => {
+    console.log('modelCache:', modelCache)
     if (modelCache[id]?.needReload) {
       fetchModel(true)
     } else {
       modelCache[id] && setModel(modelCache[id])
     }
-  }, [modelCache[id]])
+  }, [modelCache])
 
   async function fetchModel(force) {
     await getModel(id, force)
