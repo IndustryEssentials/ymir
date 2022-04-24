@@ -363,7 +363,7 @@ class CmdTrain(base.BaseCommand):
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
             task_code = MirCode.RC_CMD_CONTAINER_ERROR
-            task_error_msg = str(e)
+            task_error_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
 
         # gen task_context
         task_context = {
@@ -382,15 +382,13 @@ class CmdTrain(base.BaseCommand):
                                                        task_context=task_context)
 
         # commit task
-        executor_outlog_tail = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
-        return_msg = executor_outlog_tail if task_code != MirCode.RC_OK else ''
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',
                                            model_mAP=model_mAP,
                                            model_hash=model_sha1,
                                            return_code=task_code,
-                                           return_msg=return_msg,
+                                           return_msg=task_error_msg,
                                            serialized_task_parameters=task_parameters,
                                            serialized_executor_config=yaml.safe_dump(executor_config),
                                            executor=executor,
