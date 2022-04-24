@@ -7,7 +7,7 @@ upstream tensorboard_web {
     server tensorboard:6006;
 }
 upstream socket_server {
-    server backend:8090;
+    server backend:80;
 }
 
 map $http_upgrade $connection_upgrade {
@@ -115,4 +115,3 @@ server {
     #ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
 }
-

@@ -1,9 +1,11 @@
+import asyncio
 from dataclasses import asdict
 import enum
 import json
 from typing import Any, Dict, List, Optional, Union, Tuple
+import time
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query, Response, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -30,12 +32,14 @@ from app.constants.state import (
     ResultType,
     ResultState,
 )
+from app.config import settings
 from app.models.task import Task
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
-from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.utils.ymir_controller import ControllerClient, gen_task_hash, gen_user_hash
 from app.utils.ymir_viz import VizClient, ModelMetaData, DatasetMetaData
+from app.libs.redis_stream import RedisStream
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -525,6 +529,7 @@ def terminate_task(
 def update_task_status(
     *,
     db: Session = Depends(deps.get_db),
+    request: Request,
     task_update: schemas.TaskUpdateStatus,
     graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
@@ -567,6 +572,20 @@ def update_task_status(
     except ModelNotReady:
         logger.warning("Model Not Ready")
 
+    namespace = f"/{gen_user_hash(task.user_id)}"
+    task_update_msg = schemas.TaskResultUpdateMessage(
+        task_id=task_in_db.hash,
+        timestamp=time.time(),
+        percent=task_in_db.percent,
+        state=task_in_db.state,
+        result_model=task_in_db.result_model,  # type: ignore
+        result_dataset=task_in_db.result_dataset,  # type: ignore
+    )
+    # todo compatible with current frontend data structure
+    #  reformatting is needed
+    payload = {task_in_db.hash: task_update_msg.dict()}
+    asyncio.run(request.app.sio.emit(event="update_taskstate", data=payload, namespace=namespace))
+
     return {"result": task_in_db}
 
 
@@ -576,3 +595,19 @@ def is_obsolete_message(last_update_time: Union[float, int], msg_time: Union[flo
 
 def get_default_record_name(task_hash: str, task_name: str) -> str:
     return f"{task_name}_{task_hash[-6:]}"
+
+
+@router.post(
+    "/events",
+    response_model=schemas.TaskOut,
+    dependencies=[Depends(deps.api_key_security)],
+)
+async def save_task_update_to_redis_stream(*, task_events: schemas.TaskMonitorEvents) -> Response:
+    """
+    Save task event to Redis Stream
+    """
+    redis_stream = RedisStream(settings.BACKEND_REDIS_URL)
+    for event in task_events.events:
+        await redis_stream.publish(event.json())
+        logger.info("save task update to redis stream: %s", event.json())
+    return Response(status_code=204)
