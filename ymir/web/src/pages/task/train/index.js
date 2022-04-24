@@ -34,7 +34,8 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const { mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const did = Number(location.query.did)
   const [project, setProject] = useState({})
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
@@ -64,17 +65,14 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     setDatasets(allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))))
-    if (!datasets.some(ds => ds.id === Number(did))) {
-      setTrainSet(null)
-      form.setFieldsValue({ datasetId: null })
-    }
+    const isValid = allDatasets.some(ds => ds.id === did)
+    const visibleValue = isValid ? did : null
+    setTrainSet(visibleValue)
+    form.setFieldsValue({ datasetId: visibleValue })
   }, [allDatasets, project])
 
   useEffect(() => {
-    if (did) {
-      func.getDataset(did)
-      setTrainSet(Number(did))
-    }
+    did && func.getDataset(did)
   }, [did])
 
   useEffect(() => {
@@ -141,7 +139,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
     const gpuCount = form.getFieldValue('gpu_count')
     // if (gpuCount) {
-      config['gpu_count'] = gpuCount || 0
+    config['gpu_count'] = gpuCount || 0
     // }
     const img = (form.getFieldValue('image') || '').split(',')
     const imageId = Number(img[0])
@@ -190,7 +188,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
-    datasetId: Number(did) ? Number(did) : undefined,
+    datasetId: did ? did : undefined,
     testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
     model: mid ? parseInt(mid) : undefined,
