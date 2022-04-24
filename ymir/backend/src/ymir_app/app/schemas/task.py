@@ -181,13 +181,70 @@ class TaskTerminate(BaseModel):
     fetch_result: bool = True
 
 
+class TaskMonitorPercent(BaseModel):
+    task_id: str  # underlying task_id
+    timestamp: float
+    percent: float
+    state: int
+    state_code: Optional[int]
+    state_message: Optional[str]
+    stack_error_info: Optional[str]
+
+
+class TaskMonitorExtra(BaseModel):
+    user_id: str  # underlying user_id
+
+
+class TaskMonitorEvent(BaseModel):
+    task_extra_info: TaskMonitorExtra
+    percent_result: TaskMonitorPercent
+
+
+class TaskMonitorEvents(BaseModel):
+    events: List[TaskMonitorEvent]
+
+
 class TaskUpdateStatus(BaseModel):
+    user_id: int
     hash: str
     timestamp: float
     percent: Optional[float] = 0
     state: TaskState
     state_code: Optional[str]
     state_message: Optional[str]
+
+    @classmethod
+    def from_monitor_event(cls, msg: str) -> "TaskUpdateStatus":
+        payload = json.loads(msg)
+        user_id = int(payload["task_extra_info"]["user_id"])
+        event = payload["percent_result"]
+        return cls(
+            user_id=user_id,
+            hash=event["task_id"],
+            timestamp=event["timestamp"],
+            percent=event["percent"],
+            state=event["state"],
+            state_code=event["state_code"],
+            state_message=event["state_message"],
+        )
+
+
+class TaskResultUpdateMessage(BaseModel):
+    task_id: str
+    timestamp: float
+    percent: float
+    state: int
+    result_state: Optional[int]
+    result_model: Optional[TaskResult]
+    result_dataset: Optional[TaskResult]
+
+    @root_validator(pre=True)
+    def gen_result_state(cls, values: Any) -> Any:
+        result = values.get("result_model") or values.get("result_dataset")
+        if not result:
+            raise ValueError("Invalid Task Result")
+        values["result_state"] = result.result_state
+        return values
 
 
 class TaskOut(Common):
