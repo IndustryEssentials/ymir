@@ -134,10 +134,12 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
     const result = await getProject(id)
   }
 
+  const renderTitle = t(`breadcrumbs.project.${isEdit ? 'edit' : 'add'}`)
+
   return (
     <div className={s.projectAdd}>
       <Breadcrumbs />
-      <Card className={s.container} title={t('breadcrumbs.project.add')}>
+      <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
           <Form form={form} labelCol={{ span: 4 }} onFinish={submit} scrollToFirstError>
             {!settings ? <Panel hasHeader={false}>
