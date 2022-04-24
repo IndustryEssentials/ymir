@@ -167,24 +167,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
     console.log("Failed:", errorInfo)
   }
 
-  function getTrainSetTotal(setId) {
-    const ds = datasets.find(d => d.id === setId)
-    return ds ? ds.assetCount : 0
-  }
-
-  function validateGPU(_, value) {
-    const count = Number(value)
-    const min = 0
-    const max = gpu_count
-    if (gpu_count <= 0) {
-      return Promise.reject(t('task.gpu.tip', { count: gpu_count }))
-    }
-    if (count < min || count > max) {
-      return Promise.reject(t('task.train.gpu.invalid', { min, max }))
-    }
-    return Promise.resolve()
-  }
-
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
@@ -325,9 +307,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[
-                    { validator: validateGPU }
-                  ]}
                 >
                   <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>

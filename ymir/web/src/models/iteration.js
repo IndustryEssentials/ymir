@@ -30,9 +30,9 @@ export default {
         let iterations = result.map((iteration) => transferIteration(iteration))
         if (more && iterations.length) {
           const datasetIds = [...new Set(iterations.map(i => [
-            i.miningSet, 
-            i.miningResult, 
-            i.labelSet, 
+            i.miningSet,
+            i.miningResult,
+            i.labelSet,
             i.trainUpdateSet,
             i.testSet,
           ]).flat())].filter(id => id)
@@ -83,6 +83,40 @@ export default {
         return iteration
       }
     },
+    *getIterationStagesResult({ payload }, { put }) {
+      const iteration = payload
+
+      const fields = ['miningSet', 'miningResult', 'labelSet', 'trainUpdateSet']
+      const datasetIds = fields.map(field => iteration[field]).filter(id => id)
+      const modelId = iteration.model
+      let datasets = []
+      let model = []
+      if (datasetIds?.length) {
+        datasets = yield put.resolve({
+          type: 'dataset/batchDatasets',
+          payload: datasetIds,
+        })
+      }
+      if (modelId) {
+        model = yield put.resolve({
+          type: 'model/getModel',
+          payload: { id: modelId },
+        })
+      }
+      const ds = id => datasets.find(d => d.id === id)
+      return {
+        ...iteration,
+        ...fields.reduce((prev, field) => ({ ...prev, [`i${field}`]: ds(iteration[field]) }), {}),
+        imodel: model,
+      }
+    },
+    *setCurrentStageResult({ payload }, { call, put }) {
+      const result = payload
+      if (result) {
+        yield put({ type: 'UPDATE_CURRENT_STAGE_RESULT', payload: result })
+        return result
+      }
+    },
     *createIteration({ payload }, { call, put }) {
       const { code, result } = yield call(createIteration, payload)
       if (code === 0) {
@@ -114,10 +148,12 @@ export default {
       const tasks = payload || {}
       const updated = updateResultState(result, tasks)
 
-      yield put({
-        type: 'UPDATE_CURRENT_STAGE_RESULT',
-        payload: { ...updated },
-      })
+      if (updated) {
+        yield put({
+          type: 'UPDATE_CURRENT_STAGE_RESULT',
+          payload: { ...updated },
+        })
+      }
     },
   },
   reducers: {
