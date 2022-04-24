@@ -9,7 +9,7 @@ import {
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
-import { TASKTYPES } from '@/constants/task'
+import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 
@@ -22,13 +22,15 @@ import DelGroup from "./delGroup"
 import EditBox from "@/components/form/editBox"
 import { getTensorboardLink } from "@/services/common"
 
-import { ShieldIcon, VectorIcon, EditIcon,
-   DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, 
-   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon } from "@/components/common/icons"
+import {
+  ShieldIcon, VectorIcon, EditIcon,
+  DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,
+  ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
+} from "@/components/common/icons"
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, group, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
@@ -37,7 +39,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState({})
+  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
   let [lock, setLock] = useState(true)
   const delRef = useRef(null)
   const delGroupRef = useRef(null)
@@ -248,7 +250,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, versionName, isProtected, taskType, task } = record
+    const { id, name, url, state, taskState, taskType, task } = record
     const actions = [
       {
         key: "verify",
@@ -290,7 +292,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state) || task.is_terminated,
+        hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
       {

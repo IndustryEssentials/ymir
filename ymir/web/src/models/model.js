@@ -173,13 +173,14 @@ export default {
       })
     },
     *updateModelState({ payload }, { put, select }) {
-      const dataset = yield select(state => state.model.model)
+      const models = yield select(state => state.model.model)
       const tasks = payload || {}
-      const updatedModel = updateResultState(dataset, tasks)
+      const id = Object.keys(models).find(id => models[id])
+      const updatedModel = updateResultState(models[id], tasks)
 
       yield put({
-        type: 'UPDATE_DATASET',
-        payload: { ...updatedModel },
+        type: 'UPDATE_MODEL',
+        payload: { id: updatedModel.id, model: { ...updatedModel } },
       })
     },
     *getModelsByRef({ payload }, { call, put }) {
@@ -284,7 +285,7 @@ export default {
       const models = { ...state.model, [id]: model }
       return {
         ...state,
-        model: models,
+        model: { ...models },
       }
     },
     UPDATE_QUERY(state, { payload }) {
