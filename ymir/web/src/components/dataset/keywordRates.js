@@ -10,39 +10,40 @@ function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }) {
-  const [data, setData] = useState(null)
+function KeywordRates({ dataset, progressWidth = 0.5, getKeywordRates }) {
+  const [data, setData] = useState({})
   const [list, setList] = useState([])
 
   useEffect(() => {
-    if (dataset.id) {
+    if(dataset?.id) {
       setData(dataset)
+    } else if(dataset) {
+      fetchRates(dataset)
     } else {
-      if (id) {
-        fetchRates()
-      } else {
-        setList([])
-      }
+      setData({})
+      setList([])
     }
-  }, [id, dataset])
+  }, [dataset])
 
   useEffect(() => {
     if (data) {
       const klist = prepareList(data)
-      console.log('klist:', klist)
       setList(klist)
     }
   }, [data])
 
-  async function fetchRates() {
+  async function fetchRates(id) {
     const result = await getKeywordRates(id)
     if (result) {
       setData(result)
     }
   }
 
-  function prepareList(data = {}) {
-    const { assetCount, keywordsCount, nagetiveCount, projectNagetiveCount, project: { keywords = [] } } = data
+  function prepareList(dataset = {}) {
+    if (!dataset?.id) {
+      return []
+    }
+    const { assetCount, keywordsCount, nagetiveCount, projectNagetiveCount, project: { keywords = [] } } = dataset
     const filter = keywords.length ? keywords : Object.keys(keywordsCount)
     const neg = keywords.length ? projectNagetiveCount : nagetiveCount
     const kwList = getKeywordList(keywordsCount, filter, neg)

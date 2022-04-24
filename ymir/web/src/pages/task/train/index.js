@@ -266,7 +266,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
             </ConfigProvider>
             <Tip hidden={true}>
               <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates id={trainSet}></KeywordRates>
+                <KeywordRates dataset={trainSet}></KeywordRates>
               </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
