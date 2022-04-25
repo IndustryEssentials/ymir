@@ -290,7 +290,7 @@ class CmdTrain(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='project class ids mismatch')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
