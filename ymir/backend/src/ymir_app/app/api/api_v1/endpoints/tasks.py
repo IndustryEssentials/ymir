@@ -18,6 +18,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
+    ModelNotFound,
     ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -339,11 +340,24 @@ class TaskResult:
                 result=asdict(self.result_info),
             )
         else:
-            crud_func.finish(
-                self.db,
-                result_record.id,
-                result_state=ResultState.error,
-            )
+            if self.result_type is ResultType.model:
+                try:
+                    crud.model.finish(
+                        self.db, result_record.id, result_state=ResultState.ready, result=asdict(self.model_info)
+                    )
+                except (ModelNotReady, ModelNotFound):
+                    logger.exception("[update task] failed to get model from failed task")
+                    crud_func.finish(
+                        self.db,
+                        result_record.id,
+                        result_state=ResultState.error,
+                    )
+            else:
+                crud_func.finish(
+                    self.db,
+                    result_record.id,
+                    result_state=ResultState.error,
+                )
 
 
 def write_clickhouse_metrics(
