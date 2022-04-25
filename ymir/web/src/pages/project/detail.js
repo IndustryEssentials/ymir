@@ -76,7 +76,7 @@ function ProjectDetail(func) {
           </Col>
           <Col>
             <Space>
-              <Link to={`/home/project/add/${id}`}>{t('breadcrumbs.project.add')}</Link>
+              <Link to={`/home/project/add/${id}`}>{t('project.settings.title')}</Link>
               <Link to={`/home/project/iterations/${id}`}>{t('breadcrumbs.project.iterations')}</Link>
             </Space>
           </Col>

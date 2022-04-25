@@ -4,8 +4,10 @@ import { Button, Space } from 'antd'
 import t from '@/utils/t'
 import s from './empty.less'
 import { NoSjjIcon, ImportIcon, AddIcon } from '@/components/common/icons'
+import { useHistory } from 'umi'
 
 const ProjectEmpty = ({ style = {}, addExample = () => {} }) => {
+  const history = useHistory()
   
   return (
   <Space className={s.empty} style={style} direction="vertical">

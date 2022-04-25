@@ -134,10 +134,22 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
     const result = await getProject(id)
   }
 
+  function validateKeywords(_, kws) {
+    if (kws?.length) {
+      const valid = kws.every(kw => (kw || '').trim())
+      if (!valid) {
+        return Promise.reject(t('project.keywords.invalid'))
+      }
+    }
+    return Promise.resolve()
+  }
+
+  const renderTitle = t(`breadcrumbs.project.${isEdit ? 'edit' : 'add'}`)
+
   return (
     <div className={s.projectAdd}>
       <Breadcrumbs />
-      <Card className={s.container} title={t('breadcrumbs.project.add')}>
+      <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
           <Form form={form} labelCol={{ span: 4 }} onFinish={submit} scrollToFirstError>
             {!settings ? <Panel hasHeader={false}>
@@ -169,7 +181,8 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   label={t('project.add.form.keyword.label')}
                   name="keywords"
                   rules={[
-                    { required: true, message: t('project.add.form.keyword.required') }
+                    { required: true, message: t('project.add.form.keyword.required') },
+                    { validator: validateKeywords },
                   ]}
                 >
                   <Select mode="tags" showArrow tokenSeparators={[',']}

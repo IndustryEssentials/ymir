@@ -34,7 +34,8 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const { mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const did = Number(location.query.did)
   const [project, setProject] = useState({})
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
@@ -64,17 +65,14 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     setDatasets(allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))))
-    if (!datasets.some(ds => ds.id === Number(did))) {
-      setTrainSet(null)
-      form.setFieldsValue({ datasetId: null })
-    }
+    const isValid = allDatasets.some(ds => ds.id === did)
+    const visibleValue = isValid ? did : null
+    setTrainSet(visibleValue)
+    form.setFieldsValue({ datasetId: visibleValue })
   }, [allDatasets, project])
 
   useEffect(() => {
-    if (did) {
-      func.getDataset(did)
-      setTrainSet(Number(did))
-    }
+    did && func.getDataset(did)
   }, [did])
 
   useEffect(() => {
@@ -141,7 +139,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
     const gpuCount = form.getFieldValue('gpu_count')
     // if (gpuCount) {
-      config['gpu_count'] = gpuCount || 0
+    config['gpu_count'] = gpuCount || 0
     // }
     const img = (form.getFieldValue('image') || '').split(',')
     const imageId = Number(img[0])
@@ -169,28 +167,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
     console.log("Failed:", errorInfo)
   }
 
-  function getTrainSetTotal(setId) {
-    const ds = datasets.find(d => d.id === setId)
-    return ds ? ds.assetCount : 0
-  }
-
-  function validateGPU(_, value) {
-    const count = Number(value)
-    const min = 0
-    const max = gpu_count
-    if (gpu_count <= 0) {
-      return Promise.reject(t('task.gpu.tip', { count: gpu_count }))
-    }
-    if (count < min || count > max) {
-      return Promise.reject(t('task.train.gpu.invalid', { min, max }))
-    }
-    return Promise.resolve()
-  }
-
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
-    datasetId: Number(did) ? Number(did) : undefined,
+    datasetId: did ? did : undefined,
     testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
     model: mid ? parseInt(mid) : undefined,
@@ -266,7 +246,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
             </ConfigProvider>
             <Tip hidden={true}>
               <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates id={trainSet}></KeywordRates>
+                <KeywordRates dataset={trainSet}></KeywordRates>
               </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
@@ -327,9 +307,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[
-                    { validator: validateGPU }
-                  ]}
                 >
                   <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
