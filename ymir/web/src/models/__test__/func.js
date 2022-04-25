@@ -1,4 +1,6 @@
-import { put, call, select } from "redux-saga/effects"
+import { put, call, select, putResolve } from "redux-saga/effects"
+
+put.resolve = putResolve
 
 export function errorCode(module, func, payload = 10024, expected = null) {
   it(`effects: ${func} -> error code`, () => {
