@@ -15,19 +15,6 @@ from tests.utils.utils import random_lower_string, random_url
 
 
 @pytest.fixture(scope="function", autouse=True)
-def patch_prepare_dataset(mocker, tmp_path):
-    annotations_dir = tmp_path / "anno"
-    annotations_dir.mkdir()
-    images_dir = tmp_path / "img"
-    images_dir.mkdir()
-    mocker.patch.object(
-        m,
-        "prepare_imported_dataset_dir",
-        return_value=tmp_path,
-    )
-
-
-@pytest.fixture(scope="function", autouse=True)
 def patch_background_task(mocker):
     mocker.patch.object(fastapi, "BackgroundTasks", return_value=mocker.Mock())
 

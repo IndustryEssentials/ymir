@@ -28,7 +28,7 @@ class ProjectBase(BaseModel):
     iteration_target: Optional[int]
     map_target: Optional[float]
     training_dataset_count_target: Optional[int]
-    is_example: Optional[bool]
+    is_example: Optional[bool] = False
 
 
 # Sufficient properties to create a project
@@ -62,7 +62,7 @@ class ProjectUpdate(BaseModel):
 
 
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
-    training_dataset_group_id: int
+    training_dataset_group_id: Optional[int]
     mining_dataset_id: Optional[int]
     testing_dataset_id: Optional[int]
     initial_model_id: Optional[int]
