@@ -83,5 +83,11 @@ class Settings(BaseSettings):
     # Reverse keywords
     REVERSE_KEYWORDS_OUTPUT: bool = True
 
+    # Sample Project configs
+    SAMPLE_PROJECT_KEYWORDS: List[str] = ["person", "cat"]
+    SAMPLE_PROJECT_TESTING_DATASET_URL: str = "http://web/val.zip"
+    SAMPLE_PROJECT_MINING_DATASET_URL: str = "http://web/mining.zip"
+    SAMPLE_PROJECT_MODEL_URL: str = "http://web/683f4fa14d1baa733a87d9644bb0457cbed5aba8"
+
 
 settings = Settings(_env_file=".env")  # type: ignore

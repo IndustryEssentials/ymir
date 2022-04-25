@@ -34,6 +34,7 @@ class ModelImport(BaseModel):
     description: Optional[str]
     input_model_path: Optional[str] = Field(description="from uploaded file url")
     input_model_id: Optional[int] = Field(description="from model of other user")
+    input_url: Optional[str] = Field(description="model url")
     source: Optional[TaskType]
     import_type: Optional[TaskType]
 
@@ -41,7 +42,7 @@ class ModelImport(BaseModel):
     def gen_import_type(cls, v: TaskType, values: Any) -> TaskType:
         if values.get("input_model_id"):
             return TaskType.copy_model
-        elif values.get("input_model_path"):
+        elif values.get("input_model_path") or values.get("input_url"):
             return TaskType.import_model
         else:
             raise ValueError("Missing input source")
