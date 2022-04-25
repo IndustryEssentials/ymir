@@ -1,5 +1,7 @@
 from typing import Any
 
+from mir.tools.code import MirCode
+
 
 class MirError(Exception):
     """
@@ -35,4 +37,12 @@ class MirRuntimeError(MirError):
                                task=self.task)
 
     def __str__(self) -> str:
-        return f"code: {self.error_code} content: {self.error_message}, needs new commit: {self.needs_new_commit}"
+        return f"code: {self.error_code}, message: {self.error_message}"
+
+
+class MirContainerError(MirRuntimeError):
+    def __init__(self, error_message: str, task: Any):
+        super().__init__(error_code=MirCode.RC_CMD_CONTAINER_ERROR,
+                         error_message=error_message,
+                         needs_new_commit=True,
+                         task=task)

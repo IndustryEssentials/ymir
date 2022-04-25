@@ -100,14 +100,9 @@ def command_run_in_out(f: Callable) -> Callable:
             predefined_task = e.task
             needs_new_commit = e.needs_new_commit
             exc = copy.copy(e)
-            trace_message = f"cmd exception: {traceback.format_exc()}"
-        except CalledProcessError as e:
-            error_code = MirCode.RC_CMD_CONTAINER_ERROR
-            state_message = str(e)
-            predefined_task = None
-            needs_new_commit = True
-            exc = copy.copy(e)
-            trace_message = f"cmd exception: {traceback.format_exc()}"
+
+            task: mirpb.Task = e.task
+            trace_message = task.return_msg if task and task.return_msg else f"cmd exception: {traceback.format_exc()}"
         except BaseException as e:
             error_code = MirCode.RC_CMD_ERROR_UNKNOWN
             state_message = str(e)
@@ -141,13 +136,11 @@ def command_run_in_out(f: Callable) -> Callable:
 
             return ret
 
-        # if MirRuntimeError, CalledProcessError and BaseException occured
+        # if MirContainerError, MirRuntimeError and BaseException occured
         # exception saved in exc
-        executor_outlog_tail = utils.collect_executor_outlog_tail(work_dir=work_dir)
-        error_msg = executor_outlog_tail or trace_message
         if needs_new_commit:
             _commit_error(code=error_code,
-                          error_msg=error_msg,
+                          error_msg=trace_message,
                           mir_root=mir_root,
                           src_revs=src_revs,
                           dst_rev=dst_rev,
@@ -156,7 +149,7 @@ def command_run_in_out(f: Callable) -> Callable:
                                        task_state=phase_logger.PhaseStateEnum.ERROR,
                                        state_code=error_code,
                                        state_content=state_message,
-                                       trace_message=error_msg)
+                                       trace_message=trace_message)
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")

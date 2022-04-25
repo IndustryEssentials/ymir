@@ -45,8 +45,6 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
     monitor.write_monitor_logger(percent=0.5)
 
-    _dummy_work(idle_seconds=idle_seconds)
-
     # suppose we have a long time training, and have saved the final model
     #! use `env_config.output.models_dir` to get model output dir
     with open(os.path.join(env_config.output.models_dir, 'model-0000.params'), 'w') as f:
@@ -59,6 +57,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
                              mAP=expected_mAP,
                              classAPs={class_name: expected_mAP
                                        for class_name in class_names})
+
+    _dummy_work(idle_seconds=idle_seconds)
 
     #! if task done, write 100% percent log
     logging.info('training done')
