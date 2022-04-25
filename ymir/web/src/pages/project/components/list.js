@@ -199,7 +199,7 @@ const ProjectList = ({ list, query, ...func }) => {
   return (
     <div className={s.projectContent}>
       {addBtn}
-      <Card>
+      <Card className={s.listContainer}>
         {searchPanel}
         <ConfigProvider renderEmpty={() => <ProjectEmpty addExample={addExample} />}>
           <List

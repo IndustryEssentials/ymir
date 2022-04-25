@@ -3,7 +3,7 @@ import { Card, Col, Row, Space } from "antd"
 import { useLocation, useParams, connect, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
-import { percent } from '@/utils/number'
+import { getStageLabel } from '@/constants/project'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Iteration from './components/iteration'
 import Datasets from '@/components/dataset/list'
@@ -72,7 +72,8 @@ function ProjectDetail(func) {
             <Space className={s.detailPanel}>
               <span className={s.name}>{project.name}</span>
               <span className={s.iterationInfo}>
-                {t('project.detail.info.iteration', { 
+                {t('project.detail.info.iteration', {
+                  stageLabel: <span className={s.orange}>{t(getStageLabel(project.currentStage, project.round))}</span>,
                   current: <span className={s.orange}>{project.round}</span>, 
                   target: <span className={s.orange}>{project.targetIteration}</span> 
                 })}
@@ -92,6 +93,11 @@ function ProjectDetail(func) {
         </Row>
         {project.round > 0 ?
           <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
+        <Row className={s.setsPanel} align='middle' style={{ textAlign: 'center' }}>
+          <Col span={8}>{t('project.add.form.training.set')}: {project?.trainSet?.name}</Col>
+          <Col span={8}>{t('project.add.form.test.set')}: {project?.testSet?.name}</Col>
+          <Col span={8}>{t('project.add.form.mining.set')}: {project?.miningSet?.name}</Col>
+        </Row>
       </div>
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}

@@ -93,7 +93,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
     }
   }
   const renderMain = () => {
-    return currentStage() ? renderMainBtn() : <span>{t(stage.act)}</span>
+    return currentStage() ? renderMainBtn() : <span className={s.act}>{t(stage.act)}</span>
   }
 
   const renderMainBtn = () => {
@@ -101,7 +101,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
     const content = RenderProgress(result.state, result, true)
     const disabled = isReady() || isInvalid()
     const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
-    const btn = <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
+    const btn = <Button disabled={disabled} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
     const pop = <Popover content={content}>{btn}</Popover>
     return result.id ? pop : btn
   }
@@ -114,7 +114,11 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }
   const renderState = () => {
     const pending = 'project.stage.state.pending'
-    return !pendingStage() ? (isValid() ?  (result.name ?`${result.name} ${result.versionName}` : t('common.done')) : t(statesLabel(state))) : null
+    return !pendingStage() ? 
+      (isValid() ?  
+        (result.name ?`${result.name} ${result.versionName}` : t('common.done')) : 
+        isPending() && currentStage() ? t('project.stage.state.pending.current') : t(statesLabel(state))) : 
+      t(pending)
   }
 
   const renderSkip = () => {
