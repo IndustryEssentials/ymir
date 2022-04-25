@@ -63,7 +63,7 @@ class Settings(BaseSettings):
 
     # RUNTIME
     RUNTIMES: Optional[
-        str] = '[{"name": "sample_image", "hash": "6d30c27861c5", "type": 1, "url": "industryessentials/executor-example:latest", "configs": [{"expected_map": 0.983, "idle_seconds": 60, "type": 1}, {"idle_seconds": 60, "type": 2}, {"idle_seconds": 60, "type": 9}]}]'  # noqa: E501
+        str] = '[{"name": "sample_image", "hash": "6d30c27861c5", "type": 1, "url": "industryessentials/executor-example:latest", "configs": [{"expected_map": 0.983, "idle_seconds": 60, "trigger_crash": 0, "type": 1}, {"idle_seconds": 60, "trigger_crash": 0, "type": 2}, {"idle_seconds": 60, "trigger_crash": 0, "type": 9}]}]'  # noqa: E501
 
     # Online Sheet
     SHARING_TIMEOUT: int = 10
@@ -82,6 +82,12 @@ class Settings(BaseSettings):
 
     # Reverse keywords
     REVERSE_KEYWORDS_OUTPUT: bool = True
+
+    # Sample Project configs
+    SAMPLE_PROJECT_KEYWORDS: List[str] = ["person", "cat"]
+    SAMPLE_PROJECT_TESTING_DATASET_URL: str = "http://web/val.zip"
+    SAMPLE_PROJECT_MINING_DATASET_URL: str = "http://web/mining.zip"
+    SAMPLE_PROJECT_MODEL_URL: str = "http://web/683f4fa14d1baa733a87d9644bb0457cbed5aba8"
 
 
 settings = Settings(_env_file=".env")  # type: ignore

@@ -64,8 +64,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [])
 
   useEffect(() => {
-    setDatasets(allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))))
-    const isValid = allDatasets.some(ds => ds.id === did)
+    const dss = allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))
+    setDatasets(dss)
+    const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
     form.setFieldsValue({ datasetId: visibleValue })
