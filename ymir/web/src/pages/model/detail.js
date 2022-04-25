@@ -4,6 +4,7 @@ import { connect } from 'dva'
 import { useParams, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
+import { getTaskTypeLabel } from "@/constants/task"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import TaskDetail from "@/components/task/detail"
 import styles from "./detail.less"
@@ -23,7 +24,6 @@ function ModelDetail({ modelCache, getModel }) {
   }, [id])
 
   useEffect(() => {
-    console.log('modelCache:', modelCache)
     if (modelCache[id]?.needReload) {
       fetchModel(true)
     } else {
@@ -38,7 +38,7 @@ function ModelDetail({ modelCache, getModel }) {
   function renderTitle() {
     return (
       <Row>
-        <Col flex={1}>{model.name}</Col>
+        <Col flex={1}>{model.name} &gt; {t(getTaskTypeLabel(model.taskType))}</Col>
         <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
       </Row>
     )
