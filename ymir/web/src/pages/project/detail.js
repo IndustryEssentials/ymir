@@ -93,10 +93,10 @@ function ProjectDetail(func) {
         </Row>
         {project.round > 0 ?
           <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
-        <Row className={s.setsPanel} align='middle' style={{ textAlign: 'center' }}>
-          <Col span={8}>{t('project.add.form.training.set')}: {project?.trainSet?.name}</Col>
-          <Col span={8}>{t('project.add.form.test.set')}: {project?.testSet?.name}</Col>
-          <Col span={8}>{t('project.add.form.mining.set')}: {project?.miningSet?.name}</Col>
+        <Row className={s.setsPanel} gutter={20} align='middle' style={{ textAlign: 'center' }}>
+          <Col className={s.ellipsis} span={8} title={project?.trainSet?.name}>{t('project.add.form.training.set')}: {project?.trainSet?.name}</Col>
+          <Col className={s.ellipsis} span={8} title={project?.testSet?.name}>{t('project.add.form.test.set')}: {project?.testSet?.name}</Col>
+          <Col className={s.ellipsis} span={8} title={project?.miningSet?.name}>{t('project.add.form.mining.set')}: {project?.miningSet?.name}</Col>
         </Row>
       </div>
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange}
