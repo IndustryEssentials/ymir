@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+from subprocess import CalledProcessError
 from typing import Dict, Optional, Set
 
 from google.protobuf import json_format
@@ -9,10 +10,10 @@ import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, data_exporter, mir_storage_ops, revs_parser, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
-from mir.tools.errors import MirRuntimeError
+from mir.tools.errors import MirContainerError, MirRuntimeError
 
 
 class CmdMining(base.BaseCommand):
@@ -147,27 +148,45 @@ class CmdMining(base.BaseCommand):
                         work_asset_path=work_asset_path,
                         work_index_file=work_index_file)
 
-        infer.CmdInfer.run_with_args(work_dir=work_dir,
-                                     media_path=work_asset_path,
-                                     model_location=model_location,
-                                     model_hash=model_hash,
-                                     index_file=work_index_file,
-                                     config_file=config_file,
-                                     task_id=dst_typ_rev_tid.tid,
-                                     shm_size=_get_shm_size(config_file),
-                                     executor=executor,
-                                     executant_name=executant_name,
-                                     run_infer=add_annotations,
-                                     run_mining=(topk is not None))
+        return_code = MirCode.RC_OK
+        return_msg = ''
+        try:
+            infer.CmdInfer.run_with_args(work_dir=work_dir,
+                                         media_path=work_asset_path,
+                                         model_location=model_location,
+                                         model_hash=model_hash,
+                                         index_file=work_index_file,
+                                         config_file=config_file,
+                                         task_id=dst_typ_rev_tid.tid,
+                                         shm_size=_get_shm_size(config_file),
+                                         executor=executor,
+                                         executant_name=executant_name,
+                                         run_infer=add_annotations,
+                                         run_mining=(topk is not None))
+        except CalledProcessError:
+            return_code = MirCode.RC_CMD_CONTAINER_ERROR
+            return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
+        # catch other exceptions in command_run_in_out
+
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
+                                           task_id=dst_typ_rev_tid.tid,
+                                           message='mining',
+                                           model_hash=model_hash,
+                                           src_revs=src_typ_rev_tid.rev_tid,
+                                           dst_rev=dst_typ_rev_tid.rev_tid,
+                                           return_code=return_code,
+                                           return_msg=return_msg,
+                                           executor=executor)
+        if return_code != MirCode.RC_OK:
+            raise MirContainerError(error_message='mining container error occured', task=task)
 
         _process_results(mir_root=mir_root,
                          export_out=work_out_path,
                          dst_typ_rev_tid=dst_typ_rev_tid,
                          src_typ_rev_tid=src_typ_rev_tid,
-                         model_hash=model_hash,
                          topk=topk,
                          add_annotations=add_annotations,
-                         executor=executor)
+                         task=task)
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
@@ -175,8 +194,8 @@ class CmdMining(base.BaseCommand):
 
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
-                     src_typ_rev_tid: revs_parser.TypRevTid, model_hash: str, topk: Optional[int],
-                     add_annotations: bool, executor: str) -> int:
+                     src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_annotations: bool,
+                     task: mirpb.Task) -> int:
     # step 1: build topk results:
     #   read old
     [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
@@ -220,15 +239,6 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
             matched_task_annotation.image_annotations[asset_id].CopyFrom(task_annotation.image_annotations[asset_id])
 
     #   mir_keywords: auto generated from mir_annotations, so do nothing
-
-    #   update_mir_task
-    task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
-                                       task_id=dst_typ_rev_tid.tid,
-                                       message='mining',
-                                       model_hash=model_hash,
-                                       src_revs=src_typ_rev_tid.rev_tid,
-                                       dst_rev=dst_typ_rev_tid.rev_tid,
-                                       executor=executor)
 
     # step 3: store results and commit.
     mir_datas = {
