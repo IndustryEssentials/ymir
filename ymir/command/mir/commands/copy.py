@@ -70,20 +70,18 @@ class CmdCopy(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
-        # process annotations
         orig_head_task_id = mir_annotations.head_task_id
+        if not orig_head_task_id:
+            logging.error('bad annotations.mir: empty head task id')
+            return MirCode.RC_CMD_INVALID_MIR_REPO
+        if ((len(mir_annotations.task_annotations) > 0
+                and orig_head_task_id not in mir_annotations.task_annotations)):
+            logging.error(f"bad annotations.mir: can not find head task id: {orig_head_task_id}")
+            return MirCode.RC_CMD_INVALID_MIR_REPO
+
         unknown_types: Dict[str, int] = {}
         if not drop_annotations:
             # if don't want to drop annotations
-            # annotations.mir: change head task id and type ids
-            if not orig_head_task_id:
-                logging.error('bad annotations.mir: empty head task id')
-                return MirCode.RC_CMD_INVALID_MIR_REPO
-            if ((len(mir_annotations.task_annotations) > 0
-                 and orig_head_task_id not in mir_annotations.task_annotations)):
-                logging.error(f"bad annotations.mir: can not find head task id: {orig_head_task_id}")
-                return MirCode.RC_CMD_INVALID_MIR_REPO
-
             # annotations.mir and keywords.mir: change type ids
             single_task_annotations = mir_annotations.task_annotations[orig_head_task_id]
             return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
