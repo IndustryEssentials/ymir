@@ -14,11 +14,13 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     project.id && initStages()
   }, [project])
 
+  const validNext = () => project.miningSet && project.testSet && project.model
+
   function initStages() {
     const labels = [
       { value: 'datasets', state: project.miningSet && project.testSet ? states.VALID : -1, url: `/home/project/add/${project.id}?settings=1`, },
       { value: 'model', state: project.model ? states.VALID : -1, url: `/home/project/initmodel/${project.id}`, },
-      { value: 'start', state: project.miningSet && project.testSet && project.model ? states.VALID : -1, },
+      { value: 'start', state: validNext() ? states.VALID : -1, },
     ]
     const ss = labels.map(({ value, state, url, }, index) => {
       const act = `project.iteration.stage.${value}`
@@ -36,7 +38,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
       }
       if (index === labels.length - 1) {
         stage.react = ''
-        stage.current = 0
+        stage.current = validNext() ? index : 0
         stage.callback = () => createIteration()
         console.log('project:', project, stage)
       }

@@ -29,7 +29,7 @@ const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes
 const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
 const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
 
-function Train({ allDatasets, datasetCache, ...func }) {
+function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -61,6 +61,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
   useEffect(() => {
     fetchSysInfo()
     fetchProject()
+  }, [])
+
+  useEffect(() => {
+    func.getKeywords({ limit: 100000 })
   }, [])
 
   useEffect(() => {
@@ -110,6 +114,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   async function fetchProject() {
     const project = await func.getProject(pid)
     project && setProject(project)
+    form.setFieldsValue({ keywords: project.keywords })
   }
 
   function trainSetChange(value) {
@@ -149,7 +154,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
       ...values,
       name: 'group_' + randomNumber(),
       projectId: pid,
-      keywords: project.keywords,
+      keywords: iterationId ? project.keywords : values.keywords,
       image,
       imageId,
       config,
@@ -251,9 +256,28 @@ function Train({ allDatasets, datasetCache, ...func }) {
               </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
-              <Form.Item label={t('task.train.form.keywords.label')}>
+              {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
                 {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
-              </Form.Item>
+              </Form.Item> :
+              <Form.Item
+                label={t('task.label.form.target.label')}
+                name="keywords"
+                rules={[
+                  { required: true, message: t('task.label.form.target.placeholder') }
+                ]}
+              >
+                <Select mode="multiple" showArrow
+                  placeholder={t('task.label.form.member.labeltarget')}
+                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+                  {keywords.map(keyword => (
+                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                      <Row>
+                        <Col flex={1}>{keyword.name}</Col>
+                      </Row>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item> }
             </Tip>
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.train.model')}>
@@ -409,6 +433,7 @@ const props = (state) => {
   return {
     allDatasets: state.dataset.allDatasets,
     datasetCache: state.dataset.dataset,
+    keywords: state.keyword.keywords.items,
   }
 }
 
@@ -450,6 +475,12 @@ const dis = (dispatch) => {
       return dispatch({
         type: 'iteration/updateIteration',
         payload: params,
+      })
+    },
+    getKeywords() {
+      return dispatch({
+        type: 'keyword/getKeywords',
+        payload: { limit: 10000 },
       })
     },
   }
