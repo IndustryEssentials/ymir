@@ -29,7 +29,10 @@ const project = {
   'project.add.form.type': { en: 'Training Type', cn: '训练类型', },
   'project.add.form.keyword.label': { en: 'Training Classes', cn: '训练目标', },
   'project.add.form.keyword.required': { en: 'Training classes is required', cn: '训练目标为必选项', },
-  'project.add.form.keyword.placeholder': { en: 'Please select training classes', cn: '请输入训练目标', },
+  'project.add.form.keyword.placeholder': { 
+    en: 'Please select training classes, or input new classes, separated by comma', 
+    cn: '请输入训练目标，可选择已有的或输入新标签，英文逗号分隔', 
+  },
   'project.add.form.target': { en: 'Project Target', cn: '目标设置', },
   'project.add.form.target.map': { en: 'mAP', cn: 'mAP', },
   'project.add.form.target.map.placeholder': { en: 'Please input mAP as target', cn: '请输入目标mAP', },
@@ -57,6 +60,7 @@ const project = {
   'project.iteration.stage.merge.react': { en: 'Re-process', cn: '重新更新', },
   'project.iteration.stage.training.react': { en: 'Re-process', cn: '重新训练', },
   'project.stage.state.pending': { en: 'Unfinished', cn: '未完成', },
+  'project.stage.state.pending.current': { en: 'Pending', cn: '待完成', },
   'project.iteration.settings.title': { en: 'Iterations Settings', cn: '迭代设置', },
   'project.add.form.training.set': { en: 'Training Dataset', cn: '训练集', },
   'project.add.form.test.set': { en: 'Test Dataset', cn: '测试集', },
@@ -69,7 +73,10 @@ const project = {
   'project.mining.strategy.0.label': { en: 'Exclude Chunked Dataset', cn: '排除已分块的数据集', },
   'project.mining.strategy.1.label': { en: 'Exclude Mining Result Dataset', cn: '排除已挖掘的数据集', },
   'project.mining.strategy.2.label': { en: 'Exclude Mining Result Dataset', cn: '排除已挖掘的数据集', },
-  'project.detail.info.iteration': { en: 'iterations: {current}/{target}', cn: '您当前处于项目迭代的{current}/{target}次迭代', },
+  'project.detail.info.iteration': {
+    en: 'you are on stage {stageLabel}, iterations: {current} / {target}',
+    cn: '您当前处于项目迭代的{stageLabel}, {current} / {target}次迭代',
+  },
   'project.iteration.initmodel': { en: 'Initial Model Setting', cn: '初始模型设置', },
   'iteration.round.label': { en: 'Round {round}', cn: '第 {round} 次', },
   'iteration.column.round': { en: 'Iteration Round', cn: '迭代轮次', },
@@ -78,6 +85,7 @@ const project = {
   'iteration.column.label': { en: 'Labelling Result', cn: '标注结果', },
   'iteration.column.merging': { en: 'Training Dataset', cn: '训练数据', },
   'iteration.column.training': { en: 'Model', cn: '训练结果|mAP', },
+  'iteration.column.test': { en: 'Testing Dataset', cn: '测试集', },
   'project.detail.desc': { en: 'Description', cn: '描述', },
   'project.target.dataset': { en: 'Training Dataset\'s Assets', cn: '目标训练集大小', },
   'project.initmodel.success.msg': { en: 'Initial model prepared', cn: '设置初始模型成功', },
@@ -91,6 +99,9 @@ const project = {
   'project.add.confirm.title': { en: 'Whether this new keywords will add to your KEYWORD LIST?', cn: '标签管理列表未查询到下列标签，是否要添加至标签列表', },
   'project.add.confirm.ok': { en: 'Add Keywords and Create Project', cn: '添加标签并创建项目', },
   'project.add.confirm.cancel': { en: 'Cancel Create Project', cn: '取消创建项目', },
+  'project.empty.label': { en: 'You can manage datasets, train models, and create data iterations.', cn: '在项目中可以管理数据集、训练模型、迭代数据', },
+  'project.new.example.label': { en: 'Create Example Project', cn: '创建示例项目', },
+  'project.keywords.invalid': { en: 'Invalid training keywords', cn: '训练目标不合法', },
 }
 
 export default project

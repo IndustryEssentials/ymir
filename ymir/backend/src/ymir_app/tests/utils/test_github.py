@@ -5,8 +5,8 @@ tbl = """\
 
 |docker_name|functions|contributor|organization|description|
 |--|--|--|--|--|
-|executor-det-yolov4-training:release-0.3.0|training|alfrat|-|yolov4 detection model training|
-|executor-det-yolov4-mining:release-0.3.0|mining inference|alfrat|-|yolov4 detection model mining & inference|
+|executor-det-yolov4-training:release-0.5.0|training|alfrat|-|yolov4 detection model training|
+|executor-det-yolov4-mining:release-0.5.0|mining inference|alfrat|-|yolov4 detection model mining & inference|
 """
 
 

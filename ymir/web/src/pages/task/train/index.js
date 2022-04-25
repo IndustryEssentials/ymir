@@ -34,7 +34,8 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const { mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const did = Number(location.query.did)
   const [project, setProject] = useState({})
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
@@ -63,14 +64,16 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [])
 
   useEffect(() => {
-    setDatasets(allDatasets)
-  }, [allDatasets])
+    const dss = allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))
+    setDatasets(dss)
+    const isValid = dss.some(ds => ds.id === did)
+    const visibleValue = isValid ? did : null
+    setTrainSet(visibleValue)
+    form.setFieldsValue({ datasetId: visibleValue })
+  }, [allDatasets, project])
 
   useEffect(() => {
-    if (did) {
-      func.getDataset(did)
-      setTrainSet(Number(did))
-    }
+    did && func.getDataset(did)
   }, [did])
 
   useEffect(() => {
@@ -85,27 +88,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
-
-  useEffect(() => {
-    const state = location.state
-
-    if (state?.record) {
-      const { parameters, name, config, } = state.record
-      const { validation_dataset_id, strategy, docker_image, docker_image_id, model_id } = parameters
-      form.setFieldsValue({
-        testset: validation_dataset_id,
-        gpu_count: config.gpu_count,
-        model: model_id,
-        image: docker_image_id + ',' + docker_image,
-        strategy,
-      })
-      setConfig(config)
-      setTestSet(validation_dataset_id)
-      setHpVisible(true)
-
-      history.replace({ state: {} })
-    }
-  }, [location.state])
 
   async function validHyperparam(rule, value) {
 
@@ -157,9 +139,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
     const gpuCount = form.getFieldValue('gpu_count')
-    if (gpuCount) {
-      config['gpu_count'] = gpuCount
-    }
+    // if (gpuCount) {
+    config['gpu_count'] = gpuCount || 0
+    // }
     const img = (form.getFieldValue('image') || '').split(',')
     const imageId = Number(img[0])
     const image = img[1]
@@ -186,25 +168,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
     console.log("Failed:", errorInfo)
   }
 
-  function getTrainSetTotal(setId) {
-    const ds = datasets.find(d => d.id === setId)
-    return ds ? ds.assetCount : 0
-  }
-
-  function validateGPU(_, value) {
-    const count = Number(value)
-    const min = 1
-    const max = gpu_count
-    if (count < min || count > max) {
-      return Promise.reject(t('task.train.gpu.invalid', { min, max }))
-    }
-    return Promise.resolve()
-  }
-
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
-    datasetId: Number(did) ? Number(did) : undefined,
+    datasetId: did ? did : undefined,
     testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
     model: mid ? parseInt(mid) : undefined,
@@ -280,7 +247,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
             </ConfigProvider>
             <Tip hidden={true}>
               <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates id={trainSet}></KeywordRates>
+                <KeywordRates dataset={trainSet}></KeywordRates>
               </Form.Item>
             </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
@@ -341,11 +308,8 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 <Form.Item
                   noStyle
                   name="gpu_count"
-                  rules={[
-                    { validator: validateGPU }
-                  ]}
                 >
-                  <InputNumber min={1} max={gpu_count} precision={0} /></Form.Item>
+                  <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
@@ -422,7 +386,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
+                    <Button type="primary" size="large" htmlType="submit">
                       {t('common.action.train')}
                     </Button>
                   </Form.Item>

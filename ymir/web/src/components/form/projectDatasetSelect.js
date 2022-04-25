@@ -11,7 +11,7 @@ const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { },
   }, [])
 
   useEffect(() => {
-    const opts = projects.filter(project => project.id !== Number(pid)).map(project => {
+    const opts = projects.map(project => {
       return {
         label: project.name,
         value: project.id,
@@ -34,13 +34,13 @@ const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { },
   async function loadData(selected) {
     const target = selected[selected.length - 1]
     target.loading = true
-    const result = await getDatasets(target.value)
+    const result = await getDatasets(target.value, true)
     
     target.loading = false
     if (result) {
       target.children = result.map(dataset => {
         return {
-          label: `${dataset.name} ${dataset.versionName}`,
+          label: `${dataset.name} ${dataset.versionName} (assets: ${dataset.assetCount})`,
           value: dataset.id,
           isLeaf: true,
         }

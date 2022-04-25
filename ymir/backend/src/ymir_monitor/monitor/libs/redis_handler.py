@@ -27,6 +27,9 @@ class RedisHandler:
     def get(self, name: str) -> str:
         return self._redis.get(name)  # type: ignore
 
+    def xadd(self, name: str, fields: Dict) -> None:
+        self._redis.xadd(name, fields)
+
     def hset(self, name: str, key: str, value: Dict) -> None:
         self._redis.hset(name=name, key=key, value=json.dumps(value))
 

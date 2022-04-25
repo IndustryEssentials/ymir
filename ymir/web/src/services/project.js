@@ -64,21 +64,29 @@ export function createProject({
 }
 
 /**
+ * create an example project
+ * @returns
+ */
+export function addExampleProject() {
+  return request.post("/projects/samples")
+}
+
+/**
  * update project
  * @param {number} id 
  * @param {object} params 
  * {
  * {string} name
- * {number} iteration_target
- * {number} map_target
- * {number} training_dataset_count_target
- * {number} mining_strategy
- * {number} chunk_size
- * {number} training_dataset_group_id
- * {number} mining_dataset_id
- * {number} testing_dataset_id
+ * {number} targetIteration
+ * {number} targetMap
+ * {number} targetDataset
+ * {number} strategy
+ * {number} chunkSize
  * {string} description
- * {number} initial_model_id
+ * {number} trainSetVersion
+ * {number} miningSet
+ * {number} testSet
+ * {number} model
  * }
  * @returns 
  */
@@ -90,6 +98,7 @@ export function updateProject(id, {
   strategy,
   chunkSize,
   description,
+  trainSetVersion,
   miningSet,
   testSet,
   model,
@@ -108,6 +117,7 @@ export function updateProject(id, {
       testing_dataset_id: testSet,
       description,
       initial_model_id: model,
+      initial_training_dataset_id: trainSetVersion,
     },
   })
 }

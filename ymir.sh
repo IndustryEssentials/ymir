@@ -136,7 +136,6 @@ if [[ $1 == 'dev' ]]; then
     docker build \
         -t ${DOCKER_BACKEND} \
         --build-arg PIP_SOURCE=${DEV_SOURCE_BACKEND_PIP} \
-        --build-arg SERVER_MODE='dev' \
         git@github.com:IndustryEssentials/ymir.git#dev:/ymir -f Dockerfile.backend
     docker build \
         -t ${DOCKER_WEB} \

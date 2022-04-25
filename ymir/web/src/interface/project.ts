@@ -13,6 +13,7 @@ export interface Project {
   testSet?: Dataset,
   miningSet?: Dataset,
   setCount: number,
+  trainSetVersion?: number,
   model?: number,
   modelCount: number,
   miningStrategy: number,
@@ -23,6 +24,7 @@ export interface Project {
   createTime: string,
   updateTime: string,
   description?: string,
+  isExample?: boolean,
 }
 
 export interface Iteration {
@@ -31,6 +33,7 @@ export interface Iteration {
   name?: string,
   round: number,
   currentStage: number,
+  testSet?: DatasetId,
   trainSet?: DatasetId,
   trainUpdateSet: DatasetId,
   trainUpdateDataset?: Dataset,

@@ -4,8 +4,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 ARG PIP_SOURCE=https://pypi.org/simple
 
-ARG SERVER_MODE=prod
-
 RUN apt-get update \
   && apt-get install -y git \
   && apt-get install -y vim \
@@ -24,14 +22,11 @@ RUN mkdir -p /app_logs/
 COPY ./backend/requirements.txt ./
 RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
 
-COPY ./backend/src /app
 COPY ./command /command
-WORKDIR /app
+RUN pip3 install -U /command
 
-RUN if [ "$SERVER_MODE" = "dev" ]; then \
-    pip3 uninstall -y ymir-cmd && \
-    pip3 install -U /command; \
-  fi
+COPY ./backend/src /app
+WORKDIR /app
 
 COPY ./backend/deploy/git.config /root/.gitconfig
 

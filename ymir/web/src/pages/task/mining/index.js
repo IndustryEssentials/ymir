@@ -12,7 +12,6 @@ import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
-import { TASKSTATES } from '@/constants/task'
 import { TYPES } from '@/constants/image'
 import { useHistory, useParams, useLocation } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -50,7 +49,7 @@ function Mining({ datasetCache, datasets, ...func }) {
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
-  const [topk, setTopk] = useState(false)
+  const [topk, setTopk] = useState(true)
   const [gpu_count, setGPU] = useState(0)
   const [imageHasInference, setImageHasInference] = useState(false)
 
@@ -76,32 +75,6 @@ function Mining({ datasetCache, datasets, ...func }) {
   useEffect(() => {
     pid && func.getDatasets(pid)
   }, [pid])
-
-  useEffect(() => {
-    const state = location.state
-
-    if (state?.record) {
-      const { parameters, config, } = state.record
-      const { include_datasets, exclude_datasets, strategy, top_k, model_id, generate_annotations, docker_image, docker_image_id } = parameters
-      const sets = include_datasets || []
-      const xsets = exclude_datasets || []
-      setTopk(!!top_k)
-      form.setFieldsValue({
-        datasetId: dataset_id,
-        filter_strategy: !!top_k,
-        inference: generate_annotations,
-        model: model_id,
-        docker_image: docker_image_id + ',' + docker_image,
-        topk: top_k,
-        gpu_count: config.gpu_count,
-        strategy,
-      })
-      setConfig(config)
-      setHpVisible(true)
-
-      history.replace({ state: {} })
-    }
-  }, [location.state])
 
   function validHyperparam(rule, value) {
 
@@ -384,7 +357,7 @@ function Mining({ datasetCache, datasets, ...func }) {
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit" disabled={!gpu_count}>
+                    <Button type="primary" size="large" htmlType="submit">
                       {t('common.action.mine')}
                     </Button>
                   </Form.Item>

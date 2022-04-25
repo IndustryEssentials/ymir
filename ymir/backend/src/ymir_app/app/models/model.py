@@ -8,7 +8,6 @@ from sqlalchemy import (
     Integer,
     String,
     SmallInteger,
-    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
@@ -50,7 +49,6 @@ class Model(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
-    __table_args__ = (UniqueConstraint("project_id", "hash", name="uniq_project_hash"),)
 
     @property
     def group_name(self) -> str:

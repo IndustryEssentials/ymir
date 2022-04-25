@@ -177,6 +177,8 @@ class ControllerRequest:
             copy_request.name_strategy_ignore = True
         elif strategy is ImportStrategy.stop_upon_unknown_annotations:
             copy_request.name_strategy_ignore = False
+        elif strategy is ImportStrategy.no_annotations:
+            copy_request.drop_annotations = True
         else:
             raise ValueError("not supported strategy: %s" % strategy.name)
 

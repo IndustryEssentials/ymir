@@ -100,6 +100,34 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     ))
   }
 
+  function renderTrainKeywords(keywords = []) {
+    return <Item label={t("task.detail.label.train_goal")}>
+      {keywords.map((keyword) => (
+        <Tag key={keyword}>{keyword}</Tag>
+      ))}
+    </Item>
+  }
+
+  function renderTrainImage(image, span = 1) {
+    return <Item label={t("task.detail.label.training.image")} span={span}>
+      {image}
+    </Item>
+  }
+
+  function renderTrainAlgo(param = {}) {
+    return <>
+      <Item label={t("task.detail.label.framework")}>
+        {param.network}
+      </Item>
+      <Item label={t("task.detail.label.backbone")}>
+        {param.backbone}
+      </Item>
+      <Item label={t("task.train.form.traintype.label")}>
+        {t('task.train.form.traintypes.detect')}
+      </Item>
+    </>
+  }
+
   function renderDatasetSource(id) {
     return <Item label={t("task.origin.dataset")}>{renderDatasetName(id)}</Item>
   }
@@ -140,27 +168,10 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       <Item label={t("task.train.form.testsets.label")}>
         {renderDatasetName(task.parameters.validation_dataset_id)}
       </Item>
-      <Item label={t("task.detail.label.train_goal")}>
-        {task?.parameters?.keywords?.map((keyword) => (
-          <Tag key={keyword}>{keyword}</Tag>
-        ))}
-      </Item>
-      <Item label={t("task.detail.label.framework")}>
-        {task.parameters?.network}
-      </Item>
-      <Item label={t("task.detail.label.create_time")}>
-        {format(task.create_datetime)}
-      </Item>
-      <Item label={t("task.detail.label.backbone")}>
-        {task.parameters?.backbone}
-      </Item>
-      <Item label={t("task.detail.label.training.image")}>
-        {task?.parameters?.docker_image}
-      </Item>
-      <Item label={t("task.train.form.traintype.label")}>
-        {t('task.train.form.traintypes.detect')}
-      </Item>
-      <Item label={"TensorBoard"}>
+      {renderTrainKeywords(task?.parameters?.keywords)}
+      {renderTrainAlgo(task?.parameters)}
+      {renderTrainImage(task?.parameters?.docker_image, 2)}
+      <Item label={"TensorBoard"} span={2}>
         <Link target="_blank" to={getTensorboardLink(task.hash)}>
           {t("task.detail.tensorboard.link.label")}
         </Link>
@@ -227,6 +238,9 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const renderModelImport = () => <>
     <Item label={t("dataset.column.source")}>{t('task.type.modelimport')}</Item>
     {renderCreateTime(task.create_datetime)}
+    {renderTrainKeywords(task?.parameters?.keywords)}
+    {renderTrainAlgo(task?.parameters)}
+    {renderTrainImage(task?.parameters?.docker_image, 2)}
     <Item label={t("task.detail.label.hyperparams")} span={2}>
       {renderConfig(task.config)}
     </Item>
@@ -234,6 +248,9 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const renderModelCopy = () => <>
     <Item label={t("dataset.column.source")}>{t('task.type.modelcopy')}</Item>
     {renderCreateTime(task.create_datetime)}
+    {renderTrainKeywords(task?.parameters?.keywords)}
+    {renderTrainAlgo(task?.parameters)}
+    {renderTrainImage(task?.parameters?.docker_image, 2)}
     <Item label={t("task.detail.label.hyperparams")} span={2}>
       {renderConfig(task.config)}
     </Item>

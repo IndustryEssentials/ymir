@@ -101,7 +101,7 @@ def _check_model(model_storage: mir_utils.ModelStorage, mir_root: str) -> int:
     # check class names
     class_names = model_storage.class_names
     if not context.check_class_names(mir_root=mir_root, current_class_names=class_names):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE, error_message='project class ids mismatch')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
 
     return MirCode.RC_OK
 

@@ -10,8 +10,9 @@ import TaskDetail from "@/components/task/detail"
 import Detail from "@/components/dataset/detail"
 import s from "./detail.less"
 import TaskProgress from "@/components/task/progress"
+import Error from "@/components/task/error"
 
-const taskTypes = ["fusion", "train", "mining", "label"]
+const taskTypes = ["fusion", "train", "mining", "label", 'inference', 'copy']
 
 function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
@@ -19,7 +20,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
   const [dataset, setDataset] = useState({})
 
   useEffect(() => {
-    fetchDataset()
+    fetchDataset(true)
   }, [id])
 
   useEffect(() => {
@@ -43,6 +44,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
       >
         <Detail dataset={dataset} />
         <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
+        { dataset?.task?.error_code ? <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} /> : null }
         <TaskDetail
           task={dataset.task}
           ignore={dataset.ignoredKeywords}

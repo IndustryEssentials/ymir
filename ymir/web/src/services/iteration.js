@@ -27,13 +27,9 @@ export function getIterations(id) {
  *   {string}  [name]
  *   {number}  [currentStage]
  *   {number}  iterationRound
- *   {number}  [miningDataset]
- *   {number}  [miningResult]
- *   {number}  [labelResult]
- *   {number}  traningDataset
- *   {number}  trainingModel
  *   {number}  prevTrainingDataset
  *   {number}  projectId
+ *   {number}  testSet
  * }
  * @returns
  */
@@ -43,6 +39,7 @@ export function createIteration({
   iterationRound,
   prevIteration,
   projectId,
+  testSet,
 }) {
   return request.post("/iterations/", {
     name,
@@ -50,6 +47,7 @@ export function createIteration({
     iteration_round: iterationRound,
     project_id: projectId,
     previous_iteration: prevIteration,
+    testing_dataset_id: testSet,
   })
 }
 /**
