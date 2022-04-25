@@ -90,7 +90,7 @@ export default {
           type: "UPDATE_VERSIONS",
           payload: vs,
         })
-        return vs
+        return vss
       }
     },
     *queryDatasets({ payload }, { select, call, put }) {
@@ -207,7 +207,7 @@ export default {
       Object.keys(datasetCache).forEach(did => {
         const dataset = datasetCache[did]
         const updatedDataset = updateResultState(dataset, tasks)
-        datasetCache[did] = updatedDataset ? updateDataset : dataset
+        datasetCache[did] = updatedDataset ? updatedDataset : dataset
       })
 
       yield put({
