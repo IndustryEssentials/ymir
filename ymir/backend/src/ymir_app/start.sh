@@ -8,4 +8,4 @@ GUNICORN_CONF="app/gunicorn_conf.py"
 
 WORKER_CLASS="uvicorn.workers.UvicornWorker"
 
-exec gunicorn -k "$WORKER_CLASS" -c "$GUNICORN_CONF" "$APP_MODULE"
+exec gunicorn -w 1 -k "$WORKER_CLASS" -c "$GUNICORN_CONF" "$APP_MODULE"

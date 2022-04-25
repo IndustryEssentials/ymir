@@ -13,6 +13,9 @@ type Result = {
 }
 export function updateResultState(result: Result, tasks: BackendData) {
   const task = tasks[result?.task?.hash]
+  if (!result) {
+    return
+  }
   if (task) {
     if ([states.VALID, states.INVALID].includes(task.result_state)) {
       result.needReload = true

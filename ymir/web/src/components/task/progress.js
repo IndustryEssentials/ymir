@@ -53,7 +53,7 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
                   : null}
               </>}
             </Col>
-            <Col hidden={!terminateVisible()} flex={1}>
+            <Col hidden={state !== states.READY} flex={1}>
               <Progress
                 style={{ width: '90%'}}
                 strokeColor={"#FAD337"}
