@@ -37,13 +37,14 @@ class TaskCopyInvoker(TaskBaseInvoker):
                                         src_root=src_root,
                                         src_dataset_id=copy_request.src_dataset_id,
                                         work_dir=subtask_workdir,
-                                        name_strategy_ignore=copy_request.name_strategy_ignore)
+                                        name_strategy_ignore=copy_request.name_strategy_ignore,
+                                        drop_annotations=copy_request.drop_annotations)
 
         return copy_response
 
     @staticmethod
     def copying_cmd(repo_root: str, task_id: str, src_root: str, src_dataset_id: str, work_dir: str,
-                    name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
+                    name_strategy_ignore: bool, drop_annotations: bool) -> backend_pb2.GeneralResp:
         copying_cmd_str = [
             utils.mir_executable(), 'copy', '--root', repo_root,
             '--src-root', src_root, '--dst-rev', f"{task_id}@{task_id}", '--src-revs',
@@ -52,5 +53,7 @@ class TaskCopyInvoker(TaskBaseInvoker):
 
         if name_strategy_ignore:
             copying_cmd_str.append('--ignore-unknown-types')
+        if drop_annotations:
+            copying_cmd_str.append('--drop-annotations')
 
         return utils.run_command(copying_cmd_str)
