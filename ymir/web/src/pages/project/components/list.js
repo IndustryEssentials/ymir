@@ -83,7 +83,7 @@ const ProjectList = ({ list, query, ...func }) => {
   const addExample = async () => {
     const result = await func.addExampleProject()
     if (result) {
-      message.success('project.create.success')
+      message.success(t('project.create.success'))
       getData()
     }
   }

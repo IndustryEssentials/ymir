@@ -1,4 +1,4 @@
-import { Card, Col, Row } from "antd"
+import { Card, Col, message, Row } from "antd"
 import { useEffect, useState } from "react"
 import { connect } from 'dva'
 
@@ -29,7 +29,7 @@ const MyProject = ({ count = 6, ...func }) => {
   const addExample = async () => {
     const result = await func.addExampleProject()
     if (result) {
-      message.success('project.create.success')
+      message.success(t('project.create.success'))
       getData()
     }
   }

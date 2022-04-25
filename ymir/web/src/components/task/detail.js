@@ -100,6 +100,20 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     ))
   }
 
+  function renderTrainKeywords(keywords = []) {
+    return <Item label={t("task.detail.label.train_goal")}>
+      {keywords.map((keyword) => (
+        <Tag key={keyword}>{keyword}</Tag>
+      ))}
+    </Item>
+  }
+
+  function renderTrainImage(image) {
+    return <Item label={t("task.detail.label.training.image")}>
+    {image}
+  </Item>
+  }
+
   function renderDatasetSource(id) {
     return <Item label={t("task.origin.dataset")}>{renderDatasetName(id)}</Item>
   }
@@ -140,11 +154,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       <Item label={t("task.train.form.testsets.label")}>
         {renderDatasetName(task.parameters.validation_dataset_id)}
       </Item>
-      <Item label={t("task.detail.label.train_goal")}>
-        {task?.parameters?.keywords?.map((keyword) => (
-          <Tag key={keyword}>{keyword}</Tag>
-        ))}
-      </Item>
+      {renderTrainKeywords(task?.parameters?.keywords)}
       <Item label={t("task.detail.label.framework")}>
         {task.parameters?.network}
       </Item>
@@ -154,9 +164,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       <Item label={t("task.detail.label.backbone")}>
         {task.parameters?.backbone}
       </Item>
-      <Item label={t("task.detail.label.training.image")}>
-        {task?.parameters?.docker_image}
-      </Item>
+      {renderTrainImage(task?.parameters?.docker_image)}
       <Item label={t("task.train.form.traintype.label")}>
         {t('task.train.form.traintypes.detect')}
       </Item>
@@ -227,6 +235,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const renderModelImport = () => <>
     <Item label={t("dataset.column.source")}>{t('task.type.modelimport')}</Item>
     {renderCreateTime(task.create_datetime)}
+    {renderTrainKeywords(task?.parameters?.keywords)}
+    {renderTrainImage(task?.parameters?.docker_image)}
     <Item label={t("task.detail.label.hyperparams")} span={2}>
       {renderConfig(task.config)}
     </Item>
@@ -234,6 +244,8 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   const renderModelCopy = () => <>
     <Item label={t("dataset.column.source")}>{t('task.type.modelcopy')}</Item>
     {renderCreateTime(task.create_datetime)}
+    {renderTrainKeywords(task?.parameters?.keywords)}
+    {renderTrainImage(task?.parameters?.docker_image)}
     <Item label={t("task.detail.label.hyperparams")} span={2}>
       {renderConfig(task.config)}
     </Item>

@@ -163,7 +163,7 @@ export default {
         const models = versions[gid]
         const updatedModels = models.map(model => {
           const updatedModel = updateResultState(model, tasks)
-          return { ...updatedModel }
+          return updatedModel ? { ...updatedModel } : model
         })
         versions[gid] = updatedModels
       })
@@ -178,10 +178,12 @@ export default {
       const id = Object.keys(models).find(id => models[id])
       const updatedModel = updateResultState(models[id], tasks)
 
-      yield put({
-        type: 'UPDATE_MODEL',
-        payload: { id: updatedModel.id, model: { ...updatedModel } },
-      })
+      if (updatedModel) {
+        yield put({
+          type: 'UPDATE_MODEL',
+          payload: { id: updatedModel.id, model: { ...updatedModel } },
+        })
+      }
     },
     *getModelsByRef({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'hms' })

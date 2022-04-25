@@ -191,7 +191,7 @@ export default {
         const datasets = versions[gid]
         let updatedDatasets = datasets.map(dataset => {
           const updatedDataset = updateResultState(dataset, tasks)
-          return { ...updatedDataset }
+          return updatedDataset ? { ...updatedDataset } : dataset
         })
         versions[gid] = updatedDatasets
       })
@@ -207,7 +207,7 @@ export default {
       Object.keys(datasetCache).forEach(did => {
         const dataset = datasetCache[did]
         const updatedDataset = updateResultState(dataset, tasks)
-        datasetCache[did] = updatedDataset
+        datasetCache[did] = updatedDataset ? updateDataset : dataset
       })
 
       yield put({
