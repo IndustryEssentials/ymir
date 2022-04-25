@@ -192,6 +192,13 @@ class ClassIdManager(object):
         """
         return list(self._label_storage._id_to_labels.values())
 
+    def all_ids(self) -> List[int]:
+        """
+        Returns:
+            List[int]: all class_ids, if not loaded, returns empty list
+        """
+        return list(self._label_storage._id_to_labels.keys())
+
     def size(self) -> int:
         """
         Returns:

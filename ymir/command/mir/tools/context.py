@@ -55,4 +55,5 @@ def check_class_ids(mir_root: str, current_class_ids: List[int]) -> bool:
     if not project_class_ids:
         # if this mir repo not binded to project, treat as equal
         return True
-    return project_class_ids == current_class_ids
+    user_class_ids = class_ids.ClassIdManager(mir_root).all_ids()
+    return set(current_class_ids) <= set(user_class_ids)
