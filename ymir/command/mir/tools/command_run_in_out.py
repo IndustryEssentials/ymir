@@ -3,7 +3,6 @@ from functools import wraps
 import logging
 import os
 import shutil
-from subprocess import CalledProcessError
 import traceback
 from typing import Any, Callable, Set
 
@@ -100,9 +99,8 @@ def command_run_in_out(f: Callable) -> Callable:
             predefined_task = e.task
             needs_new_commit = e.needs_new_commit
             exc = copy.copy(e)
-
-            task: mirpb.Task = e.task
-            trace_message = task.return_msg if task and task.return_msg else f"cmd exception: {traceback.format_exc()}"
+            trace_message = predefined_task.return_msg if (
+                predefined_task and predefined_task.return_msg) else f"cmd exception: {traceback.format_exc()}"
         except BaseException as e:
             error_code = MirCode.RC_CMD_ERROR_UNKNOWN
             state_message = str(e)
