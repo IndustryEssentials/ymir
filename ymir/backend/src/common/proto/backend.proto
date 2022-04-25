@@ -207,6 +207,7 @@ message TaskReqCopyData {
     string src_repo_id = 2;
     string src_dataset_id = 3;
     bool name_strategy_ignore = 4;
+    bool drop_annotations = 5;
 }
 
 message TaskReqLabeling {

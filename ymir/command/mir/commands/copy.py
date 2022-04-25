@@ -20,6 +20,7 @@ class CmdCopy(base.BaseCommand):
                                      data_src_revs=self.args.data_src_revs,
                                      dst_rev=self.args.dst_rev,
                                      ignore_unknown_types=self.args.ignore_unknown_types,
+                                     drop_annotations=self.args.drop_annotations,
                                      src_revs='master',
                                      work_dir=self.args.work_dir)
 
@@ -30,6 +31,7 @@ class CmdCopy(base.BaseCommand):
                       data_src_revs: str,
                       dst_rev: str,
                       ignore_unknown_types: bool,
+                      drop_annotations: bool,
                       src_revs: str = 'master',
                       work_dir: str = None) -> int:
         # ! pay attention to param: `src_revs` and `data_src_revs`
@@ -68,44 +70,54 @@ class CmdCopy(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
-        # annotations.mir: change head task id and type ids
+        # process annotations
         orig_head_task_id = mir_annotations.head_task_id
-        if not orig_head_task_id:
-            logging.error('bad annotations.mir: empty head task id')
-            return MirCode.RC_CMD_INVALID_MIR_REPO
-        if ((len(mir_annotations.task_annotations) > 0 and orig_head_task_id not in mir_annotations.task_annotations)):
-            logging.error(f"bad annotations.mir: can not find head task id: {orig_head_task_id}")
-            return MirCode.RC_CMD_INVALID_MIR_REPO
-
-        # annotations.mir and keywords.mir: change type ids
-        single_task_annotations = mir_annotations.task_annotations[orig_head_task_id]
-        return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
-                                                              mir_keywords=mir_keywords,
-                                                              data_mir_root=data_mir_root,
-                                                              dst_mir_root=mir_root)
-        if return_code != MirCode.RC_OK:
-            logging.error(f"change annotation type ids failed: {return_code}")
-            return return_code
-        if unknown_types:
-            if ignore_unknown_types:
-                logging.warning(f"unknown types: {unknown_types}")
-            else:
-                logging.error(f"copy annotations error, unknown types: {unknown_types}")
+        unknown_types: Dict[str, int] = {}
+        if not drop_annotations:
+            # if don't want to drop annotations
+            # annotations.mir: change head task id and type ids
+            if not orig_head_task_id:
+                logging.error('bad annotations.mir: empty head task id')
+                return MirCode.RC_CMD_INVALID_MIR_REPO
+            if ((len(mir_annotations.task_annotations) > 0
+                 and orig_head_task_id not in mir_annotations.task_annotations)):
+                logging.error(f"bad annotations.mir: can not find head task id: {orig_head_task_id}")
                 return MirCode.RC_CMD_INVALID_MIR_REPO
 
-        # annotations.mir: change head task id
-        mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(single_task_annotations)
-        del mir_annotations.task_annotations[orig_head_task_id]
-        mir_annotations.head_task_id = dst_typ_rev_tid.tid
+            # annotations.mir and keywords.mir: change type ids
+            single_task_annotations = mir_annotations.task_annotations[orig_head_task_id]
+            return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
+                                                                  mir_keywords=mir_keywords,
+                                                                  data_mir_root=data_mir_root,
+                                                                  dst_mir_root=mir_root)
+            if return_code != MirCode.RC_OK:
+                logging.error(f"change annotation type ids failed: {return_code}")
+                return return_code
+            if unknown_types:
+                if ignore_unknown_types:
+                    logging.warning(f"unknown types: {unknown_types}")
+                else:
+                    logging.error(f"copy annotations error, unknown types: {unknown_types}")
+                    return MirCode.RC_CMD_INVALID_MIR_REPO
 
-        # tasks.mir: get necessary head task infos, remove others and change head task id
-        orig_head_task_id = mir_tasks.head_task_id
-        if not orig_head_task_id:
-            logging.error('bad tasks.mir: empty head task id')
-            return MirCode.RC_CMD_INVALID_MIR_REPO
-        if orig_head_task_id not in mir_tasks.tasks:
-            logging.error(f"bad tasks.mir: can not find head task id: {orig_head_task_id}")
-            return MirCode.RC_CMD_INVALID_MIR_REPO
+            # annotations.mir: change head task id
+            mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(single_task_annotations)
+            del mir_annotations.task_annotations[orig_head_task_id]
+            mir_annotations.head_task_id = dst_typ_rev_tid.tid
+
+            # tasks.mir: get necessary head task infos, remove others and change head task id
+            orig_head_task_id = mir_tasks.head_task_id
+            if not orig_head_task_id:
+                logging.error('bad tasks.mir: empty head task id')
+                return MirCode.RC_CMD_INVALID_MIR_REPO
+            if orig_head_task_id not in mir_tasks.tasks:
+                logging.error(f"bad tasks.mir: can not find head task id: {orig_head_task_id}")
+                return MirCode.RC_CMD_INVALID_MIR_REPO
+        else:
+            # if drop annotations, create an empty new mir_annotations
+            mir_annotations = mirpb.MirAnnotations()
+            mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(mirpb.SingleTaskAnnotations())
+            mir_annotations.head_task_id = dst_typ_rev_tid.tid
 
         PhaseLoggerCenter.update_phase(phase='copy.change')
 
@@ -199,4 +211,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                  required=False,
                                  action='store_true',
                                  help='ignore unknown type names in annotation files')
+    copy_arg_parser.add_argument('--drop-annotations',
+                                 dest='drop_annotations',
+                                 required=False,
+                                 action='store_true',
+                                 help='drop all annotations when copy')
     copy_arg_parser.set_defaults(func=CmdCopy)
