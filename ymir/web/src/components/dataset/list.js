@@ -27,13 +27,12 @@ import {
 const { confirm } = Modal
 const { useForm } = Form
 
-function Datasets({ pid, project = {}, group, datasetList, query, versions, ...func }) {
+function Datasets({ pid, project = {}, iterations, group, datasetList, query, versions, ...func }) {
   const location = useLocation()
   const { name } = location.query
   const history = useHistory()
   const [datasets, setDatasets] = useState([])
   const [datasetVersions, setDatasetVersions] = useState({})
-  const [iterations, setIterations] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
@@ -75,7 +74,7 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
 
   useEffect(() => {
     let dvs = setVersionLabelsByProject(versions, project)
-    if (iterations.length) {
+    if (iterations?.length) {
       dvs = setVersionLabelsByIterations(versions, iterations)
     }
     setDatasetVersions(dvs)
@@ -91,10 +90,6 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
       }
     })
   }, [versions])
-
-  useEffect(() => {
-    pid && fetchIterations(pid)
-  }, [pid])
 
   useEffect(async () => {
     if (name) {
@@ -297,13 +292,6 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
 
   async function fetchVersions(id, force) {
     await func.getVersions(id, force)
-  }
-
-  async function fetchIterations(pid) {
-    const iterations = await func.getIterations(pid)
-    if (iterations) {
-      setIterations(iterations)
-    }
   }
 
   function setGroupLabelsByProject(datasets, project) {
@@ -554,12 +542,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'dataset/updateDataset',
         payload: { id, name },
-      })
-    },
-    getIterations(id) {
-      return dispatch({
-        type: 'iteration/getIterations',
-        payload: { id, },
       })
     },
     updateQuery(query) {

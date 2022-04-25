@@ -21,6 +21,7 @@ function ProjectDetail(func) {
   const history = useHistory()
   const location = useLocation()
   const { id } = useParams()
+  const [iterations, setIterations] = useState([])
   const [group, setGroup] = useState(0)
   const [project, setProject] = useState({})
   const [active, setActive] = useState(tabsTitle[0].key)
@@ -31,6 +32,7 @@ function ProjectDetail(func) {
 
   useEffect(() => {
     id && fetchProject(true)
+    id && fetchIterations(id)
   }, [id])
 
   useEffect(() => {
@@ -52,6 +54,13 @@ function ProjectDetail(func) {
 
   function tabChange(key) {
     history.push(`#${key}`)
+  }
+
+  async function fetchIterations(pid) {
+    const iterations = await func.getIterations(pid)
+    if (iterations) {
+      setIterations(iterations)
+    }
   }
 
   return (
@@ -82,7 +91,7 @@ function ProjectDetail(func) {
           </Col>
         </Row>
         {project.round > 0 ?
-          <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
+          <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
       </div>
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
@@ -95,14 +104,20 @@ function ProjectDetail(func) {
 }
 
 
-const actions = (dispacth) => {
+const actions = (dispatch) => {
   return {
     getProject(id, force) {
-      return dispacth({
+      return dispatch({
         type: 'project/getProject',
         payload: { id, force },
       })
-    }
+    },
+    getIterations(id) {
+      return dispatch({
+        type: 'iteration/getIterations',
+        payload: { id, },
+      })
+    },
   }
 }
 
