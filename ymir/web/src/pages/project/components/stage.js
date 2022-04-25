@@ -116,7 +116,8 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
     const pending = 'project.stage.state.pending'
     return !pendingStage() ? 
       (isValid() ?  
-        (result.name ?`${result.name} ${result.versionName}` : t('common.done')) : 
+        (result.name ?`${result.name} ${result.versionName}` : 
+          (end ? null : t('common.done'))) : 
         isPending() && currentStage() ? t('project.stage.state.pending.current') : t(statesLabel(state))) : 
       t(pending)
   }
@@ -139,8 +140,9 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
       <Row className={s.row}>
         <Col flex={"30px"}>&nbsp;</Col>
         <Col className={s.state} flex={1}>
-          {renderState()} {renderSkip()}
+          {renderState()}
         </Col>
+        <Col>{renderSkip()}</Col>
       </Row>
     </div>
   )
