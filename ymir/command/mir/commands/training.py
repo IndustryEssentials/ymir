@@ -116,19 +116,16 @@ def _get_shm_size(executor_config: dict) -> str:
     return executor_config['shm_size']
 
 
-def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str,
-                               class_names: List[str]) -> List[str]:
+def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str) -> List[str]:
     """
     prepare pretrained models
     * extract models to dst_model_dir
-    * compare class names
     * returns model file names
 
     Args:
         model_location (str): model location
         model_hash (str): model package hash
         dst_model_dir (str): dir where you want to extract model files to
-        class_names (List[str]): class names for this training
 
     Returns:
         List[str]: model names
@@ -138,12 +135,6 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
     model_storage = mir_utils.prepare_model(model_location=model_location,
                                             model_hash=model_hash,
                                             dst_model_path=dst_model_dir)
-
-    # check class names
-    if model_storage.class_names != class_names:
-        raise MirRuntimeError(
-            error_code=MirCode.RC_CMD_INVALID_ARGS,
-            error_message=f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
 
     return model_storage.models
 
@@ -235,8 +226,7 @@ class CmdTrain(base.BaseCommand):
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
                                                             model_hash=pretrained_model_hash,
-                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'),
-                                                            class_names=class_names)
+                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'))
 
         # get train_ids and val_ids
         train_ids = set()  # type: Set[str]
