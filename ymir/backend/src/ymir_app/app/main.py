@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import aioredis
@@ -11,6 +12,7 @@ from fastapi.openapi.docs import (
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+from fastapi_socketio import SocketManager
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
@@ -19,6 +21,8 @@ from starlette.responses import HTMLResponse
 from app.api.api_v1.api import api_router
 from app.api.errors import errors
 from app.config import settings
+from app.libs.redis_stream import RedisStream
+from app.libs.tasks import batch_update_task_status
 
 app = FastAPI(
     docs_url=None,
@@ -32,13 +36,17 @@ if settings.SENTRY_DSN:
     app.add_middleware(SentryAsgiMiddleware)
 
 if settings.BACKEND_CORS_ORIGINS:
+    allow_origins = [str(origin) for origin in settings.BACKEND_CORS_ORIGINS]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=allow_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    socket_manager = SocketManager(app=app, cors_allowed_origins=allow_origins)
+else:
+    socket_manager = SocketManager(app=app)
 
 
 @app.get("/docs", include_in_schema=False)
@@ -57,10 +65,19 @@ async def swagger_ui_redirect() -> HTMLResponse:
     return get_swagger_ui_oauth2_redirect_html()
 
 
+redis_stream = RedisStream(settings.BACKEND_REDIS_URL)
+
+
 @app.on_event("startup")
 async def startup() -> None:
     redis = aioredis.from_url(settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
+    asyncio.create_task(redis_stream.consume(batch_update_task_status))
+
+
+@app.on_event("shutdown")
+async def shutdown() -> None:
+    asyncio.create_task(redis_stream.disconnect())
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -19,7 +19,7 @@ function RenderProgress(state, { id, progress, createTime, taskState, task = {} 
   return state === states.READY ? (
     <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px', textAlign: 'left' }}>
       <Col>
-        <InprogressIcon style={{ fontSize: 18, color: 'rgb(250, 211, 55)' }} />
+        {stateTag}
       </Col>
       <Col flex={1}>
         <Progress size="small" percent={percent} strokeWidth={8} strokeColor={'rgb(250, 211, 55)'} trailColor={'rgba(0, 0, 0, 0.06)'} />

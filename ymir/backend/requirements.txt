@@ -1,5 +1,6 @@
 aiofiles==0.7.0
 aiohttp==3.7.4.post0
+aioredis==2.0.1
 alembic==1.6.5
 apscheduler==3.7.0
 arrow==1.1.1

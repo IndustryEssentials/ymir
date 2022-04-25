@@ -97,6 +97,7 @@ const project = {
   'project.add.confirm.cancel': { en: 'Cancel Create Project', cn: '取消创建项目', },
   'project.empty.label': { en: 'You can manage datasets, train models, and create data iterations.', cn: '在项目中可以管理数据集、训练模型、迭代数据', },
   'project.new.example.label': { en: 'Create Example Project', cn: '创建示例项目', },
+  'project.keywords.invalid': { en: 'Invalid training keywords', cn: '训练目标不合法', },
 }
 
 export default project
