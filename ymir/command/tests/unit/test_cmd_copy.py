@@ -91,7 +91,7 @@ class TestCmdCopy(unittest.TestCase):
         return single_image_annotations
 
     # private: check results
-    def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool):
+    def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool, drop_annotations: bool):
         [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
          _] = mir_storage_ops.MirStorageOps.load_multiple_storages(
              mir_root=self._mir_root,
@@ -104,19 +104,22 @@ class TestCmdCopy(unittest.TestCase):
         self.assertEqual({'asset0', 'asset1'}, metadatas_keys)
 
         self.assertEqual(dst_tid, mir_annotations.head_task_id)
-        asset0_idx_ids = {
-            annotation.index: annotation.class_id
-            for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset0'].annotations
-        }
-        asset1_idx_ids = {
-            annotation.index: annotation.class_id
-            for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset1'].annotations
-        }
-        self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
-        self.assertEqual({}, asset1_idx_ids)
+        if drop_annotations:
+            self.assertEqual(0, len(mir_annotations.task_annotations[dst_tid].image_annotations))
+        else:
+            asset0_idx_ids = {
+                annotation.index: annotation.class_id
+                for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset0'].annotations
+            }
+            asset1_idx_ids = {
+                annotation.index: annotation.class_id
+                for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset1'].annotations
+            }
+            self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
+            self.assertEqual({}, asset1_idx_ids)
 
-        self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predifined_keyids))
-        self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predifined_keyids))
+            self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predifined_keyids))
+            self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predifined_keyids))
 
         self.assertEqual(dst_tid, mir_tasks.head_task_id)
         mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision
@@ -124,7 +127,7 @@ class TestCmdCopy(unittest.TestCase):
 
     # public: test cases
     def test_normal_00(self):
-        # run cmd
+        # case 0
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.data_mir_root = self._src_mir_root
@@ -132,12 +135,29 @@ class TestCmdCopy(unittest.TestCase):
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
         fake_args.ignore_unknown_types = True
+        fake_args.drop_annotations = False
         cmd_copy = copy.CmdCopy(fake_args)
         return_code = cmd_copy.run()
 
         # check result
         self.assertEqual(MirCode.RC_OK, return_code)
-        self.__check_results(dst_branch='b', dst_tid='t1', ignore_unknown_types=True)
+        self.__check_results(dst_branch='b', dst_tid='t1', ignore_unknown_types=True, drop_annotations=False)
+
+        # case 1
+        fake_args = type('', (), {})()
+        fake_args.mir_root = self._mir_root
+        fake_args.data_mir_root = self._src_mir_root
+        fake_args.data_src_revs = 'a@t0'
+        fake_args.dst_rev = 'b@t2'
+        fake_args.work_dir = self._work_dir
+        fake_args.ignore_unknown_types = True
+        fake_args.drop_annotations = True
+        cmd_copy = copy.CmdCopy(fake_args)
+        return_code = cmd_copy.run()
+
+        # check result
+        self.assertEqual(MirCode.RC_OK, return_code)
+        self.__check_results(dst_branch='b', dst_tid='t2', ignore_unknown_types=True, drop_annotations=True)
 
         # run cmd: abnormal cases
         fake_args = type('', (), {})()
@@ -147,6 +167,7 @@ class TestCmdCopy(unittest.TestCase):
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
         fake_args.ignore_unknown_types = True
+        fake_args.drop_annotations = False
         cmd_copy = copy.CmdCopy(fake_args)
         return_code = cmd_copy.run()
         self.assertNotEqual(MirCode.RC_OK, return_code)
@@ -158,6 +179,7 @@ class TestCmdCopy(unittest.TestCase):
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
         fake_args.ignore_unknown_types = True
+        fake_args.drop_annotations = False
         cmd_copy = copy.CmdCopy(fake_args)
         return_code = cmd_copy.run()
         self.assertNotEqual(MirCode.RC_OK, return_code)

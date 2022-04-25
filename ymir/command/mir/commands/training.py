@@ -14,7 +14,7 @@ from mir.tools import checker, class_ids, context, data_exporter, mir_storage_op
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
-from mir.tools.errors import MirRuntimeError
+from mir.tools.errors import MirContainerError, MirRuntimeError
 
 
 # private: post process
@@ -116,19 +116,16 @@ def _get_shm_size(executor_config: dict) -> str:
     return executor_config['shm_size']
 
 
-def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str,
-                               class_names: List[str]) -> List[str]:
+def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str) -> List[str]:
     """
     prepare pretrained models
     * extract models to dst_model_dir
-    * compare class names
     * returns model file names
 
     Args:
         model_location (str): model location
         model_hash (str): model package hash
         dst_model_dir (str): dir where you want to extract model files to
-        class_names (List[str]): class names for this training
 
     Returns:
         List[str]: model names
@@ -138,12 +135,6 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
     model_storage = mir_utils.prepare_model(model_location=model_location,
                                             model_hash=model_hash,
                                             dst_model_path=dst_model_dir)
-
-    # check class names
-    if model_storage.class_names != class_names:
-        raise MirRuntimeError(
-            error_code=MirCode.RC_CMD_INVALID_ARGS,
-            error_message=f"class names mismatch: pretrained: {model_storage.class_names}, current: {class_names}")
 
     return model_storage.models
 
@@ -235,8 +226,7 @@ class CmdTrain(base.BaseCommand):
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
                                                             model_hash=pretrained_model_hash,
-                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'),
-                                                            class_names=class_names)
+                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'))
 
         # get train_ids and val_ids
         train_ids = set()  # type: Set[str]
@@ -275,6 +265,8 @@ class CmdTrain(base.BaseCommand):
 
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_out, exist_ok=True)
+        out_model_dir = os.path.join(work_dir, 'out', 'models')
+        os.makedirs(out_model_dir, exist_ok=True)
 
         os.makedirs(asset_dir, exist_ok=True)
         os.makedirs(tensorboard_dir, exist_ok=True)
@@ -288,7 +280,7 @@ class CmdTrain(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='project class ids mismatch')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
@@ -335,6 +327,8 @@ class CmdTrain(base.BaseCommand):
             out_config_path=out_config_path,
             task_id=task_id,
             pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
+        mir_utils.generate_training_env_config_file(task_id=task_id,
+                                                    env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
         # start train docker and wait
         path_binds = []
@@ -352,14 +346,14 @@ class CmdTrain(base.BaseCommand):
         cmd.append(executor)
 
         task_code = MirCode.RC_OK
-        task_error_msg = ''
+        return_msg = ''
         try:
-            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, 'ymir-executor-out.log'))
+            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
             task_code = MirCode.RC_CMD_CONTAINER_ERROR
-            task_error_msg = str(e)
+            return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
 
         # gen task_context
         task_context = {
@@ -384,7 +378,7 @@ class CmdTrain(base.BaseCommand):
                                            model_mAP=model_mAP,
                                            model_hash=model_sha1,
                                            return_code=task_code,
-                                           return_msg=task_error_msg,
+                                           return_msg=return_msg,
                                            serialized_task_parameters=task_parameters,
                                            serialized_executor_config=yaml.safe_dump(executor_config),
                                            executor=executor,
@@ -392,7 +386,7 @@ class CmdTrain(base.BaseCommand):
                                            dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
-            raise MirRuntimeError(error_code=task_code, error_message=task_error_msg, needs_new_commit=True, task=task)
+            raise MirContainerError(error_message='container error occured', task=task)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,

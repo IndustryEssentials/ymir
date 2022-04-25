@@ -8,7 +8,6 @@ import { useEffect, useState } from "react"
 import RenderProgress from "../../../components/common/progress"
 
 function Stage({ pid, stage, stageResult, current = 0, end = false, callback = () => { }, ...func }) {
-  // console.log('stage: ', stage, end)
   const history = useHistory()
   const [result, setResult] = useState({})
   const [state, setState] = useState(-1)
@@ -19,17 +18,20 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }, [result, stage])
 
   useEffect(() => {
-    currentStage() && stage.result && fetchStageResult(true)
+    currentStage() && func.setCurrentStageResult(stage.result)
   }, [stage.result])
 
   useEffect(() => {
-    if (stageResult.id !== stage.result) {
+    const res = currentStage() && stageResult?.id === stage?.result?.id ? stageResult : stage.result
+    setResult(res || {})
+  }, [stage.result, stageResult])
+
+  useEffect(() => {
+    if (stageResult?.id !== stage.result?.id) {
       return
     }
     if (stageResult.needReload) {
       fetchStageResult(true)
-    } else {
-      setResult(stageResult)
     }
   }, [stageResult])
 
@@ -78,7 +80,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }
 
   async function fetchStageResult(force) {
-    await func.getStageResult(stage.result, stage.current, force)
+    await func.getStageResult(stage.result?.id, stage.current, force)
   }
 
   const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
@@ -91,7 +93,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
     }
   }
   const renderMain = () => {
-    return currentStage() ? renderMainBtn() : <span>{t(stage.act)}</span>
+    return currentStage() ? renderMainBtn() : <span className={s.act}>{t(stage.act)}</span>
   }
 
   const renderMainBtn = () => {
@@ -99,7 +101,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
     const content = RenderProgress(result.state, result, true)
     const disabled = isReady() || isInvalid()
     const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
-    const btn = <Button disabled={disabled} className={s.act} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
+    const btn = <Button disabled={disabled} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>
     const pop = <Popover content={content}>{btn}</Popover>
     return result.id ? pop : btn
   }
@@ -112,7 +114,12 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }
   const renderState = () => {
     const pending = 'project.stage.state.pending'
-    return !finishStage() ? (isPending() ? t(pending) : (isValid() ?  (result.name ?`${result.name} ${result.versionName}` : t('common.done')) : t(statesLabel(state)))) : null
+    return !pendingStage() ? 
+      (isValid() ?  
+        (result.name ?`${result.name} ${result.versionName}` : 
+          (end ? null : t('common.done'))) : 
+        isPending() && currentStage() ? t('project.stage.state.pending.current') : t(statesLabel(state))) : 
+      t(pending)
   }
 
   const renderSkip = () => {
@@ -133,8 +140,9 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
       <Row className={s.row}>
         <Col flex={"30px"}>&nbsp;</Col>
         <Col className={s.state} flex={1}>
-          {renderState()} {renderSkip()}
+          {renderState()}
         </Col>
+        <Col>{renderSkip()}</Col>
       </Row>
     </div>
   )
@@ -153,6 +161,12 @@ const actions = (dispacth) => {
       return dispacth({
         type: 'iteration/getStageResult',
         payload: { id, stage, force },
+      })
+    },
+    setCurrentStageResult(result) {
+      return dispacth({
+        type: 'iteration/setCurrentStageResult',
+        payload: result,
       })
     },
     createIteration(params) {

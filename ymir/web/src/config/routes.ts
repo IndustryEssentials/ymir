@@ -77,7 +77,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.datasets.copy',
   },
   {
-    path: "/home/dataset/add/:pid",
+    path: "/home/dataset/add/:id",
     name: "datasetImport",
     component: "@/pages/dataset/add",
     title: "dataset.add.title",
@@ -203,12 +203,21 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project',
   },
   {
-    path: "/home/project/add/:id?",
+    path: "/home/project/add/:id",
+    name: "projectAdd",
+    component: "@/pages/project/add",
+    title: "project.settings.title",
+    pid: 25,
+    id: 26,
+    breadcrumbLabel: 'breadcrumbs.project.edit',
+  },
+  {
+    path: "/home/project/add",
     name: "projectAdd",
     component: "@/pages/project/add",
     title: "project.add.title",
     pid: 24,
-    id: 26,
+    id: 29,
     breadcrumbLabel: 'breadcrumbs.project.add',
   },
   {

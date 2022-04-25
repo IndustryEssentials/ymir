@@ -11,29 +11,26 @@ function Iteration({ project, fresh = () => { }, ...func }) {
   const [iteration, setIteration] = useState({})
   const [stages, setStages] = useState([])
   const [prevIteration, setPrevIteration] = useState({})
-  const [firstTrainSet, setFirstTrainSet] = useState({})
 
   useEffect(() => {
     initStages()
   }, [project])
+
   useEffect(() => {
     if (project.id && project.currentIteration) {
-      setIteration(project.currentIteration)
+      fetchStagesResult(project.currentIteration)
     }
-  }, [project])
+  }, [project.currentIteration])
 
   useEffect(() => {
     if (iteration.prevIteration) {
       fetchPrevIteration()
-    } else {
-      fetchFirstTrainSet()
     }
-
   }, [iteration])
 
   useEffect(() => {
     iteration.id && rerenderStages()
-  }, [iteration, firstTrainSet, prevIteration])
+  }, [iteration, prevIteration])
 
   const callback = useCallback(iterationHandle, [iteration])
 
@@ -62,7 +59,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
 
   function rerenderStages() {
     const ss = stages.map(stage => {
-      const result = iteration[stage.output]
+      const result = iteration[`i${stage.output}`] || iteration[stage.output]
       const urlParams = {
         s0d: project.miningSet.id || 0,
         s0s: project.miningStrategy,
@@ -70,10 +67,10 @@ function Iteration({ project, fresh = () => { }, ...func }) {
         s1d: iteration.miningSet,
         s1m: prevIteration.model || project.model,
         s2d: iteration.miningResult,
-        s3d: prevIteration.trainUpdateSet || firstTrainSet.id,
+        s3d: prevIteration.trainUpdateSet || project.trainSetVersion,
         s3m: iteration.labelSet,
         s4d: iteration.trainUpdateSet,
-        s4t: project?.testSet?.id,
+        s4t: iteration.testSet,
         id: iteration.id,
         pid: project.id,
         stage: iteration.currentStage,
@@ -102,18 +99,15 @@ function Iteration({ project, fresh = () => { }, ...func }) {
     }
   }
 
+  async function fetchStagesResult(iteration) {
+    const iterationWithResult = await func.getIterationStagesResult(iteration)
+    setIteration(iterationWithResult)
+  }
+
   async function fetchPrevIteration() {
     const result = await func.getIteration(project.id, iteration.prevIteration)
     if (result) {
       setPrevIteration(result)
-    }
-  }
-
-  async function fetchFirstTrainSet() {
-    const result = await func.queryFirstTrainDataset(project.trainSet.id)
-    if (result) {
-      const { items: [ds] } = result
-      ds && setFirstTrainSet(ds)
     }
   }
 
@@ -122,6 +116,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
       iterationRound: data.round,
       projectId: project.id,
       prevIteration: iteration.id,
+      testSet: project.testSet.id,
     }
     const result = await func.createIteration(params)
     if (result) {
@@ -135,7 +130,8 @@ function Iteration({ project, fresh = () => { }, ...func }) {
     }
     const result = await func.updateIteration(params)
     if (result) {
-      setIteration(result)
+      fetchStagesResult(result)
+      // setIteration(result)
     }
   }
   async function skipStage({ stage = {} }) {
@@ -146,7 +142,8 @@ function Iteration({ project, fresh = () => { }, ...func }) {
     }
     const result = await func.updateIteration(params)
     if (result) {
-      setIteration(result)
+      fetchStagesResult(result)
+      // setIteration(result)
     }
   }
   return (
@@ -172,6 +169,12 @@ const actions = (dispacth) => {
       return dispacth({
         type: 'iteration/getIteration',
         payload: { pid, id },
+      })
+    },
+    getIterationStagesResult(iteration) {
+      return dispacth({
+        type: 'iteration/getIterationStagesResult',
+        payload: iteration,
       })
     },
     updateIteration(params) {

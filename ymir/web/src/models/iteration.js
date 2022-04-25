@@ -29,7 +29,13 @@ export default {
       if (code === 0) {
         let iterations = result.map((iteration) => transferIteration(iteration))
         if (more && iterations.length) {
-          const datasetIds = [...new Set(iterations.map(i => [i.miningSet, i.miningResult, i.labelSet, i.trainUpdateSet]).flat())].filter(id => id)
+          const datasetIds = [...new Set(iterations.map(i => [
+            i.miningSet,
+            i.miningResult,
+            i.labelSet,
+            i.trainUpdateSet,
+            i.testSet,
+          ]).flat())].filter(id => id)
           const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
           let datasets = []
           let models = []
@@ -53,6 +59,7 @@ export default {
               miningDataset: ds(i.miningSet),
               miningResultDataset: ds(i.miningResult),
               labelDataset: ds(i.labelSet),
+              testDataset: ds(i.testSet),
               trainingModel: models.find(m => m.id === i.model),
             }
           })
@@ -74,6 +81,40 @@ export default {
           payload: iteration,
         })
         return iteration
+      }
+    },
+    *getIterationStagesResult({ payload }, { put }) {
+      const iteration = payload
+
+      const fields = ['miningSet', 'miningResult', 'labelSet', 'trainUpdateSet']
+      const datasetIds = fields.map(field => iteration[field]).filter(id => id)
+      const modelId = iteration.model
+      let datasets = []
+      let model = []
+      if (datasetIds?.length) {
+        datasets = yield put.resolve({
+          type: 'dataset/batchDatasets',
+          payload: datasetIds,
+        })
+      }
+      if (modelId) {
+        model = yield put.resolve({
+          type: 'model/getModel',
+          payload: { id: modelId },
+        })
+      }
+      const ds = id => datasets.find(d => d.id === id)
+      return {
+        ...iteration,
+        ...fields.reduce((prev, field) => ({ ...prev, [`i${field}`]: ds(iteration[field]) }), {}),
+        imodel: model,
+      }
+    },
+    *setCurrentStageResult({ payload }, { call, put }) {
+      const result = payload
+      if (result) {
+        yield put({ type: 'UPDATE_CURRENT_STAGE_RESULT', payload: result })
+        return result
       }
     },
     *createIteration({ payload }, { call, put }) {
@@ -107,10 +148,12 @@ export default {
       const tasks = payload || {}
       const updated = updateResultState(result, tasks)
 
-      yield put({
-        type: 'UPDATE_CURRENT_STAGE_RESULT',
-        payload: { ...updated },
-      })
+      if (updated) {
+        yield put({
+          type: 'UPDATE_CURRENT_STAGE_RESULT',
+          payload: { ...updated },
+        })
+      }
     },
   },
   reducers: {

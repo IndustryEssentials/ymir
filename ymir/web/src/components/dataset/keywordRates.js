@@ -10,17 +10,20 @@ function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }) {
-  const [data, setData] = useState(null)
+function KeywordRates({ dataset, progressWidth = 0.5, getKeywordRates }) {
+  const [data, setData] = useState({})
   const [list, setList] = useState([])
 
   useEffect(() => {
-    if (dataset.id) {
+    if(dataset?.id) {
       setData(dataset)
+    } else if(dataset) {
+      fetchRates(dataset)
     } else {
-      id && fetchRates()
+      setData({})
+      setList([])
     }
-  }, [id])
+  }, [dataset])
 
   useEffect(() => {
     if (data) {
@@ -29,20 +32,27 @@ function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }
     }
   }, [data])
 
-  async function fetchRates() {
+  async function fetchRates(id) {
     const result = await getKeywordRates(id)
     if (result) {
       setData(result)
     }
   }
 
-  function prepareList(data = {}) {
-    const { assetCount, keywordsCount, nagetiveCount, projectNagetiveCount, project: { keywords = [] } } = data
+  function prepareList(dataset = {}) {
+    if (!dataset?.id) {
+      return []
+    }
+    const { assetCount, keywordsCount, nagetiveCount, projectNagetiveCount, project: { keywords = [] } } = dataset
     const filter = keywords.length ? keywords : Object.keys(keywordsCount)
     const neg = keywords.length ? projectNagetiveCount : nagetiveCount
-    return getKeywordList(keywordsCount, filter, neg).map(item => ({
+    const kwList = getKeywordList(keywordsCount, filter, neg)
+    const widthRate = assetCount / Math.max(...(kwList.map(item => item.count)))
+    const getWidth = (count) => percent(count * progressWidth * widthRate / assetCount)
+    return kwList.map(item => ({
       ...item,
-      percent: percent(item.count * progressWidth / assetCount),
+      width: getWidth(item.count),
+      percent: percent(item.count / assetCount),
       total: assetCount,
       color: randomColor(),
     }))
@@ -72,7 +82,7 @@ function KeywordRates({ id, dataset = {}, progressWidth = 0.5, getKeywordRates }
     <div className={s.rates}>
       {list.map(item => (
         <div key={item.keyword} className={s.rate}>
-          <span className={s.bar} style={{ width: item.percent, background: item.color }}>&nbsp;</span>
+          <span className={s.bar} style={{ width: item.width, background: item.color }}>&nbsp;</span>
           <span>{format(item)}</span>
         </div>
       ))}

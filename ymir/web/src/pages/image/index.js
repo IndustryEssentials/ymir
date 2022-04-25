@@ -32,7 +32,7 @@ function Image() {
   const [active, setActive] = useState(tabsTitle[0].key)
   const [query, setQuery] = useState(initQuery)
 
-  const types = getImageTypes()
+  const types = getImageTypes().map(type => ({ ...type, label: t(type.label) }))
 
   useEffect(() => {
     if (keyword) {
@@ -104,7 +104,7 @@ function Image() {
   return (
     <div className={styles.image}>
       <Breadcrumbs />
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { history.replace({ state: { type: key }} ); resetQuery()}} tabBarExtraContent={active === 'my' ? searchPanel : null}>
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={(key) => { history.replace({ state: { type: key } }); resetQuery() }} tabBarExtraContent={active === 'my' ? searchPanel : null}>
         {contents[active]}
       </Card>
     </div>

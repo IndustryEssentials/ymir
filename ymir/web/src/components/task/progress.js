@@ -4,8 +4,8 @@ import { Button, Col, Descriptions, Progress, Row } from "antd"
 import t from "@/utils/t"
 import { toFixed } from "@/utils/number"
 import Terminate from "./terminate"
-import { TASKSTATES } from "@/constants/task"
 import { states } from "@/constants/dataset"
+import { TASKSTATES } from "@/constants/task"
 import StateTag from "@/components/task/stateTag"
 import s from "./detail.less"
 
@@ -27,7 +27,8 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
   function terminateVisible() {
     const resultReady = state === states.READY
     const isTerminated = task.is_terminated
-    return resultReady && !isTerminated
+    const isPending = task.state === TASKSTATES.PENDING
+    return !isPending && resultReady && !isTerminated
   }
 
   function terminateOk() {
@@ -52,7 +53,7 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
                   : null}
               </>}
             </Col>
-            <Col hidden={!terminateVisible()} flex={1}>
+            <Col hidden={state !== states.READY} flex={1}>
               <Progress
                 style={{ width: '90%'}}
                 strokeColor={"#FAD337"}

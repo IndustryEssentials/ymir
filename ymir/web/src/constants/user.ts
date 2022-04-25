@@ -15,19 +15,19 @@ export const STATES = Object.freeze({
 
 export const getRolesLabel = (role: number | undefined) => {
   const labels = Object.freeze({
-    [ROLES.SUPER]: t('user.role.super'),
-    [ROLES.ADMIN]: t('user.role.admin'),
-    [ROLES.USER]: t('user.role.user'),
+    [ROLES.SUPER]: 'user.role.super',
+    [ROLES.ADMIN]: 'user.role.admin',
+    [ROLES.USER]: 'user.role.user',
   })
   return typeof role !== 'undefined' ? labels[role] : labels
 }
 
 export const getUserState = (state: number | undefined) => {
   const states = Object.freeze({
-    [STATES.REGISTERED]: t('user.state.registered'),
-    [STATES.ACTIVE]: t('user.state.active'),
-    [STATES.DECLINED]: t('user.state.declined'),
-    [STATES.DEACTIVED]: t('user.state.deactived'),
+    [STATES.REGISTERED]: 'user.state.registered',
+    [STATES.ACTIVE]: 'user.state.active',
+    [STATES.DECLINED]: 'user.state.declined',
+    [STATES.DEACTIVED]: 'user.state.deactived',
   })
 
   return typeof state !== 'undefined' ? states[state] : states

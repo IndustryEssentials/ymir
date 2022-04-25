@@ -1,6 +1,6 @@
 import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
-import { errorCode } from './func'
+import { errorCode, normalReducer, product, products } from './func'
 import { format } from '@/utils/date'
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
 
@@ -67,66 +67,48 @@ describe("models: dataset", () => {
   errorCode(dataset, 'getAssetsOfDataset')
   errorCode(dataset, 'getAsset')
   errorCode(dataset, 'delDataset')
+  errorCode(dataset, 'delDatasetGroup')
   errorCode(dataset, 'createDataset')
   errorCode(dataset, 'updateDataset')
   errorCode(dataset, 'getInternalDataset')
   errorCode(dataset, 'getHotDatasets', 10034, [])
+  const gid = 534234
+  const items = products(4)
+  const datasets = { items, total: items.length }
+  const allVersions = { 1: items, 2: [...items, product(8)] }
+  const allDatasets = { 1: items, 2: [...items, product(7)] }
+  normalReducer(dataset, 'UPDATE_DATASETS', datasets, datasets, 'datasets', { items: [], total: 0, })
+  normalReducer(dataset, 'UPDATE_ALL_DATASETS', allDatasets, allDatasets, 'allDatasets', [])
+  normalReducer(dataset, 'UPDATE_VERSIONS', { id: gid, versions: items }, { [gid]: items }, 'versions', {})
+  normalReducer(dataset, 'UPDATE_ALL_VERSIONS', allVersions, allVersions, 'versions', {})
+  normalReducer(dataset, 'UPDATE_DATASET', { id: gid, dataset: product(534) }, { [gid]: product(534) }, 'dataset', {})
+  normalReducer(dataset, 'UPDATE_ALL_DATASET', { [gid]: product(534), 644: product(644) }, { [gid]: product(534), 644: product(644) }, 'dataset', {})
+  normalReducer(dataset, 'UPDATE_ASSETS', datasets, datasets, 'assets', { items: [], total: 0, })
+  normalReducer(dataset, 'UPDATE_ASSET', product(6445), product(6445), 'asset', {})
+  normalReducer(dataset, 'UPDATE_PUBLICDATASETS', datasets, datasets, 'publicDatasets', { items: [], total: 0, })
+  normalReducer(dataset, 'UPDATE_QUERY', { limit: 20 }, { limit: 20 }, 'query', {})
 
-  it("reducers: UPDATE_DATASETS", () => {
+  it("reducers: CLEAR_ALL", () => {
     const state = {
       datasets: {},
     }
-    const expected = { items: [1, 2, 3, 4], total: 4 }
-    const action = {
-      payload: expected,
-    }
-    const result = dataset.reducers.UPDATE_DATASETS(state, action)
-    expect(result.datasets.total).toBe(expected.total)
-  })
-  it("reducers: UPDATE_DATASET", () => {
-    const state = {
+    const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
+
+    const expected = {
+      query: { ...initQuery },
+      datasets: { items: [], total: 0, },
+      versions: {},
       dataset: {},
-    }
-    const id = 10001
-    const expected = { id }
-    const action = {
-      payload: { id, dataset: expected },
-    }
-    const result = dataset.reducers.UPDATE_DATASET(state, action)
-    expect(result.dataset[expected.id].id).toBe(expected.id)
-  })
-  it("reducers: UPDATE_ASSETS", () => {
-    const state = {
-      assets: {},
-    }
-    const expected = { items: [1, 2, 3, 4], total: 4 }
-    const action = {
-      payload: expected,
-    }
-    const result = dataset.reducers.UPDATE_ASSETS(state, action)
-    expect(result.assets.total).toBe(expected.total)
-  })
-  it("reducers: UPDATE_ASSET", () => {
-    const state = {
-      asset: {},
-    }
-    const expected = { hash: 'test' }
-    const action = {
-      payload: expected,
-    }
-    const result = dataset.reducers.UPDATE_ASSET(state, action)
-    expect(result.asset.hash).toBe(expected.hash)
-  })
-  it("reducers: UPDATE_PUBLICDATASETS", () => {
-    const state = {
+      assets: { items: [], total: 0, },
+      asset: { annotations: [], },
+      allDatasets: [],
       publicDatasets: [],
     }
-    const expected = [1, 2, 3, 4]
     const action = {
-      payload: expected,
+      payload: null,
     }
-    const result = dataset.reducers.UPDATE_PUBLICDATASETS(state, action)
-    expect(result.publicDatasets.join(',')).toBe(expected.join(','))
+    const result = dataset.reducers.CLEAR_ALL(state, action)
+    expect(result).toEqual(expected)
   })
 
   it("effects: getDatasetGroups", () => {
@@ -215,6 +197,127 @@ describe("models: dataset", () => {
     const end = generator.next()
 
     equalObject(expected, end.value)
+    expect(end.done).toBe(true)
+  })
+  it("effects: queryAllDatasets -> from remote", () => {
+    const saga = dataset.effects.queryAllDatasets
+    const creator = {
+      type: "queryAllDatasets",
+      payload: { pid: 132223, force: true },
+    }
+    const expected = { items: [1, 2, 3, 4], total: 4 }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    generator.next(expected)
+    const end = generator.next()
+
+    expect(end.value).toEqual(expected.items)
+    expect(end.done).toBe(true)
+  })
+  it("effects: queryAllDatasets -> from cache success", () => {
+    const saga = dataset.effects.queryAllDatasets
+    const creator = {
+      type: "queryAllDatasets",
+      payload: { pid: 132223, },
+    }
+    const expected = [1, 2, 3, 4]
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next(expected)
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it("effects: queryAllDatasets -> from remote when cache failed.", () => {
+    const saga = dataset.effects.queryAllDatasets
+    const creator = {
+      type: "queryAllDatasets",
+      payload: { pid: 132223, },
+    }
+    const expected = [1, 2, 3, 4]
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    generator.next([])
+    generator.next({ items: expected, total: expected.length })
+    const end = generator.next()
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it("effects: getDatasetVersions -> success from cache.", () => {
+    const saga = dataset.effects.getDatasetVersions
+    const gid = 134234
+    const creator = {
+      type: "getDatasetVersions",
+      payload: { gid },
+    }
+    const items = products(4).map(id => ds(id))
+    const expected = items.map(item => transferDataset(item))
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const end = generator.next({ [gid]: expected })
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it("effects: getDatasetVersions -> cache failed, and success from remote.", () => {
+    const saga = dataset.effects.getDatasetVersions
+    const gid = 134234
+    const creator = {
+      type: "getDatasetVersions",
+      payload: { gid, },
+    }
+    const items = products(4).map(id => ds(id))
+    const expected = items.map(item => transferDataset(item))
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    generator.next({})
+    generator.next({ code: 0, result: { items, total: items.length }})
+    const end = generator.next()
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it("effects: getDatasetVersions -> success from remote.", () => {
+    const saga = dataset.effects.getDatasetVersions
+    const gid = 134234
+    const creator = {
+      type: "getDatasetVersions",
+      payload: { gid, force: true },
+    }
+    const items = products(4).map(id => ds(id))
+    const expected = items.map(item => transferDataset(item))
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    generator.next({ code: 0, result: { items, total: items.length }})
+    const end = generator.next()
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it("effects: delDatasetGroup -> success", () => {
+    const saga = dataset.effects.delDatasetGroup
+    const id = 133445
+    const creator = {
+      type: "delDatasetGroup",
+      payload: {id},
+    }
+    const expected = { id, name: 'del group' }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getAsset", () => {
@@ -351,6 +454,30 @@ describe("models: dataset", () => {
     const updated = d.value.payload.action.payload
 
     expect(updated).toEqual(versions)
+    expect(end.done).toBe(true)
+  })
+  it("effects: updateDatasetState -> normal success", () => {
+    const saga = dataset.effects.updateDatasetState
+    const ds = (id, state, result_state, progress) => ({ id, task: { hash: `hash${id}`, state, percent: progress, }, taskState: state, state: result_state, progress })
+
+    const datasets = {
+      '1': ds(1, 2, 0, 0.20),
+    }
+    const creator = {
+      type: "updateDatasets",
+      payload: { hash1: { id: 1, state: 2, result_state: 0, percent: 0.45 }, hash7: { id: 7, state: 3, result_state: 1, percent: 1 } },
+    }
+    const expected = {
+      '1': ds(1, 2, 0, 0.45),
+    }
+
+    const generator = saga(creator, { put, call, select })
+    generator.next()
+    const d = generator.next(datasets)
+    const end = generator.next()
+    const updated = d.value.payload.action.payload
+
+    expect(updated).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getHotDatasets -> get stats result success-> batch datasets success", () => {

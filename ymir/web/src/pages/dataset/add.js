@@ -12,13 +12,14 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import { TipsIcon } from '@/components/common/icons'
 import { getKeywords } from '../../services/keyword'
 import Tip from "@/components/form/tip"
+import ProjectDatasetSelect from '../../components/form/projectDatasetSelect'
 
 const { Option } = Select
 const { useForm } = Form
 
 const TYPES = Object.freeze({
   INTERNAL: 1,
-  SHARE: 2,
+  COPY: 2,
   NET: 3,
   LOCAL: 4,
   PATH: 5,
@@ -28,11 +29,11 @@ const TYPES = Object.freeze({
 const Add = (props) => {
   const history = useHistory()
   const pageParams = useParams()
-  const pid = Number(pageParams.pid)
+  const pid = Number(pageParams.id)
   const { id } = history.location.query
   const types = [
     { id: TYPES.INTERNAL, label: t('dataset.add.types.internal') },
-    // { id: TYPES.SHARE, label: t('dataset.add.types.share') },
+    { id: TYPES.COPY, label: t('dataset.add.types.copy') },
     { id: TYPES.NET, label: t('dataset.add.types.net') },
     { id: TYPES.LOCAL, label: t('dataset.add.types.local') },
     { id: TYPES.PATH, label: t('dataset.add.types.path') },
@@ -60,8 +61,6 @@ const Add = (props) => {
 
 
   useEffect(async () => {
-    // form.resetFields()
-    // initState()
     if (!publicDataset.length) {
       const result = await props.getInternalDataset()
       if (result) {
@@ -69,10 +68,6 @@ const Add = (props) => {
       }
     }
   }, [])
-
-  // useEffect(() => {
-  //   getAllKeywords()
-  // })
 
   useEffect(() => {
     const ds = publicDataset.find(set => set.id === selectedDataset)
@@ -115,10 +110,13 @@ const Add = (props) => {
         return message.error(t('keyword.add.failure'))
       }
     }
-    var params = {
+    let params = {
       ...values,
       strategy,
       projectId: pid,
+    }
+    if (currentType === TYPES.COPY) {
+      params.datasetId = params.datasetId[1]
     }
     if (currentType === TYPES.LOCAL) {
       if (fileToken) {
@@ -267,6 +265,19 @@ const Add = (props) => {
                   : null}
               </>
             ) : null}
+            {isType(TYPES.COPY) ? (
+              <Tip hidden={true}>
+                <Form.Item
+                  label={t('dataset.add.form.copy.label')}
+                  name='datasetId'
+                  rules={[
+                    { required: true, message: t('dataset.add.form.copy.required') }
+                  ]}
+                >
+                  <ProjectDatasetSelect pid={pid} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
+                </Form.Item>
+              </Tip>
+            ) : null}
             <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
                 <Radio.Group
@@ -275,6 +286,7 @@ const Add = (props) => {
                 />
               </Form.Item>
             </Tip>
+            { !isType(TYPES.COPY) ? <>
             {showLabelStrategy ?
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.newkw.label')}>
@@ -324,7 +336,7 @@ const Add = (props) => {
                   </Form.List>
                   : t('dataset.add.newkeyword.empty')}
               </Form.Item>
-              </Tip>
+              </Tip> </>: null }
             {isType(TYPES.NET) ? (
               <Tip hidden={true}>
               <Form.Item label={t('dataset.add.form.net.label')} required>
@@ -374,7 +386,7 @@ const Add = (props) => {
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
                   <Button type="primary" size="large" htmlType="submit">
-                    {t('task.create')}
+                    {t('common.action.import')}
                   </Button>
                 </Form.Item>
                 <Form.Item name='backBtn' noStyle>

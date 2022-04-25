@@ -2,11 +2,7 @@ import logging
 import os
 from typing import Tuple, List
 
-from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
-from controller.label_model.label_free import LabelFree
-from controller.label_model.label_studio import LabelStudio
-from controller.label_model.request_handler import RequestHandler
 from controller.utils import utils
 from proto import backend_pb2
 
@@ -58,17 +54,7 @@ def start_label_task(
     export_annotation: bool,
 ) -> None:
     logging.info("start label task!!!")
-    # set your lable tools name
-    request_handler = RequestHandler(
-        url=label_task_config.LABEL_TOOL_HOST_URL, headers={"Authorization": label_task_config.LABEL_TOOL_TOKEN}
-    )
-    if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
-        label_instance = LabelStudio(request_handler)
-    elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
-        label_instance = LabelFree(request_handler)  # type: ignore
-    else:
-        raise ValueError("Error! Please setting your label tools")
-
+    label_instance = utils.create_label_instance()
     input_asset_dir, export_path, monitor_file_path, export_work_dir, import_work_dir = prepare_label_dir(
         working_dir, task_id)
     trigger_ymir_export(repo_root=repo_root,

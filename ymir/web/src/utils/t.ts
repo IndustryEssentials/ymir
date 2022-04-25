@@ -1,27 +1,38 @@
-import { IntlShape } from "react-intl"
-import { useIntl } from "umi"
+import { useIntl, getLocale } from "umi"
 
-let intl: IntlShape
+let intl: any = null
+let locale: any = null
 
-// not use for string show on initial state
-export default (id: string, values = {}) => {
+const getIntl = () => {
+  if (!intl || locale !== getLocale()) {
+    intl = useIntl()
+    locale = getLocale()
+  }
+  return intl
+}
+
+function _MSG({ id = '', values = {} }) {
+  const uIntl = getIntl()
+  return uIntl.formatMessage({ id }, values)
+}
+
+export const initIntl = (prefix: string = '') => {
+  const _helper = (id: string, values = {}, _prefix: string = '') => {
+    const key = _prefix ? `${_prefix}.${id}` : (prefix ? `${prefix}.${id}` : id)
+    return _MSG({ id: key, values })
+  }
+  return _helper
+}
+
+const showIntl = (id: string, values = {}, prefix: string) => {
+  if (!id) {
+    return
+  }
   try {
-    if (!intl) {
-      intl = useIntl()
-    }
-    return intl.formatMessage({ id }, values)
+    return initIntl(prefix)(id, values)
   } catch (err) {
-    console.log('locale error: ')
+    console.warn('locale error: ', id, values, err)
   }
 }
 
-export function formatHtml(id: string, values = {}) {
-  try {
-    if (!intl) {
-      intl = useIntl()
-    }
-    return intl.formatHTMLMessage({ id }, values)
-  } catch (err) {
-    // console.log('locale error: ', err)
-  }
-}
+export default showIntl

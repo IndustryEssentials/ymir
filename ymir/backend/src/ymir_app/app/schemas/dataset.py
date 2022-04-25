@@ -40,7 +40,6 @@ class DatasetBase(BaseModel):
     negative_info: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
-    is_protected: Optional[bool]
 
     class Config:
         use_enum_values = True

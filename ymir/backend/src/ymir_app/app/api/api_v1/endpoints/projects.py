@@ -1,8 +1,9 @@
 import enum
 import json
+import time
 from typing import Any
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query, BackgroundTasks
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -13,12 +14,16 @@ from app.api.errors.errors import (
     DuplicateProjectError,
     FailedToCreateProject,
     FailedToConnectClickHouse,
+    NoDatasetPermission,
+    DatasetNotFound,
 )
-from app.constants.state import ResultState
-from app.constants.state import RunningStates
-from app.constants.state import TaskType, TrainingType
+from app.config import settings
+from app.constants.state import ResultState, RunningStates, TaskType, TrainingType
+from app.utils.cache import CacheClient
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
+from app.libs.projects import setup_sample_project_in_background
+from app.libs.keywords import add_keywords
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -63,6 +68,61 @@ def list_projects(
         end_time=end_time,
     )
     return {"result": {"total": total, "items": projects}}
+
+
+@router.post("/samples", response_model=schemas.ProjectOut)
+def create_sample_project(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    background_tasks: BackgroundTasks,
+    cache: CacheClient = Depends(deps.get_cache),
+) -> Any:
+    """
+    Create sample project
+    """
+    project_name = f"sample_project_{current_user.username}_{time.time()}"
+    project_in = schemas.ProjectCreate(
+        name=project_name,
+        training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
+        chunk_size=1,
+        is_example=True,
+    )
+    project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
+    project_task_hash = gen_task_hash(current_user.id, project.id)
+
+    try:
+        training_classes = user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
+    except KeyError:
+        # todo refactor keywords dependencies to handle ensure given keywords exist
+        add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
+        user_labels = controller_client.get_labels_of_user(current_user.id)
+        training_classes = user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
+
+    try:
+        resp = controller_client.create_project(
+            user_id=current_user.id,
+            project_id=project.id,
+            task_id=project_task_hash,
+            args={"training_classes": training_classes},
+        )
+        logger.info("[create task] controller response: %s", resp)
+    except ValueError:
+        crud.project.soft_remove(db, id=project.id)
+        raise FailedToCreateProject()
+
+    background_tasks.add_task(
+        setup_sample_project_in_background,
+        db,
+        controller_client,
+        project_name=project.name,
+        project_id=project.id,
+        user_id=current_user.id,
+        project_task_hash=project_task_hash,
+    )
+    return {"result": project}
 
 
 @router.post("/", response_model=schemas.ProjectOut)
@@ -122,13 +182,15 @@ def create_project(
         result_state=ResultState.ready,
         task_id=task.id,
     )
-    crud.dataset.create_with_version(db, obj_in=dataset_in, is_protected=True)
+    initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
 
     # 5.update project info
     project = crud.project.update_resources(
         db,
         project_id=project.id,
-        project_update=schemas.ProjectUpdate(training_dataset_group_id=dataset_group.id),
+        project_update=schemas.ProjectUpdate(
+            training_dataset_group_id=dataset_group.id, initial_training_dataset_id=initial_dataset.id
+        ),
     )
 
     try:
@@ -187,14 +249,14 @@ def update_project(
     project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
+    if project_update.initial_training_dataset_id is not None:
+        dataset = crud.dataset.get(db, id=project_update.initial_training_dataset_id)
+        if not dataset:
+            raise DatasetNotFound()
+        if project.training_dataset_group_id != dataset.dataset_group_id:
+            raise NoDatasetPermission()
 
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
-
-    # set protected for mining_dataset_id and testing_dataset_id
-    protected_dataset_id = list(filter(None, [project_update.mining_dataset_id, project_update.testing_dataset_id]))
-    if protected_dataset_id:
-        crud.dataset.set_datasets_protected(db, dataset_ids=protected_dataset_id)
-
     return {"result": project}
 
 

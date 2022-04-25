@@ -13,6 +13,7 @@ import DatasetSelect from '../../components/form/datasetSelect'
 import Panel from '../../components/form/panel'
 
 const { useForm } = Form
+const { confirm } = Modal
 
 const strategyOptions = Object.values(MiningStrategy)
   .filter(key => Number.isInteger(key))
@@ -56,7 +57,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
   }, [project])
 
   function initForm(project = {}) {
-    const { name, keywords: kws, targetMap, targetDataset, targetIteration,
+    const { name, keywords: kws, targetMap, targetDataset, targetIteration, trainSetVersion,
       description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
     if (name) {
       form.setFieldsValue({
@@ -64,6 +65,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
         targetMap,
         targetIteration,
         targetDataset,
+        trainSetVersion,
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
         strategy: miningStrategy || 0,
@@ -86,30 +88,68 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       params.name = name.trim()
       params.description = description.trim()
     }
-    const result = await func[`${action}Project`](params)
-    if (result) {
-      const pid = result.id || id
-      message.success(t(`project.${action}.success`))
-      history.push(`/home/project/detail/${pid}`)
+
+    const send = async () => {
+      const result = await func[`${action}Project`](params)
+      if (result) {
+        const pid = result.id || id
+        message.success(t(`project.${action}.success`))
+        history.push(`/home/project/detail/${pid}`)
+      }
+    }
+    // edit project
+    if (isEdit) {
+      return send()
+    }
+    // create project
+    const kws = params.keywords.map(kw => (kw || '').trim()).filter(kw => kw)
+    const { failed } = await func.checkKeywords(kws)
+    const newKws = kws.filter(keyword => !failed.includes(keyword))
+
+    if (newKws?.length) {
+      // confirm
+      confirm({
+        title: t('project.add.confirm.title'),
+        content: <ol>{newKws.map(keyword => <li key={keyword}>{keyword}</li>)}</ol>,
+        onOk: () => {
+          addNewKeywords(newKws, send)
+        },
+        okText: t('project.add.confirm.ok'),
+        cancelText: t('project.add.confirm.cancel'),
+      })
+    } else {
+      send()
     }
   }
 
-  const checkProjectName = (_, value) => {
-    const reg = /^[a-zA-Z0-9]+(?:[._-][a-zA-Z0-9]+)*$/
-    if (!value || reg.test(value.trim())) {
-      return Promise.resolve()
+
+  const addNewKeywords = async (keywords, callback = () => { }) => {
+    const result = func.addKeywords(keywords)
+    if (result) {
+      setTimeout(() => callback(), 500)
     }
-    return Promise.reject(t('project.add.form.name.invalid'))
   }
 
   async function fetchProject() {
     const result = await getProject(id)
   }
 
+  function validateKeywords(_, kws) {
+    if (kws?.length) {
+      const valid = kws.every(kw => (kw || '').trim())
+      if (!valid) {
+        return Promise.reject(t('project.keywords.invalid'))
+      }
+    }
+    return Promise.resolve()
+  }
+
+  const renderTitle = t(`breadcrumbs.project.${isEdit ? 'edit' : 'add'}`)
+
   return (
     <div className={s.projectAdd}>
       <Breadcrumbs />
-      <Card className={s.container} title={t('breadcrumbs.project.add')}>
+      <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
           <Form form={form} labelCol={{ span: 4 }} onFinish={submit} scrollToFirstError>
             {!settings ? <Panel hasHeader={false}>
@@ -118,8 +158,8 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   label={t('project.add.form.name')}
                   name='name'
                   rules={[
-                    { required: true, message: t('project.add.form.name.required') },
-                    { validator: checkProjectName },
+                    { required: true, whitespace: true, message: t('project.add.form.name.required') },
+                    { min: 1, max: 100 },
                   ]}
                 >
                   <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
@@ -141,10 +181,11 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   label={t('project.add.form.keyword.label')}
                   name="keywords"
                   rules={[
-                    { required: true, message: t('project.add.form.keyword.required') }
+                    { required: true, message: t('project.add.form.keyword.required') },
+                    { validator: validateKeywords },
                   ]}
                 >
-                  <Select mode="multiple" showArrow
+                  <Select mode="tags" showArrow tokenSeparators={[',']}
                     placeholder={t('project.add.form.keyword.placeholder')}
                     disabled={isEdit}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
@@ -188,21 +229,41 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 <Tip hidden={true}>
                   <Form.Item label={t('project.add.form.training.set')}>
                     {project.trainSet?.name}
+                    <Form.Item noStyle name='trainSetVersion'>
+                      <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
+                        {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) =>
+                          <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
+                        )}
+                      </Select>
+                    </Form.Item>
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
                   <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
                     { required: true, message: t('task.train.form.testset.required') },
                   ]}>
-                    <DatasetSelect pid={id} filter={[miningSet]} filterGroup={[project?.trainSet?.id, project?.miningSet?.groupId]} onChange={(value) => value && setTestSet(value)} />
+                    <DatasetSelect
+                      pid={id}
+                      filter={[miningSet]}
+                      filterGroup={[project?.trainSet?.id, project?.miningSet?.groupId]}
+                      filters={datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))}
+                      onChange={(value) => setTestSet(value)}
+                      allowClear
+                    />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
-                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet" 
-                  rules={[
-                    { required: true, message: t('task.train.form.miningset.required') },
-                  ]}>
-                    <DatasetSelect pid={id} filter={[testSet]} filterGroup={[project?.trainSet?.id, project?.testSet?.groupId]} onChange={(value) => value && setMiningSet(value)} />
+                  <Form.Item label={t('project.add.form.mining.set')} name="miningSet"
+                    rules={[
+                      { required: true, message: t('task.train.form.miningset.required') },
+                    ]}>
+                    <DatasetSelect
+                      pid={id}
+                      filter={[testSet]}
+                      filterGroup={[project?.trainSet?.id, project?.testSet?.groupId]}
+                      onChange={(value) => setMiningSet(value)}
+                      allowClear
+                    />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
@@ -214,7 +275,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                         </Form.Item>
                       </Col>
                       {strategy === 0 ? <Col flex={'200px'} offset={1}>
-                        <Form.Item label={t('project.add.form.mining.chunksize')} 
+                        <Form.Item label={t('project.add.form.mining.chunksize')}
                           wrapperCol={{ span: 12 }} labelCol={{ span: 12 }} name='chunkSize'
                           rules={[
                             { required: strategy === 0 }
@@ -259,6 +320,17 @@ const props = (state) => {
 }
 
 const actions = (dispatch) => {
+  const updateKeywords = (dry_run = false) => {
+    return (keywords) => {
+      return dispatch({
+        type: 'keyword/updateKeywords',
+        payload: {
+          keywords: keywords.map(keyword => ({ name: keyword, aliases: [] })),
+          dry_run,
+        },
+      })
+    }
+  }
   return {
     createProject: (payload) => {
       return dispatch({
@@ -284,6 +356,8 @@ const actions = (dispatch) => {
         payload,
       })
     },
+    checkKeywords: updateKeywords(true),
+    addKeywords: updateKeywords(),
   }
 }
 

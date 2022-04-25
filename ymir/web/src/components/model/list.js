@@ -9,9 +9,9 @@ import {
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
+import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
-import { getTimes, getModelImportTypes } from '@/constants/query'
 
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
@@ -20,23 +20,25 @@ import Terminate from "@/components/task/terminate"
 import Del from "./del"
 import DelGroup from "./delGroup"
 import EditBox from "@/components/form/editBox"
+import { getTensorboardLink } from "@/services/common"
 
-import { ShieldIcon, VectorIcon, EditIcon,
-   DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, 
-   ArrowDownIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
+import {
+  ShieldIcon, VectorIcon, EditIcon,
+  DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,
+  ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
+} from "@/components/common/icons"
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, iterations, group, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
-  const [iterations, setIterations] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState({})
+  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
   let [lock, setLock] = useState(true)
   const delRef = useRef(null)
   const delGroupRef = useRef(null)
@@ -84,15 +86,11 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
 
   useEffect(() => {
     let dvs = setVersionLabelsByProject(versions, project)
-    if (iterations.length) {
+    if (iterations?.length) {
       dvs = setVersionLabelsByIterations(versions, iterations)
     }
     setModelVersions(dvs)
   }, [versions, project, iterations])
-
-  useEffect(() => {
-    pid && fetchIterations(pid)
-  }, [pid])
 
   useEffect(async () => {
     if (name) {
@@ -113,10 +111,6 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
     form.resetFields()
   }
 
-  const types = getModelImportTypes()
-
-  const times = getTimes()
-
   const columns = [
     {
       title: showTitle("model.column.name"),
@@ -134,7 +128,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
     {
       title: showTitle("model.column.source"),
       dataIndex: "taskType",
-      render: (type) => <TypeTag types={getModelImportTypes()} type={type} />,
+      render: (type) => <TypeTag type={type} />,
     },
     {
       title: showTitle("model.column.map"),
@@ -235,13 +229,6 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
     await func.getVersions(id, force)
   }
 
-  async function fetchIterations(pid) {
-    const iterations = await func.getIterations(pid)
-    if (iterations) {
-      setIterations(iterations)
-    }
-  }
-
   function showTitle(str) {
     return <strong>{t(str)}</strong>
   }
@@ -251,7 +238,7 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, versionName, isProtected } = record
+    const { id, name, url, state, taskState, taskType, task } = record
     const actions = [
       {
         key: "verify",
@@ -293,8 +280,16 @@ function Model({ pid, project = {}, modelList, versions, query, ...func }) {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
-        hidden: () => !isRunning(state),
+        hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
+      },
+      {
+        key: "tensor",
+        label: 'Tensorboard',
+        target: '_blank',
+        link: getTensorboardLink(task.hash),
+        hidden: () => taskType !== TASKTYPES.TRAINING,
+        icon: <BarchartIcon />,
       },
     ]
     // const delAction = {
@@ -474,12 +469,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'model/updateModel',
         payload: { id, name },
-      })
-    },
-    getIterations(id) {
-      return dispatch({
-        type: 'iteration/getIterations',
-        payload: { id, },
       })
     },
     updateQuery: (query) => {

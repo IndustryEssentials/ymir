@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     MONITOR_RUNNING_KEY: str = "MONITOR_RUNNING_KEY:v1"
     MONITOR_FINISHED_KEY: str = "MONITOR_FINISHED_KEY:v1"
 
-    POSTMAN_URL: str = ""
+    APP_REDIS_STREAM: str = "ymir_app_stream"
     BACKEND_REDIS_URL: str = "redis://localhost"
 
 

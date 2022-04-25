@@ -116,6 +116,7 @@ class CmdInfer(base.BaseCommand):
         _, work_model_path, work_out_path = _prepare_env(work_dir)
         work_index_file = os.path.join(work_dir, 'in', 'candidate-index.tsv')
         work_config_file = os.path.join(work_dir, 'in', 'config.yaml')
+        work_env_config_file = os.path.join(work_dir, 'in', 'env.yaml')
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
@@ -139,12 +140,18 @@ class CmdInfer(base.BaseCommand):
                             run_infer=run_infer,
                             run_mining=run_mining)
 
+        mir_utils.generate_mining_infer_env_config_file(task_id=task_id,
+                                                        run_mining=run_mining,
+                                                        run_infer=run_infer,
+                                                        env_config_file_path=work_env_config_file)
+
         available_gpu_id: str = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
 
         run_docker_cmd(asset_path=media_path,
                        index_file_path=work_index_file,
                        model_path=work_model_path,
                        config_file_path=work_config_file,
+                       env_file_path=work_env_config_file,
                        out_path=work_out_path,
                        executor=executor,
                        executant_name=executant_name,
@@ -275,8 +282,9 @@ def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> No
         yaml.dump(executor_config, f)
 
 
-def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, out_path: str,
-                   executor: str, executant_name: str, shm_size: Optional[str], task_type: str, gpu_id: str) -> int:
+def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, env_file_path: str,
+                   out_path: str, executor: str, executant_name: str, shm_size: Optional[str], task_type: str,
+                   gpu_id: str) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
@@ -284,6 +292,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.append(f"-v{model_path}:/in/models:ro")
     cmd.append(f"-v{index_file_path}:/in/candidate-index.tsv")
     cmd.append(f"-v{config_file_path}:/in/config.yaml")
+    cmd.append(f"-v{env_file_path}:/in/env.yaml")
     cmd.append(f"-v{out_path}:/out")
     # permissions and shared memory
     cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
@@ -294,7 +303,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.extend(['--name', executant_name])
     cmd.append(executor)
 
-    out_log_path = os.path.join(out_path, 'ymir-executor-out.log')
+    out_log_path = os.path.join(out_path, mir_settings.EXECUTOR_OUTLOG_NAME)
     logging.info(f"starting {task_type} docker container with cmd: {' '.join(cmd)}")
     with open(out_log_path, 'a') as f:
         # run and wait, if non-zero value returned, raise

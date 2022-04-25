@@ -77,29 +77,33 @@ class TestNormalizeParameters:
             "name": random_lower_string(5),
             "else": None,
         }
-        user_labels = UserLabels.parse_obj(dict(labels=[
-            {
-                "name": "cat",
-                "aliases": [],
-                "create_time": 1647075205.0,
-                "update_time": 1647075206.0,
-                "id": 0,
-            },
-            {
-                "id": 1,
-                "name": "dog",
-                "aliases": [],
-                "create_time": 1647076207.0,
-                "update_time": 1647076408.0,
-            },
-            {
-                "id": 2,
-                "name": "boy",
-                "aliases": [],
-                "create_time": 1647076209.0,
-                "update_time": 1647076410.0,
-            },
-        ]))
+        user_labels = UserLabels.parse_obj(
+            dict(
+                labels=[
+                    {
+                        "name": "cat",
+                        "aliases": [],
+                        "create_time": 1647075205.0,
+                        "update_time": 1647075206.0,
+                        "id": 0,
+                    },
+                    {
+                        "id": 1,
+                        "name": "dog",
+                        "aliases": [],
+                        "create_time": 1647076207.0,
+                        "update_time": 1647076408.0,
+                    },
+                    {
+                        "id": 2,
+                        "name": "boy",
+                        "aliases": [],
+                        "create_time": 1647076209.0,
+                        "update_time": 1647076410.0,
+                    },
+                ]
+            )
+        )
         params = m.schemas.TaskParameter(**params)
         res = m.normalize_parameters(mocker.Mock(), params, None, user_labels)
         assert res["class_ids"] == [0, 1, 2]
@@ -241,6 +245,7 @@ class TestUpdateTaskStatus:
         last_message_datetime = task.last_message_datetime
 
         data = {
+            "user_id": 233,
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,
@@ -269,6 +274,7 @@ class TestUpdateTaskStatus:
         last_message_datetime = task.last_message_datetime
 
         data = {
+            "user_id": 233,
             "hash": task_hash,
             "state": m.TaskState.running,
             "percent": 0.5,

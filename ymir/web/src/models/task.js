@@ -87,6 +87,12 @@ export default {
       const { id, with_data } = payload
       let { code, result } = yield call(stopTask, id, with_data)
       if (code === 0) {
+        yield put.resolve({
+          type: 'dataset/clearCache'
+        })
+        yield put.resolve({
+          type: 'model/clearCache'
+        })
         return result
       }
     },

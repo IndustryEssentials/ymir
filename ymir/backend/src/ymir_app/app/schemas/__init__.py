@@ -81,6 +81,9 @@ from .task import (
     TaskTerminate,
     TaskUpdate,
     TaskUpdateStatus,
+    TaskMonitorEvent,
+    TaskMonitorEvents,
+    TaskResultUpdateMessage,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (

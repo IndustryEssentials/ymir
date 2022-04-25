@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - Server OS: [e.g. Ubuntu]
- - Ymir Version [e.g. 0.3.0]
+ - Ymir Version [e.g. 0.5.0]
  - Local Browser [e.g. chrome]
 
 **Additional context**

@@ -18,12 +18,11 @@ export function imageIsPending (state: number) {
 }
 
 export const getImageTypeLabel = (functions: number[] = []) => {
-  console.log('params: ', functions)
   const labels = {
-    [TYPES.UNKOWN]: t('image.type.unkown'),
-    [TYPES.TRAINING]: t('image.type.train'),
-    [TYPES.MINING]: t('image.type.mining'),
-    [TYPES.INFERENCE]: t('image.type.inference'),
+    [TYPES.UNKOWN]: 'image.type.unkown',
+    [TYPES.TRAINING]: 'image.type.train',
+    [TYPES.MINING]: 'image.type.mining',
+    [TYPES.INFERENCE]: 'image.type.inference',
   }
 
   return functions.map(func => labels[func])
@@ -39,9 +38,9 @@ export const getImageStateLabel = (state: number | undefined) => {
     return ''
   }
   const labels = {
-    [STATES.PENDING]: t('image.state.pending'),
-    [STATES.DONE]: t('image.state.done'),
-    [STATES.ERROR]: t('image.state.error'),
+    [STATES.PENDING]: 'image.state.pending',
+    [STATES.DONE]: 'image.state.done',
+    [STATES.ERROR]: 'image.state.error',
   }
   return labels[state]
 }

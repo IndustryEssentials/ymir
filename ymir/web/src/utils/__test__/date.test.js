@@ -1,4 +1,4 @@
-import { format, getDateFromTimestamp,getUnixTimeStamp, calTimeLeft, calDuration, } from "../date"
+import { format, getDateFromTimestamp,getUnixTimeStamp, calTimeLeft, calDuration, diffTime, } from "../date"
 import moment from 'moment'
 
 describe("utils: date", () => {
@@ -31,5 +31,13 @@ describe("utils: date", () => {
     expect(calDuration(senconds, 'zh-CN')).toBe(expected)
     expect(calDuration(0, 'zh-CN')).toBe('')
     expect(calDuration(null, 'zh-CN')).toBe('')
+  })
+  it("function: diffTime. ", () => {
+    const date = '2022-04-15 11:59:04'
+    const date2 = '2022-04-17 08:26:34'
+    const expected = 160050000
+    expect(diffTime(date, date)).toBe(0)
+    expect(diffTime(date2, date)).toBe(expected)
+    expect(diffTime(date, date2)).toBe(-expected)
   })
 })

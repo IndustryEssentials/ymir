@@ -53,11 +53,13 @@ class LabelFree(LabelBase):
             expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
         )
         resp = self._requests.post(url_path=url_path, json_data=data)
-        project_id = json.loads(resp)["id"]
+        project_id = json.loads(resp).get("id")
+        if not isinstance(project_id, int):
+            raise ValueError(f"LabelFree return wrong id: {project_id} from {url_path}")
 
         return project_id
 
-    def set_import_storage(self, project_id: int, import_path: str) -> int:
+    def set_import_storage(self, project_id: int, import_path: str, use_pre_annotation: bool = False) -> int:
         # Create a new local file import storage connection
         url_path = "/api/storages/localfiles"
         data = dict(
@@ -67,11 +69,13 @@ class LabelFree(LabelBase):
             project=project_id,
             regex_filter=".*(jpe?g|png|bmp)",
             description="description",
+            use_pre_annotation=use_pre_annotation,
         )
 
         resp = self._requests.post(url_path=url_path, json_data=data)
-        storage_id = json.loads(resp)["id"]
-
+        storage_id = json.loads(resp).get("id")
+        if not isinstance(storage_id, int):
+            raise ValueError(f"LabelFree return wrong id: {storage_id} from {url_path}")
         return storage_id
 
     def set_export_storage(self, project_id: int, export_path: str) -> int:
@@ -87,7 +91,9 @@ class LabelFree(LabelBase):
         )
 
         resp = self._requests.post(url_path=url_path, json_data=data)
-        exported_storage_id = json.loads(resp)["id"]
+        exported_storage_id = json.loads(resp).get("id")
+        if not isinstance(exported_storage_id, int):
+            raise ValueError(f"LabelFree return wrong id: {exported_storage_id} from {url_path}")
 
         return exported_storage_id
 
@@ -118,7 +124,8 @@ class LabelFree(LabelBase):
         return json.loads(resp)
 
     def delete_unlabeled_task(self, project_id: int) -> None:
-        pass
+        url_path = f"/api/projects/{project_id}"
+        self._requests.put(url_path=url_path, params={"delete_unlabeled_task": True})
 
     @classmethod
     def _move_voc_files(cls, des_path: str) -> None:
@@ -160,7 +167,7 @@ class LabelFree(LabelBase):
     ) -> None:
         logging.info("start LABELFREE run()")
         project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
-        storage_id = self.set_import_storage(project_id, input_asset_dir)
+        storage_id = self.set_import_storage(project_id, input_asset_dir, use_pre_annotation)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)
         self.store_label_task_mapping(
