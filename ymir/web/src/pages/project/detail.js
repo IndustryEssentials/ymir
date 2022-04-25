@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Card, Col, Row, Space } from "antd"
+import { Card, Col, Popover, Row, Space } from "antd"
 import { useLocation, useParams, connect, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
@@ -11,6 +11,7 @@ import Models from '@/components/model/list'
 
 import s from "./detail.less"
 import Prepare from "./components/prepare"
+import KeywordRates from "@/components/dataset/keywordRates"
 
 const tabsTitle = [
   { tab: t('project.tab.set.title'), key: 'set', },
@@ -63,6 +64,31 @@ function ProjectDetail(func) {
     }
   }
 
+  function renderProjectDatasetLabel() {
+    const getDsName = (ds = {}) => ds.name ? (ds.name + ' ' + (ds.versionName || '')) : ''
+    const maps = [
+      { label: 'project.add.form.training.set', name: getDsName(project.trainSet) },
+      { dataset: project.testSet, label: 'project.add.form.test.set', name: getDsName(project.testSet) },
+      { dataset: project.miningSet, label: 'project.add.form.mining.set', name: getDsName(project.miningSet) },
+    ]
+    
+    return maps.map(({ name, label, dataset }) => {
+      const rlabel = <span>{t(label)}: {name}</span>
+      return <Col key={label} className={s.ellipsis} span={8} title={name}>
+        {dataset ? renderPop(rlabel, dataset) : rlabel}
+      </Col>
+    })
+  }
+
+
+  function renderPop(label, dataset = {}) {
+    dataset.project = project
+    const content = <KeywordRates dataset={dataset} progressWidth={0.4}></KeywordRates>
+    return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
+      <span>{label}</span>
+    </Popover>
+  }
+
   return (
     <div className={s.projectDetail}>
       <Breadcrumbs />
@@ -74,8 +100,8 @@ function ProjectDetail(func) {
               <span className={s.iterationInfo}>
                 {t('project.detail.info.iteration', {
                   stageLabel: <span className={s.orange}>{t(getStageLabel(project.currentStage, project.round))}</span>,
-                  current: <span className={s.orange}>{project.round}</span>, 
-                  target: <span className={s.orange}>{project.targetIteration}</span> 
+                  current: <span className={s.orange}>{project.round}</span>,
+                  target: <span className={s.orange}>{project.targetIteration}</span>
                 })}
               </span>
               <span>{t('project.train_classes')}: <span className={s.bold}>{project?.keywords?.join(',')}</span></span>
@@ -94,9 +120,7 @@ function ProjectDetail(func) {
         {project.round > 0 ?
           <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
         <Row className={s.setsPanel} gutter={20} align='middle' style={{ textAlign: 'center' }}>
-          <Col className={s.ellipsis} span={8} title={project?.trainSet?.name}>{t('project.add.form.training.set')}: {project?.trainSet?.name}</Col>
-          <Col className={s.ellipsis} span={8} title={project?.testSet?.name}>{t('project.add.form.test.set')}: {project?.testSet?.name}</Col>
-          <Col className={s.ellipsis} span={8} title={project?.miningSet?.name}>{t('project.add.form.mining.set')}: {project?.miningSet?.name}</Col>
+          {renderProjectDatasetLabel()}
         </Row>
       </div>
       <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange}
