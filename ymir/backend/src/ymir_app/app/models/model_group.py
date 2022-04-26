@@ -20,7 +20,7 @@ class ModelGroup(Base):
 
     models = relationship(
         "Model",
-        primaryjoin="foreign(Model.model_group_id)==ModelGroup.id",
+        primaryjoin="and_(foreign(Model.model_group_id)==ModelGroup.id, foreign(Model.is_visible))",
         backref="group",
         uselist=True,
         viewonly=True,
@@ -34,3 +34,7 @@ class ModelGroup(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+    @property
+    def is_visible(self) -> bool:
+        return bool(self.datasets)
