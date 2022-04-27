@@ -31,7 +31,7 @@ def import_dataset_in_background(
 ) -> None:
     try:
         _import_dataset(db, controller_client, dataset_import, user_id, task_hash)
-    except (BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound, InvalidFileStructure):
+    except (OSError, BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound, InvalidFileStructure):
         logger.exception("[import dataset] failed to import dataset")
         crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
 
