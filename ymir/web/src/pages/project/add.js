@@ -187,7 +187,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 >
                   <Select mode="tags" showArrow tokenSeparators={[',']}
                     placeholder={t('project.add.form.keyword.placeholder')}
-                    disabled={isEdit}
+                    disabled={isEdit && project?.currentIteration?.id}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                     {keywords.map(keyword => (
                       <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
