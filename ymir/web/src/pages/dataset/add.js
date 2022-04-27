@@ -114,6 +114,7 @@ const Add = (props) => {
       ...values,
       strategy,
       projectId: pid,
+      url: (values.url || '').trim(),
     }
     if (currentType === TYPES.COPY) {
       params.datasetId = params.datasetId[1]
@@ -195,6 +196,15 @@ const Add = (props) => {
     return selected.length ? publicDataset.filter(dataset => {
       return dataset.keywords.some((key) => selected.indexOf(key) > -1)
     }) : publicDataset
+  }
+
+  function validateUrl(_, value) {
+    const reg = /^((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-:]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)$/
+    if(reg.test((value || '').trim())) {
+      return Promise.resolve()
+    } else {
+      return Promise.reject(t('dataset.add.validate.url.invalid'))
+    }
   }
 
   return (
@@ -345,7 +355,7 @@ const Add = (props) => {
                   noStyle
                   rules={[
                     { required: true, message: t('dataset.add.form.net.tip') },
-                    { type: 'url', }
+                    { validator: validateUrl, }
                   ]}
                 >
                   <Input placeholder={t('dataset.add.form.net.tip')} max={512} allowClear />
