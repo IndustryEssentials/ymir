@@ -216,6 +216,12 @@ const dis = (dispatch) => {
     clearCache() {
       return dispatch({ type: "dataset/clearCache", })
     },
+    getKeywords(payload) {
+      return dispatch({
+        type: 'keyword/getKeywords',
+        payload,
+      })
+    },
     updateIteration(params) {
       return dispatch({
         type: 'iteration/updateIteration',
