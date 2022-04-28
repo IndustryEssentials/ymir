@@ -20,8 +20,14 @@ class ModelGroup(Base):
 
     models = relationship(
         "Model",
-        primaryjoin="and_(foreign(Model.model_group_id)==ModelGroup.id, foreign(Model.is_visible))",
+        primaryjoin="foreign(Model.model_group_id)==ModelGroup.id",
         backref="group",
+        uselist=True,
+        viewonly=True,
+    )
+    visible_models = relationship(
+        "Model",
+        primaryjoin="and_(foreign(Model.model_group_id)==ModelGroup.id, foreign(Model.is_visible))",
         uselist=True,
         viewonly=True,
     )
@@ -37,4 +43,4 @@ class ModelGroup(Base):
 
     @property
     def is_visible(self) -> bool:
-        return bool(self.datasets)
+        return bool(self.visible_models)

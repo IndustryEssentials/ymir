@@ -22,6 +22,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         group_id: Optional[int] = None,
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
+        visible: bool = True,
         start_time: Optional[int],
         end_time: Optional[int],
         offset: Optional[int],
@@ -30,7 +31,11 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         is_desc: bool = True,
     ) -> Tuple[List[Model], int]:
         query = db.query(self.model)
-        query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
+        query = query.filter(
+            self.model.user_id == user_id,
+            self.model.is_visible == int(visible),
+            not_(self.model.is_deleted),
+        )
 
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
@@ -150,6 +155,17 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         objs = db.query(self.model).filter(self.model.model_group_id == group_id).all()
         for obj in objs:
             obj.is_deleted = True
+        db.bulk_save_objects(objs)
+        db.commit()
+        return objs
+
+    def batch_toggle_visibility(self, db: Session, *, ids: List[int], action: str) -> List[Model]:
+        objs = self.get_multi_by_ids(db, ids=ids)
+        for obj in objs:
+            if action == "hide":
+                obj.is_visible = False
+            elif action == "unhide":
+                obj.is_visible = True
         db.bulk_save_objects(objs)
         db.commit()
         return objs

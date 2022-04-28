@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger, String
 
@@ -33,3 +34,18 @@ class Iteration(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+    @property
+    def referenced_dataset_ids(self) -> List[int]:
+        datasets = [
+            self.mining_input_dataset_id,
+            self.mining_output_dataset_id,
+            self.label_output_dataset_id,
+            self.training_input_dataset_id,
+            self.testing_dataset_id,
+        ]
+        return [dataset for dataset in datasets if dataset is not None]
+
+    @property
+    def referenced_model_ids(self) -> List[int]:
+        return [self.training_output_model_id] if self.training_output_model_id else []

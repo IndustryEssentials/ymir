@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from tests.utils.datasets import create_dataset_group_record
+from tests.utils.datasets import create_dataset_group_record, create_dataset_record
 from tests.utils.utils import random_lower_string
 
 
@@ -19,16 +19,20 @@ class TestListDatasetGroups:
         mocker,
     ):
         project_id = randint(1000, 2000)
-        for _ in range(3):
-            create_dataset_group_record(db, user_id, project_id)
+        for idx in range(3):
+            grp = create_dataset_group_record(db, user_id, project_id)
+            if idx == 2:
+                create_dataset_record(db, user_id, project_id, grp.id)
         r = client.get(
             f"{settings.API_V1_STR}/dataset_groups/",
             headers=normal_user_token_headers,
             params={"project_id": project_id},
         )
         items = r.json()["result"]["items"]
+        for item in items:
+            assert item["is_visible"]
         total = r.json()["result"]["total"]
-        assert len(items) == total == 3
+        assert len(items) == total == 1
 
 
 class TestDeleteDatasetGroup:

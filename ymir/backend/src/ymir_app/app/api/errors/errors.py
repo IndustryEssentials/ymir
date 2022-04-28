@@ -290,6 +290,11 @@ class DuplicateProjectError(DuplicateError):
     message = "Duplicated Project Name"
 
 
+class FailedToHideProtectedResources(APIError):
+    code = error_codes.FAILED_TO_PROCESS_PROTECTED_RESOURCES
+    message = "Failed to Hide Protected Resources in Project"
+
+
 class DatasetGroupNotFound(NotFound):
     code = error_codes.DATASET_GROUP_NOT_FOUND
     message = "DatasetGroup Not Found"
@@ -333,3 +338,8 @@ class IterationNotFound(NotFound):
 class FailedToUpdateIterationStage(APIError):
     code = error_codes.ITERATION_COULD_NOT_UPDATE_STAGE
     message = "Failed to Update Iteration Stage"
+
+
+class RefuseToProcessMixedOperations(APIError):
+    code = error_codes.REFUSE_TO_PROCESS_MIXED_OPERATIONS
+    message = "Refuse To Process Mixed Operations"
