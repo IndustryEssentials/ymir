@@ -13,7 +13,7 @@ import { states } from '@/constants/dataset'
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
 import Terminate from "@/components/task/terminate"
-import Hide from "./hide"
+import Hide from "../common/hide"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
@@ -245,8 +245,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         key: "hide",
         label: t("common.action.hide"),
         onclick: () => hide(record),
-        disabled: isProtected,
-        hidden: () => isRunning(state),
+        hidden: () => isRunning(state) || isProtected,
         icon: <DeleteIcon />,
       },
     ]
@@ -356,7 +355,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   function rowSelectChange(gid, rowKeys) {
-    console.log('rowKeys:', rowKeys, gid)
     setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
   }
 

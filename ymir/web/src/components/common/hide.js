@@ -3,7 +3,7 @@ import confirm from '@/components/common/dangerConfirm'
 import { connect } from "dva"
 import { forwardRef, useImperativeHandle } from "react"
 
-const Hide = forwardRef(({ ok = () => {}, ...func }, ref) => {
+const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content', ok = () => { }, ...func }, ref) => {
   useImperativeHandle(ref, () => {
     return {
       hide,
@@ -11,14 +11,17 @@ const Hide = forwardRef(({ ok = () => {}, ...func }, ref) => {
   })
 
   function hide(versions) {
-    const labels = versions.map(version => <span style={{ margin: '0 5px', display: 'inline-block' }} key={version.id}>{version.name} {version.versionName}</span>)
+    const labels = versions.map(version => <span
+      style={{ margin: '0 5px', display: 'inline-block' }}
+      key={version.id}>
+      {version.name} {version.versionName}
+    </span>)
     const ids = versions.map(({ id }) => id)
     confirm({
-      content: t("dataset.action.hide.confirm.content", { name: labels }),
+      content: t(msg, { name: labels }),
       onOk: async () => {
-        const result = await func.hideDataset(ids)
+        const result = await func[type ? 'hideModels' : 'hideDatasets'](ids)
         if (result) {
-          // todo return result to parent handle
           ok(result)
         }
       },
@@ -31,12 +34,18 @@ const Hide = forwardRef(({ ok = () => {}, ...func }, ref) => {
 
 const actions = (dispatch) => {
   return {
-    hideDataset(id) {
+    hideDatasets(ids) {
       return dispatch({
-        type: 'dataset/hideDatasets',
-        payload: id,
+        type: `dataset/hideDatasets`,
+        payload: ids,
       })
-    }
+    },
+    hideModels(ids) {
+      return dispatch({
+        type: `model/hideModels`,
+        payload: ids,
+      })
+    },
   }
 }
 

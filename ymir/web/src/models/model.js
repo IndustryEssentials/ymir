@@ -6,6 +6,7 @@ import {
   getModel,
   delModel,
   delModelGroup,
+  hideModels,
   importModel,
   updateModel,
   verify,
@@ -132,6 +133,12 @@ export default {
     },
     *delModelGroup({ payload }, { call, put }) {
       const { code, result } = yield call(delModelGroup, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *hideModels({ payload: ids }, { call, put }) {
+      const { code, result } = yield call(hideModels, ids)
       if (code === 0) {
         return result
       }

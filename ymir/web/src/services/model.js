@@ -1,4 +1,5 @@
 import request from "@/utils/request"
+import { actions } from '@/constants/common'
 
 /** model service */
 /**
@@ -80,6 +81,18 @@ export function delModelGroup(id) {
   return request({
     method: "delete",
     url: `/model_groups/${id}`,
+  })
+}
+
+
+/**
+ * hide models
+ * @param {number} ids
+ * @returns
+ */
+export function hideModels(ids = []) {
+  return request.post(`/models/batch`, {
+    operations: ids.map(id => ({ id, action: actions.hide, }))
   })
 }
 

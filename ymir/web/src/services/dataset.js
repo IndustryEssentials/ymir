@@ -1,4 +1,5 @@
 import request from "@/utils/request"
+import { actions } from '@/constants/common'
 
 /** dataset service */
 /**
@@ -109,9 +110,8 @@ export function delDatasetGroup(id) {
  * @returns
  */
  export function hideDatasets(ids) {
-  return request({
-    method: "patch",
-    url: `/datasets/${ids}/hidden`,
+  return request.post(`/datasets/batch`, {
+    operations: ids.map(id => ({ id, action: actions.hide, }))
   })
 }
 
