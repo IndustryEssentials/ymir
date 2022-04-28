@@ -104,6 +104,18 @@ export function delDatasetGroup(id) {
 }
 
 /**
+ * hide datasets
+ * @param {number} ids
+ * @returns
+ */
+ export function hideDatasets(ids) {
+  return request({
+    method: "patch",
+    url: `/datasets/${ids}/hidden`,
+  })
+}
+
+/**
  * import a dataset into project
  * @param {object} dataset
  * {

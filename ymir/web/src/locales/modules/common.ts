@@ -63,6 +63,8 @@ const common = {
   'common.action.infer': {cn: '推理', en: 'Infer', },
   'common.action.copy': {cn: '复制', en: 'Copy', },
   'common.action.import': {cn: '导入', en: 'Import', },
+  'common.action.hide': {cn: '隐藏', en: 'Hide', },
+  'common.action.multiple.hide': {cn: '批量隐藏', en: 'Multiple Hide', },
 }
 
 export default common

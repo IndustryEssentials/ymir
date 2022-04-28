@@ -13,8 +13,7 @@ import { states } from '@/constants/dataset'
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
 import Terminate from "@/components/task/terminate"
-import Del from "./del"
-import DelGroup from "./delGroup"
+import Hide from "./hide"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
@@ -37,8 +36,8 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
-  const delRef = useRef(null)
-  const delGroupRef = useRef(null)
+  const [selectedVersions, setSelectedVersions] = useState({})
+  const hideRef = useRef(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef(null)
 
@@ -191,7 +190,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const actionMenus = (record) => {
-    const { id, state, taskState, task } = record
+    const { id, state, taskState, task, isProtected } = record
     const menus = [
       {
         key: "fusion",
@@ -242,14 +241,14 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
-      // {
-      //   key: "del",
-      //   label: t("dataset.action.del"),
-      //   onclick: () => del(id, `${name} ${versionName}`),
-      //   disabled: isProtected,
-      //   hidden: () => isRunning(state),
-      //   icon: <DeleteIcon />,
-      // },
+      {
+        key: "hide",
+        label: t("common.action.hide"),
+        onclick: () => hide(record),
+        disabled: isProtected,
+        hidden: () => isRunning(state),
+        icon: <DeleteIcon />,
+      },
     ]
     return menus
   }
@@ -356,20 +355,9 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     return item
   }
 
-  const delGroup = (id, name) => {
-    delGroupRef.current.del(id, name)
-  }
-  const del = (id, name) => {
-    delRef.current.del(id, name)
-  }
-
-  const delOk = (id) => {
-    func.getVersions(id, true)
-    fetchDatasets()
-  }
-
-  const delGroupOk = () => {
-    fetchDatasets()
+  function rowSelectChange(gid, rowKeys) {
+    console.log('rowKeys:', rowKeys, gid)
+    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
   }
 
   const stop = (dataset) => {
@@ -417,6 +405,23 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
   }
 
+  const multipleHide = () => {
+    const ids = Object.values(selectedVersions).flat()
+    const allVss = Object.values(versions).flat()
+    const vss = allVss.filter(({id}) => ids.includes(id))
+    hideRef.current.hide(vss)
+  }
+
+  const hide = (version) => {
+    hideRef.current.hide([version])
+  }
+
+  const hideOk = (result) => {
+    console.log('hide handle result:', result)
+    // todo tip and rerender
+    // rerender
+    fetchDatasets(true)
+  }
 
   function isValidDataset(state) {
     return states.VALID === state
@@ -432,6 +437,14 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     </Button>
   )
 
+  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
+    <>
+      <Button type="primary" onClick={multipleHide}>
+        <ImportIcon /> {t("common.action.multiple.hide")}
+      </Button>
+    </>
+  ) : null
+
   const renderGroups = (<>
     <div className={styles.groupList}>
       {datasets.map(group => <div className={styles.groupItem} key={group.id}>
@@ -443,7 +456,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
           </Col>
           <Col><Space>
             <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
-            <a hidden={true} onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
         <div className={styles.groupTable} hidden={!visibles[group.id]}>
@@ -451,6 +463,9 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
             dataSource={datasetVersions[group.id]}
             onChange={tableChange}
             rowKey={(record) => record.id}
+            rowSelection={{
+              onChange: (keys) => rowSelectChange(group.id, keys),
+            }}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             columns={columns(group.id)}
             pagination={false}
@@ -466,6 +481,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       <div className={styles.actions}>
         <Space>
           {addBtn}
+          {renderMultipleActions}
         </Space>
       </div>
       <div className={styles.list}>
@@ -502,8 +518,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
           <StateTag mode='text' state={current.state} />
         </Form.Item> : null}
       </EditBox>
-      <DelGroup ref={delGroupRef} ok={delGroupOk} />
-      <Del ref={delRef} ok={delOk} />
+      <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
@@ -530,12 +545,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'dataset/getDatasetVersions',
         payload: { gid, force },
-      })
-    },
-    delDataset(id) {
-      return dispatch({
-        type: 'dataset/delDataset',
-        payload: id,
       })
     },
     updateDataset(id, name) {

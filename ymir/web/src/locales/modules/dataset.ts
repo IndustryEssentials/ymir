@@ -25,6 +25,7 @@ const dataset = {
   "dataset.import.label": { cn: "导入数据集", en: "Import Dataset", },
   "dataset.query.name": { cn: "名称", en: "Dataset Name", },
   "dataset.action.del.confirm.content": { cn: "确认要删除数据集版本：{name}？", en: "Are you sure to remove this dataset version:{name}?", },
+  "dataset.action.hide.confirm.content": { cn: "确认要隐藏数据集版本：{name}？", en: "Are you sure to hide dataset versions: {name}?", },
   "dataset.action.delgroup.confirm.content": { en: "Are you sure to remove this dataset:{name}, all of versions will be deleted.", cn: "确认要删除数据集：{name}？这个操作将删除此数据集下的所有版本", },
   "dataset.query.name.placeholder": { cn: "数据集名称", en: "Dataset Name", },
   "dataset.detail.pager.total": { cn: "共 {total} 图像", en: "Total {total} Pictures", },

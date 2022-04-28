@@ -1,6 +1,6 @@
 import {
   getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets,
-  getAssetsOfDataset, getAsset, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getAssetsOfDataset, getAsset, hideDatasets, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
@@ -155,6 +155,12 @@ export default {
     },
     *delDatasetGroup({ payload }, { call, put }) {
       const { code, result } = yield call(delDatasetGroup, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *hideDatasets({ payload: ids }, { call, put }) {
+      const { code, result } = yield call(hideDatasets, ids)
       if (code === 0) {
         return result
       }
