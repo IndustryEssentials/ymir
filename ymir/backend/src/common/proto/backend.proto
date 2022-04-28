@@ -28,6 +28,7 @@ enum TaskType {
     TaskTypeImportModel = 13;
     TaskTypeCopyModel = 14;
     TaskTypeDatasetInfer = 15;
+    TaskTypeEvaluate = 16;
 
     reserved 12;
 };
@@ -135,6 +136,7 @@ message GeneralResp {
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     RespCMDInference detection = 1001;
+    RespCmdEvaluation evaluation = 1002;
 
     reserved 5, 1000;
 }
@@ -272,6 +274,17 @@ message Label {
     string update_time = 5;  // RFC 3339 date strings
 }
 
+message RespCmdEvaluation {
+    map<string, SingleTopicEvaluation> topics = 1;
+}
+
+message SingleTopicEvaluation {
+    float average_percision = 1;
+    float average_recall = 2;
+    float fp = 3;
+    float fn = 4;
+    repeated float pr_curve = 5;
+}
 
 service mir_controller_service {
     /*
