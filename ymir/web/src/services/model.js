@@ -88,16 +88,18 @@ export function delModelGroup(id) {
  * @param {object} param {
  * {string} projectId
  * {string} name
- * {string} [url] 
- * {number} [modelId] model id
+ * {string} [path] local file path 
+ * {string} [url]  net url
+ * {number} [modelId] copy model id
  * {string} [description]
  * }
  * @returns 
  */
-export function importModel({ projectId, name, description, url, modelId, }) {
+export function importModel({ projectId, name, description, url, path, modelId, }) {
   return request.post('/models/importing', {
     project_id: projectId,
-    input_model_path: url,
+    input_model_path: path,
+    input_url: url,
     input_model_id: modelId,
     description,
     group_name: name,
