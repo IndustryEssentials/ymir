@@ -267,5 +267,5 @@ export function createInferenceTask({
 }
 
 export function createTask(params) {
-  return request.post("/tasks/", params)
+  return request.post("/tasks/inferences", params)
 }

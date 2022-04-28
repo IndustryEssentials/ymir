@@ -34,7 +34,7 @@ function Inference({ datasetCache, datasets, ...props }) {
   const location = useLocation()
   const { did, mid, image } = location.query
   const [dataset, setDataset] = useState({})
-  const [selectedModel, setSelectedModel] = useState({})
+  const [selectedModels, setSelectedModels] = useState({})
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
@@ -142,8 +142,8 @@ function Inference({ datasetCache, datasets, ...props }) {
     id && setDataset(datasets.find(ds => ds.id === id))
   }
 
-  function modelChange(id, model) {
-      model && setSelectedModel(model)
+  function modelChange(id, models) {
+      setSelectedModels(models || [])
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -198,7 +198,7 @@ function Inference({ datasetCache, datasets, ...props }) {
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
                 >
-                  <ModelSelect placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
+                  <ModelSelect mode='multiple' placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -207,7 +207,7 @@ function Inference({ datasetCache, datasets, ...props }) {
               <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
                 {required: true, message: t('task.inference.form.image.required')}
               ]}>
-                <ImageSelect placeholder={t('task.inference.form.image.placeholder')} relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.INFERENCE} onChange={imageChange} />
+                <ImageSelect placeholder={t('task.inference.form.image.placeholder')} relatedId={selectedModels[0]?.task?.parameters?.docker_image_id} type={TYPES.INFERENCE} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
