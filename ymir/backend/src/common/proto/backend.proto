@@ -279,6 +279,7 @@ message EvaluateConfig {
     float iou_thresh_to = 2;  // default: 0.95
     float iou_thresh_step = 3;  // default: 0.05
     float conf_thresh = 4;
+    string gt_dataset_id = 5;
 }
 
 service mir_controller_service {

@@ -201,8 +201,8 @@ message SingleIouEvaluations {
 }
 
 message SingleTopicEvaluation {
-    float average_percision = 1;
-    float average_recall = 2;
+    float ap = 1;
+    float ar = 2;
     float tp = 3;
     float fp = 4;
     float fn = 5;
