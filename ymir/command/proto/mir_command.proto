@@ -195,7 +195,7 @@ message Evaluation {
 }
 
 message SingleIouTopics {
-    float iou_thresh = 1;
+    float iou_thresh = 1;  // 1 for average
     map<string, SingleTopicEvaluation> topics = 2;  // key: class names
 }
 

@@ -633,6 +633,8 @@ class SingleIouTopics(google.protobuf.message.Message):
     IOU_THRESH_FIELD_NUMBER: builtins.int
     TOPICS_FIELD_NUMBER: builtins.int
     iou_thresh: builtins.float = ...
+    """1 for average"""
+
     @property
     def topics(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
         """key: class names"""
