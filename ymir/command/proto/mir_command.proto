@@ -191,7 +191,12 @@ message ModelMeta {
 };
 
 message Evaluation {
-    map<string, SingleTopicEvaluation> topics = 1;
+    repeated SingleIouTopics iou_topics = 1;
+}
+
+message SingleIouTopics {
+    float iou_thresh = 1;
+    map<string, SingleTopicEvaluation> topics = 2;  // key: class names
 }
 
 message SingleTopicEvaluation {

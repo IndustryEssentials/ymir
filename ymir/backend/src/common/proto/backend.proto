@@ -121,6 +121,7 @@ message GeneralReq {
     }
     string task_parameters = 24;
     LabelCollection label_collection = 25;
+    EvaluateConfig evaluate_config = 26;
     ReqCreateTask req_create_task = 1001;
 
     reserved 17, 1002;
@@ -274,8 +275,20 @@ message Label {
     string update_time = 5;  // RFC 3339 date strings
 }
 
+message EvaluateConfig {
+    float iou_thresh_from = 1;  // default: 0.5
+    float iou_thresh_to = 2;  // default: 0.95
+    float iou_thresh_step = 3;  // default: 0.05
+    float conf_thresh = 4;
+}
+
 message RespCmdEvaluation {
-    map<string, SingleTopicEvaluation> topics = 1;
+    repeated SingleIouTopics iou_topics = 1;
+}
+
+message SingleIouTopics {
+    float iou_thresh = 1;
+    map<string, SingleTopicEvaluation> topics = 2;  // key: class names
 }
 
 message SingleTopicEvaluation {
