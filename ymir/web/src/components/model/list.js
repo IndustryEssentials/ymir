@@ -23,7 +23,7 @@ import { getTensorboardLink } from "@/services/common"
 
 import {
   ShieldIcon, VectorIcon, EditIcon,
-  DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,
+  EyeOffIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
 
@@ -164,6 +164,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
   }
 
+  const hideHidden = ({ state, id }) => isRunning(state) || project.hiddenModels.includes(id)
+
   const listChange = ({ current, pageSize }) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
@@ -180,21 +182,15 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
-        item = setLabelByIterations(item, iterations)
+        const iteration = iterations.find(iter => iter.model === item.id)
+        if (iteration) {
+          item.iterationLabel = t('iteration.tag.round', iteration)
+        }
         return { ...item }
       })
       versions[gid] = updatedList
     })
     return { ...versions }
-  }
-
-  function setLabelByIterations(item, iterations) {
-    iterations.forEach(iteration => {
-      if (iteration.model && iteration.model === item.id) {
-        item.iterationLabel = t('iteration.tag.round', iteration)
-      }
-    })
-    return item
   }
 
   function setVersionLabelsByProject(versions, project) {
@@ -295,8 +291,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "hide",
         label: t("common.action.hide"),
         onclick: () => hide(record),
-        hidden: ()=> isProtected,
-        icon: <DeleteIcon />,
+        hidden: ()=> hideHidden(record),
+        icon: <EyeOffIcon />,
       },
     ]
     return actions
@@ -307,7 +303,6 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     setTimeout(() => setCurrent(record), 0)
   }
 
-  
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
@@ -320,9 +315,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const hideOk = (id) => {
-    // todo tip and rerender
-    // rerender
     getData()
+    setSelectedVersions({})
   }
 
   
@@ -386,7 +380,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
     <>
       <Button type="primary" onClick={multipleHide}>
-        <ImportIcon /> {t("common.action.multiple.hide")}
+        <EyeOffIcon /> {t("common.action.multiple.hide")}
       </Button>
     </>
   ) : null
@@ -411,6 +405,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
             rowKey={(record) => record.id}
             rowSelection={{
               onChange: (keys) => rowSelectChange(group.id, keys),
+              getCheckboxProps: (record) => ({ disabled: hideHidden(record), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             columns={columns}

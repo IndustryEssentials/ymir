@@ -17,6 +17,11 @@ export enum MiningStrategy {
   free = 2,
 }
 
+export const tabs = [
+  { tab: 'project.tab.set.title', key: 'set', },
+  { tab: 'project.tab.model.title', key: 'model', },
+]
+
 export function getStageLabel(stage: Stages, round: number = 0) {
   const labels = StageList().list.map(item => item.label)
   return `project.iteration.stage.${round ? labels[stage] : 'prepare'}`

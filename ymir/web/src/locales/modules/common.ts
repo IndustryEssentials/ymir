@@ -68,6 +68,7 @@ const common = {
   'common.hidden.label': {cn: '显示状态', en: 'Visible Status', },
   'common.state.hidden': {cn: '隐藏', en: 'Hidden', },
   'common.selected.required': {cn: '需要选中至少一项', en: 'Selected required', },
+  'common.hidden.list': {cn: '隐藏列表', en: 'Hidden List', },
 }
 
 export default common

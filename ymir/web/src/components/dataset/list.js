@@ -73,11 +73,16 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   useEffect(() => {
     let dvs = setVersionLabelsByProject(versions, project)
-    if (iterations?.length) {
-      dvs = setVersionLabelsByIterations(versions, iterations)
-    }
     setDatasetVersions(dvs)
-  }, [versions, project, iterations])
+  }, [project, versions])
+
+  useEffect(() => {
+    console.log('iterations:', iterations)
+    if (iterations?.length) {
+      const dvs = setVersionLabelsByIterations(versions, iterations)
+      setDatasetVersions(dvs)
+    }
+  }, [versions, iterations])
 
   useEffect(() => {
     Object.keys(versions).forEach(gid => {
@@ -245,7 +250,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         key: "hide",
         label: t("common.action.hide"),
         onclick: () => hide(record),
-        hidden: () => isRunning(state) || isProtected,
+        hidden: () => hideHidden(record),
         icon: <EyeOffIcon />,
       },
     ]
@@ -254,6 +259,8 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
   }
+
+  const hideHidden = ({ state, id }) => isRunning(state) || project.hiddenDatasets.includes(id)
 
   const getTypeFilter = gid => {
     return getFilters(gid, 'taskType', (type) => t(getTaskTypeLabel(type)))
@@ -338,19 +345,17 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   function setLabelByIterations(item, iterations) {
-    iterations.forEach(iteration => {
-      const ids = [
-        iteration.miningSet,
-        iteration.miningResult,
-        iteration.labelSet,
-        iteration.trainUpdateSet,
-        iteration.trainSet,
-      ].filter(id => id)
-      if (ids.includes(item.id)) {
-        item.iterationLabel = t('iteration.tag.round', iteration)
-        item.iterationRound = iteration.round
-      }
-    })
+    const iteration = iterations.find(iter => [
+      iter.miningSet,
+      iter.miningResult,
+      iter.labelSet,
+      iter.trainUpdateSet,
+      iter.trainSet,
+    ].filter(id => id).includes(item.id))
+    if (iteration) {
+      item.iterationLabel = t('iteration.tag.round', iteration)
+      item.iterationRound = iteration.round
+    }
     return item
   }
 
@@ -406,7 +411,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
-    const vss = allVss.filter(({id}) => ids.includes(id))
+    const vss = allVss.filter(({ id }) => ids.includes(id))
     hideRef.current.hide(vss)
   }
 
@@ -415,10 +420,8 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const hideOk = (result) => {
-    console.log('hide handle result:', result)
-    // todo tip and rerender
-    // rerender
     fetchDatasets(true)
+    setSelectedVersions({})
   }
 
   function isValidDataset(state) {
@@ -438,7 +441,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
     <>
       <Button type="primary" onClick={multipleHide}>
-        <ImportIcon /> {t("common.action.multiple.hide")}
+        <EyeOffIcon /> {t("common.action.multiple.hide")}
       </Button>
     </>
   ) : null
@@ -463,6 +466,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
             rowKey={(record) => record.id}
             rowSelection={{
               onChange: (keys) => rowSelectChange(group.id, keys),
+              getCheckboxProps: (record) => ({ disabled: hideHidden(record), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             columns={columns(group.id)}
