@@ -12,8 +12,7 @@ import Models from '@/components/model/list'
 import s from "./detail.less"
 import Prepare from "./components/prepare"
 import KeywordRates from "@/components/dataset/keywordRates"
-import { EditIcon } from "../../components/common/icons"
-import { SearchEyeIcon } from "../../components/common/icons"
+import { EditIcon, SearchEyeIcon } from "../../components/common/icons"
 
 
 const tabsTitle = [
