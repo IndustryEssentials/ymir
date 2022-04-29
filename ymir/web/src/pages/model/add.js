@@ -9,6 +9,7 @@ import Tip from "@/components/form/tip"
 import ProjectSelect from "@/components/form/projectModelSelect"
 import Uploader from '@/components/form/uploader'
 import s from './add.less'
+import { urlValidator } from '@/components/form/validators'
 
 const { Option } = Select
 const { useForm } = Form
@@ -126,7 +127,7 @@ const Add = ({ importModel }) => {
                   name='url'
                   rules={[
                     { required: true, message: t('model.add.form.url.tip') },
-                    { type: 'url', }
+                    { validator: urlValidator, }
                   ]}
                 >
                   <Input placeholder={t('model.add.form.url.placeholder')} max={512} allowClear />
