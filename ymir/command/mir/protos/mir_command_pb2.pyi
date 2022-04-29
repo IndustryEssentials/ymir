@@ -603,19 +603,34 @@ global___ModelMeta = ModelMeta
 
 class Evaluation(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    IOU_TOPICS_FIELD_NUMBER: builtins.int
+    IOU_EVALUATIONS_FIELD_NUMBER: builtins.int
     @property
-    def iou_topics(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SingleIouTopics]: ...
+    def iou_evaluations(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SingleIouEvaluations]: ...
     def __init__(self,
         *,
-        iou_topics : typing.Optional[typing.Iterable[global___SingleIouTopics]] = ...,
+        iou_evaluations : typing.Optional[typing.Iterable[global___SingleIouEvaluations]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["iou_topics",b"iou_topics"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["iou_evaluations",b"iou_evaluations"]) -> None: ...
 global___Evaluation = Evaluation
 
-class SingleIouTopics(google.protobuf.message.Message):
+class SingleIouEvaluations(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class TopicsEntry(google.protobuf.message.Message):
+    class ClassesEvaluationsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        @property
+        def value(self) -> global___SingleTopicEvaluation: ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : typing.Optional[global___SingleTopicEvaluation] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class TopicsEvaluationsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
@@ -631,21 +646,27 @@ class SingleIouTopics(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     IOU_THRESH_FIELD_NUMBER: builtins.int
-    TOPICS_FIELD_NUMBER: builtins.int
+    CLASSES_EVALUATIONS_FIELD_NUMBER: builtins.int
+    TOPICS_EVALUATIONS_FIELD_NUMBER: builtins.int
     iou_thresh: builtins.float = ...
-    """1 for average"""
+    """0 for average"""
 
     @property
-    def topics(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
-        """key: class names"""
+    def classes_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
+        """key: class ids"""
+        pass
+    @property
+    def topics_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
+        """key: topics"""
         pass
     def __init__(self,
         *,
         iou_thresh : builtins.float = ...,
-        topics : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
+        classes_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
+        topics_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["iou_thresh",b"iou_thresh","topics",b"topics"]) -> None: ...
-global___SingleIouTopics = SingleIouTopics
+    def ClearField(self, field_name: typing_extensions.Literal["classes_evaluations",b"classes_evaluations","iou_thresh",b"iou_thresh","topics_evaluations",b"topics_evaluations"]) -> None: ...
+global___SingleIouEvaluations = SingleIouEvaluations
 
 class SingleTopicEvaluation(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...

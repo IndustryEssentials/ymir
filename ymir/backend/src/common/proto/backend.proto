@@ -137,7 +137,6 @@ message GeneralResp {
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     RespCMDInference detection = 1001;
-    RespCmdEvaluation evaluation = 1002;
 
     reserved 5, 1000;
 }
@@ -280,24 +279,6 @@ message EvaluateConfig {
     float iou_thresh_to = 2;  // default: 0.95
     float iou_thresh_step = 3;  // default: 0.05
     float conf_thresh = 4;
-}
-
-message RespCmdEvaluation {
-    repeated SingleIouTopics iou_topics = 1;
-}
-
-message SingleIouTopics {
-    float iou_thresh = 1;  // 1 for average
-    map<string, SingleTopicEvaluation> topics = 2;  // key: class names
-}
-
-message SingleTopicEvaluation {
-    float average_percision = 1;
-    float average_recall = 2;
-    float tp = 3;
-    float fp = 4;
-    float fn = 5;
-    repeated float pr_curve = 6;
 }
 
 service mir_controller_service {
