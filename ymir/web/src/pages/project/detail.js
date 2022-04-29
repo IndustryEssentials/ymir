@@ -68,7 +68,7 @@ function ProjectDetail(func) {
                   target: <span className={s.orange}>{project.targetIteration}</span> 
                 })}
               </span>
-              <span>{t('project.train_classes')}: <span className={s.bold}>{project?.keywords?.join(',')}</span></span>
+              <span>{t('project.train_classes')}: <span className={s.black}>{project?.keywords?.join(',')}</span></span>
               {project.targetMap ? <span>{t('project.target.map')}: <span className={s.target}>{project.targetMap}%</span></span> : null}
               {project.targetDataset ? <span>{t('project.target.dataset')}: <span className={s.target}>{project.targetDataset}</span></span> : null}
               {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
@@ -84,9 +84,9 @@ function ProjectDetail(func) {
         {project.round > 0 ?
           <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
       </div>
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange}
+      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange} className={s.noShadow}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
-        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px' }}
+        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 5vw' }}>
         {content[active]}
       </Card>

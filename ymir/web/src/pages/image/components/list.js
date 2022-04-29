@@ -188,11 +188,11 @@ const ImageList = ({ role, filter, getImages }) => {
     <div className={s.imageContent}>
       {isAdmin() ? addBtn : null}
       <List
-        className={s.list}
+        className='list'
         dataSource={images}
         renderItem={renderItem}
       />
-      <Pagination className={s.pager} onChange={pageChange}
+      <Pagination className='pager' onChange={pageChange}
         defaultCurrent={1} defaultPageSize={query.limit} total={total}
         showTotal={() => t('image.list.total', { total })}
         showQuickJumper showSizeChanger />

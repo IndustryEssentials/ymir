@@ -1,3 +1,49 @@
+//颜色
+@white:           #FFFFFF;
+@black:           #000000;
+@color85:         rgba(0, 0, 0, 0.85);
+@color65:         rgba(0, 0, 0, 0.65);
+@color45:         rgba(0, 0, 0, 0.45);
+@color25:         rgba(0, 0, 0, 0.25);
+@font-yellow:     #E8B900;
+@font-bule:       #2CBDE9;
+@font-red:        #F2637B;
+
+//字体
+@font-size12:     12px;
+@font-size14:     14px;
+@font-size16:     16px;
+@font-size18:     18px;
+@font-size20:     20px;
+
+//间距
+@gap5:            5px;
+@gap8:            8px;
+@gap10:           10px;
+@gap16:           16px;
+@gap20:           20px;
+@gap24:           24px;
+
+//投影变量
+@shadow:   0px 0px 3px;
+@shadow-color: rgba(0, 0, 0, 5%);
+.box-shadow(@style: @shadow, @color: @shadow-color) {
+  box-shadow: @style @color;
+}
+
+//圆角变量
+@radius:   5px;
+.box-radius(@style: @radius) {
+  border-radius: @style;
+}
+
+//高度变量
+@minus: 180px;
+.calc-height(@minus: @minus) {
+  min-height: calc(100vh - @minus);
+}
+
+
 html, body, #root {
   height: 100%;
 }
@@ -5,7 +51,7 @@ html, body, #root {
 body {
   margin: 0;
   input, input:focus {
-    background: #fff;
+    background: @white;
   }
   .ant-tag {
     padding: 1px 6px;
@@ -25,10 +71,8 @@ body {
        border-bottom: none;
      }
    } 
-
-  
   .ant-table-tbody {
-    color: rgba(0, 0, 0, 0.65);
+    color: @color65;
   }
   .ant-table-row .edit {
       visibility: hidden;
@@ -63,7 +107,7 @@ body {
     bottom: -12px;
   }
   .ant-carousel .slick-dots li {
-      background-color: #000;
+      background-color: @black;
     
   }
   .ant-carousel .slick-dots li.slick-active button {
@@ -86,16 +130,16 @@ body {
   }
   //Task Details
   .ant-descriptions-item-label {
-    color: rgba(0, 0, 0, 0.65);
+    color: @color65;
   }
   .ant-descriptions-item-content {
-    color: rgba(0, 0, 0, 0.85);
+    color: @color85;
   }
 
   /** form **/
   .ant-form-item-label {
     font-weight: bold;
-    color: rgba(0, 0, 0, 0.85);
+    color: @color85;
     > label:not(.ant-form-item-required):before {
       display: inline-block;
       margin-right: 4px;
@@ -122,4 +166,223 @@ body {
   td.ant-table-column-sort {
     background: none;
   }
+
+  .ant-card {
+    .box-radius();
+  }
+}
+
+
+
+
+
+// public component: breadcrumb 
+.breadcrumb {
+  height: 50px;
+  line-height: 50px;
+  background: @white;
+  margin: 0 -5vw 20px;
+  padding: 0 5vw;
+  .box-shadow();
+  .breadcrumbContent {
+    line-height: 50px;
+  }
+}
+
+// public box shadow radius 
+.ant-card,
+.actions,
+.list {
+  .box-shadow();
+  .box-radius();
+}
+.ant-card {
+  .list {
+    .box-shadow(0 0 0 ,rgba(0, 0, 0, 0%));
+  }
+}
+
+// public action bar 
+.actions {
+  background: @white;
+  padding: @gap20;
+  margin-bottom: @gap10;
+  width: 100%;
+}
+
+// public list 
+.list {
+  background-color: @white;
+  .ant-list-item, .ant-list-item:last-child {
+    padding: @gap10 @gap20;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin: @gap10 0;
+    .box-radius();
+    &:hover {
+      border-color: @primary-color;
+      .box-shadow(0 0 0 2px, rgba(54, 203, 203, 35%));
+      cursor: pointer;
+    }
+    &.failure {
+      border-color:@font-red;
+    }
+    &.sample {
+      border-color: @primary-color;
+      background-color: fade(@primary-color, 5);
+    }
+  }
+  .ant-list-item-meta-title {
+    font-size: @font-size18;
+  }
+  .title {
+    .titleItem {
+      font-size: @font-size14;
+      font-weight: normal;
+      margin-left: @gap20;
+    }
+  }
+  .titleLabel, .bottomContent {
+    display: inline-block;
+    margin-right: @gap8;
+    color: @color45;
+  }
+  .titleLabel {
+    color: @color45;
+  }
+  .emphasis {
+    color: @font-yellow;
+  }
+  .bottomLabel {
+    color: @color65;
+  }
+  .content {
+    padding-top: @gap5;
+    text-align: center;
+    .contentLabel {
+      color:@color45;
+      padding-bottom: @gap5;
+    }
+    .contentContent, .sets {
+      color: @color85;
+      font-size: @font-size20;
+    }
+    .sets {
+      color: @primary-color;
+      display: flex;
+      justify-content: center;
+
+      span {
+        display: inline-block;
+        overflow: hidden;
+      }
+      .setLabel{
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 120px;
+        padding: 0 @gap5;
+        &:first-child {
+          color:@font-bule;
+        }
+      }
+    }
+    .currentIteration {
+      color: @font-red;
+    }
+  }
+}
+
+// public dataset and model group 
+.groupList {
+  .groupItem {
+    
+  }
+  .groupTitle {
+    line-height: 56px;
+    border-bottom: 1px solid #eee;
+    padding: 0 20px;
+  }
+  .foldBtn, .groupName {
+    font-size: 14px;
+    font-weight: bold;
+    color: @link-color;
+  }
+  .groupName {
+    margin-right: 10px;
+  }
+  .groupTable {
+    margin: 10px 20px;
+  }
+}
+
+// public Detail card
+.ant-card-body,
+.datasetDetail,
+.taskDetail, 
+.error {
+  .infoTable {
+    margin-bottom: 20px;
+    .ant-descriptions-view {
+      border: none;
+    }
+    tr,th,td {
+      border: none;
+    }
+    tr {
+      margin-bottom: 1px;
+      border-bottom: 1px solid #fff;
+    }
+  }
+}
+.datasetDetail,
+.taskDetail, 
+.error {
+  .title {
+    line-height: 18px;
+    font-size: 16px;
+    font-weight: bold;
+    &::before {
+      content: ' ';
+      display: inline-block;
+      width: 6px;
+      height: 18px;
+      background-color: #36CBCB;
+      vertical-align: bottom;
+      margin-right: 10px;
+    }
+  }
+}
+
+// public panel title
+.panel {
+  .header {
+    margin: 10px 0;
+    padding: 0 16px;
+    height: 50px;
+    line-height: 50px;
+    background-color: #fafafa;
+    color: rgba(0, 0, 0, 0.85);
+    cursor: pointer;
+    &:before {
+      content: ' ';
+      display: inline-block;
+      margin-right: 10px;
+      margin-top: 18px;
+      height: 16px;
+      width: 6px;
+      background-color: @primary-color;
+    }
+    .title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .foldBtn {
+      color: @btn-primary-bg;
+    }
+  }
+}
+
+// public pager
+.ant-pagination.pager {
+  margin: 16px 0;
+  text-align: right;
 }

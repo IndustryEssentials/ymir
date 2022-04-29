@@ -445,12 +445,12 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
   )
 
   const renderGroups = (<>
-    <div className={styles.groupList}>
+    <div className='groupList'>
       {datasets.map(group => <div className={styles.groupItem} key={group.id}>
-        <Row className={styles.groupTitle}>
+        <Row className='groupTitle'>
           <Col flex={1} onClick={() => showVersions(group.id)}>
-            <span className={styles.foldBtn}>{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
-            <span className={styles.groupName}>{group.name}</span>
+            <span className='foldBtn'>{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+            <span className='groupName'>{group.name}</span>
             {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
           </Col>
           <Col><Space>
@@ -458,7 +458,7 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
             <a hidden={true} onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
-        <div className={styles.groupTable} hidden={!visibles[group.id]}>
+        <div className='groupTable' hidden={!visibles[group.id]}>
           <Table
             dataSource={datasetVersions[group.id]}
             onChange={tableChange}
@@ -470,17 +470,17 @@ function Datasets({ pid, project = {}, group, datasetList, query, versions, ...f
         </div>
       </div>)}
     </div>
-    <Pagination className={styles.pager} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
     <div className={styles.dataset}>
-      <div className={styles.actions}>
+      <div className='actions'>
         <Space>
           {addBtn}
         </Space>
       </div>
-      <div className={styles.list}>
+      <div className={`list ${styles.list}`}>
         <div className={styles.search}>
           <Form
             name='queryForm'
