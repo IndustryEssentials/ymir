@@ -615,7 +615,7 @@ global___Evaluation = Evaluation
 
 class SingleIouEvaluations(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class ClassesEvaluationsEntry(google.protobuf.message.Message):
+    class CiEvaluationsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
@@ -630,7 +630,7 @@ class SingleIouEvaluations(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class TopicsEvaluationsEntry(google.protobuf.message.Message):
+    class TopicEvaluationsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
@@ -646,26 +646,26 @@ class SingleIouEvaluations(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     IOU_THRESH_FIELD_NUMBER: builtins.int
-    CLASSES_EVALUATIONS_FIELD_NUMBER: builtins.int
-    TOPICS_EVALUATIONS_FIELD_NUMBER: builtins.int
+    CI_EVALUATIONS_FIELD_NUMBER: builtins.int
+    TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
     iou_thresh: builtins.float = ...
     """0 for average"""
 
     @property
-    def classes_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
+    def ci_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
         """key: class ids"""
         pass
     @property
-    def topics_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
-        """key: topics"""
+    def topic_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
+        """key: topic names"""
         pass
     def __init__(self,
         *,
         iou_thresh : builtins.float = ...,
-        classes_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
-        topics_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
+        ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
+        topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["classes_evaluations",b"classes_evaluations","iou_thresh",b"iou_thresh","topics_evaluations",b"topics_evaluations"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ci_evaluations",b"ci_evaluations","iou_thresh",b"iou_thresh","topic_evaluations",b"topic_evaluations"]) -> None: ...
 global___SingleIouEvaluations = SingleIouEvaluations
 
 class SingleTopicEvaluation(google.protobuf.message.Message):
