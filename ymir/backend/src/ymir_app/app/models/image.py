@@ -15,7 +15,7 @@ class DockerImage(Base):
     name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
     url = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
     hash = Column(String(settings.STRING_LEN_LIMIT), index=True)
-    description = Column(String(settings.STRING_LEN_LIMIT))
+    description = Column(String(settings.LONG_STRING_LEN_LIMIT))
     state = Column(Integer, index=True, nullable=False)
     related = relationship(
         "DockerImage",

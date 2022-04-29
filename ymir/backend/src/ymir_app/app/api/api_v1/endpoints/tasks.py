@@ -18,6 +18,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     FailedtoCreateTask,
     FailedToUpdateTaskStatus,
+    ModelNotFound,
     ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -196,8 +197,12 @@ class TaskResult:
         return self._user_labels
 
     @property
-    def model_info(self) -> ModelMetaData:
-        result = self.viz.get_model()
+    def model_info(self) -> Optional[ModelMetaData]:
+        try:
+            result = self.viz.get_model()
+        except (ModelNotReady, ModelNotFound):
+            logger.exception("[update task] failed to get model from task")
+            return None
         try:
             self.save_model_stats(result)
         except FailedToConnectClickHouse:
@@ -209,7 +214,7 @@ class TaskResult:
         return self.viz.get_dataset(user_labels=self.user_labels)
 
     @property
-    def result_info(self) -> Union[DatasetMetaData, ModelMetaData]:
+    def result_info(self) -> Union[DatasetMetaData, ModelMetaData, None]:
         if self._result is None:
             self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
         return self._result
@@ -324,14 +329,20 @@ class TaskResult:
             logger.error("[update task] task result record not found, skip")
             return
 
+        if self.result_type is ResultType.model and self.model_info:
+            # special path for model
+            # as long as we can get model_info, set model as ready and
+            # save related task parameters and config accordingly
+            crud.task.update_parameters_and_config(
+                self.db,
+                task=task_in_db,
+                parameters=self.model_info.task_parameters,
+                config=json.dumps(self.model_info.executor_config),
+            )
+            crud.model.finish(self.db, result_record.id, result_state=ResultState.ready, result=asdict(self.model_info))
+            return
+
         if task_result.state is TaskState.done:
-            if isinstance(self.result_info, ModelMetaData):
-                crud.task.update_parameters_and_config(
-                    self.db,
-                    task=task_in_db,
-                    parameters=self.result_info.task_parameters,
-                    config=json.dumps(self.result_info.executor_config),
-                )
             crud_func.finish(
                 self.db,
                 result_record.id,

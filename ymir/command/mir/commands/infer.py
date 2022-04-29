@@ -303,7 +303,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.extend(['--name', executant_name])
     cmd.append(executor)
 
-    out_log_path = os.path.join(out_path, 'ymir-executor-out.log')
+    out_log_path = os.path.join(out_path, mir_settings.EXECUTOR_OUTLOG_NAME)
     logging.info(f"starting {task_type} docker container with cmd: {' '.join(cmd)}")
     with open(out_log_path, 'a') as f:
         # run and wait, if non-zero value returned, raise

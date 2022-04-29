@@ -159,7 +159,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   name='name'
                   rules={[
                     { required: true, whitespace: true, message: t('project.add.form.name.required') },
-                    {min: 1, max: 100 },
+                    { min: 1, max: 100 },
                   ]}
                 >
                   <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
@@ -187,7 +187,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 >
                   <Select mode="tags" showArrow tokenSeparators={[',']}
                     placeholder={t('project.add.form.keyword.placeholder')}
-                    disabled={isEdit}
+                    disabled={isEdit && project?.currentIteration?.id}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                     {keywords.map(keyword => (
                       <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
@@ -231,7 +231,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     {project.trainSet?.name}
                     <Form.Item noStyle name='trainSetVersion'>
                       <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
-                        {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) => 
+                        {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) =>
                           <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
                         )}
                       </Select>
@@ -242,7 +242,14 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
                     { required: true, message: t('task.train.form.testset.required') },
                   ]}>
-                    <DatasetSelect pid={id} filter={[miningSet]} filterGroup={[project?.trainSet?.id, project?.miningSet?.groupId]} onChange={(value) => value && setTestSet(value)} />
+                    <DatasetSelect
+                      pid={id}
+                      filter={[miningSet]}
+                      filterGroup={[project?.trainSet?.id, project?.miningSet?.groupId]}
+                      filters={datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))}
+                      onChange={(value) => setTestSet(value)}
+                      allowClear
+                    />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>
@@ -250,7 +257,13 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     rules={[
                       { required: true, message: t('task.train.form.miningset.required') },
                     ]}>
-                    <DatasetSelect pid={id} filter={[testSet]} filterGroup={[project?.trainSet?.id, project?.testSet?.groupId]} onChange={(value) => value && setMiningSet(value)} />
+                    <DatasetSelect
+                      pid={id}
+                      filter={[testSet]}
+                      filterGroup={[project?.trainSet?.id, project?.testSet?.groupId]}
+                      onChange={(value) => setMiningSet(value)}
+                      allowClear
+                    />
                   </Form.Item>
                 </Tip>
                 <Tip hidden={true}>

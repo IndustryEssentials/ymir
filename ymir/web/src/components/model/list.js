@@ -30,12 +30,11 @@ import {
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, group, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, iterations, group, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
-  const [iterations, setIterations] = useState([])
   const [total, setTotal] = useState(0)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
@@ -87,15 +86,11 @@ function Model({ pid, project = {}, group, modelList, versions, query, ...func }
 
   useEffect(() => {
     let dvs = setVersionLabelsByProject(versions, project)
-    if (iterations.length) {
+    if (iterations?.length) {
       dvs = setVersionLabelsByIterations(versions, iterations)
     }
     setModelVersions(dvs)
   }, [versions, project, iterations])
-
-  useEffect(() => {
-    pid && fetchIterations(pid)
-  }, [pid])
 
   useEffect(async () => {
     if (name) {
@@ -232,13 +227,6 @@ function Model({ pid, project = {}, group, modelList, versions, query, ...func }
 
   async function fetchVersions(id, force) {
     await func.getVersions(id, force)
-  }
-
-  async function fetchIterations(pid) {
-    const iterations = await func.getIterations(pid)
-    if (iterations) {
-      setIterations(iterations)
-    }
   }
 
   function showTitle(str) {
@@ -481,12 +469,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'model/updateModel',
         payload: { id, name },
-      })
-    },
-    getIterations(id) {
-      return dispatch({
-        type: 'iteration/getIterations',
-        payload: { id, },
       })
     },
     updateQuery: (query) => {

@@ -1,5 +1,6 @@
 from dataclasses import asdict, dataclass, field
 from functools import wraps
+import linecache
 import logging
 import os
 import pathlib
@@ -323,3 +324,16 @@ def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_in
 
     with open(env_config_file_path, 'w') as f:
         yaml.safe_dump(env_config.dict(), f)
+
+
+def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str:
+    out_log_path = os.path.join(work_dir, 'out', mir_settings.EXECUTOR_OUTLOG_NAME)
+    if not os.path.isfile(out_log_path):
+        return ''
+
+    tail_lines = linecache.getlines(out_log_path)[-1 * tail_line_count:]
+    if not tail_lines:
+        return ''
+
+    joint_tail_lines = ''.join(tail_lines)
+    return f"EXECUTOR OUTLOG TAIL FROM: {out_log_path}\n{joint_tail_lines}"

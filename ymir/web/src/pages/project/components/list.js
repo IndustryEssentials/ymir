@@ -26,6 +26,12 @@ const ProjectList = ({ list, query, ...func }) => {
   }, [list])
 
   useEffect(() => {
+    if (history.action !== 'POP') {
+      initState()
+    }
+  }, [history.location])
+
+  useEffect(() => {
     getData()
   }, [query])
 
@@ -70,8 +76,12 @@ const ProjectList = ({ list, query, ...func }) => {
     delRef.current.del(id, name)
   }
 
-  const search = (values) => {
-    func.updateQuery({ ...query, ...values })
+  const search = ({ name = '' }) => {
+    setTimeout(() => {
+      if (name === form.getFieldValue('name')) {
+        func.updateQuery({ ...query, name: name.trim() })
+      }
+    }, 1000)
   }
 
   const delOk = (id) => {
@@ -86,6 +96,11 @@ const ProjectList = ({ list, query, ...func }) => {
       message.success(t('project.create.success'))
       getData()
     }
+  }
+  
+  async function initState() {
+    await func.resetQuery()
+    form.resetFields()
   }
 
   const more = (item) => {
@@ -107,7 +122,7 @@ const ProjectList = ({ list, query, ...func }) => {
   }
 
   const addBtn = (
-    <Space className={s.actions}>
+    <Space className="actions">
       <Button className={s.addBtn} type="primary" onClick={() => history.push('/home/project/add')} icon={<AddIcon />}>{t('project.new.label')}</Button>
       <Button className={s.addBtn} type="primary" onClick={() => addExample()} icon={<AddIcon />}>{t('project.new.example.label')}</Button>
     </Space>
@@ -121,7 +136,7 @@ const ProjectList = ({ list, query, ...func }) => {
       onValuesChange={search}
       colon={false}
     >
-      <Form.Item name="name" label={t('project.query.name')}>
+      <Form.Item name="name" label={t('project.query.name')} initialValue={query.name}>
         <Input style={{ width: '230%' }} placeholder={t("project.query.name.placeholder")} allowClear suffix={<SearchIcon />} />
       </Form.Item>
     </Form>
@@ -187,15 +202,15 @@ const ProjectList = ({ list, query, ...func }) => {
 
   return (
     <div className={s.projectContent}>
-      <Space className='actions'>{addBtn}</Space>
-      <Card>
+      {addBtn}
+      <Card className={s.listContainer}>
         {searchPanel}
         <ConfigProvider renderEmpty={() => <ProjectEmpty addExample={addExample} />}>
-        <List
-          className='list'
-          dataSource={projects}
-          renderItem={renderItem}
-        />
+          <List
+            className={s.list}
+            dataSource={projects}
+            renderItem={renderItem}
+          />
         </ConfigProvider>
         <Pagination className= 'pager' onChange={pageChange}
           defaultCurrent={1} defaultPageSize={query.limit} total={total}
