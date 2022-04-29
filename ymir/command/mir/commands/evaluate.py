@@ -39,7 +39,13 @@ class CmdEvaluate(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no assets in predictions')
         if set(mir_pred.mir_metadatas.attributes.keys()) != set(mir_gt.mir_metadatas.attributes.keys()):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='prediction and ground truth have different assets list')
+                                  error_message='prediction and ground truth have different assets')
+        pred_annotations = mir_pred.mir_annotations.task_annotations[
+            mir_pred.mir_annotations.head_task_id].image_annotations
+        gt_annotations = mir_gt.mir_annotations.task_annotations[mir_gt.mir_annotations.head_task_id].image_annotations
+        if not pred_annotations or not gt_annotations:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='prediction or ground truth annotations empty')
 
         # eval
         evaluate_result = _evaluate_with_cocotools(mir_pred=mir_pred, mir_gt=mir_gt)
@@ -50,12 +56,13 @@ class CmdEvaluate(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _evaluate_with_cocotools(mir_pred: eval.MirCoco, mir_gt: eval.MirCoco) -> Any:
+def _evaluate_with_cocotools(mir_pred: eval.MirCoco, mir_gt: eval.MirCoco) -> mirpb.Evaluation:
     evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_pred)
     # evaluator.evaluate()
     # evaluator.accumulate()
     # evaluator.summarize()
-    # return evaluator.stats
+    evaluation_result = mirpb.Evaluation()
+    return evaluation_result
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
