@@ -165,7 +165,7 @@ const ProjectList = ({ list, query, ...func }) => {
     </Row>
     const desc = <>
       <Row className='content' justify="center" >
-        <Col span={4} className={s.stats}> 
+        <Col span={4} className={s.stats}>
           <div className='contentLabel'>Datasets</div>
           <div className='contentContent'>{item.setCount}</div>
         </Col>
@@ -207,7 +207,7 @@ const ProjectList = ({ list, query, ...func }) => {
         {searchPanel}
         <ConfigProvider renderEmpty={() => <ProjectEmpty addExample={addExample} />}>
           <List
-            className={s.list}
+            className='list'
             dataSource={projects}
             renderItem={renderItem}
           />

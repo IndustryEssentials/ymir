@@ -12,6 +12,9 @@ import Models from '@/components/model/list'
 import s from "./detail.less"
 import Prepare from "./components/prepare"
 import KeywordRates from "@/components/dataset/keywordRates"
+import { EditIcon } from "../../components/common/icons"
+import { SearchEyeIcon } from "../../components/common/icons"
+
 
 const tabsTitle = [
   { tab: t('project.tab.set.title'), key: 'set', },
@@ -112,8 +115,8 @@ function ProjectDetail(func) {
           </Col>
           <Col>
             <Space>
-              <Link to={`/home/project/add/${id}`}>{t('project.settings.title')}</Link>
-              <Link to={`/home/project/iterations/${id}`}>{t('breadcrumbs.project.iterations')}</Link>
+              <Link to={`/home/project/add/${id}`}><EditIcon />{t('project.settings.title')}</Link>
+              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon />{t('breadcrumbs.project.iterations')}</Link>
             </Space>
           </Col>
         </Row>
