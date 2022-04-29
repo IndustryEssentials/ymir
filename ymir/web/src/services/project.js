@@ -93,6 +93,7 @@ export function addExampleProject() {
 export function updateProject(id, {
   name,
   targetIteration,
+  keywords,
   targetMap,
   targetDataset,
   strategy,
@@ -108,6 +109,7 @@ export function updateProject(id, {
     url: `/projects/${id}`,
     data: {
       name,
+      keywords,
       iteration_target: targetIteration,
       map_target: targetMap,
       training_dataset_count_target: targetDataset,
