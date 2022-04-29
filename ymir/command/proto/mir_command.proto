@@ -202,9 +202,10 @@ message SingleIouTopics {
 message SingleTopicEvaluation {
     float average_percision = 1;
     float average_recall = 2;
-    float fp = 3;
-    float fn = 4;
-    repeated float pr_curve = 5;
+    float tp = 3;
+    float fp = 4;
+    float fn = 5;
+    repeated float pr_curve = 6;
 }
 
 /// ========== context.mir ==========
