@@ -20,7 +20,7 @@ import Actions from "@/components/table/actions"
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
-  EditIcon, DeleteIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon,
+  EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon,
 } from "@/components/common/icons"
 
 const { confirm } = Modal
@@ -246,7 +246,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         label: t("common.action.hide"),
         onclick: () => hide(record),
         hidden: () => isRunning(state) || isProtected,
-        icon: <DeleteIcon />,
+        icon: <EyeOffIcon />,
       },
     ]
     return menus

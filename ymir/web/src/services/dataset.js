@@ -106,11 +106,13 @@ export function delDatasetGroup(id) {
 
 /**
  * hide datasets
+ * @param {number} projectId
  * @param {number} ids
  * @returns
  */
- export function hideDatasets(ids) {
+ export function hideDatasets(projectId, ids = []) {
   return request.post(`/datasets/batch`, {
+    project_id: projectId,
     operations: ids.map(id => ({ id, action: actions.hide, }))
   })
 }

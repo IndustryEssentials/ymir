@@ -69,6 +69,8 @@ export function transferProject(data: BackendData) {
     targetMap: data.map_target,
     targetDataset: data.training_dataset_count_target,
     targetIteration: data.iteration_target || 0,
+    hiddenDatasets: data.referenced_dataset_ids || [],
+    hiddenModels: data.referenced_model_ids || [],
     updateTime: format(data.update_datetime),
   }
   return project

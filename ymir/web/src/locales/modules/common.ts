@@ -65,6 +65,9 @@ const common = {
   'common.action.import': {cn: '导入', en: 'Import', },
   'common.action.hide': {cn: '隐藏', en: 'Hide', },
   'common.action.multiple.hide': {cn: '批量隐藏', en: 'Multiple Hide', },
+  'common.hidden.label': {cn: '显示状态', en: 'Visible Status', },
+  'common.state.hidden': {cn: '隐藏', en: 'Hidden', },
+  'common.selected.required': {cn: '需要选中至少一项', en: 'Selected required', },
 }
 
 export default common

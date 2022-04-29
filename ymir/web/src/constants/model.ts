@@ -30,6 +30,7 @@ export function transferModel (data: BackendData): ModelVersion {
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
     state: data.result_state,
+    keywords: data?.related_task?.parameters?.keykwords || [],
     map: data.map || 0,
     url: data.url || '',
     createTime: format(data.create_datetime),
@@ -42,5 +43,6 @@ export function transferModel (data: BackendData): ModelVersion {
     duration: data.related_task.duration,
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: data.related_task,
+    hidden: !data.is_visible,
   }
 }

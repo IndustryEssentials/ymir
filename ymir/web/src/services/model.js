@@ -87,11 +87,13 @@ export function delModelGroup(id) {
 
 /**
  * hide models
+ * @param {number} projectId
  * @param {number} ids
  * @returns
  */
-export function hideModels(ids = []) {
+export function hideModels(projectId, ids = []) {
   return request.post(`/models/batch`, {
+    project_id: projectId,
     operations: ids.map(id => ({ id, action: actions.hide, }))
   })
 }

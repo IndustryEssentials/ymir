@@ -57,7 +57,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
               </Link>
             </div>
           ) : null}
-          {taskTypes.map((type) => (
+          {!dataset.hidden ? taskTypes.map((type) => (
             <Button
               key={type}
               type="primary"
@@ -65,7 +65,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
             >
               {t(`task.type.${type}`)}
             </Button>
-          ))}
+          )) : null}
         </Space>
       </Card>
     </div>

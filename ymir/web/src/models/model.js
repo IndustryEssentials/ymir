@@ -137,8 +137,11 @@ export default {
         return result
       }
     },
-    *hideModels({ payload: ids }, { call, put }) {
-      const { code, result } = yield call(hideModels, ids)
+    *hideModels({ payload: { pid, ids } }, { call, put }) {
+      if (!(pid && ids?.length)) {
+        return
+      }
+      const { code, result } = yield call(hideModels, pid, ids)
       if (code === 0) {
         return result
       }
