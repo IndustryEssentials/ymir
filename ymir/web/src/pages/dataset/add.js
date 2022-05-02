@@ -7,6 +7,7 @@ import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
 import Uploader from '@/components/form/uploader'
 import { randomNumber } from '@/utils/number'
+import { urlValidator } from '@/components/form/validators'
 import s from './add.less'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import { TipsIcon } from '@/components/common/icons'
@@ -114,6 +115,7 @@ const Add = (props) => {
       ...values,
       strategy,
       projectId: pid,
+      url: (values.url || '').trim(),
     }
     if (currentType === TYPES.COPY) {
       params.datasetId = params.datasetId[1]
@@ -345,7 +347,7 @@ const Add = (props) => {
                   noStyle
                   rules={[
                     { required: true, message: t('dataset.add.form.net.tip') },
-                    { type: 'url', }
+                    { validator: urlValidator, }
                   ]}
                 >
                   <Input placeholder={t('dataset.add.form.net.tip')} max={512} allowClear />

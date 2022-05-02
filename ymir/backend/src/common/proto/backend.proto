@@ -275,10 +275,10 @@ message Label {
 }
 
 message EvaluateConfig {
-    float iou_thresh_from = 1;  // default: 0.5
-    float iou_thresh_to = 2;  // default: 0.95
-    float iou_thresh_step = 3;  // default: 0.05
-    float conf_thresh = 4;
+    float iou_threshold_from = 1;  // default: 0.5
+    float iou_threshold_to = 2;  // default: 0.95
+    float iou_threshold_step = 3;  // default: 0.05
+    float conf_threshold = 4;
 }
 
 service mir_controller_service {
