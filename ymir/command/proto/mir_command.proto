@@ -192,10 +192,10 @@ message ModelMeta {
 
 message Evaluation {
     float conf_threshold = 1;
-    repeated SingleIouEvaluations iou_evaluations = 2;
+    repeated SingleIouEvaluation iou_evaluation = 2;
 }
 
-message SingleIouEvaluations {
+message SingleIouEvaluation {
     float iou_thresh = 1;  // 0 for average
     map<int32, SingleTopicEvaluation> ci_evaluations = 2;  // key: class ids
     map<string, SingleTopicEvaluation> topic_evaluations = 3;  // key: topic names
