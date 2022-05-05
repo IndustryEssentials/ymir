@@ -1,5 +1,6 @@
 from collections import defaultdict
 import copy
+import logging
 from typing import List
 
 import numpy as np
@@ -61,10 +62,10 @@ class MirCoco:
         return result_annotations_list
 
     def get_asset_ids(self) -> List[str]:
-        return self.mir_metadatas.attributes.keys()
+        return sorted(list(self.mir_metadatas.attributes.keys()))
 
     def get_class_ids(self) -> List[int]:
-        return self.mir_keywords.index_predifined_keyids.keys()
+        return sorted(list(self.mir_keywords.index_predifined_keyids.keys()))
 
 
 class MirEval:
@@ -80,7 +81,7 @@ class MirEval:
         self.stats = []  # result summarization
         self.ious = {}  # ious between all gts and dts
         self.params.imgIds = sorted(coco_gt.get_asset_ids())
-        self.params.catIds = sorted(coco_dt.get_asset_ids())
+        self.params.catIds = sorted(coco_dt.get_class_ids())
 
     def _prepare(self):
         '''
@@ -92,13 +93,14 @@ class MirEval:
         #     for ann in anns:
         #         rle = coco.annToRLE(ann)
         #         ann['segmentation'] = rle
-        p = self.params
-        if p.useCats:
-            gts = self.cocoGt.get_annotations(asset_ids=p.imgIds, class_ids=p.catIds)
-            dts = self.cocoDt.get_annotations(asset_ids=p.imgIds, class_ids=p.catIds)
+        # p = self.params
+        if self.params.useCats:
+            gts = self.cocoGt.get_annotations(asset_ids=self.params.imgIds, class_ids=self.params.catIds)
+            dts = self.cocoDt.get_annotations(asset_ids=self.params.imgIds, class_ids=self.params.catIds)
         else:
-            gts = self.cocoGt.get_annotations(asset_ids=p.imgIds)
-            dts = self.cocoDt.get_annotations(asset_ids=p.imgIds)
+            gts = self.cocoGt.get_annotations(asset_ids=self.params.imgIds)
+            dts = self.cocoDt.get_annotations(asset_ids=self.params.imgIds)
+        logging.debug(f"len of gts and dts: {len(gts)}, {len(dts)}")
 
         # convert ground truth to mask if iouType == 'segm'
         # if p.iouType == 'segm':
@@ -126,13 +128,13 @@ class MirEval:
         Run per image evaluation on given images and store results (a list of dict) in self.evalImgs
         :return: None
         '''
-        print('Running per image evaluation...')
+        logging.debug('Running per image evaluation...')
         p = self.params
         # add backward compatibility if useSegm is specified in params
         # if not p.useSegm is None:
         #     p.iouType = 'segm' if p.useSegm == 1 else 'bbox'
         #     print('useSegm (deprecated) is not None. Running {} evaluation'.format(p.iouType))
-        print('Evaluate annotation type *{}*'.format(p.iouType))
+        logging.debug('Evaluate annotation type *{}*'.format(p.iouType))
         p.imgIds = list(np.unique(p.imgIds))
         if p.useCats:
             p.catIds = list(np.unique(p.catIds))
