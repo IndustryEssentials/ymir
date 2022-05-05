@@ -287,4 +287,4 @@ class TestToolsEval(unittest.TestCase):
         evaluator.accumulate()
         evaluator.summarize()
         logging.info(f"evaluator stats: {evaluator.stats}")
-        raise ValueError('a fake error occured')
+        raise ValueError('a fake error occured')  # for test: captured outputs

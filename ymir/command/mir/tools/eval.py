@@ -85,8 +85,9 @@ class MirEval:
 
     def _prepare(self):
         '''
-        Prepare ._gts and ._dts for evaluation based on params
+        Prepare self._gts and self._dts for evaluation based on params
         :return: None
+        :side effects: created and filled self._gts and self._dts; changed self.evalImgs and self.eval
         '''
         # def _toMask(anns, coco):
         #     # modify ann['segmentation'] by reference
@@ -94,7 +95,7 @@ class MirEval:
         #         rle = coco.annToRLE(ann)
         #         ann['segmentation'] = rle
         # p = self.params
-        if self.params.useCats:
+        if self.params.useCats:  # TODO: shall i remove this?
             gts = self.cocoGt.get_annotations(asset_ids=self.params.imgIds, class_ids=self.params.catIds)
             dts = self.cocoDt.get_annotations(asset_ids=self.params.imgIds, class_ids=self.params.catIds)
         else:
@@ -112,12 +113,14 @@ class MirEval:
         #     gt['ignore'] = 'iscrowd' in gt and gt['iscrowd']
         #     if p.iouType == 'keypoints':
         #         gt['ignore'] = (gt['num_keypoints'] == 0) or gt['ignore']
-        self._gts = defaultdict(list)  # gt for evaluation
-        self._dts = defaultdict(list)  # dt for evaluation
-        for gt in gts:
+
+        # self._gts and self._dts: key: (asset_id, class_id), value: {'asset_id': 'str', 'annotation': 'mirpb.Annotation'}
+        self._gts = defaultdict(list)
+        self._dts = defaultdict(list)
+        for gt in gts:  # gt: {'asset_id': 'str', 'annotation': 'mirpb.Annotation'}
             annotation: mirpb.Annotation = gt['annotation']
             self._gts[gt['asset_id'], annotation.class_id].append(gt)
-        for dt in dts:
+        for dt in dts:  # gt: {'asset_id': 'str', 'annotation': 'mirpb.Annotation'}
             annotation: mirpb.Annotation = dt['annotation']
             self._dts[dt['asset_id'], annotation.class_id].append(dt)
         self.evalImgs = defaultdict(list)  # per-image per-category evaluation results
@@ -128,13 +131,11 @@ class MirEval:
         Run per image evaluation on given images and store results (a list of dict) in self.evalImgs
         :return: None
         '''
-        logging.debug('Running per image evaluation...')
         p = self.params
         # add backward compatibility if useSegm is specified in params
         # if not p.useSegm is None:
         #     p.iouType = 'segm' if p.useSegm == 1 else 'bbox'
         #     print('useSegm (deprecated) is not None. Running {} evaluation'.format(p.iouType))
-        logging.debug('Evaluate annotation type *{}*'.format(p.iouType))
         p.imgIds = list(np.unique(p.imgIds))
         if p.useCats:
             p.catIds = list(np.unique(p.catIds))
