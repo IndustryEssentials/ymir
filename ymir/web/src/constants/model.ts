@@ -30,7 +30,7 @@ export function transferModel (data: BackendData): ModelVersion {
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
     state: data.result_state,
-    keywords: data?.related_task?.parameters?.keykwords || [],
+    keywords: data?.related_task?.parameters?.keywords || [],
     map: data.map || 0,
     url: data.url || '',
     createTime: format(data.create_datetime),
