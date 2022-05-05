@@ -72,6 +72,8 @@ services:
     image: bitnami/redis:5.0.4
     environment:
       REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ${YMIR_PATH}/labelfree/redis-persistence:/bitnami/redis/data
     networks:
       - labelfreenetwork
     restart: always
