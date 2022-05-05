@@ -603,15 +603,32 @@ global___ModelMeta = ModelMeta
 
 class Evaluation(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class IouEvaluationsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleIouEvaluation: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleIouEvaluation] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
     CONF_THRESHOLD_FIELD_NUMBER: builtins.int
     IOU_EVALUATIONS_FIELD_NUMBER: builtins.int
     conf_threshold: builtins.float = ...
     @property
-    def iou_evaluations(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SingleIouEvaluation]: ...
+    def iou_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleIouEvaluation]:
+        """key: string of iou threshold"""
+        pass
     def __init__(self,
         *,
         conf_threshold : builtins.float = ...,
-        iou_evaluations : typing.Optional[typing.Iterable[global___SingleIouEvaluation]] = ...,
+        iou_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleIouEvaluation]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["conf_threshold",b"conf_threshold","iou_evaluations",b"iou_evaluations"]) -> None: ...
 global___Evaluation = Evaluation
@@ -648,10 +665,10 @@ class SingleIouEvaluation(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    IOU_THRESH_FIELD_NUMBER: builtins.int
+    IOU_THRESHOLD_FIELD_NUMBER: builtins.int
     CI_EVALUATIONS_FIELD_NUMBER: builtins.int
     TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
-    iou_thresh: builtins.float = ...
+    iou_threshold: builtins.float = ...
     """0 for average"""
 
     @property
@@ -664,11 +681,11 @@ class SingleIouEvaluation(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        iou_thresh : builtins.float = ...,
+        iou_threshold : builtins.float = ...,
         ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
         topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ci_evaluations",b"ci_evaluations","iou_thresh",b"iou_thresh","topic_evaluations",b"topic_evaluations"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ci_evaluations",b"ci_evaluations","iou_threshold",b"iou_threshold","topic_evaluations",b"topic_evaluations"]) -> None: ...
 global___SingleIouEvaluation = SingleIouEvaluation
 
 class SingleTopicEvaluation(google.protobuf.message.Message):
@@ -685,7 +702,7 @@ class SingleTopicEvaluation(google.protobuf.message.Message):
     fp: builtins.float = ...
     fn: builtins.float = ...
     @property
-    def pr_curve(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.float]: ...
+    def pr_curve(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___FloatPoint]: ...
     def __init__(self,
         *,
         ap : builtins.float = ...,
@@ -693,10 +710,24 @@ class SingleTopicEvaluation(google.protobuf.message.Message):
         tp : builtins.float = ...,
         fp : builtins.float = ...,
         fn : builtins.float = ...,
-        pr_curve : typing.Optional[typing.Iterable[builtins.float]] = ...,
+        pr_curve : typing.Optional[typing.Iterable[global___FloatPoint]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["ap",b"ap","ar",b"ar","fn",b"fn","fp",b"fp","pr_curve",b"pr_curve","tp",b"tp"]) -> None: ...
 global___SingleTopicEvaluation = SingleTopicEvaluation
+
+class FloatPoint(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    X_FIELD_NUMBER: builtins.int
+    Y_FIELD_NUMBER: builtins.int
+    x: builtins.float = ...
+    y: builtins.float = ...
+    def __init__(self,
+        *,
+        x : builtins.float = ...,
+        y : builtins.float = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["x",b"x","y",b"y"]) -> None: ...
+global___FloatPoint = FloatPoint
 
 class MirContext(google.protobuf.message.Message):
     """/ ========== context.mir =========="""
