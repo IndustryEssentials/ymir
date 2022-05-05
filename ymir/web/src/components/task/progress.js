@@ -36,12 +36,12 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
   }
 
   return (
-    <div className={s.taskDetail}>
+    <div className='taskDetail'>
       <Descriptions
         bordered
         labelStyle={labelStyle}
-        title={<div className={s.title}>{t("task.detail.state.title")}</div>}
-        className={s.infoTable}
+        title={<div className='title'>{t("task.detail.state.title")}</div>}
+        className='infoTable'
       >
         <Item label={t("task.detail.state.current")}>
           <Row>
