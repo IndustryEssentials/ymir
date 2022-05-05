@@ -1,115 +1,132 @@
 import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
 import s from "../index.less"
-import { useHistory, useLocation, useParams } from "umi"
-import { Form, Table, Modal, ConfigProvider, Card, Space, Row, Col, Button, Popover, } from "antd"
+import { Table, Space, Button, message, } from "antd"
 
 import t from "@/utils/t"
-import { tabs } from '@/constants/project'
+import { humanize } from "@/utils/number"
+import Actions from "@/components/table/actions"
 import { EyeOnIcon } from "@/components/common/icons"
 
-const HiddenList = ({ active }) => {
-  const { id } = useParams()
+const HiddenList = ({ module, pid, ...func }) => {
   const [list, setHiddenList] = useState([])
+  const [total, setTotal] = useState(0)
+  const [query, setQuery] = useState({})
+  const [selected, setSelected] = useState([])
 
   useEffect(() => {
-    if (id) {
-      // fetchHiddenList()
+    if (pid) {
+      fetch()
     }
-  }, [id])
+  }, [pid])
+
+  useEffect(() => {
+    // initial query
+    setQuery({})
+    setSelected([])
+  }, [module])
+
+  useEffect(() => {
+    fetch()
+  }, [query])
 
   const columns = [
     {
-      title: showTitle("iteration.column.round"),
-      dataIndex: "round",
-      render: (round) => (t('iteration.round.label', { round })),
+      title: showTitle("dataset.column.name"),
+      dataIndex: "name",
+      render: (name, { versionName }) => `${name} ${versionName}`,
+      ellipsis: { showTitle: true },
     },
     {
-      title: showTitle("iteration.column.premining"),
-      dataIndex: "miningDatasetLabel",
-      render: (label, { versionName, miningDataset }) => renderPop(label, miningDataset),
-      ellipsis: true,
+      title: showTitle("dataset.column.asset_count"),
+      dataIndex: "assetCount",
+      render: (num) => humanize(num),
     },
     {
-      title: showTitle("iteration.column.mining"),
-      dataIndex: "miningResultDatasetLabel",
-      render: (label, { miningResultDataset }) => renderPop(label, miningResultDataset),
-      ellipsis: true,
+      title: showTitle("dataset.column.hidden_time"),
+      dataIndex: "updateTime",
     },
     {
-      title: showTitle("iteration.column.label"),
-      dataIndex: "labelDatasetLabel",
-      render: (label, { labelDataset }) => renderPop(label, labelDataset),
-      align: 'center',
-      ellipsis: true,
-    },
-    {
-      title: showTitle("iteration.column.test"),
-      dataIndex: "testDatasetLabel",
-      render: (label, { testDataset }) => renderPop(label, testDataset),
-      align: 'center',
-      ellipsis: true,
-    },
-    {
-      title: showTitle("iteration.column.merging"),
-      dataIndex: "trainUpdateDatasetLabel",
-      render: (label, { trainEffect, trainUpdateDataset }) => renderPop(label, trainUpdateDataset,
-        <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
-      align: 'center',
-      ellipsis: true,
-    },
-    {
-      title: showTitle("iteration.column.training"),
-      dataIndex: 'map',
-      render: (map, { mapEffect }) => <div className={s.td}>
-        <span>{map >= 0 ? percent(map) : null}</span>
-        <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
-      </div>,
-      align: 'center',
+      title: showTitle("dataset.column.action"),
+      dataIndex: "id",
+      render: (id, record) => <Actions menus={actionMenus(record)} />,
+      align: "center",
     },
   ]
 
-  function renderPop(label, dataset = {}, extra) {
-    return label
-  }
+  const actionMenus = ({ id }) => [{
+    key: "restore",
+    label: t("common.action.restore"),
+    onclick: () => restore([id]),
+    icon: <EyeOnIcon />,
+  }]
 
-  function renderExtra(value, showPercent = false) {
-    const cls = value < 0 ? s.negative : (value > 0 ? s.positive : s.neutral)
-    const label = showPercent ? percent(value) : value
-    return isNumber(value) ? <span className={cls}>{label}</span> : null
-  }
-
-
-  async function fetchHiddenList() {
-    const result = await func.getHiddenList(id)
+  async function fetch() {
+    const result = await func.getHiddenList(module, pid, query)
     if (result) {
-      const iters = fetchHandle(result)
-      setHiddenList(iters)
+      const { items, total } = result
+      setHiddenList(items)
+      setTotal(total)
     }
   }
 
-  function fetchHandle(list) {
-    return list
+  async function restore(ids = []) {
+    if (!ids.length) {
+      return message.warn(t('common.selected.required'))
+    }
+    const result = await func.restore(module, pid, ids)
+    if (result) {
+      // refresh list
+      fetch()
+      // init selected
+      setSelected([])
+    }
   }
 
   function multipleRestore() {
-
+    restore(selected)
   }
 
   function showTitle(str) {
     return <strong>{t(str)}</strong>
   }
 
-  return <><Space className={s.actions}>
-    <Button type="primary" onClick={multipleRestore}>
+  function pageChange({ current, pageSize }) {
+    const limit = pageSize
+    const offset = (current - 1) * pageSize
+    setQuery(old => ({
+      ...old,
+      limit,
+      offset,
+    }))
+  }
+
+  function rowSelectChange(keys) {
+    setSelected(keys)
+  }
+
+  return <><Space className='actions'>
+    <Button disabled={!selected.length} type="primary" onClick={multipleRestore}>
       <EyeOnIcon /> {t("common.action.multiple.restore")}
     </Button>
   </Space>
     <div className={s.table}>
       <Table
         dataSource={list}
-        pagination={false}
+        pagination={{
+          total,
+          showQuickJumper: true,
+          showSizeChanger: true,
+          defaultCurrent: 1,
+          defaultPageSize: query.offset || 20,
+        }}
+        onChange={pageChange}
         rowKey={(record) => record.id}
+        rowSelection={{
+          selectedRowKeys: selected,
+          onChange: (keys) => rowSelectChange(keys),
+        }}
+        rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
         columns={columns}
       ></Table>
     </div>
@@ -124,12 +141,20 @@ const props = (state) => {
 
 const actions = (dispatch) => {
   return {
-    getHiddenList(type, id) {
+    getHiddenList(module, id, query) {
+      const type = `${module}/getHiddenList`
       return dispatch({
-        type: 'dataset/getHiddenList',
-        payload: { id, more: true },
+        type,
+        payload: { ...query, project_id: id, },
       })
-    }
+    },
+    restore(module, pid, ids) {
+      const type = `${module}/restore`
+      return dispatch({
+        type,
+        payload: { pid, ids, }
+      })
+    },
   }
 }
 

@@ -4,7 +4,7 @@ import { connect } from "dva"
 import { forwardRef, useImperativeHandle } from "react"
 import { message, Tag } from "antd"
 
-const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content', 
+const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content',
   excludeMsg = 'dataset.action.hide.confirm.exclude', ok = () => { }, ...func }, ref) => {
   useImperativeHandle(ref, () => {
     return {
@@ -18,16 +18,16 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
     }
     const labels = getLabels(versions.filter(vs => !exclude.includes(vs.id)))
     const excludeLabels = getLabels(versions.filter(vs => exclude.includes(vs.id)))
-    console.log('excludeLabels:', excludeLabels, labels, versions, exclude)
     const ids = versions.map(({ id }) => id)
     const pid = versions[0].projectId
     confirm({
       content: <div>
         <p>{t(msg, { name: labels })} </p>
-        {exclude.length ? <div style={{ color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</div> : null}
+        {excludeLabels.length ? <div style={{ color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</div> : null}
       </div>,
       onOk: async () => {
-        const result = await func[type ? 'hideModels' : 'hideDatasets'](pid, ids)
+        const result = await func.hide(type ? 'dataset' : 'model', pid, ids)
+        console.log('result:', result)
         if (result) {
           ok(result)
         }
@@ -47,16 +47,11 @@ const getLabels = (labels) => labels.map(version => <Tag
 
 const actions = (dispatch) => {
   return {
-    hideDatasets(pid, ids) {
+    hide(module = 'dataset', pid, ids) {
+      const type = `${module}/hide`
       return dispatch({
-        type: `dataset/hideDatasets`,
-        payload: { pid, ids },
-      })
-    },
-    hideModels(pid, ids) {
-      return dispatch({
-        type: `model/hideModels`,
-        payload: { pid, ids },
+        type,
+        payload: { pid, ids, },
       })
     },
   }

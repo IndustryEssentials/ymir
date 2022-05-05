@@ -18,7 +18,7 @@ export enum MiningStrategy {
 }
 
 export const tabs = [
-  { tab: 'project.tab.set.title', key: 'set', },
+  { tab: 'project.tab.set.title', key: 'dataset', },
   { tab: 'project.tab.model.title', key: 'model', },
 ]
 

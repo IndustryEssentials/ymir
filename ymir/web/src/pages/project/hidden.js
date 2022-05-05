@@ -24,13 +24,15 @@ function Hidden() {
   }
 
   return (
-    <div className={s.list}>
+    <div className={s.hiddenList}>
       <Breadcrumbs />
       <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange}
+        className='noShadow'
+        bordered={false}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px' }}
         bodyStyle={{ padding: '0 5vw' }}>
-        <HiddenList active={active} pid={id} />
+        <HiddenList module={active} pid={id} />
       </Card>
     </div>
   )

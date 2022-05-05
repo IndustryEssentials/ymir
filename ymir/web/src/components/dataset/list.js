@@ -260,7 +260,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
   }
 
-  const hideHidden = ({ state, id }) => isRunning(state) || project.hiddenDatasets.includes(id)
+  const hideHidden = ({ state, id }) => isRunning(state) || project?.hiddenDatasets?.includes(id)
 
   const getTypeFilter = gid => {
     return getFilters(gid, 'taskType', (type) => t(getTaskTypeLabel(type)))
@@ -468,9 +468,11 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowSelection={{
+              selectedRowKeys: selectedVersions[group.id],
               onChange: (keys) => rowSelectChange(group.id, keys),
+              getCheckboxProps: (record) => ({ disabled: !isValidDataset(record.state), }),
             }}
-            rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
+            rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns(group.id)}
             pagination={false}
           />

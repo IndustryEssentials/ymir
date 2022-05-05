@@ -226,7 +226,7 @@ export const homeRoutes = [
     component: "@/pages/project/hidden",
     title: "project.hidden.title",
     pid: 25,
-    id: 29,
+    id: 30,
     breadcrumbLabel: 'breadcrumbs.project.hidden',
   },
   {

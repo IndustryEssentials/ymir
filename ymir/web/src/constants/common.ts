@@ -10,7 +10,7 @@ export enum states {
 
 export enum actions {
   hide = 'hide',
-  unhide = 'unhide',
+  restore = 'unhide',
   del = 'delete',
 }
 

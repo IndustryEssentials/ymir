@@ -12,7 +12,7 @@ import Models from '@/components/model/list'
 import s from "./detail.less"
 import Prepare from "./components/prepare"
 import KeywordRates from "@/components/dataset/keywordRates"
-import { EditIcon, SearchEyeIcon } from "../../components/common/icons"
+import { EditIcon, SearchEyeIcon, EyeOffIcon } from "../../components/common/icons"
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -120,7 +120,7 @@ function ProjectDetail(func) {
           {renderProjectDatasetLabel()}
         </Row>
       </div>
-      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange} className={s.noShadow}
+      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange} className='noShadow'
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 5vw' }}>
