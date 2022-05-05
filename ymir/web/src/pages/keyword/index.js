@@ -181,11 +181,11 @@ function Keyword({ getKeywords }) {
     <div className={styles.keyword}>
       <Breadcrumbs />
 
-      <Space className={styles.actions}>
+      <Space className='actions'>
         {addBtn}
         {multiAddBtn}
       </Space>
-      <div className={styles.list}>
+      <div className={`list ${styles.list}`}>
         <div className={styles.search}>
           <Form
             name='queryForm'
