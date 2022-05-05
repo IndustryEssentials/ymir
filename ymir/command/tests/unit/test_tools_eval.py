@@ -40,6 +40,7 @@ class TestToolsEval(unittest.TestCase):
         self._prepare_mir_repo_branch_b()
 
     def _prepare_mir_repo_branch_a(self) -> None:
+        """ branch a: a ground truth branch """
         metadatas_dict = {
             'attributes': {
                 'a0': {
@@ -147,6 +148,7 @@ class TestToolsEval(unittest.TestCase):
                                                       task=task)
 
     def _prepare_mir_repo_branch_b(self) -> None:
+        """ branch b: a prediction / detection branch """
         metadatas_dict = {
             'attributes': {
                 'a0': {
@@ -183,10 +185,10 @@ class TestToolsEval(unittest.TestCase):
                             'annotations': [{
                                 'index': 0,
                                 'box': {
-                                    'x': 50,
-                                    'y': 50,
-                                    'w': 50,
-                                    'h': 50,
+                                    'x': 45,
+                                    'y': 45,
+                                    'w': 52,
+                                    'h': 52,
                                 },
                                 'class_id': 0,
                                 'score': 0.7,
@@ -195,28 +197,38 @@ class TestToolsEval(unittest.TestCase):
                                 'box': {
                                     'x': 150,
                                     'y': 50,
-                                    'w': 75,
-                                    'h': 75,
+                                    'w': 73,
+                                    'h': 73,
                                 },
                                 'class_id': 0,
                                 'score': 0.8,
                             }, {
                                 'index': 2,
                                 'box': {
-                                    'x': 150,
-                                    'y': 150,
-                                    'w': 75,
-                                    'h': 75,
+                                    'x': 350,
+                                    'y': 50,
+                                    'w': 76,
+                                    'h': 76,
                                 },
-                                'class_id': 1,
+                                'class_id': 0,
                                 'score': 0.9,
                             }, {
                                 'index': 3,
                                 'box': {
+                                    'x': 150,
+                                    'y': 160,
+                                    'w': 78,
+                                    'h': 78,
+                                },
+                                'class_id': 1,
+                                'score': 0.9,
+                            }, {
+                                'index': 4,
+                                'box': {
                                     'x': 350,
                                     'y': 50,
-                                    'w': 100,
-                                    'h': 100,
+                                    'w': 102,
+                                    'h': 103,
                                 },
                                 'class_id': 2,
                                 'score': 0.9,
@@ -228,8 +240,8 @@ class TestToolsEval(unittest.TestCase):
                                 'box': {
                                     'x': 300,
                                     'y': 300,
-                                    'w': 100,
-                                    'h': 100,
+                                    'w': 103,
+                                    'h': 110,
                                 },
                                 'class_id': 2,
                                 'score': 0.9,

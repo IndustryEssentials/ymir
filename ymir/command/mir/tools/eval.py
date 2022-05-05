@@ -42,7 +42,7 @@ class MirCoco:
 
         Returns:
             a list of annotations and asset ids
-            each element is a dict: {'asset_id': str, 'annotation': mirpb.Annotation}
+            each element is a dict: {'asset_id': str, 'class_id': int, 'bbox': int tuple of xywh, 'score': float}
         """
         result_annotations_list: List[dict] = []
 
@@ -57,7 +57,12 @@ class MirCoco:
             single_image_annotations = single_task_annotations.image_annotations[asset_id]
             for annotation in single_image_annotations.annotations:
                 if annotation.class_id in class_ids or not class_ids:
-                    result_annotations_list.append({'annotation': annotation, 'asset_id': asset_id})
+                    result_annotations_list.append({
+                        'asset_id': asset_id,
+                        'class_id': annotation.class_id,
+                        'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
+                        'score': annotation.score,
+                    })
 
         return result_annotations_list
 
@@ -86,8 +91,9 @@ class MirEval:
     def _prepare(self):
         '''
         Prepare self._gts and self._dts for evaluation based on params
-        :return: None
-        :side effects: created and filled self._gts and self._dts; changed self.evalImgs and self.eval
+
+        SideEffects:
+            created and filled self._gts and self._dts; changed self.evalImgs and self.eval
         '''
         # def _toMask(anns, coco):
         #     # modify ann['segmentation'] by reference
@@ -103,26 +109,19 @@ class MirEval:
             dts = self.cocoDt.get_annotations(asset_ids=self.params.imgIds)
         logging.debug(f"len of gts and dts: {len(gts)}, {len(dts)}")
 
-        # convert ground truth to mask if iouType == 'segm'
-        # if p.iouType == 'segm':
-        #     _toMask(gts, self.cocoGt)
-        #     _toMask(dts, self.cocoDt)
         # set ignore flag
-        # for gt in gts:
-        #     gt['ignore'] = gt['ignore'] if 'ignore' in gt else 0
-        #     gt['ignore'] = 'iscrowd' in gt and gt['iscrowd']
-        #     if p.iouType == 'keypoints':
-        #         gt['ignore'] = (gt['num_keypoints'] == 0) or gt['ignore']
+        for gt in gts:
+            gt['ignore'] = gt['ignore'] if 'ignore' in gt else 0
+            gt['ignore'] = 'iscrowd' in gt and gt['iscrowd']
 
-        # self._gts and self._dts: key: (asset_id, class_id), value: {'asset_id': 'str', 'annotation': 'mirpb.Annotation'}
+        # for each element in self._gts and self._dts:
+        #   (asset_id, class_id), value: {'asset_id': str, 'class_id': int, 'bbox': int tuple of xywh, 'score': float}
         self._gts = defaultdict(list)
         self._dts = defaultdict(list)
-        for gt in gts:  # gt: {'asset_id': 'str', 'annotation': 'mirpb.Annotation'}
-            annotation: mirpb.Annotation = gt['annotation']
-            self._gts[gt['asset_id'], annotation.class_id].append(gt)
-        for dt in dts:  # gt: {'asset_id': 'str', 'annotation': 'mirpb.Annotation'}
-            annotation: mirpb.Annotation = dt['annotation']
-            self._dts[dt['asset_id'], annotation.class_id].append(dt)
+        for gt in gts:
+            self._gts[gt['asset_id'], gt['class_id']].append(gt)
+        for dt in dts:
+            self._dts[dt['asset_id'], dt['class_id']].append(dt)
         self.evalImgs = defaultdict(list)  # per-image per-category evaluation results
         self.eval = {}  # accumulated evaluation results
 
@@ -146,11 +145,8 @@ class MirEval:
         # loop through images, area range, max detection number
         catIds = p.catIds if p.useCats else [-1]
 
-        if p.iouType == 'segm' or p.iouType == 'bbox':
-            computeIoU = self.computeIoU
-        # elif p.iouType == 'keypoints':
-        #     computeIoU = self.computeOks
-        self.ious = {(imgId, catId): computeIoU(imgId, catId) for imgId in p.imgIds for catId in catIds}
+        self.ious = {(imgId, catId): self.computeIoU(imgId, catId) for imgId in p.imgIds for catId in catIds}
+        logging.debug(f"type of self.ious: {type(self.ious)}")
 
         evaluateImg = self.evaluateImg
         maxDet = p.maxDets[-1]
@@ -160,33 +156,41 @@ class MirEval:
         ]
         self._paramsEval = copy.deepcopy(self.params)
 
-    def computeIoU(self, imgId, catId):
+    def computeIoU(self, imgId: str, catId: int):
         p = self.params
         if p.useCats:
             gt = self._gts[imgId, catId]
             dt = self._dts[imgId, catId]
         else:
+            # if not useCats, gt and dt set to annotations for the same imgId and ALL cat ids
             gt = [_ for cId in p.catIds for _ in self._gts[imgId, cId]]
             dt = [_ for cId in p.catIds for _ in self._dts[imgId, cId]]
         if len(gt) == 0 and len(dt) == 0:
             return []
+
+        # sort dt by score, desc
         inds = np.argsort([-d['score'] for d in dt], kind='mergesort')
         dt = [dt[i] for i in inds]
         if len(dt) > p.maxDets[-1]:
             dt = dt[0:p.maxDets[-1]]
 
-        if p.iouType == 'segm':
-            g = [g['segmentation'] for g in gt]
-            d = [d['segmentation'] for d in dt]
-        elif p.iouType == 'bbox':
-            g = [g['bbox'] for g in gt]
-            d = [d['bbox'] for d in dt]
-        else:
-            raise Exception('unknown iouType for iou computation')
+        # if p.iouType == 'segm':
+        #     g = [g['segmentation'] for g in gt]
+        #     d = [d['segmentation'] for d in dt]
+        # elif p.iouType == 'bbox':
+        #     g = [g['bbox'] for g in gt]
+        #     d = [d['bbox'] for d in dt]
+        # else:
+        #     raise Exception('unknown iouType for iou computation')
+        g_boxes = [g['bbox'] for g in gt]
+        d_boxes = [d['bbox'] for d in dt]
+        breakpoint()
 
         # compute iou between each dt and gt region
-        iscrowd = [int(o['iscrowd']) for o in gt]
-        ious = maskUtils.iou(d, g, iscrowd)
+        iscrowd = [int(o.get('iscrowd', 0)) for o in gt]
+        ious = maskUtils.iou(d_boxes, g_boxes, iscrowd)
+        logging.debug(f"ious type: {type(ious)}")  # for test
+        logging.debug(f"ious: {ious}")  # for test
         return ious
 
     # def computeOks(self, imgId, catId):

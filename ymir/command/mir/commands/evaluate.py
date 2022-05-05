@@ -1,6 +1,5 @@
 import argparse
 import logging
-from typing import Any
 from mir.tools.errors import MirRuntimeError
 
 from mir.commands import base
