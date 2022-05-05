@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory, useLocation } from "umi"
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, } from "antd"
 
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
@@ -412,11 +412,14 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
     const vss = allVss.filter(({ id }) => ids.includes(id))
-    hideRef.current.hide(vss)
+    hideRef.current.hide(vss, project.hiddenDatasets)
   }
 
   const hide = (version) => {
-    hideRef.current.hide([version])
+    if (project.hiddenDatasets.includes(version.id)) {
+      return message.warn(t('dataset.hide.single.invalid'))
+    }
+    hideRef.current.hide([version], exclude)
   }
 
   const hideOk = (result) => {
@@ -466,7 +469,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
             rowKey={(record) => record.id}
             rowSelection={{
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: hideHidden(record), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             columns={columns(group.id)}

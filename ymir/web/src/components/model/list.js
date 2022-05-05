@@ -307,10 +307,13 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
     const vss = allVss.filter(({id}) => ids.includes(id))
-    hideRef.current.hide(vss)
+    hideRef.current.hide(vss, project.hiddenModels)
   }
 
   const hide = (version) => {
+    if (project.hiddenModels.includes(version.id)) {
+      return message.warn(t('dataset.hide.single.invalid'))
+    }
     hideRef.current.hide([version])
   }
 
@@ -405,7 +408,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
             rowKey={(record) => record.id}
             rowSelection={{
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: hideHidden(record), }),
+              // getCheckboxProps: (record) => ({ disabled: hideHidden(record), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             columns={columns}

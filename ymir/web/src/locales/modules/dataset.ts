@@ -26,7 +26,15 @@ const dataset = {
   "dataset.query.name": { cn: "名称", en: "Dataset Name", },
   "dataset.action.del.confirm.content": { cn: "确认要删除数据集版本：{name}？", en: "Are you sure to remove this dataset version:{name}?", },
   "dataset.action.hide.confirm.content": { cn: "确认要隐藏数据集版本：{name}？", en: "Are you sure to hide dataset versions: {name}?", },
-  "dataset.action.delgroup.confirm.content": { en: "Are you sure to remove this dataset:{name}, all of versions will be deleted.", cn: "确认要删除数据集：{name}？这个操作将删除此数据集下的所有版本", },
+  "dataset.hide.single.invalid": { cn: "该版本不能隐藏", en: "This version can not be hide", },
+  "dataset.action.hide.confirm.exclude": {
+    cn: "以下版本因与项目、迭代等关联不能隐藏：{labels}",
+    en: "The following related to project or iterations can not be hide: {name}.",
+  },
+  "dataset.action.delgroup.confirm.content": {
+    en: "Are you sure to remove this dataset:{name}, all of versions will be deleted.",
+    cn: "确认要删除数据集：{name}？这个操作将删除此数据集下的所有版本",
+  },
   "dataset.query.name.placeholder": { cn: "数据集名称", en: "Dataset Name", },
   "dataset.detail.pager.total": { cn: "共 {total} 图像", en: "Total {total} Pictures", },
   "dataset.detail.keyword.label": { cn: "标签：", en: "Keywords: ", },
@@ -60,7 +68,10 @@ const dataset = {
   "dataset.add.newkw.asalias": { cn: "添加为别名", en: "As Alias", },
   "dataset.add.newkw.ignore": { cn: "忽略此标签", en: "Ignore", },
   "dataset.add.form.newkw.link": { cn: "前往标签列表添加>>", en: "Go to the keyword list to add>>", },
-  "dataset.add.form.newkw.tip": { cn: "当导入数据集中包含的标签不属于当前标签列表时，选择标签合并策略", en: "Select a keyword merge policy when the imported dataset contains keyword that do not belong to the current keyword list", },
+  "dataset.add.form.newkw.tip": {
+    cn: "当导入数据集中包含的标签不属于当前标签列表时，选择标签合并策略",
+    en: "Select a keyword merge policy when the imported dataset contains keyword that do not belong to the current keyword list",
+  },
   "dataset.add.label_strategy.include": { cn: "包含标注信息", en: "Contains Annotations", },
   "dataset.add.label_strategy.exclude": { cn: "不包含标注信息", en: "No Annotations", },
   "dataset.add.label_strategy.ignore": { cn: "忽略新标签和对应标注", en: "Ignore unknown keywords and annotations", },
@@ -72,14 +83,17 @@ const dataset = {
   "dataset.add.form.net.label": { cn: "URL地址", en: "URL", },
   "dataset.add.form.net.tip": { cn: "请输入压缩文件的url地址", en: "Please input a url of zip file", },
   "dataset.add.form.path.label": { cn: "路径", en: "Path", },
-  "dataset.add.form.path.tip": { cn: "请输入数据集在服务器中的绝对路径，如 /home/users/dataset/train_cat", en: "Please input absolute path of dataset on server, like: /home/users/dataset/train_cat", },
+  "dataset.add.form.path.tip": {
+    cn: "请输入数据集在服务器中的绝对路径，如 /home/users/dataset/train_cat",
+    en: "Please input absolute path of dataset on server, like: /home/users/dataset/train_cat",
+  },
   "dataset.add.form.path.placeholder": { cn: "请输入服务端的绝对路径", en: "Please input absolute path of dataset on server", },
   "dataset.add.form.upload.btn": { cn: "上传文件", en: "Upload", },
   "dataset.add.form.upload.tip": {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
       3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，标注文件格式为pascal。{br}
-      4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}`, 
+      4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}`,
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
       3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml)
