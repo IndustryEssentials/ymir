@@ -22,14 +22,14 @@ export default function Error({ code, msg = '' }) {
     </div>
   }
 
-  return <div className={s.error}>
+  return <div className='error'>
 
     <Descriptions
       bordered
       column={1}
       labelStyle={labelStyle}
-      title={<div className={s.title}>{t("task.detail.error.title")}</div>}
-      className={s.infoTable}
+      title={<div className='title'>{t("task.detail.error.title")}</div>}
+      className='infoTable'
     >
       <Item label={t("task.detail.error.code")}>
         {t(`error${code}`)} 
