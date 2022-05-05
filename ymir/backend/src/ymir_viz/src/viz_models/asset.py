@@ -69,7 +69,8 @@ class AssetsModel:
 
         with redis_cache.pipeline() as pipe:
             for class_id, assets_list in asset_content["class_ids_index"].items():
-                pipe.rpush(f"{key_asset_index}:{class_id}", *assets_list)
+                if assets_list:
+                    pipe.rpush(f"{key_asset_index}:{class_id}", *assets_list)
             pipe.execute()
 
         redis_cache.set(key_cache_status, {"flag": 1})
