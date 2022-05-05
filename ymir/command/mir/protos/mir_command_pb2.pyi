@@ -620,17 +620,24 @@ class Evaluation(google.protobuf.message.Message):
 
     CONF_THRESHOLD_FIELD_NUMBER: builtins.int
     IOU_EVALUATIONS_FIELD_NUMBER: builtins.int
+    AVERAGE_EVALUATION_FIELD_NUMBER: builtins.int
     conf_threshold: builtins.float = ...
     @property
     def iou_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleIouEvaluation]:
         """key: string of iou threshold"""
         pass
+    @property
+    def average_evaluation(self) -> global___SingleIouEvaluation:
+        """everage for all ious"""
+        pass
     def __init__(self,
         *,
         conf_threshold : builtins.float = ...,
         iou_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleIouEvaluation]] = ...,
+        average_evaluation : typing.Optional[global___SingleIouEvaluation] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["conf_threshold",b"conf_threshold","iou_evaluations",b"iou_evaluations"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["average_evaluation",b"average_evaluation"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["average_evaluation",b"average_evaluation","conf_threshold",b"conf_threshold","iou_evaluations",b"iou_evaluations"]) -> None: ...
 global___Evaluation = Evaluation
 
 class SingleIouEvaluation(google.protobuf.message.Message):
@@ -665,12 +672,8 @@ class SingleIouEvaluation(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    IOU_THRESHOLD_FIELD_NUMBER: builtins.int
     CI_EVALUATIONS_FIELD_NUMBER: builtins.int
     TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
-    iou_threshold: builtins.float = ...
-    """0 for average"""
-
     @property
     def ci_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
         """key: class ids"""
@@ -681,11 +684,10 @@ class SingleIouEvaluation(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        iou_threshold : builtins.float = ...,
         ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
         topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ci_evaluations",b"ci_evaluations","iou_threshold",b"iou_threshold","topic_evaluations",b"topic_evaluations"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ci_evaluations",b"ci_evaluations","topic_evaluations",b"topic_evaluations"]) -> None: ...
 global___SingleIouEvaluation = SingleIouEvaluation
 
 class SingleTopicEvaluation(google.protobuf.message.Message):
