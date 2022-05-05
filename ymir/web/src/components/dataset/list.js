@@ -419,7 +419,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     if (project.hiddenDatasets.includes(version.id)) {
       return message.warn(t('dataset.hide.single.invalid'))
     }
-    hideRef.current.hide([version], exclude)
+    hideRef.current.hide([version])
   }
 
   const hideOk = (result) => {
