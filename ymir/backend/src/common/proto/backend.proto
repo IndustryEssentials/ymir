@@ -275,9 +275,9 @@ message Label {
 }
 
 message EvaluateConfig {
-    float iou_threshold_from = 1;  // default: 0.5
-    float iou_threshold_to = 2;  // default: 0.95
-    float iou_threshold_step = 3;  // default: 0.05
+    float iou_threshold_from = 1;
+    float iou_threshold_to = 2;
+    float iou_threshold_step = 3;
     float conf_threshold = 4;
 }
 
