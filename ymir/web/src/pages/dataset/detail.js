@@ -40,7 +40,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
       <Breadcrumbs />
       <Card
         title={t("dataset.detail.title") + ">" + t(getTaskTypeLabel(dataset.taskType))}
-        className={s.datasetDetail}
+        className='datasetDetail'
       >
         <Detail dataset={dataset} />
         <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />

@@ -323,13 +323,13 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
   )
 
   return (
-    <div className={s.taskDetail}>
+    <div className='taskDetail'>
       <Descriptions
         column={2}
         bordered
         labelStyle={labelStyle}
-        title={<div className={s.title}>{t("dataset.column.source")}</div>}
-        className={s.infoTable}
+        title={<div className='title'>{t("dataset.column.source")}</div>}
+        className='infoTable'
       >
         {task.id ? renderTypes() : null}
       </Descriptions>

@@ -139,7 +139,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const renderTitle = <Row className={styles.labels}>
     <Col flex={1}>
       <Space>
-        <strong>{dataset.name}</strong>
+        <strong>{dataset.name}</strong>xxxx
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
@@ -175,13 +175,12 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     <div className={styles.datasetDetail}>
       <Breadcrumbs />
       {assetDetail}
-      <Card className={styles.list} title={renderTitle}>
-
+      <Card className='list' title={renderTitle}>
         {renderList(assets)}
         <Space className={styles.pagi}>
           <Pagination
             key={'pager'}
-            className={styles.pager}
+            className={`pager ${styles.pager}`}
             showQuickJumper
             showSizeChanger
             defaultCurrent={1}

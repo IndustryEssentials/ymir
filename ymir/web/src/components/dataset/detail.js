@@ -15,12 +15,12 @@ function DatasetDetail({ dataset = {} }) {
   const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-end' }
 
   return (
-    <div className={styles.datasetDetail}>
+    <div className='datasetDetail'>
       <Descriptions
         bordered
         column={2}
         labelStyle={labelStyle}
-        className={styles.infoTable}
+        className='infoTable'
       >
         <Item label={t("dataset.detail.label.name")} span={2}>
           <Row>

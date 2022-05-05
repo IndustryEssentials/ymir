@@ -12,7 +12,7 @@ import Models from '@/components/model/list'
 import s from "./detail.less"
 import Prepare from "./components/prepare"
 import KeywordRates from "@/components/dataset/keywordRates"
-import { EyeOffIcon } from "../../components/common/icons"
+import { EditIcon, SearchEyeIcon } from "../../components/common/icons"
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -100,7 +100,7 @@ function ProjectDetail(func) {
                   target: <span className={s.orange}>{project.targetIteration}</span>
                 })}
               </span>
-              <span>{t('project.train_classes')}: <span className={s.bold}>{project?.keywords?.join(',')}</span></span>
+              <span>{t('project.train_classes')}: <span className={s.black}>{project?.keywords?.join(',')}</span></span>
               {project.targetMap ? <span>{t('project.target.map')}: <span className={s.target}>{project.targetMap}%</span></span> : null}
               {project.targetDataset ? <span>{t('project.target.dataset')}: <span className={s.target}>{project.targetDataset}</span></span> : null}
               {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
@@ -108,8 +108,8 @@ function ProjectDetail(func) {
           </Col>
           <Col>
             <Space>
-              <Link to={`/home/project/add/${id}`}>{t('project.settings.title')}</Link>
-              <Link to={`/home/project/iterations/${id}`}>{t('breadcrumbs.project.iterations')}</Link>
+              <Link to={`/home/project/add/${id}`}><EditIcon />{t('project.settings.title')}</Link>
+              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon />{t('breadcrumbs.project.iterations')}</Link>
               <Link to={`/home/project/hidden/${id}`}><EyeOffIcon />{t('common.hidden.list')}</Link>
             </Space>
           </Col>
@@ -120,9 +120,9 @@ function ProjectDetail(func) {
           {renderProjectDatasetLabel()}
         </Row>
       </div>
-      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange}
+      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange} className={s.noShadow}
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
-        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px' }}
+        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 5vw' }}>
         {content[active]}
       </Card>

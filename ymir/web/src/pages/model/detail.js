@@ -48,7 +48,7 @@ function ModelDetail({ modelCache, getModel }) {
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
       <Card title={renderTitle()}>
-        <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className={styles.infoTable}>
+        <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className='infoTable'>
           <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
           {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null }
           <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>

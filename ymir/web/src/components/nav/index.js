@@ -14,7 +14,7 @@ import styles from "./index.less"
 import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
-import { GithubIcon, UserIcon, KeyIcon } from "../common/icons"
+import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon } from "../common/icons"
 
 const { SubMenu } = Menu
 
@@ -27,17 +27,17 @@ const menus = () => [
   {
     label: t('common.top.menu.project'),
     key: "/home/project",
-    icon: <NavDatasetIcon className={styles.navIcon} />,
+    icon: <NavTaskIcon className={styles.navIcon} />,
   },
   {
     label: t('common.top.menu.keyword'),
     key: "/home/keyword",
-    icon: <NavModelmanageIcon className={styles.navIcon} />,
+    icon: <FlagIcon className={styles.navIcon} />,
   },
   {
     label: t('common.top.menu.configure'),
     key: "/home/configures",
-    icon: <NavModelmanageIcon className={styles.navIcon} />,
+    icon: <EqualizerIcon className={styles.navIcon} />,
     sub: [
       {
         label: t('common.top.menu.image'),
