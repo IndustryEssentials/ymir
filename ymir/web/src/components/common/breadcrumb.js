@@ -34,8 +34,8 @@ function Breadcrumbs({ suffix = '', titles = {} }) {
   const params = useParams() || {}
   const crumbs = getCrumbs()
   const crumbItems = getCrumbItems(path, crumbs)
-  return <div className={s.breadcrumb}>
-    <Breadcrumb className={s.breadcrumbContent} separator='/'>
+  return <div className='breadcrumb'>
+    <Breadcrumb className='breadcrumbContent' separator='/'>
       {crumbItems.map((crumb, index) => {
         const last = index === crumbItems.length - 1
         const link = crumb.path.replace(/:([^\/]+)/g, (str, key) => {
