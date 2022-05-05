@@ -192,7 +192,7 @@ message ModelMeta {
 
 message Evaluation {
     float conf_threshold = 1;
-    repeated SingleIouEvaluation iou_evaluation = 2;
+    repeated SingleIouEvaluation iou_evaluations = 2;
 }
 
 message SingleIouEvaluation {
