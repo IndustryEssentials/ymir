@@ -46,7 +46,7 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, .
   }
 
   return (
-    <Select value={value} {...resProps} onChange={(value, option) => {console.log('onchange: ', value, option); onChange(value, option?.model)}} options={options} allowClear></Select>
+    <Select value={value} {...resProps} onChange={onChange} options={options} allowClear></Select>
   )
 }
 
