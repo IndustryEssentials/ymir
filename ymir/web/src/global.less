@@ -60,7 +60,7 @@ body {
     margin-bottom: 5px ;
   }
   .ant-btn {
-    padding: 4px 10px;
+    padding: 0 10px;
     .anticon {
       vertical-align: middle;
     }
@@ -127,6 +127,7 @@ body {
   }
   .ant-card-head-title {
     padding: 10px 0;
+    line-height: 32px;
   }
   //Task Details
   .ant-descriptions-item-label {
@@ -169,6 +170,9 @@ body {
 
   .ant-card {
     .box-radius();
+  }
+  .ant-tabs-tab-active {
+    font-weight: bold;
   }
 }
 
@@ -380,3 +384,24 @@ body {
   margin: 16px 0;
   text-align: right;
 }
+
+// search input
+.search {
+  .ant-form-item-label {
+    font-weight: normal;
+    text-align: left;
+  }
+  .ant-form-item {
+    margin-bottom: 10px;
+  }
+  .ant-input-suffix {
+    color: rgba(0, 0, 0, 45%);
+  }
+}
+// icon text
+.ant-btn,
+.ant-space-item {
+  .anticon + span {
+    margin-left: 5px;
+  } 
+} 

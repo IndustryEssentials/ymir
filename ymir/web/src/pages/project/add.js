@@ -151,7 +151,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       <Breadcrumbs />
       <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 4 }} onFinish={submit} scrollToFirstError>
+          <Form form={form} labelCol={{ span: 6, offset: 2 }} labelAlign='left' onFinish={submit} scrollToFirstError>
             {!settings ? <Panel hasHeader={false}>
               <Tip hidden={true}>
                 <Form.Item
@@ -202,13 +202,13 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
               <Tip hidden={true}>
                 <Form.Item label={t('project.add.form.target')}>
                   <div className={s.targetPanel}>
-                    <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='targetMap'>
+                    <Form.Item labelCol={{ span: 5 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='targetMap'>
                       <InputNumber min={0} max={100} step={1} precision={2} formatter={value => `${value}%`} parser={value => value.replace('%', '')} style={{ width: '100%' }} placeholder={t('project.add.form.target.map.placeholder')} />
                     </Form.Item>
-                    <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.iterations')} name='targetIteration'>
+                    <Form.Item labelCol={{ span: 5 }} colon={false} labelAlign='left' label={t('project.add.form.target.iterations')} name='targetIteration'>
                       <InputNumber min={1} step={1} precision={0} max={100} placeholder={t('project.add.form.target.iterations.placeholder')} style={{ width: '100%' }} />
                     </Form.Item>
-                    <Form.Item labelCol={{ span: 3 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='targetDataset'>
+                    <Form.Item labelCol={{ span: 5 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='targetDataset'>
                       <InputNumber min={1} step={1} precision={0} max={100000000} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} />
                     </Form.Item>
                   </div>
@@ -289,7 +289,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
               </ConfigProvider>
             </Panel> : null}
             <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 4 }}>
+              <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
                     <Button type="primary" size="large" htmlType="submit">

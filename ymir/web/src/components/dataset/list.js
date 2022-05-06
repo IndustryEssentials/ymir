@@ -469,11 +469,11 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         </Space>
       </div>
       <div className={`list ${styles.list}`}>
-        <div className={styles.search}>
+        <div className={`search ${styles.search}`}>
           <Form
             name='queryForm'
             form={form}
-            labelCol={{ flex: '100px' }}
+            labelCol={{ flex: '120px' }}
             initialValues={{ type: query.type, time: query.time, name: name || query.name }}
             onValuesChange={search}
             colon={false}

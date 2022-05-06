@@ -24,7 +24,7 @@ import { getTensorboardLink } from "@/services/common"
 
 import {
   ShieldIcon, VectorIcon, EditIcon,
-  DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,
+  DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,SearchIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
 
@@ -413,11 +413,11 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         </Space>
       </div>
       <div className={`list ${styles.list}`}>
-        <div className={styles.search}>
+        <div className={`search ${styles.search}`}>
           <Form
             name='queryForm'
             form={form}
-            labelCol={{ flex: '100px' }}
+            labelCol={{ flex: '120px' }}
             initialValues={{ time: query.time, name: name || query.name }}
             onValuesChange={search}
             colon={false}
@@ -425,7 +425,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
             <Row>
               <Col className={styles.queryColumn} span={12}>
                 <Form.Item name="name" label={t('model.query.name')}>
-                  <Input placeholder={t("model.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchOutlined />} />
+                  <Input placeholder={t("model.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
                 </Form.Item>
               </Col>
             </Row>
