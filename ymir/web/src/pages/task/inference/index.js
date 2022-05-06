@@ -12,6 +12,7 @@ import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
+import { string2Array } from "@/utils/string"
 import { TYPES } from '@/constants/image'
 import { useHistory, useParams, useLocation } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -32,9 +33,11 @@ function Inference({ datasetCache, datasets, ...props }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, mid, image } = location.query
+  const { did, image } = location.query
+  const mid = string2Array(location.query.mid) || []
   const [dataset, setDataset] = useState({})
-  const [selectedModels, setSelectedModels] = useState({})
+  const [selectedModels, setSelectedModels] = useState(mid)
+  const [gpuStep, setGpuStep] = useState(1)
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
@@ -61,24 +64,8 @@ function Inference({ datasetCache, datasets, ...props }) {
   }, [pid])
 
   useEffect(() => {
-    const state = location.state
-
-    if (state?.record) {
-      const { parameters, config, } = state.record
-      const { description, model_id, docker_image, docker_image_id } = parameters
-      form.setFieldsValue({
-        datasetId: dataset_id,
-        model: model_id,
-        docker_image: docker_image_id + ',' + docker_image,
-        gpu_count: config.gpu_count,
-        description,
-      })
-      setConfig(config)
-      setHpVisible(true)
-
-      history.replace({ state: {} })
-    }
-  }, [location.state])
+    setGpuStep(selectedModels.length || 1)
+  }, [selectedModels])
 
   function validHyperparam(rule, value) {
 
@@ -142,14 +129,14 @@ function Inference({ datasetCache, datasets, ...props }) {
     id && setDataset(datasets.find(ds => ds.id === id))
   }
 
-  function modelChange(id, models) {
-      setSelectedModels(models || [])
+  function modelChange(id, options = []) {
+      setSelectedModels(options.map(({model}) => model) || [])
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     description: '',
-    model: mid ? parseInt(mid) : undefined,
+    model: mid,
     image: image ? parseInt(image) : undefined,
     datasetId: Number(did) ? Number(did) : undefined,
     algorithm: getCheckedValue(Algorithm()),
@@ -219,8 +206,8 @@ function Inference({ datasetCache, datasets, ...props }) {
                   noStyle
                   name="gpu_count"
                 >
-                  <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
-                  <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+                  <InputNumber min={0} max={Math.floor(gpu_count / gpuStep)} precision={0} /></Form.Item>
+                  <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}{t('task.infer.gpu.tip')}</span>
               </Form.Item>
             </Tip>
 
