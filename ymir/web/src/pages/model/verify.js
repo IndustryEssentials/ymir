@@ -169,7 +169,7 @@ function Verify({ getModel, verify }) {
       <Breadcrumb />
       <Card className={styles.info} bodyStyle={{ padding: 20, height: '100%' }} title={renderTitle}>
         <Row className={styles.infoRow} wrap={false}>
-          <Col span={18} className={styles.asset_img}>aaa
+          <Col span={18} className={styles.asset_img}>
             {url ? (
               <AssetAnnotation
                 url={url}
