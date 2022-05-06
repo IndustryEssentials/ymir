@@ -26,8 +26,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
         {excludeLabels.length ? <div style={{ color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</div> : null}
       </div>,
       onOk: async () => {
-        const result = await func.hide(type ? 'dataset' : 'model', pid, ids)
-        console.log('result:', result)
+        const result = await func.hide(!type ? 'dataset' : 'model', pid, ids)
         if (result) {
           ok(result)
         }
