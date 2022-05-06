@@ -102,6 +102,7 @@ const dataset = {
   'dataset.add.form.copy.label': { cn: '源数据集', en: 'Original Dataset', },
   'dataset.add.form.copy.required': { cn: '源数据集不能为空', en: 'Original dataset is required', },
   'dataset.add.form.copy.placeholder': { cn: '请选择待复制的数据集版本', en: 'Select a dataset version for copy', },
+  'dataset.add.validate.url.invalid': { cn: '不是合法的网络地址', en: 'Invalid url', },
 }
 
 export default dataset
