@@ -110,7 +110,7 @@ const Add = ({ getImage, createImage, updateImage }) => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.image.add')}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 4 }} onFinish={submit}>
+          <Form form={form} labelCol={{ span: 6, offset: 2 }} labelAlign='left' onFinish={submit}>
             <Tip content={t('tip.image.add.name')}>
               <Form.Item
                 label={t('image.add.form.url')}
@@ -146,7 +146,7 @@ const Add = ({ getImage, createImage, updateImage }) => {
               </Form.Item>
             </Tip>
             <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 4 }}>
+              <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
                     <Button type="primary" size="large" htmlType="submit">

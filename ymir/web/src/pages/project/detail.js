@@ -108,15 +108,15 @@ function ProjectDetail(func) {
           </Col>
           <Col>
             <Space>
-              <Link to={`/home/project/add/${id}`}><EditIcon />{t('project.settings.title')}</Link>
-              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon />{t('breadcrumbs.project.iterations')}</Link>
-              <Link to={`/home/project/hidden/${id}`}><EyeOffIcon />{t('common.hidden.list')}</Link>
+              <Link to={`/home/project/add/${id}`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
+              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
+              <Link to={`/home/project/hidden/${id}`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
             </Space>
           </Col>
         </Row>
         {project.round > 0 ?
           <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
-        <Row className={s.setsPanel} gutter={20} align='middle' style={{ textAlign: 'center' }}>
+        <Row className={s.setsPanel} gutter={0} align='middle' style={{ textAlign: 'center' }}>
           {renderProjectDatasetLabel()}
         </Row>
       </div>
