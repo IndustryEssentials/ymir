@@ -17,6 +17,11 @@ export enum MiningStrategy {
   free = 2,
 }
 
+export const tabs = [
+  { tab: 'project.tab.set.title', key: 'dataset', },
+  { tab: 'project.tab.model.title', key: 'model', },
+]
+
 export function getStageLabel(stage: Stages, round: number = 0) {
   const labels = StageList().list.map(item => item.label)
   return `project.iteration.stage.${round ? labels[stage] : 'prepare'}`
@@ -69,6 +74,8 @@ export function transferProject(data: BackendData) {
     targetMap: data.map_target,
     targetDataset: data.training_dataset_count_target,
     targetIteration: data.iteration_target || 0,
+    hiddenDatasets: data.referenced_dataset_ids || [],
+    hiddenModels: data.referenced_model_ids || [],
     updateTime: format(data.update_datetime),
   }
   return project

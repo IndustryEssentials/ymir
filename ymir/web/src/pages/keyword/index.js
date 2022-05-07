@@ -16,7 +16,7 @@ import EmptyState from '@/components/empty/keyword'
 import Actions from "@/components/table/actions"
 import Add from './add'
 import MultiAdd from "./multiAdd"
-import { AddIcon, AddtaskIcon, EditIcon, } from "@/components/common/icons"
+import { AddIcon, AddtaskIcon, EditIcon, SearchIcon, } from "@/components/common/icons"
 
 
 const { confirm } = Modal
@@ -186,19 +186,19 @@ function Keyword({ getKeywords }) {
         {multiAddBtn}
       </Space>
       <div className={`list ${styles.list}`}>
-        <div className={styles.search}>
+        <div className={`search ${styles.search}`}>
           <Form
             name='queryForm'
             form={form}
             // layout="inline"
-            labelCol={{ flex: '100px' }}
+            labelCol={{ flex: '120px' }}
             onValuesChange={search}
             colon={false}
           >
             <Row>
               <Col className={styles.queryColumn} span={12}>
                 <Form.Item name="name" label={t("keyword.column.name")}>
-                  <Input placeholder={t("keyword.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchOutlined />} />
+                  <Input placeholder={t("keyword.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
                 </Form.Item>
               </Col>
             </Row>

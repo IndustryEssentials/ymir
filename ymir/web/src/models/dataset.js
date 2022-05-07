@@ -1,10 +1,10 @@
 import {
   getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets,
-  getAssetsOfDataset, getAsset, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
-import { updateResultState } from '@/constants/common'
+import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
 let loading = false
@@ -99,6 +99,13 @@ export default {
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
       }
     },
+    *getHiddenList({ payload }, { put }) {
+      const query = { ...payload, visible: false }
+      return yield put({
+        type: 'queryDatasets',
+        payload: query,
+      })
+    },
     *queryAllDatasets({ payload }, { select, call, put }) {
       if (loading) {
         return
@@ -155,6 +162,18 @@ export default {
     },
     *delDatasetGroup({ payload }, { call, put }) {
       const { code, result } = yield call(delDatasetGroup, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *hide({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.hide, pid, ids)
+      if (code === 0) {
+        return result
+      }
+    },
+    *restore({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.restore, pid, ids)
       if (code === 0) {
         return result
       }
