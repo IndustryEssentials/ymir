@@ -96,4 +96,4 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .common import RequestParameterBase
+from .common import RequestParameterBase, BatchOperations

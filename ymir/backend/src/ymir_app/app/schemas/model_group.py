@@ -27,6 +27,7 @@ class ModelGroupUpdate(BaseModel):
 
 class ModelGroupInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelGroupBase):
     models: List[Model]
+    is_visible: bool
 
     class Config:
         orm_mode = True

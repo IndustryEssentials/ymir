@@ -73,6 +73,9 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     testing_dataset: Optional[Dataset]
     mining_dataset: Optional[Dataset]
 
+    referenced_model_ids: List[int]
+    referenced_dataset_ids: List[int]
+
     class Config:
         orm_mode = True
 

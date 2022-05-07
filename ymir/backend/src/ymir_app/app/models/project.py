@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import (
     Boolean,
@@ -88,6 +89,12 @@ class Project(Base):
         uselist=False,
         viewonly=True,
     )
+    iterations = relationship(
+        "Iteration",
+        primaryjoin="foreign(Iteration.project_id)==Project.id",
+        uselist=True,
+        viewonly=True,
+    )
 
     is_example = Column(Boolean, default=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
@@ -106,3 +113,30 @@ class Project(Base):
     @property
     def model_count(self) -> int:
         return len(self.models)
+
+    @property
+    def referenced_dataset_ids(self) -> List[int]:
+        """
+        for each project, there are some resources that are required, including:
+        - project's testing dataset, mining dataset and initial training dataset
+        - datasets and models of current iteration
+        - all the training dataset of all the iterations
+        """
+        project_dataset_ids = [self.testing_dataset_id, self.mining_dataset_id, self.initial_training_dataset_id]
+        current_iteration_dataset_ids = self.current_iteration.referenced_dataset_ids if self.current_iteration else []
+        all_iterations_training_dataset_ids = [i.training_input_dataset_id for i in self.iterations]
+        dataset_ids = filter(
+            None,
+            project_dataset_ids + current_iteration_dataset_ids + all_iterations_training_dataset_ids,  # type: ignore
+        )
+        return list(set(dataset_ids))
+
+    @property
+    def referenced_model_ids(self) -> List[int]:
+        current_iteration_model_ids = self.current_iteration.referenced_model_ids if self.current_iteration else []
+        all_iterations_training_model_ids = [i.training_output_model_id for i in self.iterations]
+        model_ids = filter(
+            None,
+            current_iteration_model_ids + [self.initial_model_id] + all_iterations_training_model_ids,  # type: ignore
+        )
+        return list(set(model_ids))

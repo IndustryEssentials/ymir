@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Optional
+from enum import Enum
+from typing import Optional, List
 
 from pydantic import BaseModel, Field, validator
 
@@ -40,3 +41,18 @@ class IterationContext(BaseModel):
 class RequestParameterBase(BaseModel):
     iteration_context: Optional[IterationContext]
     project_id: int
+
+
+class OperationAction(str, Enum):
+    hide = "hide"
+    unhide = "unhide"
+
+
+class Operation(BaseModel):
+    action: OperationAction = Field(example="hide")
+    id_: int = Field(alias="id")
+
+
+class BatchOperations(BaseModel):
+    project_id: int
+    operations: List[Operation]
