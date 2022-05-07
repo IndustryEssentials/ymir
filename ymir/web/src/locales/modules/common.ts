@@ -64,6 +64,8 @@ const common = {
   'common.action.copy': {cn: '复制', en: 'Copy', },
   'common.action.import': {cn: '导入', en: 'Import', },
   'common.action.hide': {cn: '隐藏', en: 'Hide', },
+  'common.action.compare': {cn: '比对', en: 'Compare', },
+  'common.action.multiple.compare': {cn: '批量比对', en: 'Multiple Compare', },
   'common.action.multiple.hide': {cn: '批量隐藏', en: 'Multiple Hide', },
   'common.action.multiple.restore': {cn: '批量恢复', en: 'Multiple Restore', },
   'common.action.restore': {cn: '恢复', en: 'Restore', },
