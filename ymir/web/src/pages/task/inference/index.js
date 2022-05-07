@@ -116,7 +116,7 @@ function Inference({ datasetCache, datasets, ...func }) {
     }
     const result = await func.createInferenceTask(params)
     if (result) {
-      if (result.map(item => item).length !== values.model.length) {
+      if (result.filter(item => item).length !== values.model.length) {
         message.warn(t('task.inference.failure.some'))
       }
       await func.clearCache()
