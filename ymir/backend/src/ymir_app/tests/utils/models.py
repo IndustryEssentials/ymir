@@ -24,10 +24,11 @@ def create_model_group_record(
     return record
 
 
-def create_model(db: Session, user_id: int) -> models.Model:
+def create_model(db: Session, user_id: int, group_id: Optional[int] = None) -> models.Model:
     project_id = randint(100, 200)
-    group = create_model_group_record(db, user_id, project_id)
-    group_id = group.id
+    if not group_id:
+        group = create_model_group_record(db, user_id, project_id)
+        group_id = group.id
 
     task = crud.task.create_placeholder(db, type_=TaskType.training, user_id=user_id, project_id=project_id)
     model_in = schemas.ModelCreate(

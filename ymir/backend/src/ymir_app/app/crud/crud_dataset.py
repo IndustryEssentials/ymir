@@ -23,6 +23,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         group_id: Optional[int] = None,
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
+        visible: bool = True,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
         offset: Optional[int] = 0,
@@ -33,7 +34,11 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         # each dataset is associate with one task
         # we need related task info as well
         query = db.query(self.model)
-        query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
+        query = query.filter(
+            self.model.user_id == user_id,
+            self.model.is_visible == int(visible),
+            not_(self.model.is_deleted),
+        )
 
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
@@ -153,6 +158,17 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         objs = db.query(self.model).filter(self.model.dataset_group_id == group_id).all()
         for obj in objs:
             obj.is_deleted = True
+        db.bulk_save_objects(objs)
+        db.commit()
+        return objs
+
+    def batch_toggle_visibility(self, db: Session, *, ids: List[int], action: str) -> List[Dataset]:
+        objs = self.get_multi_by_ids(db, ids=ids)
+        for obj in objs:
+            if action == "hide":
+                obj.is_visible = False
+            elif action == "unhide":
+                obj.is_visible = True
         db.bulk_save_objects(objs)
         db.commit()
         return objs

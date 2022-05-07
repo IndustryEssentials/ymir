@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from tests.utils.models import create_model_group_record
+from tests.utils.models import create_model_group_record, create_model
 from tests.utils.utils import random_lower_string
 
 
@@ -20,7 +20,8 @@ class TestListModelGroups:
     ):
         project_id = randint(1000, 2000)
         for _ in range(3):
-            create_model_group_record(db, user_id, project_id)
+            grp = create_model_group_record(db, user_id, project_id)
+            create_model(db, user_id, grp.id)
         r = client.get(
             f"{settings.API_V1_STR}/model_groups/", headers=normal_user_token_headers, params={"project_id": project_id}
         )
