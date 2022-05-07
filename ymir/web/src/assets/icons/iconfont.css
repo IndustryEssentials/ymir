@@ -1,6 +1,6 @@
 @font-face {
   font-family: "iconfont"; /* Project id  */
-  src: url('iconfont.ttf?t=1647937649188') format('truetype');
+  src: url('iconfont.ttf?t=1651198552473') format('truetype');
 }
 
 .iconfont {
@@ -393,5 +393,33 @@
 
 .icon-global-line:before {
   content: "\e6f4";
+}
+
+.icon-project:before {
+  content: "\e6f5";
+}
+
+.icon-revert:before {
+  content: "\e6f6";
+}
+
+.icon-code-box-line:before {
+  content: "\e6f7";
+}
+
+.icon-loader:before {
+  content: "\e6f8";
+}
+
+.icon-than_list:before {
+  content: "\e6f9";
+}
+
+.icon-than:before {
+  content: "\e6fa";
+}
+
+.icon-pretreatment:before {
+  content: "\e6fb";
 }
 

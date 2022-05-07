@@ -6,6 +6,7 @@ import { states, statesLabel } from '@/constants/dataset'
 import s from './iteration.less'
 import { useEffect, useState } from "react"
 import RenderProgress from "../../../components/common/progress"
+import { YesIcon } from '@/components/common/icons'    
 
 function Stage({ pid, stage, stageResult, current = 0, end = false, callback = () => { }, ...func }) {
   const history = useHistory()
@@ -87,7 +88,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
 
   const renderCount = () => {
     if (finishStage() || (currentStage() && isValid())) {
-      return '√' // finish state
+      return <YesIcon /> // finish state
     } else {
       return stage.value + 1
     }

@@ -6,13 +6,14 @@ import {
   getModel,
   delModel,
   delModelGroup,
+  batchAct,
   importModel,
   updateModel,
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
 import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
-import { updateResultState } from '@/constants/common'
+import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
 const initQuery = {
@@ -75,6 +76,13 @@ export default {
         return { items: result.items.map(ds => transferModel(ds)), total: result.total }
       }
     },
+    *getHiddenList({ payload }, { put }) {
+      const query = { ...payload, visible: false }
+      return yield put({
+        type: 'queryModels',
+        payload: query,
+      })
+    },
     *queryAllModels({ payload }, { select, call, put }) {
       const pid = payload
       const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
@@ -132,6 +140,18 @@ export default {
     },
     *delModelGroup({ payload }, { call, put }) {
       const { code, result } = yield call(delModelGroup, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *hide({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.hide, pid, ids)
+      if (code === 0) {
+        return result
+      }
+    },
+    *restore({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.restore, pid, ids)
       if (code === 0) {
         return result
       }

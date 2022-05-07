@@ -150,7 +150,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
     <div className={s.iteration}>
       <Row style={{ justifyContent: 'flex-end' }}>
         {stages.map((stage) => (
-          <Col key={stage.value} flex={1}>
+          <Col key={stage.value}  flex={stage.next ? 1 : null}>
             <Stage stage={stage} end={!stage.next} callback={callback} />
           </Col>
         ))}
