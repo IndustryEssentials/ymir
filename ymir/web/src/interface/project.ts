@@ -25,6 +25,8 @@ export interface Project {
   updateTime: string,
   description?: string,
   isExample?: boolean,
+  hiddenDatasets: Array<number>,
+  hiddenModels: Array<number>,
 }
 
 export interface Iteration {

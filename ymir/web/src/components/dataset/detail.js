@@ -15,14 +15,14 @@ function DatasetDetail({ dataset = {} }) {
   const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-end' }
 
   return (
-    <div className={styles.datasetDetail}>
+    <div className='datasetDetail'>
       <Descriptions
         bordered
-        column={1}
+        column={2}
         labelStyle={labelStyle}
-        className={styles.infoTable}
+        className='infoTable'
       >
-        <Item label={t("dataset.detail.label.name")}>
+        <Item label={t("dataset.detail.label.name")} span={2}>
           <Row>
             <Col flex={1}>{dataset.name} {dataset.versionName}</Col>
             <Col hidden={dataset.state !== states.VALID}>
@@ -35,6 +35,7 @@ function DatasetDetail({ dataset = {} }) {
           </Row>
         </Item>
         <Item label={t("dataset.detail.label.assets")}>{dataset.assetCount}</Item>
+        {dataset.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null }
         <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
       </Descriptions>
     </div>

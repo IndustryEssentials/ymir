@@ -221,6 +221,15 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.add',
   },
   {
+    path: "/home/project/hidden/:id",
+    name: "hidden",
+    component: "@/pages/project/hidden",
+    title: "project.hidden.title",
+    pid: 25,
+    id: 30,
+    breadcrumbLabel: 'breadcrumbs.project.hidden',
+  },
+  {
     path: "/home/project/iterations/:id",
     name: "projectIteration",
     component: "@/pages/project/iterations",

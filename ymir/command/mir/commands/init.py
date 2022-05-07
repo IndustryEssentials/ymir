@@ -61,6 +61,7 @@ class CmdInit(base.BaseCommand):
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         repo_git.init()
+        repo_git.config(['core.fileMode', 'false'])
 
         CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', '.mir'])
         repo_git.commit(["-m", "first commit"])

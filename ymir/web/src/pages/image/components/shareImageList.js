@@ -95,7 +95,7 @@ const ImageList = ({ role, getShareImages }) => {
   return (
     <div className={s.imageContent}>
       <List
-        className={s.list}
+        className='list'
         dataSource={images}
         renderItem={renderItem}
       />
