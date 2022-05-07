@@ -14,6 +14,8 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install -i ${PIP_SOURCE} --upgrade pip
 
+RUN git config --global core.fileMode false
+
 RUN pip install --no-cache-dir "uvicorn[standard]" gunicorn -i ${PIP_SOURCE}
 
 RUN mkdir -p /data/sharing/
