@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message } from "antd"
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -116,6 +116,9 @@ function Inference({ datasetCache, datasets, ...func }) {
     }
     const result = await func.createInferenceTask(params)
     if (result) {
+      if (result.map(item => item).length !== values.model.length) {
+        message.warn(t('task.inference.failure.some'))
+      }
       await func.clearCache()
       history.replace(`/home/project/detail/${pid}`)
     }
