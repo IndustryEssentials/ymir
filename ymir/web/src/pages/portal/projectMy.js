@@ -49,7 +49,7 @@ const MyProject = ({ count = 6, ...func }) => {
         </div>
         {projects.length ? <Lists projects={projects} /> : 
         <div className={styles.addBtn} style={{ marginTop: 20 }}>
-          <Link className={styles.emptyBoxAction}  onClick={() => addExample()}>
+          <Link className={styles.emptyBoxAction} to={''} onClick={() => addExample()}>
             <AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />
             <span style={{ color: '#36cbcb', fontSize: 16, marginLeft: 10 }}>{t('project.new.example.label')}</span>
           </Link>

@@ -48,21 +48,23 @@ function ModelDetail({ modelCache, getModel }) {
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
       <Card title={renderTitle()}>
-        <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className='infoTable'>
-          <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
-          {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null }
-          <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
-        </Descriptions>
-        <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
-        { model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null }
-        <TaskDetail task={model.task}></TaskDetail>
-        {!model.hidden ? <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-          {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
-          <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/inference/${model.projectId}?mid=${id}`)}>{t('dataset.action.inference')}</Button>
-          <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
-        </Space> : null }
+        <div className={styles.content}>
+          <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className='infoTable'>
+            <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
+            {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
+            <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
+          </Descriptions>
+          <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
+          {model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null}
+          <TaskDetail task={model.task}></TaskDetail>
+          {!model.hidden ? <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+            {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
+            <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/task/inference/${model.projectId}?mid=${id}`)}>{t('dataset.action.inference')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
+          </Space> : null}
+        </div>
       </Card>
     </div>
   )

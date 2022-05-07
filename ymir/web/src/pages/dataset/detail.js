@@ -40,33 +40,34 @@ function DatasetDetail({ datasetCache, getDataset }) {
       <Breadcrumbs />
       <Card
         title={t("dataset.detail.title") + ">" + t(getTaskTypeLabel(dataset.taskType))}
-        className='datasetDetail'
       >
-        <Detail dataset={dataset} />
-        <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
-        { dataset?.task?.error_code ? <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} /> : null }
-        <TaskDetail
-          task={dataset.task}
-          ignore={dataset.ignoredKeywords}
-        ></TaskDetail>
-        <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-          {dataset.taskType === TASKTYPES.LABEL ? (
-            <div style={{ textAlign: "right" }}>
-              <Link target="_blank" to="/label_tool/">
-                {t("task.detail.label.go.platform")}
-              </Link>
-            </div>
-          ) : null}
-          {!dataset.hidden ? taskTypes.map((type) => (
-            <Button
-              key={type}
-              type="primary"
-              onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
-            >
-              {t(`task.type.${type}`)}
-            </Button>
-          )) : null}
-        </Space>
+        <div className={s.content}>
+          <Detail dataset={dataset} />
+          <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
+          {dataset?.task?.error_code ? <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} /> : null}
+          <TaskDetail
+            task={dataset.task}
+            ignore={dataset.ignoredKeywords}
+          ></TaskDetail>
+          <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+            {dataset.taskType === TASKTYPES.LABEL ? (
+              <div style={{ textAlign: "right" }}>
+                <Link target="_blank" to="/label_tool/">
+                  {t("task.detail.label.go.platform")}
+                </Link>
+              </div>
+            ) : null}
+            {!dataset.hidden ? taskTypes.map((type) => (
+              <Button
+                key={type}
+                type="primary"
+                onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
+              >
+                {t(`task.type.${type}`)}
+              </Button>
+            )) : null}
+          </Space>
+        </div>
       </Card>
     </div>
   )
