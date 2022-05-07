@@ -264,7 +264,7 @@ export function createInferenceTask({
       docker_image_id: imageId,
     }
   }))
-  return request.post("/tasks/batch", params)
+  return request.post("/tasks/batch", { payloads: params })
 }
 
 export function createTask(params) {
