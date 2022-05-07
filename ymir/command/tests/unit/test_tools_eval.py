@@ -273,23 +273,24 @@ class TestToolsEval(unittest.TestCase):
     def test_mir_coco(self):
         mir_coco = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
+        self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
 
         # get annotations
         annotations_list = mir_coco.get_annotations()
-        counter = Counter([elem['asset_id'] for elem in annotations_list])
-        self.assertEqual(4, counter['a0'])
-        self.assertEqual(1, counter['a1'])
+        counter = Counter([elem['asset_idx'] for elem in annotations_list])
+        self.assertEqual(4, counter[0])
+        self.assertEqual(1, counter[1])
 
-        annotations_list = mir_coco.get_annotations(asset_ids=['a0', 'a2'])
-        counter = Counter([elem['asset_id'] for elem in annotations_list])
-        self.assertEqual(4, counter['a0'])
-        self.assertEqual(0, counter['a2'])
+        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 2])
+        counter = Counter([elem['asset_idx'] for elem in annotations_list])
+        self.assertEqual(4, counter[0])
+        self.assertEqual(0, counter[2])
 
-        annotations_list = mir_coco.get_annotations(asset_ids=['a0', 'a1'], class_ids=[0, 3])
-        counter = Counter([elem['asset_id'] for elem in annotations_list])
-        self.assertEqual(2, counter['a0'])
-        self.assertEqual(0, counter['a1'])
+        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1], class_ids=[0, 3])
+        counter = Counter([elem['asset_idx'] for elem in annotations_list])
+        self.assertEqual(2, counter[0])
+        self.assertEqual(0, counter[1])
 
     def test_mir_eval_00(self):
         coco_gt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
@@ -298,5 +299,6 @@ class TestToolsEval(unittest.TestCase):
         evaluator.evaluate()
         evaluator.accumulate()
         evaluator.summarize()
+        breakpoint()
         logging.info(f"evaluator stats: {evaluator.stats}")
         raise ValueError('a fake error occured')  # for test: captured outputs

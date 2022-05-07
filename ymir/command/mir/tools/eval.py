@@ -25,52 +25,76 @@ class MirCoco:
                                                                               mirpb.MirStorage.MIR_KEYWORDS,
                                                                               mirpb.MirStorage.MIR_CONTEXT
                                                                           ])
-        self.mir_metadatas = m
-        self.mir_annotations = a
-        self.mir_keywords = k
-        self.mir_context = c
+        self._mir_metadatas = m
+        self._mir_annotations = a
+        self._mir_keywords = k
+        self._mir_context = c
 
-    def get_annotations(self, asset_ids: list = [], class_ids: list = []) -> List[dict]:
+        # ordered list of asset / image ids
+        self._ordered_asset_ids = sorted(list(self._mir_metadatas.attributes.keys()))
+        # key: asset id, value: index in `self._ordered_asset_ids`
+        self._asset_id_to_ordered_idxes = {asset_id:idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
+        # ordered list of class / category ids
+        self._ordered_class_ids = sorted(list(self._mir_keywords.index_predifined_keyids.keys()))
+
+    def get_annotations(self, asset_idxes: List[int] = [], class_ids: List[int] = []) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
-        if asset_ids and class_ids provided, only returns filtered annotations
+        if asset_idxes and class_ids provided, only returns filtered annotations
 
         Args:
-            asset_ids (List[str]): asset ids, if not provided, returns annotations for all images
+            asset_idxes (List[int]): asset ids, if not provided, returns annotations for all images
             class_ids (List[int]): class ids, if not provided, returns annotations for all classe
 
         Returns:
             a list of annotations and asset ids
-            each element is a dict: {'asset_id': str, 'class_id': int, 'bbox': int tuple of xywh, 'score': float}
+            each element is a dict, and has following keys and values:
+                asset_id: str, image / asset id
+                asset_idx: int, position of asset id in `self.get_asset_ids()`
+                id: int, id for a single annotation
+                class_id: int, category / class id
+                area: int, area of bbox
+                bbox: List[int], bounding box, xywh
+                score: float, confidence of bbox
+                iscrowd: always 0 because mir knows nothing about it
         """
         result_annotations_list: List[dict] = []
 
-        single_task_annotations = self.mir_annotations.task_annotations[self.mir_annotations.head_task_id]
-        if not asset_ids:
-            asset_ids = list(single_task_annotations.image_annotations.keys())
+        single_task_annotations = self._mir_annotations.task_annotations[self._mir_annotations.head_task_id]
+        if not asset_idxes:
+            asset_idxes = self.get_asset_idxes()
 
-        for asset_id in asset_ids:
+        for asset_idx in asset_idxes:
+            asset_id = self._ordered_asset_ids[asset_idx]
             if asset_id not in single_task_annotations.image_annotations:
                 continue
 
             single_image_annotations = single_task_annotations.image_annotations[asset_id]
             for annotation in single_image_annotations.annotations:
                 if annotation.class_id in class_ids or not class_ids:
-                    result_annotations_list.append({
+                    annotation_dict = {
                         'asset_id': asset_id,
+                        'asset_idx': asset_idx,
+                        'id': annotation.index + 1,  # pycocotools uses 0 as invalid id, so + 1 is needed
                         'class_id': annotation.class_id,
+                        'area': annotation.box.w * annotation.box.h,
                         'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
                         'score': annotation.score,
-                    })
+                        'iscrowd': 0,
+                    }
+                    result_annotations_list.append(annotation_dict)
 
         return result_annotations_list
 
     def get_asset_ids(self) -> List[str]:
-        return sorted(list(self.mir_metadatas.attributes.keys()))
+        return self._ordered_asset_ids
+    
+    def get_asset_idxes(self) -> List[int]:
+        return list(range(len(self._ordered_asset_ids)))
 
     def get_class_ids(self) -> List[int]:
-        return sorted(list(self.mir_keywords.index_predifined_keyids.keys()))
+        return self._ordered_class_ids
 
 
 class MirEval:
@@ -84,9 +108,10 @@ class MirEval:
         self.params = Params(iouType='bbox')  # parameters
         self._paramsEval = {}  # parameters for evaluation
         self.stats = []  # result summarization
-        self.ious = {}  # ious between all gts and dts
-        self.params.imgIds = sorted(coco_gt.get_asset_ids())
-        self.params.catIds = sorted(coco_dt.get_class_ids())
+        self.ious = {}  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
+        self.params.imgIds = coco_gt.get_asset_ids()
+        self.params.imgIdxes = list(range(len(self.params.imgIds)))
+        self.params.catIds = coco_dt.get_class_ids()
 
     def _prepare(self):
         '''
@@ -102,11 +127,11 @@ class MirEval:
         #         ann['segmentation'] = rle
         # p = self.params
         if self.params.useCats:  # TODO: shall i remove this?
-            gts = self.cocoGt.get_annotations(asset_ids=self.params.imgIds, class_ids=self.params.catIds)
-            dts = self.cocoDt.get_annotations(asset_ids=self.params.imgIds, class_ids=self.params.catIds)
+            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes, class_ids=self.params.catIds)
+            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes, class_ids=self.params.catIds)
         else:
-            gts = self.cocoGt.get_annotations(asset_ids=self.params.imgIds)
-            dts = self.cocoDt.get_annotations(asset_ids=self.params.imgIds)
+            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes)
+            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes)
         logging.debug(f"len of gts and dts: {len(gts)}, {len(dts)}")
 
         # set ignore flag
@@ -115,27 +140,31 @@ class MirEval:
             gt['ignore'] = 'iscrowd' in gt and gt['iscrowd']
 
         # for each element in self._gts and self._dts:
-        #   (asset_id, class_id), value: {'asset_id': str, 'class_id': int, 'bbox': int tuple of xywh, 'score': float}
+        #   key: (asset_idx, class_id)
+        #   value: {'asset_idx': int, 'id': int, 'class_id': int, 'bbox': int tuple of xywh, 'score': float}
         self._gts = defaultdict(list)
         self._dts = defaultdict(list)
         for gt in gts:
-            self._gts[gt['asset_id'], gt['class_id']].append(gt)
+            self._gts[gt['asset_idx'], gt['class_id']].append(gt)
         for dt in dts:
-            self._dts[dt['asset_id'], dt['class_id']].append(dt)
+            self._dts[dt['asset_idx'], dt['class_id']].append(dt)
         self.evalImgs = defaultdict(list)  # per-image per-category evaluation results
         self.eval = {}  # accumulated evaluation results
 
     def evaluate(self):
         '''
         Run per image evaluation on given images and store results (a list of dict) in self.evalImgs
-        :return: None
+
+        Returns: None
+        SideEffects:
+            self.params.catIds / imgIdxes: duplicated class and asset ids will be removed
+            self.params.maxDets: will be sorted
+            self.ious: will be cauculated
+            self.evalImgs: will be cauculated
+            self._paramsEval: deep copied from self.params
         '''
         p = self.params
-        # add backward compatibility if useSegm is specified in params
-        # if not p.useSegm is None:
-        #     p.iouType = 'segm' if p.useSegm == 1 else 'bbox'
-        #     print('useSegm (deprecated) is not None. Running {} evaluation'.format(p.iouType))
-        p.imgIds = list(np.unique(p.imgIds))
+        p.imgIdxes = list(np.unique(p.imgIdxes))
         if p.useCats:
             p.catIds = list(np.unique(p.catIds))
         p.maxDets = sorted(p.maxDets)
@@ -145,26 +174,36 @@ class MirEval:
         # loop through images, area range, max detection number
         catIds = p.catIds if p.useCats else [-1]
 
-        self.ious = {(imgId, catId): self.computeIoU(imgId, catId) for imgId in p.imgIds for catId in catIds}
-        logging.debug(f"type of self.ious: {type(self.ious)}")
+        # self.ious: key: (img_idx, class_id), value: ious ndarray of len(dts) * len(gts)
+        self.ious = {(imgId, catId): self.computeIoU(imgId, catId) for imgId in p.imgIdxes for catId in catIds}
 
-        evaluateImg = self.evaluateImg
         maxDet = p.maxDets[-1]
         self.evalImgs = [
-            evaluateImg(imgId, catId, areaRng, maxDet) for catId in catIds for areaRng in p.areaRng
-            for imgId in p.imgIds
+            self.evaluateImg(imgIdx, catId, areaRng, maxDet) for catId in catIds for areaRng in p.areaRng
+            for imgIdx in p.imgIdxes
         ]
         self._paramsEval = copy.deepcopy(self.params)
 
-    def computeIoU(self, imgId: str, catId: int):
+    def computeIoU(self, imgIdx: int, catId: int) -> np.ndarray:
+        """
+        compute ious of detections and ground truth boxes of single image and class /category
+
+        Args:
+            imgIdx (int): asset / image ordered idx
+            catId (int): category / class id, if self.params.useCats is False, catId will be ignored
+
+        Returns:
+            ious ndarray of detections and ground truth boxes of single image and category
+            ious[i][j] means the iou i-th detection (sorted by score, desc) and j-th ground truth box
+        """
         p = self.params
         if p.useCats:
-            gt = self._gts[imgId, catId]
-            dt = self._dts[imgId, catId]
+            gt = self._gts[imgIdx, catId]
+            dt = self._dts[imgIdx, catId]
         else:
-            # if not useCats, gt and dt set to annotations for the same imgId and ALL cat ids
-            gt = [_ for cId in p.catIds for _ in self._gts[imgId, cId]]
-            dt = [_ for cId in p.catIds for _ in self._dts[imgId, cId]]
+            # if not useCats, gt and dt set to annotations for the same imgIdx and ALL cat ids
+            gt = [_ for cId in p.catIds for _ in self._gts[imgIdx, cId]]
+            dt = [_ for cId in p.catIds for _ in self._dts[imgIdx, cId]]
         if len(gt) == 0 and len(dt) == 0:
             return []
 
@@ -174,80 +213,36 @@ class MirEval:
         if len(dt) > p.maxDets[-1]:
             dt = dt[0:p.maxDets[-1]]
 
-        # if p.iouType == 'segm':
-        #     g = [g['segmentation'] for g in gt]
-        #     d = [d['segmentation'] for d in dt]
-        # elif p.iouType == 'bbox':
-        #     g = [g['bbox'] for g in gt]
-        #     d = [d['bbox'] for d in dt]
-        # else:
-        #     raise Exception('unknown iouType for iou computation')
         g_boxes = [g['bbox'] for g in gt]
         d_boxes = [d['bbox'] for d in dt]
-        breakpoint()
 
-        # compute iou between each dt and gt region
         iscrowd = [int(o.get('iscrowd', 0)) for o in gt]
+        # compute iou between each dt and gt region
+        # ious: matrix of len(d_boxes) * len(g_boxes)
+        #   ious[i][j]: iou of d_boxes[i] and g_boxes[j]
         ious = maskUtils.iou(d_boxes, g_boxes, iscrowd)
-        logging.debug(f"ious type: {type(ious)}")  # for test
-        logging.debug(f"ious: {ious}")  # for test
         return ious
 
-    # def computeOks(self, imgId, catId):
-    #     p = self.params
-    #     # dimention here should be Nxm
-    #     gts = self._gts[imgId, catId]
-    #     dts = self._dts[imgId, catId]
-    #     inds = np.argsort([-d['score'] for d in dts], kind='mergesort')
-    #     dts = [dts[i] for i in inds]
-    #     if len(dts) > p.maxDets[-1]:
-    #         dts = dts[0:p.maxDets[-1]]
-    #     # if len(gts) == 0 and len(dts) == 0:
-    #     if len(gts) == 0 or len(dts) == 0:
-    #         return []
-    #     ious = np.zeros((len(dts), len(gts)))
-    #     sigmas = p.kpt_oks_sigmas
-    #     vars = (sigmas * 2)**2
-    #     k = len(sigmas)
-    #     # compute oks between each detection and ground truth object
-    #     for j, gt in enumerate(gts):
-    #         # create bounds for ignore regions(double the gt bbox)
-    #         g = np.array(gt['keypoints'])
-    #         xg = g[0::3]; yg = g[1::3]; vg = g[2::3]
-    #         k1 = np.count_nonzero(vg > 0)
-    #         bb = gt['bbox']
-    #         x0 = bb[0] - bb[2]; x1 = bb[0] + bb[2] * 2
-    #         y0 = bb[1] - bb[3]; y1 = bb[1] + bb[3] * 2
-    #         for i, dt in enumerate(dts):
-    #             d = np.array(dt['keypoints'])
-    #             xd = d[0::3]; yd = d[1::3]
-    #             if k1>0:
-    #                 # measure the per-keypoint distance if keypoints visible
-    #                 dx = xd - xg
-    #                 dy = yd - yg
-    #             else:
-    #                 # measure minimum distance to keypoints in (x0,y0) & (x1,y1)
-    #                 z = np.zeros((k))
-    #                 dx = np.max((z, x0-xd),axis=0)+np.max((z, xd-x1),axis=0)
-    #                 dy = np.max((z, y0-yd),axis=0)+np.max((z, yd-y1),axis=0)
-    #             e = (dx**2 + dy**2) / vars / (gt['area']+np.spacing(1)) / 2
-    #             if k1 > 0:
-    #                 e=e[vg > 0]
-    #             ious[i, j] = np.sum(np.exp(-e)) / e.shape[0]
-    #     return ious
-
-    def evaluateImg(self, imgId, catId, aRng, maxDet):
+    def evaluateImg(self, imgIdx: int, catId: int, aRng: List[float], maxDet: int) -> dict:
         '''
         perform evaluation for single category and image
-        :return: dict (single image results)
+
+        Args:
+            imgIdx (int): image / asset ordered index
+            catId (int): category / class id
+            aRng (List[float]): area range (lower and upper bound)
+            maxDet (int):
+
+        Returns:
+            dict (single image results)
         '''
         p = self.params
         if p.useCats:
-            gt = self._gts[imgId, catId]
-            dt = self._dts[imgId, catId]
+            gt = self._gts[imgIdx, catId]
+            dt = self._dts[imgIdx, catId]
         else:
-            gt = [_ for cId in p.catIds for _ in self._gts[imgId, cId]]
-            dt = [_ for cId in p.catIds for _ in self._dts[imgId, cId]]
+            gt = [_ for cId in p.catIds for _ in self._gts[imgIdx, cId]]
+            dt = [_ for cId in p.catIds for _ in self._dts[imgIdx, cId]]
         if len(gt) == 0 and len(dt) == 0:
             return None
 
@@ -264,21 +259,21 @@ class MirEval:
         dt = [dt[i] for i in dtind[0:maxDet]]
         iscrowd = [int(o['iscrowd']) for o in gt]
         # load computed ious
-        ious = self.ious[imgId, catId][:, gtind] if len(self.ious[imgId, catId]) > 0 else self.ious[imgId, catId]
+        ious = self.ious[imgIdx, catId][:, gtind] if len(self.ious[imgIdx, catId]) > 0 else self.ious[imgIdx, catId]
 
         T = len(p.iouThrs)
         G = len(gt)
         D = len(dt)
-        gtm = np.zeros((T, G))
-        dtm = np.zeros((T, D))
-        gtIg = np.array([g['_ignore'] for g in gt])
-        dtIg = np.zeros((T, D))
+        gtm = np.zeros((T, G))  # gtm[i, j]: dt annotation id matched by j-th gt in i-th iou thr
+        dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr
+        gtIg = np.array([g['_ignore'] for g in gt])  # gt ignore
+        dtIg = np.zeros((T, D))  # dt ignore
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
                 for dind, d in enumerate(dt):
                     # information about best match so far (m=-1 -> unmatched)
                     iou = min([t, 1 - 1e-10])
-                    m = -1
+                    m = -1  # best matched gind for current dind, -1 for unmatch
                     for gind, g in enumerate(gt):
                         # if this gt already matched, and not a crowd, continue
                         if gtm[tind, gind] > 0 and not iscrowd[gind]:
@@ -303,7 +298,7 @@ class MirEval:
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
         # store results for given image and category
         return {
-            'image_id': imgId,
+            'image_id': imgIdx,
             'category_id': catId,
             'aRng': aRng,
             'maxDet': maxDet,
@@ -344,13 +339,13 @@ class MirEval:
         setK = set(catIds)
         setA = set(map(tuple, _pe.areaRng))
         setM = set(_pe.maxDets)
-        setI = set(_pe.imgIds)
+        setI = set(_pe.imgIdxes)
         # get inds to evaluate
         k_list = [n for n, k in enumerate(p.catIds) if k in setK]
         m_list = [m for n, m in enumerate(p.maxDets) if m in setM]
         a_list = [n for n, a in enumerate(map(lambda x: tuple(x), p.areaRng)) if a in setA]
-        i_list = [n for n, i in enumerate(p.imgIds) if i in setI]
-        I0 = len(_pe.imgIds)
+        i_list = [n for n, i in enumerate(p.imgIdxes) if i in setI]
+        I0 = len(_pe.imgIdxes)
         A0 = len(_pe.areaRng)
         # retrieve E at each category, area range, and max number of detections
         for k, k0 in enumerate(k_list):
@@ -507,17 +502,19 @@ class Params:
     def setDetParams(self):
         self.imgIds = []
         self.catIds = []
+        self.imgIdxes = []
         # np.arange causes trouble.  the data point on arange is slightly larger than the true value
-        self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)
-        self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)
+        self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)  # iou threshold
+        self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)  # recall threshold
         self.maxDets = [1, 10, 100]
-        self.areaRng = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]
-        self.areaRngLbl = ['all', 'small', 'medium', 'large']
-        self.useCats = 1
+        self.areaRng = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
+        self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
+        self.useCats = 1  # 1: use categories, 0: treat all categories as one
 
     def setKpParams(self):
         self.imgIds = []
         self.catIds = []
+        self.imgIdxes = []
         # np.arange causes trouble.  the data point on arange is slightly larger than the true value
         self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)
         self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)
