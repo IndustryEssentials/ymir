@@ -4,9 +4,9 @@ import { Select, Input, Card, Button, Form, Row, Col, Checkbox, ConfigProvider, 
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
+import { useHistory, useParams, Link, useLocation } from "umi"
 
 import t from "@/utils/t"
-import { useHistory, useParams, Link, useLocation } from "umi"
 import Uploader from "@/components/form/uploader"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomNumber } from "@/utils/number"
@@ -22,35 +22,21 @@ function Compare({ datasets, keywords, ...func }) {
   const pageParams = useParams()
   const { query } = useLocation()
   const pid = Number(pageParams.id)
-  const { iterationId, outputKey, currentStage } = query
-  const did = Number(query.did)
+  const did = string2Array(pageParams.ids)
   const history = useHistory()
   const [doc, setDoc] = useState(undefined)
   const [form] = Form.useForm()
   const [asChecker, setAsChecker] = useState(false)
 
-  useEffect(() => {
-    func.getKeywords({ limit: 100000 })
-  }, [])
-
   const onFinish = async (values) => {
-    const { labellers, checker } = values
-    const emails = [labellers]
-    checker && emails.push(checker)
     const params = {
       ...values,
       projectId: pid,
-      labellers: emails,
-      doc,
-      name: 'task_label_' + randomNumber(),
+      name: 'task_eveluate_' + randomNumber(),
     }
-    const result = await func.createLabelTask(params)
+    const result = await func.compare(params)
     if (result) {
-      if (iterationId) {
-        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
-      }
-      await func.clearCache()
-      history.replace(`/home/project/detail/${pid}`)
+      // todo set result state
     }
   }
 
@@ -207,9 +193,9 @@ const dis = (dispatch) => {
         payload: { id, force },
       })
     },
-    eveluate(payload) {
+    compare(payload) {
       return dispatch({
-        type: "dataset/eveluate",
+        type: "dataset/compare",
         payload,
       })
     },

@@ -20,7 +20,7 @@ import Actions from "@/components/table/actions"
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
-  EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon,
+  EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
 } from "@/components/common/icons"
 
 const { confirm } = Modal
@@ -233,6 +233,13 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         icon: <TaggingIcon />,
       },
       {
+        key: "compare",
+        label: t("common.action.compare"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/dataset/${id}/compare`),
+        icon: <CompareIcon />,
+      },
+      {
         key: "copy",
         label: t("task.action.copy"),
         hidden: () => !isValidDataset(state),
@@ -408,6 +415,23 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
   }
 
+  const multipleCompare = () => {
+    const ids = Object.values(selectedVersions).flat()
+    const vss = Object.values(versions).flat().filter(({ id }) => ids.includes(id))
+    const diffGroup = [...new Set(vss.map(item => item.groupId))].length > 1
+    if (diffGroup) {
+      // diff group
+      return message.error(t('dataset.compare.error.diff_group'))
+    }
+
+    const diffAssets = [...new Set(vss.map(item => item.assetCount))].length > 1
+    if (diffAssets) {
+      // diff assets count
+      return message.error(t('dataset.compare.error.diff_assets'))
+    }
+    history.push(`/home/project/${pid}/dataset/${ids}/compare`)
+  }
+
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
@@ -445,6 +469,9 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     <>
       <Button type="primary" onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
+      </Button>
+      <Button type="primary" onClick={multipleCompare}>
+        <CompareIcon /> {t("common.action.multiple.compare")}
       </Button>
     </>
   ) : null
