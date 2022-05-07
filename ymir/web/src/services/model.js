@@ -24,16 +24,25 @@ export function getModelVersions(group_id) {
  * query models
  * @param {object} param1 {
  *   {number} project_id 
- *   {number} type task type
- *   {number} state model state
- *   {string} name model name
- *   {number} offset  query start
- *   {number} limit query count 
+ *   {number} [type] task type
+ *   {number} [state] model state
+ *   {string} [name] model name
+ *   {boolean} [visible] hidden or not
+ *   {number} [offset]  query start
+ *   {number} [limit] query count 
  * }
  * @returns 
  */
-export function queryModels({ project_id, type, state, name, offset = 0, limit = 10 }) {
-  return request.get("models/", { params: { project_id, type, state, name, offset, limit } })
+export function queryModels({
+  project_id,
+  type,
+  state,
+  name,
+  visible = true,
+  offset = 0,
+  limit = 10,
+}) {
+  return request.get("models/", { params: { project_id, type, state, name, visible, offset, limit } })
 }
 
 /**
@@ -80,6 +89,21 @@ export function delModelGroup(id) {
   return request({
     method: "delete",
     url: `/model_groups/${id}`,
+  })
+}
+
+
+/**
+ * hide/restore/delete models
+ * @param {string} action hide/restore/delete
+ * @param {number} projectId
+ * @param {number} ids
+ * @returns
+ */
+export function batchAct(action, projectId, ids = []) {
+  return request.post(`/models/batch`, {
+    project_id: projectId,
+    operations: ids.map(id => ({ id, action, }))
   })
 }
 

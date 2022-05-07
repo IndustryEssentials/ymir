@@ -10,6 +10,10 @@ const errors = {
   'error110108': { cn: '下载失败', en: 'FAILED_TO_DOWNLOAD: failed to download file', },
   'error110109': { cn: '配置不可用', en: 'INVALID_CONFIGURATION', },
   'error110110': { cn: '用户权限不匹配', en: 'INVALID_SCOPE', },
+  'error110111': { 
+    cn: '无法隐藏受保护的资源，如当前迭代的产出、项目中的训练集、测试集、挖掘集或者正在进行的数据集/模型', 
+    en: 'Can not hide protected resource, such as result of current iteration, training, testing, and mining dataset related to project, or in-progress dataset/model', 
+  },
   'error110201': { cn: '找不到该用户，请重试', en: 'USER_NOT_FOUND: User Not Found, retry or contact admin.', },
   'error110202': { cn: '名称已重复，请选择新的名称注册', en: 'USER_DUPLICATED_NAME: Duplicated Username, try another name', },
   'error110203': { cn: '用户未授权访问', en: 'USER_NOT_ACCESSIBLE: User is Unaccessable', },
@@ -52,6 +56,7 @@ const errors = {
   'error111401': { cn: '找不到项目', en: 'Project Not Found', },
   'error111402': { cn: '项目名称重复', en: 'Duplicated project name', },
   'error111502': { cn: '数据集名称重复', en: 'Duplicated dataset name', },
+  'error111901': { cn: '隐藏和取消隐藏不能同时处理', en: 'Hide and Unhide cannot handle in same request', },
   'error140400': { cn: 'viz 一般错误', en: 'viz: general_error', },
   'error140401': { cn: 'viz 分支不存在', en: 'viz: branch_not_exists', },
   'error140500': { cn: 'viz 内部错误', en: 'viz: internal_error', },

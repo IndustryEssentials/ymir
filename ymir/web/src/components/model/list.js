@@ -17,14 +17,13 @@ import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
 import Terminate from "@/components/task/terminate"
-import Del from "./del"
-import DelGroup from "./delGroup"
+import Hide from "../common/hide"
 import EditBox from "@/components/form/editBox"
 import { getTensorboardLink } from "@/services/common"
 
 import {
   ShieldIcon, VectorIcon, EditIcon,
-  DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,SearchIcon,
+  EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,SearchIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
 
@@ -36,11 +35,12 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
   const [total, setTotal] = useState(0)
+  const [selectedVersions, setSelectedVersions] = useState({})
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
   let [lock, setLock] = useState(true)
-  const delRef = useRef(null)
+  const hideRef = useRef(null)
   const delGroupRef = useRef(null)
   const terminateRef = useRef(null)
 
@@ -164,6 +164,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
   }
 
+  const hideHidden = ({ state, id }) => isRunning(state) || project?.hiddenModels?.includes(id)
+
   const listChange = ({ current, pageSize }) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
@@ -180,21 +182,15 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
-        item = setLabelByIterations(item, iterations)
+        const iteration = iterations.find(iter => iter.model === item.id)
+        if (iteration) {
+          item.iterationLabel = t('iteration.tag.round', iteration)
+        }
         return { ...item }
       })
       versions[gid] = updatedList
     })
     return { ...versions }
-  }
-
-  function setLabelByIterations(item, iterations) {
-    iterations.forEach(iteration => {
-      if (iteration.model && iteration.model === item.id) {
-        item.iterationLabel = t('iteration.tag.round', iteration)
-      }
-    })
-    return item
   }
 
   function setVersionLabelsByProject(versions, project) {
@@ -238,7 +234,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, taskState, taskType, task } = record
+    const { id, name, url, state, taskState, taskType, task, isProtected } = record
     const actions = [
       {
         key: "verify",
@@ -291,15 +287,14 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         hidden: () => taskType !== TASKTYPES.TRAINING,
         icon: <BarchartIcon />,
       },
+      {
+        key: "hide",
+        label: t("common.action.hide"),
+        onclick: () => hide(record),
+        hidden: ()=> hideHidden(record),
+        icon: <EyeOffIcon />,
+      },
     ]
-    // const delAction = {
-    //   key: "del",
-    //   label: t("dataset.action.del"),
-    //   onclick: () => del(id, `${name} ${versionName}`),
-    //   className: styles.action_del,
-    //   disabled: isProtected,
-    //   icon: <DeleteIcon />,
-    // }
     return actions
   }
 
@@ -308,19 +303,28 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     setTimeout(() => setCurrent(record), 0)
   }
 
-  const delGroup = (id, name) => {
-    delGroupRef.current.del(id, name)
-  }
-  const del = (id, name) => {
-    delRef.current.del(id, name)
-  }
-
-  const delOk = (id) => {
-    func.getVersions(id, true)
+  const multipleHide = () => {
+    const ids = Object.values(selectedVersions).flat()
+    const allVss = Object.values(versions).flat()
+    const vss = allVss.filter(({id}) => ids.includes(id))
+    hideRef.current.hide(vss, project.hiddenModels)
   }
 
-  const delGroupOk = () => {
+  const hide = (version) => {
+    if (project.hiddenModels.includes(version.id)) {
+      return message.warn(t('dataset.hide.single.invalid'))
+    }
+    hideRef.current.hide([version])
+  }
+
+  const hideOk = (id) => {
     getData()
+    setSelectedVersions({})
+  }
+
+  
+  function rowSelectChange(gid, rowKeys) {
+    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
   }
 
   const stop = (dataset) => {
@@ -376,6 +380,14 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     </Button>
   )
 
+  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
+    <>
+      <Button type="primary" onClick={multipleHide}>
+        <EyeOffIcon /> {t("common.action.multiple.hide")}
+      </Button>
+    </>
+  ) : null
+
   const renderGroups = (<>
     <div className='groupList'>
       {models.length ? models.map(group => <div className={styles.groupItem} key={group.id}>
@@ -387,7 +399,6 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
           </Col>
           <Col><Space>
             <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
-            <a hidden={true} onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
         <div className='groupTable' hidden={!visibles[group.id]}>
@@ -395,6 +406,10 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
             dataSource={modelVersions[group.id]}
             onChange={tableChange}
             rowKey={(record) => record.id}
+            rowSelection={{
+              onChange: (keys) => rowSelectChange(group.id, keys),
+              getCheckboxProps: (record) => ({ disabled: !isValidModel(record.state), }),
+            }}
             rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
             columns={columns}
             pagination={false}
@@ -410,6 +425,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       <div className='actions'>
         <Space>
           {addBtn}
+          {renderMultipleActions}
         </Space>
       </div>
       <div className={`list ${styles.list}`}>
@@ -435,8 +451,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         {renderGroups}
       </div>
       <EditBox record={current} max={80} action={saveName}></EditBox>
-      <DelGroup ref={delGroupRef} ok={delGroupOk} />
-      <Del ref={delRef} ok={delOk} />
+      <Hide ref={hideRef} type={1} msg='model.action.hide.confirm.content' ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )

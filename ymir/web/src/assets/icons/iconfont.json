@@ -676,6 +676,55 @@
       "font_class": "global-line",
       "unicode": "e6f4",
       "unicode_decimal": 59124
+    },
+    {
+      "icon_id": "96788531",
+      "name": "project",
+      "font_class": "project",
+      "unicode": "e6f5",
+      "unicode_decimal": 59125
+    },
+    {
+      "icon_id": "98145138",
+      "name": "revert",
+      "font_class": "revert",
+      "unicode": "e6f6",
+      "unicode_decimal": 59126
+    },
+    {
+      "icon_id": "99361606",
+      "name": "code-box-line",
+      "font_class": "code-box-line",
+      "unicode": "e6f7",
+      "unicode_decimal": 59127
+    },
+    {
+      "icon_id": "99361607",
+      "name": "loader",
+      "font_class": "loader",
+      "unicode": "e6f8",
+      "unicode_decimal": 59128
+    },
+    {
+      "icon_id": "99361608",
+      "name": "than_list",
+      "font_class": "than_list",
+      "unicode": "e6f9",
+      "unicode_decimal": 59129
+    },
+    {
+      "icon_id": "99361609",
+      "name": "than",
+      "font_class": "than",
+      "unicode": "e6fa",
+      "unicode_decimal": 59130
+    },
+    {
+      "icon_id": "99361610",
+      "name": "pretreatment",
+      "font_class": "pretreatment",
+      "unicode": "e6fb",
+      "unicode_decimal": 59131
     }
   ]
 }
