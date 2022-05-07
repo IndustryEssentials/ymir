@@ -1,6 +1,5 @@
 from collections import defaultdict
 import copy
-import logging
 from typing import List
 
 import numpy as np
@@ -33,11 +32,14 @@ class MirCoco:
         # ordered list of asset / image ids
         self._ordered_asset_ids = sorted(list(self._mir_metadatas.attributes.keys()))
         # key: asset id, value: index in `self._ordered_asset_ids`
-        self._asset_id_to_ordered_idxes = {asset_id:idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
+        self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
         self._ordered_class_ids = sorted(list(self._mir_keywords.index_predifined_keyids.keys()))
 
-    def get_annotations(self, asset_idxes: List[int] = [], class_ids: List[int] = []) -> List[dict]:
+    def get_annotations(self,
+                        asset_idxes: List[int] = [],
+                        class_ids: List[int] = [],
+                        conf_thr: float = 0) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
@@ -46,6 +48,7 @@ class MirCoco:
         Args:
             asset_idxes (List[int]): asset ids, if not provided, returns annotations for all images
             class_ids (List[int]): class ids, if not provided, returns annotations for all classe
+            conf_thr (float): confidence threshold of bbox
 
         Returns:
             a list of annotations and asset ids
@@ -72,24 +75,28 @@ class MirCoco:
 
             single_image_annotations = single_task_annotations.image_annotations[asset_id]
             for annotation in single_image_annotations.annotations:
-                if annotation.class_id in class_ids or not class_ids:
-                    annotation_dict = {
-                        'asset_id': asset_id,
-                        'asset_idx': asset_idx,
-                        'id': annotation.index + 1,  # pycocotools uses 0 as invalid id, so + 1 is needed
-                        'class_id': annotation.class_id,
-                        'area': annotation.box.w * annotation.box.h,
-                        'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
-                        'score': annotation.score,
-                        'iscrowd': 0,
-                    }
-                    result_annotations_list.append(annotation_dict)
+                if class_ids and annotation.class_id not in class_ids:
+                    continue
+                if annotation.score < conf_thr:
+                    continue
+
+                annotation_dict = {
+                    'asset_id': asset_id,
+                    'asset_idx': asset_idx,
+                    'id': annotation.index + 1,  # pycocotools uses 0 as invalid id, so + 1 is needed
+                    'class_id': annotation.class_id,
+                    'area': annotation.box.w * annotation.box.h,
+                    'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
+                    'score': annotation.score,
+                    'iscrowd': 0,
+                }
+                result_annotations_list.append(annotation_dict)
 
         return result_annotations_list
 
     def get_asset_ids(self) -> List[str]:
         return self._ordered_asset_ids
-    
+
     def get_asset_idxes(self) -> List[int]:
         return list(range(len(self._ordered_asset_ids)))
 
@@ -105,7 +112,7 @@ class MirEval:
         self.eval = {}  # accumulated evaluation results
         self._gts = defaultdict(list)  # gt for evaluation
         self._dts = defaultdict(list)  # dt for evaluation
-        self.params = Params(iouType='bbox')  # parameters
+        self.params = Params()  # parameters
         self._paramsEval = {}  # parameters for evaluation
         self.stats = []  # result summarization
         self.ious = {}  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
@@ -120,19 +127,16 @@ class MirEval:
         SideEffects:
             created and filled self._gts and self._dts; changed self.evalImgs and self.eval
         '''
-        # def _toMask(anns, coco):
-        #     # modify ann['segmentation'] by reference
-        #     for ann in anns:
-        #         rle = coco.annToRLE(ann)
-        #         ann['segmentation'] = rle
-        # p = self.params
         if self.params.useCats:  # TODO: shall i remove this?
-            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes, class_ids=self.params.catIds)
-            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes, class_ids=self.params.catIds)
+            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes,
+                                              class_ids=self.params.catIds,
+                                              conf_thr=self.params.confThr)
+            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes,
+                                              class_ids=self.params.catIds,
+                                              conf_thr=self.params.confThr)
         else:
-            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes)
-            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes)
-        logging.debug(f"len of gts and dts: {len(gts)}, {len(dts)}")
+            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes, conf_thr=self.params.confThr)
+            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes, conf_thr=self.params.confThr)
 
         # set ignore flag
         for gt in gts:
@@ -415,23 +419,96 @@ class MirEval:
             'scores': scores,
         }
 
-    def summarize(self):
+    def get_evaluation_result(self) -> mirpb.Evaluation:
+        if not self.eval:
+            raise ValueError('Please run accumulate() first')
+
+        evaluation_result = mirpb.Evaluation()
+        evaluation_result.conf_threshold = self.params.confThr
+
+        # iou evaluations
+        for iou_thr_index, iou_thr in enumerate(self.params.iouThrs):
+            iou_evaluation = self._get_iou_evaluation_result(iou_thr_index=iou_thr_index)
+            evaluation_result.iou_evaluations[str(iou_thr)].CopyFrom(iou_evaluation)
+
+        # average evaluation
+        evaluation_result.average_evaluation.CopyFrom(self._get_iou_evaluation_result())
+
+        return evaluation_result
+
+    def _get_iou_evaluation_result(self, iou_thr_index: int = None) -> mirpb.SingleIouEvaluation:
+        iou_evaluation = mirpb.SingleIouEvaluation()
+
+        # ci evaluations: category / class ids
+        for class_id_index, class_id in enumerate(self.params.catIds):
+            topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, class_id_index)
+            iou_evaluation.ci_evaluations[class_id].CopyFrom(topic_evaluation)
+
+        return iou_evaluation
+
+    def _get_topic_evaluation_result(self, iou_thr_index: int, class_id_index: int) -> mirpb.SingleTopicEvaluation:
+        topic_evaluation = mirpb.SingleTopicEvaluation()
+
+        # from _summarize
+        area_ranges_index = 0  # area range: 'all'
+        max_dets_index = len(self.params.maxDets) - 1  # last max det number
+
+        # average precision
+        # precision dims: iouThrs * recThrs * catIds * areaRanges * maxDets
+        precisions: np.ndarray = self.eval['precision']
+        if iou_thr_index is not None:
+            precisions = precisions[[iou_thr_index]]
+        if class_id_index is not None:
+            precisions = precisions[:, :, class_id_index, area_ranges_index, max_dets_index]
+        else:
+            precisions = precisions[:, :, :, area_ranges_index, max_dets_index]
+        precisions = precisions[precisions > -1]
+        topic_evaluation.ap = np.mean(precisions) if len(precisions) > 0 else -1
+
+        # average recall
+        # recall dims: iouThrs * catIds * areaRanges * maxDets
+        recalls: np.ndarray = self.eval['recall']
+        if iou_thr_index is not None:
+            recalls = recalls[[iou_thr_index]]
+        if class_id_index is not None:
+            recalls = recalls[:, class_id_index, area_ranges_index, max_dets_index]
+        else:
+            recalls = recalls[:, :, area_ranges_index, max_dets_index]
+        recalls = recalls[recalls > -1]
+        topic_evaluation.ar = np.mean(recalls) if len(recalls) > 0 else -1
+
+        # true positive
+        # false positive
+        # false negative
+
+        # pr curve
+        # if iou_thr_index is not None and class_id_index is not None:
+        #     precisions: np.ndarray = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
+        #     for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
+        #         pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
+        #         topic_evaluation.pr_curve.append(pr_point)
+
+        # breakpoint()
+
+        return topic_evaluation
+
+    def summarize(self) -> None:
         '''
         Compute and display summary metrics for evaluation results.
         Note this functin can *only* be applied on the default parameter setting
         '''
         def _summarize(ap=1, iouThr=None, areaRng='all', maxDets=100):
             p = self.params
-            iStr = ' {:<18} {} @[ IoU={:<9} | area={:>6s} | maxDets={:>3d} ] = {:0.3f}'
-            titleStr = 'Average Precision' if ap == 1 else 'Average Recall'
-            typeStr = '(AP)' if ap == 1 else '(AR)'
-            iouStr = '{:0.2f}:{:0.2f}'.format(p.iouThrs[0], p.iouThrs[-1]) \
-                if iouThr is None else '{:0.2f}'.format(iouThr)
+            # iStr = ' {:<18} {} @[ IoU={:<9} | area={:>6s} | maxDets={:>3d} ] = {:0.3f}'
+            # titleStr = 'Average Precision' if ap == 1 else 'Average Recall'
+            # typeStr = '(AP)' if ap == 1 else '(AR)'
+            # iouStr = '{:0.2f}:{:0.2f}'.format(p.iouThrs[0], p.iouThrs[-1]) \
+            #     if iouThr is None else '{:0.2f}'.format(iouThr)
 
-            aind = [i for i, aRng in enumerate(p.areaRngLbl) if aRng == areaRng]
-            mind = [i for i, mDet in enumerate(p.maxDets) if mDet == maxDets]
+            aind = [i for i, aRng in enumerate(p.areaRngLbl) if aRng == areaRng]  # areaRanges index
+            mind = [i for i, mDet in enumerate(p.maxDets) if mDet == maxDets]  # maxDets index
             if ap == 1:
-                # dimension of precision: [TxRxKxAxM]
+                # dimension of precision: [TxRxKxAxM] iouThrs * recThrs * catIds * areaRanges * maxDets
                 s = self.eval['precision']
                 # IoU
                 if iouThr is not None:
@@ -439,7 +516,7 @@ class MirEval:
                     s = s[t]
                 s = s[:, :, :, aind, mind]
             else:
-                # dimension of recall: [TxKxAxM]
+                # dimension of recall: [TxKxAxM] iouThrs * catIds * areaRanges * maxDets
                 s = self.eval['recall']
                 if iouThr is not None:
                     t = np.where(iouThr == p.iouThrs)[0]
@@ -449,7 +526,7 @@ class MirEval:
                 mean_s = -1
             else:
                 mean_s = np.mean(s[s > -1])
-            print(iStr.format(titleStr, typeStr, iouStr, areaRng, maxDets, mean_s))
+            # print(iStr.format(titleStr, typeStr, iouStr, areaRng, maxDets, mean_s))
             return mean_s
 
         def _summarizeDets():
@@ -468,38 +545,17 @@ class MirEval:
             stats[11] = _summarize(0, areaRng='large', maxDets=self.params.maxDets[2])
             return stats
 
-        def _summarizeKps():
-            stats = np.zeros((10, ))
-            stats[0] = _summarize(1, maxDets=20)
-            stats[1] = _summarize(1, maxDets=20, iouThr=.5)
-            stats[2] = _summarize(1, maxDets=20, iouThr=.75)
-            stats[3] = _summarize(1, maxDets=20, areaRng='medium')
-            stats[4] = _summarize(1, maxDets=20, areaRng='large')
-            stats[5] = _summarize(0, maxDets=20)
-            stats[6] = _summarize(0, maxDets=20, iouThr=.5)
-            stats[7] = _summarize(0, maxDets=20, iouThr=.75)
-            stats[8] = _summarize(0, maxDets=20, areaRng='medium')
-            stats[9] = _summarize(0, maxDets=20, areaRng='large')
-            return stats
-
         if not self.eval:
             raise Exception('Please run accumulate() first')
-        iouType = self.params.iouType
-        if iouType == 'segm' or iouType == 'bbox':
-            summarize = _summarizeDets
-        elif iouType == 'keypoints':
-            summarize = _summarizeKps
-        self.stats = summarize()
+        self.stats = _summarizeDets()
 
     def __str__(self):
         self.summarize()
 
 
 class Params:
-    '''
-    Params for coco evaluation api
-    '''
-    def setDetParams(self):
+    def __init__(self):
+        self.iouType = 'bbox'
         self.imgIds = []
         self.catIds = []
         self.imgIdxes = []
@@ -510,28 +566,6 @@ class Params:
         self.areaRng = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.useCats = 1  # 1: use categories, 0: treat all categories as one
-
-    def setKpParams(self):
-        self.imgIds = []
-        self.catIds = []
-        self.imgIdxes = []
-        # np.arange causes trouble.  the data point on arange is slightly larger than the true value
-        self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)
-        self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)
-        self.maxDets = [20]
-        self.areaRng = [[0**2, 1e5**2], [32**2, 96**2], [96**2, 1e5**2]]
-        self.areaRngLbl = ['all', 'medium', 'large']
-        self.useCats = 1
-        self.kpt_oks_sigmas = np.array(
-            [.26, .25, .25, .35, .35, .79, .79, .72, .72, .62, .62, 1.07, 1.07, .87, .87, .89, .89]) / 10.0
-
-    def __init__(self, iouType='bbox'):
-        if iouType == 'segm' or iouType == 'bbox':
-            self.setDetParams()
-        elif iouType == 'keypoints':
-            self.setKpParams()
-        else:
-            raise Exception('iouType not supported')
-        self.iouType = iouType
+        self.confThr = 0.3  # confidence threshold
         # useSegm is deprecated
         self.useSegm = None

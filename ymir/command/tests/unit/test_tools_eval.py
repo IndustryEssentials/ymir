@@ -292,6 +292,9 @@ class TestToolsEval(unittest.TestCase):
         self.assertEqual(2, counter[0])
         self.assertEqual(0, counter[1])
 
+        annotations_list = mir_coco.get_annotations(conf_thr=2)
+        self.assertEqual(0, len(annotations_list))
+
     def test_mir_eval_00(self):
         coco_gt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
         coco_dt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('b@b', need_tid=False))
@@ -299,6 +302,7 @@ class TestToolsEval(unittest.TestCase):
         evaluator.evaluate()
         evaluator.accumulate()
         evaluator.summarize()
+        evaluation_result = evaluator.get_evaluation_result()
         breakpoint()
         logging.info(f"evaluator stats: {evaluator.stats}")
         raise ValueError('a fake error occured')  # for test: captured outputs

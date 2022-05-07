@@ -202,11 +202,11 @@ message SingleIouEvaluation {
 }
 
 message SingleTopicEvaluation {
-    float ap = 1;
-    float ar = 2;
-    float tp = 3;
-    float fp = 4;
-    float fn = 5;
+    float ap = 1;  // average precision
+    float ar = 2;  // average recall
+    float tp = 3;  // true positive
+    float fp = 4;  // false positive
+    float fn = 5;  // false negative
     repeated FloatPoint pr_curve = 6;
 }
 
