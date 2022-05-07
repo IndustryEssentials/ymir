@@ -76,6 +76,7 @@ const task = {
   "task.inference.form.image.placeholder": { cn: "请选择用于推理的镜像", en: "Please select a docker image for inference", },
   "task.inference.form.image.required": { cn: "请选择用于推理的镜像", en: "Please select a docker image for inference", },
   "task.inference.form.model.required": { cn: "请选择用于数据推理的模型", en: "please select the model used for data inference", },
+  "task.inference.model.iters": { cn: "迭代产生的模型", en: "Models from iterations", },
   "task.validator.same.param": { cn: "参数key重复", en: "Duplicate key of params", },
   "task.label.form.type.all": { cn: "全部重新标注", en: "All", },
   "task.label.form.member": { cn: "标注人员", en: "Labeller", },

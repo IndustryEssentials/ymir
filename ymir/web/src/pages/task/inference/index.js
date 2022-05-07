@@ -28,7 +28,7 @@ const { Option } = Select
 
 const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
 
-function Inference({ datasetCache, datasets, ...props }) {
+function Inference({ datasetCache, datasets, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -52,7 +52,7 @@ function Inference({ datasetCache, datasets, ...props }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    did && props.getDataset(did)
+    did && func.getDataset(did)
   }, [did])
 
   useEffect(() => {
@@ -60,7 +60,7 @@ function Inference({ datasetCache, datasets, ...props }) {
   }, [datasetCache])
 
   useEffect(() => {
-    pid && props.getDatasets(pid)
+    pid && func.getDatasets(pid)
   }, [pid])
 
   useEffect(() => {
@@ -79,7 +79,7 @@ function Inference({ datasetCache, datasets, ...props }) {
   }
 
   async function fetchSysInfo() {
-    const result = await props.getSysInfo()
+    const result = await func.getSysInfo()
     if (result) {
       setGPU(result.gpu_count)
     }
@@ -114,9 +114,9 @@ function Inference({ datasetCache, datasets, ...props }) {
       image,
       config,
     }
-    const result = await props.createInferenceTask(params)
+    const result = await func.createInferenceTask(params)
     if (result) {
-      await props.clearCache()
+      await func.clearCache()
       history.replace(`/home/project/detail/${pid}`)
     }
   }
@@ -131,6 +131,14 @@ function Inference({ datasetCache, datasets, ...props }) {
 
   function modelChange(id, options = []) {
       setSelectedModels(options.map(({model}) => model) || [])
+  }
+
+  async function selectModelFromIteration() {
+    const iterations = await func.getIterations(pid)
+    if (iterations) {
+      const models = iterations.map(iter => iter.model) || []
+      form.setFieldsValue({ model: models })
+    }
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
@@ -179,13 +187,17 @@ function Inference({ datasetCache, datasets, ...props }) {
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.filter.imodel')}>
                 <Form.Item
-                  label={t('task.mining.form.model.label')}
+                  label={t('task.mining.form.model.label')}>
+                    <Form.Item
+                    noStyle
                   name="model"
                   rules={[
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
                 >
                   <ModelSelect mode='multiple' placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
+                </Form.Item>
+                <div style={{ marginTop: 10 }}><Button onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -345,6 +357,12 @@ const dis = (dispatch) => {
       return dispatch({
         type: "task/createInferenceTask",
         payload,
+      })
+    },
+    getIterations(id) {
+      return dispatch({
+        type: 'iteration/getIterations',
+        payload: { id, more: true },
       })
     },
   }

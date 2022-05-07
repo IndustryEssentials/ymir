@@ -66,6 +66,7 @@ const common = {
   'common.action.hide': {cn: '隐藏', en: 'Hide', },
   'common.action.multiple.hide': {cn: '批量隐藏', en: 'Multiple Hide', },
   'common.action.multiple.restore': {cn: '批量恢复', en: 'Multiple Restore', },
+  'common.action.multiple.infer': {cn: '批量推理', en: 'Multiple Infer', },
   'common.action.restore': {cn: '恢复', en: 'Restore', },
   'common.hidden.label': {cn: '显示状态', en: 'Visible Status', },
   'common.state.hidden': {cn: '隐藏', en: 'Hidden', },
