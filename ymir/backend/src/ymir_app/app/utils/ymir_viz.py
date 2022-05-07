@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Iterator
 
 import requests
 from fastapi.logger import logger
@@ -111,6 +111,29 @@ class DatasetMetaData:
         )
 
 
+@dataclass
+class DatasetEvaluation:
+    conf_threshold: float
+    iou_threshold: float
+    keyword: str
+    ap: float
+    ar: float
+    tp: int
+    fp: int
+    fn: int
+    pr_curve: List[float]
+
+    @classmethod
+    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> Iterator["DatasetEvaluation"]:
+        for iou_evaluation in res["iou_evaluations"].values():
+            iou_threshold = iou_evaluation["iou_threshold"]
+            for class_id, data_points in iou_evaluation["ci_evaluation"].items():
+                keyword = user_labels.get_class_names(class_id)[0]
+                yield cls(
+                    conf_threshold=res["conf_threshold"], iou_threshold=iou_threshold, keyword=keyword, **data_points
+                )
+
+
 class VizClient:
     def __init__(self, *, host: str = settings.VIZ_HOST):
         self.host = host
@@ -118,6 +141,7 @@ class VizClient:
         self._user_id = None  # type: Optional[str]
         self._project_id = None  # type: Optional[str]
         self._branch_id = None  # type: Optional[str]
+        self.url_prefix = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}"  # noqa: E501
 
     def initialize(
         self,
@@ -138,8 +162,7 @@ class VizClient:
         limit: int = 20,
         user_labels: UserLabels,
     ) -> Assets:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets"  # noqa: E501
-
+        url = f"{self.url_prefix}/assets"
         payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
@@ -155,8 +178,7 @@ class VizClient:
         asset_id: str,
         user_labels: UserLabels,
     ) -> Optional[Dict]:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
-
+        url = f"{self.url_prefix}/assets/{asset_id}"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
             logger.error("[viz] failed to get asset info: %s", resp.content)
@@ -165,16 +187,22 @@ class VizClient:
         return asdict(Asset.from_viz_res(asset_id, res, user_labels))
 
     def get_model(self) -> ModelMetaData:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/models"  # noqa: E501
+        url = f"{self.url_prefix}/models"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         return ModelMetaData.from_viz_res(res)
 
     def get_dataset(self, user_labels: UserLabels) -> DatasetMetaData:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/datasets"  # noqa: E501
+        url = f"{self.url_prefix}/datasets"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         return DatasetMetaData.from_viz_res(res, user_labels)
+
+    def get_evaluations(self, user_labels: UserLabels) -> List[DatasetEvaluation]:
+        url = f"{self.url_prefix}/evaluation"
+        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        res = self.parse_resp(resp)
+        return list(DatasetEvaluation.from_viz_res(res, user_labels))
 
     def parse_resp(self, resp: requests.Response) -> Dict:
         """

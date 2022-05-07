@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 import tempfile
 import pathlib
 from zipfile import BadZipFile
@@ -10,15 +10,19 @@ from app import crud, schemas
 from app.api.errors.errors import (
     DatasetNotFound,
     FailedtoCreateDataset,
+    FailedToEvaluate,
 )
 from app.config import settings
 from app.constants.state import ResultState
 from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir, InvalidFileStructure
+from app.utils.ymir_viz import VizClient
 from app.utils.ymir_controller import (
     ControllerClient,
     gen_user_hash,
     gen_repo_hash,
+    gen_task_hash,
 )
+from common_utils.labels import UserLabels
 
 
 def import_dataset_in_background(
@@ -106,3 +110,21 @@ class ImportDatasetPaths:
             else:
                 raise ValueError("input_path or input_url is required")
         return pathlib.Path(self._data_dir)
+
+
+def evaluate_dataset(
+    controller: ControllerClient,
+    viz: VizClient,
+    user_id: int,
+    project_id: int,
+    user_labels: UserLabels,
+    gt_dataset_hash: str,
+    other_dataset_hashes: List[str],
+) -> Any:
+    task_hash = gen_task_hash(user_id, project_id)
+    try:
+        controller.evaluate_dataset(user_id, project_id, task_hash, gt_dataset_hash, other_dataset_hashes)
+    except ValueError:
+        raise FailedToEvaluate()
+    evaluations = viz.get_evaluations(user_labels)
+    return evaluations

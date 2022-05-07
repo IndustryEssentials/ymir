@@ -9,6 +9,7 @@ import grpc
 from fastapi.logger import logger
 from google.protobuf import json_format  # type: ignore
 
+from app.config import settings
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
 from common_utils.labels import UserLabels
@@ -27,6 +28,7 @@ class ExtraRequestType(enum.IntEnum):
     pull_image = 600
     get_gpu_info = 601
     create_user = 602
+    evaluate = 603
 
 
 MERGE_STRATEGY_MAPPING = {
@@ -286,9 +288,15 @@ class ControllerRequest:
         # need different app type for web, controller use same endpoint
         return self.prepare_mining(request, args)
 
+    def prepare_evaluate(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_EVALUATE
+        request.singleton_op = args["gt_dataset_hash"]
+        request.in_dataset_ids[:] = args["other_dataset_hashes"]
+        return request
+
 
 class ControllerClient:
-    def __init__(self, channel: str) -> None:
+    def __init__(self, channel: str = settings.GRPC_CHANNEL) -> None:
         self.channel = grpc.insecure_channel(channel)
         self.stub = mir_grpc.mir_controller_serviceStub(self.channel)
 
@@ -441,5 +449,17 @@ class ControllerClient:
             project_id=project_id,
             task_id=task_id,
             args=args,
+        )
+        return self.send(req)
+
+    def evaluate_dataset(
+        self, user_id: int, project_id: int, task_id: str, gt_dataset_hash: str, other_dataset_hashes: List[str]
+    ) -> Dict:
+        req = ControllerRequest(
+            type=ExtraRequestType.evaluate,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args={"gt_dataset_hash": gt_dataset_hash, "other_dataset_hashes": other_dataset_hashes},
         )
         return self.send(req)

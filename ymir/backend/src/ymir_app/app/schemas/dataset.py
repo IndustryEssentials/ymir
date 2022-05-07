@@ -153,3 +153,25 @@ class DatasetsFusionParameter(RequestParameterBase):
     exclude_labels: List[str]
 
     sampling_count: int = 0
+
+
+class DatasetEvaluationCreate(BaseModel):
+    project_id: int
+    gt_dataset_id: int
+    other_dataset_ids: List[int]
+    confidence_threshold: float
+
+
+class DatasetEvaluation(BaseModel):
+    iou_threshold: float
+    keyword: str
+    ap: float
+    ar: float
+    tp: int
+    fp: int
+    fn: int
+    pr_curve: List[float]
+
+
+class DatasetEvaluationOut(Common):
+    result: Dict[int, List[DatasetEvaluation]]

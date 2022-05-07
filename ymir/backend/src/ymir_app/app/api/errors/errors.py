@@ -98,6 +98,11 @@ class FailedtoCreateModel(ControllerError):
     message = "Failed to Create Model via Controller"
 
 
+class FailedToEvaluate(ControllerError):
+    code = error_codes.FAILED_TO_EVALUATE
+    message = "Failed to RUN EVALUATE CMD via Controller"
+
+
 class RequiredFieldMissing(APIError):
     code = error_codes.REQUIRED_FIELD_MISSING
     message = "Required Field Missing"
@@ -343,3 +348,8 @@ class FailedToUpdateIterationStage(APIError):
 class RefuseToProcessMixedOperations(APIError):
     code = error_codes.REFUSE_TO_PROCESS_MIXED_OPERATIONS
     message = "Refuse To Process Mixed Operations"
+
+
+class DatasetsNotInSameGroup(APIError):
+    code = error_codes.DATASETS_NOT_IN_SAME_GROUP
+    message = "Datasets Not in the Same Group"
