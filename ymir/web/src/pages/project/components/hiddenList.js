@@ -105,12 +105,13 @@ const HiddenList = ({ module, pid, ...func }) => {
     setSelected(keys)
   }
 
-  return <><Space className='actions'>
-    <Button disabled={!selected.length} type="primary" onClick={multipleRestore}>
-      <EyeOnIcon /> {t("common.action.multiple.restore")}
-    </Button>
-  </Space>
-    <div className={s.table}>
+  return <div className={s.hiddenList}>
+    <Space className='actions'>
+      <Button disabled={!selected.length} type="primary" onClick={multipleRestore}>
+        <EyeOnIcon /> {t("common.action.multiple.restore")}
+      </Button>
+    </Space>
+    <div className={`list ${s.table}`}>
       <Table
         dataSource={list}
         pagination={{
@@ -118,7 +119,7 @@ const HiddenList = ({ module, pid, ...func }) => {
           showQuickJumper: true,
           showSizeChanger: true,
           defaultCurrent: 1,
-          defaultPageSize: query.offset || 20,
+          defaultPageSize: query.offset || 10,
         }}
         onChange={pageChange}
         rowKey={(record) => record.id}
@@ -130,7 +131,7 @@ const HiddenList = ({ module, pid, ...func }) => {
         columns={columns}
       ></Table>
     </div>
-  </>
+  </div>
 }
 
 const props = (state) => {
