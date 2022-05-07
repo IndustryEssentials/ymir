@@ -1,10 +1,8 @@
 import { format } from '@/utils/date'
 import {
-  states,
-  statesLabel,
-  transferDatasetGroup,
-  transferDataset,
-} from '../dataset'
+  transferModelGroup,
+  transferModel,
+} from '../model'
 
 jest.mock('umi', () => {
   return {
@@ -33,20 +31,20 @@ const task = {
   "user_id": 2,
   "last_message_datetime": "2022-03-10T03:39:09.033206",
   "is_terminated": false,
-  "result_type": null
+  "result_type": null,
+  parameters: {
+    keywords: ['cat', 'dog'],
+  }
 }
 
-const ds = id => ({
-  "group_name": "dataset_training",
+const ms = id => ({
+  "group_name": "model_training",
   "result_state": 1,
   "project_id": 234,
-  "dataset_group_id": 1,
+  "model_group_id": 1,
   state: 1,
-  "keywords": { cat: 143, dog: 145 },
-  "ignored_keywords": { person: 34 },
-  negative_info: {},
-  "asset_count": 234,
-  "keyword_count": 2,
+  url: 'test/url',
+  map: 0.88,
   'is_protected': false,
   "is_deleted": false,
   "create_datetime": createTime,
@@ -59,19 +57,13 @@ const ds = id => ({
   "related_task": task,
 })
 
-describe("constants: dataset", () => {
-  it("function -> statesLabel.", () => {
-    expect(statesLabel(states.READY)).toBe('dataset.state.ready')
-    expect(statesLabel(states.VALID)).toBe('dataset.state.valid')
-    expect(statesLabel(states.INVALID)).toBe('dataset.state.invalid')
-
-  })
-  it('function -> transferDatasetGroup.', () => {
+describe("constants: model", () => {
+  it('function -> transferModelGroup.', () => {
     const time = '2022-04-15T05:43:38'
     const origin = {
       id: 8345,
       project_id: 52334,
-      name: 'dataset name',
+      name: 'model name',
       create_datetime: time,
     }
     const expected = {
@@ -79,28 +71,22 @@ describe("constants: dataset", () => {
       projectId: origin.project_id,
       name: origin.name,
       createTime: format(time),
-      versions: [],
     }
-    expect(transferDatasetGroup(origin)).toEqual(expected)
+    expect(transferModelGroup(origin)).toEqual(expected)
   })
-  it('function -> transferDataset.', () => {
-    const id = 135234
-    const dataset = ds(id)
+  it('function -> transferModel.', () => {
+    const id = 64345
+    const model = ms(id)
     const expected = {
       id,
       groupId: 1,
       projectId: 234,
-      name: 'dataset_training',
+      name: 'model_training',
       version: 1,
       versionName: 'V1',
-      assetCount: 234,
+      url: 'test/url',
+      map: 0.88,
       keywords: ['cat', 'dog'],
-      keywordCount: 2,
-      keywordsCount: { cat: 143, dog: 145 },
-      nagetiveCount: 0,
-      isProtected: false,
-      projectNagetiveCount: 0,
-      ignoredKeywords: ['person'],
       hash: 't00000020000012afef21646883528',
       state: 1,
       hidden: true,
@@ -115,6 +101,6 @@ describe("constants: dataset", () => {
       taskName: task.name,
       task,
     }
-    expect(transferDataset(dataset)).toEqual(expected)
+    expect(transferModel(model)).toEqual(expected)
   })
 })

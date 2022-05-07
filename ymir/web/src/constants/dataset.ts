@@ -59,5 +59,6 @@ export function transferDataset (data: BackendData): Dataset {
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     taskName: data.related_task.name,
     task: data.related_task,
+    hidden: !data.is_visible,
   }
 }
