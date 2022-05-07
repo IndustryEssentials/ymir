@@ -28,6 +28,7 @@ class DatasetGroupUpdate(BaseModel):
 
 class DatasetGroupInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DatasetGroupBase):
     datasets: List[Dataset]
+    is_visible: bool
 
     class Config:
         orm_mode = True
