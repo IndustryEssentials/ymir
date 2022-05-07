@@ -25,6 +25,12 @@ class ModelGroup(Base):
         uselist=True,
         viewonly=True,
     )
+    visible_models = relationship(
+        "Model",
+        primaryjoin="and_(foreign(Model.model_group_id)==ModelGroup.id, foreign(Model.is_visible))",
+        uselist=True,
+        viewonly=True,
+    )
 
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -34,3 +40,7 @@ class ModelGroup(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+    @property
+    def is_visible(self) -> bool:
+        return bool(self.visible_models)

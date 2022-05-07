@@ -3,7 +3,7 @@ import { Card, Col, Popover, Row, Space } from "antd"
 import { useLocation, useParams, connect, Link, useHistory } from "umi"
 
 import t from "@/utils/t"
-import { getStageLabel } from '@/constants/project'
+import { getStageLabel, tabs } from '@/constants/project'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Iteration from './components/iteration'
 import Datasets from '@/components/dataset/list'
@@ -12,13 +12,7 @@ import Models from '@/components/model/list'
 import s from "./detail.less"
 import Prepare from "./components/prepare"
 import KeywordRates from "@/components/dataset/keywordRates"
-import { EditIcon, SearchEyeIcon } from "../../components/common/icons"
-
-
-const tabsTitle = [
-  { tab: t('project.tab.set.title'), key: 'set', },
-  { tab: t('project.tab.model.title'), key: 'model', },
-]
+import { EditIcon, SearchEyeIcon, EyeOffIcon } from "../../components/common/icons"
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -27,10 +21,10 @@ function ProjectDetail(func) {
   const [iterations, setIterations] = useState([])
   const [group, setGroup] = useState(0)
   const [project, setProject] = useState({})
-  const [active, setActive] = useState(tabsTitle[0].key)
+  const [active, setActive] = useState(tabs[0].key)
   const content = {
-    'set': <Datasets pid={id} project={project} group={group} />,
-    'model': <Models pid={id} project={project} group={group} />
+    [tabs[0].key]: <Datasets pid={id} project={project} group={group} iterations={iterations} />,
+    [tabs[1].key]: <Models pid={id} project={project} group={group} iterations={iterations} />
   }
 
   useEffect(() => {
@@ -42,7 +36,7 @@ function ProjectDetail(func) {
     const locationHash = location.hash.replace(/^#/, '')
     const [tabKey, gid] = (locationHash || '').split('_')
     setGroup(gid)
-    setActive(tabKey || tabsTitle[0].key)
+    setActive(tabKey || tabs[0].key)
   }, [location.hash])
 
   async function fetchProject(force) {
@@ -73,7 +67,7 @@ function ProjectDetail(func) {
       { dataset: project.testSet, label: 'project.add.form.test.set', name: getDsName(project.testSet) },
       { dataset: project.miningSet, label: 'project.add.form.mining.set', name: getDsName(project.miningSet) },
     ]
-    
+
     return maps.map(({ name, label, dataset }) => {
       const rlabel = <span>{t(label)}: {name}</span>
       return <Col key={label} className={s.ellipsis} span={8} title={name}>
@@ -114,18 +108,19 @@ function ProjectDetail(func) {
           </Col>
           <Col>
             <Space>
-              <Link to={`/home/project/add/${id}`}><EditIcon />{t('project.settings.title')}</Link>
-              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon />{t('breadcrumbs.project.iterations')}</Link>
+              <Link to={`/home/project/add/${id}`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
+              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
+              <Link to={`/home/project/hidden/${id}`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
             </Space>
           </Col>
         </Row>
         {project.round > 0 ?
           <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
-        <Row className={s.setsPanel} gutter={20} align='middle' style={{ textAlign: 'center' }}>
+        <Row className={s.setsPanel} gutter={0} align='middle' style={{ textAlign: 'center' }}>
           {renderProjectDatasetLabel()}
         </Row>
       </div>
-      <Card tabList={tabsTitle} activeTabKey={active} onTabChange={tabChange} className={s.noShadow}
+      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange} className='noShadow'
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 5vw' }}>

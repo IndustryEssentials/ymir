@@ -6,6 +6,7 @@ import { states, statesLabel } from '@/constants/dataset'
 import s from './iteration.less'
 import { useEffect, useState } from "react"
 import RenderProgress from "../../../components/common/progress"
+import { YesIcon } from '@/components/common/icons'    
 
 function Stage({ pid, stage, stageResult, current = 0, end = false, callback = () => { }, ...func }) {
   const history = useHistory()
@@ -86,11 +87,9 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
 
   const renderCount = () => {
-    if (finishStage() || (currentStage() && isValid())) {
-      return '√' // finish state
-    } else {
-      return stage.value + 1
-    }
+    const content = finishStage() || (currentStage() && isValid()) ? <YesIcon /> : stage.value + 1
+    const cls = pendingStage() ? s.pending : (currentStage() ? s.current : s.finish)
+    return <span className={`${s.num} ${cls}`}>{content}</span>
   }
   const renderMain = () => {
     return currentStage() ? renderMainBtn() : <span className={s.act}>{t(stage.act)}</span>
@@ -118,8 +117,8 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
       (isValid() ?  
         (result.name ?`${result.name} ${result.versionName}` : 
           (end ? null : t('common.done'))) : 
-        isPending() && currentStage() ? t('project.stage.state.pending.current') : t(statesLabel(state))) : 
-      t(pending)
+        <span className={s.current}>{isPending() && currentStage() ? t('project.stage.state.pending.current') : t(statesLabel(state))}</span>) : 
+      <span className={s.pending}>{t(pending)}</span>
   }
 
   const renderSkip = () => {
@@ -128,7 +127,7 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   return (
     <div className={stateClass}>
       <Row className={s.row} align='middle' wrap={false}>
-        <Col flex={"30px"}><span className={s.num}>{renderCount()}</span></Col>
+        <Col flex={"30px"}>{renderCount()}</Col>
         <Col>
           <Space>
             {renderMain()}

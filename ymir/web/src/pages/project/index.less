@@ -29,40 +29,49 @@
   justify-content: flex-end;
 }
 .iterations {
-  // .td {
-    // position: relative;
-    .extraTag {
-      position: absolute;
-      right: 0;
-      top: 2px;
-      font-size: 12px;
-      line-height: 12px;
-      color: #fff;
-      text-align: right;
-      .negative, .positive, .neutral {
+  .table {
+    min-height: calc(100vh - 305px);
+  }
+  .extraTag {
+    position: absolute;
+    right: 0;
+    top: 2px;
+    font-size: 12px;
+    line-height: 12px;
+    color: #fff;
+    text-align: right;
+    .negative, .positive, .neutral {
+      display: inline-block;
+      padding: 2px 4px;
+      border-radius: 4px;
+      &::after {
         display: inline-block;
-        padding: 2px 4px;
-        border-radius: 4px;
-        &::after {
-          display: inline-block;
-          margin-left: 4px;
-        }
-      }
-      .negative {
-        background-color: darkred;
-        &::after {
-          content: '\2193';
-        }
-      }
-      .positive {
-        &::after {
-          content: '\2191';
-        }
-        background-color: darkgreen;
-      }
-      .neutral {
-        background-color: darkgray;
+        margin-left: 4px;
       }
     }
-  // }
+    .negative {
+      background-color: darkred;
+      &::after {
+        content: '\2193';
+      }
+    }
+    .positive {
+      &::after {
+        content: '\2191';
+      }
+      background-color: darkgreen;
+    }
+    .neutral {
+      background-color: darkgray;
+    }
+  }
+}
+.orange {
+  color: orange;
+}
+.hiddenList {
+  .table {
+    padding: 20px;
+    min-height: calc(100vh - 320px);
+  }
 }

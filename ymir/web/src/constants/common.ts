@@ -8,6 +8,12 @@ export enum states {
   INVALID = 2,
 }
 
+export enum actions {
+  hide = 'hide',
+  restore = 'unhide',
+  del = 'delete',
+}
+
 type Result = {
   [key: string]: any,
 }

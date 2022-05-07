@@ -110,6 +110,8 @@ describe("constants: project", () => {
       currentIteration: undefined,
       currentStage: 0,
       round: 0,
+      hiddenDatasets: [],
+      hiddenModels: [],
       createTime: format(createTime),
       description: 'project002 desc',
       type: 1,
