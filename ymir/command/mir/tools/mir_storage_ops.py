@@ -365,6 +365,7 @@ def create_task(task_type: 'mirpb.TaskType.V',
                 serialized_task_parameters: str = '',
                 serialized_executor_config: str = '',
                 executor: str = '',
+                evaluation: mirpb.Evaluation = None,
                 src_revs: str = '',
                 dst_rev: str = '') -> mirpb.Task:
     task_dict = {
@@ -387,5 +388,8 @@ def create_task(task_type: 'mirpb.TaskType.V',
     }
     task: mirpb.Task = mirpb.Task()
     json_format.ParseDict(task_dict, task)
+
+    if evaluation:
+        task.evaluation.CopyFrom(evaluation)
 
     return task

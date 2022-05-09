@@ -105,14 +105,14 @@ class MirCoco:
 
 
 class MirEval:
-    def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco):
+    def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params' = None):
         self.cocoGt = coco_gt  # ground truth COCO API
         self.cocoDt = coco_dt  # detections COCO API
         self.evalImgs = defaultdict(list)  # per-image per-category evaluation results [KxAxI] elements
         self.eval = {}  # accumulated evaluation results
         self._gts = defaultdict(list)  # gt for evaluation
         self._dts = defaultdict(list)  # dt for evaluation
-        self.params = Params()  # parameters
+        self.params = params or Params()  # parameters
         self._paramsEval = {}  # parameters for evaluation
         self.stats = []  # result summarization
         self.ious = {}  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
@@ -268,8 +268,8 @@ class MirEval:
         T = len(p.iouThrs)
         G = len(gt)
         D = len(dt)
-        gtm = np.zeros((T, G))  # gtm[i, j]: dt annotation id matched by j-th gt in i-th iou thr
-        dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr
+        gtm = np.zeros((T, G))  # gtm[i, j]: dt annotation id matched by j-th gt in i-th iou thr, iouThrs x gts
+        dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x dets
         gtIg = np.array([g['_ignore'] for g in gt])  # gt ignore
         dtIg = np.zeros((T, D))  # dt ignore
         if not len(ious) == 0:
@@ -336,6 +336,9 @@ class MirEval:
         precision = -np.ones((T, R, K, A, M))  # -1 for the precision of absent categories
         recall = -np.ones((T, K, A, M))
         scores = -np.ones((T, R, K, A, M))
+        all_tps = -np.ones((T, K, A, M))
+        all_fps = -np.ones((T, K, A, M))
+        all_fns = -np.ones((T, K, A, M))
 
         # create dictionary for future indexing
         _pe = self._paramsEval
@@ -375,11 +378,14 @@ class MirEval:
                     if npig == 0:
                         continue
 
-                    tps = np.logical_and(dtm, np.logical_not(dtIg))
-                    fps = np.logical_and(np.logical_not(dtm), np.logical_not(dtIg))
-
+                    tps = np.logical_and(dtm, np.logical_not(dtIg))  # iouThrs x dts
+                    fps = np.logical_and(np.logical_not(dtm), np.logical_not(dtIg))  # iouThrs x dts
                     tp_sum = np.cumsum(tps, axis=1).astype(dtype=float)
                     fp_sum = np.cumsum(fps, axis=1).astype(dtype=float)
+
+                    all_tps[:, k, a, m] = tp_sum[:, -1]
+                    all_fps[:, k, a, m] = fp_sum[:, -1]
+
                     for t, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
                         tp = np.array(tp)
                         fp = np.array(fp)
@@ -412,12 +418,16 @@ class MirEval:
                             pass
                         precision[t, :, k, a, m] = np.array(q)
                         scores[t, :, k, a, m] = np.array(ss)
+
         self.eval = {
             'params': p,
             'counts': [T, R, K, A, M],
             'precision': precision,
             'recall': recall,
             'scores': scores,
+            'all_fps': all_fps,
+            'all_tps': all_tps,
+            'all_fns': all_fns,
         }
 
     def get_evaluation_result(self) -> mirpb.Evaluation:
@@ -479,8 +489,26 @@ class MirEval:
         topic_evaluation.ar = np.mean(recalls) if len(recalls) > 0 else -1
 
         # true positive
+        all_tps = self.eval['all_tps']
+        if iou_thr_index is not None:
+            all_tps = all_tps[[iou_thr_index]]
+        if class_id_index is not None:
+            all_tps = all_tps[:, class_id_index, area_ranges_index, max_dets_index]
+        else:
+            all_tps = all_tps[:, :, area_ranges_index, max_dets_index]
+        topic_evaluation.tp = int(all_tps[0])
+
         # false positive
-        # false negative
+        all_fps = self.eval['all_fps']
+        if iou_thr_index is not None:
+            all_fps = all_fps[[iou_thr_index]]
+        if class_id_index is not None:
+            all_fps = all_fps[:, class_id_index, area_ranges_index, max_dets_index]
+        else:
+            all_fps = all_fps[:, :, area_ranges_index, max_dets_index]
+        topic_evaluation.fp = int(all_fps[0])
+
+        # TODO: false negative
 
         # pr curve
         if iou_thr_index is not None and class_id_index is not None:
