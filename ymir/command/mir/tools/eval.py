@@ -82,8 +82,8 @@ class MirCoco:
 
                 annotation_dict = {
                     'asset_id': asset_id,
-                    'asset_idx': asset_idx + 1,  # pycocotools uses 0 as invalid id, so + 1 is needed
-                    'id': annotation.index + 1,  # pycocotools uses 0 as invalid id, so + 1 is needed
+                    'asset_idx': asset_idx,
+                    'id': annotation.index + 1,  # annotation id starts from 1, so + 1 is needed
                     'class_id': annotation.class_id,
                     'area': annotation.box.w * annotation.box.h,
                     'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
@@ -374,11 +374,12 @@ class MirEval:
                     npig = np.count_nonzero(gtIg == 0)
                     if npig == 0:
                         continue
+
                     tps = np.logical_and(dtm, np.logical_not(dtIg))
                     fps = np.logical_and(np.logical_not(dtm), np.logical_not(dtIg))
 
-                    tp_sum = np.cumsum(tps, axis=1).astype(dtype=np.float)
-                    fp_sum = np.cumsum(fps, axis=1).astype(dtype=np.float)
+                    tp_sum = np.cumsum(tps, axis=1).astype(dtype=float)
+                    fp_sum = np.cumsum(fps, axis=1).astype(dtype=float)
                     for t, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
                         tp = np.array(tp)
                         fp = np.array(fp)
@@ -488,8 +489,6 @@ class MirEval:
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
                 topic_evaluation.pr_curve.append(pr_point)
 
-        # breakpoint()
-
         return topic_evaluation
 
     def summarize(self) -> None:
@@ -499,11 +498,6 @@ class MirEval:
         '''
         def _summarize(ap=1, iouThr=None, areaRng='all', maxDets=100):
             p = self.params
-            # iStr = ' {:<18} {} @[ IoU={:<9} | area={:>6s} | maxDets={:>3d} ] = {:0.3f}'
-            # titleStr = 'Average Precision' if ap == 1 else 'Average Recall'
-            # typeStr = '(AP)' if ap == 1 else '(AR)'
-            # iouStr = '{:0.2f}:{:0.2f}'.format(p.iouThrs[0], p.iouThrs[-1]) \
-            #     if iouThr is None else '{:0.2f}'.format(iouThr)
 
             aind = [i for i, aRng in enumerate(p.areaRngLbl) if aRng == areaRng]  # areaRanges index
             mind = [i for i, mDet in enumerate(p.maxDets) if mDet == maxDets]  # maxDets index
@@ -526,7 +520,6 @@ class MirEval:
                 mean_s = -1
             else:
                 mean_s = np.mean(s[s > -1])
-            # print(iStr.format(titleStr, typeStr, iouStr, areaRng, maxDets, mean_s))
             return mean_s
 
         def _summarizeDets():
