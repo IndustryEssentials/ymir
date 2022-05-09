@@ -82,7 +82,7 @@ class MirCoco:
 
                 annotation_dict = {
                     'asset_id': asset_id,
-                    'asset_idx': asset_idx,
+                    'asset_idx': asset_idx + 1,  # pycocotools uses 0 as invalid id, so + 1 is needed
                     'id': annotation.index + 1,  # pycocotools uses 0 as invalid id, so + 1 is needed
                     'class_id': annotation.class_id,
                     'area': annotation.box.w * annotation.box.h,
@@ -482,11 +482,11 @@ class MirEval:
         # false negative
 
         # pr curve
-        # if iou_thr_index is not None and class_id_index is not None:
-        #     precisions: np.ndarray = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
-        #     for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
-        #         pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
-        #         topic_evaluation.pr_curve.append(pr_point)
+        if iou_thr_index is not None and class_id_index is not None:
+            precisions: np.ndarray = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
+            for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
+                pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
+                topic_evaluation.pr_curve.append(pr_point)
 
         # breakpoint()
 
