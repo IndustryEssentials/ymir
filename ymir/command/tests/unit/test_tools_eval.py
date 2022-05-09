@@ -543,5 +543,4 @@ class TestToolsEval(unittest.TestCase):
         self.assertTrue(np.array_equal(coco_evaluator.stats, mir_evaluator.stats))
 
         mir_evaluation_result = mir_evaluator.get_evaluation_result()
-        breakpoint()
         self.assertTrue(len(mir_evaluation_result.iou_evaluations) > 0)

@@ -1,6 +1,6 @@
 from collections import defaultdict
 import copy
-from typing import List
+from typing import Any, List, Optional, Set, Union
 
 import numpy as np
 from pycocotools import mask as maskUtils
@@ -14,20 +14,17 @@ class MirCoco:
         m: mirpb.MirMetadatas
         a: mirpb.MirAnnotations
         k: mirpb.MirKeywords
-        c: mirpb.MirContext
-        m, a, k, c = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
-                                                                          mir_branch=rev_tid.rev,
-                                                                          mir_task_id=rev_tid.tid,
-                                                                          ms_list=[
-                                                                              mirpb.MirStorage.MIR_METADATAS,
-                                                                              mirpb.MirStorage.MIR_ANNOTATIONS,
-                                                                              mirpb.MirStorage.MIR_KEYWORDS,
-                                                                              mirpb.MirStorage.MIR_CONTEXT
-                                                                          ])
+        m, a, k, = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
+                                                                        mir_branch=rev_tid.rev,
+                                                                        mir_task_id=rev_tid.tid,
+                                                                        ms_list=[
+                                                                            mirpb.MirStorage.MIR_METADATAS,
+                                                                            mirpb.MirStorage.MIR_ANNOTATIONS,
+                                                                            mirpb.MirStorage.MIR_KEYWORDS,
+                                                                        ])
         self._mir_metadatas = m
         self._mir_annotations = a
         self._mir_keywords = k
-        self._mir_context = c
 
         # ordered list of asset / image ids
         self._ordered_asset_ids = sorted(list(self._mir_metadatas.attributes.keys()))
@@ -35,6 +32,14 @@ class MirCoco:
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
         self._ordered_class_ids = sorted(list(self._mir_keywords.index_predifined_keyids.keys()))
+
+    @property
+    def mir_metadatas(self) -> mirpb.MirMetadatas:
+        return self._mir_metadatas
+
+    @property
+    def mir_annotations(self) -> mirpb.MirAnnotations:
+        return self._mir_annotations
 
     def get_annotations(self,
                         asset_idxes: List[int] = [],
@@ -108,19 +113,19 @@ class MirEval:
     def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params' = None):
         self.cocoGt = coco_gt  # ground truth COCO API
         self.cocoDt = coco_dt  # detections COCO API
-        self.evalImgs = defaultdict(list)  # per-image per-category evaluation results [KxAxI] elements
-        self.eval = {}  # accumulated evaluation results
-        self._gts = defaultdict(list)  # gt for evaluation
-        self._dts = defaultdict(list)  # dt for evaluation
+        self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
+        self.eval: dict = {}  # accumulated evaluation results
+        self._gts: dict = defaultdict(list)  # gt for evaluation
+        self._dts: dict = defaultdict(list)  # dt for evaluation
         self.params = params or Params()  # parameters
-        self._paramsEval = {}  # parameters for evaluation
-        self.stats = []  # result summarization
-        self.ious = {}  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
-        self.params.imgIds = coco_gt.get_asset_ids()
-        self.params.imgIdxes = list(range(len(self.params.imgIds)))
+        self._paramsEval: Params = Params()  # parameters for evaluation
+        self.stats: np.ndarray = np.zeros(1)  # result summarization
+        self.ious: dict = {
+        }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
+        self.params.imgIdxes = list(range(len(coco_gt.get_asset_ids())))
         self.params.catIds = coco_dt.get_class_ids()
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         '''
         Prepare self._gts and self._dts for evaluation based on params
 
@@ -146,16 +151,12 @@ class MirEval:
         # for each element in self._gts and self._dts:
         #   key: (asset_idx, class_id)
         #   value: {'asset_idx': int, 'id': int, 'class_id': int, 'bbox': int tuple of xywh, 'score': float}
-        self._gts = defaultdict(list)
-        self._dts = defaultdict(list)
         for gt in gts:
             self._gts[gt['asset_idx'], gt['class_id']].append(gt)
         for dt in dts:
             self._dts[dt['asset_idx'], dt['class_id']].append(dt)
-        self.evalImgs = defaultdict(list)  # per-image per-category evaluation results
-        self.eval = {}  # accumulated evaluation results
 
-    def evaluate(self):
+    def evaluate(self) -> None:
         '''
         Run per image evaluation on given images and store results (a list of dict) in self.evalImgs
 
@@ -186,9 +187,9 @@ class MirEval:
             self.evaluateImg(imgIdx, catId, areaRng, maxDet) for catId in catIds for areaRng in p.areaRng
             for imgIdx in p.imgIdxes
         ]
-        self._paramsEval = copy.deepcopy(self.params)
+        self._paramsEval = copy.deepcopy(self.params)  # pragma: ignore type
 
-    def computeIoU(self, imgIdx: int, catId: int) -> np.ndarray:
+    def computeIoU(self, imgIdx: int, catId: int) -> Union[np.ndarray, list]:
         """
         compute ious of detections and ground truth boxes of single image and class /category
 
@@ -227,7 +228,7 @@ class MirEval:
         ious = maskUtils.iou(d_boxes, g_boxes, iscrowd)
         return ious
 
-    def evaluateImg(self, imgIdx: int, catId: int, aRng: List[float], maxDet: int) -> dict:
+    def evaluateImg(self, imgIdx: int, catId: int, aRng: Any, maxDet: int) -> Optional[dict]:
         '''
         perform evaluation for single category and image
 
@@ -315,7 +316,7 @@ class MirEval:
             'dtIgnore': dtIg,
         }
 
-    def accumulate(self, p=None):
+    def accumulate(self, p: 'Params' = None) -> None:
         '''
         Accumulate per image evaluation results and store the result in self.eval
         :param p: input params for evaluation
@@ -343,10 +344,10 @@ class MirEval:
         # create dictionary for future indexing
         _pe = self._paramsEval
         catIds = _pe.catIds if _pe.useCats else [-1]
-        setK = set(catIds)
-        setA = set(map(tuple, _pe.areaRng))
-        setM = set(_pe.maxDets)
-        setI = set(_pe.imgIdxes)
+        setK: set = set(catIds)
+        setA: Set[tuple] = set(map(tuple, _pe.areaRng))
+        setM: set = set(_pe.maxDets)
+        setI: set = set(_pe.imgIdxes)
         # get inds to evaluate
         k_list = [n for n, k in enumerate(p.catIds) if k in setK]
         m_list = [m for n, m in enumerate(p.maxDets) if m in setM]
@@ -361,7 +362,7 @@ class MirEval:
                 Na = a0 * I0
                 for m, maxDet in enumerate(m_list):
                     E = [self.evalImgs[Nk + Na + i] for i in i_list]
-                    E = [e for e in E if not e is None]
+                    E = [e for e in E if e is not None]
                     if len(E) == 0:
                         continue
                     dtScores = np.concatenate([e['dtScores'][0:maxDet] for e in E])
@@ -414,7 +415,7 @@ class MirEval:
                             for ri, pi in enumerate(inds):
                                 q[ri] = pr[pi]
                                 ss[ri] = dtScoresSorted[pi]
-                        except:
+                        except Exception:
                             pass
                         precision[t, :, k, a, m] = np.array(q)
                         scores[t, :, k, a, m] = np.array(ss)
@@ -457,7 +458,8 @@ class MirEval:
 
         return iou_evaluation
 
-    def _get_topic_evaluation_result(self, iou_thr_index: int, class_id_index: int) -> mirpb.SingleTopicEvaluation:
+    def _get_topic_evaluation_result(self, iou_thr_index: Optional[int],
+                                     class_id_index: int) -> mirpb.SingleTopicEvaluation:
         topic_evaluation = mirpb.SingleTopicEvaluation()
 
         # from _summarize
@@ -512,8 +514,7 @@ class MirEval:
 
         # pr curve
         if iou_thr_index is not None and class_id_index is not None:
-            precisions: np.ndarray = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index,
-                                                            max_dets_index]
+            precisions = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
                 topic_evaluation.pr_curve.append(pr_point)
@@ -525,7 +526,7 @@ class MirEval:
         Compute and display summary metrics for evaluation results.
         Note this functin can *only* be applied on the default parameter setting
         '''
-        def _summarize(ap=1, iouThr=None, areaRng='all', maxDets=100):
+        def _summarize(ap: int = 1, iouThr: float = None, areaRng: str = 'all', maxDets: int = 100) -> float:
             p = self.params
 
             aind = [i for i, aRng in enumerate(p.areaRngLbl) if aRng == areaRng]  # areaRanges index
@@ -551,7 +552,7 @@ class MirEval:
                 mean_s = np.mean(s[s > -1])
             return mean_s
 
-        def _summarizeDets():
+        def _summarizeDets() -> np.ndarray:
             stats = np.zeros((12, ))
             stats[0] = _summarize(1)
             stats[1] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[2])
@@ -571,21 +572,17 @@ class MirEval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
 
-    def __str__(self):
-        self.summarize()
-
 
 class Params:
-    def __init__(self):
+    def __init__(self) -> None:
         self.iouType = 'bbox'
-        self.imgIds = []
-        self.catIds = []
-        self.imgIdxes = []
+        self.catIds: List[int] = []
+        self.imgIdxes: List[int] = []
         # np.arange causes trouble.  the data point on arange is slightly larger than the true value
         self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)  # iou threshold
         self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)  # recall threshold
         self.maxDets = [1, 10, 100]
-        self.areaRng = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
+        self.areaRng: List[list] = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.useCats = 1  # 1: use categories, 0: treat all categories as one
         self.confThr = 0.3  # confidence threshold
