@@ -16,7 +16,7 @@ services:
       # viz
       - VIZ_REDIS_URI=redis://:@viz-redis
       # app
-      - DATABASE_URI=mysql+pymysql://user:passwd@db/ymir
+      - DATABASE_URI=mysql+pymysql://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@db/ymir
       - GRPC_CHANNEL=127.0.0.1:50066
       - VIZ_HOST=127.0.0.1:9099
       - SHARED_DATA_DIR=/data/sharing
@@ -91,8 +91,8 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_USER=${MYSQL_INITIAL_USER}
+      - MYSQL_PASSWORD=${MYSQL_INITIAL_PASSWORD}
     volumes:
       - ${YMIR_PATH}/mysql:/var/lib/mysql
     restart: on-failure:10
