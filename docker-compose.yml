@@ -24,7 +24,6 @@ services:
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
       # monitor
-      - POSTMAN_URL=http://127.0.0.1:8090
       - MONITOR_URL=http://127.0.0.1:9098
       - APP_API_HOST=127.0.0.1:80
     volumes:
