@@ -484,7 +484,8 @@ class MirEval:
 
         # pr curve
         if iou_thr_index is not None and class_id_index is not None:
-            precisions: np.ndarray = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
+            precisions: np.ndarray = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index,
+                                                            max_dets_index]
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
                 topic_evaluation.pr_curve.append(pr_point)
