@@ -24,6 +24,12 @@ class DatasetGroup(Base):
         uselist=True,
         viewonly=True,
     )
+    visible_datasets = relationship(
+        "Dataset",
+        primaryjoin="and_(foreign(Dataset.dataset_group_id)==DatasetGroup.id, foreign(Dataset.is_visible))",
+        uselist=True,
+        viewonly=True,
+    )
 
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -33,3 +39,7 @@ class DatasetGroup(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+    @property
+    def is_visible(self) -> bool:
+        return bool(self.visible_datasets)

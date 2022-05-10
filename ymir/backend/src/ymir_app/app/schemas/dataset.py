@@ -98,6 +98,7 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
     task_id: int
     user_id: int
     related_task: Optional[TaskInternal]
+    is_visible: bool
 
     class Config:
         orm_mode = True
