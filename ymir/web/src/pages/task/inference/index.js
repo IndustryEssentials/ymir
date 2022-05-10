@@ -42,6 +42,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
   const [gpu_count, setGPU] = useState(0)
+  const [selectedGpu, setSelectedGpu] = useState(0)
 
   useEffect(() => {
     fetchSysInfo()
@@ -101,7 +102,7 @@ function Inference({ datasetCache, datasets, ...func }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
-    
+
     const img = (form.getFieldValue('image') || '').split(',')
     const imageId = Number(img[0])
     const image = img[1]
@@ -133,7 +134,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }
 
   function modelChange(id, options = []) {
-      setSelectedModels(options.map(({model}) => model) || [])
+    setSelectedModels(options.map(({ model }) => model) || [])
   }
 
   async function selectModelFromIteration() {
@@ -156,7 +157,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   return (
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
-       <Card className={commonStyles.container} title={t('breadcrumbs.task.inference')}>
+      <Card className={commonStyles.container} title={t('breadcrumbs.task.inference')}>
         <div className={commonStyles.formContainer}>
           <Form
             className={styles.form}
@@ -172,18 +173,18 @@ function Inference({ datasetCache, datasets, ...func }) {
           >
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
-            <Tip hidden={true}>
-            <Form.Item
-              label={t('task.inference.form.dataset.label')}
-              required
-              name="datasetId"
-              rules={[
-                { required: true, message: t('task.inference.form.dataset.required') },
-              ]}
-            >
-              <DatasetSelect pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} onChange={setsChange} showArrow />
-            </Form.Item>
-            </Tip>
+              <Tip hidden={true}>
+                <Form.Item
+                  label={t('task.inference.form.dataset.label')}
+                  required
+                  name="datasetId"
+                  rules={[
+                    { required: true, message: t('task.inference.form.dataset.required') },
+                  ]}
+                >
+                  <DatasetSelect pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} onChange={setsChange} showArrow />
+                </Form.Item>
+              </Tip>
             </ConfigProvider>
 
 
@@ -191,38 +192,41 @@ function Inference({ datasetCache, datasets, ...func }) {
               <Tip content={t('tip.task.filter.imodel')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}>
-                    <Form.Item
+                  <Form.Item
                     noStyle
-                  name="model"
-                  rules={[
-                    { required: true, message: t('task.mining.form.model.required') },
-                  ]}
-                >
-                  <ModelSelect mode='multiple' placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
-                </Form.Item>
-                <div style={{ marginTop: 10 }}><Button onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
+                    name="model"
+                    rules={[
+                      { required: true, message: t('task.mining.form.model.required') },
+                    ]}
+                  >
+                    <ModelSelect mode='multiple' placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
+                  </Form.Item>
+                  <div style={{ marginTop: 10 }}><Button onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
                 </Form.Item>
               </Tip>
             </ConfigProvider>
 
             <Tip content={t('tip.task.inference.image')}>
               <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-                {required: true, message: t('task.inference.form.image.required')}
+                { required: true, message: t('task.inference.form.image.required') }
               ]}>
                 <ImageSelect placeholder={t('task.inference.form.image.placeholder')} relatedId={selectedModels[0]?.task?.parameters?.docker_image_id} type={TYPES.INFERENCE} onChange={imageChange} />
               </Form.Item>
             </Tip>
 
             <Tip content={t('tip.task.filter.igpucount')}>
-            <Form.Item
+              <Form.Item
                 label={t('task.gpu.count')}
               >
                 <Form.Item
                   noStyle
                   name="gpu_count"
                 >
-                  <InputNumber min={0} max={Math.floor(gpu_count / gpuStep)} precision={0} /></Form.Item>
-                  <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}{t('task.infer.gpu.tip')}</span>
+                  <InputNumber min={0} max={Math.floor(gpu_count / gpuStep)} precision={0} onChange={setSelectedGpu} /></Form.Item>
+                <span style={{ marginLeft: 20 }}>
+                  {t('task.gpu.tip', { count: gpu_count })}
+                  {t('task.infer.gpu.tip', { total: gpuStep * selectedGpu })}
+                </span>
               </Form.Item>
             </Tip>
 
@@ -292,8 +296,8 @@ function Inference({ datasetCache, datasets, ...func }) {
                 </Form.List>
 
               </Form.Item>
-            </Tip> : null }
-            
+            </Tip> : null}
+
             <Tip hidden={true}>
               <Form.Item label={t('task.inference.form.desc')} name='description'
                 rules={[
@@ -305,20 +309,20 @@ function Inference({ datasetCache, datasets, ...func }) {
             </Tip>
 
             <Tip hidden={true}>
-            <Form.Item wrapperCol={{ offset: 8 }}>
-              <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit" >
-                    {t('common.action.infer')}
-                  </Button>
-                </Form.Item>
-                <Form.Item name='backBtn' noStyle>
-                  <Button size="large" onClick={() => history.goBack()}>
-                    {t('task.btn.back')}
-                  </Button>
-                </Form.Item>
-              </Space>
-            </Form.Item>
+              <Form.Item wrapperCol={{ offset: 8 }}>
+                <Space size={20}>
+                  <Form.Item name='submitBtn' noStyle>
+                    <Button type="primary" size="large" htmlType="submit" >
+                      {t('common.action.infer')}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item name='backBtn' noStyle>
+                    <Button size="large" onClick={() => history.goBack()}>
+                      {t('task.btn.back')}
+                    </Button>
+                  </Form.Item>
+                </Space>
+              </Form.Item>
             </Tip>
           </Form>
         </div>
