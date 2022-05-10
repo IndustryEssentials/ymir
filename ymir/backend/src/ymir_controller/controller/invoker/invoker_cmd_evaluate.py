@@ -36,13 +36,13 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             '-w',
             self._work_dir,
             '--conf-thr',
-            f"{self._request.evaluate_config.conf_threshold}",
+            f"{self._request.evaluate_config.conf_threshold:.2f}",
             '--iou-thr-from',
-            f"{self._request.evaluate_config.iou_threshold_from}",
+            f"{self._request.evaluate_config.iou_threshold_from:.2f}",
             '--iou-thr-to',
-            f"{self._request.evaluate_config.iou_threshold_to}",
+            f"{self._request.evaluate_config.iou_threshold_to:.2f}",
             '--iou-thr-step',
-            f"{self._request.evaluate_config.iou_threshold_step}",
+            f"{self._request.evaluate_config.iou_threshold_step:.2f}",
         ]
 
         return utils.run_command(command)
