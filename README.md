@@ -67,6 +67,10 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 }
 ```
 
+Welcome to enter our WeChat communication group~
+
+![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
+
 # 1. Introduction to AI SUITE-YMIR
 
 As a streamlined model development product, YMIR(You Mine In Recursion) focuses on the dataset versioning and model iteration in the AI SUITE open-source series.
@@ -875,6 +879,7 @@ YMIR is licensed under version 2.0 of the Apache License. See the [LICENSE](http
 Contact us with further questions: contact.viesc@gmail.com
 
 Join our [Slack community](https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q) to chat to our engineers about your use cases, questions, and support queries.
+
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
