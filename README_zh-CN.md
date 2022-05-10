@@ -71,6 +71,10 @@
 }
 ```
 
+欢迎加入我们的微信交流群~
+
+![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
+
 # 1.  AI SUITE-YMIR介绍
 
 YMIR(You Mine In Recursion)是一个简化的模型开发产品，专注于AI SUITE开源系列中的数据集版本和模型迭代。
@@ -841,10 +845,6 @@ YMIR开源项目符合Apache 2.0证书许可。查看 [LICENSE](https://github.c
 当您有其他问题时，请联系我们： contact.viesc@gmail.com
 
 或者加入我们的[Slack community](https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q)，我们将会实时解答您的问题。
-
-欢迎加入我们的微信交流群~
-
-![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
