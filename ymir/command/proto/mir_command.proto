@@ -196,8 +196,17 @@ message Evaluation {
     map<string, SingleDatasetEvaluation> dataset_evaluations = 2;
 }
 
+message EvaluateConfig {
+    float conf_thr = 1;
+    float iou_thr_from = 2;
+    float iou_thr_to = 3;
+    float iou_thr_step = 4;
+    string gt_dataset_id = 5;
+    repeated string pred_dataset_ids = 6;
+}
+
 message SingleDatasetEvaluation {
-    float conf_threshold = 1;
+    float conf_thr = 1;
     string gt_dataset_id = 2;
     string pred_dataset_id = 3;
     map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
@@ -221,15 +230,6 @@ message SingleTopicEvaluation {
 message FloatPoint {
     float x = 1;
     float y = 2;
-}
-
-message EvaluateConfig {
-    float conf_thr = 1;
-    float iou_thr_from = 2;
-    float iou_thr_to = 3;
-    float iou_thr_step = 4;
-    string gt_dataset_id = 5;
-    repeated string pred_dataset_ids = 6;
 }
 
 /// ========== context.mir ==========
