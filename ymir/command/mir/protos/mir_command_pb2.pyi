@@ -603,6 +603,38 @@ global___ModelMeta = ModelMeta
 
 class Evaluation(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class DatasetEvaluationsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleDatasetEvaluation: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleDatasetEvaluation] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    GT_DATASET_ID_FIELD_NUMBER: builtins.int
+    DATASET_EVALUATIONS_FIELD_NUMBER: builtins.int
+    gt_dataset_id: typing.Text = ...
+    @property
+    def dataset_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleDatasetEvaluation]:
+        """key: prediction dataset id, value: evaluation result for ground truth and prediction dataset"""
+        pass
+    def __init__(self,
+        *,
+        gt_dataset_id : typing.Text = ...,
+        dataset_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleDatasetEvaluation]] = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dataset_evaluations",b"dataset_evaluations","gt_dataset_id",b"gt_dataset_id"]) -> None: ...
+global___Evaluation = Evaluation
+
+class SingleDatasetEvaluation(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class IouEvaluationsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
@@ -628,7 +660,7 @@ class Evaluation(google.protobuf.message.Message):
         pass
     @property
     def average_evaluation(self) -> global___SingleIouEvaluation:
-        """everage for all ious"""
+        """average for all ious"""
         pass
     def __init__(self,
         *,
@@ -638,7 +670,7 @@ class Evaluation(google.protobuf.message.Message):
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["average_evaluation",b"average_evaluation"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["average_evaluation",b"average_evaluation","conf_threshold",b"conf_threshold","iou_evaluations",b"iou_evaluations"]) -> None: ...
-global___Evaluation = Evaluation
+global___SingleDatasetEvaluation = SingleDatasetEvaluation
 
 class SingleIouEvaluation(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
