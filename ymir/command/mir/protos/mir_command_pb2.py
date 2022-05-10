@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11mir_command.proto\x12\x0bmir.command\"\xa1\x01\n\x0cMirMetadatas\x12=\n\nattributes\x18\x01 \x03(\x0b\x32).mir.command.MirMetadatas.AttributesEntry\x1aR\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x05value\x18\x02 \x01(\x0b\x32\x1f.mir.command.MetadataAttributes:\x02\x38\x01\"\xe0\x01\n\x12MetadataAttributes\x12\x14\n\x0c\x64\x61taset_name\x18\x01 \x01(\t\x12)\n\ttimestamp\x18\x02 \x01(\x0b\x32\x16.mir.command.Timestamp\x12&\n\x08tvt_type\x18\x03 \x01(\x0e\x32\x14.mir.command.TvtType\x12*\n\nasset_type\x18\x04 \x01(\x0e\x32\x16.mir.command.AssetType\x12\r\n\x05width\x18\x05 \x01(\x05\x12\x0e\n\x06height\x18\x06 \x01(\x05\x12\x16\n\x0eimage_channels\x18\x07 \x01(\x05\",\n\tTimestamp\x12\r\n\x05start\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x02\"\xce\x01\n\x0eMirAnnotations\x12J\n\x10task_annotations\x18\x01 \x03(\x0b\x32\x30.mir.command.MirAnnotations.TaskAnnotationsEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1aZ\n\x14TaskAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTaskAnnotations:\x02\x38\x01\"\xca\x01\n\x15SingleTaskAnnotations\x12S\n\x11image_annotations\x18\x01 \x03(\x0b\x32\x38.mir.command.SingleTaskAnnotations.ImageAnnotationsEntry\x1a\\\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command.SingleImageAnnotations:\x02\x38\x01\"F\n\x16SingleImageAnnotations\x12,\n\x0b\x61nnotations\x18\x02 \x03(\x0b\x32\x17.mir.command.Annotation\"\\\n\nAnnotation\x12\r\n\x05index\x18\x01 \x01(\x05\x12\x1e\n\x03\x62ox\x18\x02 \x01(\x0b\x32\x11.mir.command.Rect\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\x05\x12\r\n\x05score\x18\x04 \x01(\x01\"2\n\x04Rect\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01w\x18\x03 \x01(\x05\x12\t\n\x01h\x18\x04 \x01(\x05\"\xd0\x02\n\x0bMirKeywords\x12\x38\n\x08keywords\x18\x01 \x03(\x0b\x32&.mir.command.MirKeywords.KeywordsEntry\x12T\n\x17index_predifined_keyids\x18\x06 \x03(\x0b\x32\x33.mir.command.MirKeywords.IndexPredifinedKeyidsEntry\x1a\x46\n\rKeywordsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.mir.command.Keywords:\x02\x38\x01\x1aQ\n\x1aIndexPredifinedKeyidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.mir.command.Assets:\x02\x38\x01J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06\"\x1b\n\x06\x41ssets\x12\x11\n\tasset_ids\x18\x01 \x03(\t\"B\n\x08Keywords\x12\x19\n\x11predifined_keyids\x18\x01 \x03(\x05\x12\x1b\n\x13\x63ustomized_keywords\x18\x02 \x03(\t\"\x92\x01\n\x08MirTasks\x12/\n\x05tasks\x18\x01 \x03(\x0b\x32 .mir.command.MirTasks.TasksEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1a?\n\nTasksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.mir.command.Task:\x02\x38\x01\"\xda\x03\n\x04Task\x12#\n\x04type\x18\x01 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12%\n\x05model\x18\x06 \x01(\x0b\x32\x16.mir.command.ModelMeta\x12:\n\runknown_types\x18\x07 \x03(\x0b\x32#.mir.command.Task.UnknownTypesEntry\x12\x13\n\x0breturn_code\x18\x08 \x01(\x05\x12\x12\n\nreturn_msg\x18\t \x01(\t\x12+\n\nevaluation\x18\n \x01(\x0b\x32\x17.mir.command.Evaluation\x12\"\n\x1aserialized_task_parameters\x18\x66 \x01(\t\x12\"\n\x1aserialized_executor_config\x18g \x01(\t\x12\x10\n\x08src_revs\x18h \x01(\t\x12\x0f\n\x07\x64st_rev\x18i \x01(\t\x12\x10\n\x08\x65xecutor\x18j \x01(\t\x1a\x33\n\x11UnknownTypesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01J\x04\x08\x04\x10\x05J\x04\x08\x64\x10\x65J\x04\x08\x65\x10\x66\"P\n\tModelMeta\x12\x12\n\nmodel_hash\x18\x01 \x01(\t\x12\x1e\n\x16mean_average_precision\x18\x02 \x01(\x02\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t\"\xd2\x01\n\nEvaluation\x12\x15\n\rgt_dataset_id\x18\x01 \x01(\t\x12L\n\x13\x64\x61taset_evaluations\x18\x02 \x03(\x0b\x32/.mir.command.Evaluation.DatasetEvaluationsEntry\x1a_\n\x17\x44\x61tasetEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.mir.command.SingleDatasetEvaluation:\x02\x38\x01\"\xcb\x02\n\x17SingleDatasetEvaluation\x12\x16\n\x0e\x63onf_threshold\x18\x01 \x01(\x02\x12\x15\n\rgt_dataset_id\x18\x02 \x01(\t\x12\x17\n\x0fpred_dataset_id\x18\x03 \x01(\t\x12Q\n\x0fiou_evaluations\x18\x04 \x03(\x0b\x32\x38.mir.command.SingleDatasetEvaluation.IouEvaluationsEntry\x12<\n\x12\x61verage_evaluation\x18\x05 \x01(\x0b\x32 .mir.command.SingleIouEvaluation\x1aW\n\x13IouEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12/\n\x05value\x18\x02 \x01(\x0b\x32 .mir.command.SingleIouEvaluation:\x02\x38\x01\"\xec\x02\n\x13SingleIouEvaluation\x12K\n\x0e\x63i_evaluations\x18\x01 \x03(\x0b\x32\x33.mir.command.SingleIouEvaluation.CiEvaluationsEntry\x12Q\n\x11topic_evaluations\x18\x02 \x03(\x0b\x32\x36.mir.command.SingleIouEvaluation.TopicEvaluationsEntry\x1aX\n\x12\x43iEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTopicEvaluation:\x02\x38\x01\x1a[\n\x15TopicEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTopicEvaluation:\x02\x38\x01\"~\n\x15SingleTopicEvaluation\x12\n\n\x02\x61p\x18\x01 \x01(\x02\x12\n\n\x02\x61r\x18\x02 \x01(\x02\x12\n\n\x02tp\x18\x03 \x01(\x05\x12\n\n\x02\x66p\x18\x04 \x01(\x05\x12\n\n\x02\x66n\x18\x05 \x01(\x05\x12)\n\x08pr_curve\x18\x06 \x03(\x0b\x32\x17.mir.command.FloatPoint\"\"\n\nFloatPoint\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\"\xa5\x04\n\nMirContext\x12\x12\n\nimages_cnt\x18\x01 \x01(\x05\x12\x1b\n\x13negative_images_cnt\x18\x02 \x01(\x05\x12#\n\x1bproject_negative_images_cnt\x18\x03 \x01(\x05\x12O\n\x15predefined_keyids_cnt\x18\x04 \x03(\x0b\x32\x30.mir.command.MirContext.PredefinedKeyidsCntEntry\x12^\n\x1dproject_predefined_keyids_cnt\x18\x05 \x03(\x0b\x32\x37.mir.command.MirContext.ProjectPredefinedKeyidsCntEntry\x12S\n\x17\x63ustomized_keywords_cnt\x18\x06 \x03(\x0b\x32\x32.mir.command.MirContext.CustomizedKeywordsCntEntry\x1a:\n\x18PredefinedKeyidsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x41\n\x1fProjectPredefinedKeyidsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a<\n\x1a\x43ustomizedKeywordsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01*Z\n\x07TvtType\x12\x12\n\x0eTvtTypeUnknown\x10\x00\x12\x13\n\x0fTvtTypeTraining\x10\x01\x12\x15\n\x11TvtTypeValidation\x10\x02\x12\x0f\n\x0bTvtTypeTest\x10\x03*\x88\x02\n\tAssetType\x12\x14\n\x10\x41ssetTypeUnknown\x10\x00\x12\x16\n\x12\x41ssetTypeImageJpeg\x10\x01\x12\x15\n\x11\x41ssetTypeImagePng\x10\x02\x12\x1a\n\x16\x41ssetTypeImagePixelMat\x10\x03\x12\x19\n\x15\x41ssetTypeImageYuv420p\x10\x04\x12\x1a\n\x16\x41ssetTypeImageYuv420sp\x10\x05\x12\x19\n\x15\x41ssetTypeImageYuv422p\x10\x06\x12\x1a\n\x16\x41ssetTypeImageYuv422sp\x10\x07\x12\x15\n\x11\x41ssetTypeImageBmp\x10\x08\x12\x15\n\x11\x41ssetTypeVideoMp4\x10\x65*\xd3\x02\n\x08TaskType\x12\x13\n\x0fTaskTypeUnknown\x10\x00\x12\x14\n\x10TaskTypeTraining\x10\x01\x12\x12\n\x0eTaskTypeMining\x10\x02\x12\x11\n\rTaskTypeLabel\x10\x03\x12\x12\n\x0eTaskTypeFilter\x10\x04\x12\x16\n\x12TaskTypeImportData\x10\x05\x12\x16\n\x12TaskTypeExportData\x10\x06\x12\x14\n\x10TaskTypeCopyData\x10\x07\x12\x11\n\rTaskTypeMerge\x10\x08\x12\x11\n\rTaskTypeInfer\x10\t\x12\x14\n\x10TaskTypeSampling\x10\n\x12\x12\n\x0eTaskTypeFusion\x10\x0b\x12\x10\n\x0cTaskTypeInit\x10\x0c\x12\x17\n\x13TaskTypeImportModel\x10\r\x12\x14\n\x10TaskTypeEvaluate\x10\x10\"\x04\x08\x0e\x10\x0e\"\x04\x08\x0f\x10\x0f*\x87\x01\n\tTaskState\x12\x14\n\x10TaskStateUnknown\x10\x00\x12\x14\n\x10TaskStatePending\x10\x01\x12\x14\n\x10TaskStateRunning\x10\x02\x12\x11\n\rTaskStateDone\x10\x03\x12\x12\n\x0eTaskStateError\x10\x04\x12\x11\n\rTaskStateMiss\x10\x05*L\n\x08Sha1Type\x12\x15\n\x11SHA1_TYPE_UNKNOWN\x10\x00\x12\x13\n\x0fSHA1_TYPE_ASSET\x10\x01\x12\x14\n\x10SHA1_TYPE_COMMIT\x10\x02*f\n\nMirStorage\x12\x11\n\rMIR_METADATAS\x10\x00\x12\x13\n\x0fMIR_ANNOTATIONS\x10\x01\x12\x10\n\x0cMIR_KEYWORDS\x10\x02\x12\r\n\tMIR_TASKS\x10\x03\x12\x0f\n\x0bMIR_CONTEXT\x10\x04*<\n\x0bLabelFormat\x12\x11\n\rNO_ANNOTATION\x10\x00\x12\x0e\n\nPASCAL_VOC\x10\x01\x12\n\n\x06IF_ARK\x10\x02\x62\x06proto3'
+  serialized_pb=b'\n\x11mir_command.proto\x12\x0bmir.command\"\xa1\x01\n\x0cMirMetadatas\x12=\n\nattributes\x18\x01 \x03(\x0b\x32).mir.command.MirMetadatas.AttributesEntry\x1aR\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x05value\x18\x02 \x01(\x0b\x32\x1f.mir.command.MetadataAttributes:\x02\x38\x01\"\xe0\x01\n\x12MetadataAttributes\x12\x14\n\x0c\x64\x61taset_name\x18\x01 \x01(\t\x12)\n\ttimestamp\x18\x02 \x01(\x0b\x32\x16.mir.command.Timestamp\x12&\n\x08tvt_type\x18\x03 \x01(\x0e\x32\x14.mir.command.TvtType\x12*\n\nasset_type\x18\x04 \x01(\x0e\x32\x16.mir.command.AssetType\x12\r\n\x05width\x18\x05 \x01(\x05\x12\x0e\n\x06height\x18\x06 \x01(\x05\x12\x16\n\x0eimage_channels\x18\x07 \x01(\x05\",\n\tTimestamp\x12\r\n\x05start\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x02\"\xce\x01\n\x0eMirAnnotations\x12J\n\x10task_annotations\x18\x01 \x03(\x0b\x32\x30.mir.command.MirAnnotations.TaskAnnotationsEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1aZ\n\x14TaskAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTaskAnnotations:\x02\x38\x01\"\xca\x01\n\x15SingleTaskAnnotations\x12S\n\x11image_annotations\x18\x01 \x03(\x0b\x32\x38.mir.command.SingleTaskAnnotations.ImageAnnotationsEntry\x1a\\\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command.SingleImageAnnotations:\x02\x38\x01\"F\n\x16SingleImageAnnotations\x12,\n\x0b\x61nnotations\x18\x02 \x03(\x0b\x32\x17.mir.command.Annotation\"\\\n\nAnnotation\x12\r\n\x05index\x18\x01 \x01(\x05\x12\x1e\n\x03\x62ox\x18\x02 \x01(\x0b\x32\x11.mir.command.Rect\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\x05\x12\r\n\x05score\x18\x04 \x01(\x01\"2\n\x04Rect\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01w\x18\x03 \x01(\x05\x12\t\n\x01h\x18\x04 \x01(\x05\"\xd0\x02\n\x0bMirKeywords\x12\x38\n\x08keywords\x18\x01 \x03(\x0b\x32&.mir.command.MirKeywords.KeywordsEntry\x12T\n\x17index_predifined_keyids\x18\x06 \x03(\x0b\x32\x33.mir.command.MirKeywords.IndexPredifinedKeyidsEntry\x1a\x46\n\rKeywordsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.mir.command.Keywords:\x02\x38\x01\x1aQ\n\x1aIndexPredifinedKeyidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.mir.command.Assets:\x02\x38\x01J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06\"\x1b\n\x06\x41ssets\x12\x11\n\tasset_ids\x18\x01 \x03(\t\"B\n\x08Keywords\x12\x19\n\x11predifined_keyids\x18\x01 \x03(\x05\x12\x1b\n\x13\x63ustomized_keywords\x18\x02 \x03(\t\"\x92\x01\n\x08MirTasks\x12/\n\x05tasks\x18\x01 \x03(\x0b\x32 .mir.command.MirTasks.TasksEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1a?\n\nTasksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.mir.command.Task:\x02\x38\x01\"\xda\x03\n\x04Task\x12#\n\x04type\x18\x01 \x01(\x0e\x32\x15.mir.command.TaskType\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12%\n\x05model\x18\x06 \x01(\x0b\x32\x16.mir.command.ModelMeta\x12:\n\runknown_types\x18\x07 \x03(\x0b\x32#.mir.command.Task.UnknownTypesEntry\x12\x13\n\x0breturn_code\x18\x08 \x01(\x05\x12\x12\n\nreturn_msg\x18\t \x01(\t\x12+\n\nevaluation\x18\n \x01(\x0b\x32\x17.mir.command.Evaluation\x12\"\n\x1aserialized_task_parameters\x18\x66 \x01(\t\x12\"\n\x1aserialized_executor_config\x18g \x01(\t\x12\x10\n\x08src_revs\x18h \x01(\t\x12\x0f\n\x07\x64st_rev\x18i \x01(\t\x12\x10\n\x08\x65xecutor\x18j \x01(\t\x1a\x33\n\x11UnknownTypesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01J\x04\x08\x04\x10\x05J\x04\x08\x64\x10\x65J\x04\x08\x65\x10\x66\"P\n\tModelMeta\x12\x12\n\nmodel_hash\x18\x01 \x01(\t\x12\x1e\n\x16mean_average_precision\x18\x02 \x01(\x02\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t\"\xe8\x01\n\nEvaluation\x12+\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x1b.mir.command.EvaluateConfig\x12L\n\x13\x64\x61taset_evaluations\x18\x02 \x03(\x0b\x32/.mir.command.Evaluation.DatasetEvaluationsEntry\x1a_\n\x17\x44\x61tasetEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.mir.command.SingleDatasetEvaluation:\x02\x38\x01\"\xcb\x02\n\x17SingleDatasetEvaluation\x12\x16\n\x0e\x63onf_threshold\x18\x01 \x01(\x02\x12\x15\n\rgt_dataset_id\x18\x02 \x01(\t\x12\x17\n\x0fpred_dataset_id\x18\x03 \x01(\t\x12Q\n\x0fiou_evaluations\x18\x04 \x03(\x0b\x32\x38.mir.command.SingleDatasetEvaluation.IouEvaluationsEntry\x12<\n\x12\x61verage_evaluation\x18\x05 \x01(\x0b\x32 .mir.command.SingleIouEvaluation\x1aW\n\x13IouEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12/\n\x05value\x18\x02 \x01(\x0b\x32 .mir.command.SingleIouEvaluation:\x02\x38\x01\"\xec\x02\n\x13SingleIouEvaluation\x12K\n\x0e\x63i_evaluations\x18\x01 \x03(\x0b\x32\x33.mir.command.SingleIouEvaluation.CiEvaluationsEntry\x12Q\n\x11topic_evaluations\x18\x02 \x03(\x0b\x32\x36.mir.command.SingleIouEvaluation.TopicEvaluationsEntry\x1aX\n\x12\x43iEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTopicEvaluation:\x02\x38\x01\x1a[\n\x15TopicEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command.SingleTopicEvaluation:\x02\x38\x01\"~\n\x15SingleTopicEvaluation\x12\n\n\x02\x61p\x18\x01 \x01(\x02\x12\n\n\x02\x61r\x18\x02 \x01(\x02\x12\n\n\x02tp\x18\x03 \x01(\x05\x12\n\n\x02\x66p\x18\x04 \x01(\x05\x12\n\n\x02\x66n\x18\x05 \x01(\x05\x12)\n\x08pr_curve\x18\x06 \x03(\x0b\x32\x17.mir.command.FloatPoint\"\"\n\nFloatPoint\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\"\x93\x01\n\x0e\x45valuateConfig\x12\x10\n\x08\x63onf_thr\x18\x01 \x01(\x02\x12\x14\n\x0ciou_thr_from\x18\x02 \x01(\x02\x12\x12\n\niou_thr_to\x18\x03 \x01(\x02\x12\x14\n\x0ciou_thr_step\x18\x04 \x01(\x02\x12\x15\n\rgt_dataset_id\x18\x05 \x01(\t\x12\x18\n\x10pred_dataset_ids\x18\x06 \x03(\t\"\xa5\x04\n\nMirContext\x12\x12\n\nimages_cnt\x18\x01 \x01(\x05\x12\x1b\n\x13negative_images_cnt\x18\x02 \x01(\x05\x12#\n\x1bproject_negative_images_cnt\x18\x03 \x01(\x05\x12O\n\x15predefined_keyids_cnt\x18\x04 \x03(\x0b\x32\x30.mir.command.MirContext.PredefinedKeyidsCntEntry\x12^\n\x1dproject_predefined_keyids_cnt\x18\x05 \x03(\x0b\x32\x37.mir.command.MirContext.ProjectPredefinedKeyidsCntEntry\x12S\n\x17\x63ustomized_keywords_cnt\x18\x06 \x03(\x0b\x32\x32.mir.command.MirContext.CustomizedKeywordsCntEntry\x1a:\n\x18PredefinedKeyidsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x41\n\x1fProjectPredefinedKeyidsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a<\n\x1a\x43ustomizedKeywordsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01*Z\n\x07TvtType\x12\x12\n\x0eTvtTypeUnknown\x10\x00\x12\x13\n\x0fTvtTypeTraining\x10\x01\x12\x15\n\x11TvtTypeValidation\x10\x02\x12\x0f\n\x0bTvtTypeTest\x10\x03*\x88\x02\n\tAssetType\x12\x14\n\x10\x41ssetTypeUnknown\x10\x00\x12\x16\n\x12\x41ssetTypeImageJpeg\x10\x01\x12\x15\n\x11\x41ssetTypeImagePng\x10\x02\x12\x1a\n\x16\x41ssetTypeImagePixelMat\x10\x03\x12\x19\n\x15\x41ssetTypeImageYuv420p\x10\x04\x12\x1a\n\x16\x41ssetTypeImageYuv420sp\x10\x05\x12\x19\n\x15\x41ssetTypeImageYuv422p\x10\x06\x12\x1a\n\x16\x41ssetTypeImageYuv422sp\x10\x07\x12\x15\n\x11\x41ssetTypeImageBmp\x10\x08\x12\x15\n\x11\x41ssetTypeVideoMp4\x10\x65*\xd3\x02\n\x08TaskType\x12\x13\n\x0fTaskTypeUnknown\x10\x00\x12\x14\n\x10TaskTypeTraining\x10\x01\x12\x12\n\x0eTaskTypeMining\x10\x02\x12\x11\n\rTaskTypeLabel\x10\x03\x12\x12\n\x0eTaskTypeFilter\x10\x04\x12\x16\n\x12TaskTypeImportData\x10\x05\x12\x16\n\x12TaskTypeExportData\x10\x06\x12\x14\n\x10TaskTypeCopyData\x10\x07\x12\x11\n\rTaskTypeMerge\x10\x08\x12\x11\n\rTaskTypeInfer\x10\t\x12\x14\n\x10TaskTypeSampling\x10\n\x12\x12\n\x0eTaskTypeFusion\x10\x0b\x12\x10\n\x0cTaskTypeInit\x10\x0c\x12\x17\n\x13TaskTypeImportModel\x10\r\x12\x14\n\x10TaskTypeEvaluate\x10\x10\"\x04\x08\x0e\x10\x0e\"\x04\x08\x0f\x10\x0f*\x87\x01\n\tTaskState\x12\x14\n\x10TaskStateUnknown\x10\x00\x12\x14\n\x10TaskStatePending\x10\x01\x12\x14\n\x10TaskStateRunning\x10\x02\x12\x11\n\rTaskStateDone\x10\x03\x12\x12\n\x0eTaskStateError\x10\x04\x12\x11\n\rTaskStateMiss\x10\x05*L\n\x08Sha1Type\x12\x15\n\x11SHA1_TYPE_UNKNOWN\x10\x00\x12\x13\n\x0fSHA1_TYPE_ASSET\x10\x01\x12\x14\n\x10SHA1_TYPE_COMMIT\x10\x02*f\n\nMirStorage\x12\x11\n\rMIR_METADATAS\x10\x00\x12\x13\n\x0fMIR_ANNOTATIONS\x10\x01\x12\x10\n\x0cMIR_KEYWORDS\x10\x02\x12\r\n\tMIR_TASKS\x10\x03\x12\x0f\n\x0bMIR_CONTEXT\x10\x04*<\n\x0bLabelFormat\x12\x11\n\rNO_ANNOTATION\x10\x00\x12\x0e\n\nPASCAL_VOC\x10\x01\x12\n\n\x06IF_ARK\x10\x02\x62\x06proto3'
 )
 
 _TVTTYPE = _descriptor.EnumDescriptor(
@@ -53,8 +53,8 @@ _TVTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3877,
-  serialized_end=3967,
+  serialized_start=4049,
+  serialized_end=4139,
 )
 _sym_db.RegisterEnumDescriptor(_TVTTYPE)
 
@@ -119,8 +119,8 @@ _ASSETTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3970,
-  serialized_end=4234,
+  serialized_start=4142,
+  serialized_end=4406,
 )
 _sym_db.RegisterEnumDescriptor(_ASSETTYPE)
 
@@ -210,8 +210,8 @@ _TASKTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=4237,
-  serialized_end=4576,
+  serialized_start=4409,
+  serialized_end=4748,
 )
 _sym_db.RegisterEnumDescriptor(_TASKTYPE)
 
@@ -256,8 +256,8 @@ _TASKSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=4579,
-  serialized_end=4714,
+  serialized_start=4751,
+  serialized_end=4886,
 )
 _sym_db.RegisterEnumDescriptor(_TASKSTATE)
 
@@ -287,8 +287,8 @@ _SHA1TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=4716,
-  serialized_end=4792,
+  serialized_start=4888,
+  serialized_end=4964,
 )
 _sym_db.RegisterEnumDescriptor(_SHA1TYPE)
 
@@ -328,8 +328,8 @@ _MIRSTORAGE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=4794,
-  serialized_end=4896,
+  serialized_start=4966,
+  serialized_end=5068,
 )
 _sym_db.RegisterEnumDescriptor(_MIRSTORAGE)
 
@@ -359,8 +359,8 @@ _LABELFORMAT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=4898,
-  serialized_end=4958,
+  serialized_start=5070,
+  serialized_end=5130,
 )
 _sym_db.RegisterEnumDescriptor(_LABELFORMAT)
 
@@ -1386,8 +1386,8 @@ _EVALUATION_DATASETEVALUATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2363,
-  serialized_end=2458,
+  serialized_start=2385,
+  serialized_end=2480,
 )
 
 _EVALUATION = _descriptor.Descriptor(
@@ -1399,9 +1399,9 @@ _EVALUATION = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='gt_dataset_id', full_name='mir.command.Evaluation.gt_dataset_id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='config', full_name='mir.command.Evaluation.config', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -1425,7 +1425,7 @@ _EVALUATION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=2248,
-  serialized_end=2458,
+  serialized_end=2480,
 )
 
 
@@ -1463,8 +1463,8 @@ _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2705,
-  serialized_end=2792,
+  serialized_start=2727,
+  serialized_end=2814,
 )
 
 _SINGLEDATASETEVALUATION = _descriptor.Descriptor(
@@ -1522,8 +1522,8 @@ _SINGLEDATASETEVALUATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2461,
-  serialized_end=2792,
+  serialized_start=2483,
+  serialized_end=2814,
 )
 
 
@@ -1561,8 +1561,8 @@ _SINGLEIOUEVALUATION_CIEVALUATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2978,
-  serialized_end=3066,
+  serialized_start=3000,
+  serialized_end=3088,
 )
 
 _SINGLEIOUEVALUATION_TOPICEVALUATIONSENTRY = _descriptor.Descriptor(
@@ -1599,8 +1599,8 @@ _SINGLEIOUEVALUATION_TOPICEVALUATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3068,
-  serialized_end=3159,
+  serialized_start=3090,
+  serialized_end=3181,
 )
 
 _SINGLEIOUEVALUATION = _descriptor.Descriptor(
@@ -1637,8 +1637,8 @@ _SINGLEIOUEVALUATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2795,
-  serialized_end=3159,
+  serialized_start=2817,
+  serialized_end=3181,
 )
 
 
@@ -1704,8 +1704,8 @@ _SINGLETOPICEVALUATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3161,
-  serialized_end=3287,
+  serialized_start=3183,
+  serialized_end=3309,
 )
 
 
@@ -1743,8 +1743,75 @@ _FLOATPOINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3289,
-  serialized_end=3323,
+  serialized_start=3311,
+  serialized_end=3345,
+)
+
+
+_EVALUATECONFIG = _descriptor.Descriptor(
+  name='EvaluateConfig',
+  full_name='mir.command.EvaluateConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='conf_thr', full_name='mir.command.EvaluateConfig.conf_thr', index=0,
+      number=1, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='iou_thr_from', full_name='mir.command.EvaluateConfig.iou_thr_from', index=1,
+      number=2, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='iou_thr_to', full_name='mir.command.EvaluateConfig.iou_thr_to', index=2,
+      number=3, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='iou_thr_step', full_name='mir.command.EvaluateConfig.iou_thr_step', index=3,
+      number=4, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='gt_dataset_id', full_name='mir.command.EvaluateConfig.gt_dataset_id', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='pred_dataset_ids', full_name='mir.command.EvaluateConfig.pred_dataset_ids', index=5,
+      number=6, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3348,
+  serialized_end=3495,
 )
 
 
@@ -1782,8 +1849,8 @@ _MIRCONTEXT_PREDEFINEDKEYIDSCNTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3688,
-  serialized_end=3746,
+  serialized_start=3860,
+  serialized_end=3918,
 )
 
 _MIRCONTEXT_PROJECTPREDEFINEDKEYIDSCNTENTRY = _descriptor.Descriptor(
@@ -1820,8 +1887,8 @@ _MIRCONTEXT_PROJECTPREDEFINEDKEYIDSCNTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3748,
-  serialized_end=3813,
+  serialized_start=3920,
+  serialized_end=3985,
 )
 
 _MIRCONTEXT_CUSTOMIZEDKEYWORDSCNTENTRY = _descriptor.Descriptor(
@@ -1858,8 +1925,8 @@ _MIRCONTEXT_CUSTOMIZEDKEYWORDSCNTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3815,
-  serialized_end=3875,
+  serialized_start=3987,
+  serialized_end=4047,
 )
 
 _MIRCONTEXT = _descriptor.Descriptor(
@@ -1924,8 +1991,8 @@ _MIRCONTEXT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3326,
-  serialized_end=3875,
+  serialized_start=3498,
+  serialized_end=4047,
 )
 
 _MIRMETADATAS_ATTRIBUTESENTRY.fields_by_name['value'].message_type = _METADATAATTRIBUTES
@@ -1958,6 +2025,7 @@ _TASK.fields_by_name['unknown_types'].message_type = _TASK_UNKNOWNTYPESENTRY
 _TASK.fields_by_name['evaluation'].message_type = _EVALUATION
 _EVALUATION_DATASETEVALUATIONSENTRY.fields_by_name['value'].message_type = _SINGLEDATASETEVALUATION
 _EVALUATION_DATASETEVALUATIONSENTRY.containing_type = _EVALUATION
+_EVALUATION.fields_by_name['config'].message_type = _EVALUATECONFIG
 _EVALUATION.fields_by_name['dataset_evaluations'].message_type = _EVALUATION_DATASETEVALUATIONSENTRY
 _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY.fields_by_name['value'].message_type = _SINGLEIOUEVALUATION
 _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY.containing_type = _SINGLEDATASETEVALUATION
@@ -1995,6 +2063,7 @@ DESCRIPTOR.message_types_by_name['SingleDatasetEvaluation'] = _SINGLEDATASETEVAL
 DESCRIPTOR.message_types_by_name['SingleIouEvaluation'] = _SINGLEIOUEVALUATION
 DESCRIPTOR.message_types_by_name['SingleTopicEvaluation'] = _SINGLETOPICEVALUATION
 DESCRIPTOR.message_types_by_name['FloatPoint'] = _FLOATPOINT
+DESCRIPTOR.message_types_by_name['EvaluateConfig'] = _EVALUATECONFIG
 DESCRIPTOR.message_types_by_name['MirContext'] = _MIRCONTEXT
 DESCRIPTOR.enum_types_by_name['TvtType'] = _TVTTYPE
 DESCRIPTOR.enum_types_by_name['AssetType'] = _ASSETTYPE
@@ -2225,6 +2294,13 @@ FloatPoint = _reflection.GeneratedProtocolMessageType('FloatPoint', (_message.Me
   # @@protoc_insertion_point(class_scope:mir.command.FloatPoint)
   })
 _sym_db.RegisterMessage(FloatPoint)
+
+EvaluateConfig = _reflection.GeneratedProtocolMessageType('EvaluateConfig', (_message.Message,), {
+  'DESCRIPTOR' : _EVALUATECONFIG,
+  '__module__' : 'mir_command_pb2'
+  # @@protoc_insertion_point(class_scope:mir.command.EvaluateConfig)
+  })
+_sym_db.RegisterMessage(EvaluateConfig)
 
 MirContext = _reflection.GeneratedProtocolMessageType('MirContext', (_message.Message,), {
 

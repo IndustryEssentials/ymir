@@ -29,7 +29,7 @@ class CmdEvaluate(base.BaseCommand):
     @command_run_in_out
     def run_with_args(work_dir: str, src_revs: str, dst_rev: str, gt_rev: str, mir_root: str, conf_thr: float,
                       iou_thr_from: float, iou_thr_to: float, iou_thr_step: float) -> int:
-        src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        src_rev_tids = revs_parser.parse_arg_revs(src_revs)
         gt_rev_tid = revs_parser.parse_single_arg_rev(gt_rev, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
@@ -47,21 +47,25 @@ class CmdEvaluate(base.BaseCommand):
                                   error_message='invalid iou_thr_from or iou_thr_to')
 
         # read pred and gt
-        mir_pred = eval.MirCoco(mir_root=mir_root, rev_tid=src_rev_tid)
+        mir_preds = [eval.MirCoco(mir_root=mir_root, rev_tid=src_rev_tid) for src_rev_tid in src_rev_tids]
         mir_gt = eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
 
         # check pred and gt
-        if len(mir_pred.mir_metadatas.attributes) == 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no assets in predictions')
-        if set(mir_pred.mir_metadatas.attributes.keys()) != set(mir_gt.mir_metadatas.attributes.keys()):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='prediction and ground truth have different assets')
-        pred_annotations = mir_pred.mir_annotations.task_annotations[
-            mir_pred.mir_annotations.head_task_id].image_annotations
+        for mir_pred in mir_preds:
+            if len(mir_pred.mir_metadatas.attributes) == 0:
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no assets in predictions')
+            if set(mir_pred.mir_metadatas.attributes.keys()) != set(mir_gt.mir_metadatas.attributes.keys()):
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message='prediction and ground truth have different assets')
+            pred_annotations = mir_pred.mir_annotations.task_annotations[
+                mir_pred.mir_annotations.head_task_id].image_annotations
+            if not pred_annotations:
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message='prediction annotations empty')
         gt_annotations = mir_gt.mir_annotations.task_annotations[mir_gt.mir_annotations.head_task_id].image_annotations
-        if not pred_annotations or not gt_annotations:
+        if not gt_annotations:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='prediction or ground truth annotations empty')
+                                  error_message='ground truth annotations empty')
 
         # eval
         evaluation = _evaluate_with_cocotools(mir_pred=mir_pred,
