@@ -191,15 +191,15 @@ message ModelMeta {
 };
 
 message Evaluation {
-    string ground_truth_rev = 1;
+    string gt_dataset_id = 1;
     // key: prediction dataset id, value: evaluation result for ground truth and prediction dataset
-    map<string, SingleRevEvaluation> rev_evaluations = 2;
+    map<string, SingleDatasetEvaluation> dataset_evaluations = 2;
 }
 
-message SingleRevEvaluation {
+message SingleDatasetEvaluation {
     float conf_threshold = 1;
     map<string, SingleIouEvaluation> iou_evaluations = 2;  // key: string of iou threshold
-    SingleIouEvaluation average_evaluation = 3;  // everage for all ious
+    SingleIouEvaluation average_evaluation = 3;  // average for all ious
 }
 
 message SingleIouEvaluation {
