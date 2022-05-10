@@ -526,7 +526,7 @@ class TestToolsEval(unittest.TestCase):
 
         # original eval from pycocotools
         coco_gt = coco.COCO(self._coco_a)
-        coco_dt = coco.COCO(self._coco_a)
+        coco_dt = coco.COCO(self._coco_b)
         coco_evaluator = cocoeval.COCOeval(cocoGt=coco_gt, cocoDt=coco_dt, iouType='bbox')
         coco_evaluator.evaluate()
         coco_evaluator.accumulate()
@@ -534,7 +534,7 @@ class TestToolsEval(unittest.TestCase):
 
         # ymir's eval
         mir_gt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
-        mir_dt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
+        mir_dt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('b@b', need_tid=False))
         mir_evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt)
         mir_evaluator.evaluate()
         mir_evaluator.accumulate()

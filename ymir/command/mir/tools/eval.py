@@ -3,7 +3,6 @@ import copy
 from typing import Any, List, Optional, Set, Union
 
 import numpy as np
-from pycocotools import mask as maskUtils
 
 from mir.tools import mir_storage_ops, revs_parser
 from mir.protos import mir_command_pb2 as mirpb
@@ -230,7 +229,27 @@ class MirEval:
         # compute iou between each dt and gt region
         # ious: matrix of len(d_boxes) * len(g_boxes)
         #   ious[i][j]: iou of d_boxes[i] and g_boxes[j]
-        ious = maskUtils.iou(d_boxes, g_boxes, iscrowd)
+        ious = self._iou(d_boxes=d_boxes, g_boxes=g_boxes, iscrowd=iscrowd)
+        return ious
+
+    @classmethod
+    def _iou(cls, d_boxes: List[List[int]], g_boxes: List[List[int]], iscrowd: List[int]) -> np.ndarray:
+        def _single_iou(d_box: List[int], g_box: List[int], iscrowd: int) -> float:
+            """ box: xywh """
+            i_w = min(d_box[2] + d_box[0], g_box[2] + g_box[0]) - max(d_box[0], g_box[0])
+            if i_w <= 0:
+                return 0
+            i_h = min(d_box[3] + d_box[1], g_box[3] + g_box[1]) - max(d_box[1], g_box[1])
+            if i_h <= 0:
+                return 0
+            i_area = i_w * i_h
+            u_area = d_box[2] * d_box[3] + g_box[2] * g_box[3] - i_area if not iscrowd else d_box[2] * d_box[3]
+            return i_area / u_area
+
+        ious = np.zeros((len(d_boxes), len(g_boxes)), dtype=np.double)
+        for d_idx, d_box in enumerate(d_boxes):
+            for g_idx, g_box in enumerate(g_boxes):
+                ious[d_idx, g_idx] = _single_iou(d_box, g_box, iscrowd[g_idx])
         return ious
 
     def evaluateImg(self, imgIdx: int, catId: int, aRng: Any, maxDet: int) -> Optional[dict]:
