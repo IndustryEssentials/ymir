@@ -18,6 +18,7 @@ class CmdEvaluate(base.BaseCommand):
         return CmdEvaluate.run_with_args(work_dir=self.args.work_dir,
                                          src_revs=self.args.src_revs,
                                          dst_rev=self.args.dst_rev,
+                                         gt_rev=self.args.gt_rev,
                                          mir_root=self.args.mir_root,
                                          conf_thr=self.args.conf_thr,
                                          iou_thr_from=self.args.iou_thr_from,
@@ -26,9 +27,10 @@ class CmdEvaluate(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(work_dir: str, src_revs: str, dst_rev: str, mir_root: str, conf_thr: float, iou_thr_from: float,
-                      iou_thr_to: float, iou_thr_step: float) -> int:
-        src_rev_tid, gt_rev_tid = revs_parser.parse_arg_revs(src_revs)  # pred and gt
+    def run_with_args(work_dir: str, src_revs: str, dst_rev: str, gt_rev: str, mir_root: str, conf_thr: float,
+                      iou_thr_from: float, iou_thr_to: float, iou_thr_step: float) -> int:
+        src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        gt_rev_tid = revs_parser.parse_single_arg_rev(gt_rev, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         return_code = checker.check(mir_root,
@@ -107,11 +109,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                                 description='use this command to evaluate model with ground truth',
                                                 help='evaluate model with ground truth')
     evaluate_arg_parser.add_argument('-w', dest='work_dir', type=str, help='work place for training')
-    evaluate_arg_parser.add_argument("--src-revs",
-                                     dest="src_revs",
-                                     type=str,
-                                     required=True,
-                                     help="prediction rev@tid and ground truth rev@tid, seperated by semicolons")
+    evaluate_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, required=True, help="prediction rev@tid")
+    evaluate_arg_parser.add_argument("--gt-rev", dest="gt_rev", type=str, required=True, help="ground truth rev@tid")
     evaluate_arg_parser.add_argument("--dst-rev",
                                      dest="dst_rev",
                                      type=str,

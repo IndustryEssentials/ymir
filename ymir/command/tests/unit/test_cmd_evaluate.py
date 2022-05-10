@@ -263,7 +263,8 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.work_dir = self._working_root
-        fake_args.src_revs = 'a;b'
+        fake_args.src_revs = 'a'
+        fake_args.gt_rev = 'b'
         fake_args.dst_rev = 'c@c'
         fake_args.conf_thr = 0.3
         fake_args.iou_thr_from = 0.5
