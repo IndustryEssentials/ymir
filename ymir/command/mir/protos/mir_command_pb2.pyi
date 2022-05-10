@@ -766,20 +766,10 @@ class SingleTopicEvaluation(google.protobuf.message.Message):
     FN_FIELD_NUMBER: builtins.int
     PR_CURVE_FIELD_NUMBER: builtins.int
     ap: builtins.float = ...
-    """average precision"""
-
     ar: builtins.float = ...
-    """average recall"""
-
     tp: builtins.int = ...
-    """true positive"""
-
     fp: builtins.int = ...
-    """false positive"""
-
     fn: builtins.int = ...
-    """false negative"""
-
     @property
     def pr_curve(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___FloatPoint]: ...
     def __init__(self,
