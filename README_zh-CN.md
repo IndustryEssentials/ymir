@@ -844,7 +844,7 @@ YMIR开源项目符合Apache 2.0证书许可。查看 [LICENSE](https://github.c
 
 欢迎扫码进入我们的微信交流群~
 
-[](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat%20code.jpg)
+![wechat group](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat%20code.jpg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
