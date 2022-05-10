@@ -876,6 +876,10 @@ Contact us with further questions: contact.viesc@gmail.com
 
 Join our [Slack community](https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q) to chat to our engineers about your use cases, questions, and support queries.
 
+Welcome to enter our WeChat communication group~
+
+![wechat group](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
