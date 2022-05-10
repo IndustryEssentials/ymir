@@ -191,6 +191,12 @@ message ModelMeta {
 };
 
 message Evaluation {
+    string ground_truth_rev = 1;
+    // key: prediction dataset id, value: evaluation result for ground truth and prediction dataset
+    map<string, SingleRevEvaluation> rev_evaluations = 2;
+}
+
+message SingleRevEvaluation {
     float conf_threshold = 1;
     map<string, SingleIouEvaluation> iou_evaluations = 2;  // key: string of iou threshold
     SingleIouEvaluation average_evaluation = 3;  // everage for all ious
@@ -204,9 +210,9 @@ message SingleIouEvaluation {
 message SingleTopicEvaluation {
     float ap = 1;
     float ar = 2;
-    float tp = 3;
-    float fp = 4;
-    float fn = 5;
+    int32 tp = 3;
+    int32 fp = 4;
+    int32 fn = 5;
     repeated FloatPoint pr_curve = 6;
 }
 
