@@ -33,6 +33,8 @@ class MirCoco:
         # ordered list of class / category ids
         self._ordered_class_ids = sorted(list(self._mir_keywords.index_predifined_keyids.keys()))
 
+        self.dataset_id = rev_tid.rev_tid
+
     @property
     def mir_metadatas(self) -> mirpb.MirMetadatas:
         return self._mir_metadatas
@@ -434,12 +436,12 @@ class MirEval:
             'all_fns': all_fns,
         }
 
-    def get_evaluation_result(self) -> mirpb.Evaluation:
+    def get_evaluation_result(self) -> mirpb.SingleDatasetEvaluation:
         if not self.eval:
             raise ValueError('Please run accumulate() first')
 
-        evaluation_result = mirpb.Evaluation()
-        evaluation_result.conf_threshold = self.params.confThr
+        evaluation_result = mirpb.SingleDatasetEvaluation()
+        evaluation_result.conf_thr = self.params.confThr
 
         # iou evaluations
         for iou_thr_index, iou_thr in enumerate(self.params.iouThrs):

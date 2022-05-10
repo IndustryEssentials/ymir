@@ -263,7 +263,7 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.work_dir = self._working_root
-        fake_args.src_revs = 'a'
+        fake_args.src_revs = 'a;b'
         fake_args.gt_rev = 'b'
         fake_args.dst_rev = 'c@c'
         fake_args.conf_thr = 0.3
@@ -274,3 +274,11 @@ class TestCmdEvaluate(unittest.TestCase):
         return_code = evaluate_instance.run()
 
         self.assertEqual(return_code, MirCode.RC_OK)
+
+        # check evaluation result
+        mir_tasks: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
+                                                                                      mir_branch='c',
+                                                                                      mir_task_id='c',
+                                                                                      ms=mirpb.MirStorage.MIR_TASKS)
+        evaluation_result = mir_tasks.tasks[mir_tasks.head_task_id].evaluation
+        self.assertEqual({'a', 'b'}, set(evaluation_result.dataset_evaluations.keys()))

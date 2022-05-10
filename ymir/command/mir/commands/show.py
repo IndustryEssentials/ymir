@@ -94,9 +94,11 @@ class CmdShow(base.BaseCommand):
                   f"    model hash: {task.model.model_hash}\n"
                   f"    map: {task.model.mean_average_precision}\n"
                   f"    executor: {task.executor}\n"
-                  f"    evaluations count: {len(task.evaluation.average_evaluation.ci_evaluations)}")
-            for ci, topic_evaluation in task.evaluation.average_evaluation.ci_evaluations.items():
-                print(f"        class id: {ci}, ap: {topic_evaluation.ap}, ar: {topic_evaluation.ar}")
+                  f"    evaluations: {len(task.evaluation.dataset_evaluations)} datasets")
+            for dataset_id, single_dataset_evaluation in task.evaluation.dataset_evaluations.items():
+                print(f"    dataset id: {dataset_id}")
+                for ci, topic_evaluation in single_dataset_evaluation.average_evaluation.ci_evaluations.items():
+                    print(f"        class id: {ci}, ap: {topic_evaluation.ap}, ar: {topic_evaluation.ar}")
         else:
             print(f"tasks.mir: {json_format.MessageToDict(mir_tasks, preserving_proto_field_name=True)}")
 

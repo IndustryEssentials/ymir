@@ -1,5 +1,6 @@
 import argparse
 import logging
+from typing import List
 
 import numpy as np
 
@@ -68,7 +69,7 @@ class CmdEvaluate(base.BaseCommand):
                                   error_message='ground truth annotations empty')
 
         # eval
-        evaluation = _evaluate_with_cocotools(mir_pred=mir_pred,
+        evaluation = _evaluate_with_cocotools(mir_preds=mir_preds,
                                               mir_gt=mir_gt,
                                               conf_thr=conf_thr,
                                               iou_thr_from=iou_thr_from,
@@ -84,14 +85,14 @@ class CmdEvaluate(base.BaseCommand):
                                            dst_rev=dst_rev)
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
-                                                      his_branch=src_rev_tid.rev,
+                                                      his_branch=src_rev_tids[0].rev,
                                                       mir_datas={},
                                                       task=task)
 
         return MirCode.RC_OK
 
 
-def _evaluate_with_cocotools(mir_pred: eval.MirCoco, mir_gt: eval.MirCoco, conf_thr: float, iou_thr_from: float,
+def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco, conf_thr: float, iou_thr_from: float,
                              iou_thr_to: float, iou_thr_step: float) -> mirpb.Evaluation:
     params = eval.Params()
     params.confThr = conf_thr
@@ -100,11 +101,26 @@ def _evaluate_with_cocotools(mir_pred: eval.MirCoco, mir_gt: eval.MirCoco, conf_
                                  num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)) + 1,
                                  endpoint=True)
 
-    evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_pred, params=params)
-    evaluator.evaluate()
-    evaluator.accumulate()
+    evaluation = mirpb.Evaluation()
+    evaluation.config.conf_thr = conf_thr
+    evaluation.config.iou_thr_from = iou_thr_from
+    evaluation.config.iou_thr_to = iou_thr_to
+    evaluation.config.iou_thr_step = iou_thr_step
+    evaluation.config.gt_dataset_id = mir_gt.dataset_id
+    evaluation.config.pred_dataset_ids.extend([mir_pred.dataset_id for mir_pred in mir_preds])
 
-    return evaluator.get_evaluation_result()
+    for mir_pred in mir_preds:
+        evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_pred, params=params)
+        evaluator.evaluate()
+        evaluator.accumulate()
+
+        single_dataset_evaluation = evaluator.get_evaluation_result()
+        single_dataset_evaluation.conf_thr = conf_thr
+        single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
+        single_dataset_evaluation.pred_dataset_id = mir_pred.dataset_id
+        evaluation.dataset_evaluations[mir_pred.dataset_id].CopyFrom(single_dataset_evaluation)
+
+    return evaluation
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
