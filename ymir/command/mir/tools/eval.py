@@ -4,7 +4,7 @@ from typing import Any, List, Optional, Set, Union
 
 import numpy as np
 
-from mir.tools import mir_storage_ops, revs_parser
+from mir.tools import mir_storage_ops, revs_parser, settings as mir_settings
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -361,9 +361,9 @@ class MirEval:
         precision = -np.ones((T, R, K, A, M))  # -1 for the precision of absent categories
         recall = -np.ones((T, K, A, M))
         scores = -np.ones((T, R, K, A, M))
-        all_tps = -np.ones((T, K, A, M))
-        all_fps = -np.ones((T, K, A, M))
-        all_fns = -np.ones((T, K, A, M))
+        all_tps = np.zeros((T, K, A, M))
+        all_fps = np.zeros((T, K, A, M))
+        all_fns = np.zeros((T, K, A, M))
 
         # create dictionary for future indexing
         _pe = self._paramsEval
@@ -479,6 +479,10 @@ class MirEval:
         for class_id_index, class_id in enumerate(self.params.catIds):
             topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, class_id_index)
             iou_evaluation.ci_evaluations[class_id].CopyFrom(topic_evaluation)
+        # class average
+        topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, None)
+        iou_evaluation.ci_evaluations[mir_settings.EVALUATOR_AVERAGE_PLACEHOLDER_CLASS_ID].CopyFrom(topic_evaluation)
+        breakpoint()
 
         return iou_evaluation
 
@@ -521,7 +525,9 @@ class MirEval:
         if class_id_index is not None:
             all_tps = all_tps[:, class_id_index, area_ranges_index, max_dets_index]
         else:
-            all_tps = all_tps[:, :, area_ranges_index, max_dets_index]
+            # sum by class ids
+            all_tps = np.sum(all_tps[:, :, area_ranges_index, max_dets_index], axis=1)
+            breakpoint()
         topic_evaluation.tp = int(all_tps[0])
 
         # false positive
@@ -531,7 +537,8 @@ class MirEval:
         if class_id_index is not None:
             all_fps = all_fps[:, class_id_index, area_ranges_index, max_dets_index]
         else:
-            all_fps = all_fps[:, :, area_ranges_index, max_dets_index]
+            # sum by class ids
+            all_fps = np.sum(all_fps[:, :, area_ranges_index, max_dets_index], axis=1)
         topic_evaluation.fp = int(all_fps[0])
 
         # TODO: false negative
