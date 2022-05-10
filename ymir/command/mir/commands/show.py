@@ -93,7 +93,10 @@ class CmdShow(base.BaseCommand):
             print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
                   f"    model hash: {task.model.model_hash}\n"
                   f"    map: {task.model.mean_average_precision}\n"
-                  f"    executor: {task.executor}")
+                  f"    executor: {task.executor}\n"
+                  f"    evaluations count: {len(task.evaluation.average_evaluation.ci_evaluations)}")
+            for ci, topic_evaluation in task.evaluation.average_evaluation.ci_evaluations.items():
+                print(f"        class id: {ci}, ap: {topic_evaluation.ap}, ar: {topic_evaluation.ar}")
         else:
             print(f"tasks.mir: {json_format.MessageToDict(mir_tasks, preserving_proto_field_name=True)}")
 

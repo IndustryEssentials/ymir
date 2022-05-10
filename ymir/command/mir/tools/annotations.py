@@ -68,7 +68,7 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     annotation.box.y = ymin
     annotation.box.w = width
     annotation.box.h = height
-    annotation.score = 0
+    annotation.score = 1
     return annotation
 
 

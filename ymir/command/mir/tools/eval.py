@@ -73,6 +73,7 @@ class MirCoco:
         if not asset_idxes:
             asset_idxes = self.get_asset_idxes()
 
+        annotation_idx = 1
         for asset_idx in asset_idxes:
             asset_id = self._ordered_asset_ids[asset_idx]
             if asset_id not in single_task_annotations.image_annotations:
@@ -88,7 +89,7 @@ class MirCoco:
                 annotation_dict = {
                     'asset_id': asset_id,
                     'asset_idx': asset_idx,
-                    'id': annotation.index + 1,  # annotation id starts from 1, so + 1 is needed
+                    'id': annotation_idx,
                     'class_id': annotation.class_id,
                     'area': annotation.box.w * annotation.box.h,
                     'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
@@ -96,6 +97,8 @@ class MirCoco:
                     'iscrowd': 0,
                 }
                 result_annotations_list.append(annotation_dict)
+
+                annotation_idx += 1
 
         return result_annotations_list
 
