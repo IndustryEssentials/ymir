@@ -116,6 +116,23 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+# 文章引用
+
+如要在您的工作中引用YMIR，请使用下面的Bibtex：
+
+```bibtex
+@inproceedings{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
+      year={2021},
+}
+```
+
+欢迎加入我们的微信交流群~
+
+![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
+
 # 1.  AI SUITE-YMIR介绍
 
 YMIR(You Mine In Recursion)是一个简化的模型开发产品，专注于AI SUITE开源系列中的数据集版本和模型迭代。
