@@ -198,8 +198,10 @@ message Evaluation {
 
 message SingleDatasetEvaluation {
     float conf_threshold = 1;
-    map<string, SingleIouEvaluation> iou_evaluations = 2;  // key: string of iou threshold
-    SingleIouEvaluation average_evaluation = 3;  // average for all ious
+    string gt_dataset_id = 2;
+    string pred_dataset_id = 3;
+    map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
+    SingleIouEvaluation average_evaluation = 5;  // average for all ious
 }
 
 message SingleIouEvaluation {
