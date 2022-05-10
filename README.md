@@ -1,7 +1,3 @@
-Welcome to enter our WeChat communication group~
-
-![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
-
 ## Introduction
 
 English | [Simplified Chinese](README_zh-CN.md)
@@ -70,6 +66,10 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
       year={2021},
 }
 ```
+
+Welcome to enter our WeChat communication group~
+
+![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
 
 # 1. Introduction to AI SUITE-YMIR
 
