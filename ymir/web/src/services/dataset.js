@@ -118,6 +118,23 @@ export function delDatasetGroup(id) {
 }
 
 /**
+ * evalute between gt and target dataset
+ * @param {number} projectId    project id
+ * @param {number} datasets      evaluational datasets
+ * @param {number} gt           ground truth dataset
+ * @param {number} confidence   range: [0, 1]
+ * @returns 
+ */
+export function evaluate({ projectId, datasets, gt, confidence }) {
+  return request.post(`/datasets/evaluation`, {
+    project_id: projectId,
+    other_dataset_ids: datasets,
+    gt_dataset_id: gt,
+    confidence_threshold: confidence,
+  })
+}
+
+/**
  * hide datasets
  * @param {number} projectId
  * @param {number} ids

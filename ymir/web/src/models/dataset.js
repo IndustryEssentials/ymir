@@ -1,5 +1,5 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets,
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
@@ -47,7 +47,7 @@ export default {
       }
     },
     *getDataset({ payload }, { call, put, select }) {
-      const {id, force } = payload
+      const { id, force } = payload
       if (!force) {
         const dataset = yield select(state => state.dataset.dataset[id])
         if (dataset) {
@@ -274,6 +274,31 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
+    },
+    *compare({ payload }, { call, put }) {
+      const result = yield call(evaluate, payload)
+      return payload.datasets.reduce((prev, dataset) => {
+        const ious = [0.5, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+        const keywords = ['person', 'cat', 'dog', 'bottle']
+        return {
+          ...prev,
+          [dataset]: {
+            map: Math.random(),
+            metrics: ious.map(iou => keywords.map(keyword => ({
+            iou_threshold: iou,
+            keyword,
+            ap: keyword + iou,
+            ar: 0.2,
+            tp: 0.6,
+            fp: 45,
+            fn: 34,
+            pr_curv: [1, 2, 3],
+          }))).flat()
+        }}
+      }, {})
+      if (result) {
+        return result
+      }
     },
   },
   reducers: {

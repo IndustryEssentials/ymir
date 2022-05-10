@@ -195,7 +195,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const actionMenus = (record) => {
-    const { id, state, taskState, task, isProtected } = record
+    const { id, groupId, state, taskState, task, isProtected } = record
     const menus = [
       {
         key: "fusion",
@@ -236,7 +236,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         key: "compare",
         label: t("common.action.compare"),
         hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/project/${pid}/dataset/${id}/compare`),
+        onclick: () => history.push(`/home/project/${pid}/dataset/${groupId}/compare/${id}`),
         icon: <CompareIcon />,
       },
       {
@@ -418,7 +418,8 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const multipleCompare = () => {
     const ids = Object.values(selectedVersions).flat()
     const vss = Object.values(versions).flat().filter(({ id }) => ids.includes(id))
-    const diffGroup = [...new Set(vss.map(item => item.groupId))].length > 1
+    const groups = [...new Set(vss.map(item => item.groupId))]
+    const diffGroup = groups.length > 1
     if (diffGroup) {
       // diff group
       return message.error(t('dataset.compare.error.diff_group'))
@@ -429,7 +430,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       // diff assets count
       return message.error(t('dataset.compare.error.diff_assets'))
     }
-    history.push(`/home/project/${pid}/dataset/${ids}/compare`)
+    history.push(`/home/project/${pid}/dataset/${groups[0]}/compare/${ids}`)
   }
 
   const multipleHide = () => {
