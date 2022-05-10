@@ -227,7 +227,7 @@ function Compare({ ...func }) {
                   <DatasetSelect pid={pid} filters={filterGT} onChange={gtChange} />
                 </Form.Item>
                 <Form.Item label={t('dataset.compare.form.confidence')} name='confidence'>
-                  <Slider min={0} max={1} step={0.1} value={confidence} marks={{ 0: '0', 0.5: '0.5', 1: '1' }} onChange={setConfidence} />
+                  <Slider min={0} max={1} step={0.1} value={confidence} tooltipVisible marks={{ 0: '0', 0.5: '0.5', 1: '1' }} onChange={setConfidence} />
                 </Form.Item>
                 <Form.Item name='submitBtn'>
                   <div style={{ textAlign: 'center' }}>
