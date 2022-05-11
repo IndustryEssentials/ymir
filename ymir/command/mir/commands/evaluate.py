@@ -22,14 +22,12 @@ class CmdEvaluate(base.BaseCommand):
                                          gt_rev=self.args.gt_rev,
                                          mir_root=self.args.mir_root,
                                          conf_thr=self.args.conf_thr,
-                                         iou_thr_from=self.args.iou_thr_from,
-                                         iou_thr_to=self.args.iou_thr_to,
-                                         iou_thr_step=self.args.iou_thr_step)
+                                         iou_thrs=self.args.iou_thrs)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str, src_revs: str, dst_rev: str, gt_rev: str, mir_root: str, conf_thr: float,
-                      iou_thr_from: float, iou_thr_to: float, iou_thr_step: float) -> int:
+                      iou_thrs: str) -> int:
         src_rev_tids = revs_parser.parse_arg_revs(src_revs)
         gt_rev_tid = revs_parser.parse_single_arg_rev(gt_rev, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
@@ -38,6 +36,9 @@ class CmdEvaluate(base.BaseCommand):
                                     [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.IS_CLEAN])
         if return_code != MirCode.RC_OK:
             return return_code
+
+        iou_thrs_list = [float(v) for v in iou_thrs.split(':')]
+        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs_list
 
         for thr in [conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
             if thr < 0 or thr > 1:
@@ -142,22 +143,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      required=False,
                                      default=0.3,
                                      help='confidence threshold, default 0.3')
-    evaluate_arg_parser.add_argument('--iou-thr-from',
-                                     dest='iou_thr_from',
-                                     type=float,
+    evaluate_arg_parser.add_argument('--iou-thrs',
+                                     dest='iou_thrs',
+                                     type=str,
                                      required=False,
-                                     default=0.5,
-                                     help='min iou threshold, default 0.5')
-    evaluate_arg_parser.add_argument('--iou-thr-to',
-                                     dest='iou_thr_to',
-                                     type=float,
-                                     required=False,
-                                     default=0.95,
-                                     help='max iou threshold, default 0.95')
-    evaluate_arg_parser.add_argument('--iou-thr-step',
-                                     dest='iou_thr_step',
-                                     type=float,
-                                     required=False,
-                                     default=0.05,
-                                     help='iou threshold step, default 0.95')
+                                     default='0.5:0.95:0.05',
+                                     help='iou thresholds, default 0.5:0.95:0.05, upper bound is included')
     evaluate_arg_parser.set_defaults(func=CmdEvaluate)

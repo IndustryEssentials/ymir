@@ -22,6 +22,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
+        ec = self._request.evaluate_config
         command = [
             utils.mir_executable(),
             'evaluate',
@@ -36,13 +37,9 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             '-w',
             self._work_dir,
             '--conf-thr',
-            f"{self._request.evaluate_config.conf_threshold:.2f}",
-            '--iou-thr-from',
-            f"{self._request.evaluate_config.iou_threshold_from:.2f}",
-            '--iou-thr-to',
-            f"{self._request.evaluate_config.iou_threshold_to:.2f}",
-            '--iou-thr-step',
-            f"{self._request.evaluate_config.iou_threshold_step:.2f}",
+            f"{ec.conf_threshold:.2f}",
+            '--iou-thrs',
+            f"{ec.iou_threshold_from:.2f}:{ec.iou_threshold_to:.2f}:{ec.iou_threshold_step:.2f}",
         ]
 
         return utils.run_command(command)

@@ -93,6 +93,6 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
         expected_cmd = f"mir evaluate --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id}"
         expected_cmd += f" --src-revs {self._in_dataset_ids[0]}@{self._in_dataset_ids[0]}"
         expected_cmd += f" --gt-rev {self._gt_dataset_id}@{self._gt_dataset_id}"
-        expected_cmd += f" -w {work_dir} --conf-thr {self._conf_thr:.2f} --iou-thr-from {self._iou_thr_from:.2f}"
-        expected_cmd += f" --iou-thr-to {self._iou_thr_to:.2f} --iou-thr-step {self._iou_thr_step:.2f}"
+        expected_cmd += f" -w {work_dir} --conf-thr {self._conf_thr:.2f}"
+        expected_cmd += f" --iou-thrs {self._iou_thr_from:.2f}:{self._iou_thr_to:.2f}:{self._iou_thr_step:.2f}"
         mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)

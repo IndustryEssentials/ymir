@@ -267,9 +267,7 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args.gt_rev = 'b'
         fake_args.dst_rev = 'c@c'
         fake_args.conf_thr = 0.3
-        fake_args.iou_thr_from = 0.5
-        fake_args.iou_thr_to = 0.95
-        fake_args.iou_thr_step = 0.05
+        fake_args.iou_thrs = '0.5:0.95:0.05'
         evaluate_instance = evaluate.CmdEvaluate(fake_args)
         return_code = evaluate_instance.run()
 

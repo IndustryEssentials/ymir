@@ -4,7 +4,7 @@ from typing import Any, List, Optional, Set, Union
 
 import numpy as np
 
-from mir.tools import mir_storage_ops, revs_parser, settings as mir_settings
+from mir.tools import mir_storage_ops, revs_parser
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -466,7 +466,7 @@ class MirEval:
         # iou evaluations
         for iou_thr_index, iou_thr in enumerate(self.params.iouThrs):
             iou_evaluation = self._get_iou_evaluation_result(iou_thr_index=iou_thr_index)
-            evaluation_result.iou_evaluations[str(iou_thr)].CopyFrom(iou_evaluation)
+            evaluation_result.iou_evaluations[f"{iou_thr:.2f}"].CopyFrom(iou_evaluation)
 
         # average evaluation
         evaluation_result.average_evaluation.CopyFrom(self._get_iou_evaluation_result())
@@ -482,7 +482,7 @@ class MirEval:
             iou_evaluation.ci_evaluations[class_id].CopyFrom(topic_evaluation)
         # class average
         topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, None)
-        iou_evaluation.ci_evaluations[mir_settings.EVALUATOR_AVERAGE_PLACEHOLDER_CLASS_ID].CopyFrom(topic_evaluation)
+        iou_evaluation.average_ci_evaluation.CopyFrom(topic_evaluation)
 
         return iou_evaluation
 
