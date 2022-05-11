@@ -486,7 +486,7 @@ class MirEval:
         return iou_evaluation
 
     def _get_topic_evaluation_result(self, iou_thr_index: Optional[int],
-                                     class_id_index: int) -> mirpb.SingleTopicEvaluation:
+                                     class_id_index: Optional[int]) -> mirpb.SingleTopicEvaluation:
         topic_evaluation = mirpb.SingleTopicEvaluation()
 
         # from _summarize
