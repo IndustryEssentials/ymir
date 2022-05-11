@@ -30,7 +30,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             '--dst-rev',
             revs.join_tvt_branch_tid(branch_id=self._request.dst_dataset_id, tid=self._request.task_id),
             '--src-revs',
-            revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.his_task_id),
+            revs.build_src_revs(in_src_revs=self._request.in_dataset_ids, his_tid=self._request.his_task_id)),
             '--gt-rev',
             revs.join_tvt_branch_tid(branch_id=self._request.singleton_op, tid=self._request.singleton_op),
             '-w',
