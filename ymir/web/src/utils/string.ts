@@ -13,3 +13,11 @@ export function templateString(str: string, obj: ob = {}) {
     return typeof obj[variable] !== 'undefined' && obj[variable] !== null ? obj[variable] : ''
   })
 }
+
+export function string2Array(str: string, seprate = ',') {
+  if (!str) {
+    return
+  }
+  const arr = str.split(seprate)
+  return arr.map(item => Number.isNaN(Number(item)) ? item : Number(item))
+}

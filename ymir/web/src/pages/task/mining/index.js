@@ -148,7 +148,7 @@ function Mining({ datasetCache, datasets, ...func }) {
     id && setDataset(datasets.find(ds => ds.id === id))
   }
 
-  function modelChange(id, model) {
+  function modelChange(id, { model }) {
     model && setSelectedModel(model)
   }
 
