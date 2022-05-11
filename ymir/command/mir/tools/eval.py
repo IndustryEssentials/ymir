@@ -488,6 +488,22 @@ class MirEval:
 
     def _get_topic_evaluation_result(self, iou_thr_index: Optional[int],
                                      class_id_index: Optional[int]) -> mirpb.SingleTopicEvaluation:
+        def _get_tp_tn_or_fn(iou_thr_index: Optional[int], class_id_index: Optional[int], area_ranges_index: int,
+                             max_dets_index: int, array: np.ndarray) -> int:
+            """
+            extract tp, tn and fn from `array`
+
+            `array` comes from self.eval's all_tps, all_tns and all_fns, they all have the same structure:
+                iouThrs x catIds x aRngs x maxDets
+            """
+            if iou_thr_index is not None:
+                array = array[[iou_thr_index]]
+            if class_id_index is not None:
+                array = array[:, class_id_index, area_ranges_index, max_dets_index]
+            else:
+                array = np.sum(array[:, :, area_ranges_index, max_dets_index], axis=1)
+            return int(array[0])
+
         topic_evaluation = mirpb.SingleTopicEvaluation()
 
         # from _summarize
@@ -519,36 +535,25 @@ class MirEval:
         topic_evaluation.ar = np.mean(recalls) if len(recalls) > 0 else -1
 
         # true positive
-        all_tps = self.eval['all_tps']
-        if iou_thr_index is not None:
-            all_tps = all_tps[[iou_thr_index]]
-        if class_id_index is not None:
-            all_tps = all_tps[:, class_id_index, area_ranges_index, max_dets_index]
-        else:
-            # sum by class ids
-            all_tps = np.sum(all_tps[:, :, area_ranges_index, max_dets_index], axis=1)
-        topic_evaluation.tp = int(all_tps[0])
+        topic_evaluation.tp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
+                                               class_id_index=class_id_index,
+                                               area_ranges_index=area_ranges_index,
+                                               max_dets_index=max_dets_index,
+                                               array=self.eval['all_tps'])
 
         # false positive
-        all_fps = self.eval['all_fps']
-        if iou_thr_index is not None:
-            all_fps = all_fps[[iou_thr_index]]
-        if class_id_index is not None:
-            all_fps = all_fps[:, class_id_index, area_ranges_index, max_dets_index]
-        else:
-            # sum by class ids
-            all_fps = np.sum(all_fps[:, :, area_ranges_index, max_dets_index], axis=1)
-        topic_evaluation.fp = int(all_fps[0])
+        topic_evaluation.fp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
+                                               class_id_index=class_id_index,
+                                               area_ranges_index=area_ranges_index,
+                                               max_dets_index=max_dets_index,
+                                               array=self.eval['all_fps'])
 
-        all_fns = self.eval['all_fns']
-        if iou_thr_index is not None:
-            all_fns = all_fns[[iou_thr_index]]
-        if class_id_index is not None:
-            all_fns = all_fns[:, class_id_index, area_ranges_index, max_dets_index]
-        else:
-            # sum by class ids
-            all_fns = np.sum(all_fns[:, :, area_ranges_index, max_dets_index], axis=1)
-        topic_evaluation.fn = int(all_fns[0])
+        # false negative
+        topic_evaluation.fn = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
+                                               class_id_index=class_id_index,
+                                               area_ranges_index=area_ranges_index,
+                                               max_dets_index=max_dets_index,
+                                               array=self.eval['all_fns'])
 
         # pr curve
         if iou_thr_index is not None and class_id_index is not None:
