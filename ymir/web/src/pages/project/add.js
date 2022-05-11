@@ -268,7 +268,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 </Tip>
                 <Tip hidden={true}>
                   <Form.Item label={t('project.add.form.mining.strategy')}>
-                    <Row>
+                    <Row wrap={false}>
                       <Col flex={1}>
                         <Form.Item name='strategy' noStyle>
                           <Select options={strategyOptions} onChange={value => setStrategy(value)} />
@@ -276,7 +276,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                       </Col>
                       {strategy === 0 ? <Col flex={'200px'} offset={1}>
                         <Form.Item label={t('project.add.form.mining.chunksize')}
-                          wrapperCol={{ span: 12 }} labelCol={{ span: 12 }} name='chunkSize'
+                          name='chunkSize'
                           rules={[
                             { required: strategy === 0 }
                           ]}>

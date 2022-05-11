@@ -67,7 +67,7 @@ const project = {
   'project.add.form.test.set': { en: 'Test Dataset', cn: '测试集', },
   'project.add.form.mining.set': { en: 'Mining Dataset', cn: '挖掘集', },
   'project.add.form.mining.strategy': { en: 'Mining Strategy', cn: '挖掘策略', },
-  'project.add.form.mining.chunksize': { en: 'Chunk Size', cn: '分块大小', },
+  'project.add.form.mining.chunksize': { en: 'Chunk Size', cn: '每块数据量大小', },
   'project.mining.strategy.0': { en: 'Chunk Mining', cn: '分块挖掘（在迭代中对挖掘集进行分块处理）', },
   'project.mining.strategy.1': { en: 'Dedup Mining', cn: '去重挖掘（在迭代中会将之前迭代的挖掘数据排除出去）', },
   'project.mining.strategy.2': { en: 'Customer Mining', cn: '自定义挖掘（在迭代中不对挖掘数据进行额外处理）', },
