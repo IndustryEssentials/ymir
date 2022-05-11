@@ -740,25 +740,25 @@ class SingleIouEvaluation(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     CI_EVALUATIONS_FIELD_NUMBER: builtins.int
-    TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
     CI_AVERAGED_EVALUATION_FIELD_NUMBER: builtins.int
+    TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
     @property
     def ci_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
         """key: class ids"""
         pass
     @property
-    def topic_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
-        """key: topic names"""
-        pass
-    @property
     def ci_averaged_evaluation(self) -> global___SingleTopicEvaluation:
         """evaluations averaged by class ids"""
+        pass
+    @property
+    def topic_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
+        """key: topic names"""
         pass
     def __init__(self,
         *,
         ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
-        topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
         ci_averaged_evaluation : typing.Optional[global___SingleTopicEvaluation] = ...,
+        topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation","ci_evaluations",b"ci_evaluations","topic_evaluations",b"topic_evaluations"]) -> None: ...

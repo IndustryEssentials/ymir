@@ -215,8 +215,8 @@ message SingleDatasetEvaluation {
 
 message SingleIouEvaluation {
     map<int32, SingleTopicEvaluation> ci_evaluations = 1;  // key: class ids
-    map<string, SingleTopicEvaluation> topic_evaluations = 2;  // key: topic names
-    SingleTopicEvaluation ci_averaged_evaluation = 3;  // evaluations averaged by class ids
+    SingleTopicEvaluation ci_averaged_evaluation = 2;  // evaluations averaged by class ids
+    map<string, SingleTopicEvaluation> topic_evaluations = 3;  // key: topic names
 }
 
 message SingleTopicEvaluation {
