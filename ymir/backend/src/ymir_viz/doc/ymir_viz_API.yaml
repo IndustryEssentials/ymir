@@ -360,13 +360,13 @@ components:
               additionalProperties:
                 type: object
                 properties:
-                  conf_threshold:
+                  conf_thr:
                     type: number
                   iou_evaluations:
                     type: object
                     additionalProperties:
                       $ref: '#/components/schemas/DatasetEvaluation'
-                  average_evaluation:
+                  iou_averaged_evaluation:
                     $ref: '#/components/schemas/DatasetEvaluation'
 
     ApiResponse:
@@ -410,6 +410,8 @@ components:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/DatasetEvaluationElement"
+        ci_averaged_evaluation:
+          $ref: "#/components/schemas/DatasetEvaluationElement"
     DatasetEvaluationElement:
       type: object
       properties:
@@ -423,12 +425,3 @@ components:
           type: integer
         fn:
           type: integer
-        pr_curve:
-          type: array
-          items:
-            type: object
-            properties:
-              x:
-                type: number
-              y:
-                type: number
