@@ -469,7 +469,7 @@ class MirEval:
             evaluation_result.iou_evaluations[f"{iou_thr:.2f}"].CopyFrom(iou_evaluation)
 
         # average evaluation
-        evaluation_result.average_evaluation.CopyFrom(self._get_iou_evaluation_result())
+        evaluation_result.iou_averaged_evaluation.CopyFrom(self._get_iou_evaluation_result())
 
         return evaluation_result
 
@@ -482,7 +482,7 @@ class MirEval:
             iou_evaluation.ci_evaluations[class_id].CopyFrom(topic_evaluation)
         # class average
         topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, None)
-        iou_evaluation.average_ci_evaluation.CopyFrom(topic_evaluation)
+        iou_evaluation.ci_averaged_evaluation.CopyFrom(topic_evaluation)
 
         return iou_evaluation
 

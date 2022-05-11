@@ -129,8 +129,8 @@ def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
     logging.info(f"\nevaluation result for ground truth: {evaluation.config.gt_dataset_id}")
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
-        average_evaluation = dataset_evaluation.average_evaluation.average_ci_evaluation
-        logging.info(f"    prediction: {dataset_id}, AP: {average_evaluation.ap}, AR: {average_evaluation.ar}")
+        cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
+        logging.info(f"    prediction: {dataset_id}, AP: {cae.ap}, AR: {cae.ar}")
     logging.info('')
 
 
