@@ -89,7 +89,7 @@ class CmdEvaluate(base.BaseCommand):
                                                       his_branch=src_rev_tids[0].rev,
                                                       mir_datas={},
                                                       task=task)
-        
+
         _show_evaluation(evaluation=evaluation)
 
         return MirCode.RC_OK
