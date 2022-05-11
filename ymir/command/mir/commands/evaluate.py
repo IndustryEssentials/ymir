@@ -89,6 +89,8 @@ class CmdEvaluate(base.BaseCommand):
                                                       his_branch=src_rev_tids[0].rev,
                                                       mir_datas={},
                                                       task=task)
+        
+        _show_evaluation(evaluation=evaluation)
 
         return MirCode.RC_OK
 
@@ -122,6 +124,14 @@ def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco
         evaluation.dataset_evaluations[mir_pred.dataset_id].CopyFrom(single_dataset_evaluation)
 
     return evaluation
+
+
+def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
+    logging.info(f"\nevaluation result for ground truth: {evaluation.config.gt_dataset_id}")
+    for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
+        average_evaluation = dataset_evaluation.average_evaluation.average_ci_evaluation
+        logging.info(f"    prediction: {dataset_id}, AP: {average_evaluation.ap}, AR: {average_evaluation.ar}")
+    logging.info('')
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
