@@ -346,9 +346,9 @@ class MirEval:
         :param p: input params for evaluation
         :return: None
         '''
-        print('Accumulating evaluation results...')
         if not self.evalImgs:
-            print('Please run evaluate() first')
+            raise ValueError('Please run evaluate() first')
+
         # allows input customized parameters
         if p is None:
             p = self.params
@@ -410,6 +410,7 @@ class MirEval:
 
                     all_tps[:, k, a, m] = tp_sum[:, -1]
                     all_fps[:, k, a, m] = fp_sum[:, -1]
+                    all_fns[:, k, a, m] = npig - all_tps[:, k, a, m]
 
                     for t, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
                         tp = np.array(tp)
@@ -539,7 +540,15 @@ class MirEval:
             all_fps = np.sum(all_fps[:, :, area_ranges_index, max_dets_index], axis=1)
         topic_evaluation.fp = int(all_fps[0])
 
-        # TODO: false negative
+        all_fns = self.eval['all_fns']
+        if iou_thr_index is not None:
+            all_fns = all_fns[[iou_thr_index]]
+        if class_id_index is not None:
+            all_fns = all_fns[:, class_id_index, area_ranges_index, max_dets_index]
+        else:
+            # sum by class ids
+            all_fns = np.sum(all_fns[:, :, area_ranges_index, max_dets_index], axis=1)
+        topic_evaluation.fn = int(all_fns[0])
 
         # pr curve
         if iou_thr_index is not None and class_id_index is not None:
