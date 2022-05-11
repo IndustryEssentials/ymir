@@ -224,8 +224,7 @@ function Inference({ datasetCache, datasets, ...func }) {
                 >
                   <InputNumber min={0} max={Math.floor(gpu_count / gpuStep)} precision={0} onChange={setSelectedGpu} /></Form.Item>
                 <span style={{ marginLeft: 20 }}>
-                  {t('task.gpu.tip', { count: gpu_count })}
-                  {t('task.infer.gpu.tip', { total: gpuStep * selectedGpu })}
+                  {t('task.infer.gpu.tip', { total: gpu_count, selected: gpuStep * selectedGpu })}
                 </span>
               </Form.Item>
             </Tip>
