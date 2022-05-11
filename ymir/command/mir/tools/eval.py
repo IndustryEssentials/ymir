@@ -526,7 +526,6 @@ class MirEval:
         else:
             # sum by class ids
             all_tps = np.sum(all_tps[:, :, area_ranges_index, max_dets_index], axis=1)
-            breakpoint()
         topic_evaluation.tp = int(all_tps[0])
 
         # false positive
