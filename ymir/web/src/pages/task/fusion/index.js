@@ -37,8 +37,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const [selectedExcludeKeywords, setExcludeKeywords] = useState([])
   const [visibles, setVisibles] = useState({
     merge: true,
-    filter: false,
-    sampling: !!chunk,
+    filter: true,
+    sampling: true,
   })
 
   const initialValues = {
