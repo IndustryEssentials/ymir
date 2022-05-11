@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import ReactDOM from "react-dom"
 import { Menu, Dropdown, Row, Col, Space } from "antd"
 import {
   LogoutOutlined,
@@ -16,35 +15,33 @@ import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
 import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon } from "../common/icons"
 
-const { SubMenu } = Menu
-
-const menus = () => [
+const menus = [
   {
-    label: t('common.top.menu.home'),
+    label: 'common.top.menu.home',
     key: "/home/portal",
     icon: <NavHomeIcon className={styles.navIcon} />,
   },
   {
-    label: t('common.top.menu.project'),
+    label: 'common.top.menu.project',
     key: "/home/project",
     icon: <NavTaskIcon className={styles.navIcon} />,
   },
   {
-    label: t('common.top.menu.keyword'),
+    label: 'common.top.menu.keyword',
     key: "/home/keyword",
     icon: <FlagIcon className={styles.navIcon} />,
   },
   {
-    label: t('common.top.menu.configure'),
+    label: 'common.top.menu.configure',
     key: "/home/configures",
     icon: <EqualizerIcon className={styles.navIcon} />,
-    sub: [
+    children: [
       {
-        label: t('common.top.menu.image'),
+        label: 'common.top.menu.image',
         key: "/home/image",
       },
       {
-        label: t('common.top.menu.permission'),
+        label: 'common.top.menu.permission',
         key: "/home/permission",
         permission: ROLES.SUPER,
       },
@@ -65,21 +62,16 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   const [defaultKeys, setDefaultKeys] = useState(null)
   const location = useLocation()
   const history = useHistory()
-  const [searchValue, setSearchValue] = useState('')
-  const [visible, setVisible] = useState(false)
-  const [guideTarget, setGuideTarget] = useState(null)
-  const guideRefs = []
-
-  useEffect(() => {
-    if (guideRefs.length && guideRefs[1]) {
-      setGuideTarget(guideRefs[1])
-    }
-  }, [guideRefs])
+  const [mainMenu, setMainMenu] = useState([])
 
   useEffect(() => {
     const key = getParantPath(location.pathname)
     setDefaultKeys([key])
   }, [location.pathname])
+
+  useEffect(() => {
+    setMainMenu(handleMenus(menus))
+  }, [])
 
   const out = async () => {
     const res = await loginout()
@@ -88,59 +80,35 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
     }
   }
 
-  const handleClick = function (key) {
+  const handleClick = ({ key }) => {
     setDefaultKeys([key])
     history.push(key)
   }
+  const topMenuItems = [
+    { key: 'user', label: <div onClick={() => history.push('/home/user')}><UserIcon /> {t('common.top.menu.user')}</div>, },
+    { key: 'github', label: <a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, },
+    { key: 'logout', label: <div onClick={out}><LogoutOutlined /> {t('common.top.menu.logout')}</div>, },
+  ]
 
-  const menu = (
-    <Menu className={styles.popMenu}>
-      <Menu.Item key='user' onClick={() => history.push('/home/user')}>
-        <UserIcon /> {t('common.top.menu.user')}
-      </Menu.Item>
-      <Menu.Item key='github'>
-        <a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>
-      </Menu.Item>
-      <Menu.Item key='logout' onClick={out}>
-        <LogoutOutlined /> {t('common.top.menu.logout')}
-      </Menu.Item>
-    </Menu>
-  )
+  const menu = <Menu className={styles.popMenu} items={topMenuItems} />
+
   const renderSimple = (
     <Col flex={1} style={{ textAlign: 'right' }}>
       <LangBtn />
     </Col>
   )
 
-  const renderMenu = (menus) => {
-    return menus.map((menu, i) => {
-      if (menu.sub) {
-        return (
-          <SubMenu
-            key={menu.key}
-            popupClassName='nav-submenu'
-            title={menu.label}
-            icon={menu.icon}
-            popupOffset={[0, -2]}
-          // onTitleClick={handleTitleClick}
-          >
-            {renderMenu(menu.sub)}
-          </SubMenu>
-        )
-      } else {
-        return validPermission(role, menu.permission) ? (
-          <Menu.Item key={menu.key} onClick={() => handleClick(menu.key)} ref={e => {
-            const ref = ReactDOM.findDOMNode(e)
-            if (ref) {
-              guideRefs[i] = ref
-            }
-          }}>
-            {menu.icon}
-            {menu.label}
-          </Menu.Item>
-        ) : null
+  const handleMenus = (menus) => {
+    let result = []
+    menus.forEach(menu => {
+      if (menu.children) {
+        menu.children = handleMenus(menu.children)
       }
+      console.log('menu.label:', menus, menu, menu.label)
+      menu.label = t(menu.label)
+      validPermission(role, menu.permission) && result.push(menu)
     })
+    return result
   }
 
   return (
@@ -148,9 +116,7 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
       <div className={styles.logo} style={{ overflow: simple ? 'initial' : 'hidden' }}><Link to='/' title={'YMIR'}><img src={logo} /></Link></div>
       {!simple ? <>
         <Col flex={1}>
-          <Menu className='nav-menu' selectedKeys={defaultKeys} mode="horizontal">
-            {renderMenu(menus())}
-          </Menu>
+          <Menu className='nav-menu' selectedKeys={defaultKeys} onClick={handleClick} mode="horizontal" items={mainMenu} />
         </Col>
         <Col style={{ textAlign: "right" }}>
           <Space size={20}>
