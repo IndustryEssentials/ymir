@@ -226,7 +226,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
             </Panel> : null}
             {isEdit ? <Panel label={t('project.iteration.settings.title')} visible={settingsVisible} setVisible={() => setSettingsVisible(!settingsVisible)}>
               <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
-                <Tip hidden={true}>
+                <Tip content={t('project.add.trainset.tip')}>
                   <Form.Item label={t('project.add.form.training.set')}>
                     {project.trainSet?.name}
                     <Form.Item noStyle name='trainSetVersion'>
@@ -238,7 +238,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     </Form.Item>
                   </Form.Item>
                 </Tip>
-                <Tip hidden={true}>
+                <Tip content={t('project.add.testset.tip')}>
                   <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
                     { required: true, message: t('task.train.form.testset.required') },
                   ]}>
@@ -252,7 +252,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     />
                   </Form.Item>
                 </Tip>
-                <Tip hidden={true}>
+                <Tip content={t('project.add.miningset.tip')}>
                   <Form.Item label={t('project.add.form.mining.set')} name="miningSet"
                     rules={[
                       { required: true, message: t('task.train.form.miningset.required') },
