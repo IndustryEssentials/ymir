@@ -482,7 +482,6 @@ class MirEval:
         # class average
         topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, None)
         iou_evaluation.ci_evaluations[mir_settings.EVALUATOR_AVERAGE_PLACEHOLDER_CLASS_ID].CopyFrom(topic_evaluation)
-        breakpoint()
 
         return iou_evaluation
 
