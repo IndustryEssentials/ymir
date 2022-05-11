@@ -244,26 +244,27 @@ export function createInferenceTask({
   name,
   projectId,
   datasetId,
-  model,
+  model = [],
   config,
   image,
   imageId,
   description,
 }) {
-  return createTask({
+  const params = model.map(md => ({
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
     description,
     docker_image_config: config,
     parameters: {
-      model_id: model,
+      model_id: md,
       generate_annotations: true,
       dataset_id: datasetId,
       docker_image: image,
       docker_image_id: imageId,
     }
-  })
+  }))
+  return request.post("/tasks/batch", { payloads: params })
 }
 
 export function createTask(params) {
