@@ -113,6 +113,7 @@ class MirCoco:
                     'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
                     'score': annotation.score,
                     'iscrowd': 0,
+                    'ignore': 0,
                 }
                 result_annotations_list.append(annotation_dict)
 
@@ -159,11 +160,6 @@ class MirDetEval:
         dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes,
                                           class_ids=self.params.catIds,
                                           conf_thr=self.params.confThr)
-
-        # set ignore flag
-        for gt in gts:
-            gt['ignore'] = gt['ignore'] if 'ignore' in gt else 0
-            gt['ignore'] = 'iscrowd' in gt and gt['iscrowd']
 
         # for each element in self._gts and self._dts:
         #   key: (asset_idx, class_id)
@@ -626,6 +622,5 @@ class Params:
         self.areaRng: List[list] = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.confThr = 0.3  # confidence threshold
-        # useSegm is deprecated
         self.useSegm = None
         self.need_pr_curve = False
