@@ -101,6 +101,7 @@ def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco
     evaluation.config.iou_thr_from = iou_thr_from
     evaluation.config.iou_thr_to = iou_thr_to
     evaluation.config.iou_thr_step = iou_thr_step
+    evaluation.config.need_pr_curve = need_pr_curve
     evaluation.config.gt_dataset_id = mir_gt.dataset_id
     evaluation.config.pred_dataset_ids.extend([mir_pred.dataset_id for mir_pred in mir_preds])
 
