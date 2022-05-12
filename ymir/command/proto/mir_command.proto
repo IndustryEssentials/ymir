@@ -197,12 +197,11 @@ message Evaluation {
 }
 
 message EvaluateConfig {
-    float conf_thr = 1;
-    float iou_thr_from = 2;
-    float iou_thr_to = 3;
-    float iou_thr_step = 4;
-    string gt_dataset_id = 5;
-    repeated string pred_dataset_ids = 6;
+    string gt_dataset_id = 1;
+    repeated string pred_dataset_ids = 2;
+    float conf_thr = 3;
+    string iou_thrs_interval = 4;
+    bool need_pr_curve = 5;
 }
 
 message SingleDatasetEvaluation {
@@ -210,12 +209,13 @@ message SingleDatasetEvaluation {
     string gt_dataset_id = 2;
     string pred_dataset_id = 3;
     map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
-    SingleIouEvaluation average_evaluation = 5;  // average for all ious
+    SingleIouEvaluation iou_averaged_evaluation = 5;  // average for all ious
 }
 
 message SingleIouEvaluation {
     map<int32, SingleTopicEvaluation> ci_evaluations = 1;  // key: class ids
-    map<string, SingleTopicEvaluation> topic_evaluations = 2;  // key: topic names
+    SingleTopicEvaluation ci_averaged_evaluation = 2;  // evaluations averaged by class ids
+    map<string, SingleTopicEvaluation> topic_evaluations = 3;  // key: topic names
 }
 
 message SingleTopicEvaluation {

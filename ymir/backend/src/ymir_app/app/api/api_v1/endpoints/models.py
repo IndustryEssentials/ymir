@@ -38,7 +38,7 @@ def batch_get_models(
 
 @router.post(
     "/batch",
-    response_model=schemas.DatasetsOut,
+    response_model=schemas.ModelsOut,
 )
 def batch_update_models(
     *,

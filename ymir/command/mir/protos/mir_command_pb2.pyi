@@ -637,29 +637,26 @@ global___Evaluation = Evaluation
 
 class EvaluateConfig(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    CONF_THR_FIELD_NUMBER: builtins.int
-    IOU_THR_FROM_FIELD_NUMBER: builtins.int
-    IOU_THR_TO_FIELD_NUMBER: builtins.int
-    IOU_THR_STEP_FIELD_NUMBER: builtins.int
     GT_DATASET_ID_FIELD_NUMBER: builtins.int
     PRED_DATASET_IDS_FIELD_NUMBER: builtins.int
-    conf_thr: builtins.float = ...
-    iou_thr_from: builtins.float = ...
-    iou_thr_to: builtins.float = ...
-    iou_thr_step: builtins.float = ...
+    CONF_THR_FIELD_NUMBER: builtins.int
+    IOU_THRS_INTERVAL_FIELD_NUMBER: builtins.int
+    NEED_PR_CURVE_FIELD_NUMBER: builtins.int
     gt_dataset_id: typing.Text = ...
     @property
     def pred_dataset_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
+    conf_thr: builtins.float = ...
+    iou_thrs_interval: typing.Text = ...
+    need_pr_curve: builtins.bool = ...
     def __init__(self,
         *,
-        conf_thr : builtins.float = ...,
-        iou_thr_from : builtins.float = ...,
-        iou_thr_to : builtins.float = ...,
-        iou_thr_step : builtins.float = ...,
         gt_dataset_id : typing.Text = ...,
         pred_dataset_ids : typing.Optional[typing.Iterable[typing.Text]] = ...,
+        conf_thr : builtins.float = ...,
+        iou_thrs_interval : typing.Text = ...,
+        need_pr_curve : builtins.bool = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thr_from",b"iou_thr_from","iou_thr_step",b"iou_thr_step","iou_thr_to",b"iou_thr_to","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
 global___EvaluateConfig = EvaluateConfig
 
 class SingleDatasetEvaluation(google.protobuf.message.Message):
@@ -683,7 +680,7 @@ class SingleDatasetEvaluation(google.protobuf.message.Message):
     GT_DATASET_ID_FIELD_NUMBER: builtins.int
     PRED_DATASET_ID_FIELD_NUMBER: builtins.int
     IOU_EVALUATIONS_FIELD_NUMBER: builtins.int
-    AVERAGE_EVALUATION_FIELD_NUMBER: builtins.int
+    IOU_AVERAGED_EVALUATION_FIELD_NUMBER: builtins.int
     conf_thr: builtins.float = ...
     gt_dataset_id: typing.Text = ...
     pred_dataset_id: typing.Text = ...
@@ -692,7 +689,7 @@ class SingleDatasetEvaluation(google.protobuf.message.Message):
         """key: string of iou threshold"""
         pass
     @property
-    def average_evaluation(self) -> global___SingleIouEvaluation:
+    def iou_averaged_evaluation(self) -> global___SingleIouEvaluation:
         """average for all ious"""
         pass
     def __init__(self,
@@ -701,10 +698,10 @@ class SingleDatasetEvaluation(google.protobuf.message.Message):
         gt_dataset_id : typing.Text = ...,
         pred_dataset_id : typing.Text = ...,
         iou_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleIouEvaluation]] = ...,
-        average_evaluation : typing.Optional[global___SingleIouEvaluation] = ...,
+        iou_averaged_evaluation : typing.Optional[global___SingleIouEvaluation] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["average_evaluation",b"average_evaluation"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["average_evaluation",b"average_evaluation","conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_evaluations",b"iou_evaluations","pred_dataset_id",b"pred_dataset_id"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["iou_averaged_evaluation",b"iou_averaged_evaluation"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_averaged_evaluation",b"iou_averaged_evaluation","iou_evaluations",b"iou_evaluations","pred_dataset_id",b"pred_dataset_id"]) -> None: ...
 global___SingleDatasetEvaluation = SingleDatasetEvaluation
 
 class SingleIouEvaluation(google.protobuf.message.Message):
@@ -740,10 +737,15 @@ class SingleIouEvaluation(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     CI_EVALUATIONS_FIELD_NUMBER: builtins.int
+    CI_AVERAGED_EVALUATION_FIELD_NUMBER: builtins.int
     TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
     @property
     def ci_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
         """key: class ids"""
+        pass
+    @property
+    def ci_averaged_evaluation(self) -> global___SingleTopicEvaluation:
+        """evaluations averaged by class ids"""
         pass
     @property
     def topic_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
@@ -752,9 +754,11 @@ class SingleIouEvaluation(google.protobuf.message.Message):
     def __init__(self,
         *,
         ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
+        ci_averaged_evaluation : typing.Optional[global___SingleTopicEvaluation] = ...,
         topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ci_evaluations",b"ci_evaluations","topic_evaluations",b"topic_evaluations"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation","ci_evaluations",b"ci_evaluations","topic_evaluations",b"topic_evaluations"]) -> None: ...
 global___SingleIouEvaluation = SingleIouEvaluation
 
 class SingleTopicEvaluation(google.protobuf.message.Message):

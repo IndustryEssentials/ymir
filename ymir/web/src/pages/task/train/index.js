@@ -22,6 +22,7 @@ import styles from "./index.less"
 import commonStyles from "../common.less"
 import ModelSelect from "@/components/form/modelSelect"
 import KeywordRates from "@/components/dataset/keywordRates"
+import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 
 const { Option } = Select
 
@@ -190,6 +191,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.training')}>
         <div className={commonStyles.formContainer}>
+          <CheckProjectDirty style={{ marginBottom: 20 }} pid={pid} initialCheck={true} />
           <Form
             name='trainForm'
             className={styles.form}

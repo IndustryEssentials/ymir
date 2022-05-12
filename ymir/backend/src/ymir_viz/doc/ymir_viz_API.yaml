@@ -187,6 +187,41 @@ paths:
                 $ref: "#/components/schemas/ModelResult"
         "400":
           description: Task not exists
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/evaluations":
+    get:
+      tags:
+        - evaluation
+      summary: "get dataset evaluation result"
+      description: "get dataset evaluation result"
+      operationId: get_dataset_evaluations
+      parameters:
+        - name: user_id
+          in: path
+          description: user_id
+          required: true
+          schema:
+            type: string
+        - name: repo_id
+          in: path
+          description: repo_id
+          required: true
+          schema:
+            type: string
+        - name: branch_id
+          in: path
+          description: branch_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetEvaluationResult"
+        "400":
+          description: DatasetEvaluation not exists
 components:
   schemas:
     AssetInfo:
@@ -315,6 +350,24 @@ components:
                       type: integer
                     project_negative_images_cnt:
                       type: integer
+    DatasetEvaluationResult:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            result:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  conf_thr:
+                    type: number
+                  iou_evaluations:
+                    type: object
+                    additionalProperties:
+                      $ref: '#/components/schemas/DatasetEvaluation'
+                  iou_averaged_evaluation:
+                    $ref: '#/components/schemas/DatasetEvaluation'
 
     ApiResponse:
       type: object
@@ -346,3 +399,29 @@ components:
             type: integer
           score:
             type: integer
+    DatasetEvaluation:
+      type: object
+      properties:
+        ci_evaluations:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/DatasetEvaluationElement"
+        topic_evaluations:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/DatasetEvaluationElement"
+        ci_averaged_evaluation:
+          $ref: "#/components/schemas/DatasetEvaluationElement"
+    DatasetEvaluationElement:
+      type: object
+      properties:
+        ap:
+          type: number
+        ar:
+          type: number
+        tp:
+          type: integer
+        fp:
+          type: integer
+        fn:
+          type: integer
