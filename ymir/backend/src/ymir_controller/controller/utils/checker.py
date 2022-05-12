@@ -27,6 +27,7 @@ class Prerequisites(IntEnum):
     CHECK_TASKINFO_IDS = auto()
     CHECK_SINGLE_IN_DATASET_ID = auto()
     CHECK_IN_DATASET_IDS = auto()
+    CHECK_HIS_TASK_ID = auto()
 
 
 # check controller request
