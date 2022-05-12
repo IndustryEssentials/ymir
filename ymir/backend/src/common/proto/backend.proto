@@ -279,6 +279,7 @@ message EvaluateConfig {
     string iou_thrs_interval = 1;
     // confidence threshold, 0 to 1
     float conf_thr = 2;
+    bool need_pr_curve = 3;
 }
 
 service mir_controller_service {
