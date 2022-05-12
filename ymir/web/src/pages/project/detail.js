@@ -13,6 +13,7 @@ import s from "./detail.less"
 import Prepare from "./components/prepare"
 import KeywordRates from "@/components/dataset/keywordRates"
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from "../../components/common/icons"
+import CheckProjectDirty from "../../components/common/CheckProjectDirty"
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -91,7 +92,7 @@ function ProjectDetail(func) {
       <div className={s.header}>
         <Row>
           <Col flex={1}>
-            <Space className={s.detailPanel}>
+            <Space className={s.detailPanel} wrap>
               <span className={s.name}>{project.name}</span>
               <span className={s.iterationInfo}>
                 {t('project.detail.info.iteration', {
@@ -120,7 +121,8 @@ function ProjectDetail(func) {
           {renderProjectDatasetLabel()}
         </Row>
       </div>
-      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange} className='noShadow'
+      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} tabBarExtraContent={<CheckProjectDirty pid={id} />}
+        activeTabKey={active} onTabChange={tabChange} className='noShadow'
         style={{ margin: '-20px -5vw 0', background: 'transparent' }}
         headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 5vw' }}>

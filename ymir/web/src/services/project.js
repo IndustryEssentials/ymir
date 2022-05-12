@@ -123,3 +123,12 @@ export function updateProject(id, {
     },
   })
 }
+
+/**
+ * get project status, dirty/clean
+ * @param {number} pid 
+ * @returns 
+ */
+export function checkStatus(pid) {
+  return request.post(`/projects/${pid}/status`)
+}
