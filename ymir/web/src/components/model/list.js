@@ -303,6 +303,11 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     setTimeout(() => setCurrent(record), 0)
   }
 
+  const multipleInfer = () => {
+    const ids = Object.values(selectedVersions)
+    history.push(`/home/task/inference/${pid}?mid=${ids}`)
+  }
+
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
@@ -384,6 +389,9 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     <>
       <Button type="primary" onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
+      </Button>
+      <Button type="primary" onClick={multipleInfer}>
+        <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>
     </>
   ) : null

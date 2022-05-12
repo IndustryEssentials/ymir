@@ -127,6 +127,7 @@ const dataset = {
   'dataset.compare.form.gt': { cn: '真值(Ground Truth)', en: 'Ground Truth', },
   'dataset.compare.form.confidence': { cn: '置信度', en: 'Confidence', },
   'dataset.compare.restart': { cn: '重新比对', en: 'Compare Again', },
+  'dataset.fusion.validate.inputs': { cn: '请输入至少一项预处理条件', en: 'Please input at less one condition for pretreating', },
 }
 
 export default dataset
