@@ -289,6 +289,11 @@ class ControllerRequest:
         return self.prepare_mining(request, args)
 
     def prepare_evaluate(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        evaluate_config = mirsvrpb.EvaluateConfig()
+        evaluate_config.conf_thr = args["confidence_threshold"]
+        evaluate_config.iou_thrs_interval = "0.5:1:0.05"
+        evaluate_config.need_pr_curve = False
+
         request.req_type = mirsvrpb.CMD_EVALUATE
         request.singleton_op = args["gt_dataset_hash"]
         request.in_dataset_ids[:] = args["other_dataset_hashes"]
@@ -453,13 +458,23 @@ class ControllerClient:
         return self.send(req)
 
     def evaluate_dataset(
-        self, user_id: int, project_id: int, task_id: str, gt_dataset_hash: str, other_dataset_hashes: List[str]
+        self,
+        user_id: int,
+        project_id: int,
+        task_id: str,
+        confidence_threshold: float,
+        gt_dataset_hash: str,
+        other_dataset_hashes: List[str],
     ) -> Dict:
         req = ControllerRequest(
             type=ExtraRequestType.evaluate,
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,
-            args={"gt_dataset_hash": gt_dataset_hash, "other_dataset_hashes": other_dataset_hashes},
+            args={
+                "confidence_threshold": confidence_threshold,
+                "gt_dataset_hash": gt_dataset_hash,
+                "other_dataset_hashes": other_dataset_hashes,
+            },
         )
         return self.send(req)

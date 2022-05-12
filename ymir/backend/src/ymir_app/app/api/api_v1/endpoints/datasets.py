@@ -520,8 +520,9 @@ def evaluate_datasets(
         current_user.id,
         evaluation_in.project_id,
         user_labels,
-        gt_dataset.hash,
-        [other_dataset.hash for other_dataset in other_datasets],
+        evaluation_in.confidence_threshold,
+        gt_dataset,
+        other_datasets,
     )
     return {"result": evaluations}
 

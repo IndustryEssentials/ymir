@@ -143,6 +143,11 @@ class ModelNotFound(NotFound):
     message = "Model Not Found"
 
 
+class DatasetEvaluationNotFound(NotFound):
+    code = error_codes.DATASET_EVALUATION_NOT_FOUND
+    message = "Dataset Evaluation Not Found"
+
+
 class ModelNotReady(APIError):
     code = error_codes.MODEL_NOT_READY
     message = "Model Not Ready"

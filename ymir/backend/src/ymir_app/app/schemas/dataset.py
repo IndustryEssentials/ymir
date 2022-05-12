@@ -162,16 +162,6 @@ class DatasetEvaluationCreate(BaseModel):
     confidence_threshold: float
 
 
-class DatasetEvaluation(BaseModel):
-    iou_threshold: float
-    keyword: str
-    ap: float
-    ar: float
-    tp: int
-    fp: int
-    fn: int
-    pr_curve: List[float]
-
-
 class DatasetEvaluationOut(Common):
-    result: Dict[int, List[DatasetEvaluation]]
+    # dict of dataset_id to evaluation result
+    result: Dict[int, Dict]
