@@ -42,6 +42,18 @@ class MirCoco:
 
         self.dataset_id = rev_tid.rev_tid
 
+    def load_dts_from_gt(self, mir_root: str, rev_tids: List[revs_parser.TypRevTid]) -> List['MirCoco']:
+        gt_asset_ids_set = set(self.get_asset_ids())
+        mir_dts: List['MirCoco'] = []
+        for rev_tid in rev_tids:
+            mir_dt = MirCoco(mir_root=mir_root, rev_tid=rev_tid)
+            if set(mir_dt.mir_metadatas.attributes.keys()) != gt_asset_ids_set:
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message='prediction and ground truth have different assets')
+
+            mir_dts.append(mir_dt)
+        return mir_dts
+
     @property
     def mir_metadatas(self) -> mirpb.MirMetadatas:
         return self._mir_metadatas

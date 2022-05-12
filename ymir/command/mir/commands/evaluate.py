@@ -39,15 +39,8 @@ class CmdEvaluate(base.BaseCommand):
             return return_code
 
         # read pred and gt
-        mir_dts = [eval.MirCoco(mir_root=mir_root, rev_tid=src_rev_tid) for src_rev_tid in src_rev_tids]
         mir_gt = eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
-
-        # check pred and gt
-        gt_asset_ids_set = set(mir_gt.mir_metadatas.attributes.keys())
-        for mir_dt in mir_dts:
-            if set(mir_dt.mir_metadatas.attributes.keys()) != gt_asset_ids_set:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                      error_message='prediction and ground truth have different assets')
+        mir_dts = mir_gt.load_dts_from_gt(mir_root=mir_root, rev_tids=src_rev_tids)
 
         # eval
         evaluate_config = mirpb.EvaluateConfig()
@@ -56,9 +49,7 @@ class CmdEvaluate(base.BaseCommand):
         evaluate_config.need_pr_curve = need_pr_curve
         evaluate_config.gt_dataset_id = mir_gt.dataset_id
         evaluate_config.pred_dataset_ids.extend([mir_dt.dataset_id for mir_dt in mir_dts])
-        evaluation = _evaluate_with_cocotools(mir_dts=mir_dts,
-                                              mir_gt=mir_gt,
-                                              config=evaluate_config)
+        evaluation = _evaluate_with_cocotools(mir_dts=mir_dts, mir_gt=mir_gt, config=evaluate_config)
 
         _show_evaluation(evaluation=evaluation)
 
