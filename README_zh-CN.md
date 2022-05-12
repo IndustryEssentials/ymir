@@ -25,10 +25,10 @@
   </div>
   <div>&nbsp;</div>
 <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20management.png" width="180"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.png" width="200"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.png" width="200"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_management.png" width="180"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_mining.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_labeling.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_training.png" width="200"/>
   <div>&nbsp;</div>
 
 [📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
