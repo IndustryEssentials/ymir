@@ -60,13 +60,17 @@ class CmdEvaluate(base.BaseCommand):
                                       error_message='prediction and ground truth have different assets')
 
         # eval
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = conf_thr
+        evaluate_config.iou_thr_from = iou_thr_from
+        evaluate_config.iou_thr_to = iou_thr_to
+        evaluate_config.iou_thr_step = iou_thr_step
+        evaluate_config.need_pr_curve = need_pr_curve
+        evaluate_config.gt_dataset_id = mir_gt.dataset_id
+        evaluate_config.pred_dataset_ids.extend([mir_pred.dataset_id for mir_pred in mir_preds])
         evaluation = _evaluate_with_cocotools(mir_preds=mir_preds,
                                               mir_gt=mir_gt,
-                                              conf_thr=conf_thr,
-                                              iou_thr_from=iou_thr_from,
-                                              iou_thr_to=iou_thr_to,
-                                              iou_thr_step=iou_thr_step,
-                                              need_pr_curve=need_pr_curve)
+                                              config=evaluate_config)
 
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,
@@ -86,24 +90,18 @@ class CmdEvaluate(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco, conf_thr: float, iou_thr_from: float,
-                             iou_thr_to: float, iou_thr_step: float, need_pr_curve: bool) -> mirpb.Evaluation:
+def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco,
+                             config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     params = eval.Params()
-    params.confThr = conf_thr
-    params.iouThrs = np.linspace(start=iou_thr_from,
-                                 stop=iou_thr_to,
-                                 num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)) + 1,
+    params.confThr = config.conf_thr
+    params.iouThrs = np.linspace(start=config.iou_thr_from,
+                                 stop=config.iou_thr_to,
+                                 num=int(np.round((config.iou_thr_to - config.iou_thr_from) / config.iou_thr_step)) + 1,
                                  endpoint=True)
-    params.need_pr_curve = need_pr_curve
+    params.need_pr_curve = config.need_pr_curve
 
     evaluation = mirpb.Evaluation()
-    evaluation.config.conf_thr = conf_thr
-    evaluation.config.iou_thr_from = iou_thr_from
-    evaluation.config.iou_thr_to = iou_thr_to
-    evaluation.config.iou_thr_step = iou_thr_step
-    evaluation.config.need_pr_curve = need_pr_curve
-    evaluation.config.gt_dataset_id = mir_gt.dataset_id
-    evaluation.config.pred_dataset_ids.extend([mir_pred.dataset_id for mir_pred in mir_preds])
+    evaluation.config.CopyFrom(config)
 
     for mir_pred in mir_preds:
         evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_pred, params=params)
@@ -111,7 +109,7 @@ def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco
         evaluator.accumulate()
 
         single_dataset_evaluation = evaluator.get_evaluation_result()
-        single_dataset_evaluation.conf_thr = conf_thr
+        single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_pred.dataset_id
         evaluation.dataset_evaluations[mir_pred.dataset_id].CopyFrom(single_dataset_evaluation)
