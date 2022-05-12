@@ -275,10 +275,12 @@ message Label {
 }
 
 message EvaluateConfig {
-    float iou_threshold_from = 1;
-    float iou_threshold_to = 2;
-    float iou_threshold_step = 3;
-    float conf_threshold = 4;
+    // confidence threshold, 0 to 1
+    float conf_thr = 1;
+    // from:to:step, to value is excluded (same as python range)
+    string iou_thrs_interval = 2;
+    // need pr curve in evaluation result, default is false
+    bool need_pr_curve = 3;
 }
 
 service mir_controller_service {
