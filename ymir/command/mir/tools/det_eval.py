@@ -130,7 +130,7 @@ class MirCoco:
         return self._ordered_class_ids
 
 
-class MirEval:
+class MirDetEval:
     def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params' = None):
         self.cocoGt = coco_gt  # ground truth COCO API
         self.cocoDt = coco_dt  # detections COCO API

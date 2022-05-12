@@ -91,7 +91,7 @@ def _evaluate_with_cocotools(mir_dts: List[det_eval.MirCoco], mir_gt: det_eval.M
     evaluation.config.CopyFrom(config)
 
     for mir_dt in mir_dts:
-        evaluator = det_eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+        evaluator = det_eval.MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         evaluator.accumulate()
 
