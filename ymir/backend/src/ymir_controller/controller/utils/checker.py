@@ -28,8 +28,6 @@ class Prerequisites(IntEnum):
     CHECK_SINGLE_IN_DATASET_ID = auto()
     CHECK_IN_DATASET_IDS = auto()
     CHECK_HIS_TASK_ID = auto()
-    CHECK_EVALUATE_CONF_THR = auto()
-    CHECK_EVALUATE_IOU_THRS_INTERVAL = auto()
 
 
 # check controller request
@@ -180,32 +178,5 @@ def _check_single_in_dataset_id(request: backend_pb2.GeneralReq, mir_root: str) 
     if not in_dataset_ids or len(in_dataset_ids) > 1:
         return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                            "invalid single in_dataset ids: {}".format(in_dataset_ids))
-
-    return utils.make_general_response(CTLResponseCode.CTR_OK, "")
-
-
-def _check_evaluate_conf_thr(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
-    conf_thr = request.evaluate_config.conf_thr
-    if conf_thr < 0 or conf_thr >= 1:
-        return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                           f"invalid evaluate conf thr: {conf_thr:.2f}")
-
-    return utils.make_general_response(CTLResponseCode.CTR_OK, "")
-
-
-def _check_evaluate_iou_thrs_interval(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
-    iou_thrs_interval: str = request.evaluate_config.iou_thrs_interval
-    if not iou_thrs_interval:
-        return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                           "empty evaluate iou thrs interval")
-
-    iou_thrs_interval_list = [float(v) for v in iou_thrs_interval.split(':')]
-    if len(iou_thrs_interval_list) != 3:
-        return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                           "invalid evaluate iou thrs interval: {}".format(iou_thrs_interval))
-    for v in iou_thrs_interval_list:
-        if v < 0 or v > 1:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               "invalid evaluate iou thrs interval: {}".format(iou_thrs_interval))
 
     return utils.make_general_response(CTLResponseCode.CTR_OK, "")

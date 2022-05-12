@@ -6,20 +6,37 @@ from proto import backend_pb2
 
 class EvaluateInvoker(BaseMirControllerInvoker):
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(request=self._request,
-                                     prerequisites=[
-                                         checker.Prerequisites.CHECK_USER_ID,
-                                         checker.Prerequisites.CHECK_REPO_ID,
-                                         checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
-                                         checker.Prerequisites.CHECK_DST_DATASET_ID,
-                                         checker.Prerequisites.CHECK_TASK_ID,
-                                         checker.Prerequisites.CHECK_SINGLETON_OP,
-                                         checker.Prerequisites.CHECK_IN_DATASET_IDS,
-                                         checker.Prerequisites.CHECK_HIS_TASK_ID,
-                                         checker.Prerequisites.CHECK_EVALUATE_CONF_THR,
-                                         checker.Prerequisites.CHECK_EVALUATE_IOU_THRS_INTERVAL,
-                                     ],
-                                     mir_root=self._repo_root)
+        checker_resp = checker.check_request(request=self._request,
+                                             prerequisites=[
+                                                 checker.Prerequisites.CHECK_USER_ID,
+                                                 checker.Prerequisites.CHECK_REPO_ID,
+                                                 checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
+                                                 checker.Prerequisites.CHECK_DST_DATASET_ID,
+                                                 checker.Prerequisites.CHECK_TASK_ID,
+                                                 checker.Prerequisites.CHECK_SINGLETON_OP,
+                                                 checker.Prerequisites.CHECK_IN_DATASET_IDS,
+                                                 checker.Prerequisites.CHECK_HIS_TASK_ID,
+                                             ],
+                                             mir_root=self._repo_root)
+        if checker_resp.code != CTLResponseCode.CTR_OK:
+            return checker_resp
+
+        conf_thr = self._request.evaluate_config.conf_thr
+        if conf_thr < 0 or conf_thr >= 1:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
+                                               f"invalid evaluate conf thr: {conf_thr:.2f}")
+
+        iou_thrs_interval: str = self._request.evaluate_config.iou_thrs_interval
+        iou_thrs_interval_list = [float(v) for v in iou_thrs_interval.split(':')]
+        if len(iou_thrs_interval_list) != 3:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
+                                               "invalid evaluate iou thrs interval: {}".format(iou_thrs_interval))
+        for v in iou_thrs_interval_list:
+            if v < 0 or v > 1:
+                return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
+                                                   "invalid evaluate iou thrs interval: {}".format(iou_thrs_interval))
+
+        return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def invoke(self) -> backend_pb2.GeneralResp:
         expected_type = backend_pb2.RequestType.CMD_EVALUATE
