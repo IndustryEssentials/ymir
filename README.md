@@ -26,9 +26,9 @@
   <div>&nbsp;</div>
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20management.png" width="180"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.jpg" width="200"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.jpg" width="200"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.png" width="200"/>
   <div>&nbsp;</div>
   
 [📘Usage Instruction](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
@@ -115,6 +115,10 @@ English | [简体中文](README_zh-CN.md)
 
 As a streamlined model development product, YMIR(You Mine In Recursion) focuses on the dataset versioning and model iteration in the AI SUITE open-source series.
 
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="800"/>
+  <div>&nbsp;</div>
+
 AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs and long iteration cycles.
 
 As a platform, YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
@@ -164,8 +168,6 @@ YMIR platform mainly meets the needs of users to produce models at scale, provid
 We provide an online trial version for your convenience. If you need, please fill out the [Apply for YMIR Trial](https://alfrat.wufoo.com/forms/mkxsic906al0pf/) , and we will send the trial information to your email address.
 
 # 2. Installation
-
-![processing](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png)
 
 How do users choose to install GUI or CMD?
 
