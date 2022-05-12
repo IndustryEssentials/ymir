@@ -1,8 +1,68 @@
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpg" width="500"/>
+  <div>&nbsp;</div>
+  <div align="center">
+    <b><font size="5">VIESC 官网</font></b>
+    <sup>
+      <a href="https://www.viesc.com/">
+        <i><font size="4">VISIT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">试用申请</font></b>
+    <sup>
+      <a href="https://github.com/IndustryEssentials/ymir#12-apply-for-trial">
+        <i><font size="4">TRY IT OUT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">SLACK社区</font></b>
+    <sup>
+      <a href="https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q">
+        <i><font size="4">WELCOME</font></i>
+      </a>
+    </sup>
+  </div>
+  <div>&nbsp;</div>
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_management.png" width="180"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_mining.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_labeling.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_training.png" width="200"/>
+  <div>&nbsp;</div>
+
+[📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
+[🛠️安装教程](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
+[🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
+[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose)| 
+[📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
+  
+</div>&nbsp;</div>
+  
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
+  
+  📫反馈邮箱： contact.viesc@gmail.com
+  
+<div>&nbsp;</div>&nbsp;</div>
+
+# 文章引用
+
+如要在您的工作中引用YMIR，请使用下面的Bibtex：
+
+```bibtex
+@inproceedings{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
+      year={2021},
+}
+```
+
 ## 简介
 
 [English](README.md) | 简体中文
-
-![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpeg)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -53,27 +113,16 @@
     - [6.1.2 分支与数据集的管理](#612-分支与数据集的管理)
 - [7.MISC](#7misc)
   - [7.1 常见问题](#71-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
-  - [7.2 License](#72-license)
-  - [7.3 联系我们](#73-%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# 文章引用
-
-如要在您的工作中引用YMIR，请使用下面的Bibtex：
-
-```bibtex
-@inproceedings{huang2021ymir,
-      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
-      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
-      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
-      year={2021},
-}
-```
 
 # 1.  AI SUITE-YMIR介绍
 
 YMIR(You Mine In Recursion)是一个简化的模型开发产品，专注于AI SUITE开源系列中的数据集版本和模型迭代。
+
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="800"/>
+<div>&nbsp;</div>&nbsp;</div>
 
 目前人工智能商业化在算力、算法和技术方面达到阶段性成熟。AI应用在产品落地过程中经常会遇到无法大规模扩展的瓶颈，例如人才紧缺、开发成本高、迭代周期长等问题。
 
@@ -120,9 +169,6 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 我们提供一个在线的体验版本，方便您试用，如有需要，请填写[YMIR在线系统申请试用表](https://alfrat.wufoo.com/forms/z2wr9vz0dl1jeo/)，我们会将试用信息发送至您的邮箱。
 
 # 2. 安装
-
-![YMIR总流程图](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png)
-
 
 **用户如何选择安装GUI or CMD：**
 
@@ -348,7 +394,7 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 ## 3.2.7. 合并训练
 
-![流程-中文](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
+![合并训练](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
 
 合并完成后，再次进行模型训练，生成新的模型版本，如下图所示：
 
@@ -831,16 +877,6 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 *  在windows系统遇到部署、调试、运行问题如何解决？
 
 尚未在Windows服务器完备测试，暂时无法提供服务支持。
-
-## 7.2 License
-
-YMIR开源项目符合Apache 2.0证书许可。查看 [LICENSE](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE) file for details.
-
-## 7.3 联系我们
-
-当您有其他问题时，请联系我们： contact.viesc@gmail.com
-
-或者加入我们的[Slack community](https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q)，我们将会实时解答您的问题。
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
