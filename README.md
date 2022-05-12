@@ -44,14 +44,23 @@
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
   
   📫Contact us： contact.viesc@gmail.com
-  
 <div>&nbsp;</div>&nbsp;</div>
+
+# Citations
+
+If you wish to refer to YMIR in your work, please use the following BibTeX entry.
+```bibtex
+@inproceedings{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
+      year={2021},
+}
+```
 
 ## Introduction
 
 English | [简体中文](README_zh-CN.md)
-
-![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpeg)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -99,26 +108,8 @@ English | [简体中文](README_zh-CN.md)
     - [6.1.2. Branch and dataset management](#612-branch-and-dataset-management)
 - [7. MISC](#7-misc)
   - [7.1. FAQ](#71-faq)
-  - [7.2. License](#72-license)
-  - [7.3. Contact us](#73-contact-us)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Citations
-
-If you wish to refer to YMIR in your work, please use the following BibTeX entry.
-```bibtex
-@inproceedings{huang2021ymir,
-      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
-      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
-      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
-      year={2021},
-}
-```
-
-Welcome to enter our WeChat communication group~
-
-![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg)
 
 # 1. Introduction to AI SUITE-YMIR
 
@@ -918,17 +909,6 @@ After successful training, the system will output the ID of the model. The user 
 **How to solve the deployment, debugging and operation problems encountered in windows system?**
 
 It has not been fully tested on Windows server, so we cannot provide service support for the time being.
-
-## 7.2. License
-
-YMIR is licensed under version 2.0 of the Apache License. See the [LICENSE](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE) file for details.
-
-## 7.3. Contact us
-
-Contact us with further questions: contact.viesc@gmail.com
-
-Join our [Slack community](https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q) to chat to our engineers about your use cases, questions, and support queries.
-
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
