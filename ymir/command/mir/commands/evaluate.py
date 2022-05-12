@@ -142,8 +142,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      dest='iou_thrs',
                                      type=str,
                                      required=False,
-                                     default='0.5:0.95:0.05',
-                                     help='iou thresholds, default 0.5:0.95:0.05, upper bound is included')
+                                     default='0.5:1.0:0.05',
+                                     help='iou thresholds, default 0.5:1.0:0.05, upper bound is excluded')
     evaluate_arg_parser.add_argument('--need-pr-curve',
                                      dest='need_pr_curve',
                                      action='store_true',
