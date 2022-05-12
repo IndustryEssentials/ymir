@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpeg" width="600"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="160"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpeg" width="500"/>
   <div>&nbsp;</div>
-    
+
   <div align="center">
     <b><font size="5">VIESC 官网</font></b>
     <sup>
@@ -17,16 +17,9 @@
         <i><font size="4">TRY IT OUT</font></i>
       </a>
     </sup>
-     &nbsp;&nbsp;&nbsp;&nbsp;
-    <b><font size="5">扫码进群</font></b>
-    <sup>
-      <a href="https://github.com/IndustryEssentials/ymir#12-apply-for-trial">
-        <i><font size="4">TRY IT OUT</font></i>
-      </a>
-    </sup>
   </div>
   <div>&nbsp;</div>
-
+  
 [![PyPI](https://img.shields.io/pypi/v/mmdet)](https://pypi.org/project/mmdet)
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdetection.readthedocs.io/en/latest/)
 [![badge](https://github.com/open-mmlab/mmdetection/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdetection/actions)
@@ -34,10 +27,13 @@
 [![license](https://img.shields.io/github/license/open-mmlab/mmdetection.svg)](https://github.com/open-mmlab/mmdetection/blob/master/LICENSE)
 [![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmdetection.svg)](https://github.com/open-mmlab/mmdetection/issues)
 
-  <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="600"/>
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20management.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.jpg" width="220"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.jpg" width="220"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.jpg" width="220"/>
   <div>&nbsp;</div>
-
+  
 [📘使用文档](https://mmdetection.readthedocs.io/zh_CN/v2.21.0/) |
 [🛠️安装教程](https://mmdetection.readthedocs.io/zh_CN/v2.21.0/get_started.html) |
 [👀模型库](https://mmdetection.readthedocs.io/zh_CN/v2.21.0/model_zoo.html) |
