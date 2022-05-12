@@ -13,6 +13,8 @@ class EvaluateInvoker(BaseMirControllerInvoker):
                                          checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
                                          checker.Prerequisites.CHECK_DST_DATASET_ID,
                                          checker.Prerequisites.CHECK_TASK_ID,
+                                         checker.Prerequisites.CHECK_SINGLETON_OP,
+                                         checker.Prerequisites.CHECK_IN_DATASET_IDS,
                                      ],
                                      mir_root=self._repo_root)
 
