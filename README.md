@@ -430,7 +430,7 @@ After training the model, users can validate the model. On the [Model Management
 
 Select the validation mirror, adjust the parameters, click the [Upload Image] button, select the local image to upload, click [Model Validation], and display the results as follows.
 
-![model val2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model%20ver2.jpg)
+![model val2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model_ver2.jpg)
 
 ## 3.2.9. Model download
 
