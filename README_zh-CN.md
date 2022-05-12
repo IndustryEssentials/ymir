@@ -1,7 +1,6 @@
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpg" width="500"/>
   <div>&nbsp;</div>
-
   <div align="center">
     <b><font size="5">VIESC 官网</font></b>
     <sup>
@@ -25,36 +24,29 @@
     </sup>
   </div>
   <div>&nbsp;</div>
-  
-[![PyPI](https://img.shields.io/pypi/v/mmdet)](https://pypi.org/project/mmdet)
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdetection.readthedocs.io/en/latest/)
-[![badge](https://github.com/open-mmlab/mmdetection/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdetection/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmdetection/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdetection)
-[![license](https://img.shields.io/github/license/open-mmlab/mmdetection.svg)](https://github.com/open-mmlab/mmdetection/blob/master/LICENSE)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmdetection.svg)](https://github.com/open-mmlab/mmdetection/issues)
-
 <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20management.png" width="200"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.jpg" width="220"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.jpg" width="220"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.jpg" width="220"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20management.png" width="180"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.jpg" width="200"/>
   <div>&nbsp;</div>
   
 [📘使用说明](https://github.com/Aryalfrat/ymir/edit/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
 [🛠️安装教程](https://github.com/Aryalfrat/ymir/edit/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
 [👀推荐配置](https://mmdetection.readthedocs.io/zh_CN/v2.21.0/model_zoo.html) |
 [🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose)
-
+[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose)| 
+[📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
+  
 </div>&nbsp;</div>
   
 <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="200"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
   
   📫反馈邮箱： contact.viesc@gmail.com
   
-  <div>&nbsp;</div>&nbsp;</div>
+<div>&nbsp;</div>&nbsp;</div>
 
 ## 简介
 
