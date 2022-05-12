@@ -39,13 +39,13 @@ class CmdEvaluate(base.BaseCommand):
             return return_code
 
         # read pred and gt
-        mir_preds = [eval.MirCoco(mir_root=mir_root, rev_tid=src_rev_tid) for src_rev_tid in src_rev_tids]
+        mir_dts = [eval.MirCoco(mir_root=mir_root, rev_tid=src_rev_tid) for src_rev_tid in src_rev_tids]
         mir_gt = eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
 
         # check pred and gt
         gt_asset_ids_set = set(mir_gt.mir_metadatas.attributes.keys())
-        for mir_pred in mir_preds:
-            if set(mir_pred.mir_metadatas.attributes.keys()) != gt_asset_ids_set:
+        for mir_dt in mir_dts:
+            if set(mir_dt.mir_metadatas.attributes.keys()) != gt_asset_ids_set:
                 raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                       error_message='prediction and ground truth have different assets')
 
@@ -55,8 +55,8 @@ class CmdEvaluate(base.BaseCommand):
         evaluate_config.iou_thrs_interval = iou_thrs
         evaluate_config.need_pr_curve = need_pr_curve
         evaluate_config.gt_dataset_id = mir_gt.dataset_id
-        evaluate_config.pred_dataset_ids.extend([mir_pred.dataset_id for mir_pred in mir_preds])
-        evaluation = _evaluate_with_cocotools(mir_preds=mir_preds,
+        evaluate_config.pred_dataset_ids.extend([mir_dt.dataset_id for mir_dt in mir_dts])
+        evaluation = _evaluate_with_cocotools(mir_dts=mir_dts,
                                               mir_gt=mir_gt,
                                               config=evaluate_config)
 
@@ -78,7 +78,7 @@ class CmdEvaluate(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco,
+def _evaluate_with_cocotools(mir_dts: List[eval.MirCoco], mir_gt: eval.MirCoco,
                              config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
     for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
@@ -99,16 +99,16 @@ def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
-    for mir_pred in mir_preds:
-        evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_pred, params=params)
+    for mir_dt in mir_dts:
+        evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         evaluator.accumulate()
 
         single_dataset_evaluation = evaluator.get_evaluation_result()
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
-        single_dataset_evaluation.pred_dataset_id = mir_pred.dataset_id
-        evaluation.dataset_evaluations[mir_pred.dataset_id].CopyFrom(single_dataset_evaluation)
+        single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
+        evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
 
     return evaluation
 
