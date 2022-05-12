@@ -38,16 +38,6 @@ class CmdEvaluate(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in iou_thrs.split(':')]
-
-        for thr in [conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
-            if thr < 0 or thr > 1:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                      error_message='invalid conf_thr, iou_thr_from, iou_thr_to or iou_thr_step')
-        if iou_thr_from >= iou_thr_to:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='invalid iou_thr_from or iou_thr_to')
-
         # read pred and gt
         mir_preds = [eval.MirCoco(mir_root=mir_root, rev_tid=src_rev_tid) for src_rev_tid in src_rev_tids]
         mir_gt = eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
@@ -62,9 +52,7 @@ class CmdEvaluate(base.BaseCommand):
         # eval
         evaluate_config = mirpb.EvaluateConfig()
         evaluate_config.conf_thr = conf_thr
-        evaluate_config.iou_thr_from = iou_thr_from
-        evaluate_config.iou_thr_to = iou_thr_to
-        evaluate_config.iou_thr_step = iou_thr_step
+        evaluate_config.iou_thrs_interval = iou_thrs
         evaluate_config.need_pr_curve = need_pr_curve
         evaluate_config.gt_dataset_id = mir_gt.dataset_id
         evaluate_config.pred_dataset_ids.extend([mir_pred.dataset_id for mir_pred in mir_preds])
@@ -92,11 +80,19 @@ class CmdEvaluate(base.BaseCommand):
 
 def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco,
                              config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+    iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
+    for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
+        if thr < 0 or thr > 1:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='invalid conf_thr, iou_thr_from, iou_thr_to or iou_thr_step')
+    if iou_thr_from >= iou_thr_to:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='invalid iou_thr_from or iou_thr_to')
     params = eval.Params()
     params.confThr = config.conf_thr
-    params.iouThrs = np.linspace(start=config.iou_thr_from,
-                                 stop=config.iou_thr_to,
-                                 num=int(np.round((config.iou_thr_to - config.iou_thr_from) / config.iou_thr_step)) + 1,
+    params.iouThrs = np.linspace(start=iou_thr_from,
+                                 stop=iou_thr_to,
+                                 num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
                                  endpoint=True)
     params.need_pr_curve = config.need_pr_curve
 
