@@ -45,7 +45,7 @@ class CmdEvaluate(base.BaseCommand):
         evaluate_config.need_pr_curve = need_pr_curve
         evaluate_config.gt_dataset_id = mir_gt.dataset_id
         evaluate_config.pred_dataset_ids.extend([mir_dt.dataset_id for mir_dt in mir_dts])
-        evaluation = det_eval.evaluate(mir_dts=mir_dts, mir_gt=mir_gt, config=evaluate_config)
+        evaluation = det_eval.det_evaluate(mir_dts=mir_dts, mir_gt=mir_gt, config=evaluate_config)
 
         _show_evaluation(evaluation=evaluation)
 
