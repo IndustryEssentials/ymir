@@ -60,6 +60,8 @@ class CmdEvaluate(base.BaseCommand):
                                               mir_gt=mir_gt,
                                               config=evaluate_config)
 
+        _show_evaluation(evaluation=evaluation)
+
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,
                                            task_id=dst_rev_tid.tid,
@@ -72,8 +74,6 @@ class CmdEvaluate(base.BaseCommand):
                                                       his_branch=src_rev_tids[0].rev,
                                                       mir_datas={},
                                                       task=task)
-
-        _show_evaluation(evaluation=evaluation)
 
         return MirCode.RC_OK
 
