@@ -1,5 +1,4 @@
 from collections import defaultdict
-import copy
 from typing import Any, List, Optional, Set, Union
 from mir.tools.code import MirCode
 
@@ -140,7 +139,6 @@ class MirDetEval:
         self._gts: dict = defaultdict(list)  # gt for evaluation
         self._dts: dict = defaultdict(list)  # dt for evaluation
         self.params = params or Params()  # parameters
-        self._paramsEval: Params = Params()  # parameters for evaluation
         self.stats: np.ndarray = np.zeros(1)  # result summarization
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
@@ -180,7 +178,6 @@ class MirDetEval:
             self.params.maxDets: will be sorted
             self.ious: will be cauculated
             self.evalImgs: will be cauculated
-            self._paramsEval: deep copied from self.params
         '''
         self.params.maxDets.sort()
         p = self.params
@@ -197,7 +194,6 @@ class MirDetEval:
             self.evaluateImg(imgIdx, catId, areaRng, maxDet) for catId in catIds for areaRng in p.areaRng
             for imgIdx in p.imgIdxes
         ]
-        self._paramsEval = copy.deepcopy(self.params)  # pragma: ignore type
 
     def computeIoU(self, imgIdx: int, catId: int) -> Union[np.ndarray, list]:
         """
@@ -361,19 +357,18 @@ class MirDetEval:
         all_fns = np.zeros((T, K, A, M))
 
         # create dictionary for future indexing
-        _pe = self._paramsEval
-        catIds = _pe.catIds
+        catIds = self.params.catIds
         setK: set = set(catIds)
-        setA: Set[tuple] = set(map(tuple, _pe.areaRng))
-        setM: set = set(_pe.maxDets)
-        setI: set = set(_pe.imgIdxes)
+        setA: Set[tuple] = set(map(tuple, self.params.areaRng))
+        setM: set = set(self.params.maxDets)
+        setI: set = set(self.params.imgIdxes)
         # get inds to evaluate
         k_list = [n for n, k in enumerate(p.catIds) if k in setK]
         m_list = [m for n, m in enumerate(p.maxDets) if m in setM]
         a_list = [n for n, a in enumerate(map(lambda x: tuple(x), p.areaRng)) if a in setA]
         i_list = [n for n, i in enumerate(p.imgIdxes) if i in setI]
-        I0 = len(_pe.imgIdxes)
-        A0 = len(_pe.areaRng)
+        I0 = len(self.params.imgIdxes)
+        A0 = len(self.params.areaRng)
         # retrieve E at each category, area range, and max number of detections
         for k, k0 in enumerate(k_list):
             Nk = k0 * A0 * I0
