@@ -26,9 +26,9 @@
   <div>&nbsp;</div>
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20management.png" width="180"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.jpg" width="200"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.jpg" width="200"/>
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.png" width="200"/>
   <div>&nbsp;</div>
   
 [📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
@@ -120,6 +120,10 @@
 
 YMIR(You Mine In Recursion)是一个简化的模型开发产品，专注于AI SUITE开源系列中的数据集版本和模型迭代。
 
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="800"/>
+<div>&nbsp;</div>&nbsp;</div>
+
 目前人工智能商业化在算力、算法和技术方面达到阶段性成熟。AI应用在产品落地过程中经常会遇到无法大规模扩展的瓶颈，例如人才紧缺、开发成本高、迭代周期长等问题。
 
 在此基础上，为了降低企业利用AI技术的成本，加速推进AI赋能企业，YMIR系统为算法人员提供端到端的算法研发工具，围绕AI开发过程中所需要的数据处理、模型训练等业务需求提供一站式服务，推动算法技术应用。
@@ -165,9 +169,6 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 我们提供一个在线的体验版本，方便您试用，如有需要，请填写[YMIR在线系统申请试用表](https://alfrat.wufoo.com/forms/z2wr9vz0dl1jeo/)，我们会将试用信息发送至您的邮箱。
 
 # 2. 安装
-
-![YMIR总流程图](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png)
-
 
 **用户如何选择安装GUI or CMD：**
 
@@ -393,7 +394,7 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 ## 3.2.7. 合并训练
 
-![流程-中文](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
+![合并训练](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E6%B5%81%E7%A8%8B-%E4%B8%AD%E6%96%87.jpeg)
 
 合并完成后，再次进行模型训练，生成新的模型版本，如下图所示：
 
