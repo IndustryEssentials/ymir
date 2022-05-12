@@ -178,7 +178,7 @@ class MirEval:
 
         self._prepare()
         # loop through images, area range, max detection number
-        catIds = p.catIds if p.useCats else [-1]
+        catIds = p.catIds
 
         # self.ious: key: (img_idx, class_id), value: ious ndarray of len(dts) * len(gts)
         self.ious = {(imgIdx, catId): self.computeIoU(imgIdx, catId) for imgIdx in p.imgIdxes for catId in catIds}
@@ -196,20 +196,15 @@ class MirEval:
 
         Args:
             imgIdx (int): asset / image ordered idx
-            catId (int): category / class id, if self.params.useCats is False, catId will be ignored
+            catId (int): category / class id
 
         Returns:
             ious ndarray of detections and ground truth boxes of single image and category
             ious[i][j] means the iou i-th detection (sorted by score, desc) and j-th ground truth box
         """
         p = self.params
-        if p.useCats:
-            gt = self._gts[imgIdx, catId]
-            dt = self._dts[imgIdx, catId]
-        else:
-            # if not useCats, gt and dt set to annotations for the same imgIdx and ALL cat ids
-            gt = [_ for cId in p.catIds for _ in self._gts[imgIdx, cId]]
-            dt = [_ for cId in p.catIds for _ in self._dts[imgIdx, cId]]
+        gt = self._gts[imgIdx, catId]
+        dt = self._dts[imgIdx, catId]
         if len(gt) == 0 and len(dt) == 0:
             return []
 
@@ -263,14 +258,8 @@ class MirEval:
             dict (single image results)
         '''
         p = self.params
-        if p.useCats:
-            gt = self._gts[imgIdx, catId]
-            dt = self._dts[imgIdx, catId]
-        else:
-            gt = [_ for cId in p.catIds for _ in self._gts[imgIdx, cId]]
-            dt = [_ for cId in p.catIds for _ in self._dts[imgIdx, cId]]
-        if len(gt) == 0 and len(dt) == 0:
-            return None
+        gt = self._gts[imgIdx, catId]
+        dt = self._dts[imgIdx, catId]
 
         for g in gt:
             if g['ignore'] or (g['area'] < aRng[0] or g['area'] > aRng[1]):
@@ -349,10 +338,9 @@ class MirEval:
         # allows input customized parameters
         if p is None:
             p = self.params
-        p.catIds = p.catIds if p.useCats == 1 else [-1]
         T = len(p.iouThrs)
         R = len(p.recThrs)
-        K = len(p.catIds) if p.useCats else 1
+        K = len(p.catIds)
         A = len(p.areaRng)
         M = len(p.maxDets)
         precision = -np.ones((T, R, K, A, M))  # -1 for the precision of absent categories
@@ -364,7 +352,7 @@ class MirEval:
 
         # create dictionary for future indexing
         _pe = self._paramsEval
-        catIds = _pe.catIds if _pe.useCats else [-1]
+        catIds = _pe.catIds
         setK: set = set(catIds)
         setA: Set[tuple] = set(map(tuple, _pe.areaRng))
         setM: set = set(_pe.maxDets)
@@ -624,7 +612,6 @@ class Params:
         self.maxDets = [1, 10, 100]
         self.areaRng: List[list] = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
-        self.useCats = 1  # 1: use categories, 0: treat all categories as one
         self.confThr = 0.3  # confidence threshold
         # useSegm is deprecated
         self.useSegm = None
