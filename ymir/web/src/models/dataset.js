@@ -277,34 +277,6 @@ export default {
     },
     *compare({ payload }, { call, put }) {
       const result = yield call(evaluate, payload)
-      return payload.datasets.reduce((prev, dataset) => {
-        const ious = [0.5, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
-        const keywords = ['person', 'cat', 'dog', 'bottle']
-
-        const item = (id = '') => ({
-          ap: id + Math.random(),
-          ar: 0.2,
-          tp: 0.6,
-          fp: 45,
-          fn: 34,
-        })
-        const klist = () => keywords.reduce((prev, k) => ({ ...prev, [k]: item(k) }), {})
-        const ilist = () => ious.reduce((prev, i) => ({ ...prev, [i]: {
-          ci_averaged_evaluation: item('ci_averaged_evaluation'),
-          ci_evaluations: klist(),
-        } }), {})
-
-        return {
-          ...prev,
-          [dataset]: {
-            iou_averaged_evaluation: {
-              ci_averaged_evaluation: item('ci_averaged_evaluation'),
-              ci_evaluations: klist(),
-            },
-            iou_evaluations: ilist(),
-          }
-        }
-      }, {})
       if (result) {
         return result
       }
