@@ -275,10 +275,10 @@ message Label {
 }
 
 message EvaluateConfig {
-    float iou_threshold_from = 1;
-    float iou_threshold_to = 2;
-    float iou_threshold_step = 3;
-    float conf_threshold = 4;
+    // from:to:step, to value is included in the interval
+    string iou_thrs_interval = 1;
+    // confidence threshold, 0 to 1
+    float conf_thr = 2;
 }
 
 service mir_controller_service {
