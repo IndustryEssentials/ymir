@@ -50,10 +50,7 @@ class MirCoco:
     def mir_annotations(self) -> mirpb.MirAnnotations:
         return self._mir_annotations
 
-    def get_annotations(self,
-                        asset_idxes: List[int] = [],
-                        class_ids: List[int] = [],
-                        conf_thr: float = 0) -> List[dict]:
+    def get_annotations(self, asset_idxes: List[int], class_ids: List[int], conf_thr: float) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
@@ -134,7 +131,7 @@ class MirEval:
         self.stats: np.ndarray = np.zeros(1)  # result summarization
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
-        self.params.imgIdxes = list(range(len(coco_gt.get_asset_ids())))
+        self.params.imgIdxes = coco_gt.get_asset_idxes()
         self.params.catIds = coco_gt.get_class_ids()
 
     def _prepare(self) -> None:

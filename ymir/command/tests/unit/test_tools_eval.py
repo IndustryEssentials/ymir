@@ -503,22 +503,22 @@ class TestToolsEval(unittest.TestCase):
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
 
         # get annotations
-        annotations_list = mir_coco.get_annotations()
+        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1, 2], class_ids=[0, 1, 2], conf_thr=0)
         counter = Counter([elem['asset_idx'] for elem in annotations_list])
         self.assertEqual(4, counter[0])
         self.assertEqual(1, counter[1])
 
-        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 2])
+        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 2], class_ids=[0, 1, 2], conf_thr=0)
         counter = Counter([elem['asset_idx'] for elem in annotations_list])
         self.assertEqual(4, counter[0])
         self.assertEqual(0, counter[2])
 
-        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1], class_ids=[0, 3])
+        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1], class_ids=[0, 3], conf_thr=0)
         counter = Counter([elem['asset_idx'] for elem in annotations_list])
         self.assertEqual(2, counter[0])
         self.assertEqual(0, counter[1])
 
-        annotations_list = mir_coco.get_annotations(conf_thr=2)
+        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1, 2], class_ids=[0, 1, 2], conf_thr=2)
         self.assertEqual(0, len(annotations_list))
 
     def test_mir_eval_00(self):
