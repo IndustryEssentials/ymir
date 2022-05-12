@@ -132,6 +132,10 @@ const task = {
     cn: "请输入每个模型推理分配到的GPU个数，目前已选中{selected}/{total}",
     en: "Input GPU count for each model, currently {selected}/{total} selected.",
   },
+  "task.inference.unmatch.keywrods": {
+    cn: "选中的模型中的训练目标{keywords}不在当前用户的标签列表中，推理对这些目标无效",
+    en: "Inference partial invalidity by {keywords} for selected model out of KEYWORD LIST of current user.",
+  },
 }
 
 export default task

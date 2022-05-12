@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message, Tag, Alert } from "antd"
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -23,6 +23,8 @@ import Tip from "@/components/form/tip"
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
 import DatasetSelect from "@/components/form/datasetSelect"
+import useAddKeywords from "@/hooks/useAddKeywords"
+import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
 
 const { Option } = Select
 
@@ -36,13 +38,15 @@ function Inference({ datasetCache, datasets, ...func }) {
   const { did, image } = location.query
   const mid = string2Array(location.query.mid) || []
   const [dataset, setDataset] = useState({})
-  const [selectedModels, setSelectedModels] = useState(mid)
+  const [selectedModels, setSelectedModels] = useState([])
   const [gpuStep, setGpuStep] = useState(1)
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
   const [gpu_count, setGPU] = useState(0)
   const [selectedGpu, setSelectedGpu] = useState(0)
+  const [keywordRepeatTip, setKRTip] = useState('')
+  const [{ newer }, checkKeywords] = useAddKeywords(true)
 
   useEffect(() => {
     fetchSysInfo()
@@ -66,7 +70,21 @@ function Inference({ datasetCache, datasets, ...func }) {
 
   useEffect(() => {
     setGpuStep(selectedModels.length || 1)
+
+    checkModelKeywords()
   }, [selectedModels])
+
+  useEffect(() => {
+    if (newer.length) {
+      const tip = <>
+        {t('task.inference.unmatch.keywrods', {
+          keywords: newer.map(key => <Tag key={key}>{key}</Tag>)
+        })}
+        <AddKeywordsBtn type="primary" size="small" style={{ marginLeft: 10 }} keywords={newer} callback={checkModelKeywords} />
+      </>
+      setKRTip(tip)
+    }
+  }, [newer])
 
   function validHyperparam(rule, value) {
 
@@ -77,6 +95,11 @@ function Inference({ datasetCache, datasets, ...func }) {
     } else {
       return Promise.resolve()
     }
+  }
+
+  function checkModelKeywords() {
+    const keywords = (selectedModels.map(model => model?.keywords) || []).flat()
+    checkKeywords(keywords)
   }
 
   async function fetchSysInfo() {
@@ -158,6 +181,7 @@ function Inference({ datasetCache, datasets, ...func }) {
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.inference')}>
+        {keywordRepeatTip ? <Alert style={{ marginBottom: 20 }} message={keywordRepeatTip} type="warning" showIcon closable /> : null}
         <div className={commonStyles.formContainer}>
           <Form
             className={styles.form}
@@ -201,7 +225,7 @@ function Inference({ datasetCache, datasets, ...func }) {
                   >
                     <ModelSelect mode='multiple' placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
                   </Form.Item>
-                  <div style={{ marginTop: 10 }}><Button onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
+                  <div style={{ marginTop: 10 }}><Button size='small' type="primary" onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
                 </Form.Item>
               </Tip>
             </ConfigProvider>
