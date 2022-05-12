@@ -9,7 +9,10 @@ class VizException(Exception):
     message = "Exception Occured"
 
     def __init__(
-        self, message: Optional[str] = None, status_code: Optional[int] = None, code: Optional[int] = None,
+        self,
+        message: Optional[str] = None,
+        status_code: Optional[int] = None,
+        code: Optional[int] = None,
     ):
         super().__init__()
         self.status_code = status_code or self.status_code
@@ -35,3 +38,8 @@ class BranchNotExists(VizException):
 class ModelNotExists(VizException):
     code = VizErrorCode.MODEL_NOT_EXISTS
     message = "model not found"
+
+
+class DatasetEvaluationNotExists(VizException):
+    code = VizErrorCode.DATASET_EVALUATION_NOT_EXISTS
+    message = "dataset evaluation not found"

@@ -21,7 +21,10 @@ const project = {
   "project.content.desc": { en: "Description", cn: "描述", },
   "project.tab.set.title": { en: "Datasets", cn: "数据集", },
   "project.tab.model.title": { en: "Models", cn: "模型", },
-  'project.add.form.name.invalid': { en: 'Project name allow letters, numbers, and underline, and start with letter', cn: '项目名称只允许大小写字母及下划线，且只能以字母开头', },
+  'project.add.form.name.invalid': {
+    en: 'Project name allow letters, numbers, and underline, and start with letter',
+    cn: '项目名称只允许大小写字母及下划线，且只能以字母开头',
+  },
   'project.create.success': { en: 'Project Created!', cn: '项目创建成功', },
   'project.update.success': { en: 'Project Updated!', cn: '项目设置成功', },
   'project.add.form.name': { en: 'Project Name', cn: '项目名称', },
@@ -30,9 +33,9 @@ const project = {
   'project.add.form.type': { en: 'Training Type', cn: '训练类型', },
   'project.add.form.keyword.label': { en: 'Training Classes', cn: '训练目标', },
   'project.add.form.keyword.required': { en: 'Training classes is required', cn: '训练目标为必选项', },
-  'project.add.form.keyword.placeholder': { 
-    en: 'Please select training classes, or input new classes, separated by comma', 
-    cn: '请输入训练目标，可选择已有的或输入新标签，英文逗号分隔', 
+  'project.add.form.keyword.placeholder': {
+    en: 'Please select training classes, or input new classes, separated by comma',
+    cn: '请输入训练目标，可选择已有的或输入新标签，英文逗号分隔',
   },
   'project.add.form.target': { en: 'Project Target', cn: '目标设置', },
   'project.add.form.target.map': { en: 'mAP', cn: 'mAP', },
@@ -67,7 +70,7 @@ const project = {
   'project.add.form.test.set': { en: 'Test Dataset', cn: '测试集', },
   'project.add.form.mining.set': { en: 'Mining Dataset', cn: '挖掘集', },
   'project.add.form.mining.strategy': { en: 'Mining Strategy', cn: '挖掘策略', },
-  'project.add.form.mining.chunksize': { en: 'Chunk Size', cn: '分块大小', },
+  'project.add.form.mining.chunksize': { en: 'Chunk Size', cn: '每块数据量大小', },
   'project.mining.strategy.0': { en: 'Chunk Mining', cn: '分块挖掘（在迭代中对挖掘集进行分块处理）', },
   'project.mining.strategy.1': { en: 'Dedup Mining', cn: '去重挖掘（在迭代中会将之前迭代的挖掘数据排除出去）', },
   'project.mining.strategy.2': { en: 'Customer Mining', cn: '自定义挖掘（在迭代中不对挖掘数据进行额外处理）', },
@@ -95,14 +98,27 @@ const project = {
   'project.tag.mining': { en: 'Mining Dataset {version}', cn: '挖掘集 {version}', },
   'project.tag.model': { en: 'Initial Model {version}', cn: '初始模型 {version}', },
   'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
-  'project.del.confirm.content': { en: 'Remove all datasets and models in this project, confirm?', 
-    cn: '删除项目会将项目中的所有资源（数据集、模型）删除，请谨慎操作！', },
-  'project.add.confirm.title': { en: 'Whether this new keywords will add to your KEYWORD LIST?', cn: '标签管理列表未查询到下列标签，是否要添加至标签列表', },
+  'project.del.confirm.content': {
+    en: 'Remove all datasets and models in this project, confirm?',
+    cn: '删除项目会将项目中的所有资源（数据集、模型）删除，请谨慎操作！',
+  },
+  'project.add.confirm.title': {
+    en: 'Whether this new keywords will add to your KEYWORD LIST?',
+    cn: '标签管理列表未查询到下列标签，是否要添加至标签列表',
+  },
   'project.add.confirm.ok': { en: 'Add Keywords and Create Project', cn: '添加标签并创建项目', },
   'project.add.confirm.cancel': { en: 'Cancel Create Project', cn: '取消创建项目', },
-  'project.empty.label': { en: 'You can manage datasets, train models, and create data iterations.', cn: '在项目中可以管理数据集、训练模型、迭代数据', },
+  'project.empty.label': {
+    en: 'You can manage datasets, train models, and create data iterations.',
+    cn: '在项目中可以管理数据集、训练模型、迭代数据',
+  },
   'project.new.example.label': { en: 'Create Example Project', cn: '创建示例项目', },
   'project.keywords.invalid': { en: 'Invalid training keywords', cn: '训练目标不合法', },
+  'project.workspace.status.dirty': {
+    en: 'Project is {dirtyLabel}, can not train, please check again.',
+    cn: '项目当前状态为{dirtyLabel}，无法创建训练任务，请重新检查状态',
+  },
+  'project.workspace.status.clean': { en: 'Project is {cleanLabel}.', cn: '项目当前状态为{cleanLabel}', },
 }
 
 export default project

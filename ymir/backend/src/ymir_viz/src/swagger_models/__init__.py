@@ -2,7 +2,6 @@
 
 # flake8: noqa
 from __future__ import absolute_import
-
 # import models into model package
 from src.swagger_models.annotations import Annotations
 from src.swagger_models.annotations_inner import AnnotationsInner
@@ -14,6 +13,10 @@ from src.swagger_models.assets_meta_info_metadata import AssetsMetaInfoMetadata
 from src.swagger_models.assets_meta_info_metadata_timestamp import AssetsMetaInfoMetadataTimestamp
 from src.swagger_models.assets_result import AssetsResult
 from src.swagger_models.assets_result_result import AssetsResultResult
+from src.swagger_models.dataset_evaluation import DatasetEvaluation
+from src.swagger_models.dataset_evaluation_element import DatasetEvaluationElement
+from src.swagger_models.dataset_evaluation_result import DatasetEvaluationResult
+from src.swagger_models.dataset_evaluation_result_result import DatasetEvaluationResultResult
 from src.swagger_models.dataset_result import DatasetResult
 from src.swagger_models.dataset_result_result import DatasetResultResult
 from src.swagger_models.dataset_result_result_negative_info import DatasetResultResultNegativeInfo

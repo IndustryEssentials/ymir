@@ -353,6 +353,20 @@ class MirStorageOps():
             class_ids_index={k: v["asset_ids"] for k, v in mir_storage_keywords["index_predifined_keyids"].items()},
         )
 
+    @classmethod
+    def load_dataset_evaluations(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
+        mir_storage_data: mirpb.MirTasks = cls.load_single_storage(mir_root=mir_root,
+                                                                   mir_branch=mir_branch,
+                                                                   ms=mirpb.MirStorage.MIR_TASKS,
+                                                                   mir_task_id=mir_task_id,
+                                                                   as_dict=False)
+        task = mir_storage_data.tasks[mir_storage_data.head_task_id]
+        if not task.evaluation.dataset_evaluations:
+            raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no dataset evaluation")
+
+        dataset_evaluations = cls.__message_to_dict(task.evaluation)
+        return dataset_evaluations["dataset_evaluations"]
+
 
 def create_task(task_type: 'mirpb.TaskType.V',
                 task_id: str,
