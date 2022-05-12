@@ -10,7 +10,7 @@ from mir.protos import mir_command_pb2 as mirpb
 
 class CmdEvaluate(base.BaseCommand):
     def run(self) -> int:
-        logging.debug("command evaluate: %s", self.args)
+        logging.info(f"command evaluate: {self.args}")
 
         return CmdEvaluate.run_with_args(work_dir=self.args.work_dir,
                                          src_revs=self.args.src_revs,
