@@ -16,6 +16,13 @@
         <i><font size="4">TRY IT OUT</font></i>
       </a>
     </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">SLACK社区</font></b>
+    <sup>
+      <a href="https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q">
+        <i><font size="4">WELCOME</font></i>
+      </a>
+    </sup>
   </div>
   <div>&nbsp;</div>
   
@@ -40,9 +47,15 @@
 [🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose)
 
 </div>&nbsp;</div>
-
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.png" width="160"/>
   
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.png" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
+  
+  📫反馈邮箱： contact.viesc@gmail.com
+  
+  <div>&nbsp;</div>&nbsp;</div>
+
 ## 简介
 
 [English](README.md) | 简体中文
@@ -96,8 +109,6 @@
     - [6.1.2 分支与数据集的管理](#612-分支与数据集的管理)
 - [7.MISC](#7misc)
   - [7.1 常见问题](#71-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
-  - [7.2 License](#72-license)
-  - [7.3 联系我们](#73-%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -874,16 +885,6 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 *  在windows系统遇到部署、调试、运行问题如何解决？
 
 尚未在Windows服务器完备测试，暂时无法提供服务支持。
-
-## 7.2 License
-
-YMIR开源项目符合Apache 2.0证书许可。查看 [LICENSE](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE) file for details.
-
-## 7.3 联系我们
-
-当您有其他问题时，请联系我们： contact.viesc@gmail.com
-
-或者加入我们的[Slack community](https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q)，我们将会实时解答您的问题。
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
