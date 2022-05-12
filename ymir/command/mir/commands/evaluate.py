@@ -37,8 +37,7 @@ class CmdEvaluate(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        iou_thrs_list = [float(v) for v in iou_thrs.split(':')]
-        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs_list
+        iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in iou_thrs.split(':')]
 
         for thr in [conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
             if thr < 0 or thr > 1:
@@ -53,21 +52,11 @@ class CmdEvaluate(base.BaseCommand):
         mir_gt = eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
 
         # check pred and gt
+        gt_asset_ids_set = set(mir_gt.mir_metadatas.attributes.keys())
         for mir_pred in mir_preds:
-            if len(mir_pred.mir_metadatas.attributes) == 0:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no assets in predictions')
-            if set(mir_pred.mir_metadatas.attributes.keys()) != set(mir_gt.mir_metadatas.attributes.keys()):
+            if set(mir_pred.mir_metadatas.attributes.keys()) != gt_asset_ids_set:
                 raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                       error_message='prediction and ground truth have different assets')
-            pred_annotations = mir_pred.mir_annotations.task_annotations[
-                mir_pred.mir_annotations.head_task_id].image_annotations
-            if not pred_annotations:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                      error_message='prediction annotations empty')
-        gt_annotations = mir_gt.mir_annotations.task_annotations[mir_gt.mir_annotations.head_task_id].image_annotations
-        if not gt_annotations:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='ground truth annotations empty')
 
         # eval
         evaluation = _evaluate_with_cocotools(mir_preds=mir_preds,

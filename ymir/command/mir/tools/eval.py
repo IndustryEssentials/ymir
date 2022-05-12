@@ -1,10 +1,12 @@
 from collections import defaultdict
 import copy
 from typing import Any, List, Optional, Set, Union
+from mir.tools.code import MirCode
 
 import numpy as np
 
 from mir.tools import mir_storage_ops, revs_parser
+from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -21,16 +23,22 @@ class MirCoco:
                                                                             mirpb.MirStorage.MIR_ANNOTATIONS,
                                                                             mirpb.MirStorage.MIR_KEYWORDS,
                                                                         ])
+        if len(m.attributes) == 0:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='no assets in evaluated dataset')
+        if len(a.task_annotations[a.head_task_id].image_annotations) == 0:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='no annotations in evaluated dataset')
+
         self._mir_metadatas = m
         self._mir_annotations = a
-        self._mir_keywords = k
 
         # ordered list of asset / image ids
         self._ordered_asset_ids = sorted(list(self._mir_metadatas.attributes.keys()))
         # key: asset id, value: index in `self._ordered_asset_ids`
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
-        self._ordered_class_ids = sorted(list(self._mir_keywords.index_predifined_keyids.keys()))
+        self._ordered_class_ids = sorted(list(k.index_predifined_keyids.keys()))
 
         self.dataset_id = rev_tid.rev_tid
 
@@ -127,7 +135,7 @@ class MirEval:
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
         self.params.imgIdxes = list(range(len(coco_gt.get_asset_ids())))
-        self.params.catIds = coco_dt.get_class_ids()
+        self.params.catIds = coco_gt.get_class_ids()
 
     def _prepare(self) -> None:
         '''
@@ -173,9 +181,6 @@ class MirEval:
             self._paramsEval: deep copied from self.params
         '''
         p = self.params
-        p.imgIdxes = list(np.unique(p.imgIdxes))
-        if p.useCats:
-            p.catIds = list(np.unique(p.catIds))
         p.maxDets = sorted(p.maxDets)
         self.params = p
 
@@ -184,7 +189,7 @@ class MirEval:
         catIds = p.catIds if p.useCats else [-1]
 
         # self.ious: key: (img_idx, class_id), value: ious ndarray of len(dts) * len(gts)
-        self.ious = {(imgId, catId): self.computeIoU(imgId, catId) for imgId in p.imgIdxes for catId in catIds}
+        self.ious = {(imgIdx, catId): self.computeIoU(imgIdx, catId) for imgIdx in p.imgIdxes for catId in catIds}
 
         maxDet = p.maxDets[-1]
         self.evalImgs = [
