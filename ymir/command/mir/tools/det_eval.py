@@ -154,6 +154,7 @@ class MirDetEval:
         SideEffects:
             created and filled self._gts and self._dts; changed self.evalImgs and self.eval
         '''
+        # TODO: in 1:n evaluate, gts should calc only once
         gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes,
                                           class_ids=self.params.catIds,
                                           conf_thr=self.params.confThr)
