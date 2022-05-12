@@ -41,7 +41,7 @@
 </div>&nbsp;</div>
   
 <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
   
   📫反馈邮箱： contact.viesc@gmail.com
