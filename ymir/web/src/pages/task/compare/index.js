@@ -1,50 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Input, Card, Button, Form, Row, Col, Checkbox, ConfigProvider, Space, Radio, Tag, InputNumber, Table, Dropdown, Menu, Progress, Slider, } from "antd"
+import { Card, Button, Form, Row, Col, Space, Table, Slider, } from "antd"
 import s from "./index.less"
 import commonStyles from "../common.less"
-import { formLayout } from "@/config/antd"
-import { useHistory, useParams, Link, useLocation } from "umi"
+import { useHistory, useParams, Link } from "umi"
 
 import t from "@/utils/t"
-import Uploader from "@/components/form/uploader"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomNumber } from "@/utils/number"
-import Tip from "@/components/form/tip"
 import Panel from "@/components/form/panel"
-import DatasetSelect from "../../../components/form/datasetSelect"
-import { ArrowDownIcon, CompareIcon } from "../../../components/common/icons"
+import DatasetSelect from "@/components/form/datasetSelect"
+import { CompareIcon } from "@/components/common/icons"
+import useDynamicColumn from "@/hooks/useCompareDynamicColumn"
 
 function string2Array(str) {
   return str.split(',').map(i => +i)
-}
-
-const useDynamicColumn = () => {
-  const [options, setOptions] = useState([])
-  const [selected, setSelected] = useState(null)
-  const change = ({ key }) => setSelected(key)
-  useEffect(() => {
-    setSelected(options.length ? options[0] : '')
-  }, [options])
-  const menus = <Menu items={options.map(option => ({ key: option, label: option }))} onClick={change} />
-  const title = <Dropdown overlay={menus}>
-    <Space>
-      {selected}
-      <ArrowDownIcon />
-    </Space>
-  </Dropdown>
-  const column = {
-    title,
-    dataIndex: "metrics",
-    render: (metrics = []) => {
-      const target = metrics.find(met => met.keyword === selected)
-      return target?.ap
-    },
-    ellipsis: {
-      showTitle: true,
-    },
-  }
-  return [column, setOptions]
 }
 
 function Compare({ ...func }) {
@@ -60,7 +30,7 @@ function Compare({ ...func }) {
   const [source, setSource] = useState(null)
   const [tableSource, setTableSource] = useState([])
   const [form] = Form.useForm()
-  const [dynamicColumn, setDynamicColumn] = useDynamicColumn()
+  const { column: dynamicColumn, render: renderMap, setKeywords } = useDynamicColumn()
 
   const filterDatasets = useCallback((dss) => {
     return filterSameAssets(innerGroup(dss)).filter(ds => ds.id !== gt.id)
@@ -74,11 +44,6 @@ function Compare({ ...func }) {
     setTableSource(generateTableSource(iou))
   }, [iou, source])
 
-  useEffect(() => {
-    const list = gt.keywords || []
-    setDynamicColumn(tableSource.length ? list : [])
-  }, [tableSource])
-
   const onFinish = async (values) => {
     const params = {
       ...values,
@@ -89,6 +54,8 @@ function Compare({ ...func }) {
     console.log('compare result:', result, datasets)
     if (result) {
       setSource(result)
+      const list = [...gt.keywords || [], 'dog', 'cat']
+      setKeywords(list)
     }
   }
 
@@ -126,10 +93,10 @@ function Compare({ ...func }) {
     })
     return source ? [getInfo(gt), ...datasets.map((dataset, index) => {
       const datasetSource = source[dataset.id]
-      const metrics = datasetSource.metrics.filter(m => m.iou_threshold === iou)
+      const metrics = datasetSource.iou_evaluations[iou]
       return {
         ...getInfo(dataset),
-        map: datasetSource.map,
+        map: datasetSource.iou_averaged_evaluation,
         metrics,
         dataset,
       }
@@ -146,7 +113,7 @@ function Compare({ ...func }) {
       dataIndex: "name",
       render: (name, { id }) => {
         const extra = id === gt.id ? <span className={s.extra}>Ground Truth</span> : null
-        return <>{ name } { extra}</>
+        return <>{name} {extra}</>
       },
       ellipsis: {
         showTitle: true,
@@ -163,6 +130,7 @@ function Compare({ ...func }) {
     {
       title: t("dataset.column.map"),
       dataIndex: "map",
+      render: renderMap,
     },
     dynamicColumn,
   ]
@@ -231,9 +199,9 @@ function Compare({ ...func }) {
                 </Form.Item>
                 <Form.Item name='submitBtn'>
                   <div style={{ textAlign: 'center' }}>
-                  <Button type="primary" size="large" htmlType="submit">
-                    <CompareIcon /> {t('common.action.compare')}
-                  </Button>
+                    <Button type="primary" size="large" htmlType="submit">
+                      <CompareIcon /> {t('common.action.compare')}
+                    </Button>
                   </div>
                 </Form.Item>
               </Form>
