@@ -41,6 +41,7 @@ describe("models: project", () => {
   errorCode(project, "createProject")
   errorCode(project, "addExampleProject")
   errorCode(project, "updateProject")
+  errorCode(project, "checkStatus")
 
   it("effects: getProjects -> success", () => {
     const saga = project.effects.getProjects
@@ -162,6 +163,25 @@ describe("models: project", () => {
     const end = generator.next()
 
     equalObject(expected, end.value)
+    expect(end.done).toBe(true)
+  })
+  it("effects: checkStatus", () => {
+    const saga = project.effects.checkStatus
+    const pid = 2346349
+    const expected = { is_dirty: true }
+    const creator = {
+      type: "checkStatus",
+      payload: pid,
+    }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
 })
