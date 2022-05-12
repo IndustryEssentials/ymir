@@ -5,7 +5,7 @@ import useAddKeywords from "@/hooks/useAddKeywords"
 import t from '@/utils/t'
 
 const AddKeywordsBtn = ({ keywords, callback = () => {}, ...props }) => {
-  const [{ repeated }, add] = useAddKeywords(true)
+  const [{ repeated }, add] = useAddKeywords()
 
   const addNewKeywords = useCallback(async (kws) => {
     const result = await add(kws)
