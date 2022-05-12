@@ -202,7 +202,6 @@ class MirEval:
             ious ndarray of detections and ground truth boxes of single image and category
             ious[i][j] means the iou i-th detection (sorted by score, desc) and j-th ground truth box
         """
-        p = self.params
         gt = self._gts[imgIdx, catId]
         dt = self._dts[imgIdx, catId]
         if len(gt) == 0 and len(dt) == 0:
@@ -211,8 +210,8 @@ class MirEval:
         # sort dt by score, desc
         inds = np.argsort([-d['score'] for d in dt], kind='mergesort')
         dt = [dt[i] for i in inds]
-        if len(dt) > p.maxDets[-1]:
-            dt = dt[0:p.maxDets[-1]]
+        if len(dt) > self.params.maxDets[-1]:
+            dt = dt[0:self.params.maxDets[-1]]
 
         g_boxes = [g['bbox'] for g in gt]
         d_boxes = [d['bbox'] for d in dt]
@@ -257,9 +256,10 @@ class MirEval:
         Returns:
             dict (single image results)
         '''
-        p = self.params
         gt = self._gts[imgIdx, catId]
         dt = self._dts[imgIdx, catId]
+        if len(gt) == 0 and len(dt) == 0:
+            return None
 
         for g in gt:
             if g['ignore'] or (g['area'] < aRng[0] or g['area'] > aRng[1]):
@@ -276,6 +276,7 @@ class MirEval:
         # load computed ious
         ious = self.ious[imgIdx, catId][:, gtind] if len(self.ious[imgIdx, catId]) > 0 else self.ious[imgIdx, catId]
 
+        p = self.params
         T = len(p.iouThrs)
         G = len(gt)
         D = len(dt)

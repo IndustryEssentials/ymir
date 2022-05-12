@@ -1,6 +1,5 @@
 import argparse
 import logging
-import time  # for test
 from typing import List
 
 import numpy as np
@@ -94,29 +93,22 @@ def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco
     params.iouThrs = np.linspace(start=iou_thr_from,
                                  stop=iou_thr_to,
                                  num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
-                                 endpoint=True)
+                                 endpoint=False)
     params.need_pr_curve = config.need_pr_curve
 
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
     for mir_pred in mir_preds:
-        t0 = time.time()
         evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_pred, params=params)
-        t1 = time.time()
         evaluator.evaluate()
-        t2 = time.time()
         evaluator.accumulate()
-        t3 = time.time()
 
         single_dataset_evaluation = evaluator.get_evaluation_result()
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_pred.dataset_id
         evaluation.dataset_evaluations[mir_pred.dataset_id].CopyFrom(single_dataset_evaluation)
-        t4 = time.time()
-
-        logging.info(f"==== times: {t1 - t0}, {t2 - t1}, {t3 - t2}, {t4 - t3}, {t4 - t0}")
 
     return evaluation
 
