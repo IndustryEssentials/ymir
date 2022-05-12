@@ -198,11 +198,10 @@ message Evaluation {
 
 message EvaluateConfig {
     float conf_thr = 1;
-    float iou_thr_from = 2;
-    float iou_thr_to = 3;
-    float iou_thr_step = 4;
-    string gt_dataset_id = 5;
-    repeated string pred_dataset_ids = 6;
+    string iou_thrs_interval = 2;
+    bool need_pr_curve = 3;
+    string gt_dataset_id = 4;
+    repeated string pred_dataset_ids = 5;
 }
 
 message SingleDatasetEvaluation {
