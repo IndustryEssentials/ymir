@@ -173,9 +173,8 @@ class MirEval:
             self.evalImgs: will be cauculated
             self._paramsEval: deep copied from self.params
         '''
+        self.params.maxDets.sort()
         p = self.params
-        p.maxDets = sorted(p.maxDets)
-        self.params = p
 
         self._prepare()
         # loop through images, area range, max detection number
