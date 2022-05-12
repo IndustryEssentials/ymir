@@ -1,22 +1,9 @@
 
-import { connect } from "dva"
-import { Button, Col, message, Row, Tag } from "antd"
+import { Col, Row, Tag } from "antd"
 
-import t from "@/utils/t"
+import AddKeywordsBtn from "../keyword/addKeywordsBtn"
 
-function IgnoreKeywords({ keywords = [], addKeywords }) {
-  async function addIgnoreKeywords() {
-    if (!keywords.length) {
-      return
-    }
-    const params = keywords.map(k => ({
-      name: k, alias: []
-    }))
-    const result = await addKeywords(params)
-    if (result) {
-      message.success(t('keyword.add.success'))
-    }
-  }
+function IgnoreKeywords({ keywords = [] }) {
   return (
     <Row wrap={false}>
       <Col flex={1}>
@@ -25,19 +12,10 @@ function IgnoreKeywords({ keywords = [], addKeywords }) {
         ))}
       </Col>
       <Col>
-        {keywords.length ? <Button type="primary" onClick={() => addIgnoreKeywords()}>{t("dataset.add.label_strategy.add")}</Button> : null }
+        {keywords.length ? <AddKeywordsBtn type="primary" keywords={keywords} /> : null }
       </Col>
     </Row>
   )
 }
-const actions = (dispatch) => {
-  return {
-    addKeywords(keywords) {
-      return dispatch({
-        type: "keyword/updateKeywords",
-        payload: { keywords },
-      })
-    },
-  }
-}
-export default connect(null, actions)(IgnoreKeywords)
+
+export default IgnoreKeywords
