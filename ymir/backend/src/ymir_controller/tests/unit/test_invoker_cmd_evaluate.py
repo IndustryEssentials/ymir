@@ -28,9 +28,7 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
         self._dst_dataset_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz4'
 
         self._conf_thr = 0.3
-        self._iou_thr_from = 0.5
-        self._iou_thr_to = 0.95
-        self._iou_thr_step = 0.05
+        self._iou_thrs_interval = '0.5:1.0:0.05'
 
         self._sandbox_root = test_utils.dir_test_root(self.id().split(".")[-3:])
         self._user_root = os.path.join(self._sandbox_root, self._user_name)
@@ -81,9 +79,7 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
                                          dst_dataset_id=self._task_id,
                                          in_dataset_ids=self._in_dataset_ids,
                                          singleton_op=self._gt_dataset_id,
-                                         iou_thr_from=self._iou_thr_from,
-                                         iou_thr_to=self._iou_thr_to,
-                                         iou_thr_step=self._iou_thr_step,
+                                         iou_thrs_interval=self._iou_thrs_interval,
                                          conf_thr=self._conf_thr)
         self.assertEqual(response.code, 0)
         self.assertEqual(response.message, 'done')
@@ -94,5 +90,5 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
         expected_cmd += f" --src-revs {self._in_dataset_ids[0]}@{self._in_dataset_ids[0]}"
         expected_cmd += f" --gt-rev {self._gt_dataset_id}@{self._gt_dataset_id}"
         expected_cmd += f" -w {work_dir} --conf-thr {self._conf_thr:.2f}"
-        expected_cmd += f" --iou-thrs {self._iou_thr_from:.2f}:{self._iou_thr_to:.2f}:{self._iou_thr_step:.2f}"
+        expected_cmd += f" --iou-thrs {self._iou_thrs_interval}"
         mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)

@@ -29,9 +29,7 @@ def make_cmd_request(user_id: str = None,
                      sampling_rate: float = None,
                      task_parameters: str = None,
                      conf_thr: float = None,
-                     iou_thr_from: float = None,
-                     iou_thr_to: float = None,
-                     iou_thr_step: float = None) -> backend_pb2.GeneralReq:
+                     iou_thrs_interval: str = '') -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -84,13 +82,9 @@ def make_cmd_request(user_id: str = None,
     if task_parameters:
         request.task_parameters = task_parameters
     if conf_thr:
-        request.evaluate_config.conf_threshold = conf_thr
-    if iou_thr_from:
-        request.evaluate_config.iou_threshold_from = iou_thr_from
-    if iou_thr_to:
-        request.evaluate_config.iou_threshold_to = iou_thr_to
-    if iou_thr_step:
-        request.evaluate_config.iou_threshold_step = iou_thr_step
+        request.evaluate_config.conf_thr = conf_thr
+    if iou_thrs_interval:
+        request.evaluate_config.iou_thrs_interval = iou_thrs_interval
     return request
 
 
@@ -122,9 +116,7 @@ def make_invoker_cmd_call(invoker: Any,
                           sampling_rate: float = None,
                           work_dir: str = '',
                           conf_thr: float = None,
-                          iou_thr_from: float = None,
-                          iou_thr_to: float = None,
-                          iou_thr_step: float = None) -> backend_pb2.GeneralReq:
+                          iou_thrs_interval: str = '') -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,
@@ -148,9 +140,7 @@ def make_invoker_cmd_call(invoker: Any,
                                sampling_count=sampling_count,
                                sampling_rate=sampling_rate,
                                conf_thr=conf_thr,
-                               iou_thr_from=iou_thr_from,
-                               iou_thr_to=iou_thr_to,
-                               iou_thr_step=iou_thr_step)
+                               iou_thrs_interval=iou_thrs_interval)
     invoker = invoker(sandbox_root=sandbox_root,
                       request=request,
                       assets_config=assets_config,

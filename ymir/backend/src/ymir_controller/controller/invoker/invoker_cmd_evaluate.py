@@ -16,6 +16,8 @@ class EvaluateInvoker(BaseMirControllerInvoker):
                                          checker.Prerequisites.CHECK_SINGLETON_OP,
                                          checker.Prerequisites.CHECK_IN_DATASET_IDS,
                                          checker.Prerequisites.CHECK_HIS_TASK_ID,
+                                         checker.Prerequisites.CHECK_EVALUATE_CONF_THR,
+                                         checker.Prerequisites.CHECK_EVALUATE_IOU_THRS_INTERVAL,
                                      ],
                                      mir_root=self._repo_root)
 
@@ -40,9 +42,9 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             '-w',
             self._work_dir,
             '--conf-thr',
-            f"{ec.conf_threshold:.2f}",
+            f"{ec.conf_thr:.2f}",
             '--iou-thrs',
-            f"{ec.iou_threshold_from:.2f}:{ec.iou_threshold_to:.2f}:{ec.iou_threshold_step:.2f}",
+            ec.iou_thrs_interval,
         ]
         if ec.need_pr_curve:
             command.append('--need-pr-curve')
