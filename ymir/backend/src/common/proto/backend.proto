@@ -279,6 +279,7 @@ message EvaluateConfig {
     float iou_threshold_to = 2;
     float iou_threshold_step = 3;
     float conf_threshold = 4;
+    bool need_pr_curve = 5;
 }
 
 service mir_controller_service {

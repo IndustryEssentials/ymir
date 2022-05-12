@@ -41,5 +41,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             '--iou-thrs',
             f"{ec.iou_threshold_from:.2f}:{ec.iou_threshold_to:.2f}:{ec.iou_threshold_step:.2f}",
         ]
+        if ec.need_pr_curve:
+            command.append('--need-pr-curve')
 
         return utils.run_command(command)
