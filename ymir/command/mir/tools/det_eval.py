@@ -10,7 +10,7 @@ from mir.protos import mir_command_pb2 as mirpb
 
 
 class MirCoco:
-    def __init__(self, mir_root: str, rev_tid: revs_parser.TypRevTid) -> None:
+    def __init__(self, mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float) -> None:
         m: mirpb.MirMetadatas
         a: mirpb.MirAnnotations
         k: mirpb.MirKeywords
@@ -39,13 +39,21 @@ class MirCoco:
         # ordered list of class / category ids
         self._ordered_class_ids = sorted(list(k.index_predifined_keyids.keys()))
 
+        self.img_cat_to_annotations = defaultdict(list)
+        annos = self._get_annotations(asset_idxes=self.get_asset_idxes(),
+                                      class_ids=self.get_class_ids(),
+                                      conf_thr=conf_thr)
+        for anno in annos:
+            self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
+
         self.dataset_id = rev_tid.rev_tid
 
-    def load_dts_from_gt(self, mir_root: str, rev_tids: List[revs_parser.TypRevTid]) -> List['MirCoco']:
+    def load_dts_from_gt(self, mir_root: str, rev_tids: List[revs_parser.TypRevTid],
+                         conf_thr: float) -> List['MirCoco']:
         gt_asset_ids_set = set(self.get_asset_ids())
         mir_dts: List['MirCoco'] = []
         for rev_tid in rev_tids:
-            mir_dt = MirCoco(mir_root=mir_root, rev_tid=rev_tid)
+            mir_dt = MirCoco(mir_root=mir_root, rev_tid=rev_tid, conf_thr=conf_thr)
             if set(mir_dt.mir_metadatas.attributes.keys()) != gt_asset_ids_set:
                 raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                       error_message='prediction and ground truth have different assets')
@@ -61,7 +69,7 @@ class MirCoco:
     def mir_annotations(self) -> mirpb.MirAnnotations:
         return self._mir_annotations
 
-    def get_annotations(self, asset_idxes: List[int], class_ids: List[int], conf_thr: float) -> List[dict]:
+    def _get_annotations(self, asset_idxes: List[int], class_ids: List[int], conf_thr: float) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
@@ -136,37 +144,14 @@ class MirDetEval:
         self.cocoDt = coco_dt  # detections COCO API
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
-        self._gts: dict = defaultdict(list)  # gt for evaluation
-        self._dts: dict = defaultdict(list)  # dt for evaluation
+        self._gts: dict = coco_gt.img_cat_to_annotations  # gt for evaluation
+        self._dts: dict = coco_dt.img_cat_to_annotations  # dt for evaluation
         self.params = params or Params()  # parameters
         self.stats: np.ndarray = np.zeros(1)  # result summarization
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
         self.params.imgIdxes = coco_gt.get_asset_idxes()
         self.params.catIds = coco_gt.get_class_ids()
-
-    def _prepare(self) -> None:
-        '''
-        Prepare self._gts and self._dts for evaluation based on params
-
-        SideEffects:
-            created and filled self._gts and self._dts; changed self.evalImgs and self.eval
-        '''
-        # TODO: in 1:n evaluate, gts should calc only once
-        gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes,
-                                          class_ids=self.params.catIds,
-                                          conf_thr=self.params.confThr)
-        dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes,
-                                          class_ids=self.params.catIds,
-                                          conf_thr=self.params.confThr)
-
-        # for each element in self._gts and self._dts:
-        #   key: (asset_idx, class_id)
-        #   value: {'asset_idx': int, 'id': int, 'class_id': int, 'bbox': int tuple of xywh, 'score': float}
-        for gt in gts:
-            self._gts[gt['asset_idx'], gt['class_id']].append(gt)
-        for dt in dts:
-            self._dts[dt['asset_idx'], dt['class_id']].append(dt)
 
     def evaluate(self) -> None:
         '''
@@ -182,7 +167,6 @@ class MirDetEval:
         self.params.maxDets.sort()
         p = self.params
 
-        self._prepare()
         # loop through images, area range, max detection number
         catIds = p.catIds
 

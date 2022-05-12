@@ -35,8 +35,8 @@ class CmdEvaluate(base.BaseCommand):
             return return_code
 
         # read pred and gt
-        mir_gt = det_eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
-        mir_dts = mir_gt.load_dts_from_gt(mir_root=mir_root, rev_tids=src_rev_tids)
+        mir_gt = det_eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid, conf_thr=conf_thr)
+        mir_dts = mir_gt.load_dts_from_gt(mir_root=mir_root, rev_tids=src_rev_tids, conf_thr=conf_thr)
 
         # eval
         evaluate_config = mirpb.EvaluateConfig()

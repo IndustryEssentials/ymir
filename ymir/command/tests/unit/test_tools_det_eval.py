@@ -274,29 +274,13 @@ class TestToolsDetEval(unittest.TestCase):
     # public: test cases
     def test_mir_coco(self):
         mir_coco = det_eval.MirCoco(mir_root=self._mir_root,
-                                    rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
+                                    rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False),
+                                    conf_thr=0)
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
 
-        # get annotations
-        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1, 2], class_ids=[0, 1, 2], conf_thr=0)
-        counter = Counter([elem['asset_idx'] for elem in annotations_list])
-        self.assertEqual(4, counter[0])
-        self.assertEqual(1, counter[1])
-
-        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 2], class_ids=[0, 1, 2], conf_thr=0)
-        counter = Counter([elem['asset_idx'] for elem in annotations_list])
-        self.assertEqual(4, counter[0])
-        self.assertEqual(0, counter[2])
-
-        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1], class_ids=[0, 3], conf_thr=0)
-        counter = Counter([elem['asset_idx'] for elem in annotations_list])
-        self.assertEqual(2, counter[0])
-        self.assertEqual(0, counter[1])
-
-        annotations_list = mir_coco.get_annotations(asset_idxes=[0, 1, 2], class_ids=[0, 1, 2], conf_thr=2)
-        self.assertEqual(0, len(annotations_list))
+        self.assertEqual(2, len(mir_coco.img_cat_to_annotations[(0, 0)]))
 
     def test_mir_eval_00(self):
         """ align our eval with original COCOeval """
@@ -307,9 +291,11 @@ class TestToolsDetEval(unittest.TestCase):
 
         # ymir's eval
         mir_gt = det_eval.MirCoco(mir_root=self._mir_root,
-                                  rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
+                                  rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False),
+                                  conf_thr=0)
         mir_dt = det_eval.MirCoco(mir_root=self._mir_root,
-                                  rev_tid=revs_parser.parse_single_arg_rev('b@b', need_tid=False))
+                                  rev_tid=revs_parser.parse_single_arg_rev('b@b', need_tid=False),
+                                  conf_thr=0)
         mir_evaluator = det_eval.MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
         mir_evaluator.evaluate()
         mir_evaluator.accumulate()
