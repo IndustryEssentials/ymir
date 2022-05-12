@@ -6,7 +6,6 @@ import unittest
 
 from google.protobuf import json_format
 import numpy as np
-from pycocotools import coco, cocoeval
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import eval, mir_storage_ops, revs_parser
@@ -19,14 +18,11 @@ class TestToolsEval(unittest.TestCase):
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._working_root = os.path.join(self._test_root, 'work')
         self._mir_root = os.path.join(self._test_root, 'mir-root')
-        self._coco_a = os.path.join(self._test_root, 'coco_a.json')
-        self._coco_b = os.path.join(self._test_root, 'coco_b.json')
 
     def setUp(self) -> None:
         self._prepare_dirs()
         test_utils.prepare_labels(mir_root=self._mir_root, names=['person', 'cat', 'tv', 'dog'])
         self._prepare_mir_repo()
-        self._prepare_coco()
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -38,227 +34,6 @@ class TestToolsEval(unittest.TestCase):
         test_utils.remake_dirs(self._test_root)
         test_utils.remake_dirs(self._working_root)
         test_utils.remake_dirs(self._mir_root)
-
-    def _prepare_coco(self) -> None:
-        self._prepare_coco_a()
-        self._prepare_coco_b()
-
-    def _prepare_coco_a(self) -> None:
-        coco_dict = {
-            "info": {},
-            "licenses": [
-                {
-                    "id": 1,
-                    "name": "Attribution-NonCommercial-ShareAlike License",
-                    "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/",
-                },
-            ],
-            "categories": [
-                {
-                    "id": 0,
-                    "name": "person",
-                    "supercategory": "unknown",
-                    "keypoints": [],
-                    "skeleton": []
-                }, {
-                    "id": 1,
-                    "name": "cat",
-                    "supercategory": "unknown",
-                    "keypoints": [],
-                    "skeleton": []
-                }, {
-                    "id": 2,
-                    "name": "tv",
-                    "supercategory": "unknown",
-                    "keypoints": [],
-                    "skeleton": []
-                },
-            ],
-            "images": [
-                {
-                    "id": 1,
-                    "license": 1,
-                    "file_name": "a0",
-                    "height": 500,
-                    "width": 500,
-                }, {
-                    "id": 2,
-                    "license": 1,
-                    "file_name": "a1",
-                    "height": 500,
-                    "width": 500,
-                }, {
-                    "id": 3,
-                    "license": 1,
-                    "file_name": "a2",
-                    "height": 500,
-                    "width": 500,
-                },
-            ],
-            "annotations": [
-                {
-                    "id": 1,
-                    "image_id": 1,
-                    "category_id": 0,
-                    "bbox": [50, 50, 50, 50],
-                    "score": 1,
-                    "area": 2500,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 2,
-                    "image_id": 1,
-                    "category_id": 0,
-                    "bbox": [150, 50, 75, 75],
-                    "score": 1,
-                    "area": 5625,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 3,
-                    "image_id": 1,
-                    "category_id": 1,
-                    "bbox": [150, 150, 75, 75],
-                    "score": 1,
-                    "area": 5625,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 4,
-                    "image_id": 1,
-                    "category_id": 2,
-                    "bbox": [350, 50, 100, 100],
-                    "score": 1,
-                    "area": 10000,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 5,
-                    "image_id": 2,
-                    "category_id": 2,
-                    "bbox": [300, 300, 100, 100],
-                    "score": 1,
-                    "area": 10000,
-                    "segmentation": [],
-                    "iscrowd": 0
-                },
-            ]
-        }
-        with open(self._coco_a, 'w') as f:
-            f.write(json.dumps(coco_dict))
-
-    def _prepare_coco_b(self) -> None:
-        coco_dict = {
-            "info": {},
-            "licenses": [
-                {
-                    "id": 1,
-                    "name": "Attribution-NonCommercial-ShareAlike License",
-                    "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/",
-                },
-            ],
-            "categories": [
-                {
-                    "id": 0,
-                    "name": "person",
-                    "supercategory": "unknown",
-                    "keypoints": [],
-                    "skeleton": []
-                }, {
-                    "id": 1,
-                    "name": "cat",
-                    "supercategory": "unknown",
-                    "keypoints": [],
-                    "skeleton": []
-                }, {
-                    "id": 2,
-                    "name": "tv",
-                    "supercategory": "unknown",
-                    "keypoints": [],
-                    "skeleton": []
-                },
-            ],
-            "images": [
-                {
-                    "id": 1,
-                    "license": 1,
-                    "file_name": "a0",
-                    "height": 500,
-                    "width": 500,
-                }, {
-                    "id": 2,
-                    "license": 1,
-                    "file_name": "a1",
-                    "height": 500,
-                    "width": 500,
-                }, {
-                    "id": 3,
-                    "license": 1,
-                    "file_name": "a2",
-                    "height": 500,
-                    "width": 500,
-                },
-            ],
-            "annotations": [
-                {
-                    "id": 1,
-                    "image_id": 1,
-                    "category_id": 0,
-                    "bbox": [45, 45, 52, 52],
-                    "score": 0.7,
-                    "area": 2704,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 2,
-                    "image_id": 1,
-                    "category_id": 0,
-                    "bbox": [150, 50, 73, 73],
-                    "score": 0.8,
-                    "area": 5329,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 3,
-                    "image_id": 1,
-                    "category_id": 0,
-                    "bbox": [350, 50, 76, 76],
-                    "score": 0.9,
-                    "area": 5776,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 4,
-                    "image_id": 1,
-                    "category_id": 1,
-                    "bbox": [150, 160, 78, 78],
-                    "score": 0.9,
-                    "area": 6084,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 5,
-                    "image_id": 1,
-                    "category_id": 2,
-                    "bbox": [350, 50, 102, 103],
-                    "score": 0.9,
-                    "area": 10506,
-                    "segmentation": [],
-                    "iscrowd": 0
-                }, {
-                    "id": 6,
-                    "image_id": 2,
-                    "category_id": 2,
-                    "bbox": [300, 300, 103, 110],
-                    "score": 0.9,
-                    "area": 11330,
-                    "segmentation": [],
-                    "iscrowd": 0
-                },
-            ]
-        }
-        with open(self._coco_b, 'w') as f:
-            f.write(json.dumps(coco_dict))
 
     def _prepare_mir_repo(self) -> None:
         test_utils.mir_repo_init(self._mir_root)
@@ -524,13 +299,8 @@ class TestToolsEval(unittest.TestCase):
     def test_mir_eval_00(self):
         """ align our eval with original COCOeval """
 
-        # original eval from pycocotools
-        coco_gt = coco.COCO(self._coco_a)
-        coco_dt = coco.COCO(self._coco_b)
-        coco_evaluator = cocoeval.COCOeval(cocoGt=coco_gt, cocoDt=coco_dt, iouType='bbox')
-        coco_evaluator.evaluate()
-        coco_evaluator.accumulate()
-        coco_evaluator.summarize()
+        # original result from pycocotools
+        expected_stats = np.array([0.61177118, 0.88888889, 0.41749175, -1.0, 0.46716172, 0.9009901, 0.46666667, 0.7, 0.7, -1.0, 0.6,  0.9])
 
         # ymir's eval
         mir_gt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
@@ -538,9 +308,8 @@ class TestToolsEval(unittest.TestCase):
         mir_evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt)
         mir_evaluator.evaluate()
         mir_evaluator.accumulate()
-
         mir_evaluator.summarize()
-        self.assertTrue(np.array_equal(coco_evaluator.stats, mir_evaluator.stats))
+        self.assertTrue(np.isclose(expected_stats, mir_evaluator.stats).all())
 
         mir_evaluation_result = mir_evaluator.get_evaluation_result()
         self.assertTrue(len(mir_evaluation_result.iou_evaluations) > 0)
