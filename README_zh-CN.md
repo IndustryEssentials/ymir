@@ -47,6 +47,19 @@
   
 <div>&nbsp;</div>&nbsp;</div>
 
+# 文章引用
+
+如要在您的工作中引用YMIR，请使用下面的Bibtex：
+
+```bibtex
+@inproceedings{huang2021ymir,
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
+      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
+      year={2021},
+}
+```
+
 ## 简介
 
 [English](README.md) | 简体中文
@@ -102,19 +115,6 @@
   - [7.1 常见问题](#71-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# 文章引用
-
-如要在您的工作中引用YMIR，请使用下面的Bibtex：
-
-```bibtex
-@inproceedings{huang2021ymir,
-      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
-      author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
-      booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
-      year={2021},
-}
-```
 
 # 1.  AI SUITE-YMIR介绍
 
