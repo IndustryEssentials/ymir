@@ -623,7 +623,6 @@ class Params:
         self.areaRng: List[list] = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.confThr = 0.3  # confidence threshold
-        self.useSegm = None
         self.need_pr_curve = False
 
 
