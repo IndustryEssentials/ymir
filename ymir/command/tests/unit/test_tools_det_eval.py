@@ -8,10 +8,11 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import eval, mir_storage_ops, revs_parser
+from mir.tools import det_eval, mir_storage_ops, revs_parser
 from tests import utils as test_utils
 
-class TestToolsEval(unittest.TestCase):
+
+class TestToolsDetEval(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
@@ -272,7 +273,7 @@ class TestToolsEval(unittest.TestCase):
 
     # public: test cases
     def test_mir_coco(self):
-        mir_coco = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
+        mir_coco = det_eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
@@ -303,9 +304,9 @@ class TestToolsEval(unittest.TestCase):
         expected_stats = np.array([0.61177118, 0.88888889, 0.41749175, -1.0, 0.46716172, 0.9009901, 0.46666667, 0.7, 0.7, -1.0, 0.6,  0.9])
 
         # ymir's eval
-        mir_gt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
-        mir_dt = eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('b@b', need_tid=False))
-        mir_evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt)
+        mir_gt = det_eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=False))
+        mir_dt = det_eval.MirCoco(mir_root=self._mir_root, rev_tid=revs_parser.parse_single_arg_rev('b@b', need_tid=False))
+        mir_evaluator = det_eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt)
         mir_evaluator.evaluate()
         mir_evaluator.accumulate()
         mir_evaluator.summarize()

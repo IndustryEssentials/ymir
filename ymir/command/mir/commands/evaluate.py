@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 
 from mir.commands import base
-from mir.tools import checker, eval, mir_storage_ops, revs_parser
+from mir.tools import checker, det_eval, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -39,7 +39,7 @@ class CmdEvaluate(base.BaseCommand):
             return return_code
 
         # read pred and gt
-        mir_gt = eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
+        mir_gt = det_eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid)
         mir_dts = mir_gt.load_dts_from_gt(mir_root=mir_root, rev_tids=src_rev_tids)
 
         # eval
@@ -69,7 +69,7 @@ class CmdEvaluate(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _evaluate_with_cocotools(mir_dts: List[eval.MirCoco], mir_gt: eval.MirCoco,
+def _evaluate_with_cocotools(mir_dts: List[det_eval.MirCoco], mir_gt: det_eval.MirCoco,
                              config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
     for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
@@ -79,7 +79,7 @@ def _evaluate_with_cocotools(mir_dts: List[eval.MirCoco], mir_gt: eval.MirCoco,
     if iou_thr_from >= iou_thr_to:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='invalid iou_thr_from or iou_thr_to')
-    params = eval.Params()
+    params = det_eval.Params()
     params.confThr = config.conf_thr
     params.iouThrs = np.linspace(start=iou_thr_from,
                                  stop=iou_thr_to,
@@ -91,7 +91,7 @@ def _evaluate_with_cocotools(mir_dts: List[eval.MirCoco], mir_gt: eval.MirCoco,
     evaluation.config.CopyFrom(config)
 
     for mir_dt in mir_dts:
-        evaluator = eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+        evaluator = det_eval.MirEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         evaluator.accumulate()
 
