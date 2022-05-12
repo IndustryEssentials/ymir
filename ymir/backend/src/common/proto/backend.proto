@@ -277,7 +277,7 @@ message Label {
 message EvaluateConfig {
     // confidence threshold, 0 to 1
     float conf_thr = 1;
-    // from:to:step, to value is included in the interval
+    // from:to:step
     string iou_thrs_interval = 2;
     // need pr curve in evaluation result, default is false
     bool need_pr_curve = 3;
