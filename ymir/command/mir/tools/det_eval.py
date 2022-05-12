@@ -627,7 +627,7 @@ class Params:
         self.need_pr_curve = False
 
 
-def evaluate_with_cocotools(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+def evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
     for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
         if thr < 0 or thr > 1:
