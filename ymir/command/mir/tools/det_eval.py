@@ -625,3 +625,37 @@ class Params:
         self.confThr = 0.3  # confidence threshold
         self.useSegm = None
         self.need_pr_curve = False
+
+
+def evaluate_with_cocotools(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+    iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
+    for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
+        if thr < 0 or thr > 1:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='invalid conf_thr, iou_thr_from, iou_thr_to or iou_thr_step')
+    if iou_thr_from >= iou_thr_to:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='invalid iou_thr_from or iou_thr_to')
+    params = Params()
+    params.confThr = config.conf_thr
+    params.iouThrs = np.linspace(start=iou_thr_from,
+                                 stop=iou_thr_to,
+                                 num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
+                                 endpoint=False)
+    params.need_pr_curve = config.need_pr_curve
+
+    evaluation = mirpb.Evaluation()
+    evaluation.config.CopyFrom(config)
+
+    for mir_dt in mir_dts:
+        evaluator = MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+        evaluator.evaluate()
+        evaluator.accumulate()
+
+        single_dataset_evaluation = evaluator.get_evaluation_result()
+        single_dataset_evaluation.conf_thr = config.conf_thr
+        single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
+        single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
+        evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
+
+    return evaluation

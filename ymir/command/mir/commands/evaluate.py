@@ -1,14 +1,10 @@
 import argparse
 import logging
-from typing import List
-
-import numpy as np
 
 from mir.commands import base
 from mir.tools import checker, det_eval, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
-from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -49,7 +45,7 @@ class CmdEvaluate(base.BaseCommand):
         evaluate_config.need_pr_curve = need_pr_curve
         evaluate_config.gt_dataset_id = mir_gt.dataset_id
         evaluate_config.pred_dataset_ids.extend([mir_dt.dataset_id for mir_dt in mir_dts])
-        evaluation = _evaluate_with_cocotools(mir_dts=mir_dts, mir_gt=mir_gt, config=evaluate_config)
+        evaluation = det_eval.evaluate_with_cocotools(mir_dts=mir_dts, mir_gt=mir_gt, config=evaluate_config)
 
         _show_evaluation(evaluation=evaluation)
 
@@ -67,41 +63,6 @@ class CmdEvaluate(base.BaseCommand):
                                                       task=task)
 
         return MirCode.RC_OK
-
-
-def _evaluate_with_cocotools(mir_dts: List[det_eval.MirCoco], mir_gt: det_eval.MirCoco,
-                             config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
-    iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
-    for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
-        if thr < 0 or thr > 1:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='invalid conf_thr, iou_thr_from, iou_thr_to or iou_thr_step')
-    if iou_thr_from >= iou_thr_to:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='invalid iou_thr_from or iou_thr_to')
-    params = det_eval.Params()
-    params.confThr = config.conf_thr
-    params.iouThrs = np.linspace(start=iou_thr_from,
-                                 stop=iou_thr_to,
-                                 num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
-                                 endpoint=False)
-    params.need_pr_curve = config.need_pr_curve
-
-    evaluation = mirpb.Evaluation()
-    evaluation.config.CopyFrom(config)
-
-    for mir_dt in mir_dts:
-        evaluator = det_eval.MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
-        evaluator.evaluate()
-        evaluator.accumulate()
-
-        single_dataset_evaluation = evaluator.get_evaluation_result()
-        single_dataset_evaluation.conf_thr = config.conf_thr
-        single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
-        single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
-        evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
-
-    return evaluation
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
