@@ -144,16 +144,12 @@ class MirEval:
         SideEffects:
             created and filled self._gts and self._dts; changed self.evalImgs and self.eval
         '''
-        if self.params.useCats:  # TODO: shall i remove this?
-            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes,
-                                              class_ids=self.params.catIds,
-                                              conf_thr=self.params.confThr)
-            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes,
-                                              class_ids=self.params.catIds,
-                                              conf_thr=self.params.confThr)
-        else:
-            gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes, conf_thr=self.params.confThr)
-            dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes, conf_thr=self.params.confThr)
+        gts = self.cocoGt.get_annotations(asset_idxes=self.params.imgIdxes,
+                                          class_ids=self.params.catIds,
+                                          conf_thr=self.params.confThr)
+        dts = self.cocoDt.get_annotations(asset_idxes=self.params.imgIdxes,
+                                          class_ids=self.params.catIds,
+                                          conf_thr=self.params.confThr)
 
         # set ignore flag
         for gt in gts:
@@ -561,7 +557,7 @@ class MirEval:
                                                array=self.eval['all_fns'])
 
         # pr curve
-        if iou_thr_index is not None and class_id_index is not None:
+        if self.params.need_pr_curve and iou_thr_index is not None and class_id_index is not None:
             precisions = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
@@ -636,3 +632,4 @@ class Params:
         self.confThr = 0.3  # confidence threshold
         # useSegm is deprecated
         self.useSegm = None
+        self.need_pr_curve = False

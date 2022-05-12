@@ -22,12 +22,13 @@ class CmdEvaluate(base.BaseCommand):
                                          gt_rev=self.args.gt_rev,
                                          mir_root=self.args.mir_root,
                                          conf_thr=self.args.conf_thr,
-                                         iou_thrs=self.args.iou_thrs)
+                                         iou_thrs=self.args.iou_thrs,
+                                         need_pr_curve=self.args.need_pr_curve)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str, src_revs: str, dst_rev: str, gt_rev: str, mir_root: str, conf_thr: float,
-                      iou_thrs: str) -> int:
+                      iou_thrs: str, need_pr_curve: bool) -> int:
         src_rev_tids = revs_parser.parse_arg_revs(src_revs)
         gt_rev_tid = revs_parser.parse_single_arg_rev(gt_rev, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
@@ -64,7 +65,8 @@ class CmdEvaluate(base.BaseCommand):
                                               conf_thr=conf_thr,
                                               iou_thr_from=iou_thr_from,
                                               iou_thr_to=iou_thr_to,
-                                              iou_thr_step=iou_thr_step)
+                                              iou_thr_step=iou_thr_step,
+                                              need_pr_curve=need_pr_curve)
 
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,
@@ -85,13 +87,14 @@ class CmdEvaluate(base.BaseCommand):
 
 
 def _evaluate_with_cocotools(mir_preds: List[eval.MirCoco], mir_gt: eval.MirCoco, conf_thr: float, iou_thr_from: float,
-                             iou_thr_to: float, iou_thr_step: float) -> mirpb.Evaluation:
+                             iou_thr_to: float, iou_thr_step: float, need_pr_curve: bool) -> mirpb.Evaluation:
     params = eval.Params()
     params.confThr = conf_thr
     params.iouThrs = np.linspace(start=iou_thr_from,
                                  stop=iou_thr_to,
                                  num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)) + 1,
                                  endpoint=True)
+    params.need_pr_curve = need_pr_curve
 
     evaluation = mirpb.Evaluation()
     evaluation.config.conf_thr = conf_thr
@@ -148,4 +151,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      required=False,
                                      default='0.5:0.95:0.05',
                                      help='iou thresholds, default 0.5:0.95:0.05, upper bound is included')
+    evaluate_arg_parser.add_argument('--need-pr-curve',
+                                     dest='need_pr_curve',
+                                     action='store_true',
+                                     help='also generates pr curve in evaluation result')
     evaluate_arg_parser.set_defaults(func=CmdEvaluate)
