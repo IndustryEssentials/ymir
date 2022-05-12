@@ -122,7 +122,6 @@ def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
         cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
         logging.info(f"gt: {evaluation.config.gt_dataset_id} vs pred: {dataset_id}, mAP: {cae.ap}")
-    logging.info('')
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
