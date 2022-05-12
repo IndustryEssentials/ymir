@@ -1,6 +1,55 @@
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpg" width="500"/>
+  <div>&nbsp;</div>
+  <div align="center">
+    <b><font size="5">Official Site</font></b>
+    <sup>
+      <a href="https://www.viesc.com/">
+        <i><font size="4">VISIT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">Apply for Trial</font></b>
+    <sup>
+      <a href="https://github.com/IndustryEssentials/ymir#12-apply-for-trial">
+        <i><font size="4">TRY IT OUT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">SLACK Community</font></b>
+    <sup>
+      <a href="https://join.slack.com/t/ymir-users/shared_invite/zt-ywephyib-ccghwp8vrd58d3u6zwtG3Q">
+        <i><font size="4">WELCOME</font></i>
+      </a>
+    </sup>
+  </div>
+  <div>&nbsp;</div>
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20management.png" width="180"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20mining.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20labeling.jpg" width="200"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for%20training.jpg" width="200"/>
+  <div>&nbsp;</div>
+  
+[📘Usage Instruction](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
+[🛠️Installation](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
+[🚀Projects](https://github.com/IndustryEssentials/ymir/projects) | 
+[🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose)| 
+[📰Lisence](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
+  
+</div>&nbsp;</div>
+  
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
+  
+  📫Contact us： contact.viesc@gmail.com
+  
+<div>&nbsp;</div>&nbsp;</div>
+
 ## Introduction
 
-English | [Simplified Chinese](README_zh-CN.md)
+English | [简体中文](README_zh-CN.md)
 
 ![YMIR](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR.jpeg)
 
