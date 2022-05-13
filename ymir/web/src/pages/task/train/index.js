@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag, message } from "antd"
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -46,6 +46,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
   const [gpu_count, setGPU] = useState(0)
+  const [projectDirty, setProjectDirty] = useState(false)
 
   const renderRadio = (types) => {
     return (
@@ -191,7 +192,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.training')}>
         <div className={commonStyles.formContainer}>
-          <CheckProjectDirty style={{ marginBottom: 20 }} pid={pid} initialCheck={true} />
+          <CheckProjectDirty style={{ marginBottom: 20 }} pid={pid} initialCheck={true} callback={(dirty) => setProjectDirty(dirty)} />
           <Form
             name='trainForm'
             className={styles.form}
@@ -412,7 +413,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit">
+                    <Button type="primary" size="large" disabled={projectDirty} htmlType="submit">
                       {t('common.action.train')}
                     </Button>
                   </Form.Item>
