@@ -5,17 +5,23 @@ from proto import backend_pb2
 
 
 class EvaluateInvoker(BaseMirControllerInvoker):
+    """
+    invoker for command evaluate
+    request.in_dataset_ids: predictions
+    request.singleton_op: ground truth
+    request.task_id: task hash for this evaluate command
+    request.evaluate_config.conf_thr: confidence threshold
+    request.evaluate_config.iou_thrs_interval: from:to:step, default is '0.5:1.0:0.05', end point excluded
+    """
     def pre_invoke(self) -> backend_pb2.GeneralResp:
         checker_resp = checker.check_request(request=self._request,
                                              prerequisites=[
                                                  checker.Prerequisites.CHECK_USER_ID,
                                                  checker.Prerequisites.CHECK_REPO_ID,
                                                  checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
-                                                 checker.Prerequisites.CHECK_DST_DATASET_ID,
                                                  checker.Prerequisites.CHECK_TASK_ID,
                                                  checker.Prerequisites.CHECK_SINGLETON_OP,
                                                  checker.Prerequisites.CHECK_IN_DATASET_IDS,
-                                                 checker.Prerequisites.CHECK_HIS_TASK_ID,
                                              ],
                                              mir_root=self._repo_root)
         if checker_resp.code != CTLResponseCode.CTR_OK:
@@ -26,7 +32,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                f"invalid evaluate conf thr: {conf_thr:.2f}")
 
-        iou_thrs_interval: str = self._request.evaluate_config.iou_thrs_interval
+        iou_thrs_interval: str = self._request.evaluate_config.iou_thrs_interval or '0.5:1.0:0.05'
         iou_thrs_interval_list = [float(v) for v in iou_thrs_interval.split(':')]
         if len(iou_thrs_interval_list) != 3:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
@@ -51,7 +57,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             '--root',
             self._repo_root,
             '--dst-rev',
-            revs.join_tvt_branch_tid(branch_id=self._request.dst_dataset_id, tid=self._request.task_id),
+            revs.join_tvt_branch_tid(branch_id=self._request.task_id, tid=self._request.task_id),
             '--src-revs',
             revs.build_src_revs(in_src_revs=self._request.in_dataset_ids, his_tid=self._request.his_task_id),
             '--gt-rev',
