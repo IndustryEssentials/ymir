@@ -5,7 +5,7 @@ import requests
 from fastapi.logger import logger
 from pydantic import BaseModel
 
-from app.api.errors.errors import ModelNotFound, ModelNotReady
+from app.api.errors.errors import DatasetEvaluationNotFound, ModelNotFound, ModelNotReady
 from app.config import settings
 from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode
@@ -79,7 +79,7 @@ class ModelMetaData:
 class VizDataset(BaseModel):
     """
     Interface dataclass of VIZ output, defined as DatasetResult in doc:
-    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir-viz/doc/ymir_viz_API.yaml
+    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
     """
 
     total_images_cnt: int
@@ -111,6 +111,29 @@ class DatasetMetaData:
         )
 
 
+class EvaluationScore(BaseModel):
+    ap: float
+    ar: float
+    fn: int
+    fp: int
+    tp: int
+
+
+class VizDatasetEvaluation(BaseModel):
+    ci_evaluations: Dict[int, EvaluationScore]  # class_id -> scores
+    ci_averaged_evaluation: EvaluationScore
+
+
+class VizDatasetEvaluationResult(BaseModel):
+    """
+    Interface dataclass of VIZ output, defined as DatasetEvaluationResult in doc:
+    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
+    """
+
+    iou_evaluations: Dict[float, VizDatasetEvaluation]  # iou -> evaluation
+    iou_averaged_evaluation: VizDatasetEvaluation
+
+
 class VizClient:
     def __init__(self, *, host: str = settings.VIZ_HOST):
         self.host = host
@@ -118,6 +141,7 @@ class VizClient:
         self._user_id = None  # type: Optional[str]
         self._project_id = None  # type: Optional[str]
         self._branch_id = None  # type: Optional[str]
+        self._url_prefix = None  # type: Optional[str]
 
     def initialize(
         self,
@@ -129,6 +153,7 @@ class VizClient:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
         self._branch_id = branch_id
+        self._url_prefix = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}"  # noqa: E501
 
     def get_assets(
         self,
@@ -138,8 +163,7 @@ class VizClient:
         limit: int = 20,
         user_labels: UserLabels,
     ) -> Assets:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets"  # noqa: E501
-
+        url = f"{self._url_prefix}/assets"
         payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
@@ -155,8 +179,7 @@ class VizClient:
         asset_id: str,
         user_labels: UserLabels,
     ) -> Optional[Dict]:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/assets/{asset_id}"  # noqa: E501
-
+        url = f"{self._url_prefix}/assets/{asset_id}"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
             logger.error("[viz] failed to get asset info: %s", resp.content)
@@ -165,16 +188,26 @@ class VizClient:
         return asdict(Asset.from_viz_res(asset_id, res, user_labels))
 
     def get_model(self) -> ModelMetaData:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/models"  # noqa: E501
+        url = f"{self._url_prefix}/models"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         return ModelMetaData.from_viz_res(res)
 
     def get_dataset(self, user_labels: UserLabels) -> DatasetMetaData:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}/datasets"  # noqa: E501
+        url = f"{self._url_prefix}/datasets"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         return DatasetMetaData.from_viz_res(res, user_labels)
+
+    def get_evaluations(self, user_labels: UserLabels) -> Dict:
+        url = f"{self._url_prefix}/evaluations"
+        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        res = self.parse_resp(resp)
+        evaluations = {
+            dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
+        }
+        convert_class_id_to_keyword(evaluations, user_labels)
+        return evaluations
 
     def parse_resp(self, resp: requests.Response) -> Dict:
         """
@@ -190,6 +223,8 @@ class VizClient:
             error_code = resp.json()["code"]
             if error_code == VizErrorCode.MODEL_NOT_EXISTS:
                 raise ModelNotFound()
+            elif error_code == VizErrorCode.DATASET_EVALUATION_NOT_EXISTS:
+                raise DatasetEvaluationNotFound()
         raise ModelNotReady()
 
     def close(self) -> None:
@@ -198,3 +233,12 @@ class VizClient:
 
 def get_asset_url(asset_id: str) -> str:
     return f"{settings.NGINX_PREFIX}/ymir-assets/{asset_id}"
+
+
+def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if key == "ci_evaluations":
+                obj[key] = {user_labels.get_main_names(k)[0]: v for k, v in value.items()}
+            else:
+                convert_class_id_to_keyword(obj[key], user_labels)
