@@ -61,6 +61,8 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     ymax = int(float(_get_dom_xml_tag_data(bndbox_node, "ymax")))
     width = xmax - xmin + 1
     height = ymax - ymin + 1
+    score_str = _get_dom_xml_tag_data(obj, 'score')
+    score = float(score_str) if score_str else 1.0
 
     annotation = mirpb.Annotation()
     annotation.class_id = class_type_manager.id_and_main_name_for_name(name)[0]
@@ -68,7 +70,7 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     annotation.box.y = ymin
     annotation.box.w = width
     annotation.box.h = height
-    annotation.score = 1
+    annotation.score = score
     return annotation
 
 

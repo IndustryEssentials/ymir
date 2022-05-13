@@ -69,6 +69,10 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
     # public: test cases
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_evaluate_00(self, mock_run):
+        evaluate_config = backend_pb2.EvaluateConfig()
+        evaluate_config.conf_thr = self._conf_thr
+        evaluate_config.iou_thrs_interval = self._iou_thrs_interval
+
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_EVALUATE],
                                          sandbox_root=self._sandbox_root,
                                          req_type=backend_pb2.CMD_EVALUATE,
@@ -79,8 +83,7 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
                                          dst_dataset_id=self._task_id,
                                          in_dataset_ids=self._in_dataset_ids,
                                          singleton_op=self._gt_dataset_id,
-                                         iou_thrs_interval=self._iou_thrs_interval,
-                                         conf_thr=self._conf_thr)
+                                         evaluate_config=evaluate_config)
         self.assertEqual(response.code, 0)
         self.assertEqual(response.message, 'done')
 
