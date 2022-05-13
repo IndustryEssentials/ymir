@@ -364,6 +364,8 @@ class MirDetEval:
                     if len(E) == 0:
                         continue
                     dtScores = np.concatenate([e['dtScores'][0:maxDet] for e in E])
+                    if len(dtScores) == 0:
+                        continue
 
                     # different sorting method generates slightly different results.
                     # mergesort is used to be consistent as Matlab implementation.
