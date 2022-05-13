@@ -60,6 +60,7 @@ export default {
         }
       }
       const { code, result } = yield call(getModelVersions, gid)
+      console.log('result:', result, code)
       if (code === 0) {
         const ms = result.items.map(model => transferModel(model))
         const vs = { id: gid, versions: ms }
