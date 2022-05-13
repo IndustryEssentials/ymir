@@ -81,7 +81,6 @@ describe("models: model", () => {
   errorCode(model, 'importModel')
   errorCode(model, 'updateModel')
   errorCode(model, 'verify')
-  errorCode(model, 'getModelsByRef', 100324, [])
   errorCode(model, 'getModelsByMap', 10025, { keywords: [], kmodels: {} })
 
   it("effects: getModelGroups", () => {
@@ -224,89 +223,6 @@ describe("models: model", () => {
     })
 
     expect(end.value.model_id).toBe(id)
-    expect(end.done).toBe(true)
-  })
-
-  //   getModelsByRef
-  it("effects: getModelsByRef -> get stats result success-> batch models success", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const models = products(12)
-    const result = models.map((model, index) => [model.id, index])
-    const expected = models.map((model, index) => ({ id: model.id, count: index }))
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(models)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getModelsByRef -> get stats result success-> batch models success", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const models = products(12)
-    const result = models.map((model, index) => [model.id, index])
-    const expected = models.map((model, index) => ({ id: model.id, count: index }))
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(models)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getModelsByRef -> get stats result success-> batch models failed", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const models = products(12)
-    const result = models.map((model, index) => [model.id, index])
-    const expected = models.map((model, index) => ({ id: model.id, count: index }))
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(undefined)
-
-    expect(end.value).toEqual([])
-    expect(end.done).toBe(true)
-  })
-  it("effects: getModelsByRef -> get stats result = []", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const result = []
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result,
-    })
-
-    expect(end.value).toEqual([])
     expect(end.done).toBe(true)
   })
   // getModelsByMap
