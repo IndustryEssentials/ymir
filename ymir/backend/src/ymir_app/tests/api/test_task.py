@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.api.api_v1.api import tasks as m
 from app.config import settings
-from common_utils.labels import UserLabels
 from tests.utils.tasks import create_task
 from tests.utils.utils import random_lower_string
 
@@ -59,56 +58,6 @@ def mock_viz(mocker):
 @pytest.fixture(scope="function")
 def mock_clickhouse(mocker):
     return mocker.Mock()
-
-
-def test_get_default_dataset_name():
-    task_hash = random_lower_string(32)
-    task_name = random_lower_string(10)
-    assert m.get_default_record_name(task_hash, task_name) == task_name + "_" + task_hash[-6:]
-
-
-class TestNormalizeParameters:
-    def test_normalize_task_parameters_succeed(self, mocker):
-        mocker.patch.object(m, "crud")
-        params = {
-            "keywords": "cat,dog,boy".split(","),
-            "dataset_id": 1,
-            "model_id": 233,
-            "name": random_lower_string(5),
-            "else": None,
-        }
-        user_labels = UserLabels.parse_obj(
-            dict(
-                labels=[
-                    {
-                        "name": "cat",
-                        "aliases": [],
-                        "create_time": 1647075205.0,
-                        "update_time": 1647075206.0,
-                        "id": 0,
-                    },
-                    {
-                        "id": 1,
-                        "name": "dog",
-                        "aliases": [],
-                        "create_time": 1647076207.0,
-                        "update_time": 1647076408.0,
-                    },
-                    {
-                        "id": 2,
-                        "name": "boy",
-                        "aliases": [],
-                        "create_time": 1647076209.0,
-                        "update_time": 1647076410.0,
-                    },
-                ]
-            )
-        )
-        params = m.schemas.TaskParameter(**params)
-        res = m.normalize_parameters(mocker.Mock(), params, None, user_labels)
-        assert res["class_ids"] == [0, 1, 2]
-        assert "dataset_hash" in res
-        assert "model_hash" in res
 
 
 class TestListTasks:

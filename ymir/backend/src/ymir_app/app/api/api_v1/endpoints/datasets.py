@@ -1,7 +1,7 @@
 from operator import attrgetter
 import enum
 import random
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -20,17 +20,15 @@ from app.api.errors.errors import (
     DatasetGroupNotFound,
     ProjectNotFound,
     RefuseToProcessMixedOperations,
+    DatasetsNotInSameGroup,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.iteration import get_iteration_context_converter
-from app.utils.ymir_controller import (
-    ControllerClient,
-    gen_task_hash,
-)
+from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 from app.schemas.dataset import MergeStrategy
-from app.libs.datasets import import_dataset_in_background
+from app.libs.datasets import import_dataset_in_background, evaluate_dataset
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -490,3 +488,44 @@ def create_dataset_fusion(
     logger.info("[create dataset] dataset record created: %s", dataset.name)
 
     return {"result": dataset}
+
+
+@router.post(
+    "/evaluation",
+    response_model=schemas.dataset.DatasetEvaluationOut,
+)
+def evaluate_datasets(
+    *,
+    db: Session = Depends(deps.get_db),
+    evaluation_in: schemas.dataset.DatasetEvaluationCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    """
+    evaluate dataset against ground truth
+    """
+    gt_dataset = crud.dataset.get(db, id=evaluation_in.gt_dataset_id)
+    other_datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.other_dataset_ids)
+    if not gt_dataset or len(evaluation_in.other_dataset_ids) != len(other_datasets):
+        raise DatasetNotFound()
+    if not is_same_group([gt_dataset, *other_datasets]):
+        # confine evaluation to the same dataset group
+        raise DatasetsNotInSameGroup()
+
+    evaluations = evaluate_dataset(
+        controller_client,
+        viz_client,
+        current_user.id,
+        evaluation_in.project_id,
+        user_labels,
+        evaluation_in.confidence_threshold,
+        gt_dataset,
+        other_datasets,
+    )
+    return {"result": evaluations}
+
+
+def is_same_group(datasets: List[models.Dataset]) -> bool:
+    return len({dataset.dataset_group_id for dataset in datasets}) == 1
