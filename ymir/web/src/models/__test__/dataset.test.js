@@ -1,7 +1,7 @@
 import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
 import { errorCode, normalReducer, product, products } from './func'
-import { format } from '@/utils/date'
+import { toFixed } from '@/utils/number'
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
 
 jest.mock('umi', () => {
@@ -277,7 +277,7 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     generator.next({})
-    generator.next({ code: 0, result: { items, total: items.length }})
+    generator.next({ code: 0, result: { items, total: items.length } })
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
@@ -295,7 +295,7 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call, select })
     generator.next()
-    generator.next({ code: 0, result: { items, total: items.length }})
+    generator.next({ code: 0, result: { items, total: items.length } })
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
@@ -306,7 +306,7 @@ describe("models: dataset", () => {
     const id = 133445
     const creator = {
       type: "delDatasetGroup",
-      payload: {id},
+      payload: { id },
     }
     const expected = { id, name: 'del group' }
 
@@ -561,13 +561,24 @@ describe("models: dataset", () => {
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
-  
+
   it("effects: compare", () => {
     const saga = dataset.effects.compare
-    const expected = { id: 10001, name: 'new_dataset_name' }
+    const item = () => ({ ap: Math.random()})
+    const list = (list, it) => list.reduce((p, c) => ({ ...p, [c]: it ? it : item()}), {})
+    const keywords = ['dog', 'cat', 'person']
+    const ious = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map(n => toFixed(n, 2))
+    const iitems = () => ({
+        ci_evaluations: list(keywords),
+        ci_everage_evaluations: item(),
+      })
+    const expected = {
+      iou_evaluations: list(ious, iitems()),
+      iou_everage_evaluations: iitems(),
+    }
     const creator = {
       type: "compare",
-      payload: { main_dataset_id: 1324536, other_dataset_id: [534243234, 64311234], confidence: 0.6 },
+      payload: { projectId: 51234, gt: 1324536, datasets: [534243234, 64311234], confidence: 0.6 },
     }
 
     const generator = saga(creator, { put, call })
