@@ -35,7 +35,7 @@
 [🛠️安装教程](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
 [👀推荐配置](https://c1n.cn/obvHf) |
 [🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose)| 
+[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
 [📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
   
 </div>&nbsp;</div>
