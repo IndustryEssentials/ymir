@@ -33,8 +33,9 @@
 
 [📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
 [🛠️安装教程](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
+[👀推荐配置](https://c1n.cn/obvHf) |
 [🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose)| 
+[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
 [📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
   
 </div>&nbsp;</div>
@@ -43,7 +44,7 @@
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
   
-  📫反馈邮箱： contact.viesc@gmail.com
+  📫 使用问题反馈：contact.viesc@gmail.com / 服务器级设备专业咨询：tensor.station@gmail.com
   
 <div>&nbsp;</div>&nbsp;</div>
 
