@@ -1,5 +1,5 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets,
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
@@ -47,7 +47,7 @@ export default {
       }
     },
     *getDataset({ payload }, { call, put, select }) {
-      const {id, force } = payload
+      const { id, force } = payload
       if (!force) {
         const dataset = yield select(state => state.dataset.dataset[id])
         if (dataset) {
@@ -274,6 +274,12 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
+    },
+    *compare({ payload }, { call, put }) {
+      const { code, result } = yield call(evaluate, payload)
+      if (code === 0) {
+        return result
+      }
     },
   },
   reducers: {
