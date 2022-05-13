@@ -79,8 +79,6 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
-                                         his_task_id=self._in_dataset_ids[0],
-                                         dst_dataset_id=self._task_id,
                                          in_dataset_ids=self._in_dataset_ids,
                                          singleton_op=self._gt_dataset_id,
                                          evaluate_config=evaluate_config)
@@ -90,7 +88,7 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
         work_dir = os.path.join(self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_EVALUATE),
                                 self._task_id)
         expected_cmd = f"mir evaluate --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id}"
-        expected_cmd += f" --src-revs {self._in_dataset_ids[0]}@{self._in_dataset_ids[0]}"
+        expected_cmd += f" --src-revs {self._in_dataset_ids[0]}"
         expected_cmd += f" --gt-rev {self._gt_dataset_id}@{self._gt_dataset_id}"
         expected_cmd += f" -w {work_dir} --conf-thr {self._conf_thr:.2f}"
         expected_cmd += f" --iou-thrs {self._iou_thrs_interval}"
