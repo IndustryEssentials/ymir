@@ -60,7 +60,7 @@ export const homeRoutes = [
   },
   {
     path: "/home/task/label/:id",
-    name: "taskTrain",
+    name: "taskLabel",
     component: "@/pages/task/label/index",
     title: 'task.label.title',
     pid: 25,
@@ -84,6 +84,15 @@ export const homeRoutes = [
     pid: 25,
     id: 9,
     breadcrumbLabel: 'breadcrumbs.dataset.add',
+  },
+  {
+    path: "/home/project/:id/dataset/:gid/compare/:ids",
+    name: "taskCompare",
+    component: "@/pages/task/compare/index",
+    title: 'dataset.compare.title',
+    pid: 25,
+    id: 31,
+    breadcrumbLabel: 'breadcrumbs.dataset.compare',
   },
   {
     path: "/home/project/:id/dataset/:did",

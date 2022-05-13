@@ -128,7 +128,7 @@ def command_run_in_out(f: Callable) -> Callable:
                                                state_content=state_message,
                                                trace_message='')
 
-            logging.info(f"command done: {dst_rev}, result: {ret}")
+            logging.info(f"command done: {dst_rev}, return code: {ret}")
 
             _cleanup(work_dir=work_dir)
 

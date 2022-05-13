@@ -27,7 +27,8 @@ def make_cmd_request(user_id: str = None,
                      terminated_task_type: str = None,
                      sampling_count: int = None,
                      sampling_rate: float = None,
-                     task_parameters: str = None) -> backend_pb2.GeneralReq:
+                     task_parameters: str = None,
+                     evaluate_config: backend_pb2.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -79,6 +80,8 @@ def make_cmd_request(user_id: str = None,
         request.sampling_rate = sampling_rate
     if task_parameters:
         request.task_parameters = task_parameters
+    if evaluate_config:
+        request.evaluate_config.CopyFrom(evaluate_config)
     return request
 
 
@@ -108,7 +111,8 @@ def make_invoker_cmd_call(invoker: Any,
                           terminated_task_type: str = None,
                           sampling_count: int = None,
                           sampling_rate: float = None,
-                          work_dir: str = '') -> backend_pb2.GeneralReq:
+                          work_dir: str = '',
+                          evaluate_config: backend_pb2.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,
@@ -130,7 +134,8 @@ def make_invoker_cmd_call(invoker: Any,
                                docker_image_config=docker_image_config,
                                terminated_task_type=terminated_task_type,
                                sampling_count=sampling_count,
-                               sampling_rate=sampling_rate)
+                               sampling_rate=sampling_rate,
+                               evaluate_config=evaluate_config)
     invoker = invoker(sandbox_root=sandbox_root,
                       request=request,
                       assets_config=assets_config,
