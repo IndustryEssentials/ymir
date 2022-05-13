@@ -155,7 +155,7 @@ print_help() {
 # main
 main() {
     if [ "$EUID" -eq 0 ]
-        then echo "Error: using sudo, this will cause serve permission issue."
+        then echo "Error: using sudo, this will cause permission issue."
         exit
     fi
 
