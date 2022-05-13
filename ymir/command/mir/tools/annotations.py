@@ -64,6 +64,8 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     ymax = int(float(_get_dom_xml_tag_data(bndbox_node, "ymax")))
     width = xmax - xmin + 1
     height = ymax - ymin + 1
+
+    # there's no `score` key in original voc format, we add it here to support box conf score
     score_str = _get_dom_xml_tag_data(obj, 'score')
     score = float(score_str) if score_str else 1.0
     logging.info(f"score: {score}, x: {xmin}, y: {ymin}")
