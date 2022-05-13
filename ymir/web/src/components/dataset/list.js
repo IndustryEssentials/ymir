@@ -498,7 +498,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
             rowSelection={{
               selectedRowKeys: selectedVersions[group.id],
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: !isValidDataset(record.state), }),
+              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns(group.id)}

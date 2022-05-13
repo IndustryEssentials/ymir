@@ -416,7 +416,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
             rowKey={(record) => record.id}
             rowSelection={{
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: !isValidModel(record.state), }),
+              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns}
