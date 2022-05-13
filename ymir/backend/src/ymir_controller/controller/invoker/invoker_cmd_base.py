@@ -100,6 +100,7 @@ class BaseMirControllerInvoker(ABC):
         # Only create work_dir for specific tasks.
         if self._request.req_type not in [
                 backend_pb2.RequestType.TASK_CREATE,
+                backend_pb2.RequestType.CMD_EVALUATE,
                 backend_pb2.RequestType.CMD_FILTER,
                 backend_pb2.RequestType.CMD_MERGE,
                 backend_pb2.RequestType.CMD_INFERENCE,
