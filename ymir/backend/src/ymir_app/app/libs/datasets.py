@@ -141,4 +141,4 @@ def evaluate_dataset(
     evaluations = viz.get_evaluations(user_labels)
 
     dataset_id_mapping = {dataset.hash: dataset.id for dataset in other_datasets}
-    return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations}
+    return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}

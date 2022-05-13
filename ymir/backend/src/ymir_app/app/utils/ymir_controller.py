@@ -297,6 +297,7 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_EVALUATE
         request.singleton_op = args["gt_dataset_hash"]
         request.in_dataset_ids[:] = args["other_dataset_hashes"]
+        request.evaluate_config.CopyFrom(evaluate_config)
         return request
 
 

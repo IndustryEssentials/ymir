@@ -79,7 +79,7 @@ class ModelMetaData:
 class VizDataset(BaseModel):
     """
     Interface dataclass of VIZ output, defined as DatasetResult in doc:
-    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir-viz/doc/ymir_viz_API.yaml
+    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
     """
 
     total_images_cnt: int
@@ -109,6 +109,29 @@ class DatasetMetaData:
             asset_count=viz_dataset.total_images_cnt,
             keyword_count=len(keywords),
         )
+
+
+class EvaluationScore(BaseModel):
+    ap: float
+    ar: float
+    fn: int
+    fp: int
+    tp: int
+
+
+class VizDatasetEvaluation(BaseModel):
+    ci_evaluations: Dict[int, EvaluationScore]  # class_id -> scores
+    ci_averaged_evaluation: EvaluationScore
+
+
+class VizDatasetEvaluationResult(BaseModel):
+    """
+    Interface dataclass of VIZ output, defined as DatasetEvaluationResult in doc:
+    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
+    """
+
+    iou_evaluations: Dict[float, VizDatasetEvaluation]  # iou -> evaluation
+    iou_averaged_evaluation: VizDatasetEvaluation
 
 
 class VizClient:
@@ -180,8 +203,11 @@ class VizClient:
         url = f"{self._url_prefix}/evaluations"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
-        convert_class_id_to_keyword(res, user_labels)
-        return res
+        evaluations = {
+            dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
+        }
+        convert_class_id_to_keyword(evaluations, user_labels)
+        return evaluations
 
     def parse_resp(self, resp: requests.Response) -> Dict:
         """
