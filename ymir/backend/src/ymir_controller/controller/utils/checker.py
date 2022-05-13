@@ -26,6 +26,8 @@ class Prerequisites(IntEnum):
     CHECK_COMMIT_MESSAGE = auto()
     CHECK_TASKINFO_IDS = auto()
     CHECK_SINGLE_IN_DATASET_ID = auto()
+    CHECK_IN_DATASET_IDS = auto()
+    CHECK_HIS_TASK_ID = auto()
 
 
 # check controller request
@@ -158,6 +160,15 @@ def _check_user_root_not_exist(request: backend_pb2.GeneralReq, mir_root: str) -
     if os.path.isdir(user_root):
         return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                            "user_root exist: {}, abort".format(user_root))
+
+    return utils.make_general_response(CTLResponseCode.CTR_OK, "")
+
+
+def _check_in_dataset_ids(request: backend_pb2.GeneralReq, mir_root: str) -> backend_pb2.GeneralResp:
+    in_dataset_ids = request.in_dataset_ids
+    if not in_dataset_ids:
+        return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
+                                           "invalid in_dataset ids: {}".format(in_dataset_ids))
 
     return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 

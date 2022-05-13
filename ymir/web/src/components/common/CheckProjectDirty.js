@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import t from '@/utils/t'
 
-const CheckProjectDirty = ({ pid, initialCheck, ...props }) => {
+const CheckProjectDirty = ({ pid, initialCheck, callback = () => {}, ...props }) => {
   const { checkDirty } = useProjectStatus(pid)
   const [isDirty, setDirty] = useState(null)
   const [checked, setChecked] = useState(false)
@@ -16,6 +16,7 @@ const CheckProjectDirty = ({ pid, initialCheck, ...props }) => {
     const dirty = await checkDirty()
     setDirty(dirty)
     setChecked(true)
+    callback(dirty)
   }
 
   return <Space {...props}>
