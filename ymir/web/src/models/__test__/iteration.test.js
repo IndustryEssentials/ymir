@@ -146,11 +146,11 @@ describe("models: iteration", () => {
   })
   it("effects: updateCurrentStageResult -> progress", () => {
     const saga = iteration.effects.updateCurrentStageResult
-    const ds = (id, state, result_state, progress) => ({ 
-      id, 
-      task: { hash: `hash${id}`, state, percent: progress, }, 
-      taskState: state, 
-      state: result_state, progress 
+    const ds = (id, state, result_state, progress) => ({
+      id,
+      task: { hash: `hash${id}`, state, percent: progress, },
+      taskState: state,
+      state: result_state, progress
     })
 
     const result = ds(1, 2, 0, 0.20)
@@ -172,15 +172,15 @@ describe("models: iteration", () => {
   })
   it("effects: updateCurrentStageResult -> state change.", () => {
     const saga = iteration.effects.updateCurrentStageResult
-    const ds = (id, state, result_state, progress) => ({ 
-      id, 
-      task: { hash: `hash${id}`, state, percent: progress, }, 
-      taskState: state, 
-      state: result_state, progress 
+    const ds = (id, state, result_state, progress) => ({
+      id,
+      task: { hash: `hash${id}`, state, percent: progress, },
+      taskState: state,
+      state: result_state, progress
     })
 
     const result = ds(1, 2, 0, 0.20)
-    const task = { hash1: { id: 1, state: 3, result_state: 1, percent: 1 }}
+    const task = { hash1: { id: 1, state: 3, result_state: 1, percent: 1 } }
     const creator = {
       type: "updateDatasets",
       payload: task,
@@ -230,6 +230,43 @@ describe("models: iteration", () => {
       code: 0,
       result: expected,
     })
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+
+  it("effects: getIterationStagesResult -> get model", () => {
+    const saga = iteration.effects.getIterationStagesResult
+
+    const pid = 62314
+    const iter = {
+      id: 5349,
+      projectId: pid,
+      miningSet: 5340,
+      miningResult: 5341,
+      labelSet: 5342,
+      trainUpdateSet: 5343,
+      model: 34234,
+    }
+    const datasets = [product(5340), product(5341), product(5342), product(5343)]
+    const model = product(32234)
+    const creator = {
+      type: "getIterationStagesResult",
+      payload: iter,
+    }
+    const expected = {
+      ...iter,
+      iminingSet: product(5340),
+      iminingResult: product(5341),
+      ilabelSet: product(5342),
+      itrainUpdateSet: product(5343),
+      imodel: product(32234),
+    }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    generator.next(datasets)
+    const end = generator.next(model)
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
