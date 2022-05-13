@@ -145,10 +145,11 @@ class ClassIdManager(object):
             name (str): main type name or alias
 
         Raises:
-            ClassIdManagerError: if not loaded, or name is empty, or can not find name
+            ClassIdManagerError: if not loaded, or name is empty
 
         Returns:
-            Tuple[int, Optional[str]]: (type id, main type name)
+            Tuple[int, Optional[str]]: (type id, main type name),
+            if name not found, returns -1, None
         """
         name = name.strip().lower()
         if not self._storage_file_path:
@@ -157,7 +158,7 @@ class ClassIdManager(object):
             raise ClassIdManagerError("empty name")
 
         if name not in self._label_storage._label_to_ids:
-            raise ClassIdManagerError(f"not exists: {name}")
+            return -1, None
 
         return self._label_storage._label_to_ids[name]
 

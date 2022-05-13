@@ -30,7 +30,7 @@ def save(mir_root: str, project_class_ids: List[int]) -> None:
 
 
 # general
-def check_class_names(mir_root: str, current_class_names: List[str]) -> bool:
+def check_class_names(mir_root: str, current_class_names: List[str], ignore_unknown_class_names: bool = False) -> bool:
     """
     check `current_class_names` matches mir repo's project class ids settings
 
@@ -40,6 +40,8 @@ def check_class_names(mir_root: str, current_class_names: List[str]) -> bool:
     """
     class_id_manager = class_ids.ClassIdManager(mir_root)
     current_class_ids = class_id_manager.id_for_names(current_class_names)
+    if ignore_unknown_class_names:
+        current_class_ids = [v for v in current_class_ids if v >= 0]
     return check_class_ids(mir_root=mir_root, current_class_ids=current_class_ids)
 
 
