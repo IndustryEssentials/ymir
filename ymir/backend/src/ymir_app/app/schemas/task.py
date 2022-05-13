@@ -74,6 +74,10 @@ class TaskCreate(TaskBase):
         use_enum_values = True
 
 
+class BatchTasksCreate(BaseModel):
+    payloads: List[TaskCreate]
+
+
 class TaskUpdate(BaseModel):
     name: str
 
@@ -249,6 +253,14 @@ class TaskResultUpdateMessage(BaseModel):
 
 class TaskOut(Common):
     result: Task
+
+
+class TasksOut(Common):
+    result: List[Task]
+
+
+class BatchTasksCreateResults(Common):
+    result: List[Optional[Task]]
 
 
 class TaskPagination(BaseModel):

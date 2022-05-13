@@ -23,6 +23,7 @@
 			<xmax>375</xmax>
 			<ymax>183</ymax>
 		</bndbox>
+		<score>0.5</score>
 	</object>
 	<object>
 		<name>aeroplane</name>

@@ -84,6 +84,8 @@ from .task import (
     TaskMonitorEvent,
     TaskMonitorEvents,
     TaskResultUpdateMessage,
+    BatchTasksCreate,
+    BatchTasksCreateResults,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (
