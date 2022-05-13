@@ -25,19 +25,22 @@ const useDynamicColumn = () => {
 
   const render = useCallback((metrics = {}) => {
     const everage = metrics.ci_averaged_evaluation || {}
-    const kwMetrics = metrics.ci_evaluations|| {}
+    const kwMetrics = metrics.ci_evaluations || {}
     const result = selected === '' ? everage : kwMetrics[selected]
     return result?.ap
   }, [selected])
 
 
   const menus = <Menu items={options} onClick={change} />
-  const title = <Dropdown overlay={menus}>
-    <Space>
-      {selected === '' ? t('common.everage') : selected}
-      <ArrowDownIcon />
-    </Space>
-  </Dropdown>
+  const title = <Space>
+    <span>{t('dataset.column.keyword')}:</span>
+    <Dropdown overlay={menus}>
+      <Space>
+        {selected === '' ? t('common.everage') : selected}
+        <ArrowDownIcon />
+      </Space>
+    </Dropdown>
+  </Space>
   const column = {
     title,
     dataIndex: 'metrics',
