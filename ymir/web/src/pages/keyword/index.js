@@ -225,7 +225,7 @@ function Keyword({ getKeywords }) {
                 pageChange({ current, pageSize })
               }
               rowKey={(record) => record.name}
-              rowClassName={(record, index)=>index % 2 === 0 ? styles.normalRow : styles.oddRow}
+              rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
               pagination={{
                 showQuickJumper: true,
                 showSizeChanger: true,
