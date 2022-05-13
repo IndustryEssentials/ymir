@@ -116,7 +116,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 94,
                                 'h': 67
                             },
-                            'class_id': 1
+                            'class_id': 1,
+                            'score': 2.0,
                         }]
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
@@ -127,7 +128,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 272,
                                 'h': 106
                             },
-                            'class_id': 1
+                            'class_id': 1,
+                            'score': 0.5,
                         }, {
                             'index': 1,
                             'box': {
@@ -136,7 +138,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 65,
                                 'h': 36
                             },
-                            'class_id': 1
+                            'class_id': 1,
+                            'score': 2.0,
                         }]
                     }
                 }
@@ -152,7 +155,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 94,
                                 'h': 67
                             },
-                            'class_id': 1
+                            'class_id': 1,
+                            'score': 2.0,
                         }]
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
@@ -163,7 +167,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 272,
                                 'h': 106
                             },
-                            'class_id': 1
+                            'class_id': 1,
+                            'score': 0.5,
                         }, {
                             'index': 1,
                             'box': {
@@ -172,7 +177,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 65,
                                 'h': 36
                             },
-                            'class_id': 1
+                            'class_id': 1,
+                            'score': 2.0,
                         }, {
                             'index': 2,
                             'box': {
@@ -181,7 +187,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 19,
                                 'h': 50
                             },
-                            'class_id': 2
+                            'class_id': 2,
+                            'score': 2.0,
                         }, {
                             'index': 3,
                             'box': {
@@ -190,7 +197,8 @@ class TestCmdImport(unittest.TestCase):
                                 'w': 19,
                                 'h': 50
                             },
-                            'class_id': 2
+                            'class_id': 2,
+                            'score': 2.0,
                         }]
                     }
                 }
