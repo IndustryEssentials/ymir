@@ -129,7 +129,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 106
                             },
                             'class_id': 1,
-                            'score': 1.0,
+                            'score': 0.5,
                         }, {
                             'index': 1,
                             'box': {
@@ -168,7 +168,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 106
                             },
                             'class_id': 1,
-                            'score': 1.0,
+                            'score': 0.5,
                         }, {
                             'index': 1,
                             'box': {

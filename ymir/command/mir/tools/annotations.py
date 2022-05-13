@@ -1,7 +1,7 @@
 from collections import defaultdict
 import logging
 import os
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import xml.dom.minidom
 
@@ -12,7 +12,7 @@ from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
 
-def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> xml.dom.minidom.Element:
+def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> Optional[xml.dom.minidom.Element]:
     """
     suppose we have the following xml:
     ```
@@ -27,7 +27,7 @@ def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> xml.d
     tag_nodes = node.getElementsByTagName(tag_name)
     if len(tag_nodes) > 0 and len(tag_nodes[0].childNodes) > 0:
         return tag_nodes[0]
-    raise MirRuntimeError(MirCode.RC_CMD_INVALID_FILE, f"found no element for key: {tag_name}")
+    return None
 
 
 def _get_dom_xml_tag_data(node: xml.dom.minidom.Element, tag_name: str) -> str:
@@ -55,6 +55,9 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     """
     name = _xml_obj_to_type_name(obj)
     bndbox_node = _get_dom_xml_tag_node(obj, "bndbox")
+    if not bndbox_node:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='found no value for bndbox')
+
     xmin = int(float(_get_dom_xml_tag_data(bndbox_node, "xmin")))
     ymin = int(float(_get_dom_xml_tag_data(bndbox_node, "ymin")))
     xmax = int(float(_get_dom_xml_tag_data(bndbox_node, "xmax")))
@@ -63,6 +66,7 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     height = ymax - ymin + 1
     score_str = _get_dom_xml_tag_data(obj, 'score')
     score = float(score_str) if score_str else 1.0
+    logging.info(f"score: {score}, x: {xmin}, y: {ymin}")
 
     annotation = mirpb.Annotation()
     annotation.class_id = class_type_manager.id_and_main_name_for_name(name)[0]
