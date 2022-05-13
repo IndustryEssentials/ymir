@@ -117,7 +117,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 67
                             },
                             'class_id': 1,
-                            'score': 1.0,
+                            'score': 2.0,
                         }]
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
@@ -139,7 +139,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 36
                             },
                             'class_id': 1,
-                            'score': 1.0,
+                            'score': 2.0,
                         }]
                     }
                 }
@@ -156,7 +156,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 67
                             },
                             'class_id': 1,
-                            'score': 1.0,
+                            'score': 2.0,
                         }]
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
@@ -178,7 +178,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 36
                             },
                             'class_id': 1,
-                            'score': 1.0,
+                            'score': 2.0,
                         }, {
                             'index': 2,
                             'box': {
@@ -188,7 +188,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 50
                             },
                             'class_id': 2,
-                            'score': 1.0,
+                            'score': 2.0,
                         }, {
                             'index': 3,
                             'box': {
@@ -198,7 +198,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 50
                             },
                             'class_id': 2,
-                            'score': 1.0,
+                            'score': 2.0,
                         }]
                     }
                 }

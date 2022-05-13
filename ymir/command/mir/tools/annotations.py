@@ -67,7 +67,7 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
 
     # there's no `score` key in original voc format, we add it here to support box conf score
     score_str = _get_dom_xml_tag_data(obj, 'score')
-    score = float(score_str) if score_str else 1.0
+    score = float(score_str) if score_str else 2.0
 
     annotation = mirpb.Annotation()
     annotation.class_id = class_type_manager.id_and_main_name_for_name(name)[0]
