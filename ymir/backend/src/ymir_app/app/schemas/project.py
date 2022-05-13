@@ -56,6 +56,8 @@ class ProjectUpdate(BaseModel):
     initial_model_id: Optional[int]
     initial_training_dataset_id: Optional[int]
 
+    training_keywords: Optional[List[str]]
+
     class Config:
         use_enum_values = True
         validate_all = True
