@@ -276,8 +276,8 @@ export default {
       yield put({ type: 'CLEAR_ALL', })
     },
     *compare({ payload }, { call, put }) {
-      const result = yield call(evaluate, payload)
-      if (result) {
+      const { code, result } = yield call(evaluate, payload)
+      if (code === 0) {
         return result
       }
     },

@@ -561,4 +561,23 @@ describe("models: dataset", () => {
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
+  
+  it("effects: compare", () => {
+    const saga = dataset.effects.compare
+    const expected = { id: 10001, name: 'new_dataset_name' }
+    const creator = {
+      type: "compare",
+      payload: { main_dataset_id: 1324536, other_dataset_id: [534243234, 64311234], confidence: 0.6 },
+    }
+
+    const generator = saga(creator, { put, call })
+    generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    equalObject(expected, end.value)
+    expect(end.done).toBe(true)
+  })
 })

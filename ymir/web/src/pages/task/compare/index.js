@@ -7,7 +7,7 @@ import { useHistory, useParams, Link } from "umi"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
-import { randomNumber } from "@/utils/number"
+import { randomNumber, toFixed } from "@/utils/number"
 import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
 import { CompareIcon } from "@/components/common/icons"
@@ -54,7 +54,7 @@ function Compare({ ...func }) {
     console.log('compare result:', result, datasets)
     if (result) {
       setSource(result)
-      const list = [...gt.keywords || [], 'dog', 'cat']
+      const list = gt.keywords || []
       setKeywords(list)
     }
   }
@@ -92,8 +92,9 @@ function Compare({ ...func }) {
       modelId: dataset.task?.parameters?.model_id,
     })
     return source ? [getInfo(gt), ...datasets.map((dataset, index) => {
-      const datasetSource = source[dataset.id]
-      const metrics = datasetSource.iou_evaluations[iou]
+      const datasetSource = source[dataset.id] || {}
+      const iouMetrics = datasetSource.iou_evaluations || {}
+      const metrics = iouMetrics[toFixed(iou, 2)] || {}
       return {
         ...getInfo(dataset),
         map: datasetSource.iou_averaged_evaluation,
@@ -149,7 +150,7 @@ function Compare({ ...func }) {
               <span>{t('dataset.compare.form.confidence')}: {source ? confidence : 0}</span>
               <span>IoU:</span>
               <span>
-                <Slider style={{ width: 300 }} min={0.5} max={0.95} tooltipVisible marks={{ 0.5: '0.5', 0.95: '0.95' }} step={0.05} value={iou} onChange={value => setIou(value)} />
+                <Slider style={{ width: 300 }} min={0.5} max={0.95} tooltipVisible marks={{ 0.5: '0.50', 0.95: '0.95' }} step={0.05} value={iou} onChange={value => setIou(value)} />
               </span>
             </Space>
             <Table

@@ -23,10 +23,10 @@ const useDynamicColumn = () => {
     setSelected(options.length ? options[0].key : null)
   }, [options])
 
-  const render = useCallback((metrics = { ci_averaged_evaluation: {}, ci_evaluations: {} }) => {
-    const everageLabel = 'ci_averaged_evaluation'
-    const label = 'ci_evaluations'
-    const result = selected === '' ? metrics[everageLabel] : metrics[label][selected]
+  const render = useCallback((metrics = {}) => {
+    const everage = metrics.ci_averaged_evaluation || {}
+    const kwMetrics = metrics.ci_evaluations|| {}
+    const result = selected === '' ? everage : kwMetrics[selected]
     return result?.ap
   }, [selected])
 
