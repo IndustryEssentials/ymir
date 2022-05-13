@@ -4,35 +4,36 @@ import t from '@/utils/t'
 import { Dropdown, Menu, Space } from "antd"
 import { ArrowDownIcon } from "@/components/common/icons"
 
-const useDynamicColumn = () => {
-  const [keywords, setKeywords] = useState([])
+const KeywordSelect = ({ value, keywords, onChange = () => {} }) => {
   const [selected, setSelected] = useState(null)
   const [options, setOptions] = useState([])
   const change = ({ key }) => setSelected(key)
-
   useEffect(() => {
-    if (keywords.length) {
+    if (keywords?.length) {
       setOptions([
         ...keywords.map(label => ({ key: label, label: label })),
         { key: '', label: t('common.everage') }
       ])
+    } else {
+      setOptions([])
     }
   }, [keywords])
+
+  useEffect(() => {
+    value && setSelected(value)
+  }, [value])
+
+  useEffect(() => {
+    onChange(selected)
+  }, [selected])
 
   useEffect(() => {
     setSelected(options.length ? options[0].key : null)
   }, [options])
 
-  const render = useCallback((metrics = {}) => {
-    const everage = metrics.ci_averaged_evaluation || {}
-    const kwMetrics = metrics.ci_evaluations || {}
-    const result = selected === '' ? everage : kwMetrics[selected]
-    return result?.ap
-  }, [selected])
-
-
   const menus = <Menu items={options} onClick={change} />
-  const title = <Space>
+
+  return <>
     <span>{t('dataset.column.keyword')}:</span>
     <Dropdown overlay={menus}>
       <Space>
@@ -40,16 +41,7 @@ const useDynamicColumn = () => {
         <ArrowDownIcon />
       </Space>
     </Dropdown>
-  </Space>
-  const column = {
-    title,
-    dataIndex: 'metrics',
-    render,
-    ellipsis: {
-      showTitle: true,
-    },
-  }
-  return { column, render, setKeywords }
+  </>
 }
 
-export default useDynamicColumn
+export default KeywordSelect

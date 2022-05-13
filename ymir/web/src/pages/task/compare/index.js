@@ -11,7 +11,8 @@ import { randomNumber, toFixed } from "@/utils/number"
 import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
 import { CompareIcon } from "@/components/common/icons"
-import useDynamicColumn from "@/hooks/useCompareDynamicColumn"
+import useDynamicRender from "@/hooks/useDynamicRender"
+import KeywordSelect from "./components/keywordSelect"
 
 function string2Array(str) {
   return str.split(',').map(i => +i)
@@ -27,10 +28,11 @@ function Compare({ ...func }) {
   const [gt, setGT] = useState({})
   const [iou, setIou] = useState(0.5)
   const [confidence, setConfidence] = useState(0.3)
+  const [keywords, setKeywords] = useState([])
   const [source, setSource] = useState(null)
   const [tableSource, setTableSource] = useState([])
   const [form] = Form.useForm()
-  const { column: dynamicColumn, render: renderMap, setKeywords } = useDynamicColumn()
+  const [apRender, setSelectedKeyword] = useDynamicRender()
 
   const filterDatasets = useCallback((dss) => {
     return filterSameAssets(innerGroup(dss)).filter(ds => ds.id !== gt.id)
@@ -44,6 +46,10 @@ function Compare({ ...func }) {
     setTableSource(generateTableSource(iou))
   }, [iou, source])
 
+  useEffect(() => {
+    !source && setKeywords([])
+  }, [source])
+
   const onFinish = async (values) => {
     const params = {
       ...values,
@@ -51,7 +57,6 @@ function Compare({ ...func }) {
       name: 'task_eveluate_' + randomNumber(),
     }
     const result = await func.compare(params)
-    console.log('compare result:', result, datasets)
     if (result) {
       setSource(result)
       const list = gt.keywords || []
@@ -94,7 +99,7 @@ function Compare({ ...func }) {
     return source ? [getInfo(gt), ...datasets.map((dataset, index) => {
       const datasetSource = source[dataset.id] || {}
       const iouMetrics = datasetSource.iou_evaluations || {}
-      const metrics = iouMetrics[toFixed(iou, 2)] || {}
+      const metrics = iouMetrics[iou] || {}
       return {
         ...getInfo(dataset),
         map: datasetSource.iou_averaged_evaluation,
@@ -131,9 +136,16 @@ function Compare({ ...func }) {
     {
       title: t("dataset.column.map"),
       dataIndex: "map",
-      render: renderMap,
+      render: apRender,
     },
-    dynamicColumn,
+    {
+      title: 'AP',
+      dataIndex: 'metrics',
+      render: apRender,
+      ellipsis: {
+        showTitle: true,
+      },
+    },
   ]
 
   const initialValues = {
@@ -146,12 +158,15 @@ function Compare({ ...func }) {
       <Card className={commonStyles.container} title={t('breadcrumbs.dataset.compare')}>
         <Row gutter={20}>
           <Col span={18} style={{ border: '1px solid #ccc' }}>
-            <Space className={s.info}>
+            <Space className={s.info} size={20}>
               <span>{t('dataset.compare.form.confidence')}: {source ? confidence : 0}</span>
               <span>IoU:</span>
               <span>
-                <Slider style={{ width: 300 }} min={0.5} max={0.95} tooltipVisible marks={{ 0.5: '0.50', 0.95: '0.95' }} step={0.05} value={iou} onChange={value => setIou(value)} />
+                <Slider style={{ width: 300 }} min={0.5} max={0.95}
+                  tooltipVisible marks={{ 0.5: '0.5', 0.95: '0.95' }}
+                  step={0.05} value={iou} onChange={value => setIou(value)} />
               </span>
+              <span><KeywordSelect keywords={keywords} onChange={selected => setSelectedKeyword(selected)} /></span>
             </Space>
             <Table
               dataSource={tableSource}
@@ -165,7 +180,7 @@ function Compare({ ...func }) {
             <div className={s.mask} hidden={!source}>
               <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {t('dataset.compare.restart')}</Button>
             </div>
-            <Panel label={t('breadcrumbs.dataset.compare')} style={{ marginTop: -10 }} visible={true}>
+            <Panel label={t('breadcrumbs.dataset.compare')} style={{ marginTop: -10 }} toogleVisible={false}>
               <Form
                 className={s.form}
                 form={form}
