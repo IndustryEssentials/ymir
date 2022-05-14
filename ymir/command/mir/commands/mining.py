@@ -292,13 +292,20 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
             logging.debug(f"unknown asset name: {asset_name}, ignore")
             continue
         single_image_annotations = mirpb.SingleImageAnnotations()
-        for idx, annotation_dict in enumerate(annotations_dict['annotations']):
+        idx = 0
+        for annotation_dict in annotations_dict['annotations']:
+            class_id = cls_id_mgr.id_and_main_name_for_name(annotation_dict['class_name'])[0]
+            # ignore unknown class ids
+            if class_id < 0:
+                continue
+
             annotation = mirpb.Annotation()
             annotation.index = idx
             json_format.ParseDict(annotation_dict['box'], annotation.box)
-            annotation.class_id = cls_id_mgr.id_and_main_name_for_name(annotation_dict['class_name'])[0]
+            annotation.class_id = class_id
             annotation.score = float(annotation_dict.get('score', 0))
             single_image_annotations.annotations.append(annotation)
+            idx += 1
         asset_id_to_annotations[asset_id] = single_image_annotations
     return asset_id_to_annotations
 
