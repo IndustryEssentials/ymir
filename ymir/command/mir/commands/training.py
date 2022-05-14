@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import time
 import subprocess
 from subprocess import CalledProcessError
 import traceback
@@ -359,7 +360,7 @@ class CmdTrain(base.BaseCommand):
             # write executor tail to tensorboard
             if return_msg:
                 tb_writer = SummaryWriter(logdir=tensorboard_dir)
-                tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```")
+                tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
                 tb_writer.close()
 
         # gen task_context
