@@ -149,11 +149,16 @@ docker-compose up -d
 }
 
 print_help() {
-    printf '\nUsage: \n  sh ymir.sh start/stop.\n'
+    printf '\nUsage: \n  bash ymir.sh start/stop.\n'
 }
 
 # main
 main() {
+    if [ "$EUID" -eq 0 ]
+        then echo "Error: using sudo, this will cause permission issue."
+        exit
+    fi
+
     if [[ $# -eq 0 ]]; then
         print_help
     else

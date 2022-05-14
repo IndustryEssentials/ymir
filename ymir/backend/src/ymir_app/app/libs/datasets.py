@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 import tempfile
 import pathlib
 from zipfile import BadZipFile
@@ -6,19 +6,23 @@ from zipfile import BadZipFile
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
+from app import crud, schemas, models
 from app.api.errors.errors import (
     DatasetNotFound,
     FailedtoCreateDataset,
+    FailedToEvaluate,
 )
 from app.config import settings
 from app.constants.state import ResultState
 from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir, InvalidFileStructure
+from app.utils.ymir_viz import VizClient
 from app.utils.ymir_controller import (
     ControllerClient,
     gen_user_hash,
     gen_repo_hash,
+    gen_task_hash,
 )
+from common_utils.labels import UserLabels
 
 
 def import_dataset_in_background(
@@ -106,3 +110,35 @@ class ImportDatasetPaths:
             else:
                 raise ValueError("input_path or input_url is required")
         return pathlib.Path(self._data_dir)
+
+
+def evaluate_dataset(
+    controller: ControllerClient,
+    viz: VizClient,
+    user_id: int,
+    project_id: int,
+    user_labels: UserLabels,
+    confidence_threshold: float,
+    gt_dataset: models.Dataset,
+    other_datasets: List[models.Dataset],
+) -> Dict:
+    # temporary task hash used to fetch evaluation result later
+    task_hash = gen_task_hash(user_id, project_id)
+    try:
+        controller.evaluate_dataset(
+            user_id,
+            project_id,
+            task_hash,
+            confidence_threshold,
+            gt_dataset.hash,
+            [dataset.hash for dataset in other_datasets],
+        )
+    except ValueError:
+        logger.exception("Failed to evaluate via controller")
+        raise FailedToEvaluate()
+    # todo refactor
+    viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_hash)
+    evaluations = viz.get_evaluations(user_labels)
+
+    dataset_id_mapping = {dataset.hash: dataset.id for dataset in other_datasets}
+    return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}
