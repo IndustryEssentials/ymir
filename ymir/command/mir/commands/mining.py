@@ -294,7 +294,8 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
         single_image_annotations = mirpb.SingleImageAnnotations()
         idx = 0
         for annotation_dict in annotations_dict['annotations']:
-            class_id = cls_id_mgr.id_and_main_name_for_name(annotation_dict['class_name'])[0]
+            class_id = cls_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'],
+                                                            error_on_unknown_name=False)[0]
             # ignore unknown class ids
             if class_id < 0:
                 continue
