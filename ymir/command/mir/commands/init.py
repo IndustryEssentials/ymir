@@ -7,7 +7,7 @@ from mir import scm
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.scm.cmd import CmdScm
-from mir.tools import checker, class_ids, context, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 
 
@@ -47,17 +47,13 @@ class CmdInit(base.BaseCommand):
 
     # public: run
     @staticmethod
-    def run_with_args(mir_root: str, project_class_names: str, empty_rev: str) -> int:
+    def run_with_args(mir_root: str, empty_rev: str) -> int:
         return_code = checker.check(
             mir_root, [checker.Prerequisites.IS_OUTSIDE_GIT_REPO, checker.Prerequisites.IS_OUTSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
             return return_code
 
         class_ids.create_empty_if_not_exists(mir_root=mir_root)
-
-        project_class_ids = class_ids.ClassIdManager(
-            mir_root=mir_root).id_for_names(project_class_names.split(';')) if project_class_names else []
-        context.save(mir_root=mir_root, project_class_ids=project_class_ids)
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         repo_git.init()
@@ -75,7 +71,6 @@ class CmdInit(base.BaseCommand):
         logging.debug("command init: %s", self.args)
 
         return self.run_with_args(mir_root=self.args.mir_root,
-                                  project_class_names=self.args.project_class_names,
                                   empty_rev=self.args.empty_rev)
 
 
@@ -84,12 +79,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                             parents=[parent_parser],
                                             description="use this command to init mir repo",
                                             help="init mir repo")
-    init_arg_parser.add_argument('--project-class-names',
-                                 dest='project_class_names',
-                                 required=False,
-                                 type=str,
-                                 default='',
-                                 help='project class type names, separated by semicolon')
     init_arg_parser.add_argument('--with-empty-rev',
                                  dest='empty_rev',
                                  required=False,
