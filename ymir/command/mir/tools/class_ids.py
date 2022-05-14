@@ -6,7 +6,6 @@ import yaml
 
 from mir.tools import utils as mir_utils
 
-
 EXPECTED_FILE_VERSION = 1
 
 
@@ -60,10 +59,7 @@ class _LabelStorage(BaseModel):
         label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
         id_to_labels: Dict[int, str] = {}
         for label in labels:
-            _set_if_not_exists(k=label.name,
-                               v=(label.id, None),
-                               d=label_to_ids,
-                               error_message_prefix='duplicated name')
+            _set_if_not_exists(k=label.name, v=(label.id, None), d=label_to_ids, error_message_prefix='duplicated name')
             #   key: aliases
             for label_alias in label.aliases:
                 _set_if_not_exists(k=label_alias,
@@ -72,10 +68,7 @@ class _LabelStorage(BaseModel):
                                    error_message_prefix='duplicated alias')
 
             # self._type_id_name_dict
-            _set_if_not_exists(k=label.id,
-                               v=label.name,
-                               d=id_to_labels,
-                               error_message_prefix='duplicated id')
+            _set_if_not_exists(k=label.id, v=label.name, d=id_to_labels, error_message_prefix='duplicated id')
 
         values['_label_to_ids'] = label_to_ids
         values['_id_to_labels'] = id_to_labels
@@ -137,7 +130,7 @@ class ClassIdManager(object):
         return True
 
     # public: general
-    def id_and_main_name_for_name(self, name: str) -> Tuple[int, Optional[str]]:
+    def id_and_main_name_for_name(self, name: str, error_on_unknown_name: bool = True) -> Tuple[int, Optional[str]]:
         """
         returns type id and main type name for main type name or alias
 
@@ -158,6 +151,8 @@ class ClassIdManager(object):
             raise ClassIdManagerError("empty name")
 
         if name not in self._label_storage._label_to_ids:
+            if error_on_unknown_name:
+                raise ClassIdManagerError(f"unknown name: {name}")
             return -1, None
 
         return self._label_storage._label_to_ids[name]
@@ -174,7 +169,7 @@ class ClassIdManager(object):
         """
         return self._label_storage._id_to_labels.get(type_id, None)
 
-    def id_for_names(self, names: List[str]) -> List[int]:
+    def id_for_names(self, names: List[str], error_on_unknown_name: bool = True) -> List[int]:
         """
         return all type ids for names
 
@@ -184,7 +179,9 @@ class ClassIdManager(object):
         Returns:
             List[int]: corresponding type ids
         """
-        return [self.id_and_main_name_for_name(name=name)[0] for name in names]
+        return [
+            self.id_and_main_name_for_name(name=name, error_on_unknown_name=error_on_unknown_name)[0] for name in names
+        ]
 
     def all_main_names(self) -> List[str]:
         """
