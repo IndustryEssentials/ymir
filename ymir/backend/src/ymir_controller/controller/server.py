@@ -8,6 +8,7 @@ from distutils.util import strtobool
 from typing import Any, Dict
 
 import grpc
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
 import yaml
 
@@ -48,8 +49,14 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
         try:
             invoker_result = invoker.server_invoke()
         except errors.MirCtrError as e:
-            logging.exception(f"task {task_id} error: {e}")
+            logging.exception(f"task {task_id} MirCtrError error: {e}")
             return utils.make_general_response(e.error_code, e.error_message)
+        except (ConnectionError, HTTPError, Timeout) as e:
+            logging.exception(f"task {task_id} HTTPError error: {e}")
+            return utils.make_general_response(CTLResponseCode.INVOKER_HTTP_ERROR, str(e))
+        except Exception as e:
+            logging.exception(f"task {task_id} general error: {e}")
+            return utils.make_general_response(CTLResponseCode.INVOKER_UNKNOWN_ERROR, str(e))
 
         logging.info(f"task {task_id} result: {invoker_result}")
         if isinstance(invoker_result, backend_pb2.GeneralResp):

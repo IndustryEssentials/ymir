@@ -283,8 +283,6 @@ class CmdMerge(base.BaseCommand):
                                                       mir_datas=mir_data,
                                                       task=task)
 
-        logging.debug("mir merge: write files done")
-
         return MirCode.RC_OK
 
 
