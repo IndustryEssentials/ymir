@@ -17,7 +17,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
       return message.warn(t('common.selected.required'))
     }
     const hideVersions = versions.filter(vs => !exclude.includes(vs.id))
-    const labels = getLabels(cids)
+    const labels = getLabels(hideVersions)
     const excludeLabels = getLabels(versions.filter(vs => exclude.includes(vs.id)))
     const ids = hideVersions.map(({ id }) => id)
     const pid = versions[0].projectId
