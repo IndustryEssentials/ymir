@@ -16,9 +16,9 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
     if (!versions?.length) {
       return message.warn(t('common.selected.required'))
     }
-    const labels = getLabels(versions.filter(vs => !exclude.includes(vs.id)))
+    const cids = versions.filter(vs => !exclude.includes(vs.id))
+    const labels = getLabels(cids)
     const excludeLabels = getLabels(versions.filter(vs => exclude.includes(vs.id)))
-    const ids = versions.map(({ id }) => id)
     const pid = versions[0].projectId
     confirm({
       content: <div>
@@ -26,7 +26,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
         {excludeLabels.length ? <div style={{ color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</div> : null}
       </div>,
       onOk: async () => {
-        const result = await func.hide(!type ? 'dataset' : 'model', pid, ids)
+        const result = await func.hide(!type ? 'dataset' : 'model', pid, cids)
         if (result) {
           ok(result)
         }
