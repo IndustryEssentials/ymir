@@ -105,6 +105,12 @@ def locate_dir(p: Union[str, Path], target: str) -> Path:
         for __p in _p.iterdir():
             if __p.is_dir() and __p.name.lower() == target:
                 return __p
+    # Only search 3rd depth when no result was found in 2nd depth.
+    for _p in Path(p).iterdir():
+        for __p in _p.iterdir():
+            for ___p in __p.iterdir():
+                if ___p.is_dir() and ___p.name.lower() == target:
+                    return ___p
     raise FileNotFoundError()
 
 
