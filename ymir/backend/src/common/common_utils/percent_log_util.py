@@ -57,7 +57,7 @@ class PercentLogHandler:
             raise RuntimeError("Invalid log_file")
         content_list: List[str] = [tid, f"{datetime.now().timestamp():.6f}", str(percent), str(state.value)]
         if error_code and error_message:
-            content_list.extend([str(error_code), error_message])
+            content_list.extend([str(int(error_code)), error_message])
         content = '\t'.join(content_list)
         if msg:
             content = '\n'.join([content, msg])

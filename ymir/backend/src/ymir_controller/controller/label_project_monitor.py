@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-import requests
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -76,7 +76,7 @@ def lable_task_monitor() -> None:
                 label_instance.convert_annotation_to_voc(
                     project_info["project_id"], project_info["des_annotation_path"]
                 )
-            except requests.HTTPError as e:
+            except (ConnectionError, HTTPError, Timeout) as e:
                 sentry_sdk.capture_exception(e)
                 logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
                 state = LogState.ERROR
