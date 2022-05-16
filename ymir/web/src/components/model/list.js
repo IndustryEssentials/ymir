@@ -322,7 +322,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     hideRef.current.hide([version])
   }
 
-  const hideOk = (id) => {
+  const hideOk = (result) => {
+    result.forEach(item => fetchVersions(item.model_group_id, true))
     getData()
     setSelectedVersions({})
   }

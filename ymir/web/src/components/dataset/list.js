@@ -447,6 +447,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const hideOk = (result) => {
+    result.forEach(item => fetchVersions(item.dataset_group_id, true))
     fetchDatasets(true)
     setSelectedVersions({})
   }

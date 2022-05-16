@@ -175,6 +175,7 @@ export default {
     *restore({ payload: { pid, ids = [] } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.restore, pid, ids)
       if (code === 0) {
+        yield put.resolve({ type: 'clearCache' })
         return result
       }
     },
