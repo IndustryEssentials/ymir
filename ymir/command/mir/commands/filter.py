@@ -21,7 +21,13 @@ class CmdFilter(base.BaseCommand):
         if not preds_str:
             return set()
 
-        return set(cls_mgr.id_for_names(preds_str.split(";")))
+        class_names = preds_str.split(";")
+        class_ids, unknown_names = cls_mgr.id_for_names(class_names)
+        if unknown_names:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"unknwon class names: {unknown_names}")
+
+        return set(class_ids)
 
     @staticmethod
     def __include_match(asset_ids_set: Set[str], mir_keywords: mirpb.MirKeywords, attr_name: str,

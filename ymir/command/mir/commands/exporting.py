@@ -7,6 +7,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 
 
@@ -68,7 +69,11 @@ class CmdExport(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_ARGS
 
         cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-        type_ids_list = cls_mgr.id_for_names(in_cis.split(';')) if in_cis else []
+        class_names = in_cis.split(';') if in_cis else []
+        type_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
+        if unknown_names:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"unknown class names: {unknown_names}")
 
         # export
         data_exporter.export(mir_root=mir_root,

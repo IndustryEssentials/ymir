@@ -276,10 +276,13 @@ class CmdTrain(base.BaseCommand):
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
         cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-        type_ids_list = cls_mgr.id_for_names(class_names)
+        type_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")
             return MirCode.RC_CMD_INVALID_ARGS
+        if unknown_names:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"unknown class names: {unknown_names}")
 
         if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
