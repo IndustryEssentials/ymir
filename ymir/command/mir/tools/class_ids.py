@@ -130,7 +130,7 @@ class ClassIdManager(object):
         return True
 
     # public: general
-    def id_and_main_name_for_name(self, name: str, error_on_unknown_name: bool = True) -> Tuple[int, Optional[str]]:
+    def id_and_main_name_for_name(self, name: str) -> Tuple[int, Optional[str]]:
         """
         returns type id and main type name for main type name or alias
 
@@ -151,8 +151,6 @@ class ClassIdManager(object):
             raise ClassIdManagerError("empty name")
 
         if name not in self._label_storage._label_to_ids:
-            if error_on_unknown_name:
-                raise ClassIdManagerError(f"unknown name: {name}")
             return -1, None
 
         return self._label_storage._label_to_ids[name]
@@ -169,7 +167,7 @@ class ClassIdManager(object):
         """
         return self._label_storage._id_to_labels.get(type_id, None)
 
-    def id_for_names(self, names: List[str], error_on_unknown_name: bool = True) -> List[int]:
+    def id_for_names(self, names: List[str]) -> Tuple[List[int], List[str]]:
         """
         return all type ids for names
 
@@ -177,11 +175,18 @@ class ClassIdManager(object):
             names (List[str]): main type names or alias
 
         Returns:
-            List[int]: corresponding type ids
+            Tuple[List[int], List[str]]: corresponding type ids and unknown names
         """
-        return [
-            self.id_and_main_name_for_name(name=name, error_on_unknown_name=error_on_unknown_name)[0] for name in names
-        ]
+        class_ids = []
+        unknown_names = []
+        for name in names:
+            class_id = self.id_and_main_name_for_name(name=name)[0]
+            class_ids.append(class_id)
+
+            if class_id < 0:
+                unknown_names.append(name)
+
+        return class_ids, unknown_names
 
     def all_main_names(self) -> List[str]:
         """
