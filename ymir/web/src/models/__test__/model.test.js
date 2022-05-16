@@ -47,7 +47,7 @@ describe("models: model", () => {
     related_task: task,
   })
 
-  const groupsResult = products(7)
+  const groupsResult = products(7).map(({ id }) => ({ id, create_datetime: createTime }))
   const groupsExpected = groupsResult.map(item => transferModelGroup(item))
   const modelsResult = products(4).map(({ id }) => md(id))
   const modelsExpected = modelsResult.map(item => transferModel(item))
@@ -67,28 +67,13 @@ describe("models: model", () => {
       let end = generator.next()
 
       if (hasForce) {
-        if (label === 'force = true') {
-          console.log('hasForce:force = true')
-        }
         if (!force) {
-        if (label === 'force = true') {
-          console.log('hasForce:force = true unexpected')
-        }
           end = generator.next(cache || {})
         }
 
-        if (label === 'force = true') {
-          console.log('hasForce:force = true', payload)
-        }
         if (force || !cache) {
           const res = generator.next(result)
-          if (label === 'force = true') {
-            console.log('hasForce:', JSON.stringify(end), res)
-          }
           end = generator.next()
-          if (label === 'force = true') {
-            console.log('hasForce:', JSON.stringify(end))
-          }
         }
       } else {
         end = generator.next(result)
@@ -107,7 +92,7 @@ describe("models: model", () => {
   })
 
   const generateForce = ({ func, result, expected, payload, label, force, cache }) => generateNormal({
-    func, payload: { ...payload, force }, result, expected, label, cache, hasForce: true,
+    func, payload: { ...payload, force }, force, result, expected, label, cache, hasForce: true,
   })
 
   const generateGetModelVersions = (label, result, expected, force = false, hasCache = false) => {
@@ -161,6 +146,7 @@ describe("models: model", () => {
   // delModelGroup
   // hide
   // restore
+
   // updateModelsStates
   // updateModelState
   // updateQuery
@@ -179,6 +165,16 @@ describe("models: model", () => {
   generateList('getHiddenList', {}, list(modelsExpected), list(modelsExpected))
   generateList('queryAllModels', 63453, list(modelsExpected), modelsExpected)
   generateList('batchModels', { ids: '1,3' }, response(modelsResult), modelsExpected)
+  generateList('hide', {pid: 324334, ids: [53, 34]}, response(list(modelsExpected)), list(modelsExpected))
+  generateList('restore', {pid: 324334, ids: [63, 23]}, response(list(modelsExpected)), list(modelsExpected))
+
+
+  generateNormal({
+    func: 'delModelGroup',
+    payload: { id: 4235234234 },
+    result: response('ok'),
+    expected: 'ok',
+  })
 
   it("effects: getModel", () => {
     const saga = model.effects.getModel
