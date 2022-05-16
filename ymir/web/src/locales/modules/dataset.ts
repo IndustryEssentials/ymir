@@ -87,10 +87,10 @@ const dataset = {
   "dataset.add.form.net.tip": { cn: "请输入压缩文件的url地址", en: "Please input a url of zip file", },
   "dataset.add.form.path.label": { cn: "路径", en: "Path", },
   "dataset.add.form.path.tip": {
-    cn: "请输入数据集在服务器中的绝对路径，如 /home/users/dataset/train_cat",
-    en: "Please input absolute path of dataset on server, like: /home/users/dataset/train_cat",
+    cn: "将数据文件夹存放到ymir安装目录中的importing_pic目录，如 /home/ymir/importing_pic/VOC2012, 输入路径：/VOC2012",
+    en: "Save the data in 'importing_pic' under ymir install directory, such as /home/ymir/importing_pic/VOC2012, and input: /VOC2012",
   },
-  "dataset.add.form.path.placeholder": { cn: "请输入服务端的绝对路径", en: "Please input absolute path of dataset on server", },
+  "dataset.add.form.path.placeholder": { cn: "请输入路径", en: "Please input path on server", },
   "dataset.add.form.upload.btn": { cn: "上传文件", en: "Upload", },
   "dataset.add.form.upload.tip": {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
