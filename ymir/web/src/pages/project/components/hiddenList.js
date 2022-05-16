@@ -7,12 +7,14 @@ import t from "@/utils/t"
 import { humanize } from "@/utils/number"
 import Actions from "@/components/table/actions"
 import { EyeOnIcon } from "@/components/common/icons"
+import useRestore from "@/hooks/useRestore"
 
 const HiddenList = ({ module, pid, ...func }) => {
   const [list, setHiddenList] = useState([])
   const [total, setTotal] = useState(0)
   const [query, setQuery] = useState({})
   const [selected, setSelected] = useState([])
+  const restoreAction = useRestore(pid)
 
   useEffect(() => {
     if (pid) {
@@ -71,10 +73,7 @@ const HiddenList = ({ module, pid, ...func }) => {
   }
 
   async function restore(ids = []) {
-    if (!ids.length) {
-      return message.warn(t('common.selected.required'))
-    }
-    const result = await func.restore(module, pid, ids)
+    const result = await restoreAction(module, ids)
     if (result) {
       // refresh list
       fetch()
@@ -147,13 +146,6 @@ const actions = (dispatch) => {
       return dispatch({
         type,
         payload: { ...query, project_id: id, },
-      })
-    },
-    restore(module, pid, ids) {
-      const type = `${module}/restore`
-      return dispatch({
-        type,
-        payload: { pid, ids, }
       })
     },
   }
