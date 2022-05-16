@@ -30,6 +30,7 @@ class ExtraRequestType(enum.IntEnum):
     create_user = 602
     evaluate = 603
     check_repo = 604
+    fix_repo = 605
 
 
 MERGE_STRATEGY_MAPPING = {
@@ -302,6 +303,10 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_REPO_CHECK
         return request
 
+    def prepare_fix_repo(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_REPO_CLEAR
+        return request
+
 
 class ControllerClient:
     def __init__(self, channel: str = settings.GRPC_CHANNEL) -> None:
@@ -489,3 +494,11 @@ class ControllerClient:
         )
         resp = self.send(req)
         return resp["ops_ret"]
+
+    def fix_repo(self, user_id: int, project_id: int) -> Dict:
+        req = ControllerRequest(
+            type=ExtraRequestType.fix_repo,
+            user_id=user_id,
+            project_id=project_id,
+        )
+        return self.send(req)

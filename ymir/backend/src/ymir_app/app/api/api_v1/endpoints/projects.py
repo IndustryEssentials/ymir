@@ -302,5 +302,5 @@ def check_project_status(
     """
     Check if current project is dirty
     """
-    is_dirty = controller_client.check_repo_status(user_id=current_user.id, project_id=project_id)
-    return {"result": {"is_dirty": is_dirty}}
+    is_clean = controller_client.check_repo_status(user_id=current_user.id, project_id=project_id)
+    return {"result": {"is_dirty": not is_clean}}
