@@ -34,7 +34,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const { name } = history.location.query
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
-  const [total, setTotal] = useState(0)
+  const [total, setTotal] = useState(1)
   const [selectedVersions, setSelectedVersions] = useState({})
   const [form] = useForm()
   const [current, setCurrent] = useState({})
@@ -166,7 +166,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
 
   const hideHidden = ({ state, id }) => isRunning(state) || project?.hiddenModels?.includes(id)
 
-  const listChange = ({ current, pageSize }) => {
+  const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     func.updateQuery({ ...query, limit, offset })
