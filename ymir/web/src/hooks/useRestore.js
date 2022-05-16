@@ -2,7 +2,7 @@ import { message } from 'antd'
 import { useDispatch } from 'umi'
 import t from '@/utils/t'
 
-const useRestore = (module, pid) => {
+const useRestore = (pid) => {
   const dispatch = useDispatch()
   const restore = (module, ids) => {
     if (!ids.length) {
