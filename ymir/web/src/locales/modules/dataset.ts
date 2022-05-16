@@ -85,10 +85,10 @@ const dataset = {
   "dataset.add.form.internal.placeholder": { cn: "请选择一个公共数据集", en: "Select A Public Dataset", },
   "dataset.add.form.net.label": { cn: "URL地址", en: "URL", },
   "dataset.add.form.net.tip": { cn: "请输入压缩文件的url地址", en: "Please input a url of zip file", },
-  "dataset.add.form.path.label": { cn: "路径", en: "Path", },
+  "dataset.add.form.path.label": { cn: "相对路径", en: "Relative Path", },
   "dataset.add.form.path.tip": {
-    cn: "将数据文件夹存放到ymir安装目录中的importing_pic目录，如 /home/ymir/importing_pic/VOC2012, 输入路径：/VOC2012",
-    en: "Save the data in 'importing_pic' under ymir install directory, such as /home/ymir/importing_pic/VOC2012, and input: /VOC2012",
+    cn: "将数据文件夹存放到ymir安装目录中的importing_pic目录，如 /home/ymir/importing_pic/VOC2012, 输入相对路径：VOC2012",
+    en: "Save the data in 'importing_pic' under ymir install directory, such as /home/ymir/importing_pic/VOC2012, and input relative path: VOC2012",
   },
   "dataset.add.form.path.placeholder": { cn: "请输入路径", en: "Please input path on server", },
   "dataset.add.form.upload.btn": { cn: "上传文件", en: "Upload", },

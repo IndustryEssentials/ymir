@@ -138,7 +138,7 @@ const Add = (props) => {
       }
     }
     if (isType(TYPES.PATH)) {
-      params.path = `/ymir-sharing${params.path}`
+      params.path = `/ymir-sharing/${params.path}`
     }
     const result = await props.createDataset(params)
     if (result) {
@@ -347,13 +347,11 @@ const Add = (props) => {
             {isType(TYPES.PATH) ? (
               <Tip hidden={true}>
                 <Form.Item label={t('dataset.add.form.path.label')} required
-                    name='path'
-                    help={t('dataset.add.form.path.tip')}
-                    rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
-                  >
-                    <Input placeholder={t('dataset.add.form.path.placeholder')} max={512} allowClear />
-                  {/* </Form.Item>
-                  <p></p> */}
+                  name='path'
+                  help={t('dataset.add.form.path.tip')}
+                  rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
+                >
+                  <Input placeholder={t('dataset.add.form.path.placeholder')} max={512} allowClear />
                 </Form.Item>
               </Tip>
             ) : null}
