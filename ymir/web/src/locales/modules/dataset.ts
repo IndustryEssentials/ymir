@@ -88,7 +88,7 @@ const dataset = {
   "dataset.add.form.path.label": { cn: "相对路径", en: "Relative Path", },
   "dataset.add.form.path.tip": {
     cn: "将数据文件夹存放到ymir安装目录中的importing_pic目录，如 /home/ymir/ymir-sharing/VOC2012, 输入相对路径：VOC2012",
-    en: "Save the data in 'importing_pic' under ymir install directory, such as /home/ymir/ymir-sharing/VOC2012, and input relative path: VOC2012",
+    en: "Save the data in 'ymir-sharing' under ymir install directory, such as /home/ymir/ymir-sharing/VOC2012, and input relative path: VOC2012",
   },
   "dataset.add.form.path.placeholder": { cn: "请输入路径", en: "Please input path on server", },
   "dataset.add.form.upload.btn": { cn: "上传文件", en: "Upload", },
