@@ -143,10 +143,7 @@ describe("models: model", () => {
   errorCode(model, 'hide')
   errorCode(model, 'restore')
 
-  // delModelGroup
-  // hide
-  // restore
-
+  // todo list
   // updateModelsStates
   // updateModelState
   // updateQuery
