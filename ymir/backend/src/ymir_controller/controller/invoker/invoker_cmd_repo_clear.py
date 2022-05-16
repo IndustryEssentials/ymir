@@ -1,7 +1,7 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, invoker_call, utils
 from id_definition.error_codes import CTLResponseCode
-from invoker_cmd_branch_commit import BranchCommitInvoker
+from controller.invoker.invoker_cmd_branch_commit import BranchCommitInvoker
 from proto import backend_pb2
 
 
