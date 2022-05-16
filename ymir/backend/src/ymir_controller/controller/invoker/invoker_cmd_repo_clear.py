@@ -1,6 +1,7 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import checker, utils
+from controller.utils import checker, invoker_call, utils
 from id_definition.error_codes import CTLResponseCode
+from invoker_cmd_branch_commit import BranchCommitInvoker
 from proto import backend_pb2
 
 
@@ -22,7 +23,13 @@ class RepoClearInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
-        response = backend_pb2.GeneralResp()
-        response.code = CTLResponseCode.CTR_OK
-        command = [utils.mir_executable(), 'commit', '--root', self._repo_root, '-m', 'manually clear repo.']
-        return utils.run_command(command)
+        request = self._request
+        return invoker_call.make_invoker_cmd_call(
+            invoker=BranchCommitInvoker,
+            sandbox_root=self._sandbox_root,
+            req_type=backend_pb2.RequestType.CMD_COMMIT,
+            user_id=request.user_id,
+            repo_id=request.repo_id,
+            task_id=request.task_id,
+            commit_message=request.commit_message,
+        )
