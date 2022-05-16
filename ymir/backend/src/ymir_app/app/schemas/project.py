@@ -109,3 +109,11 @@ class ProjectPagination(BaseModel):
 
 class ProjectPaginationOut(Common):
     result: ProjectPagination
+
+
+class ProjectStatus(BaseModel):
+    is_dirty: bool
+
+
+class ProjectStatusOut(Common):
+    result: ProjectStatus

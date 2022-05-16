@@ -29,6 +29,8 @@ class ExtraRequestType(enum.IntEnum):
     get_gpu_info = 601
     create_user = 602
     evaluate = 603
+    check_repo = 604
+    fix_repo = 605
 
 
 MERGE_STRATEGY_MAPPING = {
@@ -296,6 +298,13 @@ class ControllerRequest:
         request.singleton_op = args["gt_dataset_hash"]
         request.in_dataset_ids[:] = args["other_dataset_hashes"]
         request.evaluate_config.CopyFrom(evaluate_config)
+
+    def prepare_check_repo(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_REPO_CHECK
+        return request
+
+    def prepare_fix_repo(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_REPO_CLEAR
         return request
 
 
@@ -474,5 +483,22 @@ class ControllerClient:
                 "gt_dataset_hash": gt_dataset_hash,
                 "other_dataset_hashes": other_dataset_hashes,
             },
+        )
+        return self.send(req)
+
+    def check_repo_status(self, user_id: int, project_id: int) -> bool:
+        req = ControllerRequest(
+            type=ExtraRequestType.check_repo,
+            user_id=user_id,
+            project_id=project_id,
+        )
+        resp = self.send(req)
+        return resp["ops_ret"]
+
+    def fix_repo(self, user_id: int, project_id: int) -> Dict:
+        req = ControllerRequest(
+            type=ExtraRequestType.fix_repo,
+            user_id=user_id,
+            project_id=project_id,
         )
         return self.send(req)

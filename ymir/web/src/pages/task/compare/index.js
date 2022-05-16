@@ -6,6 +6,7 @@ import commonStyles from "../common.less"
 import { useHistory, useParams, Link } from "umi"
 
 import t from "@/utils/t"
+import { string2Array } from "@/utils/string"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomNumber, toFixed } from "@/utils/number"
 import Panel from "@/components/form/panel"
@@ -13,10 +14,6 @@ import DatasetSelect from "@/components/form/datasetSelect"
 import { CompareIcon } from "@/components/common/icons"
 import useDynamicRender from "@/hooks/useDynamicRender"
 import KeywordSelect from "./components/keywordSelect"
-
-function string2Array(str) {
-  return str.split(',').map(i => +i)
-}
 
 function Compare({ ...func }) {
   const history = useHistory()
