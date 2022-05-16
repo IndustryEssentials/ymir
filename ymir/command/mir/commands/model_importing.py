@@ -7,7 +7,7 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, context, mir_storage_ops, revs_parser
+from mir.tools import checker, mir_storage_ops, revs_parser
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
@@ -97,12 +97,6 @@ def _check_model(model_storage: mir_utils.ModelStorage, mir_root: str) -> int:
     if producer != mir_settings.PRODUCER_NAME:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"can not import model, invalid producer: {producer}")
-
-    # check class names
-    class_names = model_storage.class_names
-    if not context.check_class_names(
-            mir_root=mir_root, current_class_names=class_names, error_on_unknown_name=False):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
 
     return MirCode.RC_OK
 
