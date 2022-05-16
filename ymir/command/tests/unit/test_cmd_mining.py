@@ -61,6 +61,15 @@ class TestMiningCmd(unittest.TestCase):
                             },
                             'score': 0.5,
                             'class_name': 'cat',
+                        }, {
+                            'box': {
+                                'x': 50,
+                                'y': 0,
+                                'w': 30,
+                                'h': 30
+                            },
+                            'score': 0.5,
+                            'class_name': 'unknown-car',  # unknown class name, should be ignored
                         },
                     ],
                 },
@@ -73,7 +82,7 @@ class TestMiningCmd(unittest.TestCase):
 
     def _mock_prepare_model(*args, **kwargs):
         model_storage = mir_utils.ModelStorage(models=['0.params'],
-                                               executor_config={'class_names': ['person', 'cat']},
+                                               executor_config={'class_names': ['person', 'cat', 'unknown-car']},
                                                task_context={'task_id': '0'})
         return model_storage
 

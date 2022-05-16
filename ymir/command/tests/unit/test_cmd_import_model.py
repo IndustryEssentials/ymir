@@ -51,8 +51,9 @@ class TestCmdImportModel(unittest.TestCase):
     def _prepare_model(self):
         with open(os.path.join(self._src_model_root, 'best.weights'), 'w') as f:
             f.write('fake darknet weights model')
+        # note: unknown-car is not in user labels, we still expect it success
         model_storage = mir_utils.ModelStorage(models=['best.weights'],
-                                               executor_config={'class_names': ['cat', 'person']},
+                                               executor_config={'class_names': ['cat', 'person', 'unknown-car']},
                                                task_context={
                                                    mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
                                                    'mAP': 0.5
