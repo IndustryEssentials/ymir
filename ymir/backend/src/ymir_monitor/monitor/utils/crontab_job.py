@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 import sys
@@ -7,6 +8,7 @@ import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from common_utils.percent_log_util import PercentLogHandler, PercentResult, LogState
+from id_definition.error_codes import MonitorErrorCode
 from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
@@ -53,8 +55,13 @@ def update_monitor_percent_log() -> None:
                 runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
             except ValueError as e:
                 sentry_sdk.capture_exception(e)
-                logging.warning(e)
-                runtime_log_content = PercentResult(task_id=task_id, timestamp="123", percent=0.0, state=LogState.ERROR)
+                logging.exception(e)
+                runtime_log_content = PercentResult(task_id=task_id,
+                                                    timestamp=f"{datetime.now().timestamp():.6f}",
+                                                    percent=1.0,
+                                                    state=LogState.ERROR,
+                                                    state_code=MonitorErrorCode.PERCENT_LOG_PARSE_ERROR,
+                                                    state_message=f"logfile parse error: {log_path}")
 
             runtime_log_contents[log_path] = runtime_log_content
             if runtime_log_content.timestamp != previous_log_content["timestamp"]:
