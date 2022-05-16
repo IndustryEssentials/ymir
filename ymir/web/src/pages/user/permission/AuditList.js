@@ -23,7 +23,7 @@ function AuditList({ getUsers, setUserState }) {
 
   useEffect(() => {
     getUserList()
-  }, [])
+  }, [query])
 
   const columns = [
     {
