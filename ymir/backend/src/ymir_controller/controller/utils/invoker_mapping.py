@@ -18,6 +18,8 @@ from controller.invoker import (
     invoker_cmd_terminate,
     invoker_cmd_user_create,
     invoker_task_factory,
+    invoker_cmd_repo_check,
+    invoker_cmd_repo_clear,
 )
 
 from proto import backend_pb2
@@ -39,6 +41,8 @@ RequestTypeToInvoker = {
     backend_pb2.CMD_MERGE: invoker_cmd_merge.MergeInvoker,
     backend_pb2.CMD_PULL_IMAGE: invoker_cmd_pull_image.ImageHandler,
     backend_pb2.CMD_TERMINATE: invoker_cmd_terminate.CMDTerminateInvoker,
+    backend_pb2.CMD_REPO_CHECK: invoker_cmd_repo_check.RepoCheckInvoker,
+    backend_pb2.CMD_REPO_CLEAR: invoker_cmd_repo_clear.RepoClearInvoker,
     backend_pb2.REPO_CREATE: invoker_cmd_init.InitInvoker,
     backend_pb2.TASK_CREATE: invoker_task_factory.CreateTaskInvokerFactory,
     backend_pb2.USER_CREATE: invoker_cmd_user_create.UserCreateInvoker,
