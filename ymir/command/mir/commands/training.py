@@ -1,11 +1,13 @@
 import argparse
 import logging
 import os
+import time
 import subprocess
 from subprocess import CalledProcessError
 import traceback
 from typing import Any, List, Optional, Set, Tuple
 
+from tensorboardX import SummaryWriter
 import yaml
 
 from mir.commands import base
@@ -354,6 +356,11 @@ class CmdTrain(base.BaseCommand):
             # don't exit, proceed if model exists
             task_code = MirCode.RC_CMD_CONTAINER_ERROR
             return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
+
+            # write executor tail to tensorboard
+            if return_msg:
+                with SummaryWriter(logdir=tensorboard_dir) as tb_writer:
+                    tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
         # gen task_context
         task_context = {

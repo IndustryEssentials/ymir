@@ -37,3 +37,15 @@ export function normalReducer(module, func, payload, expected, field, initState)
 
 export const product = (id) => ({ id })
 export const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
+export const list = items => ({ items, total: items.length })
+export const response = (result, code = 0) => ({ code, result })
+
+export const generatorCreator = (module) => (func, payload) => {
+  const saga = module['effects'][func]
+  const creator = {
+    type: func,
+    payload,
+  }
+
+  return saga(creator, { put, call, select })
+}

@@ -1,6 +1,6 @@
 import iteration from "../iteration"
 import { put, putResolve, call, select } from "redux-saga/effects"
-import { errorCode, normalReducer } from "./func"
+import { product, products, errorCode, normalReducer, generatorCreator } from "./func"
 import { Stages, transferIteration } from '@/constants/project'
 
 put.resolve = putResolve
@@ -10,9 +10,7 @@ function equalObject(obj1, obj2) {
 }
 
 describe("models: iteration", () => {
-  const product = (id) => ({ id })
-  const products = (n) =>
-    Array.from({ length: n }, (item, index) => product(index + 1))
+  const createGenerator = generatorCreator(iteration)
   normalReducer(iteration, 'UPDATE_ITERATIONS', { id: 13424, iterations: product(34) }, { 13424: product(34) }, 'iterations', {})
   normalReducer(iteration, 'UPDATE_ITERATION', product(100434), product(100434), 'iteration', {})
   normalReducer(iteration, 'UPDATE_CURRENT_STAGE_RESULT', product(100435), product(100435), 'currentStageResult', {})
@@ -23,15 +21,10 @@ describe("models: iteration", () => {
   errorCode(iteration, "updateIteration")
 
   it("effects: getIterations -> success", () => {
-    const saga = iteration.effects.getIterations
-    const creator = {
-      type: "getIterations",
-      payload: {},
-    }
     const iterations = products(5)
     const expected = iterations.map(i => transferIteration(i))
 
-    const generator = saga(creator, { put, call })
+    const generator = createGenerator('getIterations', {})
     generator.next()
     generator.next({
       code: 0,
@@ -43,12 +36,7 @@ describe("models: iteration", () => {
     expect(end.done).toBe(true)
   })
   it("effects: getIterations -> success -> get more info with data.", () => {
-    const saga = iteration.effects.getIterations
     const pid = 64321
-    const creator = {
-      type: "getIterations",
-      payload: { id: pid, more: true },
-    }
     const iterations = products(3).map(({ id }) => ({
       id,
       mining_input_dataset_id: id,
@@ -70,7 +58,7 @@ describe("models: iteration", () => {
       testDataset: product(i.id),
     }))
 
-    const generator = saga(creator, { put, call })
+    const generator = createGenerator('getIterations', { id: pid, more: true })
     generator.next()
     generator.next({
       code: 0,
@@ -85,17 +73,12 @@ describe("models: iteration", () => {
   })
 
   it("effects: getIteration", () => {
-    const saga = iteration.effects.getIteration
     const id = 10012
     const pid = 62314
-    const creator = {
-      type: "getIteration",
-      payload: { pid, id },
-    }
     const result = { id, project_id: pid, name: "iteration001" }
     const expected = transferIteration(result)
 
-    const generator = saga(creator, { put, call })
+    const generator = createGenerator('getIteration', { pid, id })
     generator.next()
     generator.next({
       code: 0,
@@ -107,17 +90,12 @@ describe("models: iteration", () => {
     expect(end.done).toBe(true)
   })
   it("effects: getStageResult", () => {
-    const saga = iteration.effects.getStageResult
     const stage = 1
     const pid = 62314
-    const creator = {
-      type: "getStageResult",
-      payload: { id: pid, stage, },
-    }
     const result = { id: 254, project_id: pid, name: "iteration002" }
     const expected = result
 
-    const generator = saga(creator, { put, call })
+    const generator = createGenerator('getStageResult', { id: pid, stage, })
     generator.next()
     generator.next(result)
     const end = generator.next()
@@ -126,17 +104,12 @@ describe("models: iteration", () => {
     expect(end.done).toBe(true)
   })
   it("effects: getStageResult -> get model", () => {
-    const saga = iteration.effects.getStageResult
     const stage = Stages.training
     const pid = 62314
-    const creator = {
-      type: "getStageResult",
-      payload: { id: pid, stage, force: true },
-    }
     const result = product(2345)
     const expected = result
 
-    const generator = saga(creator, { put, call })
+    const generator = createGenerator('getStageResult', { id: pid, stage, force: true })
     generator.next()
     generator.next(result)
     const end = generator.next()
@@ -145,23 +118,18 @@ describe("models: iteration", () => {
     expect(end.done).toBe(true)
   })
   it("effects: updateCurrentStageResult -> progress", () => {
-    const saga = iteration.effects.updateCurrentStageResult
-    const ds = (id, state, result_state, progress) => ({ 
-      id, 
-      task: { hash: `hash${id}`, state, percent: progress, }, 
-      taskState: state, 
-      state: result_state, progress 
+    const ds = (id, state, result_state, progress) => ({
+      id,
+      task: { hash: `hash${id}`, state, percent: progress, },
+      taskState: state,
+      state: result_state, progress
     })
 
     const result = ds(1, 2, 0, 0.20)
     const task1 = { hash1: { id: 1, state: 2, result_state: 0, percent: 0.45 }, hash7: { id: 7, state: 3, result_state: 1, percent: 1 } }
-    const creator = {
-      type: "updateDatasets",
-      payload: task1,
-    }
     const expected = ds(1, 2, 0, 0.45)
 
-    const generator = saga(creator, { put, call, select })
+    const generator = createGenerator('updateCurrentStageResult', task1)
     generator.next()
     const d = generator.next(result)
     const end = generator.next()
@@ -171,23 +139,18 @@ describe("models: iteration", () => {
     expect(end.done).toBe(true)
   })
   it("effects: updateCurrentStageResult -> state change.", () => {
-    const saga = iteration.effects.updateCurrentStageResult
-    const ds = (id, state, result_state, progress) => ({ 
-      id, 
-      task: { hash: `hash${id}`, state, percent: progress, }, 
-      taskState: state, 
-      state: result_state, progress 
+    const ds = (id, state, result_state, progress) => ({
+      id,
+      task: { hash: `hash${id}`, state, percent: progress, },
+      taskState: state,
+      state: result_state, progress
     })
 
     const result = ds(1, 2, 0, 0.20)
-    const task = { hash1: { id: 1, state: 3, result_state: 1, percent: 1 }}
-    const creator = {
-      type: "updateDatasets",
-      payload: task,
-    }
+    const task = { hash1: { id: 1, state: 3, result_state: 1, percent: 1 } }
     const expected = { ...ds(1, 3, 1, 1), needReload: true }
 
-    const generator = saga(creator, { put, call, select })
+    const generator = createGenerator('updateCurrentStageResult', task)
     generator.next()
     const d = generator.next(result)
     const end = generator.next()
@@ -197,15 +160,11 @@ describe("models: iteration", () => {
     expect(end.done).toBe(true)
   })
   it("effects: createIteration", () => {
-    const saga = iteration.effects.createIteration
     const id = 10015
     const expected = { id, name: "new_iteration_name" }
-    const creator = {
-      type: "createIteration",
-      payload: { name: "new_iteration_name", type: 1 },
-    }
 
-    const generator = saga(creator, { put, call })
+
+    const generator = createGenerator('createIteration', { name: "new_iteration_name", type: 1 })
     generator.next()
     const end = generator.next({
       code: 0,
@@ -216,15 +175,11 @@ describe("models: iteration", () => {
     expect(end.done).toBe(true)
   })
   it("effects: updateIteration", () => {
-    const saga = iteration.effects.updateIteration
     const origin = { id: 10011, name: "new_iteration_name" }
-    const creator = {
-      type: "updateIteration",
-      payload: { ...origin },
-    }
-    const expected = transferIteration(origin)
 
-    const generator = saga(creator, { put, call })
+    const expected = transferIteration(origin)
+    const generator = createGenerator('updateIteration', origin)
+
     generator.next()
     const end = generator.next({
       code: 0,
@@ -233,5 +188,45 @@ describe("models: iteration", () => {
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
+  })
+
+  it("effects: getIterationStagesResult -> get datasets/model for iteration", () => {
+    const pid = 62314
+    const iter = {
+      id: 5349,
+      projectId: pid,
+      miningSet: 5340,
+      miningResult: 5341,
+      labelSet: 5342,
+      trainUpdateSet: 5343,
+      model: 34234,
+    }
+    const datasets = [product(5340), product(5341), product(5342), product(5343)]
+    const model = product(32234)
+
+    const expected = {
+      ...iter,
+      iminingSet: product(5340),
+      iminingResult: product(5341),
+      ilabelSet: product(5342),
+      itrainUpdateSet: product(5343),
+      imodel: product(32234),
+    }
+    const generator = createGenerator('getIterationStagesResult', iter)
+
+    generator.next()
+    generator.next(datasets)
+    const end = generator.next(model)
+
+    expect(end.value).toEqual(expected)
+    expect(end.done).toBe(true)
+  })
+  it('effects: setCurrentStageResult -> success', ()=> {
+    const model = product(523464)
+    const expected = model
+    const generator = createGenerator('setCurrentStageResult', model)
+    generator.next()
+    const end = generator.next()
+    expect(end.value).toEqual(expected)
   })
 })
