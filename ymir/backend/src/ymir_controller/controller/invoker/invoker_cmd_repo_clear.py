@@ -31,5 +31,5 @@ class RepoClearInvoker(BaseMirControllerInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=request.task_id,
-            commit_message=request.commit_message,
+            commit_message="Manually clear mir repo.",
         )
