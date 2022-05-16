@@ -336,9 +336,9 @@ Users can download the example **Sample.zip** for reference as follows:
 
 1. Download the open-source dataset VOC2012 ([Click to download VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar)) and unzip it. Change the folder name as required, and then compressing them separately into zip packages that meet the import requirements.
 
-2. Place dataset VOC2012 under ymir-workplace/importing_pic.
+2. Place dataset VOC2012 under `ymir-workplace/ymir-sharing`.
 
-3. Select 'path import' and enter the absolute path address of the dataset in the server: /data/sharing/voc2012, as shown in the figure below:
+3. Select 'path import' and enter the absolute path of the dataset in the server: `/ymir-sharing/voc2012`, as shown in the figure below:
 
 ![path import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/path%20import.jpg)
 
