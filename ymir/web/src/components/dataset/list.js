@@ -32,7 +32,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const history = useHistory()
   const [datasets, setDatasets] = useState([])
   const [datasetVersions, setDatasetVersions] = useState({})
-  const [total, setTotal] = useState(0)
+  const [total, setTotal] = useState(1)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
@@ -77,7 +77,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }, [project, versions])
 
   useEffect(() => {
-    console.log('iterations:', iterations)
     if (iterations?.length) {
       const dvs = setVersionLabelsByIterations(versions, iterations)
       setDatasetVersions(dvs)
@@ -284,7 +283,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
   }
 
-  const listChange = ({ current, pageSize }) => {
+  const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     func.updateQuery({ ...query, limit, offset })
@@ -448,6 +447,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const hideOk = (result) => {
+    result.forEach(item => fetchVersions(item.dataset_group_id, true))
     fetchDatasets(true)
     setSelectedVersions({})
   }

@@ -58,7 +58,12 @@ function Inference({ datasetCache, datasets, ...func }) {
 
   useEffect(() => {
     did && func.getDataset(did)
+    did && form.setFieldsValue({ datasetId: Number(did) })
   }, [did])
+
+  useEffect(() => {
+    mid?.length && form.setFieldsValue({ model: mid })
+  }, [location.query.mid])
 
   useEffect(() => {
     datasetCache[did] && setDataset(datasetCache[did])
@@ -98,7 +103,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }
 
   function checkModelKeywords() {
-    const keywords = (selectedModels.map(model => model?.keywords) || []).flat()
+    const keywords = (selectedModels.map(model => model?.keywords) || []).flat().filter(item => item)
     checkKeywords(keywords)
   }
 
@@ -171,9 +176,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     description: '',
-    model: mid,
     image: image ? parseInt(image) : undefined,
-    datasetId: Number(did) ? Number(did) : undefined,
     algorithm: getCheckedValue(Algorithm()),
     gpu_count: 0,
   }
@@ -214,7 +217,7 @@ function Inference({ datasetCache, datasets, ...func }) {
 
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.filter.imodel')}>
-                <Form.Item
+                <Form.Item required
                   label={t('task.mining.form.model.label')}>
                   <Form.Item
                     noStyle
