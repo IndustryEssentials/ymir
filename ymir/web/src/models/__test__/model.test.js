@@ -1,6 +1,6 @@
 import model from "../model"
 import { put, putResolve, select, call } from "redux-saga/effects"
-import { errorCode } from './func'
+import { errorCode, generatorCreator, product, products, list, response } from './func'
 import { transferModelGroup, transferModel, states } from '@/constants/model'
 
 put.resolve = putResolve
@@ -14,9 +14,7 @@ jest.mock('umi', () => {
 })
 
 describe("models: model", () => {
-  const product = (id) => ({ id })
-  const products = (n) => Array.from({ length: n }, (item, index) => product(index + 1))
-
+  const createGenerator = generatorCreator(model)
   const createTime = "2022-03-10T03:39:09"
   const task = {
     "name": "t00000020000013277a01646883549",
@@ -49,6 +47,63 @@ describe("models: model", () => {
     related_task: task,
   })
 
+  const groupsResult = products(7).map(({ id }) => ({ id, create_datetime: createTime }))
+  const groupsExpected = groupsResult.map(item => transferModelGroup(item))
+  const modelsResult = products(4).map(({ id }) => md(id))
+  const modelsExpected = modelsResult.map(item => transferModel(item))
+
+  const generateNormal = ({
+    func,
+    result,
+    expected,
+    payload = {},
+    label = '',
+    hasForce = false,
+    force = false,
+    cache = null,
+  }) => {
+    it(`effects: ${func} -> ${label} -> success`, () => {
+      const generator = createGenerator(func, payload)
+      let end = generator.next()
+
+      if (hasForce) {
+        if (!force) {
+          end = generator.next(cache || {})
+        }
+
+        if (force || !cache) {
+          const res = generator.next(result)
+          end = generator.next()
+        }
+      } else {
+        end = generator.next(result)
+        if (!end.done) {
+          end = generator.next()
+        }
+      }
+
+      expect(end.value).toEqual(expected)
+      expect(end.done).toBe(true)
+    })
+  }
+
+  const generateList = (func, payload, result, expected) => generateNormal({
+    func, payload, result, expected
+  })
+
+  const generateForce = ({ func, result, expected, payload, label, force, cache }) => generateNormal({
+    func, payload: { ...payload, force }, force, result, expected, label, cache, hasForce: true,
+  })
+
+  const generateGetModelVersions = (label, result, expected, force = false, hasCache = false) => {
+    const gid = 2325234
+    const cache = hasCache ? { [gid]: expected } : null
+    return generateForce({
+      label, force, cache, result, expected,
+      func: 'getModelVersions', payload: { gid },
+    })
+  }
+
   it("reducers: UPDATE_MODELS, UPDATE_MODEL", () => {
     const state = {
       models: {},
@@ -56,11 +111,11 @@ describe("models: model", () => {
     }
     const expected = products(10)
     const action = {
-      payload: { items: expected, total: expected.length },
+      payload: list(expected),
     }
     const { models } = model.reducers.UPDATE_MODELS(state, action)
     const { items, total } = models
-    expect(items.join(',')).toBe(expected.join(','))
+    expect(items).toEqual(expected)
     expect(total).toBe(expected.length)
 
     const expectedId = 1001
@@ -81,47 +136,43 @@ describe("models: model", () => {
   errorCode(model, 'importModel')
   errorCode(model, 'updateModel')
   errorCode(model, 'verify')
-  errorCode(model, 'getModelsByRef', 100324, [])
   errorCode(model, 'getModelsByMap', 10025, { keywords: [], kmodels: {} })
+  errorCode(model, 'getModelVersions', { id: 235234, force: true })
+  errorCode(model, 'queryModels')
+  errorCode(model, 'delModelGroup')
+  errorCode(model, 'hide')
+  errorCode(model, 'restore')
 
-  it("effects: getModelGroups", () => {
-    const saga = model.effects.getModelGroups
-    const creator = {
-      type: "getModelGroups",
-      payload: {},
-    }
-    const expected = products(8)
+  // todo list
+  // updateModelsStates
+  // updateModelState
+  // updateQuery
+  // resetQuery
+  // clearCache
 
-    const generator = saga(creator, { put, call })
-    const start = generator.next()
-    generator.next({
-      code: 0,
-      result: { items: expected, total: expected.length },
-    })
-    const end = generator.next()
+  generateList('getModelGroups', {}, response(list(groupsResult)), list(groupsExpected))
 
-    expect(end.value.items.join('')).toBe(expected.join(''))
-    expect(end.done).toBe(true)
+  // getModelVersion
+  generateGetModelVersions('force = false && cache = false', response(list(modelsResult)), modelsExpected)
+  generateGetModelVersions('force = true', response(list(modelsResult)), modelsExpected, true)
+  generateGetModelVersions('force = false && cache = true', response(list(modelsResult)), modelsExpected, false, true)
+
+  // queryModels
+  generateList('queryModels', {}, response(list(modelsResult)), list(modelsExpected))
+  generateList('getHiddenList', {}, list(modelsExpected), list(modelsExpected))
+  generateList('queryAllModels', 63453, list(modelsExpected), modelsExpected)
+  generateList('batchModels', { ids: '1,3' }, response(modelsResult), modelsExpected)
+  generateList('hide', {pid: 324334, ids: [53, 34]}, response(list(modelsExpected)), list(modelsExpected))
+  generateList('restore', {pid: 324334, ids: [63, 23]}, response(list(modelsExpected)), list(modelsExpected))
+
+
+  generateNormal({
+    func: 'delModelGroup',
+    payload: { id: 4235234234 },
+    result: response('ok'),
+    expected: 'ok',
   })
-  it("effects: batchModels", () => {
-    const saga = model.effects.batchModels
-    const creator = {
-      type: "batchModels",
-      payload: { ids: '1,3' },
-    }
-    const recieved = products(2).map(id => md(id))
-    const expected = recieved.map(item => transferModel(item))
 
-    const generator = saga(creator, { put, call })
-    const start = generator.next()
-    const end = generator.next({
-      code: 0,
-      result: recieved,
-    })
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
   it("effects: getModel", () => {
     const saga = model.effects.getModel
     const modelId = 615
@@ -224,89 +275,6 @@ describe("models: model", () => {
     })
 
     expect(end.value.model_id).toBe(id)
-    expect(end.done).toBe(true)
-  })
-
-  //   getModelsByRef
-  it("effects: getModelsByRef -> get stats result success-> batch models success", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const models = products(12)
-    const result = models.map((model, index) => [model.id, index])
-    const expected = models.map((model, index) => ({ id: model.id, count: index }))
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(models)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getModelsByRef -> get stats result success-> batch models success", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const models = products(12)
-    const result = models.map((model, index) => [model.id, index])
-    const expected = models.map((model, index) => ({ id: model.id, count: index }))
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(models)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getModelsByRef -> get stats result success-> batch models failed", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const models = products(12)
-    const result = models.map((model, index) => [model.id, index])
-    const expected = models.map((model, index) => ({ id: model.id, count: index }))
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(undefined)
-
-    expect(end.value).toEqual([])
-    expect(end.done).toBe(true)
-  })
-  it("effects: getModelsByRef -> get stats result = []", () => {
-    const saga = model.effects.getModelsByRef
-    const creator = {
-      type: "getModelsByRef",
-      payload: { limit: 3 },
-    }
-    const result = []
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result,
-    })
-
-    expect(end.value).toEqual([])
     expect(end.done).toBe(true)
   })
   // getModelsByMap
