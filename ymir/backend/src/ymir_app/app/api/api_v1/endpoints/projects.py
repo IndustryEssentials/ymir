@@ -94,19 +94,16 @@ def create_sample_project(
     project_task_hash = gen_task_hash(current_user.id, project.id)
 
     try:
-        training_classes = user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
+        user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
     except KeyError:
         # todo refactor keywords dependencies to handle ensure given keywords exist
         add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
-        user_labels = controller_client.get_labels_of_user(current_user.id)
-        training_classes = user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
 
     try:
         resp = controller_client.create_project(
             user_id=current_user.id,
             project_id=project.id,
             task_id=project_task_hash,
-            args={"training_classes": training_classes},
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
@@ -132,7 +129,6 @@ def create_project(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
@@ -146,15 +142,12 @@ def create_project(
 
     task_id = gen_task_hash(current_user.id, project.id)
 
-    training_classes = user_labels.get_class_ids(names_or_aliases=project_in.training_keywords)
-
     # 2.send to controller
     try:
         resp = controller_client.create_project(
             user_id=current_user.id,
             project_id=project.id,
             task_id=task_id,
-            args={"training_classes": training_classes},
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
