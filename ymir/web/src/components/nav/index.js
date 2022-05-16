@@ -15,7 +15,7 @@ import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
 import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon } from "../common/icons"
 
-const menus = [
+const menus = () => [
   {
     label: 'common.top.menu.home',
     key: "/home/portal",
@@ -58,7 +58,6 @@ function validPermission(role, permission) {
 }
 
 function HeaderNav({ simple = false, username, loginout, avatar, role }) {
-  // const location = useLocation()
   const [defaultKeys, setDefaultKeys] = useState(null)
   const location = useLocation()
   const history = useHistory()
@@ -70,8 +69,8 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   }, [location.pathname])
 
   useEffect(() => {
-    setMainMenu(handleMenus(menus))
-  }, [])
+    setMainMenu(handleMenus(menus()))
+  }, [role])
 
   const out = async () => {
     const res = await loginout()
@@ -104,7 +103,6 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
       if (menu.children) {
         menu.children = handleMenus(menu.children)
       }
-      console.log('menu.label:', menus, menu, menu.label)
       menu.label = t(menu.label)
       validPermission(role, menu.permission) && result.push(menu)
     })

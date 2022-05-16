@@ -217,14 +217,10 @@ export default {
           const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
           if (modelsObj) {
             kws.forEach(kw => {
-              kmodels[kw] = result[kw].map(item => {
-                const { id, name, map } = modelsObj.find(model => model.id === item[0])
-                if (name) {
-                  return {
-                    id, map, name,
-                  }
-                }
-              })
+              kmodels[kw] = [...new Set(result[kw].map(item => {
+                const model = modelsObj.find(model => model.id === item[0])
+                return model ? model : null
+              }))]
             })
           }
         }

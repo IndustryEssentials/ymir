@@ -69,7 +69,7 @@ class TestCmdInfer(unittest.TestCase):
             training_config = yaml.safe_load(f.read())
 
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
-        training_config['class_names'] = ['person', 'cat']
+        training_config['class_names'] = ['person', 'cat', 'unknown-car']
 
         model_storage = mir_utils.ModelStorage(models=['model.params', 'model.json'],
                                                executor_config=training_config,

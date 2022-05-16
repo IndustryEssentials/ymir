@@ -88,8 +88,6 @@ class ControllerRequest:
         return request
 
     def prepare_create_project(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        # project training target labels
-        request.in_class_ids[:] = args["training_classes"]
         request.req_type = mirsvrpb.REPO_CREATE
         return request
 
@@ -393,13 +391,12 @@ class ControllerClient:
         req = ControllerRequest(type=ExtraRequestType.create_user, user_id=user_id)
         return self.send(req)
 
-    def create_project(self, user_id: int, project_id: int, task_id: str, args: Dict) -> Dict:
+    def create_project(self, user_id: int, project_id: int, task_id: str) -> Dict:
         req = ControllerRequest(
             type=ExtraRequestType.create_project,
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,
-            args=args,
         )
         return self.send(req)
 
