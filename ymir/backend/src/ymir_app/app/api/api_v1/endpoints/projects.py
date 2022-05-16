@@ -287,3 +287,20 @@ def delete_project(
             continue
 
     return {"result": project}
+
+
+@router.get(
+    "/{project_id}/status",
+    response_model=schemas.project.ProjectStatusOut,
+)
+def check_project_status(
+    *,
+    project_id: int = Path(...),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    """
+    Check if current project is dirty
+    """
+    is_clean = controller_client.check_repo_status(user_id=current_user.id, project_id=project_id)
+    return {"result": {"is_dirty": not is_clean}}

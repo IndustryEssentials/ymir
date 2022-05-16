@@ -14,3 +14,6 @@ python app/initial_data.py
 
 # Clean legacy tasks
 python app/clean_tasks.py
+
+# Fix dirty repos
+python app/fix_dirty_repos.py
