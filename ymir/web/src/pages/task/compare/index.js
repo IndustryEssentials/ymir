@@ -196,7 +196,7 @@ function Compare({ ...func }) {
                     { required: true }
                   ]}
                 >
-                  <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetsChange} />
+                  <DatasetSelect pid={pid} mode='multiple' filterOption={false} filters={filterDatasets} onChange={datasetsChange} />
                 </Form.Item>
                 <Form.Item
                   label={t('dataset.compare.form.gt')}
