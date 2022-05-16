@@ -14,12 +14,12 @@ from controller.invoker import (
     invoker_cmd_log,
     invoker_cmd_merge,
     invoker_cmd_pull_image,
+    invoker_cmd_repo_check,
+    invoker_cmd_repo_clear,
     invoker_cmd_sampling,
     invoker_cmd_terminate,
     invoker_cmd_user_create,
     invoker_task_factory,
-    invoker_cmd_repo_check,
-    invoker_cmd_repo_clear,
 )
 
 from proto import backend_pb2
