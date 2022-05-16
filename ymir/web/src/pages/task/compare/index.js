@@ -32,7 +32,7 @@ function Compare({ ...func }) {
   const [apRender, setSelectedKeyword] = useDynamicRender()
 
   const filterDatasets = useCallback((dss) => {
-    return filterSameAssets(innerGroup(dss)).filter(ds => ds.id !== gt.id)
+    return filterSameAssets(innerGroup(dss)).filter(ds => ds.id !== gt?.id)
   }, [gt])
 
   const filterGT = useCallback((dss) => {
@@ -69,8 +69,8 @@ function Compare({ ...func }) {
     setDatasets(options.map(option => option.dataset))
   }
 
-  function gtChange(value, option) {
-    setGT(option.dataset)
+  function gtChange(value, option = {}) {
+    setGT(option?.dataset)
   }
 
   function innerGroup(datasets) {
