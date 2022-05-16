@@ -35,11 +35,6 @@ class InitInvoker(BaseMirControllerInvoker):
         os.link(self._label_storage_file, link_dst_file)
 
         command = [utils.mir_executable(), 'init', '--root', self._repo_root]
-        if self._request.in_class_ids:
-            command.extend([
-                '--project-class-names',
-                ';'.join(self._user_labels.get_main_names(class_ids=list(self._request.in_class_ids)))
-            ])
         command.extend(
             ['--with-empty-rev',
              revs.join_tvt_branch_tid(branch_id=self._request.task_id, tid=self._request.task_id)])
