@@ -100,6 +100,8 @@ def locate_dir(p: Union[str, Path], target: str) -> Path:
     Locate specifc target dirs
     """
     for _p in Path(p).iterdir():
+        if _p.is_dir() and _p.name.lower() == target:
+            return _p
         for __p in _p.iterdir():
             if __p.is_dir() and __p.name.lower() == target:
                 return __p
