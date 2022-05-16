@@ -289,7 +289,7 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
             continue
         asset_id = os.path.splitext(os.path.basename(asset_name))[0]
         if asset_id not in asset_ids_set:
-            logging.debug(f"unknown asset name: {asset_name}, ignore")
+            logging.info(f"unknown asset name: {asset_name}, ignore")
             continue
         single_image_annotations = mirpb.SingleImageAnnotations()
         idx = 0

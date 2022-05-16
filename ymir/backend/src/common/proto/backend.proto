@@ -72,6 +72,8 @@ enum RequestType {
     CMD_GPU_INFO_GET = 17;
     CMD_SAMPLING = 18;
     CMD_EVALUATE = 19;
+    CMD_REPO_CHECK = 20;
+    CMD_REPO_CLEAR = 21;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -136,6 +138,7 @@ message GeneralResp {
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
+    bool ops_ret = 10;
     RespCMDInference detection = 1001;
 
     reserved 5, 1000;

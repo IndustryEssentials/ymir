@@ -205,27 +205,6 @@ export default {
         })
       }
     },
-    *getModelsByRef({ payload }, { call, put }) {
-      const { code, result } = yield call(getStats, { ...payload, q: 'hms' })
-      let models = []
-      if (code === 0) {
-        const refs = {}
-        const ids = result.map(item => {
-          refs[item[0]] = item[1]
-          return item[0]
-        })
-        if (ids.length) {
-          const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
-          if (modelsObj) {
-            models = modelsObj.map(model => {
-              model.count = refs[model.id]
-              return model
-            })
-          }
-        }
-      }
-      return models
-    },
     *getModelsByMap({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'mms' })
       let kws = []

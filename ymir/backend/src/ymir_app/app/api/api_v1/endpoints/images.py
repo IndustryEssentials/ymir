@@ -150,7 +150,7 @@ async def get_shared_images(
 
 @cache(expire=settings.APP_CACHE_EXPIRE_IN_SECONDS)
 async def get_shared_images_from_github(url: str, timeout: int) -> List[Dict]:
-    logger.debug("[share image] getting shared docker images from GitHub...")
+    logger.info("[share image] getting shared docker images from GitHub...")
     shared_images = get_github_table(url, timeout=timeout)
     return shared_images
 
