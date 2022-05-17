@@ -77,7 +77,7 @@ export default {
       }
     },
     *getHiddenList({ payload }, { put }) {
-      const query = { ...payload, visible: false }
+      const query = { ...{ order_by: 'update_datetime' }, ...payload, visible: false }
       return yield put({
         type: 'queryModels',
         payload: query,

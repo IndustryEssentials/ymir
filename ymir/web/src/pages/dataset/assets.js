@@ -139,7 +139,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const renderTitle = <Row className={styles.labels}>
     <Col flex={1}>
       <Space>
-        <strong>{dataset.name}</strong>
+        <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
