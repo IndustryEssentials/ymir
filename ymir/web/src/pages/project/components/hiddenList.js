@@ -42,7 +42,7 @@ const HiddenList = ({ module, pid, ...func }) => {
       title: showTitle("dataset.column.hidden_time"),
       dataIndex: "updateTime",
       sorter: true,
-      sortDirections: [false, 'descend', 'ascend'],
+      sortDirections: ['descend', 'ascend'],
       defaultSortOrder: 'descend',
     },
     {
