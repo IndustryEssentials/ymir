@@ -152,6 +152,7 @@ class CmdMining(base.BaseCommand):
         return_msg = ''
         try:
             infer.CmdInfer.run_with_args(work_dir=work_dir,
+                                         mir_root=mir_root,
                                          media_path=work_asset_path,
                                          model_location=model_location,
                                          model_hash=model_hash,

@@ -87,6 +87,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         config_file = self.gen_inference_config(self._request.docker_image_config, self._work_dir)
 
         self.inference_cmd(
+            repo_root=self._repo_root,
             work_dir=self._work_dir,
             config_file=config_file,
             model_location=self._assets_config["modelskvlocation"],
@@ -99,10 +100,11 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         return self.generate_inference_response(inference_result)
 
     @classmethod
-    def inference_cmd(cls, work_dir: str, model_location: str, config_file: str, model_hash: str, index_file: str,
-                      executor: str) -> backend_pb2.GeneralResp:
+    def inference_cmd(cls, repo_root: str, work_dir: str, model_location: str, config_file: str, model_hash: str,
+                      index_file: str, executor: str) -> backend_pb2.GeneralResp:
         infer_cmd = [
-            utils.mir_executable(), 'infer', '-w', work_dir, '--model-location', model_location, '--index-file',
-            index_file, '--model-hash', model_hash, '--task-config-file', config_file, "--executor", executor
+            utils.mir_executable(), 'infer', '--root', repo_root, '-w', work_dir, '--model-location', model_location,
+            '--index-file', index_file, '--model-hash', model_hash, '--task-config-file', config_file, "--executor",
+            executor
         ]
         return utils.run_command(infer_cmd)
