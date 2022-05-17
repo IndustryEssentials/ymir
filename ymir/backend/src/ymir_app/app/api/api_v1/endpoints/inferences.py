@@ -53,6 +53,7 @@ def call_inference(
     try:
         resp = controller_client.call_inference(
             current_user.id,
+            model.project_id,
             model.hash,
             asset_dir,
             docker_image.url,

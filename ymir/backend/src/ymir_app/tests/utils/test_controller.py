@@ -146,6 +146,7 @@ class TestControllerClient:
 
     def test_inference(self, mocker):
         user_id = random.randint(1000, 9000)
+        project_id = random.randint(1000, 9000)
         model_hash = random_lower_string()
         asset_dir = random_lower_string()
         channel_str = random_lower_string()
@@ -153,7 +154,7 @@ class TestControllerClient:
         docker_config = random_lower_string()
         cc = m.ControllerClient(channel_str)
         cc.send = mock_send = mocker.Mock()
-        cc.call_inference(user_id, model_hash, asset_dir, docker_image, docker_config)
+        cc.call_inference(user_id, project_id, model_hash, asset_dir, docker_image, docker_config)
         mock_send.assert_called()
         generated_req = mock_send.call_args[0][0].req
         assert generated_req.user_id == str(user_id)

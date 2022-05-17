@@ -19,6 +19,7 @@ from app.api.errors.errors import (
     FailedToHideProtectedResources,
     DatasetGroupNotFound,
     ProjectNotFound,
+    MissingOperations,
     RefuseToProcessMixedOperations,
     DatasetsNotInSameGroup,
 )
@@ -59,6 +60,8 @@ def batch_update_datasets(
     dataset_ops: schemas.BatchOperations,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    if not dataset_ops.operations:
+        raise MissingOperations()
     project = crud.project.get(db, dataset_ops.project_id)
     if not project:
         raise ProjectNotFound()
