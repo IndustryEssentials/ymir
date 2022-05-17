@@ -1,7 +1,7 @@
 from operator import attrgetter
 import enum
 import random
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -16,18 +16,20 @@ from app.api.errors.errors import (
     DuplicateDatasetGroupError,
     NoDatasetPermission,
     FailedtoCreateTask,
+    FailedToHideProtectedResources,
     DatasetGroupNotFound,
+    ProjectNotFound,
+    MissingOperations,
+    RefuseToProcessMixedOperations,
+    DatasetsNotInSameGroup,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.iteration import get_iteration_context_converter
-from app.utils.ymir_controller import (
-    ControllerClient,
-    gen_task_hash,
-)
+from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 from app.schemas.dataset import MergeStrategy
-from app.libs.datasets import import_dataset_in_background
+from app.libs.datasets import import_dataset_in_background, evaluate_dataset
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -48,9 +50,38 @@ def batch_get_datasets(
     return {"result": datasets}
 
 
+@router.post(
+    "/batch",
+    response_model=schemas.DatasetsOut,
+)
+def batch_update_datasets(
+    *,
+    db: Session = Depends(deps.get_db),
+    dataset_ops: schemas.BatchOperations,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    if not dataset_ops.operations:
+        raise MissingOperations()
+    project = crud.project.get(db, dataset_ops.project_id)
+    if not project:
+        raise ProjectNotFound()
+    to_process = {op.id_ for op in dataset_ops.operations}
+    if to_process.intersection(project.referenced_dataset_ids):
+        raise FailedToHideProtectedResources()
+    actions = {op.action for op in dataset_ops.operations}
+    if len(actions) != 1:
+        # for now, we do not support mixed operations, for example,
+        #  hide and unhide in a single batch request
+        raise RefuseToProcessMixedOperations()
+
+    datasets = crud.dataset.batch_toggle_visibility(db, ids=list(to_process), action=list(actions)[0])
+    return {"result": datasets}
+
+
 class SortField(enum.Enum):
     id = "id"
     create_datetime = "create_datetime"
+    update_datetime = "update_datetime"
     asset_count = "asset_count"
     source = "source"
 
@@ -64,6 +95,7 @@ def list_datasets(
     source: TaskType = Query(None, description="type of related task"),
     project_id: int = Query(None),
     group_id: int = Query(None),
+    visible: bool = Query(True),
     state: ResultState = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
@@ -84,6 +116,7 @@ def list_datasets(
         group_id=group_id,
         source=source,
         state=state,
+        visible=visible,
         offset=offset,
         limit=limit,
         order_by=order_by.name,
@@ -459,3 +492,44 @@ def create_dataset_fusion(
     logger.info("[create dataset] dataset record created: %s", dataset.name)
 
     return {"result": dataset}
+
+
+@router.post(
+    "/evaluation",
+    response_model=schemas.dataset.DatasetEvaluationOut,
+)
+def evaluate_datasets(
+    *,
+    db: Session = Depends(deps.get_db),
+    evaluation_in: schemas.dataset.DatasetEvaluationCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    """
+    evaluate dataset against ground truth
+    """
+    gt_dataset = crud.dataset.get(db, id=evaluation_in.gt_dataset_id)
+    other_datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.other_dataset_ids)
+    if not gt_dataset or len(evaluation_in.other_dataset_ids) != len(other_datasets):
+        raise DatasetNotFound()
+    if not is_same_group([gt_dataset, *other_datasets]):
+        # confine evaluation to the same dataset group
+        raise DatasetsNotInSameGroup()
+
+    evaluations = evaluate_dataset(
+        controller_client,
+        viz_client,
+        current_user.id,
+        evaluation_in.project_id,
+        user_labels,
+        evaluation_in.confidence_threshold,
+        gt_dataset,
+        other_datasets,
+    )
+    return {"result": evaluations}
+
+
+def is_same_group(datasets: List[models.Dataset]) -> bool:
+    return len({dataset.dataset_group_id for dataset in datasets}) == 1

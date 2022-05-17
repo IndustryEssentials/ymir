@@ -6,6 +6,7 @@ import { Form, Table, Modal, ConfigProvider, Card, Space, Row, Col, Button, Popo
 
 import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
+import { getStageLabel } from '@/constants/project'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import KeywordRates from "@/components/dataset/keywordRates"
 
@@ -77,8 +78,8 @@ function Iterations({ ...func }) {
     dataset.project = project
     const content = <KeywordRates dataset={dataset} progressWidth={0.4}></KeywordRates>
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
-        <span>{label}</span>
-        {extra}
+      <span>{label}</span>
+      {extra}
     </Popover>
   }
 
@@ -152,9 +153,12 @@ function Iterations({ ...func }) {
       <Card title={renderTitle()}>
         <Space className={s.detailPanel}>
           <span>{t('project.train_classes')}: {project?.keywords?.join(',')}</span>
-          <span className={s.iterationInfo}>{t('project.detail.info.iteration', { current: project.round, target: project.targetIteration })}</span>
-          {project.targetMap ? <span>{t('project.target.map')}: {project.targetMap}%</span> : null}
-          {project.targetDataset ? <span>{t('project.target.dataset')}: {project.targetDataset}</span> : null}
+          <span className={s.iterationInfo}>
+            {t('project.detail.info.iteration', {
+              stageLabel: <span className={s.orange}>{t(getStageLabel(project.currentStage, project.round))}</span>,
+              current: <span className={s.orange}>{project.round}</span>,
+            })}
+          </span>
           {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
         </Space>
         <div className={s.table}>

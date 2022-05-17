@@ -20,7 +20,6 @@ class CmdImport(base.BaseCommand):
 
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        index_file=self.args.index_file,
-                                       ck_file='',
                                        anno_abs=self.args.anno,
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
@@ -31,7 +30,7 @@ class CmdImport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, index_file: str, ck_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
+    def run_with_args(mir_root: str, index_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
                       dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
@@ -76,11 +75,9 @@ class CmdImport(base.BaseCommand):
             return ret
 
         mir_annotation = mirpb.MirAnnotations()
-        mir_keywords = mirpb.MirKeywords()
-        ret_code, unknown_types = annotations.import_annotations(mir_annotation=mir_annotation,
-                                                                 mir_keywords=mir_keywords,
+        ret_code, unknown_types = annotations.import_annotations(mir_metadatas=mir_metadatas,
+                                                                 mir_annotation=mir_annotation,
                                                                  in_sha1_file=sha1_index_abs,
-                                                                 ck_file=ck_file,
                                                                  mir_root=mir_root,
                                                                  annotations_dir_path=anno_abs,
                                                                  task_id=dst_typ_rev_tid.tid,

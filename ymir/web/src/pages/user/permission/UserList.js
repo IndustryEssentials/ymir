@@ -23,7 +23,7 @@ function UserList({ getUsers, setUserRole, off }) {
 
   useEffect(() => {
     getUserList()
-  }, [])
+  }, [query])
 
   const columns = [
     {

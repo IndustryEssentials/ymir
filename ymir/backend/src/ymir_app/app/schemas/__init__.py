@@ -84,6 +84,8 @@ from .task import (
     TaskMonitorEvent,
     TaskMonitorEvents,
     TaskResultUpdateMessage,
+    BatchTasksCreate,
+    BatchTasksCreateResults,
 )
 from .token import Token, TokenOut, TokenPayload
 from .user import (
@@ -96,4 +98,4 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .common import RequestParameterBase
+from .common import RequestParameterBase, BatchOperations

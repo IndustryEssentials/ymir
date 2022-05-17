@@ -12,19 +12,17 @@ services:
       - MODELS_PATH=${YMIR_PATH}/ymir-models
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
-      - DATA_SOURCE=/data/sharing
       # viz
       - VIZ_REDIS_URI=redis://:@viz-redis
       # app
       - DATABASE_URI=mysql+pymysql://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@db/ymir
       - GRPC_CHANNEL=127.0.0.1:50066
       - VIZ_HOST=127.0.0.1:9099
-      - SHARED_DATA_DIR=/data/sharing
+      - SHARED_DATA_DIR=/ymir-sharing
       - NGINX_DATA_PATH=/ymir-storage
       # arq
       - CHECK_INTERVAL_IN_SECONDS=30
       # monitor
-      - POSTMAN_URL=http://127.0.0.1:8090
       - MONITOR_URL=http://127.0.0.1:9098
       - APP_API_HOST=127.0.0.1:80
     volumes:
@@ -40,7 +38,7 @@ services:
       - /lib64/libltdl.so.7:/lib64/libltdl.so.7
       # app
       - ${YMIR_PATH}/ymir-storage:/ymir-storage
-      - ${YMIR_PATH}/importing_pic:/data/sharing
+      - ${YMIR_PATH}/ymir-sharing:/ymir-sharing
       # tensorboard
       - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
     depends_on:

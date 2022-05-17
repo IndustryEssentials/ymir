@@ -14,6 +14,8 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install -i ${PIP_SOURCE} --upgrade pip
 
+RUN git config --global core.fileMode false
+
 RUN pip install --no-cache-dir "uvicorn[standard]" gunicorn -i ${PIP_SOURCE}
 
 RUN mkdir -p /data/sharing/
@@ -23,7 +25,7 @@ COPY ./backend/requirements.txt ./
 RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
 
 COPY ./command /command
-RUN pip3 install -U /command
+RUN pip3 install -U /command -i ${PIP_SOURCE}
 
 COPY ./backend/src /app
 WORKDIR /app

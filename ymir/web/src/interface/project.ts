@@ -6,9 +6,6 @@ export interface Project {
   name: string,
   type: number,
   keywords: Array<string>,
-  targetMap: number,
-  targetDataset: number,
-  targetIteration: number,
   trainSet?: DatasetGroup,
   testSet?: Dataset,
   miningSet?: Dataset,
@@ -25,6 +22,8 @@ export interface Project {
   updateTime: string,
   description?: string,
   isExample?: boolean,
+  hiddenDatasets: Array<number>,
+  hiddenModels: Array<number>,
 }
 
 export interface Iteration {

@@ -5,6 +5,7 @@ import {
   createProject,
   updateProject,
   addExampleProject,
+  checkStatus,
 } from "../project"
 import { product, products, requestExample } from './func'
 
@@ -54,6 +55,11 @@ describe("service: projects", () => {
     }
     const expected = "ok"
     requestExample(createProject, project, expected, 'post')
+  })
+  it("checkStatus -> success", () => {
+    const pid = 2532432
+    const expected = "ok"
+    requestExample(checkStatus, pid, expected)
   })
   it("addExampleProject -> success", () => {
     const project = {

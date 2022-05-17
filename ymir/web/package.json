@@ -1,6 +1,6 @@
 {
   "name": "ymir-web",
-  "version": "1.0.0.0425",
+  "version": "1.1.0.0517",
   "scripts": {
     "local": "APP_ROOT=../pages/demo1 umi dev",
     "analyze": "cross-env UMI_ENV=dev ANALYZE=1 umi dev",
@@ -58,7 +58,7 @@
     "@antv/graphin-components": "^2.4.0",
     "@antv/graphin-icons": "^1.0.0",
     "@umijs/preset-react": "1.x",
-    "antd": "^4.18.4",
+    "antd": "^4.20.0",
     "antd-img-crop": "^4.1.0",
     "axios": "^0.25.0",
     "color": "^4.2.0",

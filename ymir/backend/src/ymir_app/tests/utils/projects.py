@@ -11,9 +11,11 @@ from tests.utils.datasets import create_dataset_group_record
 def create_project_record(
     db: Session,
     user_id: Optional[int] = None,
+    name: Optional[str] = None,
 ):
+    name = name or random_lower_string()
     user_id = user_id or randint(1, 20)
-    j = {"name": random_lower_string(), "training_keywords": [random_lower_string() for _ in range(3)]}
+    j = {"name": name, "training_keywords": [random_lower_string() for _ in range(3)]}
     in_ = schemas.ProjectCreate(**j)
     record = crud.project.create_project(db, obj_in=in_, user_id=user_id)
 

@@ -223,6 +223,48 @@ paths:
         "400":
           description: Task not exists
       x-openapi-router-controller: src.controllers.model_controller
+  /users/{user_id}/repositories/{repo_id}/branches/{branch_id}/evaluations:
+    get:
+      tags:
+      - evaluation
+      summary: get dataset evaluation result
+      description: get dataset evaluation result
+      operationId: get_dataset_evaluations
+      parameters:
+      - name: user_id
+        in: path
+        description: user_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: repo_id
+        in: path
+        description: repo_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: branch_id
+        in: path
+        description: branch_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetEvaluationResult'
+        "400":
+          description: DatasetEvaluation not exists
+      x-openapi-router-controller: src.controllers.evaluation_controller
 components:
   schemas:
     AssetInfo:
@@ -292,6 +334,15 @@ components:
         properties:
           result:
             $ref: '#/components/schemas/DatasetResult_result'
+    DatasetEvaluationResult:
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+        properties:
+          result:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/DatasetEvaluationResult_result'
     ApiResponse:
       type: object
       properties:
@@ -306,6 +357,32 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Annotations_inner'
+    DatasetEvaluation:
+      type: object
+      properties:
+        ci_evaluations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DatasetEvaluationElement'
+        topic_evaluations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DatasetEvaluationElement'
+        ci_averaged_evaluation:
+          $ref: '#/components/schemas/DatasetEvaluationElement'
+    DatasetEvaluationElement:
+      type: object
+      properties:
+        ap:
+          type: number
+        ar:
+          type: number
+        tp:
+          type: integer
+        fp:
+          type: integer
+        fn:
+          type: integer
     AssetsResult_result:
       type: object
       properties:
@@ -319,11 +396,13 @@ components:
           type: integer
         tatal:
           type: integer
+      example: null
     AssetsMetaInfo_metadata_timestamp:
       type: object
       properties:
         start:
           type: integer
+      example: null
     AssetsMetaInfo_metadata:
       type: object
       properties:
@@ -337,6 +416,7 @@ components:
           type: integer
         timestamp:
           $ref: '#/components/schemas/AssetsMetaInfo_metadata_timestamp'
+      example: null
     ModelResult_result:
       type: object
       properties:
@@ -351,6 +431,7 @@ components:
           type: string
         executor_config:
           type: string
+      example: null
     DatasetResult_result_negative_info:
       type: object
       properties:
@@ -358,6 +439,7 @@ components:
           type: integer
         project_negative_images_cnt:
           type: integer
+      example: null
     DatasetResult_result:
       type: object
       properties:
@@ -374,6 +456,19 @@ components:
           example: "{'cat':8}"
         negative_info:
           $ref: '#/components/schemas/DatasetResult_result_negative_info'
+      example: null
+    DatasetEvaluationResult_result:
+      type: object
+      properties:
+        conf_thr:
+          type: number
+        iou_evaluations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DatasetEvaluation'
+        iou_averaged_evaluation:
+          $ref: '#/components/schemas/DatasetEvaluation'
+      example: null
     Annotations_inner:
       type: object
       properties:

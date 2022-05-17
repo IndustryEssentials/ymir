@@ -117,7 +117,7 @@ class TestInvokerCMDInference(unittest.TestCase):
 
         index_file = os.path.join(working_dir, "inference_pic_index.txt")
 
-        cmd = (f"mir infer -w {working_dir} --model-location {self._storage_root} "
+        cmd = (f"mir infer --root {self._mir_repo_root} -w {working_dir} --model-location {self._storage_root} "
                f"--index-file {index_file} --model-hash {model_hash} "
                f"--task-config-file {config_file} --executor {inference_image}")
 

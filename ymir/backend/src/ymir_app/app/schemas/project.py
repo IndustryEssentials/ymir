@@ -56,9 +56,20 @@ class ProjectUpdate(BaseModel):
     initial_model_id: Optional[int]
     initial_training_dataset_id: Optional[int]
 
+    training_keywords: Optional[List[str]]
+
     class Config:
         use_enum_values = True
         validate_all = True
+
+    @validator("training_keywords")
+    def pack_keywords(cls, v: Optional[List[str]]) -> Optional[str]:
+        """
+        serialize training keywords for db
+        """
+        if v is not None:
+            return json.dumps(v)
+        return v
 
 
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
@@ -72,6 +83,9 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
     training_dataset_group: Optional[DatasetGroup]
     testing_dataset: Optional[Dataset]
     mining_dataset: Optional[Dataset]
+
+    referenced_model_ids: List[int]
+    referenced_dataset_ids: List[int]
 
     class Config:
         orm_mode = True
@@ -104,3 +118,11 @@ class ProjectPagination(BaseModel):
 
 class ProjectPaginationOut(Common):
     result: ProjectPagination
+
+
+class ProjectStatus(BaseModel):
+    is_dirty: bool
+
+
+class ProjectStatusOut(Common):
+    result: ProjectStatus

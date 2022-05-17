@@ -1,7 +1,10 @@
+from typing import Any
 from fastapi.testclient import TestClient
 
+from app.api.api_v1.endpoints import images as m
 from app.api.errors.errors import error_codes
 from app.config import settings
+from app.constants.state import DockerImageType
 from tests.utils.utils import random_lower_string
 
 
@@ -110,3 +113,12 @@ class TestGetRelationship:
         for relationship, dest_image_id in zip(result, dest_image_ids):
             assert relationship["src_image_id"] == src_image_id
             assert relationship["dest_image_id"] == dest_image_id
+
+
+def test_parse(mocker: Any) -> None:
+    config = {
+        DockerImageType.mining: {"A": 1},
+        DockerImageType.infer: {"B": 2},
+    }
+    res = list(m.parse_docker_image_config(config))
+    assert len(res) == 2

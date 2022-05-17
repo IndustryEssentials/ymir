@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory, useLocation } from "umi"
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, } from "antd"
 
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
@@ -13,15 +13,14 @@ import { states } from '@/constants/dataset'
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
 import Terminate from "@/components/task/terminate"
-import Del from "./del"
-import DelGroup from "./delGroup"
+import Hide from "../common/hide"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
-  EditIcon, DeleteIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon,
+  EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
 } from "@/components/common/icons"
 
 const { confirm } = Modal
@@ -33,12 +32,12 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const history = useHistory()
   const [datasets, setDatasets] = useState([])
   const [datasetVersions, setDatasetVersions] = useState({})
-  const [total, setTotal] = useState(0)
+  const [total, setTotal] = useState(1)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
-  const delRef = useRef(null)
-  const delGroupRef = useRef(null)
+  const [selectedVersions, setSelectedVersions] = useState({})
+  const hideRef = useRef(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef(null)
 
@@ -74,11 +73,15 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   useEffect(() => {
     let dvs = setVersionLabelsByProject(versions, project)
-    if (iterations?.length) {
-      dvs = setVersionLabelsByIterations(versions, iterations)
-    }
     setDatasetVersions(dvs)
-  }, [versions, project, iterations])
+  }, [project, versions])
+
+  useEffect(() => {
+    if (iterations?.length) {
+      const dvs = setVersionLabelsByIterations(versions, iterations)
+      setDatasetVersions(dvs)
+    }
+  }, [versions, iterations])
 
   useEffect(() => {
     Object.keys(versions).forEach(gid => {
@@ -191,7 +194,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const actionMenus = (record) => {
-    const { id, state, taskState, task } = record
+    const { id, groupId, state, taskState, task, isProtected } = record
     const menus = [
       {
         key: "fusion",
@@ -229,6 +232,13 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         icon: <TaggingIcon />,
       },
       {
+        key: "compare",
+        label: t("common.action.compare"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/dataset/${groupId}/compare/${id}`),
+        icon: <CompareIcon />,
+      },
+      {
         key: "copy",
         label: t("task.action.copy"),
         hidden: () => !isValidDataset(state),
@@ -242,20 +252,21 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
-      // {
-      //   key: "del",
-      //   label: t("dataset.action.del"),
-      //   onclick: () => del(id, `${name} ${versionName}`),
-      //   disabled: isProtected,
-      //   hidden: () => isRunning(state),
-      //   icon: <DeleteIcon />,
-      // },
+      {
+        key: "hide",
+        label: t("common.action.hide"),
+        onclick: () => hide(record),
+        hidden: () => hideHidden(record),
+        icon: <EyeOffIcon />,
+      },
     ]
     return menus
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
   }
+
+  const hideHidden = ({ state, id }) => isRunning(state) || project?.hiddenDatasets?.includes(id)
 
   const getTypeFilter = gid => {
     return getFilters(gid, 'taskType', (type) => t(getTaskTypeLabel(type)))
@@ -272,7 +283,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
   }
 
-  const listChange = ({ current, pageSize }) => {
+  const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
     func.updateQuery({ ...query, limit, offset })
@@ -340,36 +351,22 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   function setLabelByIterations(item, iterations) {
-    iterations.forEach(iteration => {
-      const ids = [
-        iteration.miningSet,
-        iteration.miningResult,
-        iteration.labelSet,
-        iteration.trainUpdateSet,
-        iteration.trainSet,
-      ].filter(id => id)
-      if (ids.includes(item.id)) {
-        item.iterationLabel = t('iteration.tag.round', iteration)
-        item.iterationRound = iteration.round
-      }
-    })
+    const iteration = iterations.find(iter => [
+      iter.miningSet,
+      iter.miningResult,
+      iter.labelSet,
+      iter.trainUpdateSet,
+      iter.trainSet,
+    ].filter(id => id).includes(item.id))
+    if (iteration) {
+      item.iterationLabel = t('iteration.tag.round', iteration)
+      item.iterationRound = iteration.round
+    }
     return item
   }
 
-  const delGroup = (id, name) => {
-    delGroupRef.current.del(id, name)
-  }
-  const del = (id, name) => {
-    delRef.current.del(id, name)
-  }
-
-  const delOk = (id) => {
-    func.getVersions(id, true)
-    fetchDatasets()
-  }
-
-  const delGroupOk = () => {
-    fetchDatasets()
+  function rowSelectChange(gid, rowKeys) {
+    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
   }
 
   const stop = (dataset) => {
@@ -417,6 +414,43 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
   }
 
+  const multipleCompare = () => {
+    const ids = Object.values(selectedVersions).flat()
+    const vss = Object.values(versions).flat().filter(({ id }) => ids.includes(id))
+    const groups = [...new Set(vss.map(item => item.groupId))]
+    const diffGroup = groups.length > 1
+    if (diffGroup) {
+      // diff group
+      return message.error(t('dataset.compare.error.diff_group'))
+    }
+
+    const diffAssets = [...new Set(vss.map(item => item.assetCount))].length > 1
+    if (diffAssets) {
+      // diff assets count
+      return message.error(t('dataset.compare.error.diff_assets'))
+    }
+    history.push(`/home/project/${pid}/dataset/${groups[0]}/compare/${ids}`)
+  }
+
+  const multipleHide = () => {
+    const ids = Object.values(selectedVersions).flat()
+    const allVss = Object.values(versions).flat()
+    const vss = allVss.filter(({ id }) => ids.includes(id))
+    hideRef.current.hide(vss, project.hiddenDatasets)
+  }
+
+  const hide = (version) => {
+    if (project.hiddenDatasets.includes(version.id)) {
+      return message.warn(t('dataset.hide.single.invalid'))
+    }
+    hideRef.current.hide([version])
+  }
+
+  const hideOk = (result) => {
+    result.forEach(item => fetchVersions(item.dataset_group_id, true))
+    fetchDatasets(true)
+    setSelectedVersions({})
+  }
 
   function isValidDataset(state) {
     return states.VALID === state
@@ -432,48 +466,64 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     </Button>
   )
 
+  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
+    <>
+      <Button type="primary" onClick={multipleHide}>
+        <EyeOffIcon /> {t("common.action.multiple.hide")}
+      </Button>
+      <Button type="primary" onClick={multipleCompare}>
+        <CompareIcon /> {t("common.action.multiple.compare")}
+      </Button>
+    </>
+  ) : null
+
   const renderGroups = (<>
-    <div className={styles.groupList}>
+    <div className='groupList'>
       {datasets.map(group => <div className={styles.groupItem} key={group.id}>
-        <Row className={styles.groupTitle}>
+        <Row className='groupTitle'>
           <Col flex={1} onClick={() => showVersions(group.id)}>
-            <span className={styles.foldBtn}>{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
-            <span className={styles.groupName}>{group.name}</span>
+            <span className='foldBtn'>{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+            <span className='groupName'>{group.name}</span>
             {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
           </Col>
           <Col><Space>
             <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
-            <a hidden={true} onClick={() => delGroup(group.id, group.name)} title={t('common.del')}><DeleteIcon /></a>
           </Space></Col>
         </Row>
-        <div className={styles.groupTable} hidden={!visibles[group.id]}>
+        <div className='groupTable' hidden={!visibles[group.id]}>
           <Table
             dataSource={datasetVersions[group.id]}
             onChange={tableChange}
             rowKey={(record) => record.id}
-            rowClassName={(record, index) => index % 2 === 0 ? styles.normalRow : styles.oddRow}
+            rowSelection={{
+              selectedRowKeys: selectedVersions[group.id],
+              onChange: (keys) => rowSelectChange(group.id, keys),
+              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
+            }}
+            rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns(group.id)}
             pagination={false}
           />
         </div>
       </div>)}
     </div>
-    <Pagination className={styles.pager} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
     <div className={styles.dataset}>
-      <div className={styles.actions}>
+      <div className='actions'>
         <Space>
           {addBtn}
+          {renderMultipleActions}
         </Space>
       </div>
-      <div className={styles.list}>
-        <div className={styles.search}>
+      <div className={`list ${styles.list}`}>
+        <div className={`search ${styles.search}`}>
           <Form
             name='queryForm'
             form={form}
-            labelCol={{ flex: '100px' }}
+            labelCol={{ flex: '120px' }}
             initialValues={{ type: query.type, time: query.time, name: name || query.name }}
             onValuesChange={search}
             colon={false}
@@ -502,8 +552,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
           <StateTag mode='text' state={current.state} />
         </Form.Item> : null}
       </EditBox>
-      <DelGroup ref={delGroupRef} ok={delGroupOk} />
-      <Del ref={delRef} ok={delOk} />
+      <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )
@@ -530,12 +579,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'dataset/getDatasetVersions',
         payload: { gid, force },
-      })
-    },
-    delDataset(id) {
-      return dispatch({
-        type: 'dataset/delDataset',
-        payload: id,
       })
     },
     updateDataset(id, name) {

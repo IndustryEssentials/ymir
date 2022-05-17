@@ -1,11 +1,13 @@
 import argparse
 import logging
 import os
+import time
 import subprocess
 from subprocess import CalledProcessError
 import traceback
 from typing import Any, List, Optional, Set, Tuple
 
+from tensorboardX import SummaryWriter
 import yaml
 
 from mir.commands import base
@@ -274,10 +276,13 @@ class CmdTrain(base.BaseCommand):
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
         cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-        type_ids_list = cls_mgr.id_for_names(class_names)
+        type_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")
             return MirCode.RC_CMD_INVALID_ARGS
+        if unknown_names:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"unknown class names: {unknown_names}")
 
         if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
@@ -354,6 +359,11 @@ class CmdTrain(base.BaseCommand):
             # don't exit, proceed if model exists
             task_code = MirCode.RC_CMD_CONTAINER_ERROR
             return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
+
+            # write executor tail to tensorboard
+            if return_msg:
+                with SummaryWriter(logdir=tensorboard_dir) as tb_writer:
+                    tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
         # gen task_context
         task_context = {

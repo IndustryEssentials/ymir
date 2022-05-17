@@ -11,6 +11,9 @@ const dataset = {
   "dataset.column.ignored_keyword": { cn: "忽略标签", en: "Ignored Keywords", },
   "dataset.column.state": { cn: "状态", en: "Status", },
   "dataset.column.create_time": { cn: "创建时间", en: "Create Time", },
+  "dataset.column.hidden_time": { cn: "隐藏时间", en: "Hidden Time", },
+  "dataset.column.model": { cn: "模型名称", en: "Model Name", },
+  "dataset.column.map": { cn: "AP(平均IoU)", en: "AP(Average of IoU)", },
   "dataset.column.action": { cn: "操作", en: "Actions", },
   "dataset.column.keyword.label": { cn: "{keywords} 共{total}个", en: "{keywords} total {total}.", },
   "dataset.action.fusion": { cn: "预处理", en: "Pretreat", },
@@ -25,7 +28,16 @@ const dataset = {
   "dataset.import.label": { cn: "导入数据集", en: "Import Dataset", },
   "dataset.query.name": { cn: "名称", en: "Dataset Name", },
   "dataset.action.del.confirm.content": { cn: "确认要删除数据集版本：{name}？", en: "Are you sure to remove this dataset version:{name}?", },
-  "dataset.action.delgroup.confirm.content": { en: "Are you sure to remove this dataset:{name}, all of versions will be deleted.", cn: "确认要删除数据集：{name}？这个操作将删除此数据集下的所有版本", },
+  "dataset.action.hide.confirm.content": { cn: "确认要隐藏数据集版本：{name}？", en: "Are you sure to hide dataset versions: {name}?", },
+  "dataset.hide.single.invalid": { cn: "该版本不能隐藏", en: "This version can not be hide", },
+  "dataset.action.hide.confirm.exclude": {
+    cn: "以下版本因与项目、迭代等关联不能隐藏：{labels}",
+    en: "The following related to project or iterations can not be hide: {name}.",
+  },
+  "dataset.action.delgroup.confirm.content": {
+    en: "Are you sure to remove this dataset:{name}, all of versions will be deleted.",
+    cn: "确认要删除数据集：{name}？这个操作将删除此数据集下的所有版本",
+  },
   "dataset.query.name.placeholder": { cn: "数据集名称", en: "Dataset Name", },
   "dataset.detail.pager.total": { cn: "共 {total} 图像", en: "Total {total} Pictures", },
   "dataset.detail.keyword.label": { cn: "标签：", en: "Keywords: ", },
@@ -59,30 +71,38 @@ const dataset = {
   "dataset.add.newkw.asalias": { cn: "添加为别名", en: "As Alias", },
   "dataset.add.newkw.ignore": { cn: "忽略此标签", en: "Ignore", },
   "dataset.add.form.newkw.link": { cn: "前往标签列表添加>>", en: "Go to the keyword list to add>>", },
-  "dataset.add.form.newkw.tip": { cn: "当导入数据集中包含的标签不属于当前标签列表时，选择标签合并策略", en: "Select a keyword merge policy when the imported dataset contains keyword that do not belong to the current keyword list", },
+  "dataset.add.form.newkw.tip": {
+    cn: "当导入模型的标签内容不在当前的用户标签列表时，选择导入策略。",
+    en: "Select an import policy when the tag of the imported dataset does not belong to the current list of user tags.",
+  },
   "dataset.add.label_strategy.include": { cn: "包含标注信息", en: "Contains Annotations", },
   "dataset.add.label_strategy.exclude": { cn: "不包含标注信息", en: "No Annotations", },
   "dataset.add.label_strategy.ignore": { cn: "忽略新标签和对应标注", en: "Ignore unknown keywords and annotations", },
   "dataset.add.label_strategy.add": { cn: "添加到标签列表", en: "Add Keywords to your Keywords List", },
-  "dataset.add.label_strategy.stop": { cn: "终止操作", en: "Terminate Action", },
+  "dataset.add.label_strategy.stop": { cn: "终止数据集导入", en: "Terminate dataset import", },
   "dataset.add.form.internal.label": { cn: "数据集", en: "Dataset", },
   "dataset.add.form.internal.required": { cn: "请选择公共数据集", en: "Please select public dataset", },
   "dataset.add.form.internal.placeholder": { cn: "请选择一个公共数据集", en: "Select A Public Dataset", },
   "dataset.add.form.net.label": { cn: "URL地址", en: "URL", },
   "dataset.add.form.net.tip": { cn: "请输入压缩文件的url地址", en: "Please input a url of zip file", },
-  "dataset.add.form.path.label": { cn: "路径", en: "Path", },
-  "dataset.add.form.path.tip": { cn: "请输入数据集在服务器中的绝对路径，如 /home/users/dataset/train_cat", en: "Please input absolute path of dataset on server, like: /home/users/dataset/train_cat", },
-  "dataset.add.form.path.placeholder": { cn: "请输入服务端的绝对路径", en: "Please input absolute path of dataset on server", },
+  "dataset.add.form.path.label": { cn: "相对路径", en: "Relative Path", },
+  "dataset.add.form.path.tip": {
+    cn: "将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/VOC2012, 输入基于ymir-sharing相对路径：VOC2012",
+    en: "Save the data in 'ymir-sharing' under ymir workspace directory, such as /home/ymir/ymir-workspace/ymir-sharing/VOC2012, and input relative path base on ymir-sharing: VOC2012",
+  },
+  "dataset.add.form.path.placeholder": { cn: "请输入路径", en: "Please input path on server", },
   "dataset.add.form.upload.btn": { cn: "上传文件", en: "Upload", },
   "dataset.add.form.upload.tip": {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
-      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，标注文件格式为pascal。{br}
-      4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}`, 
+      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为Pascal VOC。{br}
+      4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}{br}
+      5. 压缩包内文件结构如下：{br}{pic}`,
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
-      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml)
-      4. Sample: {sample}`
+      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, images with unmatched format can not be imported, annotations format supported pascal(*.xml){br}
+      4. Sample: {sample}{br}
+      5. zip structure: {br}{pic}`
   },
   "dataset.copy.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "dataset.copy.form.desc.label": { cn: '备注', en: 'Description', },
@@ -102,6 +122,14 @@ const dataset = {
   'dataset.add.form.copy.label': { cn: '源数据集', en: 'Original Dataset', },
   'dataset.add.form.copy.required': { cn: '源数据集不能为空', en: 'Original dataset is required', },
   'dataset.add.form.copy.placeholder': { cn: '请选择待复制的数据集版本', en: 'Select a dataset version for copy', },
+  'dataset.add.validate.url.invalid': { cn: '不是合法的网络地址', en: 'Invalid url', },
+  'dataset.compare.error.diff_group': { cn: '比对的版本必须在同一个数据集', en: 'Target versions must be in one dataset', },
+  'dataset.compare.error.diff_assets': { cn: '比对的数据集版本数据量需要保持一致', en: 'Assets\' count must be the same for every version', },
+  'dataset.compare.form.datasets': { cn: '比对数据集', en: 'Compare Datasets', },
+  'dataset.compare.form.gt': { cn: '真值(Ground Truth)', en: 'Ground Truth', },
+  'dataset.compare.form.confidence': { cn: '置信度', en: 'Confidence', },
+  'dataset.compare.restart': { cn: '重新比对', en: 'Compare Again', },
+  'dataset.fusion.validate.inputs': { cn: '请输入至少一项预处理条件', en: 'Please input at less one condition for pretreating', },
 }
 
 export default dataset

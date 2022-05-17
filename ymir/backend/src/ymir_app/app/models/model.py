@@ -41,6 +41,7 @@ class Model(Base):
         viewonly=True,
     )
 
+    is_visible = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(

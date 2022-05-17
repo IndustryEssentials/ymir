@@ -98,6 +98,11 @@ class FailedtoCreateModel(ControllerError):
     message = "Failed to Create Model via Controller"
 
 
+class FailedToEvaluate(ControllerError):
+    code = error_codes.FAILED_TO_EVALUATE
+    message = "Failed to RUN EVALUATE CMD via Controller"
+
+
 class RequiredFieldMissing(APIError):
     code = error_codes.REQUIRED_FIELD_MISSING
     message = "Required Field Missing"
@@ -136,6 +141,11 @@ class AssetNotFound(NotFound):
 class ModelNotFound(NotFound):
     code = error_codes.MODEL_NOT_FOUND
     message = "Model Not Found"
+
+
+class DatasetEvaluationNotFound(NotFound):
+    code = error_codes.DATASET_EVALUATION_NOT_FOUND
+    message = "Dataset Evaluation Not Found"
 
 
 class ModelNotReady(APIError):
@@ -290,6 +300,11 @@ class DuplicateProjectError(DuplicateError):
     message = "Duplicated Project Name"
 
 
+class FailedToHideProtectedResources(APIError):
+    code = error_codes.FAILED_TO_PROCESS_PROTECTED_RESOURCES
+    message = "Failed to Hide Protected Resources in Project"
+
+
 class DatasetGroupNotFound(NotFound):
     code = error_codes.DATASET_GROUP_NOT_FOUND
     message = "DatasetGroup Not Found"
@@ -333,3 +348,18 @@ class IterationNotFound(NotFound):
 class FailedToUpdateIterationStage(APIError):
     code = error_codes.ITERATION_COULD_NOT_UPDATE_STAGE
     message = "Failed to Update Iteration Stage"
+
+
+class RefuseToProcessMixedOperations(APIError):
+    code = error_codes.REFUSE_TO_PROCESS_MIXED_OPERATIONS
+    message = "Refuse To Process Mixed Operations"
+
+
+class MissingOperations(APIError):
+    code = error_codes.MISSING_OPERATIONS
+    message = "Missing Operations"
+
+
+class DatasetsNotInSameGroup(APIError):
+    code = error_codes.DATASETS_NOT_IN_SAME_GROUP
+    message = "Datasets Not in the Same Group"

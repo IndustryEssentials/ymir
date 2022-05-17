@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-import requests
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -24,6 +24,10 @@ def trigger_mir_import(
 
 
 def remove_json_file(des_annotation_path: str) -> None:
+    if not os.path.isdir(des_annotation_path):
+        logging.error(f"des_annotation_path not exist: {des_annotation_path}")
+        return
+
     for one_file in os.listdir(des_annotation_path):
         if one_file.endswith(".json"):
             os.remove(os.path.join(des_annotation_path, one_file))
@@ -40,10 +44,11 @@ def _gen_index_file(des_annotation_path: str) -> str:
                     pic_path = json_content["task"]["data"]["image"].replace("data/local-files/?d=", "")
                     media_files.append(pic_path)
     elif label_task_config.LABEL_FREE == label_task_config.LABEL_TOOL:
-        des_annotation_path = os.path.join(des_annotation_path, "images")
-        for one_file in os.listdir(des_annotation_path):
-            if one_file.endswith(".jpeg") or one_file.endswith(".jpg") or one_file.endswith(".png"):
-                media_files.append(os.path.join(des_annotation_path, one_file))
+        des_annotation_media_path = os.path.join(des_annotation_path, "images")
+        if os.path.isdir(des_annotation_media_path):
+            for one_file in os.listdir(des_annotation_media_path):
+                if os.path.splitext(one_file)[1].lower() in [".jpeg", ".jpg", ".png"]:
+                    media_files.append(os.path.join(des_annotation_media_path, one_file))
     else:
         raise ValueError("LABEL_TOOL Error")
 
@@ -71,7 +76,7 @@ def lable_task_monitor() -> None:
                 label_instance.convert_annotation_to_voc(
                     project_info["project_id"], project_info["des_annotation_path"]
                 )
-            except requests.HTTPError as e:
+            except (ConnectionError, HTTPError, Timeout) as e:
                 sentry_sdk.capture_exception(e)
                 logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
                 state = LogState.ERROR

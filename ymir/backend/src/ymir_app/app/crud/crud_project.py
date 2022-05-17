@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.crud.base import CRUDBase
 from app.models import Project
 from app.schemas.project import ProjectCreate, ProjectUpdate
@@ -78,6 +79,11 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         if limit:
             return query.offset(offset).limit(limit).all(), query.count()
         return query.all(), query.count()
+
+    def get_all_projects(self, db: Session, *, offset: int = 0, limit: int = settings.DEFAULT_LIMIT) -> List[Project]:
+        query = db.query(self.model)
+        query = query.filter(not_(self.model.is_deleted))
+        return query.offset(offset).limit(limit).all()
 
     def update_current_iteration(
         self,

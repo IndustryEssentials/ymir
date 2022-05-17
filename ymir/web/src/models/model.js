@@ -6,13 +6,14 @@ import {
   getModel,
   delModel,
   delModelGroup,
+  batchAct,
   importModel,
   updateModel,
   verify,
 } from "@/services/model"
 import { getStats } from "../services/common"
 import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
-import { updateResultState } from '@/constants/common'
+import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
 const initQuery = {
@@ -75,6 +76,13 @@ export default {
         return { items: result.items.map(ds => transferModel(ds)), total: result.total }
       }
     },
+    *getHiddenList({ payload }, { put }) {
+      const query = { ...{ order_by: 'update_datetime' }, ...payload, visible: false }
+      return yield put({
+        type: 'queryModels',
+        payload: query,
+      })
+    },
     *queryAllModels({ payload }, { select, call, put }) {
       const pid = payload
       const dss = yield put.resolve({ type: 'queryModels', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
@@ -136,6 +144,19 @@ export default {
         return result
       }
     },
+    *hide({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.hide, pid, ids)
+      if (code === 0) {
+        return result
+      }
+    },
+    *restore({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.restore, pid, ids)
+      if (code === 0) {
+        yield put.resolve({ type: 'clearCache' })
+        return result
+      }
+    },
     *importModel({ payload }, { call, put }) {
       const { code, result } = yield call(importModel, payload)
       if (code === 0) {
@@ -185,27 +206,6 @@ export default {
         })
       }
     },
-    *getModelsByRef({ payload }, { call, put }) {
-      const { code, result } = yield call(getStats, { ...payload, q: 'hms' })
-      let models = []
-      if (code === 0) {
-        const refs = {}
-        const ids = result.map(item => {
-          refs[item[0]] = item[1]
-          return item[0]
-        })
-        if (ids.length) {
-          const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
-          if (modelsObj) {
-            models = modelsObj.map(model => {
-              model.count = refs[model.id]
-              return model
-            })
-          }
-        }
-      }
-      return models
-    },
     *getModelsByMap({ payload }, { call, put }) {
       const { code, result } = yield call(getStats, { ...payload, q: 'mms' })
       let kws = []
@@ -217,14 +217,10 @@ export default {
           const modelsObj = yield put.resolve({ type: 'batchModels', payload: ids })
           if (modelsObj) {
             kws.forEach(kw => {
-              kmodels[kw] = result[kw].map(item => {
-                const { id, name, map } = modelsObj.find(model => model.id === item[0])
-                if (name) {
-                  return {
-                    id, map, name,
-                  }
-                }
-              })
+              kmodels[kw] = [...new Set(result[kw].map(item => {
+                const model = modelsObj.find(model => model.id === item[0])
+                return model ? model : null
+              }))]
             })
           }
         }

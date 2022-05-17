@@ -122,7 +122,7 @@ const ProjectList = ({ list, query, ...func }) => {
   }
 
   const addBtn = (
-    <Space className={s.actions}>
+    <Space className="actions">
       <Button className={s.addBtn} type="primary" onClick={() => history.push('/home/project/add')} icon={<AddIcon />}>{t('project.new.label')}</Button>
       <Button className={s.addBtn} type="primary" onClick={() => addExample()} icon={<AddIcon />}>{t('project.new.example.label')}</Button>
     </Space>
@@ -143,52 +143,52 @@ const ProjectList = ({ list, query, ...func }) => {
   )
 
   const renderItem = (item) => {
-    const title = <Row wrap={false} className={s.title}>
+    const title = <Row wrap={false} className='title'>
       <Col flex={1}>
         <Space>
           <span className={s.name}><a>{item.name}</a></span>
-          <span className={s.titleItem}>
-            <span className={s.titleLabel}>{t('project.train_classes')}:</span>
-            <span className={s.titleContent}>{item.keywords.join(',')}</span>
+          <span className='titleItem'>
+            <span className='titleLabel'>{t('project.train_classes')}:</span>
+            <span className='titleContent'>{item.keywords.join(',')}</span>
           </span>
-          <span className={s.titleItem}>
-            <span className={s.titleLabel}>{t('project.target.map')}:</span>
-            <span className={s.titleContent}>{item?.targetMap}</span>
-          </span>
-          <span className={s.titleItem}>
-            <span className={s.titleLabel}>{t('project.iteration.current')}:</span>
-            <span className={s.titleContent}>{t(getStageLabel(item.currentStage, item.round))}</span>
+          <span className='titleItem'>
+            <span className='titleLabel'>{t('project.iteration.current')}:</span>
+            <span className='titleContent emphasis'>{t(getStageLabel(item.currentStage, item.round))}</span>
           </span>
         </Space>
       </Col>
       <Col>{more(item)}</Col>
     </Row>
     const desc = <>
-      <Row className={s.content} justify="center">
+      <Row className='content' justify="center" >
         <Col span={4} className={s.stats}>
-          <div className={s.contentLabel}>Datasets</div>
-          <div className={s.contentContent}>{item.setCount}</div>
+          <div className='contentLabel'>Datasets</div>
+          <div className='contentContent'>{item.setCount}</div>
         </Col>
         <Col span={4} className={s.stats}>
-          <div className={s.contentLabel}>Models</div>
-          <div className={s.contentContent}>{item.modelCount}</div>
+          <div className='contentLabel'>Models</div>
+          <div className='contentContent'>{item.modelCount}</div>
         </Col>
         <Col span={12} className={s.stats}>
-          <div className={s.contentLabel}>{t('project.train_set')}/{t('project.test_set')}/{t('project.mining_set')}</div>
-          <div className={s.sets} title={`${t('project.train_set')}:${item.trainSet?.name}\n${t('project.test_set')}:${item.testSet?.name}\n${t('project.mining_set')}:${item.miningSet?.name}`}>{item.trainSet?.name}/{item.testSet?.name}/{item.miningSet?.name}</div>
+          <div className='contentLabel'>{t('project.train_set')}/{t('project.test_set')}/{t('project.mining_set')}</div>
+          <div className='sets' title={`${t('project.train_set')}:${item.trainSet?.name}\n${t('project.test_set')}:${item.testSet?.name}\n${t('project.mining_set')}:${item.miningSet?.name}`}>
+            <span className='setLabel'>{item.trainSet?.name}</span><span>|</span>
+            <span className='setLabel'>{item.testSet?.name}</span><span>|</span>
+            <span className='setLabel'>{item.miningSet?.name}</span>
+            </div>
         </Col>
         <Col span={4} className={s.stats}>
-          <div className={s.contentLabel}>{t('project.iteration.number')}</div>
-          <div className={s.contentContent}>{item.round}/{item?.targetIteration}</div>
+          <div className='contentLabel'>{t('project.iteration.number')}</div>
+          <div className='contentContent'><span className='currentIteration'>{item.round}</span></div>
         </Col>
       </Row>
       <Row>
-        <Col flex={1}><span className={s.bottomLabel}>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.description}</span></Col>
-        <Col><span className={s.bottomContent}>{item.createTime}</span></Col>
+        <Col flex={1}><span className='bottomLabel'>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.description}</span></Col>
+        <Col><span className='bottomContent'>{item.createTime}</span></Col>
       </Row>
     </>
 
-    return <List.Item className={item.state ? 'success' : 'failure'}>
+    return <List.Item>
       <Skeleton active loading={item.loading}>
         <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/detail/${item.id}`)}>
         </List.Item.Meta>
@@ -203,12 +203,12 @@ const ProjectList = ({ list, query, ...func }) => {
         {searchPanel}
         <ConfigProvider renderEmpty={() => <ProjectEmpty addExample={addExample} />}>
           <List
-            className={s.list}
+            className='list'
             dataSource={projects}
             renderItem={renderItem}
           />
         </ConfigProvider>
-        <Pagination className={s.pager} onChange={pageChange}
+        <Pagination className= 'pager' onChange={pageChange}
           defaultCurrent={1} defaultPageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
           showQuickJumper showSizeChanger />

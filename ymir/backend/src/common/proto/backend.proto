@@ -29,7 +29,7 @@ enum TaskType {
     TaskTypeCopyModel = 14;
     TaskTypeDatasetInfer = 15;
 
-    reserved 12;
+    reserved 12, 16;
 };
 
 enum LabelFormat {
@@ -71,6 +71,9 @@ enum RequestType {
     CMD_PULL_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
     CMD_SAMPLING = 18;
+    CMD_EVALUATE = 19;
+    CMD_REPO_CHECK = 20;
+    CMD_REPO_CLEAR = 21;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -120,6 +123,7 @@ message GeneralReq {
     }
     string task_parameters = 24;
     LabelCollection label_collection = 25;
+    EvaluateConfig evaluate_config = 26;
     ReqCreateTask req_create_task = 1001;
 
     reserved 17, 1002;
@@ -134,6 +138,7 @@ message GeneralResp {
     map<int32 , string> docker_image_config = 7;
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
+    bool ops_ret = 10;
     RespCMDInference detection = 1001;
 
     reserved 5, 1000;
@@ -272,6 +277,14 @@ message Label {
     string update_time = 5;  // RFC 3339 date strings
 }
 
+message EvaluateConfig {
+    // confidence threshold, 0 to 1
+    float conf_thr = 1;
+    // from:to:step, to value is excluded (same as python range)
+    string iou_thrs_interval = 2;
+    // need pr curve in evaluation result, default is false
+    bool need_pr_curve = 3;
+}
 
 service mir_controller_service {
     /*

@@ -9,6 +9,7 @@ import Tip from "@/components/form/tip"
 import ProjectSelect from "@/components/form/projectModelSelect"
 import Uploader from '@/components/form/uploader'
 import s from './add.less'
+import { urlValidator } from '@/components/form/validators'
 
 const { Option } = Select
 const { useForm } = Form
@@ -17,11 +18,13 @@ const { useForm } = Form
 const TYPES = Object.freeze({
   COPY: 1,
   LOCAL: 2,
+  NET: 3,
 })
 
 const Add = ({ importModel }) => {
   const types = [
     { id: TYPES.COPY, label: t('model.add.types.copy') },
+    { id: TYPES.NET, label: t('model.add.types.net') },
     { id: TYPES.LOCAL, label: t('model.add.types.local') },
   ]
 
@@ -30,7 +33,7 @@ const Add = ({ importModel }) => {
   const { mid } = query
   const { id: pid } = useParams()
   const [form] = useForm()
-  const [url, setUrl] = useState('')
+  const [path, setPath] = useState('')
   const [currentType, setCurrentType] = useState(mid ? TYPES.COPY : TYPES.LOCAL)
   const initialValues = {
     name: generateName('import_model'),
@@ -41,10 +44,11 @@ const Add = ({ importModel }) => {
     const params = {
       ...values,
       projectId: pid,
+      url: (values.url || '').trim(),
     }
     if (isType(TYPES.LOCAL)) {
-      if (url) {
-        params.url = url
+      if (path) {
+        params.path = path
       } else {
         return message.error(t('model.file.required'))
       }
@@ -106,17 +110,30 @@ const Add = ({ importModel }) => {
               : null}
             {isType(TYPES.LOCAL) ?
               <Tip hidden={true}>
-                <Form.Item label={t('model.add.form.upload.btn')} name='url' required>
+                <Form.Item label={t('model.add.form.upload.btn')} name='path' required>
                   <Uploader
-                    onChange={(files, result) => { setUrl(result) }}
+                    onChange={(files, result) => { setPath(result) }}
                     max={1024}
                     format='all'
-                    onRemove={() => setUrl('')}
+                    onRemove={() => setPath('')}
                     info={t('model.add.form.upload.info', { br: <br />, max: 1024 })}
                   ></Uploader>
                 </Form.Item>
               </Tip> : null}
 
+            {isType(TYPES.NET) ?
+              <Tip hidden={true}>
+                <Form.Item
+                  label={t('model.add.form.url')}
+                  name='url'
+                  rules={[
+                    { required: true, message: t('model.add.form.url.tip') },
+                    { validator: urlValidator, }
+                  ]}
+                >
+                  <Input placeholder={t('model.add.form.url.placeholder')} max={512} allowClear />
+                </Form.Item>
+              </Tip> : null}
             <Tip hidden={true}>
               <Form.Item label={t('project.add.form.desc')} name='description'
                 rules={[

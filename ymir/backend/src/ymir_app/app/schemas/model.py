@@ -63,6 +63,7 @@ class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Model
     group_name: str
     version_num: int
     related_task: Optional[TaskInternal]
+    is_visible: bool
 
     class Config:
         orm_mode = True

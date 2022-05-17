@@ -3,11 +3,36 @@ import { connect } from 'umi'
 import { useEffect, useState } from 'react'
 import t from '@/utils/t'
 
-const DatasetSelect = ({ pid, filter = [], filterGroup = [], filters = d => d, value, datasets = [], onChange = () => { }, getDatasets, ...resProps }) => {
+const DatasetSelect = ({ pid, filter = [], filterGroup = [], filters, value, datasets = [], onChange = () => { }, getDatasets, ...resProps }) => {
+  const [options, setOptions] = useState([])
 
   useEffect(() => {
     pid && fetchDatasets()
   }, [pid])
+
+  useEffect(() => {
+    let selected = null
+    if (value) {
+      if (resProps.mode) {
+        selected = options.filter(opt => value.includes(opt.value))
+      } else {
+        selected = options.find(opt => value === opt.value)
+      }
+      onChange(value, selected)
+    }
+  }, [options])
+
+  useEffect(() => {
+    const dss = filters ? filters(datasets) : datasets
+    const opts = dss.filter(ds => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId)).map(item => {
+      return {
+        label: <>{item.name} {item.versionName}(assets: {item.assetCount})</>,
+        dataset: item,
+        value: item.id,
+      }
+    })
+    setOptions(opts)
+  }, [filters, datasets])
 
   function fetchDatasets() {
     getDatasets(pid, true)
@@ -17,16 +42,12 @@ const DatasetSelect = ({ pid, filter = [], filterGroup = [], filters = d => d, v
     <Select
       value={value}
       placeholder={t('task.train.form.training.datasets.placeholder')}
-      filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
       onChange={onChange}
       showArrow
+      allowClear
+      options={options}
       {...resProps}
     >
-      {filters(datasets).filter(ds => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId)).map(item =>
-        <Select.Option value={item.id} key={item.id}>
-          {item.name} {item.versionName}(assets: {item.assetCount})
-        </Select.Option>
-      )}
     </Select>
   )
 }
@@ -41,7 +62,7 @@ const actions = (dispatch) => {
     getDatasets(pid, force) {
       return dispatch({
         type: 'dataset/queryAllDatasets',
-        payload: {pid, force},
+        payload: { pid, force },
       })
     }
   }

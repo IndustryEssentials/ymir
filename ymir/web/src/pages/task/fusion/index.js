@@ -37,8 +37,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
   const [selectedExcludeKeywords, setExcludeKeywords] = useState([])
   const [visibles, setVisibles] = useState({
     merge: true,
-    filter: false,
-    sampling: !!chunk,
+    filter: true,
+    sampling: true,
   })
 
   const initialValues = {
@@ -99,7 +99,14 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
     setKeywords(ks)
   }
 
+  const checkInputs = (i) => {
+    return i.exc || i.inc || i.samples || i?.exclude_datasets?.length || i?.include_datasets?.length
+  }
+
   const onFinish = async (values) => {
+    if(!checkInputs(values)) {
+      return message.error(t('dataset.fusion.validate.inputs'))
+    }
     const params = {
       ...values,
       project_id: dataset.projectId,
@@ -298,7 +305,7 @@ const props = (state) => {
 }
 const mapDispatchToProps = (dispatch) => {
   return {
-    getDatasets(pid, force) {
+    getDatasets(pid, force = true) {
       return dispatch({
         type: "dataset/queryAllDatasets",
         payload: { pid, force },

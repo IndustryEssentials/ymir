@@ -98,6 +98,7 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
     task_id: int
     user_id: int
     related_task: Optional[TaskInternal]
+    is_visible: bool
 
     class Config:
         orm_mode = True
@@ -152,3 +153,15 @@ class DatasetsFusionParameter(RequestParameterBase):
     exclude_labels: List[str]
 
     sampling_count: int = 0
+
+
+class DatasetEvaluationCreate(BaseModel):
+    project_id: int
+    gt_dataset_id: int
+    other_dataset_ids: List[int]
+    confidence_threshold: float
+
+
+class DatasetEvaluationOut(Common):
+    # dict of dataset_id to evaluation result
+    result: Dict[int, Dict]

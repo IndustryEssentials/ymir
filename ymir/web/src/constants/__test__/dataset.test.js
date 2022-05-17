@@ -103,6 +103,7 @@ describe("constants: dataset", () => {
       ignoredKeywords: ['person'],
       hash: 't00000020000012afef21646883528',
       state: 1,
+      hidden: true,
       createTime: format(createTime),
       updateTime: format(createTime),
       taskId: task.id,

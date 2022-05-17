@@ -9,6 +9,7 @@ import grpc
 from fastapi.logger import logger
 from google.protobuf import json_format  # type: ignore
 
+from app.config import settings
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
 from common_utils.labels import UserLabels
@@ -27,6 +28,9 @@ class ExtraRequestType(enum.IntEnum):
     pull_image = 600
     get_gpu_info = 601
     create_user = 602
+    evaluate = 603
+    check_repo = 604
+    fix_repo = 605
 
 
 MERGE_STRATEGY_MAPPING = {
@@ -86,8 +90,6 @@ class ControllerRequest:
         return request
 
     def prepare_create_project(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        # project training target labels
-        request.in_class_ids[:] = args["training_classes"]
         request.req_type = mirsvrpb.REPO_CREATE
         return request
 
@@ -286,9 +288,29 @@ class ControllerRequest:
         # need different app type for web, controller use same endpoint
         return self.prepare_mining(request, args)
 
+    def prepare_evaluate(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        evaluate_config = mirsvrpb.EvaluateConfig()
+        evaluate_config.conf_thr = args["confidence_threshold"]
+        evaluate_config.iou_thrs_interval = "0.5:1:0.05"
+        evaluate_config.need_pr_curve = False
+
+        request.req_type = mirsvrpb.CMD_EVALUATE
+        request.singleton_op = args["gt_dataset_hash"]
+        request.in_dataset_ids[:] = args["other_dataset_hashes"]
+        request.evaluate_config.CopyFrom(evaluate_config)
+        return request
+
+    def prepare_check_repo(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_REPO_CHECK
+        return request
+
+    def prepare_fix_repo(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        request.req_type = mirsvrpb.CMD_REPO_CLEAR
+        return request
+
 
 class ControllerClient:
-    def __init__(self, channel: str) -> None:
+    def __init__(self, channel: str = settings.GRPC_CHANNEL) -> None:
         self.channel = grpc.insecure_channel(channel)
         self.stub = mir_grpc.mir_controller_serviceStub(self.channel)
 
@@ -379,13 +401,12 @@ class ControllerClient:
         req = ControllerRequest(type=ExtraRequestType.create_user, user_id=user_id)
         return self.send(req)
 
-    def create_project(self, user_id: int, project_id: int, task_id: str, args: Dict) -> Dict:
+    def create_project(self, user_id: int, project_id: int, task_id: str) -> Dict:
         req = ControllerRequest(
             type=ExtraRequestType.create_project,
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,
-            args=args,
         )
         return self.send(req)
 
@@ -402,6 +423,7 @@ class ControllerClient:
     def call_inference(
         self,
         user_id: int,
+        project_id: int,
         model_hash: Optional[str],
         asset_dir: str,
         docker_image: Optional[str],
@@ -412,6 +434,7 @@ class ControllerClient:
         req = ControllerRequest(
             type=ExtraRequestType.inference,
             user_id=user_id,
+            project_id=project_id,
             args={
                 "model_hash": model_hash,
                 "asset_dir": asset_dir,
@@ -441,5 +464,44 @@ class ControllerClient:
             project_id=project_id,
             task_id=task_id,
             args=args,
+        )
+        return self.send(req)
+
+    def evaluate_dataset(
+        self,
+        user_id: int,
+        project_id: int,
+        task_id: str,
+        confidence_threshold: float,
+        gt_dataset_hash: str,
+        other_dataset_hashes: List[str],
+    ) -> Dict:
+        req = ControllerRequest(
+            type=ExtraRequestType.evaluate,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args={
+                "confidence_threshold": confidence_threshold,
+                "gt_dataset_hash": gt_dataset_hash,
+                "other_dataset_hashes": other_dataset_hashes,
+            },
+        )
+        return self.send(req)
+
+    def check_repo_status(self, user_id: int, project_id: int) -> bool:
+        req = ControllerRequest(
+            type=ExtraRequestType.check_repo,
+            user_id=user_id,
+            project_id=project_id,
+        )
+        resp = self.send(req)
+        return resp["ops_ret"]
+
+    def fix_repo(self, user_id: int, project_id: int) -> Dict:
+        req = ControllerRequest(
+            type=ExtraRequestType.fix_repo,
+            user_id=user_id,
+            project_id=project_id,
         )
         return self.send(req)

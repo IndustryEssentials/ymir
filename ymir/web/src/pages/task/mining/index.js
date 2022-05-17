@@ -148,7 +148,7 @@ function Mining({ datasetCache, datasets, ...func }) {
     id && setDataset(datasets.find(ds => ds.id === id))
   }
 
-  function modelChange(id, model) {
+  function modelChange(id, { model }) {
     model && setSelectedModel(model)
   }
 
@@ -390,7 +390,7 @@ const dis = (dispatch) => {
         type: "common/getSysInfo",
       })
     },
-    getDatasets(pid, force) {
+    getDatasets(pid, force = true) {
       return dispatch({
         type: "dataset/queryAllDatasets",
         payload: { pid, force },

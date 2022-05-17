@@ -12,6 +12,9 @@ from app.api.errors.errors import (
     ModelNotFound,
     DuplicateModelGroupError,
     FailedtoImportModel,
+    FailedToHideProtectedResources,
+    RefuseToProcessMixedOperations,
+    ProjectNotFound,
 )
 from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.ymir_controller import ControllerClient
@@ -33,9 +36,34 @@ def batch_get_models(
     return {"result": models}
 
 
+@router.post(
+    "/batch",
+    response_model=schemas.ModelsOut,
+)
+def batch_update_models(
+    *,
+    db: Session = Depends(deps.get_db),
+    model_ops: schemas.BatchOperations,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    project = crud.project.get(db, model_ops.project_id)
+    if not project:
+        raise ProjectNotFound()
+    to_process = {op.id_ for op in model_ops.operations}
+    if to_process.intersection(project.referenced_model_ids):
+        raise FailedToHideProtectedResources()
+    actions = {op.action for op in model_ops.operations}
+    if len(actions) != 1:
+        raise RefuseToProcessMixedOperations()
+
+    models = crud.model.batch_toggle_visibility(db, ids=list(to_process), action=list(actions)[0])
+    return {"result": models}
+
+
 class SortField(enum.Enum):
     id = "id"
     create_datetime = "create_datetime"
+    update_datetime = "update_datetime"
     map = "map"
     source = "source"
 
@@ -47,6 +75,7 @@ def list_models(
     state: ResultState = Query(None),
     project_id: int = Query(None),
     group_id: int = Query(None),
+    visible: bool = Query(True),
     training_dataset_id: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
@@ -73,6 +102,7 @@ def list_models(
         group_id=group_id,
         source=source,
         state=state,
+        visible=visible,
         offset=offset,
         limit=limit,
         order_by=order_by.name,

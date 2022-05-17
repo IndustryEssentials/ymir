@@ -152,6 +152,7 @@ class CmdMining(base.BaseCommand):
         return_msg = ''
         try:
             infer.CmdInfer.run_with_args(work_dir=work_dir,
+                                         mir_root=mir_root,
                                          media_path=work_asset_path,
                                          model_location=model_location,
                                          model_hash=model_hash,
@@ -289,16 +290,23 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
             continue
         asset_id = os.path.splitext(os.path.basename(asset_name))[0]
         if asset_id not in asset_ids_set:
-            logging.debug(f"unknown asset name: {asset_name}, ignore")
+            logging.info(f"unknown asset name: {asset_name}, ignore")
             continue
         single_image_annotations = mirpb.SingleImageAnnotations()
-        for idx, annotation_dict in enumerate(annotations_dict['annotations']):
+        idx = 0
+        for annotation_dict in annotations_dict['annotations']:
+            class_id = cls_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
+            # ignore unknown class ids
+            if class_id < 0:
+                continue
+
             annotation = mirpb.Annotation()
             annotation.index = idx
             json_format.ParseDict(annotation_dict['box'], annotation.box)
-            annotation.class_id = cls_id_mgr.id_and_main_name_for_name(annotation_dict['class_name'])[0]
+            annotation.class_id = class_id
             annotation.score = float(annotation_dict.get('score', 0))
             single_image_annotations.annotations.append(annotation)
+            idx += 1
         asset_id_to_annotations[asset_id] = single_image_annotations
     return asset_id_to_annotations
 

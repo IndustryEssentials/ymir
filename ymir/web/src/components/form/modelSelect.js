@@ -14,6 +14,14 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, .
   }, [])
 
   useEffect(() => {
+    if (options.length) {
+      if (value) {
+        onChange(value, resProps.mode ? options.filter(opt => value.includes(opt.value)) : options.find(opt => opt.value === value))
+      }
+    }
+  }, [options])
+
+  useEffect(() => {
     setModels(allModels)
   }, [allModels])
 
@@ -46,7 +54,7 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, .
   }
 
   return (
-    <Select value={value} {...resProps} onChange={(value, option) => onChange(value, option?.model)} options={options} allowClear></Select>
+    <Select value={value} {...resProps} onChange={onChange} options={options} allowClear></Select>
   )
 }
 

@@ -84,6 +84,7 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
 
     TaskTypeInit = TaskType.V(12)
     TaskTypeImportModel = TaskType.V(13)
+    TaskTypeEvaluate = TaskType.V(16)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -101,6 +102,7 @@ TaskTypeFusion = TaskType.V(11)
 
 TaskTypeInit = TaskType.V(12)
 TaskTypeImportModel = TaskType.V(13)
+TaskTypeEvaluate = TaskType.V(16)
 global___TaskType = TaskType
 
 
@@ -520,6 +522,7 @@ class Task(google.protobuf.message.Message):
     UNKNOWN_TYPES_FIELD_NUMBER: builtins.int
     RETURN_CODE_FIELD_NUMBER: builtins.int
     RETURN_MSG_FIELD_NUMBER: builtins.int
+    EVALUATION_FIELD_NUMBER: builtins.int
     SERIALIZED_TASK_PARAMETERS_FIELD_NUMBER: builtins.int
     SERIALIZED_EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     SRC_REVS_FIELD_NUMBER: builtins.int
@@ -547,6 +550,8 @@ class Task(google.protobuf.message.Message):
         pass
     return_code: builtins.int = ...
     return_msg: typing.Text = ...
+    @property
+    def evaluation(self) -> global___Evaluation: ...
     serialized_task_parameters: typing.Text = ...
     serialized_executor_config: typing.Text = ...
     src_revs: typing.Text = ...
@@ -562,14 +567,15 @@ class Task(google.protobuf.message.Message):
         unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         return_code : builtins.int = ...,
         return_msg : typing.Text = ...,
+        evaluation : typing.Optional[global___Evaluation] = ...,
         serialized_task_parameters : typing.Text = ...,
         serialized_executor_config : typing.Text = ...,
         src_revs : typing.Text = ...,
         dst_rev : typing.Text = ...,
         executor : typing.Text = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["dst_rev",b"dst_rev","executor",b"executor","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["evaluation",b"evaluation","model",b"model"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dst_rev",b"dst_rev","evaluation",b"evaluation","executor",b"executor","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):
@@ -594,6 +600,207 @@ class ModelMeta(google.protobuf.message.Message):
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["context",b"context","mean_average_precision",b"mean_average_precision","model_hash",b"model_hash"]) -> None: ...
 global___ModelMeta = ModelMeta
+
+class Evaluation(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class DatasetEvaluationsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleDatasetEvaluation: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleDatasetEvaluation] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    CONFIG_FIELD_NUMBER: builtins.int
+    DATASET_EVALUATIONS_FIELD_NUMBER: builtins.int
+    @property
+    def config(self) -> global___EvaluateConfig: ...
+    @property
+    def dataset_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleDatasetEvaluation]:
+        """key: prediction dataset id, value: evaluation result for ground truth and prediction dataset"""
+        pass
+    def __init__(self,
+        *,
+        config : typing.Optional[global___EvaluateConfig] = ...,
+        dataset_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleDatasetEvaluation]] = ...,
+        ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["config",b"config"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["config",b"config","dataset_evaluations",b"dataset_evaluations"]) -> None: ...
+global___Evaluation = Evaluation
+
+class EvaluateConfig(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    GT_DATASET_ID_FIELD_NUMBER: builtins.int
+    PRED_DATASET_IDS_FIELD_NUMBER: builtins.int
+    CONF_THR_FIELD_NUMBER: builtins.int
+    IOU_THRS_INTERVAL_FIELD_NUMBER: builtins.int
+    NEED_PR_CURVE_FIELD_NUMBER: builtins.int
+    gt_dataset_id: typing.Text = ...
+    @property
+    def pred_dataset_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
+    conf_thr: builtins.float = ...
+    iou_thrs_interval: typing.Text = ...
+    need_pr_curve: builtins.bool = ...
+    def __init__(self,
+        *,
+        gt_dataset_id : typing.Text = ...,
+        pred_dataset_ids : typing.Optional[typing.Iterable[typing.Text]] = ...,
+        conf_thr : builtins.float = ...,
+        iou_thrs_interval : typing.Text = ...,
+        need_pr_curve : builtins.bool = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
+global___EvaluateConfig = EvaluateConfig
+
+class SingleDatasetEvaluation(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class IouEvaluationsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleIouEvaluation: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleIouEvaluation] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    CONF_THR_FIELD_NUMBER: builtins.int
+    GT_DATASET_ID_FIELD_NUMBER: builtins.int
+    PRED_DATASET_ID_FIELD_NUMBER: builtins.int
+    IOU_EVALUATIONS_FIELD_NUMBER: builtins.int
+    IOU_AVERAGED_EVALUATION_FIELD_NUMBER: builtins.int
+    conf_thr: builtins.float = ...
+    gt_dataset_id: typing.Text = ...
+    pred_dataset_id: typing.Text = ...
+    @property
+    def iou_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleIouEvaluation]:
+        """key: string of iou threshold"""
+        pass
+    @property
+    def iou_averaged_evaluation(self) -> global___SingleIouEvaluation:
+        """average for all ious"""
+        pass
+    def __init__(self,
+        *,
+        conf_thr : builtins.float = ...,
+        gt_dataset_id : typing.Text = ...,
+        pred_dataset_id : typing.Text = ...,
+        iou_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleIouEvaluation]] = ...,
+        iou_averaged_evaluation : typing.Optional[global___SingleIouEvaluation] = ...,
+        ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["iou_averaged_evaluation",b"iou_averaged_evaluation"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_averaged_evaluation",b"iou_averaged_evaluation","iou_evaluations",b"iou_evaluations","pred_dataset_id",b"pred_dataset_id"]) -> None: ...
+global___SingleDatasetEvaluation = SingleDatasetEvaluation
+
+class SingleIouEvaluation(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class CiEvaluationsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        @property
+        def value(self) -> global___SingleTopicEvaluation: ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : typing.Optional[global___SingleTopicEvaluation] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class TopicEvaluationsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleTopicEvaluation: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleTopicEvaluation] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    CI_EVALUATIONS_FIELD_NUMBER: builtins.int
+    CI_AVERAGED_EVALUATION_FIELD_NUMBER: builtins.int
+    TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
+    @property
+    def ci_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
+        """key: class ids"""
+        pass
+    @property
+    def ci_averaged_evaluation(self) -> global___SingleTopicEvaluation:
+        """evaluations averaged by class ids"""
+        pass
+    @property
+    def topic_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
+        """key: topic names"""
+        pass
+    def __init__(self,
+        *,
+        ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
+        ci_averaged_evaluation : typing.Optional[global___SingleTopicEvaluation] = ...,
+        topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
+        ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation","ci_evaluations",b"ci_evaluations","topic_evaluations",b"topic_evaluations"]) -> None: ...
+global___SingleIouEvaluation = SingleIouEvaluation
+
+class SingleTopicEvaluation(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    AP_FIELD_NUMBER: builtins.int
+    AR_FIELD_NUMBER: builtins.int
+    TP_FIELD_NUMBER: builtins.int
+    FP_FIELD_NUMBER: builtins.int
+    FN_FIELD_NUMBER: builtins.int
+    PR_CURVE_FIELD_NUMBER: builtins.int
+    ap: builtins.float = ...
+    ar: builtins.float = ...
+    tp: builtins.int = ...
+    fp: builtins.int = ...
+    fn: builtins.int = ...
+    @property
+    def pr_curve(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___FloatPoint]: ...
+    def __init__(self,
+        *,
+        ap : builtins.float = ...,
+        ar : builtins.float = ...,
+        tp : builtins.int = ...,
+        fp : builtins.int = ...,
+        fn : builtins.int = ...,
+        pr_curve : typing.Optional[typing.Iterable[global___FloatPoint]] = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ap",b"ap","ar",b"ar","fn",b"fn","fp",b"fp","pr_curve",b"pr_curve","tp",b"tp"]) -> None: ...
+global___SingleTopicEvaluation = SingleTopicEvaluation
+
+class FloatPoint(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    X_FIELD_NUMBER: builtins.int
+    Y_FIELD_NUMBER: builtins.int
+    x: builtins.float = ...
+    y: builtins.float = ...
+    def __init__(self,
+        *,
+        x : builtins.float = ...,
+        y : builtins.float = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["x",b"x","y",b"y"]) -> None: ...
+global___FloatPoint = FloatPoint
 
 class MirContext(google.protobuf.message.Message):
     """/ ========== context.mir =========="""

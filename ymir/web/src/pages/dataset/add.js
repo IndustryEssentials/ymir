@@ -7,12 +7,15 @@ import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
 import Uploader from '@/components/form/uploader'
 import { randomNumber } from '@/utils/number'
+import { urlValidator } from '@/components/form/validators'
 import s from './add.less'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import { TipsIcon } from '@/components/common/icons'
 import { getKeywords } from '../../services/keyword'
 import Tip from "@/components/form/tip"
 import ProjectDatasetSelect from '../../components/form/projectDatasetSelect'
+import useAddKeywords from '@/hooks/useAddKeywords'
+import samplePic from '@/assets/sample.png'
 
 const { Option } = Select
 const { useForm } = Form
@@ -58,6 +61,7 @@ const Add = (props) => {
   const [kStrategy, setKStrategy] = useState(0)
   const [newKeywords, setNewKeywords] = useState([])
   const [currentKeywords, setCurrentKeywords] = useState([])
+  const [{ newer }, checkKeywords] = useAddKeywords(true)
 
 
   useEffect(async () => {
@@ -87,6 +91,14 @@ const Add = (props) => {
     renderKeywords()
   }, [selectedDataset])
 
+  useEffect(() => {
+    if (newer.length) {
+      const unique = newer.map(k => ({ name: k, type: 0 }))
+      setNewKeywords(unique)
+      form.setFieldsValue({ new_keywords: unique })
+    }
+  }, [newer])
+
   const typeChange = (type) => {
     setCurrentType(type)
     form.setFieldsValue({ with_annotations: 0, k_strategy: 0, })
@@ -114,6 +126,7 @@ const Add = (props) => {
       ...values,
       strategy,
       projectId: pid,
+      url: (values.url || '').trim(),
     }
     if (currentType === TYPES.COPY) {
       params.datasetId = params.datasetId[1]
@@ -124,6 +137,9 @@ const Add = (props) => {
       } else {
         return message.error(t('dataset.add.local.file.empty'))
       }
+    }
+    if (isType(TYPES.PATH)) {
+      params.path = `/ymir-sharing/${params.path}`
     }
     const result = await props.createDataset(params)
     if (result) {
@@ -148,14 +164,7 @@ const Add = (props) => {
 
   async function renderKeywords() {
     const kws = getSelectedDatasetKeywords()
-    // const kws = ['cat', 'catty', 'dog', 'tree', 'people']
-    const result = await props.updateKeywords({ keywords: kws.map(k => ({ name: k })), dry_run: true })
-    if (result) {
-      const repeated = result.failed || []
-      const unique = kws.filter(k => repeated.indexOf(k) < 0).map(k => ({ name: k, type: 0 }))
-      setNewKeywords(unique)
-      form.setFieldsValue({ new_keywords: unique })
-    }
+    await checkKeywords(kws)
   }
 
   function onInternalDatasetChange(value) {
@@ -170,25 +179,6 @@ const Add = (props) => {
   function getSelectedDatasetKeywords() {
     const set = publicDataset.find(d => d.id === selectedDataset)
     return set?.keywords || []
-  }
-
-  let currentValue
-  let timeout
-  function searchKeywords(value) {
-    if (timeout) {
-      clearTimeout(timeout)
-      timeout = null
-    }
-    const timer = 1000
-    currentValue = value
-    const fetchKeywords = async () => {
-      const { code, result } = await getKeywords({ q: value })
-      if (code === 0 && currentValue === value && result?.items) {
-        setCurrentKeywords(result.items)
-      }
-    }
-
-    timeout = setTimeout(fetchKeywords, timer)
   }
 
   function filterDataset() {
@@ -214,17 +204,17 @@ const Add = (props) => {
             colon={false}
           >
             <Tip hidden={true}>
-            <Form.Item
-              label={t('dataset.add.form.name.label')}
-              name='name'
-              initialValue={'dataset_import_' + randomNumber()}
-              rules={[
-                { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
-                { type: 'string', min: 2, max: 80 },
-              ]}
-            >
-              <Input autoComplete={'off'} allowClear />
-            </Form.Item>
+              <Form.Item
+                label={t('dataset.add.form.name.label')}
+                name='name'
+                initialValue={'dataset_import_' + randomNumber()}
+                rules={[
+                  { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
+                  { type: 'string', min: 2, max: 80 },
+                ]}
+              >
+                <Input autoComplete={'off'} allowClear />
+              </Form.Item>
             </Tip>
 
             <Tip hidden={true}>
@@ -239,28 +229,28 @@ const Add = (props) => {
 
             {isType(TYPES.INTERNAL) ? (
               <>
-              <Tip content={t('tip.task.filter.datasets')}>
-                <Form.Item
-                  label={t('dataset.add.form.internal.label')}
-                  name='datasetId'
-                  initialValue={selectedDataset}
-                  rules={isType(TYPES.INTERNAL) ? [
-                    { required: true, message: t('dataset.add.form.internal.required') }
-                  ] : []}
-                >
-                  <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
-                    {filterDataset().map(dataset => (
-                      <Option value={dataset.id} key={dataset.id}>{dataset.name} (Total: {dataset.assetCount})</Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Tip>
+                <Tip content={t('tip.task.filter.datasets')}>
+                  <Form.Item
+                    label={t('dataset.add.form.internal.label')}
+                    name='datasetId'
+                    initialValue={selectedDataset}
+                    rules={isType(TYPES.INTERNAL) ? [
+                      { required: true, message: t('dataset.add.form.internal.required') }
+                    ] : []}
+                  >
+                    <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
+                      {filterDataset().map(dataset => (
+                        <Option value={dataset.id} key={dataset.id}>{dataset.name} {dataset.versionName} (Total: {dataset.assetCount})</Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Tip>
 
                 {selectedDataset ?
-                <Tip hidden={true}>
-                  <Form.Item label={t('dataset.import.public.include')}>
-                    {renderSelectedKeywords()}
-                  </Form.Item>
+                  <Tip hidden={true}>
+                    <Form.Item label={t('dataset.import.public.include')}>
+                      {renderSelectedKeywords()}
+                    </Form.Item>
                   </Tip>
                   : null}
               </>
@@ -286,116 +276,117 @@ const Add = (props) => {
                 />
               </Form.Item>
             </Tip>
-            { !isType(TYPES.COPY) ? <>
-            {showLabelStrategy ?
-              <Tip hidden={true}>
-              <Form.Item label={t('dataset.add.form.newkw.label')}>
-                <p className={s.newkwTip}><TipsIcon className={s.tipIcon} /> {t('dataset.add.form.newkw.tip')}</p>
-                <Row><Col flex={1}><Form.Item noStyle name='k_strategy' initialValue={0}>
-                  <Radio.Group key={!isType(TYPES.INTERNAL) ? 'internal' : 'other'}
-                    options={labelStrategyOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 2 : option.value !== 1)}
-                    onChange={onStrategyChange} />
-                </Form.Item></Col>
-                  <Col><Link to={'/home/keyword'} target='_blank'>{t('dataset.add.form.newkw.link')}</Link></Col>
-                </Row>
-              </Form.Item>
-              </Tip> : null}
-  
-              <Tip hidden={true}>
-              <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 8, span: 16 }}>
-                {newKeywords.length > 0 ?
-                  <Form.List name='new_keywords'>
-                    {(fields, { add, remove }) => (
+            {!isType(TYPES.COPY) ? <>
+              {showLabelStrategy ?
+                <Tip hidden={true}>
+                  <Form.Item label={t('dataset.add.form.newkw.label')}>
+                    <p className={s.newkwTip}><TipsIcon className={s.tipIcon} /> {t('dataset.add.form.newkw.tip')}</p>
+                    <Row><Col flex={1}><Form.Item noStyle name='k_strategy' initialValue={0}>
+                      <Radio.Group key={!isType(TYPES.INTERNAL) ? 'internal' : 'other'}
+                        options={labelStrategyOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 2 : option.value !== 1)}
+                        onChange={onStrategyChange} />
+                    </Form.Item></Col>
+                      <Col><Link to={'/home/keyword'} target='_blank'>{t('dataset.add.form.newkw.link')}</Link></Col>
+                    </Row>
+                  </Form.Item>
+                </Tip> : null}
 
-                      <Row>
-                        {fields.map((field, index) => (
-                          <Col span={12} className={s.odd}>
-                          <Row gutter={22}>
-                            <Col span={5} className={s.name}>{newKeywords[field.name]?.name}</Col>
-                            <Col span={12}>
-                              <Form.Item
-                                {...field}
-                                name={[field.name, 'type']}
-                                fieldKey={[field.fieldKey, 'type']}
-                                initialValue={0}
-                                style={{ width: 150, display: 'inline-block' }}
-                              >
-                                <Select>
-                                  <Select.Option value={0}>{t('dataset.add.newkw.asname')}</Select.Option>
-                                  {/* <Select.Option value={1}>{t('dataset.add.newkw.asalias')}</Select.Option> */}
-                                  <Select.Option value={2}>{t('dataset.add.newkw.ignore')}</Select.Option>
-                                </Select>
-                              </Form.Item>
+              <Tip hidden={true}>
+                <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 8, span: 16 }}>
+                  {newKeywords.length > 0 ?
+                    <Form.List name='new_keywords'>
+                      {(fields, { add, remove }) => (
+
+                        <Row>
+                          {fields.map((field, index) => (
+                            <Col span={12} className={s.odd}>
+                              <Row gutter={22}>
+                                <Col span={5} className={s.name}>{newKeywords[field.name]?.name}</Col>
+                                <Col span={12}>
+                                  <Form.Item
+                                    {...field}
+                                    name={[field.name, 'type']}
+                                    fieldKey={[field.fieldKey, 'type']}
+                                    initialValue={0}
+                                    style={{ width: 150, display: 'inline-block' }}
+                                  >
+                                    <Select>
+                                      <Select.Option value={0}>{t('dataset.add.newkw.asname')}</Select.Option>
+                                      {/* <Select.Option value={1}>{t('dataset.add.newkw.asalias')}</Select.Option> */}
+                                      <Select.Option value={2}>{t('dataset.add.newkw.ignore')}</Select.Option>
+                                    </Select>
+                                  </Form.Item>
+                                </Col>
+                              </Row>
                             </Col>
-                          </Row>
-                          </Col>
-                        ))}
-                      </Row>
+                          ))}
+                        </Row>
 
-                    )}
-                  </Form.List>
-                  : t('dataset.add.newkeyword.empty')}
-              </Form.Item>
-              </Tip> </>: null }
+                      )}
+                    </Form.List>
+                    : t('dataset.add.newkeyword.empty')}
+                </Form.Item>
+              </Tip> </> : null}
             {isType(TYPES.NET) ? (
               <Tip hidden={true}>
-              <Form.Item label={t('dataset.add.form.net.label')} required>
-                <Form.Item
-                  name='url'
-                  noStyle
-                  rules={[
-                    { required: true, message: t('dataset.add.form.net.tip') },
-                    { type: 'url', }
-                  ]}
-                >
-                  <Input placeholder={t('dataset.add.form.net.tip')} max={512} allowClear />
+                <Form.Item label={t('dataset.add.form.net.label')} required>
+                  <Form.Item
+                    name='url'
+                    noStyle
+                    rules={[
+                      { required: true, message: t('dataset.add.form.net.tip') },
+                      { validator: urlValidator, }
+                    ]}
+                  >
+                    <Input placeholder={t('dataset.add.form.net.tip')} max={512} allowClear />
+                  </Form.Item>
+                  <p>Sample: https://www.examples.com/pascal.zip</p>
                 </Form.Item>
-                <p>Sample: https://www.examples.com/pascal.zip</p>
-              </Form.Item>
               </Tip>
             ) : null}
- 
+
             {isType(TYPES.PATH) ? (
               <Tip hidden={true}>
-              <Form.Item label={t('dataset.add.form.path.label')} required>
-                <Form.Item
+                <Form.Item label={t('dataset.add.form.path.label')} required
                   name='path'
-                  noStyle
+                  help={t('dataset.add.form.path.tip')}
                   rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
                 >
                   <Input placeholder={t('dataset.add.form.path.placeholder')} max={512} allowClear />
                 </Form.Item>
-                <p>{t('dataset.add.form.path.tip')}</p>
-              </Form.Item>
               </Tip>
             ) : null}
             {isType(TYPES.LOCAL) ? (
               <Tip hidden={true}>
-              <Form.Item label={t('dataset.add.form.upload.btn')} required>
-                <Uploader
-                  onChange={(files, result) => { setFileToken(result) }}
-                  max={1024}
-                  onRemove={() => setFileToken('')}
-                  info={t('dataset.add.form.upload.tip', { br: <br />, sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a> })}
-                ></Uploader>
-              </Form.Item>
+                <Form.Item label={t('dataset.add.form.upload.btn')} required>
+                  <Uploader
+                    onChange={(files, result) => { setFileToken(result) }}
+                    max={1024}
+                    onRemove={() => setFileToken('')}
+                    info={t('dataset.add.form.upload.tip', { 
+                      br: <br />, 
+                      sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a>,
+                      pic: <img src={samplePic} />
+                    })}
+                  ></Uploader>
+                </Form.Item>
               </Tip>
             ) : null}
             <Tip hidden={true}>
-            <Form.Item wrapperCol={{ offset: 8 }}>
-              <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit">
-                    {t('common.action.import')}
-                  </Button>
-                </Form.Item>
-                <Form.Item name='backBtn' noStyle>
-                  <Button size="large" onClick={() => history.goBack()}>
-                    {t('task.btn.back')}
-                  </Button>
-                </Form.Item>
-              </Space>
-            </Form.Item>
+              <Form.Item wrapperCol={{ offset: 8 }}>
+                <Space size={20}>
+                  <Form.Item name='submitBtn' noStyle>
+                    <Button type="primary" size="large" htmlType="submit">
+                      {t('common.action.import')}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item name='backBtn' noStyle>
+                    <Button size="large" onClick={() => history.goBack()}>
+                      {t('task.btn.back')}
+                    </Button>
+                  </Form.Item>
+                </Space>
+              </Form.Item>
             </Tip>
           </Form>
         </div>

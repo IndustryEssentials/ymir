@@ -139,7 +139,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const renderTitle = <Row className={styles.labels}>
     <Col flex={1}>
       <Space>
-        <strong>{dataset.name}</strong>
+        <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
@@ -175,31 +175,12 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     <div className={styles.datasetDetail}>
       <Breadcrumbs />
       {assetDetail}
-      <div className={styles.actions}>
-        <Space>
-          <Button
-            hidden={!dataset.keyword_count}
-            icon={<ScreenIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/fusion/${dataset.projectId}?did=${id}`)}
-          >{t('dataset.detail.action.fusion')} </Button>
-          <Button
-            icon={<TrainIcon className={styles.addBtnIcon} />}
-            type='primary'
-            onClick={() => history.push(`/home/task/train/${dataset.projectId}?did=${id}`)}
-          >{t('dataset.detail.action.train')}</Button>
-          <Button icon={<VectorIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/mining/${dataset.projectId}?did=${id}`)}>{t('dataset.detail.action.mining')}</Button>
-          <Button icon={<TaggingIcon className={styles.addBtnIcon} />}
-            onClick={() => history.push(`/home/task/label/${dataset.projectId}?did=${id}`)}>{t('dataset.detail.action.label')}</Button>
-        </Space>
-      </div>
-      <Card className={styles.list} title={renderTitle}>
-
+      <Card className='list' title={renderTitle}>
         {renderList(assets)}
         <Space className={styles.pagi}>
           <Pagination
             key={'pager'}
-            className={styles.pager}
+            className={`pager ${styles.pager}`}
             showQuickJumper
             showSizeChanger
             defaultCurrent={1}

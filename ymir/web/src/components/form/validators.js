@@ -16,3 +16,12 @@ export const trimValidator = (_, value) => {
   }
   return Promise.resolve()
 }
+
+export function urlValidator(_, value) {
+  const reg = /^https?:\/\/([\w\-]+(\.[\w\-\:]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?$/
+  if(reg.test((value || '').trim())) {
+    return Promise.resolve()
+  } else {
+    return Promise.reject(t('dataset.add.validate.url.invalid'))
+  }
+}

@@ -63,6 +63,20 @@ const common = {
   'common.action.infer': {cn: '推理', en: 'Infer', },
   'common.action.copy': {cn: '复制', en: 'Copy', },
   'common.action.import': {cn: '导入', en: 'Import', },
+  'common.action.hide': {cn: '隐藏', en: 'Hide', },
+  'common.action.compare': {cn: '比对', en: 'Compare', },
+  'common.action.multiple.compare': {cn: '批量比对', en: 'Batch Compare', },
+  'common.action.check': {cn: '检查', en: 'Check', },
+  'common.action.check.again': {cn: '重新检查', en: 'Recheck', },
+  'common.action.multiple.hide': {cn: '批量隐藏', en: 'Batch Hide', },
+  'common.action.multiple.restore': {cn: '批量显示', en: 'Batch Show', },
+  'common.action.multiple.infer': {cn: '批量推理', en: 'Batch Inference', },
+  'common.action.restore': {cn: '显示', en: 'Show', },
+  'common.hidden.label': {cn: '显示状态', en: 'Visible Status', },
+  'common.state.hidden': {cn: '隐藏', en: 'Hidden', },
+  'common.selected.required': {cn: '需要选中至少一项', en: 'Selected required', },
+  'common.hidden.list': {cn: '隐藏列表', en: 'Hidden List', },
+  'common.everage': {cn: '平均值', en: 'Everage', },
 }
 
 export default common

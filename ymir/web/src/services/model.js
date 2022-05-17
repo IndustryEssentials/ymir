@@ -24,16 +24,27 @@ export function getModelVersions(group_id) {
  * query models
  * @param {object} param1 {
  *   {number} project_id 
- *   {number} type task type
- *   {number} state model state
- *   {string} name model name
- *   {number} offset  query start
- *   {number} limit query count 
+ *   {number} [type] task type
+ *   {number} [state] model state
+ *   {string} [name] model name
+ *   {boolean} [visible] hidden or not
+ *   {number} [offset]  query start
+ *   {number} [limit] query count 
  * }
  * @returns 
  */
-export function queryModels({ project_id, type, state, name, offset = 0, limit = 10 }) {
-  return request.get("models/", { params: { project_id, type, state, name, offset, limit } })
+export function queryModels({
+  project_id,
+  type,
+  state,
+  name,
+  order_by,
+  is_desc,
+  visible = true,
+  offset = 0,
+  limit = 10,
+}) {
+  return request.get("models/", { params: { project_id, type, state, name, visible, order_by, is_desc, offset, limit } })
 }
 
 /**
@@ -83,21 +94,38 @@ export function delModelGroup(id) {
   })
 }
 
+
+/**
+ * hide/restore/delete models
+ * @param {string} action hide/restore/delete
+ * @param {number} projectId
+ * @param {number} ids
+ * @returns
+ */
+export function batchAct(action, projectId, ids = []) {
+  return request.post(`/models/batch`, {
+    project_id: projectId,
+    operations: ids.map(id => ({ id, action, }))
+  })
+}
+
 /**
  * 
  * @param {object} param {
  * {string} projectId
  * {string} name
- * {string} [url] 
- * {number} [modelId] model id
+ * {string} [path] local file path 
+ * {string} [url]  net url
+ * {number} [modelId] copy model id
  * {string} [description]
  * }
  * @returns 
  */
-export function importModel({ projectId, name, description, url, modelId, }) {
+export function importModel({ projectId, name, description, url, path, modelId, }) {
   return request.post('/models/importing', {
     project_id: projectId,
-    input_model_path: url,
+    input_model_path: path,
+    input_url: url,
     input_model_id: modelId,
     description,
     group_name: name,

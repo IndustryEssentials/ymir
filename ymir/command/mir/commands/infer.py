@@ -4,12 +4,12 @@ import logging
 import os
 import subprocess
 import time
-from typing import Any, Tuple, Optional
+from typing import Any, List, Tuple, Optional
 
 import yaml
 
 from mir.commands import base
-from mir.tools import settings as mir_settings, utils as mir_utils
+from mir.tools import checker, class_ids, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -36,6 +36,7 @@ class CmdInfer(base.BaseCommand):
         logging.debug("command infer: %s", self.args)
 
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
+                                      mir_root=self.args.mir_root,
                                       media_path=self.args.work_dir,
                                       model_location=self.args.model_location,
                                       model_hash=self.args.model_hash,
@@ -48,6 +49,7 @@ class CmdInfer(base.BaseCommand):
 
     @staticmethod
     def run_with_args(work_dir: str,
+                      mir_root: str,
                       media_path: str,
                       model_location: str,
                       model_hash: str,
@@ -82,6 +84,8 @@ class CmdInfer(base.BaseCommand):
             int: [description]
         """
         # check args
+        if not mir_root:
+            mir_root = '.'
         if not work_dir:
             logging.error('empty --work-dir, abort')
             return MirCode.RC_CMD_INVALID_ARGS
@@ -109,6 +113,10 @@ class CmdInfer(base.BaseCommand):
         if not executor:
             logging.error('empty --executor, abort')
             return MirCode.RC_CMD_INVALID_ARGS
+
+        return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
+        if return_code != MirCode.RC_OK:
+            return return_code
 
         if not executant_name:
             executant_name = task_id
@@ -161,7 +169,7 @@ class CmdInfer(base.BaseCommand):
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
-                                   max_boxes=_get_max_boxes(config_file))
+                                   max_boxes=_get_max_boxes(config_file), mir_root=mir_root)
 
         return MirCode.RC_OK
 
@@ -238,7 +246,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_results(infer_result_file: str, max_boxes: int) -> None:
+def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str) -> None:
     if not os.path.isfile(infer_result_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
                               error_message=f"can not find result file: {infer_result_file}")
@@ -246,12 +254,16 @@ def _process_infer_results(infer_result_file: str, max_boxes: int) -> None:
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
 
+    class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+
     if 'detection' in results:
         names_annotations_dict = results['detection']
         for _, annotations_dict in names_annotations_dict.items():
             if 'annotations' in annotations_dict and isinstance(annotations_dict['annotations'], list):
-                annotations_dict['annotations'].sort(key=(lambda x: x['score']), reverse=True)
-                annotations_dict['annotations'] = annotations_dict['annotations'][:max_boxes]
+                annotations_list: List[dict] = annotations_dict['annotations']
+                annotations_list.sort(key=(lambda x: x['score']), reverse=True)
+                annotations_list = [a for a in annotations_list if class_id_mgr.has_name(a['class_name'])]
+                annotations_dict['annotations'] = annotations_list[:max_boxes]
 
     with open(infer_result_file, 'w') as f:
         f.write(json.dumps(results, indent=4))
@@ -315,6 +327,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
 # public: cli bind
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     infer_arg_parser = subparsers.add_parser('infer',
+                                             parents=[parent_parser],
                                              description='use this command to inference images',
                                              help='inference images')
     infer_arg_parser.add_argument('--index-file', dest='index_file', type=str, required=True, help='path to index file')

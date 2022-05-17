@@ -224,6 +224,11 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 4. 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
+5. 默认初始用户权限为超级管理员，可以通过项目路径下.env文件查看账号密码，部署前可自行设置修改。建议在服务部署完成后，通过用户管理界面修改密码。
+<div align="left">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/first_admin.png" width="600"/>
+  <div>&nbsp;</div>
+
 ## 2.3. 安装配置LabelStudio （可选）
 
 label studio同时也是YMIR所支持的外接标注系统，可以作为备选标注工具安装。
@@ -320,9 +325,9 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 1.通过在网络中下载开源数据集VOC2012([点击下载VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar))，解压缩后按要求修改文件夹名称，再分别压缩为符合导入要求的zip包；
 
-2.把VOC2012放到ymir-workplace/importing_pic下面；
+2.把VOC2012放到 `ymir-workplace/ymir-sharing` 下面；
 
-3.选择路径导入，填上路径地址/data/sharing/voc2012_train。
+3.选择路径导入，填上路径地址`/ymir-sharing/voc2012`。
 
 完成初始数据集的导入后，点击【迭代数据准备】，完成对应的数据集和挖掘策略设置。其中训练集已设置为创建项目时默认的系统训练集，不可变更。
 

@@ -110,13 +110,12 @@ describe("constants: project", () => {
       currentIteration: undefined,
       currentStage: 0,
       round: 0,
+      hiddenDatasets: [],
+      hiddenModels: [],
       createTime: format(createTime),
       description: 'project002 desc',
       type: 1,
       isExample: false,
-      targetMap: 88,
-      targetDataset: null,
-      targetIteration: 0,
       updateTime: format(createTime)
     }
     expect(transferProject(origin)).toEqual(expected)

@@ -1,7 +1,7 @@
 from collections import defaultdict
 import logging
 import os
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import xml.dom.minidom
 
@@ -12,7 +12,7 @@ from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
 
-def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> xml.dom.minidom.Element:
+def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> Optional[xml.dom.minidom.Element]:
     """
     suppose we have the following xml:
     ```
@@ -27,7 +27,7 @@ def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> xml.d
     tag_nodes = node.getElementsByTagName(tag_name)
     if len(tag_nodes) > 0 and len(tag_nodes[0].childNodes) > 0:
         return tag_nodes[0]
-    raise MirRuntimeError(MirCode.RC_CMD_INVALID_FILE, f"found no element for key: {tag_name}")
+    return None
 
 
 def _get_dom_xml_tag_data(node: xml.dom.minidom.Element, tag_name: str) -> str:
@@ -55,6 +55,9 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     """
     name = _xml_obj_to_type_name(obj)
     bndbox_node = _get_dom_xml_tag_node(obj, "bndbox")
+    if not bndbox_node:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='found no value for bndbox')
+
     xmin = int(float(_get_dom_xml_tag_data(bndbox_node, "xmin")))
     ymin = int(float(_get_dom_xml_tag_data(bndbox_node, "ymin")))
     xmax = int(float(_get_dom_xml_tag_data(bndbox_node, "xmax")))
@@ -62,13 +65,17 @@ def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
     width = xmax - xmin + 1
     height = ymax - ymin + 1
 
+    # there's no `score` key in original voc format, we add it here to support box conf score
+    score_str = _get_dom_xml_tag_data(obj, 'score')
+    score = float(score_str) if score_str else 2.0
+
     annotation = mirpb.Annotation()
     annotation.class_id = class_type_manager.id_and_main_name_for_name(name)[0]
     annotation.box.x = xmin
     annotation.box.y = ymin
     annotation.box.w = width
     annotation.box.h = height
-    annotation.score = 0
+    annotation.score = score
     return annotation
 
 
@@ -76,45 +83,9 @@ def _xml_obj_to_type_name(obj: xml.dom.minidom.Element) -> str:
     return _get_dom_xml_tag_data(obj, "name").lower()
 
 
-def _read_customized_Keywords(ck_file: str) -> Dict[str, Set[str]]:
-    """
-    read customized keywords out from ck file
-
-    Args:
-        ck_file (str): tsv file, <asset_name>\t<ck1>\t<ck2>...
-
-    Returns:
-        Dict[str, Set[str]]: key: asset name, value: set of customized keywords
-
-    Raises:
-        ValueError: if found dumplicat key in ck file
-    """
-    name_cks = {}  # type: Dict[str, Set[str]]
-    if not ck_file:
-        return name_cks
-
-    with open(ck_file, 'r') as f:
-        lines = f.read().splitlines()
-
-    for line in lines:
-        if not line:
-            continue
-        components = line.split('\t')
-        if len(components) == 1:
-            continue
-
-        if components[0] in name_cks:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f'dumplicate asset name in ck file: {components[0]}')
-
-        name_cks[components[0]] = set(components[1:])
-
-    return name_cks
-
-
-def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords, in_sha1_file: str,
-                       ck_file: str, mir_root: str, annotations_dir_path: str, task_id: str,
-                       phase: str) -> Tuple[int, Dict[str, int]]:
+def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
+                       in_sha1_file: str, mir_root: str,
+                       annotations_dir_path: str, task_id: str, phase: str) -> Tuple[int, Dict[str, int]]:
     """
     imports annotations
 
@@ -122,7 +93,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
         mir_annotation (mirpb.MirAnnotations): data buf for annotations.mir
         mir_keywords (mirpb.MirKeywords): data buf for keywords.mir
         in_sha1_file (str): path to sha1 file
-        ck_file (str): path to customized keywords file
         mir_root (str): path to mir repo
         annotations_dir_path (str): path to annotations root
         task_id (str): task id
@@ -141,12 +111,9 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
     logging.info("loaded type id and names: %d", class_type_manager.size())
 
-    # read customized keywords from ck_file
-    cks = _read_customized_Keywords(ck_file)
-
     image_annotations = mir_annotation.task_annotations[task_id].image_annotations
 
-    assethash_filename_list = []  # type: List[Tuple[str, str, str]]
+    assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
     with open(in_sha1_file, "r") as in_file:
         for line in in_file.readlines():
             line_components = line.strip().split('\t')
@@ -154,15 +121,17 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
                 logging.warning("incomplete line: %s", line)
                 continue
             asset_hash, file_name = line_components[0], line_components[1]
+            if asset_hash not in mir_metadatas.attributes:
+                continue
             main_file_name = os.path.splitext(os.path.basename(file_name))[0]
-            assethash_filename_list.append((asset_hash, main_file_name, file_name))
+            assethash_filename_list.append((asset_hash, main_file_name))
 
     total_assethash_count = len(assethash_filename_list)
     logging.info(f"wrting {total_assethash_count} annotations")
 
     counter = 0
     missing_annotations_counter = 0
-    for asset_hash, main_file_name, file_path in assethash_filename_list:
+    for asset_hash, main_file_name in assethash_filename_list:
         # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml') if annotations_dir_path else None
         if not annotation_file or not os.path.isfile(annotation_file):
@@ -184,10 +153,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_keywords: mirpb
                     image_annotations[asset_hash].annotations.append(annotation)
                 else:
                     unknown_types_and_count[type_name] += 1
-
-        # import customized keywords
-        if file_path in cks:
-            mir_keywords.keywords[asset_hash].customized_keywords[:] = cks[file_path]
 
         counter += 1
         if counter % 5000 == 0:

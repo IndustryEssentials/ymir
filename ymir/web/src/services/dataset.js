@@ -16,26 +16,40 @@ export function getDataset(id) {
  * @returns 
  */
 export function getDatasetByGroup(group_id) {
-  return request.get(`datasets/`, { params: { group_id, limit: 10000 }})
+  return request.get(`datasets/`, { params: { group_id, limit: 10000 } })
 }
 
 /**
  * get datasets
  * @param {object} param1 {
  *   {number}   project_id
- *   {number}   group_id
- *   {number}   type        task type
- *   {number}   state       dataset state
- *   {string}   name        dataset name
- *   {number}   offset      query start
- *   {number}   limit       query count 
- *   {boolean}  is_desc     default as true
- *   {string}   order_by    value as: id, create_datetime, asset_count, source. default as id
+ *   {number}   [group_id]
+ *   {number}   [type]        task type
+ *   {number}   [state]       dataset state
+ *   {string}   [name]        dataset name
+ *   {number}   [offset]      query start
+ *   {number}   [limit]       query count 
+ *   {boolean}  [visible]     default as true
+ *   {boolean}  [is_desc]     default as true
+ *   {string}   [order_by]    value as: id, create_datetime, asset_count, source. default as id
  * }
  * @returns 
  */
-export function queryDatasets({ project_id, group_id, type, state, name, offset = 0, limit = 10, is_desc, order_by }) {
-  return request.get("datasets/", { params: { project_id, group_id, type, state, name, offset, limit, is_desc, order_by } })
+export function queryDatasets({
+  project_id,
+  group_id,
+  type,
+  state,
+  name,
+  visible = true,
+  offset = 0,
+  limit = 10,
+  is_desc = true,
+  order_by
+}) {
+  return request.get("datasets/", {
+    params: { project_id, group_id, type, state, name, offset, limit, is_desc, order_by, visible }
+  })
 }
 /**
  * get dataset groups
@@ -84,7 +98,7 @@ export function getAsset(id, hash) {
  * @param {number} id
  * @returns
  */
- export function delDataset(id) {
+export function delDataset(id) {
   return request({
     method: "delete",
     url: `/datasets/${id}`,
@@ -100,6 +114,36 @@ export function delDatasetGroup(id) {
   return request({
     method: "delete",
     url: `/dataset_groups/${id}`,
+  })
+}
+
+/**
+ * evalute between gt and target dataset
+ * @param {number} projectId    project id
+ * @param {number} datasets      evaluational datasets
+ * @param {number} gt           ground truth dataset
+ * @param {number} confidence   range: [0, 1]
+ * @returns 
+ */
+export function evaluate({ projectId, datasets, gt, confidence }) {
+  return request.post(`/datasets/evaluation`, {
+    project_id: projectId,
+    other_dataset_ids: datasets,
+    gt_dataset_id: gt,
+    confidence_threshold: confidence,
+  })
+}
+
+/**
+ * hide datasets
+ * @param {number} projectId
+ * @param {number} ids
+ * @returns
+ */
+export function batchAct(action, projectId, ids = []) {
+  return request.post(`/datasets/batch`, {
+    project_id: projectId,
+    operations: ids.map(id => ({ id, action, }))
   })
 }
 

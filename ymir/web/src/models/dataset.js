@@ -1,10 +1,10 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets,
-  getAssetsOfDataset, getAsset, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate,
+  getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
-import { updateResultState } from '@/constants/common'
+import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
 let loading = false
@@ -47,7 +47,7 @@ export default {
       }
     },
     *getDataset({ payload }, { call, put, select }) {
-      const {id, force } = payload
+      const { id, force } = payload
       if (!force) {
         const dataset = yield select(state => state.dataset.dataset[id])
         if (dataset) {
@@ -98,6 +98,13 @@ export default {
       if (code === 0) {
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
       }
+    },
+    *getHiddenList({ payload }, { put }) {
+      const query = { ...{ order_by: 'update_datetime' }, ...payload, visible: false }
+      return yield put({
+        type: 'queryDatasets',
+        payload: query,
+      })
     },
     *queryAllDatasets({ payload }, { select, call, put }) {
       if (loading) {
@@ -156,6 +163,19 @@ export default {
     *delDatasetGroup({ payload }, { call, put }) {
       const { code, result } = yield call(delDatasetGroup, payload)
       if (code === 0) {
+        return result
+      }
+    },
+    *hide({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.hide, pid, ids)
+      if (code === 0) {
+        return result
+      }
+    },
+    *restore({ payload: { pid, ids = [] } }, { call, put }) {
+      const { code, result } = yield call(batchAct, actions.restore, pid, ids)
+      if (code === 0) {
+        yield put.resolve({ type: 'clearCache' })
         return result
       }
     },
@@ -255,6 +275,12 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
+    },
+    *compare({ payload }, { call, put }) {
+      const { code, result } = yield call(evaluate, payload)
+      if (code === 0) {
+        return result
+      }
     },
   },
   reducers: {
