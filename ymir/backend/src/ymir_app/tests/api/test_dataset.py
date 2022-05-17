@@ -90,6 +90,7 @@ class TestBatchGetDatasets:
 
 class TestCreateDataset:
     def test_create_dataset_succeed(self, client: TestClient, normal_user_token_headers, mocker):
+        mocker.patch.object(m, "import_dataset_in_background")
         j = {
             "group_name": random_lower_string(),
             "version_num": random.randint(100, 200),

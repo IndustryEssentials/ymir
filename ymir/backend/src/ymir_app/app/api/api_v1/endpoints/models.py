@@ -63,6 +63,7 @@ def batch_update_models(
 class SortField(enum.Enum):
     id = "id"
     create_datetime = "create_datetime"
+    update_datetime = "update_datetime"
     map = "map"
     source = "source"
 

@@ -298,6 +298,7 @@ class ControllerRequest:
         request.singleton_op = args["gt_dataset_hash"]
         request.in_dataset_ids[:] = args["other_dataset_hashes"]
         request.evaluate_config.CopyFrom(evaluate_config)
+        return request
 
     def prepare_check_repo(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_REPO_CHECK
@@ -422,6 +423,7 @@ class ControllerClient:
     def call_inference(
         self,
         user_id: int,
+        project_id: int,
         model_hash: Optional[str],
         asset_dir: str,
         docker_image: Optional[str],
@@ -432,6 +434,7 @@ class ControllerClient:
         req = ControllerRequest(
             type=ExtraRequestType.inference,
             user_id=user_id,
+            project_id=project_id,
             args={
                 "model_hash": model_hash,
                 "asset_dir": asset_dir,
