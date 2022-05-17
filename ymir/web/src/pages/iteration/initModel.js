@@ -72,39 +72,38 @@ const InitModel = ({ projects = {}, ...props }) => {
             className={s.form}
             {...formLayout}
             form={form}
+            labelCol={{ span: 6, offset: 2 }}
+            wrapperCol={{ span: 12 }}
             onFinish={submit}
             labelAlign={'left'}
             colon={false}
           >
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={id} />}>
-              <Tip content={t('tip.task.filter.model')}>
-                <Form.Item
-                  label={t('task.mining.form.model.label')}
-                  name="model"
-                  rules={[
-                    { required: true, message: t('task.mining.form.model.required') },
-                  ]}
-                >
-                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={id} />
-                </Form.Item>
-              </Tip>
-            </ConfigProvider>
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit">
-                      {t('common.confirm')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('task.btn.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
+              <Form.Item
+                label={t('task.mining.form.model.label')}
+                name="model"
+                rules={[
+                  { required: true, message: t('task.mining.form.model.required') },
+                ]}
+                tooltip={t('tip.task.filter.model')}
+              >
+                <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={id} />
               </Form.Item>
-            </Tip>
+            </ConfigProvider>
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('common.confirm')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>
