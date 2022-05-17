@@ -355,6 +355,11 @@ class RefuseToProcessMixedOperations(APIError):
     message = "Refuse To Process Mixed Operations"
 
 
+class MissingOperations(APIError):
+    code = error_codes.MISSING_OPERATIONS
+    message = "Missing Operations"
+
+
 class DatasetsNotInSameGroup(APIError):
     code = error_codes.DATASETS_NOT_IN_SAME_GROUP
     message = "Datasets Not in the Same Group"
