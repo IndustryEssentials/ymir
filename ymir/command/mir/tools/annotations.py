@@ -121,6 +121,8 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
                 logging.warning("incomplete line: %s", line)
                 continue
             asset_hash, file_name = line_components[0], line_components[1]
+            if asset_hash not in mir_metadatas.attributes:
+                continue
             main_file_name = os.path.splitext(os.path.basename(file_name))[0]
             assethash_filename_list.append((asset_hash, main_file_name))
 
@@ -131,9 +133,6 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     missing_annotations_counter = 0
     for asset_hash, main_file_name in assethash_filename_list:
         # for each asset, import it's annotations
-        if asset_hash not in mir_metadatas.attributes:
-            continue
-
         annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml') if annotations_dir_path else None
         if not annotation_file or not os.path.isfile(annotation_file):
             missing_annotations_counter += 1
