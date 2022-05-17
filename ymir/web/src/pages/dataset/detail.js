@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { connect } from "dva"
 import { useHistory, useParams, Link } from "umi"
 import { Button, Card, Space } from "antd"
@@ -11,6 +11,8 @@ import Detail from "@/components/dataset/detail"
 import s from "./detail.less"
 import TaskProgress from "@/components/task/progress"
 import Error from "@/components/task/error"
+import Hide from "@/components/common/hide"
+import useRestore from "@/hooks/useRestore"
 
 const taskTypes = ["fusion", "train", "mining", "label", 'inference', 'copy']
 
@@ -18,6 +20,8 @@ function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
   const { id: pid, did: id } = useParams()
   const [dataset, setDataset] = useState({})
+  const hideRef = useRef(null)
+  const restoreAction = useRestore(pid)
 
   useEffect(() => {
     fetchDataset(true)
@@ -33,6 +37,24 @@ function DatasetDetail({ datasetCache, getDataset }) {
 
   async function fetchDataset(force) {
     await getDataset(id, force)
+  }
+
+  const hide = (version) => {
+    if (dataset?.project?.hiddenDatasets?.includes(version.id)) {
+      return message.warn(t('dataset.hide.single.invalid'))
+    }
+    hideRef.current.hide([version])
+  }
+
+  const hideOk = () => {
+    fetchDataset(true)
+  }
+
+  async function restore() {
+    const result = await restoreAction('dataset', [id])
+    if (result) {
+      fetchDataset(true)
+    }
   }
 
   return (
@@ -57,18 +79,32 @@ function DatasetDetail({ datasetCache, getDataset }) {
                 </Link>
               </div>
             ) : null}
-            {!dataset.hidden ? taskTypes.map((type) => (
-              <Button
-                key={type}
-                type="primary"
-                onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
-              >
-                {t(`task.type.${type}`)}
+            {!dataset.hidden ? <>
+              {taskTypes.map((type) => (
+                <Button
+                  key={type}
+                  type="primary"
+                  onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
+                >
+                  {t(`task.type.${type}`)}
+                </Button>
+              ))}
+              <Button type="primary" onClick={() => hide(dataset)}>
+                {t(`common.action.hide`)}
               </Button>
-            )) : null}
+              <Button type="primary" onClick={() => history.push(`/home/project/${pid}/dataset/${dataset.groupId}/compare/${id}`)}>
+                {t(`common.action.compare`)}
+              </Button>
+            </> :
+              <Button type="primary" onClick={restore}>
+                {t("common.action.restore")}
+              </Button>
+            }
+
           </Space>
         </div>
       </Card>
+      <Hide ref={hideRef} ok={hideOk} />
     </div>
   )
 }

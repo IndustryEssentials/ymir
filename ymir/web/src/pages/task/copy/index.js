@@ -121,7 +121,7 @@ const mapDispatchToProps = (dispatch) => {
     getDatasets(pid) {
       return dispatch({
         type: "dataset/queryAllDatasets",
-        payload: pid,
+        payload: { pid, force: true },
       })
     },
     getDataset(id, force) {
