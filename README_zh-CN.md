@@ -224,6 +224,11 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 4. 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
 
+5. 默认初始用户权限为超级管理员，可以通过项目路径下.env文件查看账号密码，部署前可自行设置修改。建议在服务部署完成后，通过用户管理界面修改密码。
+<div align="left">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/first_admin.png" width="600"/>
+  <div>&nbsp;</div>
+
 ## 2.3. 安装配置LabelStudio （可选）
 
 label studio同时也是YMIR所支持的外接标注系统，可以作为备选标注工具安装。
