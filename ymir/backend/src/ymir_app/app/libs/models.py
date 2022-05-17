@@ -13,7 +13,7 @@ from app.api.errors.errors import (
     FieldValidationFailed,
 )
 from app.constants.state import ResultState, TaskType
-from app.utils.files import NGINX_DATA_PATH, save_file
+from app.utils.files import NGINX_DATA_PATH, save_file, FailedToDownload
 from app.utils.ymir_controller import gen_user_hash, gen_repo_hash, ControllerClient
 from app.config import settings
 
@@ -28,7 +28,15 @@ def import_model_in_background(
 ) -> None:
     try:
         _import_model(db, controller_client, model_import, user_id, task_hash)
-    except (ValueError, OSError, FieldValidationFailed, FailedtoImportModel, ModelNotFound, TaskNotFound):
+    except (
+        ValueError,
+        OSError,
+        FieldValidationFailed,
+        FailedtoImportModel,
+        ModelNotFound,
+        TaskNotFound,
+        FailedToDownload,
+    ):
         logger.exception("[import model] failed to import model, set model result_state to error")
         crud.model.update_state(db, model_id=model_id, new_state=ResultState.error)
 
