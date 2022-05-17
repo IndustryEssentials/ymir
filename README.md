@@ -226,6 +226,11 @@ Execute the start command after the modification: `bash ymir.sh start`.
 
 4. After the service successfully started, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
+5. The default initial user is Super Administrator, the username and password are set as follows.
+<div align="left">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/first_admin.png" width="600"/>
+  <div>&nbsp;</div>
+
 ## 2.3. Installation of **Label Studio** (optional)
 
 **Label Sudio** is also an external labeling system supported by YMIR and can be installed as an alternative labeling tool.
