@@ -220,11 +220,8 @@ class TaskResult:
         except (ModelNotReady, ModelNotFound):
             logger.exception("[update task] failed to get model from task")
             return None
-        try:
-            self.save_model_stats(result)
-        except FailedToConnectClickHouse:
-            logger.exception("Failed to write model stats to clickhouse, continue anyway")
-        return result
+        else:
+            return result
 
     @property
     def dataset_info(self) -> DatasetMetaData:
@@ -357,6 +354,10 @@ class TaskResult:
                 config=json.dumps(self.model_info.executor_config),
             )
             crud.model.finish(self.db, result_record.id, result_state=ResultState.ready, result=asdict(self.model_info))
+            try:
+                self.save_model_stats(self.model_info)
+            except FailedToConnectClickHouse:
+                logger.exception("Failed to write model stats to clickhouse, continue anyway")
             return
 
         if task_result.state is TaskState.done:
