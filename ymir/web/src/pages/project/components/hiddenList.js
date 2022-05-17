@@ -12,15 +12,9 @@ import useRestore from "@/hooks/useRestore"
 const HiddenList = ({ module, pid, ...func }) => {
   const [list, setHiddenList] = useState([])
   const [total, setTotal] = useState(0)
-  const [query, setQuery] = useState({})
+  const [query, setQuery] = useState(null)
   const [selected, setSelected] = useState([])
   const restoreAction = useRestore(pid)
-
-  useEffect(() => {
-    if (pid) {
-      fetch()
-    }
-  }, [pid])
 
   useEffect(() => {
     // initial query
@@ -29,7 +23,7 @@ const HiddenList = ({ module, pid, ...func }) => {
   }, [module])
 
   useEffect(() => {
-    fetch()
+    query && fetch()
   }, [query])
 
   const columns = [
@@ -47,6 +41,9 @@ const HiddenList = ({ module, pid, ...func }) => {
     {
       title: showTitle("dataset.column.hidden_time"),
       dataIndex: "updateTime",
+      sorter: true,
+      sortDirections: [false, 'descend', 'ascend'],
+      defaultSortOrder: 'descend',
     },
     {
       title: showTitle("dataset.column.action"),
@@ -90,13 +87,17 @@ const HiddenList = ({ module, pid, ...func }) => {
     return <strong>{t(str)}</strong>
   }
 
-  function pageChange({ current, pageSize }) {
+  function pageChange({ current, pageSize }, filters, sorters) {
+    const is_desc = sorters.order !== 'ascend'
+    const sortColumn = sorters.field === 'updateTime' ? 'update_datetime' : undefined
     const limit = pageSize
     const offset = (current - 1) * pageSize
     setQuery(old => ({
       ...old,
       limit,
       offset,
+      order_by: sorters.column ? sortColumn : 'id',
+      is_desc
     }))
   }
 
@@ -118,7 +119,7 @@ const HiddenList = ({ module, pid, ...func }) => {
           showQuickJumper: true,
           showSizeChanger: true,
           defaultCurrent: 1,
-          defaultPageSize: query.offset || 10,
+          defaultPageSize: query?.offset || 10,
         }}
         onChange={pageChange}
         rowKey={(record) => record.id}
