@@ -64,6 +64,9 @@ const HiddenList = ({ module, pid, ...func }) => {
     const result = await func.getHiddenList(module, pid, query)
     if (result) {
       const { items, total } = result
+      if (query.offset && total <= query.offset) {
+        return setQuery(old => ({ ...old, offset: query.offset - query.limit }))
+      }
       setHiddenList(items)
       setTotal(total)
     }
