@@ -72,7 +72,7 @@ const dataset = {
   "dataset.add.newkw.ignore": { cn: "忽略此标签", en: "Ignore", },
   "dataset.add.form.newkw.link": { cn: "前往标签列表添加>>", en: "Go to the keyword list to add>>", },
   "dataset.add.form.newkw.tip": {
-    cn: "当导入模型的标签内容不属于当前的用户标签列表时，选择导入策略。",
+    cn: "当导入模型的标签内容不在当前的用户标签列表时，选择导入策略。",
     en: "Select an import policy when the tag of the imported dataset does not belong to the current list of user tags.",
   },
   "dataset.add.label_strategy.include": { cn: "包含标注信息", en: "Contains Annotations", },
