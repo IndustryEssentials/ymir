@@ -38,11 +38,13 @@ export function queryModels({
   type,
   state,
   name,
+  order_by,
+  is_desc,
   visible = true,
   offset = 0,
   limit = 10,
 }) {
-  return request.get("models/", { params: { project_id, type, state, name, visible, offset, limit } })
+  return request.get("models/", { params: { project_id, type, state, name, visible, order_by, is_desc, offset, limit } })
 }
 
 /**
