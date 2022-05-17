@@ -32,7 +32,7 @@ function Compare({ ...func }) {
   const [apRender, setSelectedKeyword] = useDynamicRender()
 
   const filterDatasets = useCallback((dss) => {
-    return filterSameAssets(innerGroup(dss)).filter(ds => ds.id !== gt.id)
+    return filterSameAssets(innerGroup(dss)).filter(ds => ds.id !== gt?.id)
   }, [gt])
 
   const filterGT = useCallback((dss) => {
@@ -69,8 +69,8 @@ function Compare({ ...func }) {
     setDatasets(options.map(option => option.dataset))
   }
 
-  function gtChange(value, option) {
-    setGT(option.dataset)
+  function gtChange(value, option = {}) {
+    setGT(option?.dataset)
   }
 
   function innerGroup(datasets) {
@@ -145,6 +145,15 @@ function Compare({ ...func }) {
     },
   ]
 
+  function renderTitle() {
+    return (
+      <Row>
+        <Col flex={1}>{t('breadcrumbs.dataset.compare')}</Col>
+        <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
+      </Row>
+    )
+  }
+
   const initialValues = {
     datasets: did,
     confidence,
@@ -152,7 +161,7 @@ function Compare({ ...func }) {
   return (
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
-      <Card className={commonStyles.container} title={t('breadcrumbs.dataset.compare')}>
+      <Card className={commonStyles.container} title={renderTitle()}>
         <Row gutter={20}>
           <Col span={18} style={{ border: '1px solid #ccc' }}>
             <Space className={s.info} size={20}>
@@ -196,7 +205,7 @@ function Compare({ ...func }) {
                     { required: true }
                   ]}
                 >
-                  <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetsChange} />
+                  <DatasetSelect pid={pid} mode='multiple' filterOption={false} filters={filterDatasets} onChange={datasetsChange} />
                 </Form.Item>
                 <Form.Item
                   label={t('dataset.compare.form.gt')}
@@ -208,7 +217,7 @@ function Compare({ ...func }) {
                   <DatasetSelect pid={pid} filters={filterGT} onChange={gtChange} />
                 </Form.Item>
                 <Form.Item label={t('dataset.compare.form.confidence')} name='confidence'>
-                  <Slider min={0} max={1} step={0.1} value={confidence} tooltipVisible marks={{ 0: '0', 0.5: '0.5', 1: '1' }} onChange={setConfidence} />
+                  <Slider min={0} max={0.9} step={0.1} value={confidence} tooltipVisible marks={{ 0: '0', 0.5: '0.5', 0.9: '0.9' }} onChange={setConfidence} />
                 </Form.Item>
                 <Form.Item name='submitBtn'>
                   <div style={{ textAlign: 'center' }}>
