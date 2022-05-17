@@ -390,7 +390,7 @@ const dis = (dispatch) => {
         type: "common/getSysInfo",
       })
     },
-    getDatasets(pid, force) {
+    getDatasets(pid, force = true) {
       return dispatch({
         type: "dataset/queryAllDatasets",
         payload: { pid, force },

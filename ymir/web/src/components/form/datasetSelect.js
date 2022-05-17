@@ -42,7 +42,6 @@ const DatasetSelect = ({ pid, filter = [], filterGroup = [], filters, value, dat
     <Select
       value={value}
       placeholder={t('task.train.form.training.datasets.placeholder')}
-      filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
       onChange={onChange}
       showArrow
       allowClear
