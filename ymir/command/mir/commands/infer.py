@@ -260,7 +260,6 @@ def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str
         names_annotations_dict = results['detection']
         for _, annotations_dict in names_annotations_dict.items():
             if 'annotations' in annotations_dict and isinstance(annotations_dict['annotations'], list):
-                # annotations_dict['annotations'].sort(key=(lambda x: x['score']), reverse=True)
                 annotations_list: List[dict] = annotations_dict['annotations']
                 annotations_list.sort(key=(lambda x: x['score']), reverse=True)
                 annotations_list = [a for a in annotations_list if class_id_mgr.has_name(a['class_name'])]
