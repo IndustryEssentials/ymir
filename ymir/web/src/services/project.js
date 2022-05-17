@@ -115,5 +115,5 @@ export function updateProject(id, {
  * @returns 
  */
 export function checkStatus(pid) {
-  return request.post(`/projects/${pid}/status`)
+  return request.get(`/projects/${pid}/status`)
 }

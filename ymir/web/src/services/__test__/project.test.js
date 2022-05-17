@@ -59,7 +59,7 @@ describe("service: projects", () => {
   it("checkStatus -> success", () => {
     const pid = 2532432
     const expected = "ok"
-    requestExample(checkStatus, pid, expected, 'post')
+    requestExample(checkStatus, pid, expected)
   })
   it("addExampleProject -> success", () => {
     const project = {
