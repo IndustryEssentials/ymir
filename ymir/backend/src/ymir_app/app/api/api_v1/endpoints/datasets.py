@@ -81,6 +81,7 @@ def batch_update_datasets(
 class SortField(enum.Enum):
     id = "id"
     create_datetime = "create_datetime"
+    update_datetime = "update_datetime"
     asset_count = "asset_count"
     source = "source"
 
