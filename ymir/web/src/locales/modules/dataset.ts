@@ -72,14 +72,14 @@ const dataset = {
   "dataset.add.newkw.ignore": { cn: "忽略此标签", en: "Ignore", },
   "dataset.add.form.newkw.link": { cn: "前往标签列表添加>>", en: "Go to the keyword list to add>>", },
   "dataset.add.form.newkw.tip": {
-    cn: "当导入数据集中包含的标签不属于当前标签列表时，选择标签合并策略",
-    en: "Select a keyword merge policy when the imported dataset contains keyword that do not belong to the current keyword list",
+    cn: "当导入模型的标签内容不在当前的用户标签列表时，选择导入策略。",
+    en: "Select an import policy when the tag of the imported dataset does not belong to the current list of user tags.",
   },
   "dataset.add.label_strategy.include": { cn: "包含标注信息", en: "Contains Annotations", },
   "dataset.add.label_strategy.exclude": { cn: "不包含标注信息", en: "No Annotations", },
   "dataset.add.label_strategy.ignore": { cn: "忽略新标签和对应标注", en: "Ignore unknown keywords and annotations", },
   "dataset.add.label_strategy.add": { cn: "添加到标签列表", en: "Add Keywords to your Keywords List", },
-  "dataset.add.label_strategy.stop": { cn: "终止操作", en: "Terminate Action", },
+  "dataset.add.label_strategy.stop": { cn: "终止数据集导入", en: "Terminate dataset import", },
   "dataset.add.form.internal.label": { cn: "数据集", en: "Dataset", },
   "dataset.add.form.internal.required": { cn: "请选择公共数据集", en: "Please select public dataset", },
   "dataset.add.form.internal.placeholder": { cn: "请选择一个公共数据集", en: "Select A Public Dataset", },
@@ -95,12 +95,12 @@ const dataset = {
   "dataset.add.form.upload.tip": {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
-      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，标注文件格式为pascal。{br}
+      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为Pascal VOC。{br}
       4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}{br}
       5. 压缩包内文件结构如下：{br}{pic}`,
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
-      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml){br}
+      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, images with unmatched format can not be imported, annotations format supported pascal(*.xml){br}
       4. Sample: {sample}{br}
       5. zip structure: {br}{pic}`
   },

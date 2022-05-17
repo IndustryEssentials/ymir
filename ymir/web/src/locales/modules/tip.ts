@@ -52,8 +52,8 @@ const tip = {
     en: "Hyperparameter tips: the operation parameters to be entered in the training docker, the default value is the best recommended configuration",
   },
   "tip.task.filter.model": {
-    cn: "挖掘出来的数据一般用于该模型的效果优化",
-    en: "The mined dataset is generally used for the optimization of the selected model",
+    cn: "初始模型用于第一轮迭代时的数据挖掘，可以通过导入或者训练添加。",
+    en: "The initial model is used for data mining during the first iteration and can be added by importing or training.",
   },
   "tip.task.filter.strategy": {
     cn: "用户自定义挖掘结果数据集的大小，即希望保留TopK个最有利于模型优化的数据。在选择多个数据集时，由于可能存在重复数据，合并后的结果小于所选数据集之和，当用户自定义TopK值大于合并后的数据集大小时，则返回全部数据。",
@@ -108,12 +108,12 @@ const tip = {
     en: 'Classes annotations required, training data will update in every iterations',
   },
   "project.add.testset.tip": {
-    cn: '每次训练模型时，系统默认的测试集，需要包含目标标注',
-    en: 'Classes Annotations required for testing dataset used to train model.',
+    cn: '用于指导训练集进行训练和测试，可获得更客观的模型效果评估结果，该数据集需要有标注。',
+    en: 'It is used to guide the training set for training and testing, which can obtain more objective results for model effect evaluation. This dataset needs to be annotated.',
   },
   "project.add.miningset.tip": {
-    cn: '在该数据集上进行数据寻找，找到的数据一般标注后被用于模型效果提升，不需要包含目标标注',
-    en: 'Annotations is not required in mining dataset, for optimization of model by mining and labelling data',
+    cn: '一般情况下无标注且数据量大，通过数据挖掘在该数据集下找到更贴合目标业务场景的数据。',
+    en: 'Generally unlabeled and with a large amount of data, data mining is used to find data that better fits the target business scenario under that data set.',
   },
 
 }

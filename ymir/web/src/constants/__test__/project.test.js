@@ -116,9 +116,6 @@ describe("constants: project", () => {
       description: 'project002 desc',
       type: 1,
       isExample: false,
-      targetMap: 88,
-      targetDataset: null,
-      targetIteration: 0,
       updateTime: format(createTime)
     }
     expect(transferProject(origin)).toEqual(expected)

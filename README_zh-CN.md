@@ -33,8 +33,9 @@
 
 [📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
 [🛠️安装教程](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
+[👀推荐配置](https://c1n.cn/obvHf) |
 [🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose)| 
+[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
 [📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
   
 </div>&nbsp;</div>
@@ -43,7 +44,7 @@
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
   
-  📫反馈邮箱： contact.viesc@gmail.com
+  📫 使用问题反馈：contact.viesc@gmail.com / 服务器级设备专业咨询：tensor.station@gmail.com
   
 <div>&nbsp;</div>&nbsp;</div>
 
@@ -222,6 +223,11 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 修改完成后再执行启动命令：`bash ymir.sh start`。
 
 4. 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
+
+5. 默认初始用户权限为超级管理员，可以通过项目路径下.env文件查看账号密码，部署前可自行设置修改。建议在服务部署完成后，通过用户管理界面修改密码。
+<div align="left">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/first_admin.png" width="600"/>
+  <div>&nbsp;</div>
 
 ## 2.3. 安装配置LabelStudio （可选）
 

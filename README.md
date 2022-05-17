@@ -33,8 +33,9 @@
   
 [📘Usage Instruction](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
 [🛠️Installation](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
+[👀Equipment](https://c1n.cn/obvHf) |
 [🚀Projects](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose)| 
+[🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
 [📰Lisence](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
   
 </div>&nbsp;</div>
@@ -43,7 +44,7 @@
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
   
-  📫Contact us： contact.viesc@gmail.com
+  📫 Feedback on usage issues: contact.viesc@gmail.com / Professional consulting for server equipment: tensor.station@gmail.com
 <div>&nbsp;</div>&nbsp;</div>
 
 # Citations
@@ -224,6 +225,11 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 Execute the start command after the modification: `bash ymir.sh start`.
 
 4. After the service successfully started, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
+
+5. The default initial user is super administrator, you can check account and password through the .env file under the project path and modify it before deployment. It is recommended to change the password through the user management interface after the service deployment is completed.
+<div align="left">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/first_admin.png" width="600"/>
+  <div>&nbsp;</div>
 
 ## 2.3. Installation of **Label Studio** (optional)
 

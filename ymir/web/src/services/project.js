@@ -47,18 +47,12 @@ export function delProject(id) {
 export function createProject({
   name,
   description,
-  targetIteration,
-  targetMap,
-  targetDataset,
   keywords,
 }) {
   return request.post("/projects/", {
     name,
     description,
     training_type: 1,
-    iteration_target: targetIteration,
-    map_target: targetMap,
-    training_dataset_count_target: targetDataset,
     training_keywords: keywords,
   })
 }
@@ -77,9 +71,6 @@ export function addExampleProject() {
  * @param {object} params 
  * {
  * {string} name
- * {number} targetIteration
- * {number} targetMap
- * {number} targetDataset
  * {number} strategy
  * {number} chunkSize
  * {string} description
@@ -92,10 +83,7 @@ export function addExampleProject() {
  */
 export function updateProject(id, {
   name,
-  targetIteration,
   keywords,
-  targetMap,
-  targetDataset,
   strategy,
   chunkSize,
   description,
@@ -110,9 +98,6 @@ export function updateProject(id, {
     data: {
       name,
       training_keywords: keywords,
-      iteration_target: targetIteration,
-      map_target: targetMap,
-      training_dataset_count_target: targetDataset,
       mining_strategy: strategy,
       chunk_size: chunkSize,
       mining_dataset_id: miningSet,
@@ -130,5 +115,5 @@ export function updateProject(id, {
  * @returns 
  */
 export function checkStatus(pid) {
-  return request.post(`/projects/${pid}/status`)
+  return request.get(`/projects/${pid}/status`)
 }

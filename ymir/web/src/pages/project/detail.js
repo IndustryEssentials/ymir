@@ -98,12 +98,9 @@ function ProjectDetail(func) {
                 {t('project.detail.info.iteration', {
                   stageLabel: <span className={s.orange}>{t(getStageLabel(project.currentStage, project.round))}</span>,
                   current: <span className={s.orange}>{project.round}</span>,
-                  target: <span className={s.orange}>{project.targetIteration}</span>
                 })}
               </span>
               <span>{t('project.train_classes')}: <span className={s.black}>{project?.keywords?.join(',')}</span></span>
-              {project.targetMap ? <span>{t('project.target.map')}: <span className={s.target}>{project.targetMap}%</span></span> : null}
-              {project.targetDataset ? <span>{t('project.target.dataset')}: <span className={s.target}>{project.targetDataset}</span></span> : null}
               {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
             </Space>
           </Col>

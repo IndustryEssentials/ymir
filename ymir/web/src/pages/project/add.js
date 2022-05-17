@@ -57,14 +57,11 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
   }, [project])
 
   function initForm(project = {}) {
-    const { name, keywords: kws, targetMap, targetDataset, targetIteration, trainSetVersion,
+    const { name, keywords: kws, trainSetVersion,
       description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
     if (name) {
       form.setFieldsValue({
         name, keywords: kws, description,
-        targetMap,
-        targetIteration,
-        targetDataset,
         trainSetVersion,
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
@@ -151,9 +148,8 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       <Breadcrumbs />
       <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 6, offset: 2 }} labelAlign='left' onFinish={submit} scrollToFirstError>
+          <Form form={form} labelCol={{ span: 6, offset: 2 }} wrapperCol={{ span: 12 }} labelAlign='left' onFinish={submit} scrollToFirstError>
             {!settings ? <Panel hasHeader={false}>
-              <Tip hidden={true}>
                 <Form.Item
                   label={t('project.add.form.name')}
                   name='name'
@@ -164,8 +160,6 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 >
                   <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
                 </Form.Item>
-              </Tip>
-              <Tip hidden={true}>
                 <Form.Item
                   label={t('project.add.form.type')}
                   name='type'
@@ -175,15 +169,14 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     <Radio value={0}>{t('task.train.form.traintypes.detect')}</Radio>
                   </Radio.Group>
                 </Form.Item>
-              </Tip>
-              <Tip hidden={true}>
                 <Form.Item
-                  label={t('project.add.form.keyword.label')}
+                  label={t('project.train_classes')}
                   name="keywords"
                   rules={[
                     { required: true, message: t('project.add.form.keyword.required') },
                     { validator: validateKeywords },
                   ]}
+                  tooltip={t('project.add.form.keyword.tip')}
                 >
                   <Select mode="tags" showArrow tokenSeparators={[',']}
                     placeholder={t('project.add.form.keyword.placeholder')}
@@ -198,23 +191,6 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     ))}
                   </Select>
                 </Form.Item>
-              </Tip>
-              <Tip hidden={true}>
-                <Form.Item label={t('project.add.form.target')}>
-                  <div className={s.targetPanel}>
-                    <Form.Item labelCol={{ span: 5 }} colon={false} labelAlign='left' label={t('project.add.form.target.map')} name='targetMap'>
-                      <InputNumber min={0} max={100} step={1} precision={2} formatter={value => `${value}%`} parser={value => value.replace('%', '')} style={{ width: '100%' }} placeholder={t('project.add.form.target.map.placeholder')} />
-                    </Form.Item>
-                    <Form.Item labelCol={{ span: 5 }} colon={false} labelAlign='left' label={t('project.add.form.target.iterations')} name='targetIteration'>
-                      <InputNumber min={1} step={1} precision={0} max={100} placeholder={t('project.add.form.target.iterations.placeholder')} style={{ width: '100%' }} />
-                    </Form.Item>
-                    <Form.Item labelCol={{ span: 5 }} colon={false} labelAlign='left' label={t('project.add.form.target.dataset')} name='targetDataset'>
-                      <InputNumber min={1} step={1} precision={0} max={100000000} placeholder={t('project.add.form.target.dataset.placeholder')} style={{ width: '100%' }} />
-                    </Form.Item>
-                  </div>
-                </Form.Item>
-              </Tip>
-              <Tip hidden={true}>
                 <Form.Item label={t('project.add.form.desc')} name='description'
                   rules={[
                     { max: 500 },
@@ -222,12 +198,10 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                 >
                   <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
                 </Form.Item>
-              </Tip>
             </Panel> : null}
             {isEdit ? <Panel label={t('project.iteration.settings.title')} visible={settingsVisible} setVisible={() => setSettingsVisible(!settingsVisible)}>
               <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
-                <Tip content={t('project.add.trainset.tip')}>
-                  <Form.Item label={t('project.add.form.training.set')}>
+                  <Form.Item label={t('project.add.form.training.set')} tooltip={t('project.add.trainset.tip')}>
                     {project.trainSet?.name}
                     <Form.Item noStyle name='trainSetVersion'>
                       <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
@@ -237,11 +211,9 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                       </Select>
                     </Form.Item>
                   </Form.Item>
-                </Tip>
-                <Tip content={t('project.add.testset.tip')}>
                   <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
                     { required: true, message: t('task.train.form.testset.required') },
-                  ]}>
+                  ]} tooltip={t('project.add.testset.tip')}>
                     <DatasetSelect
                       pid={id}
                       filter={[miningSet]}
@@ -251,12 +223,10 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                       allowClear
                     />
                   </Form.Item>
-                </Tip>
-                <Tip content={t('project.add.miningset.tip')}>
                   <Form.Item label={t('project.add.form.mining.set')} name="miningSet"
                     rules={[
                       { required: true, message: t('task.train.form.miningset.required') },
-                    ]}>
+                    ]} tooltip={t('project.add.miningset.tip')}>
                     <DatasetSelect
                       pid={id}
                       filter={[testSet]}
@@ -265,8 +235,6 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                       allowClear
                     />
                   </Form.Item>
-                </Tip>
-                <Tip hidden={true}>
                   <Form.Item label={t('project.add.form.mining.strategy')}>
                     <Row wrap={false}>
                       <Col flex={1}>
@@ -285,10 +253,8 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                       </Col> : null}
                     </Row>
                   </Form.Item>
-                </Tip>
               </ConfigProvider>
             </Panel> : null}
-            <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
@@ -303,7 +269,6 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   </Form.Item>
                 </Space>
               </Form.Item>
-            </Tip>
           </Form>
         </div>
       </Card>
