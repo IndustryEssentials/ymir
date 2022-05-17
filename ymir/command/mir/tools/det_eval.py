@@ -495,7 +495,7 @@ class MirDetEval:
             precisions = precisions[:, :, class_id_index, area_ranges_index, max_dets_index]
         else:
             precisions = precisions[:, :, :, area_ranges_index, max_dets_index]
-        precisions = precisions[precisions > -1]
+        precisions[precisions <= -1] = 0
         topic_evaluation.ap = np.mean(precisions) if len(precisions) > 0 else -1
 
         # average recall
@@ -507,7 +507,7 @@ class MirDetEval:
             recalls = recalls[:, class_id_index, area_ranges_index, max_dets_index]
         else:
             recalls = recalls[:, :, area_ranges_index, max_dets_index]
-        recalls = recalls[recalls > -1]
+        recalls[recalls <= -1] = 0
         topic_evaluation.ar = np.mean(recalls) if len(recalls) > 0 else -1
 
         # true positive
