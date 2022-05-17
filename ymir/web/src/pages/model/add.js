@@ -44,6 +44,7 @@ const Add = ({ importModel }) => {
     const params = {
       ...values,
       projectId: pid,
+      url: (values.url || '').trim(),
     }
     if (isType(TYPES.LOCAL)) {
       if (path) {
