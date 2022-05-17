@@ -25,7 +25,7 @@ COPY ./backend/requirements.txt ./
 RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
 
 COPY ./command /command
-RUN pip3 install -U /command
+RUN pip3 install -U /command -i ${PIP_SOURCE}
 
 COPY ./backend/src /app
 WORKDIR /app
