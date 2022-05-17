@@ -31,9 +31,6 @@ def terminate_tasks() -> None:
         logger.error("No initial user yet, quit")
         return
     for task in list_unfinished_tasks(db):
-        if not (task.hash and task.type):
-            # make mypy happy
-            continue
         if task.type in settings.TASK_TYPES_WHITELIST:
             # do not terminate task having whitelist type
             continue
