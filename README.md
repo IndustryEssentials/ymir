@@ -226,7 +226,7 @@ Execute the start command after the modification: `bash ymir.sh start`.
 
 4. After the service successfully started, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
 
-5. The default initial user is Super Administrator, the username and password are set as follows.
+5. The default initial user is super administrator, you can check account and password through the .env file under the project path and modify it before deployment. It is recommended to change the password through the user management interface after the service deployment is completed.
 <div align="left">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/first_admin.png" width="600"/>
   <div>&nbsp;</div>
