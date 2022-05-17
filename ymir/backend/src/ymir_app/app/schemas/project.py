@@ -62,6 +62,15 @@ class ProjectUpdate(BaseModel):
         use_enum_values = True
         validate_all = True
 
+    @validator("training_keywords")
+    def pack_keywords(cls, v: Optional[List[str]]) -> Optional[str]:
+        """
+        serialize training keywords for db
+        """
+        if v is not None:
+            return json.dumps(v)
+        return v
+
 
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
     training_dataset_group_id: Optional[int]
