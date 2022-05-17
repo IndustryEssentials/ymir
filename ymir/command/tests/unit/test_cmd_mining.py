@@ -196,6 +196,7 @@ class TestMiningCmd(unittest.TestCase):
         mining_instance.run()
 
         mock_run.assert_called_once_with(work_dir=args.work_dir,
+                                         mir_root=args.mir_root,
                                          media_path=os.path.join(args.work_dir, 'in', 'assets'),
                                          model_location=args.model_location,
                                          model_hash=args.model_hash,

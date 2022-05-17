@@ -18,6 +18,7 @@ class TestCmdInfer(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName=methodName)
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
+        self._mir_repo_root = os.path.join(self._test_root, 'mir-demo-repo')
         self._models_location = os.path.join(self._test_root, 'models')
         self._src_assets_root = os.path.join(self._test_root, 'assets')  # source assets, index and infer config file
         self._working_root = os.path.join(self._test_root, 'work')  # work directory for cmd infer
@@ -26,6 +27,7 @@ class TestCmdInfer(unittest.TestCase):
 
     def setUp(self) -> None:
         self._prepare_dir()
+        self._prepare_mir_root()
         self._prepare_assets()
         self._prepare_model()
         self._prepare_config_file()
@@ -46,6 +48,10 @@ class TestCmdInfer(unittest.TestCase):
 
     def _deprepare_dir(self):
         shutil.rmtree(self._test_root)
+
+    def _prepare_mir_root(self):
+        test_utils.mir_repo_init(self._mir_repo_root)
+        test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['person', 'cat'])
 
     def _prepare_assets(self):
         test_assets_root = TestCmdInfer._test_assets_root()
@@ -131,6 +137,7 @@ class TestCmdInfer(unittest.TestCase):
     def test_00(self, mock_run):
         fake_args = type('', (), {})()
         fake_args.work_dir = self._working_root
+        fake_args.mir_root = self._mir_repo_root
         fake_args.model_location = self._models_location
         fake_args.model_hash = 'fake_model_hash'
         fake_args.index_file = self._assets_index_file
