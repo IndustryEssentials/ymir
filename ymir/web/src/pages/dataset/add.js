@@ -15,6 +15,7 @@ import { getKeywords } from '../../services/keyword'
 import Tip from "@/components/form/tip"
 import ProjectDatasetSelect from '../../components/form/projectDatasetSelect'
 import useAddKeywords from '@/hooks/useAddKeywords'
+import samplePic from '@/assets/sample.png'
 
 const { Option } = Select
 const { useForm } = Form
@@ -362,7 +363,11 @@ const Add = (props) => {
                     onChange={(files, result) => { setFileToken(result) }}
                     max={1024}
                     onRemove={() => setFileToken('')}
-                    info={t('dataset.add.form.upload.tip', { br: <br />, sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a> })}
+                    info={t('dataset.add.form.upload.tip', { 
+                      br: <br />, 
+                      sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a>,
+                      pic: <img src={samplePic} />
+                    })}
                   ></Uploader>
                 </Form.Item>
               </Tip>

@@ -96,11 +96,13 @@ const dataset = {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
       3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，标注文件格式为pascal。{br}
-      4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}`,
+      4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}{br}
+      5. 压缩包内文件结构如下：{br}{pic}`,
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
-      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml)
-      4. Sample: {sample}`
+      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, annotations format supported pascal(*.xml){br}
+      4. Sample: {sample}{br}
+      5. zip structure: {br}{pic}`
   },
   "dataset.copy.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "dataset.copy.form.desc.label": { cn: '备注', en: 'Description', },

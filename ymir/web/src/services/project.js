@@ -109,7 +109,7 @@ export function updateProject(id, {
     url: `/projects/${id}`,
     data: {
       name,
-      keywords,
+      training_keywords: keywords,
       iteration_target: targetIteration,
       map_target: targetMap,
       training_dataset_count_target: targetDataset,
