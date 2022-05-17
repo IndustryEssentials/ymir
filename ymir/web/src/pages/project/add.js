@@ -85,8 +85,8 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       params.id = id
     }
     if (!settings) {
-      params.name = name.trim()
-      params.description = description.trim()
+      params.name = (name || '').trim()
+      params.description = (description || '').trim()
     }
 
     const send = async () => {

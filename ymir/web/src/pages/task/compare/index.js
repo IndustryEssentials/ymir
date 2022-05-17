@@ -14,6 +14,7 @@ import DatasetSelect from "@/components/form/datasetSelect"
 import { CompareIcon } from "@/components/common/icons"
 import useDynamicRender from "@/hooks/useDynamicRender"
 import KeywordSelect from "./components/keywordSelect"
+import useBatchModels from "../../../hooks/useBatchModels"
 
 function Compare({ ...func }) {
   const history = useHistory()
@@ -30,6 +31,7 @@ function Compare({ ...func }) {
   const [tableSource, setTableSource] = useState([])
   const [form] = Form.useForm()
   const [apRender, setSelectedKeyword] = useDynamicRender()
+  const [models, getModels] = useBatchModels()
 
   const filterDatasets = useCallback((dss) => {
     return filterSameAssets(innerGroup(dss)).filter(ds => ds.id !== gt?.id)
@@ -58,6 +60,7 @@ function Compare({ ...func }) {
       setSource(result)
       const list = gt.keywords || []
       setKeywords(list)
+      fetchModels()
     }
   }
 
@@ -90,8 +93,7 @@ function Compare({ ...func }) {
     const getInfo = (dataset) => ({
       id: dataset.id,
       name: `${dataset.name} ${dataset.versionName}`,
-      model: dataset.task?.parameters?.model_name,
-      modelId: dataset.task?.parameters?.model_id,
+      model: dataset.task?.parameters?.model_id,
     })
     return source ? [getInfo(gt), ...datasets.map((dataset, index) => {
       const datasetSource = source[dataset.id] || {}
@@ -110,6 +112,18 @@ function Compare({ ...func }) {
     setSource(null)
   }
 
+  function getModelsName(id) {
+    const model  = models.find(md => md.id === id)
+    return model ? `${model.name} ${model.versionName}` : null
+  }
+
+  function fetchModels () {
+    if (datasets.length) {
+      const ids = datasets.map(({ task: { parameters: { model_id } } }) => model_id).filter(item => item)
+      getModels(ids)
+    }
+  }
+
   const columns = [
     {
       title: t("dataset.column.name"),
@@ -125,7 +139,7 @@ function Compare({ ...func }) {
     {
       title: t("dataset.column.model"),
       dataIndex: "model",
-      render: (name, { modelId }) => <Link to={`/home/project/${pid}/model/${modelId}`}>{name}</Link>,
+      render: id => <Link to={`/home/project/${pid}/model/${id}`}>{getModelsName(id)}</Link>,
       ellipsis: {
         showTitle: true,
       },

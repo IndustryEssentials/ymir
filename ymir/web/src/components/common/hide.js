@@ -21,10 +21,14 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
     const excludeLabels = getLabels(versions.filter(vs => exclude.includes(vs.id)))
     const ids = hideVersions.map(({ id }) => id)
     const pid = versions[0].projectId
+    const emsg = <div style={{ color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</div>
+    if (!hideVersions?.length) {
+      return message.error(emsg)
+    }
     confirm({
       content: <div>
         <p>{t(msg, { name: labels })} </p>
-        {excludeLabels.length ? <div style={{ color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</div> : null}
+        {excludeLabels.length ? emsg : null}
       </div>,
       onOk: async () => {
         const result = await func.hide(!type ? 'dataset' : 'model', pid, ids)

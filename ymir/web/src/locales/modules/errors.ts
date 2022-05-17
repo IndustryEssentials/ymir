@@ -57,6 +57,7 @@ const errors = {
   'error111402': { cn: '项目名称重复', en: 'Duplicated project name', },
   'error111502': { cn: '数据集名称重复', en: 'Duplicated dataset name', },
   'error111901': { cn: '隐藏和取消隐藏不能同时处理', en: 'Hide and Unhide cannot handle in same request', },
+  'error111904': { cn: '操作的数量为空', en: 'Operations is missing', },
   'error110406': { cn: '不在同一个数据集的版本不能进行比对', en: 'Versions must be in the same datasets', },
   'error111902': { cn: '调用CMD进行数据集比对失败', en: 'Evaluate error from CMD', },
   'error111903': { cn: '完成数据集比对，但找不到相应的结果', en: 'Evaluate done, but can not find result', },
