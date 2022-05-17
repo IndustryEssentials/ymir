@@ -81,8 +81,8 @@ const project = {
   'project.mining.strategy.1.label': { en: 'Exclude Mining Result Dataset', cn: '排除已挖掘的数据集', },
   'project.mining.strategy.2.label': { en: 'Exclude Mining Result Dataset', cn: '排除已挖掘的数据集', },
   'project.detail.info.iteration': {
-    en: 'you are on stage {stageLabel}, iterations: {current} / {target}',
-    cn: '您当前处于项目迭代的{stageLabel}, {current} / {target}次迭代',
+    en: 'you are on stage {stageLabel}, iterations: {current}',
+    cn: '您当前处于项目迭代的{stageLabel}, 第 {current} 次迭代',
   },
   'project.iteration.initmodel': { en: 'Initial Model Setting', cn: '初始模型设置', },
   'iteration.round.label': { en: 'Round {round}', cn: '第 {round} 次', },

@@ -16,10 +16,6 @@ export const Lists = ({ projects = [], more = '' }) => {
             <span className='titleContent'>{item.keywords.join(',')}</span>
           </span>
           <span className='titleItem'>
-            <span className='titleLabel'>{t('project.target.map')}:</span>
-            <span className='titleContent'>{item?.targetMap}%</span>
-          </span>
-          <span className='titleItem'>
             <span className='titleLabel'>{t('project.iteration.current')}:</span>
             <span className='titleContent emphasis'>{t(getStageLabel(item.currentStage, item.round))}</span>
           </span>
@@ -57,7 +53,7 @@ export const Lists = ({ projects = [], more = '' }) => {
     
         <Col span={5} className={s.stats}>
           <div className='contentLabel'>{t('project.iteration.number')}</div>
-          <div className='contentContent'><span className='currentIteration'>{item.round}</span>/{item?.targetIteration}</div>
+          <div className='contentContent'><span className='currentIteration'>{item.round}</span></div>
         </Col>
       </Row>
       <Row>

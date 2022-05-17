@@ -157,11 +157,8 @@ function Iterations({ ...func }) {
             {t('project.detail.info.iteration', {
               stageLabel: <span className={s.orange}>{t(getStageLabel(project.currentStage, project.round))}</span>,
               current: <span className={s.orange}>{project.round}</span>,
-              target: <span className={s.orange}>{project.targetIteration}</span>
             })}
           </span>
-          {project.targetMap ? <span>{t('project.target.map')}: {project.targetMap}%</span> : null}
-          {project.targetDataset ? <span>{t('project.target.dataset')}: {project.targetDataset}</span> : null}
           {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
         </Space>
         <div className={s.table}>
