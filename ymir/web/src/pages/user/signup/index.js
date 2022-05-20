@@ -113,6 +113,18 @@ const Signup = ({ signupApi, loginApi, history }) => {
               >
                 <Input allowClear placeholder={t('signup.phone.placeholder')} prefix={<SmartphoneIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
+              <Form.Item
+                label={t("signup.org")}
+                name="organization"
+              >
+                <Input allowClear placeholder={t('signup.org.placeholder')} prefix={<SmartphoneIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+              </Form.Item>
+              <Form.Item
+                label={t("signup.scence")}
+                name="scence"
+              >
+                <Input allowClear placeholder={t('signup.scence.placeholder')} prefix={<SmartphoneIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+              </Form.Item>
 
               <Form.Item
                 label={t("signup.pwd")}
