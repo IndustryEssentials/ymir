@@ -13,6 +13,7 @@ const DatasetSelect = ({
   const [options, setOptions] = useState([])
 
   useEffect(() => {
+    console.log('pid:', pid)
     pid && fetchDatasets()
   }, [pid])
 

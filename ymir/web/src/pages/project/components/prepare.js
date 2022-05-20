@@ -1,34 +1,30 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Row, Col, Form, Button } from "antd"
 import { connect } from "dva"
 
-import { states } from '@/constants/dataset'
+import t from '@/utils/t'
 import useUpdateProject from '@/hooks/useUpdateProject'
-import DatasetSelect from '@/components/form/DatasetSelect'
-import ModelSelect from '@/components/form/ModelSelect'
+import DatasetSelect from '@/components/form/datasetSelect'
+import ModelSelect from '@/components/form/modelSelect'
 
 import s from "./iteration.less"
+import { YesIcon, LoaderIcon } from "../../../components/common/icons"
 
 const SettingsSelection = (Select) => {
-  const Selection = ({ field, callback = () => { }, ...props }) => {
-    const [newProject, updateProject] = useUpdateProject()
-    const onChange = async (value) => {
-      await updateProject({ [field]: value })
-      callback(newProject)
-    }
-
-    return <Select {...props} onChange={onChange} />
+  const Selection = (props) => {
+    return <Select {...props} />
   }
   return Selection
 }
 
-const Stage = ({ project, stage }) => {
+const Stage = ({ pid, value, stage }) => {
   const [valid, setValid] = useState(false)
-  const Selection = SettingsSelection(stage.type ? ModelSelect : DatasetSelect)
+  const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
+  // const [newProject, updateProject] = useUpdateProject(pid)
 
   useEffect(() => {
-    project && setValid(project[stage.field])
-  }, [project])
+    setValid(value)
+  }, [value])
 
   const validNext = () => project.miningSet && project.testSet && project.model
 
@@ -62,39 +58,44 @@ const Stage = ({ project, stage }) => {
     setStages(ss)
   }
   const renderIcon = () => {
-    return valid ? <YesIcon /> : 'wait'
+    return valid ? <YesIcon /> : <LoaderIcon />
   }
   const renderState = () => {
     return valid ? '已完成' : '待选择'
   }
-  return <Col flex={1}>
-    <Row>
+  return <Row wrap={false}>
       <Col flex={'60px'}>
         <div className={s.state}>{renderIcon()}</div>
         <div className={s.state}>{renderState()}</div>
       </Col>
       <Col flex={1}>
-        <Form.Item label={stage.label}></Form.Item>
-        <Selection field={stage.field} callback={stage.callback} />
+        <Form.Item name={stage.field} label={stage.label} tooltip={t(stage.tip)}>
+          <Selection value={value} pid={pid} />
+        </Form.Item>
       </Col>
     </Row>
-  </Col>
 }
 
+const stages = [
+  { field: 'trainSet', option: true, label: '训练集准备', tip: 'project.add.trainset.tip', },
+  { field: 'testSet', label: '测试集准备', tip: 'project.add.testset.tip', },
+  { field: 'miningSet', label: '挖掘集准备', tip: 'project.add.miningset.tip', },
+  { field: 'model', label: '初始模型准备', tip: 'tip.task.filter.model', type: 1 },
+]
 function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const [validPrepare, setValidPrepare] = useState(false)
-
-  const stages = [
-    { field: 'trainSet', },
-    { field: 'testSet', },
-    { field: 'miningSet', },
-    { field: 'model', type: 1 },
-  ]
+  const [id, setId] = useState(null)
 
   useEffect(() => {
-    const valid = stages.reduce((prev, curr) => prev && project[curr[field]], false)
-    setValidPrepare(valid)
+    project.id && setId(project.id)
   }, [project])
+
+  const formChange = (_, values) => {
+    const fields = stages.filter(stage => !stage.option)
+    const valid = fields.every(field => values[field])
+    console.log('form change values:', values, fields, valid)
+    setValidPrepare(valid)
+  }
 
   async function createIteration() {
     const params = {
@@ -111,14 +112,16 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
 
   return (
     <div className={s.iteration}>
-      <Row style={{ justifyContent: 'flex-end' }}>
-        {stages.map((stage, index) => (
-          <Col key={stage.field} flex={1}>
-            <Stage stage={{ ...stage, callback: fresh }} project={project} />
-          </Col>
-        ))}
-      </Row>
-      <div className={s.createBtn}><Button type='primary' disabled={validPrepare} onClick={createIteration}>使用迭代功能提升模型效果</Button></div>
+      <Form layout="vertical" onValuesChange={formChange}>
+        <Row style={{ justifyContent: 'flex-end' }}>
+          {stages.map((stage, index) => (
+            <Col key={stage.field} span={6}>
+              <Stage stage={{ ...stage, callback: fresh }} value={project[stage.field]} pid={id} />
+            </Col>
+          ))}
+        </Row>
+        <div className={s.createBtn}><Button type='primary' disabled={!validPrepare} onClick={createIteration}>使用迭代功能提升模型效果</Button></div>
+      </Form>
     </div>
   )
 }

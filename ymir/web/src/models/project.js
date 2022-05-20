@@ -81,10 +81,10 @@ export default {
       const { id, ...params } = payload
       const { code, result } = yield call(updateProject, id, params)
       if (code === 0) {
-        yield put({
-          type: 'clearCache'
-        })
-        return result
+        // yield put({
+        //   type: 'clearCache'
+        // })
+        return transferProject(result)
       }
     },
     *updateQuery({ payload = {} }, { put, select }) {
