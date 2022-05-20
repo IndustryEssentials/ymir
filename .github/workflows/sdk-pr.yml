@@ -12,7 +12,7 @@ on:
       - 'docker_executor/sample_executor/**'
 
 jobs:
-  ymir-sdk-ci:
+  sdk-ci:
 
     runs-on: ubuntu-latest
 
