@@ -1,7 +1,7 @@
 from enum import IntEnum, auto
 from typing import Iterator, Tuple
 
-from executor import env
+from ymir_sdk import env
 
 
 class DatasetType(IntEnum):

@@ -48,7 +48,7 @@ from enum import IntEnum, auto
 from pydantic import BaseModel
 import yaml
 
-from executor import settings
+from ymir_sdk import settings
 
 
 class DatasetType(IntEnum):

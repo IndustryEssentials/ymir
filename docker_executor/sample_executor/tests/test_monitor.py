@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from executor import env, monitor, settings
+from ymir_sdk import env, monitor, settings
 
 
 class TestMonitor(unittest.TestCase):

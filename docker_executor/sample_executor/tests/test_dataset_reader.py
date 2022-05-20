@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from executor import dataset_reader as dr, env, settings
+from ymir_sdk import dataset_reader as dr, settings
 
 
 class TestDatasetReader(unittest.TestCase):
