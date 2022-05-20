@@ -174,6 +174,7 @@ class CmdTrain(base.BaseCommand):
                       dst_rev: str,
                       config_file: Optional[str],
                       tensorboard_dir: str,
+                      using_openpai: bool,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
         if not model_upload_location:
@@ -342,28 +343,31 @@ class CmdTrain(base.BaseCommand):
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
 
-        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
-        cmd.extend(path_binds)
-        if available_gpu_id:
-            cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
-        cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
-        cmd.append(executor)
-
-        task_code = MirCode.RC_OK
-        return_msg = ''
-        try:
-            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
-        except CalledProcessError as e:
-            logging.warning(f"training exception: {e}")
-            # don't exit, proceed if model exists
-            task_code = MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
-
-            # write executor tail to tensorboard
-            if return_msg:
-                with SummaryWriter(logdir=tensorboard_dir) as tb_writer:
-                    tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
+        if using_openpai:
+            # submit job to OpenPAI
+        else:
+            cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
+            cmd.extend(path_binds)
+            if available_gpu_id:
+                cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
+            cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+            cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
+            cmd.append(executor)
+    
+            task_code = MirCode.RC_OK
+            return_msg = ''
+            try:
+                _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
+            except CalledProcessError as e:
+                logging.warning(f"training exception: {e}")
+                # don't exit, proceed if model exists
+                task_code = MirCode.RC_CMD_CONTAINER_ERROR
+                return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
+    
+                # write executor tail to tensorboard
+                if return_msg:
+                    with SummaryWriter(logdir=tensorboard_dir) as tb_writer:
+                        tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
         # gen task_context
         task_context = {
