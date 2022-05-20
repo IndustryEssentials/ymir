@@ -3,12 +3,15 @@ import logging
 import os
 import time
 import subprocess
+from functools import partial
 from subprocess import CalledProcessError
 import traceback
-from typing import Any, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from tensorboardX import SummaryWriter
 import yaml
+import requests
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -323,7 +326,6 @@ class CmdTrain(base.BaseCommand):
 
         logging.info("starting train docker container")
 
-        available_gpu_id = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
@@ -335,25 +337,9 @@ class CmdTrain(base.BaseCommand):
         mir_utils.generate_training_env_config_file(task_id=task_id,
                                                     env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
-        # start train docker and wait
-        path_binds = []
-        path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
-        path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
-        path_binds.append(f"-v{work_dir_out}:/out")
-        path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
-
-        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
-        cmd.extend(path_binds)
-        if available_gpu_id:
-            cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
-        cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
-        cmd.append(executor)
-
-        task_code = MirCode.RC_OK
-        return_msg = ''
+        task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
         try:
-            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
+            execute_training(work_dir, work_dir_in, work_dir_out, asset_dir, tensorboard_dir, executor, executant_name, executor_config, task_config)
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
@@ -364,6 +350,10 @@ class CmdTrain(base.BaseCommand):
             if return_msg:
                 with SummaryWriter(logdir=tensorboard_dir) as tb_writer:
                     tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
+        except OpenPAIError:
+            logging.exception("openpai exception")
+            task_code = MirCode.RC_CMD_OPENPAI_ERROR
+
 
         # gen task_context
         task_context = {
@@ -407,6 +397,113 @@ class CmdTrain(base.BaseCommand):
         logging.info("training done")
 
         return MirCode.RC_OK
+
+
+def execute_training(work_dir: str, work_dir_in: str, work_dir_out: str, asset_dir: str, tensorboard_dir: str, executor: str, executant_name: str, executor_config: Dict, task_config: Dict) -> None:
+    if "openpai_host" in task_config:
+        try:
+            execute_in_openpai(work_dir, task_config["openpai_host"], task_config["openpai_token"], executor, executant_name, executor_config, task_config.get("available_gpu_id"))
+        except (ConnectionError, HTTPError, Timeout):
+            raise OpenPAIError()
+    else:
+        execute_locally(work_dir, work_dir_in, work_dir_out, asset_dir, tensorboard_dir, executor, executant_name, executor_config, task_config.get("available_gpu_id"))
+
+
+class OpenPAIError(Exception):
+    pass
+
+
+def is_job_finished(session: requests.Session, host: str, openpai_token: str, executant_name) -> bool:
+    headers = {"Authorization": f"Bearer {openpai_token}"}
+    # last part of api route is `username~job_name`
+    # ymir has a special user in OpenPAI system, `ymir`
+    resp = session.get(f"{host}/rest-server/api/v2/jobs/ymir~{executant_name}", headers=headers)
+    if not resp.ok:
+        resp.raise_for_status()
+    progress = resp.json()["jobStatus"]["appProgress"]
+    return progress == 1
+
+
+def execute_in_openpai(work_dir: str, host: str, openpai_token: str, executor: str, executant_name: str, executor_config: Dict, available_gpu_id: Optional[str], cpu=15, memory_in_mb=30965) -> None:
+    gpu_count = len(available_gpu_id.split(",")) if available_gpu_id else 1
+    with requests.Session() as session:
+        headers = {"Authorization": f"Bearer {openpai_token}", "Content-Type": "text/plain"}
+        payload = {
+            "protocolVersion": 2,
+            "name": executant_name,
+            "type": "job",
+            "jobRetryCount": 0,
+            "prerequisites": [{"type": "dockerimage", "uri": executor, "name": "docker_image_0"}],
+            "taskRoles": {
+                "taskrole": {
+                    "instances": 1,
+                    "completion": {"minFailedInstances": 1},
+                    "taskRetryCount": 0,
+                    "dockerImage": "docker_image_0",
+                    "resourcePerInstance": {"gpu": gpu_count, "cpu": cpu, "memoryMB": memory_in_mb},
+                    "commands": [
+                        "ln -fs /usr/bin/python3.7 /usr/bin/python3",  # walk around python version issue
+                        f"ln -s {work_dir}/in /in",
+                        "bash make_train_test_darknet.sh",  # todo change to fixed entrypoint script
+                        f"mv /out {work_dir}/",
+                    ],
+                }
+            },
+            "defaults": {"virtualCluster": "default"},
+            "extras": {
+                "com.microsoft.pai.runtimeplugin": [
+                    {
+                        "plugin": "teamwise_storage",
+                        "parameters": {"storageConfigNames": ["nfs-storage"]},
+                    },
+                ],
+                "hivedScheduler": {"taskRoles": {"taskrole": {"skuNum": 1, "skuType": "gpu-machine"}}},
+            },
+        }
+        resp = session.post(f"{host}/rest-server/api/v2/jobs", data=yaml.safe_dump(payload), headers=headers)
+        if not resp.ok:
+            resp.raise_for_status()
+
+        logging.info("[openpai] job submitted")
+        finished = False
+        while not finished:
+            checker = partial(is_job_finished, session, host, openpai_token, executant_name)
+            # if we cannot get job status after 3 attempts, give up and raise error
+            finished = retry(checker)
+            time.sleep(1)
+        logging.info("[openpai] job done")
+        return
+
+
+def retry(func: Callable, n_times: int = 3, wait: float = 1) -> Any:
+    for i in range(n_times - 1):
+        try:
+            return func()
+        except Exception:
+            if wait > 0:
+                time.sleep(wait)
+    logging.error(f"Failed after {n_times} {func} attempts")
+    return func()
+
+
+def execute_locally(work_dir: str, work_dir_in: str, work_dir_out: str, asset_dir: str, tensorboard_dir: str, executor: str, executant_name: str, executor_config: Dict, available_gpu_id: Optional[str]):
+    path_binds = []
+    path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml, env.yaml
+    path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
+    path_binds.append(f"-v{work_dir_out}:/out")
+    path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
+
+    cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
+    cmd.extend(path_binds)
+    if available_gpu_id:
+        cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
+    cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+    cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
+    cmd.append(executor)
+
+    task_code = MirCode.RC_OK
+    return_msg = ''
+    _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
