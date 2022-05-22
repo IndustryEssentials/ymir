@@ -2,14 +2,14 @@
 
 FROM python:3.8.13-alpine
 
-COPY ./ymir_sdk/requirements.txt ./
+COPY ./ymir_exc/requirements.txt ./
 RUN pip3 install -r requirements.txt
 
 # tmi framework and your app
 COPY app /app
 RUN mkdir /img-man
 COPY app/*-template.yaml /img-man/
-COPY ymir_sdk/ymir_sdk /app/ymir_sdk
+COPY ymir_exc/ymir_exc /app/ymir_exc
 
 # dependencies: write other dependencies here (pytorch, mxnet, tensorboard-x, etc.)
 

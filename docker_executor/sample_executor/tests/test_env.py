@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from ymir_sdk import env, settings
+from ymir_exc import env, settings
 
 
 class TestEnv(unittest.TestCase):
