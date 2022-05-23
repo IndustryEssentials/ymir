@@ -12,7 +12,7 @@ on:
       - 'docker_executor/sample_executor/**'
 
 jobs:
-  sdk-ci:
+  exc-sdk-ci:
 
     runs-on: ubuntu-latest
 
