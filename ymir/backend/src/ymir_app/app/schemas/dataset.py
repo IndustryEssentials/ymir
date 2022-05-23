@@ -165,3 +165,13 @@ class DatasetEvaluationCreate(BaseModel):
 class DatasetEvaluationOut(Common):
     # dict of dataset_id to evaluation result
     result: Dict[int, Dict]
+
+
+class DatasetCheckDuplicationCreate(BaseModel):
+    project_id: int
+    main_dataset_id: int
+    other_dataset_ids: List[int]
+
+
+class DatasetCheckDuplicationOut(Common):
+    result: bool

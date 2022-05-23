@@ -209,6 +209,15 @@ class VizClient:
         convert_class_id_to_keyword(evaluations, user_labels)
         return evaluations
 
+    def check_duplication(self, other_dataset_hashes: List[str]) -> bool:
+        url = f"{self._url_prefix}/check_duplication"
+        payload = {"other_branch_ids": other_dataset_hashes}
+        resp = self.session.post(url, json=payload, timeout=settings.VIZ_TIMEOUT)
+        # todo
+        #  modify according to viz
+        res = self.parse_resp(resp)
+        return res["is_duplicated"]
+
     def parse_resp(self, resp: requests.Response) -> Dict:
         """
         response falls in three categories:

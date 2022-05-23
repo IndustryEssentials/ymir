@@ -118,6 +118,10 @@ def get_viz_client() -> Generator:
         client.close()
 
 
+def get_current_viz_client() -> Generator:
+    ...
+
+
 def get_graph_client() -> Generator:
     try:
         client = graph.GraphClient(redis_uri=settings.BACKEND_REDIS_URL)
@@ -148,9 +152,9 @@ def get_cache(
 
 
 def get_user_labels(
-        current_user: models.User = Depends(get_current_active_user),
-        cache: ymir_cache.CacheClient = Depends(get_cache),
-        controller_client: ControllerClient = Depends(get_controller_client),
+    current_user: models.User = Depends(get_current_active_user),
+    cache: ymir_cache.CacheClient = Depends(get_cache),
+    controller_client: ControllerClient = Depends(get_controller_client),
 ) -> UserLabels:
     # todo: make a cache wrapper
     cached = cache.get(ymir_cache.KEYWORDS_CACHE_KEY)
