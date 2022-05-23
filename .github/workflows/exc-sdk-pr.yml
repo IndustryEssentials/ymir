@@ -12,7 +12,7 @@ on:
       - 'docker_executor/sample_executor/**'
 
 jobs:
-  executor-framework-ci:
+  exc-sdk-ci:
 
     runs-on: ubuntu-latest
 
@@ -24,17 +24,17 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        pip install -r executor/requirements.txt
-        pip install -r executor/requirements-ci.txt
+        pip install -r ymir_exc/requirements.txt
+        pip install -r ymir_exc/requirements-ci.txt
       working-directory: docker_executor/sample_executor
     - name: mypy
       run: |
         mypy .
-      working-directory: docker_executor/sample_executor/executor
+      working-directory: docker_executor/sample_executor/ymir_exc
     - name: flake8
       run: |
         flake8 .
-      working-directory: docker_executor/sample_executor/executor
+      working-directory: docker_executor/sample_executor/ymir_exc
     - name: Test with pytest
       run: |
         python tests/__main__.py
