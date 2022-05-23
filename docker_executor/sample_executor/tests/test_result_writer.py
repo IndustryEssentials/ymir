@@ -6,7 +6,7 @@ import unittest
 
 import yaml
 
-from executor import result_writer as rw, settings
+from ymir_exc import result_writer as rw, settings
 
 
 class TestResultWriter(unittest.TestCase):

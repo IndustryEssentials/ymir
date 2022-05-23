@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 from pydantic import BaseModel
 import yaml
 
-from executor import env
+from ymir_exc import env
 
 
 class Box(BaseModel):
