@@ -15,7 +15,7 @@ emails==0.6
 fastapi-cache2[redis]==0.1.8
 fastapi-login==1.6.0
 fastapi-socketio==0.0.9
-fastapi==0.65.1
+fastapi==0.65.2
 gevent==21.1.2
 grpcio-tools==1.39.0
 grpcio==1.39.0
