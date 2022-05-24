@@ -1,0 +1,26 @@
+<annotation>
+    <folder>images</folder>
+    <filename>241295174_802164147128543_3685831163417916581_n.jpg</filename>
+    <path>images</path>
+    <source>
+        <database>Unknown</database>
+    </source>
+    <size>
+        <width>1080</width>
+        <height>1080</height>
+        <depth>3</depth>
+    </size>
+    <segmented>0</segmented>
+    <object>
+        <name>人</name>
+        <pose>Unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>106.76470588235294</xmin>
+            <ymin>86.47058823529412</ymin>
+            <xmax>1053.529411764706</xmax>
+            <ymax>544.4117647058823</ymax>
+        </bndbox>
+    </object>
+</annotation>
