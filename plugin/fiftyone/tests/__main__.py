@@ -1,30 +1,20 @@
 import os
-import subprocess
 import sys
-from typing import List
+import subprocess
 
 
-def main(args: List[str]) -> int:
-    module_root = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "fiftyone"
+def main(args):
+    params = " ".join(sys.argv[1:])
+
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # --cov-report term-missing
+    cmd = (
+        "PYTHONPATH=$PYTHONPATH:{repo_root} pytest -vv -xs --durations=0 -n=4 "
+        "--ignore=ymir_proto/util/tests --cov=fifyone --cov-config=.coveragerc {params}".format(
+            repo_root=repo_root, params=params
+        )
     )
-    os.path.abspath(module_root)
-
-    # note that env.DEFAULT_ENV_FILE_PATH will change when test
-    # so there should be only ONE process / thread when test
-    cmd = [
-        f"PYTHONPATH=$PYTHONPATH:{module_root}",
-        "pytest",
-        "-vv",
-        "-x",
-        "--durations=0",
-        f"--cov={module_root}",
-    ]
-    cmd.extend(args)
-
-    subprocess.check_call(" ".join(cmd), shell=True)
-
-    return 0
+    subprocess.check_call(cmd, shell=True)
 
 
 if __name__ == "__main__":
