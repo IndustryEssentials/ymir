@@ -12,7 +12,7 @@ on:
       - 'plugin/fiftyone/**'
 
 jobs:
-  executor-framework-ci:
+  fiftyone-plugin-ci:
 
     runs-on: ubuntu-latest
 

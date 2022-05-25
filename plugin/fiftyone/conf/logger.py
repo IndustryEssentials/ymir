@@ -1,7 +1,8 @@
 """Configure handlers and formats for application loggers."""
 import logging
-from loguru import logger
 import sys
+
+from loguru import logger
 
 
 class InterceptHandler(logging.Handler):

@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routes.api import router as api_router
 from conf.configs import conf
 from conf.logger import init_logging
-from app.routes.api import router as api_router
 
 
 def get_application() -> FastAPI:
