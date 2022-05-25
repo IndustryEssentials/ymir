@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Body, Depends, HTTPException
-from starlette.status import HTTP_400_BAD_REQUEST
+from fastapi import APIRouter
+from loguru import logger
 
 router = APIRouter()
 
 
 @router.post("/")
 async def create_task(
-    task_in: Body,
+    task_in: str,
 ):
-    return {}
+    logger.info(f"Creating task: {task_in}")
+
+    return {"task": task_in}

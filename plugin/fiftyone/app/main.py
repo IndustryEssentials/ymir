@@ -1,18 +1,13 @@
-import logging
-from logging.config import dictConfig
-
-import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routes.api import router as api_router
 from conf.configs import conf
-from conf.log import LogConfig
-
-logger = logging.getLogger("fiftyOne_app")
+from conf.logger import init_logging
 
 
 def get_application() -> FastAPI:
-    dictConfig(LogConfig().dict())
+    init_logging()
 
     _app = FastAPI()
 
@@ -23,12 +18,15 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    logger.info("FiftyOne app created")
 
+    _app.include_router(api_router)
     return _app
 
 
 app = get_application()
 
+
 if __name__ == "__main__":
+    import uvicorn  # type: ignore
+
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8888)
