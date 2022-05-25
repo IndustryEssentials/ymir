@@ -1,0 +1,19 @@
+[run]
+omit =
+    */main.py
+    */__main__.py
+    */__init__.py
+
+[report]
+include =
+    app/service/*.py
+exclude_lines =
+    if __name__ == .__main__.:
+    pragma: no cover
+    import
+    from
+    def run\(self\)
+    bind_to_subparsers
+    class CmdReset
+
+ignore_errors = True
