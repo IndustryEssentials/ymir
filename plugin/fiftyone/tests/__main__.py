@@ -8,7 +8,7 @@ def main(args):
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # --cov-report term-missing
     cmd = (
-        "PYTHONPATH=$PYTHONPATH:{repo_root} pytest -vv -xs --durations=0 -n=4 "
+        "PYTHONPATH=$PYTHONPATH:{repo_root} pytest -vv -xs --durations=0 "
         "--cov=app --cov-config=.coveragerc {params}".format(
             repo_root=repo_root, params=params
         )
