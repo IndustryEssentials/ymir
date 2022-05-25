@@ -24,8 +24,8 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        pip install -r executor/requirements.txt
-        pip install -r executor/requirements-ci.txt
+        pip install -r requirements.txt
+        pip install -r requirements-ci.txt
       working-directory: plugin/fiftyone/
     - name: mypy
       run: |
