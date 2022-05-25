@@ -2,7 +2,3 @@ black==22.3.0
 flake8==4.0.1
 mypy==0.950
 pytest==7.1.2
-environs==9.5.0
-fastapi==0.78.0
-loguru==0.6.0
-uvicorn==0.17.6
