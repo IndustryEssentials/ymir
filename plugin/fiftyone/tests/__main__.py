@@ -17,7 +17,7 @@ def main(args: List[str]) -> int:
         "-vv",
         "-x",
         "--durations=0",
-        "--cov={module_root}",
+        f"--cov={module_root}",
     ]
     cmd.extend(args)
 
