@@ -10,7 +10,7 @@ def main(args):
     # --cov-report term-missing
     cmd = (
         "PYTHONPATH=$PYTHONPATH:{repo_root} pytest -vv -xs --durations=0 -n=4 "
-        "--ignore=ymir_proto/util/tests --cov=fifyone --cov-config=.coveragerc {params}".format(
+        "--cov=fiftyone --cov-config=.coveragerc {params}".format(
             repo_root=repo_root, params=params
         )
     )
