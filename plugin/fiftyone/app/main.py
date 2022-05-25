@@ -1,3 +1,4 @@
+import uvicorn  # type: ignore
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,6 +28,4 @@ app = get_application()
 
 
 if __name__ == "__main__":
-    import uvicorn  # type: ignore
-
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8888)
