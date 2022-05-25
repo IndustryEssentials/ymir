@@ -17,6 +17,7 @@ services:
       - .env
     volumes:
       - ${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}
+      - ${YMIR_PATH}/labelfree/backend_log:/var/log/gunicorn
     environment:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
@@ -36,6 +37,8 @@ services:
     command: celery -A labelfree.app.celery worker -l info 
     env_file:
       - .env
+    volumes:
+      - ${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}
     environment:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
