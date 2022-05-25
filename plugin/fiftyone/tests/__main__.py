@@ -3,9 +3,7 @@ import sys
 import subprocess
 
 
-def main(args):
-    params = " ".join(sys.argv[1:])
-
+def main():
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # --cov-report term-missing
     cmd = (
@@ -16,4 +14,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())
