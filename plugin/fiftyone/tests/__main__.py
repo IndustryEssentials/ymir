@@ -10,9 +10,7 @@ def main(args):
     # --cov-report term-missing
     cmd = (
         "PYTHONPATH=$PYTHONPATH:{repo_root} pytest -vv -xs --durations=0 -n=4 "
-        "--cov=fiftyone --cov-config=.coveragerc {params}".format(
-            repo_root=repo_root, params=params
-        )
+        "--cov=fiftyone".format(repo_root=repo_root, params=params)
     )
     subprocess.check_call(cmd, shell=True)
 
