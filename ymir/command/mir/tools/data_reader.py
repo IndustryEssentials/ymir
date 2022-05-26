@@ -5,17 +5,8 @@ from mir.tools import class_ids, mir_storage_ops, revs_parser
 from pkg_resources import yield_lines
 
 
-def _tvt_type_from_str(typ: str) -> Optional[mirpb.TvtType]:
-    str_to_typ = {
-        'tr': mirpb.TvtType.TvtTypeTraining,
-        'va': mirpb.TvtType.TvtTypeValidation,
-        'te': mirpb.TvtType.TvtTypeTest,
-    }
-    return str_to_typ[typ] if typ else None
-
-
 class MirDataReader:
-    def __init__(self, mir_root: str, typ_rev_tid: revs_parser.TypRevTid, assets_location: str,
+    def __init__(self, mir_root: str, typ_rev_tid: revs_parser.TypRevTid, asset_ids: Set[str],
                  class_ids: Set[int]) -> None:
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
@@ -27,22 +18,18 @@ class MirDataReader:
 
         self._mir_metadatas = mir_metadatas
         self._task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
-        self._assets_location = assets_location
-        self._tvt_type = _tvt_type_from_str(typ_rev_tid.typ)
-        self._asset_ids = [asset_id for asset_id in self._mir_metadatas.attributes.keys()]
-        self._asset_ids.sort()
+        self._asset_ids = asset_ids or {asset_id for asset_id in self._mir_metadatas.attributes.keys()}
         self._class_ids = class_ids
 
-    def read_single(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, List[mirpb.Annotation]]]:
-        for asset_id in self._asset_ids:
-            attr = self._mir_metadatas.attributes[asset_id]
-            if self._tvt_type and attr.asset_type != self._tvt_type:
-                continue  # if tvt type mismatch, continue
+    def read(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, List[mirpb.Annotation]]]:
+        for asset_id, attributes in self._mir_metadatas.attributes.items():
+            if asset_id not in self._asset_ids:
+                continue
 
             annotations = []
             image_annotations = self._task_annotations.image_annotations.get(asset_id, None)
             if image_annotations:
                 for annotation in image_annotations.annotations:
-                    if class_ids and annotation.class_id in class_ids:
+                    if self._class_ids and annotation.class_id in self._class_ids:
                         annotations.append(annotation)
-            yield (asset_id, attr, annotations)
+            yield (asset_id, attributes, annotations)

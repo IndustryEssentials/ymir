@@ -7,7 +7,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 
-class AnnotationFormat(Enum, str):
+class AnnotationFormat(str, Enum):
     AF_NONE = 'none'
     AF_ARK = 'ark'
     AF_VOC = 'voc'
@@ -28,9 +28,22 @@ class RawDataWriter:
         if not assets_location or not assets_dir or not annotations_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='empty assets_location, assets_dir or annotations_dir')
-        
+
+        # prepare dirs
         os.makedirs(assets_dir, exist_ok=True)
         os.makedirs(annotations_dir, exist_ok=True)
+        if index_file_path:
+            os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
+
+        self._assets_location = assets_location
+        self._assets_dir = assets_dir
+        self._annotations_dir = annotations_dir
+        self._need_ext = need_ext
+        self._need_id_sub_folder = need_id_sub_folder
+        self._format_type = format_type
+        self._index_file_path = index_file_path
+        self._index_assets_prefix = index_assets_prefix
+        self._index_annotations_prefix = index_annotations_prefix
 
     def write(self, asset_id: str, attr: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         pass

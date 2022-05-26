@@ -6,7 +6,7 @@ import unittest
 from google.protobuf import json_format
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_exporter, data_reader, data_writer, hash_utils, mir_storage_ops
+from mir.tools import data_exporter, data_reader, data_writer, hash_utils, mir_storage_ops, revs_parser
 from tests import utils as test_utils
 
 
@@ -64,13 +64,14 @@ class TestArkDataExporter(unittest.TestCase):
                     'assetType': 'AssetTypeImageJpeg',
                     'width': 500,
                     'height': 281,
-                    'imageChannels': 3
+                    'imageChannels': 3,
+                    'tvtType': 'TvtTypeTraining',
                 },
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
                     'assetType': 'AssetTypeImageJpeg',
                     'width': 500,
                     'height': 333,
-                    'imageChannels': 3
+                    'imageChannels': 3,
                 }
             }
         }
@@ -163,9 +164,7 @@ class TestArkDataExporter(unittest.TestCase):
         json_format.ParseDict(keywords_dict, mir_keywords)
 
         # task
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
-                                           task_id='a',
-                                           message='import')
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
 
         # save and commit
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
@@ -270,3 +269,33 @@ class TestArkDataExporter(unittest.TestCase):
                             format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC,
                             export_path=train_path,
                             index_file_path=os.path.join(train_path, 'index.tsv'))
+
+    def test_data_reader_00(self):
+        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+                                           typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
+                                           asset_ids=set(),
+                                           class_ids=set())
+        self.assertEqual(2, len(list(reader.read())))
+
+        asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
+        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+                                           typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
+                                           asset_ids=asset_ids,
+                                           class_ids=set())
+        self.assertEqual(2, len(list(reader.read())))
+
+        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+                                           typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
+                                           asset_ids=asset_ids,
+                                           class_ids={2})
+        for asset_id, attrs, annotations in reader.read():
+            if asset_id == '430df22960b0f369318705800139fcc8ec38a3e4':
+                self.assertEqual(2, len(annotations))
+        self.assertEqual(2, len(list(reader.read())))
+
+        asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4'}
+        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+                                           typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
+                                           asset_ids=asset_ids,
+                                           class_ids=set())
+        self.assertEqual(1, len(list(reader.read())))
