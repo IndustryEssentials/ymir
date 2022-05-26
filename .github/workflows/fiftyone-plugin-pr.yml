@@ -9,10 +9,10 @@ on:
       - master
       - dev
     paths:
-      - 'docker_executor/sample_executor/**'
+      - 'plugin/fiftyone/**'
 
 jobs:
-  executor-framework-ci:
+  fiftyone-plugin-ci:
 
     runs-on: ubuntu-latest
 
@@ -24,18 +24,18 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        pip install -r executor/requirements.txt
-        pip install -r executor/requirements-ci.txt
-      working-directory: docker_executor/sample_executor
+        pip install -r requirements.txt
+        pip install -r requirements-ci.txt
+      working-directory: plugin/fiftyone/
     - name: mypy
       run: |
         mypy .
-      working-directory: docker_executor/sample_executor/executor
+      working-directory: plugin/fiftyone/
     - name: flake8
       run: |
         flake8 .
-      working-directory: docker_executor/sample_executor/executor
+      working-directory: plugin/fiftyone/
     - name: Test with pytest
       run: |
         python tests/__main__.py
-      working-directory: docker_executor/sample_executor
+      working-directory: plugin/fiftyone/

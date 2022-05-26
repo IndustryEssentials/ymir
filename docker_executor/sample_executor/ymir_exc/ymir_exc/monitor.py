@@ -1,6 +1,7 @@
 import time
 
-from executor import env
+from ymir_exc import env
+
 
 TASK_STATE_RUNNING = 2
 
