@@ -35,3 +35,7 @@ def item_paths(dataset_type: DatasetType) -> Iterator[Tuple[str, str]]:
                 yield (components[0], '')
             else:
                 raise ValueError(f"irregular index file: {file_path}")
+
+
+def items_count(dataset_type: DatasetType) -> int:
+    return len(list(item_paths(dataset_type=dataset_type)))
