@@ -6,7 +6,7 @@ import unittest
 from google.protobuf import json_format
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_exporter, hash_utils, mir_storage_ops
+from mir.tools import data_exporter, data_reader, data_writer, hash_utils, mir_storage_ops
 from tests import utils as test_utils
 
 
