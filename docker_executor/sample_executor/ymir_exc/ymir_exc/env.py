@@ -110,12 +110,13 @@ def _get_code_config() -> dict:
     return code_config
 
 
-def get_universual_config() -> dict:
-    executor_config = get_executor_config()
+def get_merged_config() -> dict:
+    """
+    get merged config, if same config key appeared in both executor and code config, use config in executor config.
 
-    try:
-        code_config = _get_code_config()
-        code_config.update(executor_config)
-        return code_config
-    except FileNotFoundError:
-        return executor_config
+    if found no code config, raise exception
+    """
+    executor_config = get_executor_config()
+    code_config = _get_code_config()
+    code_config.update(executor_config)
+    return code_config
