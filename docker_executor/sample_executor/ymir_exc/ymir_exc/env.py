@@ -44,6 +44,7 @@ output:
 """
 
 from enum import IntEnum, auto
+import os
 
 from pydantic import BaseModel
 import yaml
@@ -98,3 +99,23 @@ def get_executor_config() -> dict:
     with open(get_current_env().input.config_file, 'r') as f:
         executor_config = yaml.safe_load(f)
     return executor_config
+
+
+def _get_code_config() -> dict:
+    if not os.path.isdir('/app'):
+        raise FileNotFoundError('app not exists')
+
+    with open(os.path.join('/app', get_executor_config()['code_config']), 'r') as f:
+        code_config = yaml.safe_load(f)
+    return code_config
+
+
+def get_universual_config() -> dict:
+    executor_config = get_executor_config()
+
+    try:
+        code_config = _get_code_config()
+        code_config.update(executor_config)
+        return code_config
+    except FileNotFoundError:
+        return executor_config
