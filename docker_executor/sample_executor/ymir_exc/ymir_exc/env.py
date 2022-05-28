@@ -102,9 +102,6 @@ def get_executor_config() -> dict:
 
 
 def _get_code_config() -> dict:
-    if not os.path.isdir('/app'):
-        raise FileNotFoundError('app not exists')
-
     with open(os.path.join('/app', get_executor_config()[settings.CODE_CONFIG_KEY]), 'r') as f:
         code_config = yaml.safe_load(f)
     return code_config
