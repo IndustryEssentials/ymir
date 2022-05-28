@@ -1,8 +1,7 @@
-from typing import Any, Iterator, List, Optional, Set, Tuple
+from typing import Iterator, List, Set, Tuple
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, mir_storage_ops, revs_parser
-from pkg_resources import yield_lines
+from mir.tools import mir_storage_ops, revs_parser
 
 
 class MirDataReader:
@@ -21,7 +20,14 @@ class MirDataReader:
         self._asset_ids = asset_ids or {asset_id for asset_id in self._mir_metadatas.attributes.keys()}
         self._class_ids = class_ids
 
+        self._empty_annotations_count = 0
+
+    @property
+    def empty_annotations_count(self) -> int:
+        return self._empty_annotations_count
+
     def read(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, List[mirpb.Annotation]]]:
+        self._empty_annotations_count = 0
         for asset_id, attributes in self._mir_metadatas.attributes.items():
             if asset_id not in self._asset_ids:
                 continue
@@ -30,6 +36,10 @@ class MirDataReader:
             image_annotations = self._task_annotations.image_annotations.get(asset_id, None)
             if image_annotations:
                 for annotation in image_annotations.annotations:
-                    if self._class_ids and annotation.class_id in self._class_ids:
+                    if not self._class_ids or annotation.class_id in self._class_ids:
                         annotations.append(annotation)
+
+            if not annotations:
+                self._empty_annotations_count += 1
+
             yield (asset_id, attributes, annotations)

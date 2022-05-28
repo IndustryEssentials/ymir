@@ -1,9 +1,8 @@
-from collections.abc import Collection
 from enum import Enum
 import json
 import os
 import shutil
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Callable, Dict, List, Optional
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -192,13 +191,6 @@ class BaseDataWriter:
         self._class_ids_mapping = class_ids_mapping
         self._format_type = format_type
 
-        self._unknown_format_count = 0  # count for assets with unknown format
-        self._empty_annotations_count = 0  # count for assets without annotations
-
-    @property
-    def unknown_format_count(self) -> int:
-        return self._unknown_format_count
-
     def write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         """
         write assets and annotations to destination with proper format
@@ -282,7 +274,6 @@ class RawDataWriter(BaseDataWriter):
                 asset_file_name = f"{asset_file_name}.{asset_image.format.lower()}"  # type: ignore
             except UnidentifiedImageError:
                 asset_file_name = f"{asset_file_name}.unknown"
-                self._unknown_format_count += 1
 
         asset_dest_dir = os.path.join(self._assets_dir, sub_folder_name)
         os.makedirs(asset_dest_dir, exist_ok=True)
@@ -291,16 +282,13 @@ class RawDataWriter(BaseDataWriter):
             shutil.copyfile(asset_src_path, asset_dest_path)
 
         # write annotation file
-        if len(annotations) == 0:
-            self._empty_annotations_count += 1
-
         format_func = _format_file_output_func(anno_format=self._format_type)
-        anno_str = format_func(asset_id=asset_id,
-                               attrs=attrs,
-                               annotations=annotations,
-                               class_type_mapping=self._class_ids_mapping,
-                               cls_id_mgr=self._class_id_manager,
-                               asset_filename=asset_file_name)
+        anno_str: str = format_func(asset_id=asset_id,
+                                    attrs=attrs,
+                                    annotations=annotations,
+                                    class_type_mapping=self._class_ids_mapping,
+                                    cls_id_mgr=self._class_id_manager,
+                                    asset_filename=asset_file_name)
 
         anno_dest_dir = os.path.join(self._annotations_dir, sub_folder_name)
         os.makedirs(anno_dest_dir, exist_ok=True)
@@ -316,7 +304,7 @@ class RawDataWriter(BaseDataWriter):
                 anno_path_in_index_file = ''
             else:
                 anno_path_in_index_file = os.path.join(self._index_annotations_prefix, sub_folder_name, anno_file_name)
-            f.write(f"{asset_path_in_index_file}\t{anno_path_in_index_file}\n")
+            self._index_file.write(f"{asset_path_in_index_file}\t{anno_path_in_index_file}\n")
 
     def close(self) -> None:
         if not self._index_file:
@@ -347,12 +335,39 @@ class LmdbDataWriter(BaseDataWriter):
         if index_file_path:
             os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
 
-        self._lmdb_dir = lmdb_dir
-        self._index_file_path = index_file_path
+        self._lmdb_env = lmdb.open(lmdb_dir)
+        self._lmdb_tnx = self._lmdb_env.begin(write=True)
+        self._index_file = open(index_file_path, 'w') if index_file_path else None
 
-    def write(self, asset_id: str, attr: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
-        # write asset
+    def write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
+        # read asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
+        with open(asset_src_path, 'rb') as f:
+            asset_data = f.read()
 
-        # write annotation
-        pass
+        # read annotation
+        format_func = _format_file_output_func(anno_format=self._format_type)
+        anno_data: bytes = format_func(asset_id=asset_id,
+                                       attrs=attrs,
+                                       annotations=annotations,
+                                       class_type_mapping=self._class_ids_mapping,
+                                       cls_id_mgr=self._class_id_manager,
+                                       asset_filename='').encode()
+
+        asset_key_name = f"asset_{asset_id}"
+        anno_key_name = f"anno_{asset_id}"
+        self._lmdb_tnx.put(asset_key_name.encode(), asset_data)
+        self._lmdb_tnx.put(anno_key_name.encode(), anno_data)
+
+        if self._index_file:
+            self._index_file.write(f"{asset_key_name}\t{anno_key_name}\n")
+
+    def close(self) -> None:
+        if self._lmdb_env:
+            self._lmdb_tnx.commit()
+            self._lmdb_tnx = None
+            self._lmdb_env.close()
+            self._lmdb_env = None
+        if self._index_file:
+            self._index_file.close()
+            self._index_file = None
