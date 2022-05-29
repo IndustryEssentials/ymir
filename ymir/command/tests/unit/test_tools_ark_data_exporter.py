@@ -183,9 +183,9 @@ class TestArkDataExporter(unittest.TestCase):
         for asset_id in asset_ids:
             asset_path = os.path.join(export_path, asset_id + '.jpeg')
             self.assertTrue(os.path.isfile(asset_path))
-            if format_type == data_exporter.ExportFormat.EXPORT_FORMAT_ARK:
+            if format_type == data_writer.ExportFormat.EXPORT_FORMAT_ARK:
                 annotation_path = os.path.join(export_path, asset_id + '.txt')
-            elif format_type == data_exporter.ExportFormat.EXPORT_FORMAT_VOC:
+            elif format_type == data_writer.ExportFormat.EXPORT_FORMAT_VOC:
                 annotation_path = os.path.join(export_path, asset_id + '.xml')
             self.assertTrue(os.path.isfile(annotation_path))
 
@@ -245,13 +245,13 @@ class TestArkDataExporter(unittest.TestCase):
                              need_id_sub_folder=False,
                              base_branch='a',
                              base_task_id='a',
-                             format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+                             format_type=data_writer.ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(train_path, 'index.tsv'),
                              index_assets_prefix='')
 
         # check result
         self.__check_result(asset_ids=asset_ids,
-                            format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+                            format_type=data_writer.ExportFormat.EXPORT_FORMAT_ARK,
                             export_path=train_path,
                             index_file_path=os.path.join(train_path, 'index.tsv'))
         self.__check_ark_annotations(asset_id='430df22960b0f369318705800139fcc8ec38a3e4',
@@ -276,13 +276,13 @@ class TestArkDataExporter(unittest.TestCase):
                              need_id_sub_folder=False,
                              base_branch='a',
                              base_task_id='a',
-                             format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC,
+                             format_type=data_writer.ExportFormat.EXPORT_FORMAT_VOC,
                              index_file_path=os.path.join(train_path, 'index.tsv'),
                              index_assets_prefix='')
 
         # check result
         self.__check_result(asset_ids=asset_ids,
-                            format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC,
+                            format_type=data_writer.ExportFormat.EXPORT_FORMAT_VOC,
                             export_path=train_path,
                             index_file_path=os.path.join(train_path, 'index.tsv'))
 
@@ -337,7 +337,7 @@ class TestArkDataExporter(unittest.TestCase):
                                                    2: 0,
                                                    52: 1
                                                },
-                                               format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+                                               format_type=data_writer.ExportFormat.EXPORT_FORMAT_ARK,
                                                index_file_path=index_file_path)
 
         lmdb_index_file_path = os.path.join(train_path, 'index-lmdb.tsv')
@@ -348,7 +348,7 @@ class TestArkDataExporter(unittest.TestCase):
                                                      2: 0,
                                                      52: 1
                                                  },
-                                                 format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+                                                 format_type=data_writer.ExportFormat.EXPORT_FORMAT_ARK,
                                                  index_file_path=lmdb_index_file_path)
 
         for asset_id, attrs, annotations in reader.read():
@@ -360,11 +360,11 @@ class TestArkDataExporter(unittest.TestCase):
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+            format_type=data_writer.ExportFormat.EXPORT_FORMAT_ARK,
             export_path=train_path,
             index_file_path=index_file_path)
         self.__check_lmdb_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+            format_type=data_writer.ExportFormat.EXPORT_FORMAT_ARK,
             export_path=train_path,
             index_file_path=lmdb_index_file_path)

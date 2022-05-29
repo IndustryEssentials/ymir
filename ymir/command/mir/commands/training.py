@@ -16,6 +16,7 @@ from mir.tools import checker, class_ids, context, data_exporter, mir_storage_op
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
+from mir.tools.data_writer import ExportFormat
 from mir.tools.errors import MirContainerError, MirRuntimeError
 
 
@@ -300,7 +301,7 @@ class CmdTrain(base.BaseCommand):
                              need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
-                             format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+                             format_type=ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
                              index_assets_prefix='/in/assets',
                              index_annotations_prefix='/in/annotations')
@@ -316,7 +317,7 @@ class CmdTrain(base.BaseCommand):
                              need_id_sub_folder=True,
                              base_branch=src_typ_rev_tid.rev,
                              base_task_id=src_typ_rev_tid.tid,
-                             format_type=data_exporter.ExportFormat.EXPORT_FORMAT_ARK,
+                             format_type=ExportFormat.EXPORT_FORMAT_ARK,
                              index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
                              index_assets_prefix='/in/assets',
                              index_annotations_prefix='/in/annotations')

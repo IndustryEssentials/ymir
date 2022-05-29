@@ -13,6 +13,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_exporter, mir_storage_ops, revs_parser, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.data_writer import ExportFormat
 from mir.tools.errors import MirContainerError, MirRuntimeError
 
 
@@ -336,7 +337,7 @@ def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_ti
                          need_id_sub_folder=True,
                          base_branch=src_rev_tid.rev,
                          base_task_id=src_rev_tid.tid,
-                         format_type=data_exporter.ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
+                         format_type=ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
                          index_file_path=work_index_file,
                          index_assets_prefix=work_asset_path)
 

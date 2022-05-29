@@ -242,13 +242,10 @@ class RawDataWriter(BaseDataWriter):
                          class_ids_mapping=class_ids_mapping,
                          format_type=format_type)
 
-        if not assets_dir or not annotations_dir:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='empty assets_dir or annotations_dir')
-
         # prepare out dirs
         os.makedirs(assets_dir, exist_ok=True)
-        os.makedirs(annotations_dir, exist_ok=True)
+        if annotations_dir:
+            os.makedirs(annotations_dir, exist_ok=True)
         if index_file_path:
             os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
 
@@ -281,30 +278,32 @@ class RawDataWriter(BaseDataWriter):
         if self._overwrite or not os.path.isfile(asset_dest_path):
             shutil.copyfile(asset_src_path, asset_dest_path)
 
-        # write annotation file
-        format_func = _format_file_output_func(anno_format=self._format_type)
-        anno_str: str = format_func(asset_id=asset_id,
-                                    attrs=attrs,
-                                    annotations=annotations,
-                                    class_type_mapping=self._class_ids_mapping,
-                                    cls_id_mgr=self._class_id_manager,
-                                    asset_filename=asset_file_name)
+        # write annotations
+        anno_file_name = ''
+        if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+            format_func = _format_file_output_func(anno_format=self._format_type)
+            anno_str: str = format_func(asset_id=asset_id,
+                                        attrs=attrs,
+                                        annotations=annotations,
+                                        class_type_mapping=self._class_ids_mapping,
+                                        cls_id_mgr=self._class_id_manager,
+                                        asset_filename=asset_file_name)
 
-        anno_dest_dir = os.path.join(self._annotations_dir, sub_folder_name)
-        os.makedirs(anno_dest_dir, exist_ok=True)
-        anno_file_name = f"{asset_id}{_format_file_ext(self._format_type)}"
-        anno_dest_path = os.path.join(anno_dest_dir, anno_file_name)
-        with open(anno_dest_path, 'w') as f:
-            f.write(anno_str)
+            anno_dest_dir = os.path.join(self._annotations_dir, sub_folder_name)
+            os.makedirs(anno_dest_dir, exist_ok=True)
+            anno_file_name = f"{asset_id}{_format_file_ext(self._format_type)}"
+            anno_dest_path = os.path.join(anno_dest_dir, anno_file_name)
+            with open(anno_dest_path, 'w') as f:
+                f.write(anno_str)
 
         # write index file
         if self._index_file:
             asset_path_in_index_file = os.path.join(self._index_assets_prefix, sub_folder_name, asset_file_name)
-            if self._format_type == ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
-                anno_path_in_index_file = ''
-            else:
+            if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
                 anno_path_in_index_file = os.path.join(self._index_annotations_prefix, sub_folder_name, anno_file_name)
-            self._index_file.write(f"{asset_path_in_index_file}\t{anno_path_in_index_file}\n")
+                self._index_file.write(f"{asset_path_in_index_file}\t{anno_path_in_index_file}\n")
+            else:
+                self._index_file.write(f"{asset_path_in_index_file}\n")
 
     def close(self) -> None:
         if not self._index_file:
@@ -345,22 +344,28 @@ class LmdbDataWriter(BaseDataWriter):
         with open(asset_src_path, 'rb') as f:
             asset_data = f.read()
 
-        # read annotation
-        format_func = _format_file_output_func(anno_format=self._format_type)
-        anno_data: bytes = format_func(asset_id=asset_id,
-                                       attrs=attrs,
-                                       annotations=annotations,
-                                       class_type_mapping=self._class_ids_mapping,
-                                       cls_id_mgr=self._class_id_manager,
-                                       asset_filename='').encode()
+        # write asset and annotations
+        anno_key_name = ''
+        if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+            format_func = _format_file_output_func(anno_format=self._format_type)
+            anno_data: bytes = format_func(asset_id=asset_id,
+                                           attrs=attrs,
+                                           annotations=annotations,
+                                           class_type_mapping=self._class_ids_mapping,
+                                           cls_id_mgr=self._class_id_manager,
+                                           asset_filename='').encode()
 
-        asset_key_name = f"asset_{asset_id}"
-        anno_key_name = f"anno_{asset_id}"
-        self._lmdb_tnx.put(asset_key_name.encode(), asset_data)
-        self._lmdb_tnx.put(anno_key_name.encode(), anno_data)
+            asset_key_name = f"asset_{asset_id}"
+            anno_key_name = f"anno_{asset_id}"
+            self._lmdb_tnx.put(asset_key_name.encode(), asset_data)
+            self._lmdb_tnx.put(anno_key_name.encode(), anno_data)
 
+        # write index file
         if self._index_file:
-            self._index_file.write(f"{asset_key_name}\t{anno_key_name}\n")
+            if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+                self._index_file.write(f"{asset_key_name}\t{anno_key_name}\n")
+            else:
+                self._index_file.write(f"{asset_key_name}\n")
 
     def close(self) -> None:
         if self._lmdb_env:
