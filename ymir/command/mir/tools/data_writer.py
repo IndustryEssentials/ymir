@@ -15,6 +15,11 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 
+class AssetFormat(str, Enum):
+    ASSET_FORMAT_RAW = 'raw'
+    ASSET_FORMAT_LMDB = 'lmdb'
+
+
 class ExportFormat(str, Enum):
     EXPORT_FORMAT_UNKNOWN = 'unknown'
     EXPORT_FORMAT_NO_ANNOTATION = 'none'
@@ -334,9 +339,24 @@ class LmdbDataWriter(BaseDataWriter):
         if index_file_path:
             os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
 
-        self._lmdb_env = lmdb.open(lmdb_dir)
+        self._lmdb_dir = lmdb_dir
+        self._lmdb_env = lmdb.open(lmdb_dir, map_size=1099511627776)  # 1TB
         self._lmdb_tnx = self._lmdb_env.begin(write=True)
-        self._index_file = open(index_file_path, 'w') if index_file_path else None
+        self._lmdb_index = open(os.path.join(lmdb_dir, 'index.mdb'), 'w') if index_file_path else None
+        self._index_file_path = index_file_path
+
+        self.need_write = self._get_need_write()
+
+    def _get_need_write(self) -> bool:
+        data_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'data.mdb'))
+        lock_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'lock.mdb'))
+
+        # check index file exists and not empty
+        # if not exists, or exists but empty, need write
+        index_file_path = os.path.join(self._lmdb_dir, 'index.mdb')
+        index_empty = os.stat(index_file_path).st_size == 0 if os.path.isfile(index_file_path) else True
+
+        return not data_exists or not lock_exists or index_empty
 
     def write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         # read asset
@@ -361,11 +381,11 @@ class LmdbDataWriter(BaseDataWriter):
             self._lmdb_tnx.put(anno_key_name.encode(), anno_data)
 
         # write index file
-        if self._index_file:
+        if self._lmdb_index:
             if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
-                self._index_file.write(f"{asset_key_name}\t{anno_key_name}\n")
+                self._lmdb_index.write(f"{asset_key_name}\t{anno_key_name}\n")
             else:
-                self._index_file.write(f"{asset_key_name}\n")
+                self._lmdb_index.write(f"{asset_key_name}\n")
 
     def close(self) -> None:
         if self._lmdb_env:
@@ -373,6 +393,8 @@ class LmdbDataWriter(BaseDataWriter):
             self._lmdb_tnx = None
             self._lmdb_env.close()
             self._lmdb_env = None
-        if self._index_file:
-            self._index_file.close()
-            self._index_file = None
+        if self._lmdb_index:
+            self._lmdb_index.close()
+            self._lmdb_index = None
+        if self._index_file_path:
+            shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)

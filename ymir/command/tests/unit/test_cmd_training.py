@@ -25,6 +25,7 @@ class TestCmdTraining(unittest.TestCase):
         self._working_root = os.path.join(self._test_root, "work")
         self._mir_root = os.path.join(self._test_root, "mir-root")
         self._config_file = os.path.join(self._test_root, 'config.yaml')
+        self._config_file_lmdb = os.path.join(self._test_root, 'config-lmdb.yaml')
 
     def setUp(self) -> None:
         self.__prepare_dirs()
@@ -34,7 +35,7 @@ class TestCmdTraining(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        self.__deprepare_dirs()
+        # self.__deprepare_dirs()
         return super().tearDown()
 
     # private: prepare env
@@ -212,6 +213,10 @@ class TestCmdTraining(unittest.TestCase):
         with open(self._config_file, 'w') as f:
             yaml.dump(config, f)
 
+        executor_config['export_format'] = 'ark:lmdb'
+        with open(self._config_file_lmdb, 'w') as f:
+            yaml.dump(config, f)
+
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
@@ -242,6 +247,32 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.executant_name = 'executor-instance'
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file
+        fake_args.asset_cache_dir = ''
+
+        cmd = training.CmdTrain(fake_args)
+        cmd_run_result = cmd.run()
+
+        # check result
+        self.assertEqual(MirCode.RC_OK, cmd_run_result)
+
+    @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
+    @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
+    def test_normal_01(self, *mock_run):
+        """ normal case """
+        fake_args = type('', (), {})()
+        fake_args.src_revs = "a@a"
+        fake_args.dst_rev = "a@test_training_cmd_lmdb"
+        fake_args.mir_root = self._mir_root
+        fake_args.model_path = self._models_location
+        fake_args.media_location = self._assets_location
+        fake_args.model_hash = ''
+        fake_args.work_dir = self._working_root
+        fake_args.force = True
+        fake_args.force_rebuild = False
+        fake_args.executor = "executor"
+        fake_args.executant_name = 'executor-instance'
+        fake_args.tensorboard_dir = ''
+        fake_args.config_file = self._config_file_lmdb
         fake_args.asset_cache_dir = ''
 
         cmd = training.CmdTrain(fake_args)

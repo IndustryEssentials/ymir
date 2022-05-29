@@ -118,18 +118,20 @@ def export_lmdb(mir_root: str,
     rev_tid.rev = base_branch
     rev_tid.tid = base_task_id
 
-    dr = data_reader.MirDataReader(mir_root=mir_root,
-                                   typ_rev_tid=rev_tid,
-                                   asset_ids=asset_ids,
-                                   class_ids=set(class_type_ids.keys()))
     dw = data_writer.LmdbDataWriter(mir_root=mir_root,
                                     assets_location=assets_location,
                                     lmdb_dir=lmdb_dir,
                                     class_ids_mapping=class_type_ids,
                                     format_type=format_type,
                                     index_file_path=index_file_path)
-    for asset_id, attrs, annotations in dr.read():
-        dw.write(asset_id=asset_id, attrs=attrs, annotations=annotations)
+    # if base_task_id empty, we can only read HEAD of base_branch, which often changes, so need to write again
+    if dw.need_write or not base_task_id:
+        dr = data_reader.MirDataReader(mir_root=mir_root,
+                                       typ_rev_tid=rev_tid,
+                                       asset_ids=asset_ids,
+                                       class_ids=set(class_type_ids.keys()))
+        for asset_id, attrs, annotations in dr.read():
+            dw.write(asset_id=asset_id, attrs=attrs, annotations=annotations)
     dw.close()
 
     return True
