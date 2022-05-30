@@ -9,7 +9,7 @@ from google.protobuf import json_format
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import hash_utils, mir_storage_ops
-from mir.tools.data_writer import ExportFormat
+from mir.tools.data_writer import AnnoFormat
 from mir.tools.code import MirCode
 from mir.tools.utils import mir_repo_commit_id
 from tests import utils as test_utils
@@ -221,7 +221,7 @@ class TestCmdExport(unittest.TestCase):
                                             need_id_sub_folder=False,
                                             base_branch='a',
                                             base_task_id='a',  # see: fake_args.src_revs = 'a@a'
-                                            format_type=ExportFormat.EXPORT_FORMAT_VOC)
+                                            format_type=AnnoFormat.ANNO_FORMAT_VOC)
 
         # normal case: voc:lmdb
         fake_args = type('', (), {})()
@@ -246,7 +246,7 @@ class TestCmdExport(unittest.TestCase):
                                                  lmdb_dir=self._dest_root,
                                                  base_branch='a',
                                                  base_task_id='a',  # see: fake_args.src_revs = 'a@a'
-                                                 format_type=ExportFormat.EXPORT_FORMAT_VOC)
+                                                 format_type=AnnoFormat.ANNO_FORMAT_VOC)
 
         # abnormal case: no asset_dir, annotation_dir, media_location
         fake_args = type('', (), {})()

@@ -28,16 +28,16 @@ class CmdExport(base.BaseCommand):
                                        dst_rev=dst_rev,
                                        in_cis=self.args.in_cis,
                                        work_dir=self.args.work_dir,
-                                       format=self.args.format,
+                                       anno_format=self.args.format,
                                        asset_format=self.args.asset_format)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, media_location: str, src_revs: str,
-                      format: str, asset_format: str, in_cis: str, work_dir: str, dst_rev: str) -> int:
+                      anno_format: str, asset_format: str, in_cis: str, work_dir: str, dst_rev: str) -> int:
         # check args
-        if not format:
-            format = 'none'
+        if not anno_format:
+            anno_format = 'none'
         if not asset_format:
             asset_format = 'raw'
 
@@ -56,7 +56,7 @@ class CmdExport(base.BaseCommand):
         if check_code != MirCode.RC_OK:
             return check_code
 
-        format_type = data_exporter.format_type_from_str(format)
+        anno_format_type = data_exporter.format_type_from_str(anno_format)
         asset_format_type = data_exporter.asset_format_type_from_str(asset_format)
 
         # asset ids
@@ -89,7 +89,7 @@ class CmdExport(base.BaseCommand):
                                  need_id_sub_folder=False,
                                  base_branch=src_rev_tid.rev,
                                  base_task_id=src_rev_tid.tid,
-                                 format_type=format_type)
+                                 format_type=anno_format_type)
         elif asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             data_exporter.export_lmdb(mir_root=mir_root,
                                       assets_location=media_location,
@@ -97,8 +97,11 @@ class CmdExport(base.BaseCommand):
                                       asset_ids=asset_ids,
                                       base_branch=src_rev_tid.rev,
                                       base_task_id=src_rev_tid.tid,
-                                      format_type=format_type,
+                                      format_type=anno_format_type,
                                       lmdb_dir=asset_dir)
+        else:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"exporting not support asset format: {asset_format_type}")
 
         # add task result commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeExportData,

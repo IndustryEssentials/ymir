@@ -16,32 +16,33 @@ from mir.tools.errors import MirRuntimeError
 
 
 class AssetFormat(str, Enum):
+    ASSET_FORMAT_UNKNOWN = 'unknown'
     ASSET_FORMAT_RAW = 'raw'
     ASSET_FORMAT_LMDB = 'lmdb'
 
 
-class ExportFormat(str, Enum):
-    EXPORT_FORMAT_UNKNOWN = 'unknown'
-    EXPORT_FORMAT_NO_ANNOTATION = 'none'
-    EXPORT_FORMAT_ARK = 'ark'
-    EXPORT_FORMAT_VOC = 'voc'
-    EXPORT_FORMAT_LS_JSON = 'ls_json'  # label studio json format
+class AnnoFormat(str, Enum):
+    ANNO_FORMAT_UNKNOWN = 'unknown'
+    ANNO_FORMAT_NO_ANNOTATION = 'none'
+    ANNO_FORMAT_ARK = 'ark'
+    ANNO_FORMAT_VOC = 'voc'
+    ANNO_FORMAT_LS_JSON = 'ls_json'  # label studio json format
 
 
-def _format_file_output_func(anno_format: ExportFormat) -> Callable:
+def _format_file_output_func(anno_format: AnnoFormat) -> Callable:
     _format_func_map = {
-        ExportFormat.EXPORT_FORMAT_ARK: _single_image_annotations_to_ark,
-        ExportFormat.EXPORT_FORMAT_VOC: _single_image_annotations_to_voc,
-        ExportFormat.EXPORT_FORMAT_LS_JSON: _single_image_annotations_to_ls_json,
+        AnnoFormat.ANNO_FORMAT_ARK: _single_image_annotations_to_ark,
+        AnnoFormat.ANNO_FORMAT_VOC: _single_image_annotations_to_voc,
+        AnnoFormat.ANNO_FORMAT_LS_JSON: _single_image_annotations_to_ls_json,
     }
     return _format_func_map[anno_format]
 
 
-def _format_file_ext(anno_format: ExportFormat) -> str:
+def _format_file_ext(anno_format: AnnoFormat) -> str:
     _format_ext_map = {
-        ExportFormat.EXPORT_FORMAT_ARK: '.txt',
-        ExportFormat.EXPORT_FORMAT_VOC: '.xml',
-        ExportFormat.EXPORT_FORMAT_LS_JSON: '.json',
+        AnnoFormat.ANNO_FORMAT_ARK: '.txt',
+        AnnoFormat.ANNO_FORMAT_VOC: '.xml',
+        AnnoFormat.ANNO_FORMAT_LS_JSON: '.json',
     }
     return _format_ext_map[anno_format]
 
@@ -187,7 +188,7 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: mirpb.MetadataAtt
 
 class BaseDataWriter:
     def __init__(self, mir_root: str, assets_location: str, class_ids_mapping: Dict[int, int],
-                 format_type: ExportFormat) -> None:
+                 format_type: AnnoFormat) -> None:
         if not assets_location:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty assets_location')
 
@@ -224,7 +225,7 @@ class RawDataWriter(BaseDataWriter):
                  need_id_sub_folder: bool,
                  overwrite: bool,
                  class_ids_mapping: Dict[int, int],
-                 format_type: ExportFormat,
+                 format_type: AnnoFormat,
                  index_file_path: str = '',
                  index_assets_prefix: str = '',
                  index_annotations_prefix: str = '') -> None:
@@ -235,7 +236,7 @@ class RawDataWriter(BaseDataWriter):
             annotations_dir (str): export annotation directory, if format_type is NO_ANNOTATION, this could be None
             need_ext (bool): if true, all export assets will have it's type as ext, jpg, png, etc.
             need_id_sub_folder (bool): if True, use last 2 chars of asset id as a sub folder name
-            format_type (ExportFormat): format type, NONE means exports no annotations
+            format_type (AnnoFormat): format type, NONE means exports no annotations
             overwrite (bool): if true, export assets even if they are exist in destination position
             class_ids_mapping (Dict[int, int]): key: ymir class id, value: class id in exported annotation files
             index_file_path (str): path to index file, if None, generates no index file
@@ -285,7 +286,7 @@ class RawDataWriter(BaseDataWriter):
 
         # write annotations
         anno_file_name = ''
-        if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+        if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
             format_func = _format_file_output_func(anno_format=self._format_type)
             anno_str: str = format_func(asset_id=asset_id,
                                         attrs=attrs,
@@ -304,7 +305,7 @@ class RawDataWriter(BaseDataWriter):
         # write index file
         if self._index_file:
             asset_path_in_index_file = os.path.join(self._index_assets_prefix, sub_folder_name, asset_file_name)
-            if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+            if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
                 anno_path_in_index_file = os.path.join(self._index_annotations_prefix, sub_folder_name, anno_file_name)
                 self._index_file.write(f"{asset_path_in_index_file}\t{anno_path_in_index_file}\n")
             else:
@@ -324,7 +325,7 @@ class LmdbDataWriter(BaseDataWriter):
                  assets_location: str,
                  lmdb_dir: str,
                  class_ids_mapping: Dict[int, int],
-                 format_type: ExportFormat,
+                 format_type: AnnoFormat,
                  index_file_path: str = '') -> None:
         super().__init__(mir_root=mir_root,
                          assets_location=assets_location,
@@ -366,7 +367,7 @@ class LmdbDataWriter(BaseDataWriter):
 
         # write asset and annotations
         anno_key_name = ''
-        if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+        if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
             format_func = _format_file_output_func(anno_format=self._format_type)
             anno_data: bytes = format_func(asset_id=asset_id,
                                            attrs=attrs,
@@ -382,7 +383,7 @@ class LmdbDataWriter(BaseDataWriter):
 
         # write index file
         if self._lmdb_index:
-            if self._format_type != ExportFormat.EXPORT_FORMAT_NO_ANNOTATION:
+            if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
                 self._lmdb_index.write(f"{asset_key_name}\t{anno_key_name}\n")
             else:
                 self._lmdb_index.write(f"{asset_key_name}\n")

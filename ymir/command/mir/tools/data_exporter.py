@@ -12,27 +12,27 @@ def check_support_format(anno_format: str) -> bool:
 
 
 def support_format_type() -> List[str]:
-    return [f.value for f in data_writer.ExportFormat]
+    return [f.value for f in data_writer.AnnoFormat]
 
 
 def support_asset_format_type() -> List[str]:
     return [f.value for f in data_writer.AssetFormat]
 
 
-def format_type_from_str(anno_format: str) -> data_writer.ExportFormat:
-    return data_writer.ExportFormat(anno_format.lower())
+def format_type_from_str(anno_format: str) -> data_writer.AnnoFormat:
+    return data_writer.AnnoFormat(anno_format.lower())
 
 
 def asset_format_type_from_str(asset_format: str) -> data_writer.AssetFormat:
     return data_writer.AssetFormat(asset_format.lower())
 
 
-def format_type_from_executor_config(executor_config: dict) -> Tuple[data_writer.ExportFormat, data_writer.AssetFormat]:
+def format_type_from_executor_config(executor_config: dict) -> Tuple[data_writer.AnnoFormat, data_writer.AssetFormat]:
     if 'export_format' not in executor_config:
-        return (data_writer.ExportFormat.EXPORT_FORMAT_ARK, data_writer.AssetFormat.ASSET_FORMAT_RAW)
+        return (data_writer.AnnoFormat.ANNO_FORMAT_ARK, data_writer.AssetFormat.ASSET_FORMAT_RAW)
 
     ef, af = executor_config['export_format'].split(':')
-    return (data_writer.ExportFormat(ef), data_writer.AssetFormat(af))
+    return (data_writer.AnnoFormat(ef), data_writer.AssetFormat(af))
 
 
 def export(mir_root: str,
@@ -45,7 +45,7 @@ def export(mir_root: str,
            need_id_sub_folder: bool,
            base_branch: str,
            base_task_id: str,
-           format_type: data_writer.ExportFormat,
+           format_type: data_writer.AnnoFormat,
            index_file_path: str = '',
            index_assets_prefix: str = '',
            index_annotations_prefix: str = '') -> bool:
@@ -63,7 +63,7 @@ def export(mir_root: str,
         need_ext (bool): if true, all export assets will have it's type as ext, jpg, png, etc.
         need_id_sub_folder (bool): if True, use last 2 chars of asset id as a sub folder name
         base_branch (str): data branch
-        format_type (ExportFormat): format type, NONE means exports no annotations
+        format_type (AnnoFormat): format type, NONE means exports no annotations
         index_file_path (str): path to index file, if None, generates no index file
         index_assets_prefix (str): prefix path added to each asset index path
         index_annotations_prefix (str): prefix path added to each annotation index path
@@ -107,7 +107,7 @@ def export_lmdb(mir_root: str,
                 asset_ids: Set[str],
                 base_branch: str,
                 base_task_id: str,
-                format_type: data_writer.ExportFormat,
+                format_type: data_writer.AnnoFormat,
                 lmdb_dir: str,
                 index_file_path: str = '') -> bool:
     """
@@ -120,7 +120,7 @@ def export_lmdb(mir_root: str,
             all objects within this dict keys will be exported, if None, export everything;
         asset_ids (Set[str]): export asset ids
         base_branch (str): data branch
-        format_type (ExportFormat): format type, NONE means exports no annotations
+        format_type (AnnoFormat): format type, NONE means exports no annotations
         lmdb_dir: lmdb file directory
         index_file_path (str): path to index file, if None, generates no index file
 
