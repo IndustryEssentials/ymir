@@ -1,3 +1,4 @@
+import uvicorn  # type: ignore
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,7 +9,6 @@ from conf.logger import init_logging
 
 def get_application() -> FastAPI:
     init_logging()
-
     _app = FastAPI()
 
     _app.add_middleware(
@@ -20,13 +20,11 @@ def get_application() -> FastAPI:
     )
 
     _app.include_router(api_router)
+    _app.router.redirect_slashes = False
     return _app
 
 
 app = get_application()
 
-
 if __name__ == "__main__":
-    import uvicorn  # type: ignore
-
-    uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8888)
+    uvicorn.run("main:app", host="0.0.0.0", port=8888, debug=True)
