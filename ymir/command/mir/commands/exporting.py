@@ -4,7 +4,7 @@ import time
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, mir_repo_utils, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, data_exporter, data_writer, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -28,21 +28,21 @@ class CmdExport(base.BaseCommand):
                                        dst_rev=dst_rev,
                                        in_cis=self.args.in_cis,
                                        work_dir=self.args.work_dir,
-                                       format=self.args.format)
+                                       format=self.args.format,
+                                       asset_format=self.args.asset_format)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, media_location: str, src_revs: str,
-                      format: str, in_cis: str, work_dir: str, dst_rev: str) -> int:
+                      format: str, asset_format: str, in_cis: str, work_dir: str, dst_rev: str) -> int:
         # check args
         if not format:
             format = 'none'
+        if not asset_format:
+            asset_format = 'raw'
 
         if not asset_dir or not annotation_dir or not media_location or not src_revs:
             logging.error('empty --asset-dir, --annotation-dir, --media-location or --src-revs')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if format and (not data_exporter.check_support_format(format)):
-            logging.error(f"invalid --format: {format}")
             return MirCode.RC_CMD_INVALID_ARGS
 
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
@@ -57,6 +57,7 @@ class CmdExport(base.BaseCommand):
             return check_code
 
         format_type = data_exporter.format_type_from_str(format)
+        asset_format_type = data_exporter.asset_format_type_from_str(asset_format)
 
         # asset ids
         mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
@@ -76,18 +77,28 @@ class CmdExport(base.BaseCommand):
                                   error_message=f"unknown class names: {unknown_names}")
 
         # export
-        data_exporter.export(mir_root=mir_root,
-                             assets_location=media_location,
-                             class_type_ids={type_id: type_id
-                                             for type_id in type_ids_list},
-                             asset_ids=asset_ids,
-                             asset_dir=asset_dir,
-                             annotation_dir=annotation_dir,
-                             need_ext=True,
-                             need_id_sub_folder=False,
-                             base_branch=src_rev_tid.rev,
-                             base_task_id=src_rev_tid.tid,
-                             format_type=format_type)
+        class_type_ids = {type_id: type_id for type_id in type_ids_list}
+        if asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_RAW:
+            data_exporter.export(mir_root=mir_root,
+                                 assets_location=media_location,
+                                 class_type_ids=class_type_ids,
+                                 asset_ids=asset_ids,
+                                 asset_dir=asset_dir,
+                                 annotation_dir=annotation_dir,
+                                 need_ext=True,
+                                 need_id_sub_folder=False,
+                                 base_branch=src_rev_tid.rev,
+                                 base_task_id=src_rev_tid.tid,
+                                 format_type=format_type)
+        elif asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
+            data_exporter.export_lmdb(mir_root=mir_root,
+                                      assets_location=media_location,
+                                      class_type_ids=class_type_ids,
+                                      asset_ids=asset_ids,
+                                      base_branch=src_rev_tid.rev,
+                                      base_task_id=src_rev_tid.tid,
+                                      format_type=format_type,
+                                      lmdb_dir=asset_dir)
 
         # add task result commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeExportData,
@@ -134,6 +145,12 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       default="none",
                                       choices=data_exporter.support_format_type(),
                                       help='annotation format: ark / voc / none')
+    exporting_arg_parser.add_argument('--asset-format',
+                                      dest='asset_format',
+                                      type=str,
+                                      default='raw',
+                                      choices=data_exporter.support_asset_format_type(),
+                                      help='asset format: raw / lmdb')
     exporting_arg_parser.add_argument("-p",
                                       '--cis',
                                       dest="in_cis",

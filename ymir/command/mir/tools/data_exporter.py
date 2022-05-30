@@ -15,8 +15,16 @@ def support_format_type() -> List[str]:
     return [f.value for f in data_writer.ExportFormat]
 
 
+def support_asset_format_type() -> List[str]:
+    return [f.value for f in data_writer.AssetFormat]
+
+
 def format_type_from_str(anno_format: str) -> data_writer.ExportFormat:
     return data_writer.ExportFormat(anno_format.lower())
+
+
+def asset_format_type_from_str(asset_format: str) -> data_writer.AssetFormat:
+    return data_writer.AssetFormat(asset_format.lower())
 
 
 def format_type_from_executor_config(executor_config: dict) -> Tuple[data_writer.ExportFormat, data_writer.AssetFormat]:
