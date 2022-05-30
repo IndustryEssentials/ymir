@@ -299,7 +299,7 @@ class CmdTrain(base.BaseCommand):
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
 
-        export_format, asset_format = _get_export_format(executor_config=executor_config)
+        export_format, asset_format = data_exporter.format_type_from_executor_config(executor_config)
 
         if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
             # export train set
@@ -370,7 +370,7 @@ class CmdTrain(base.BaseCommand):
                 shutil.copytree(val_lmdb_dir, os.path.join(work_dir_in, 'val'), dirs_exist_ok=True)
         else:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"unsupported asset format: {asset_format}")
+                                  error_message=f"training unsupported asset format: {asset_format}")
 
         logging.info("starting train docker container")
 

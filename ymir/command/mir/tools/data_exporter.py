@@ -2,7 +2,7 @@
 exports the assets and annotations from mir format to ark-training-format
 """
 
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 from mir.tools import data_reader, data_writer, revs_parser
 
@@ -17,6 +17,14 @@ def support_format_type() -> List[str]:
 
 def format_type_from_str(anno_format: str) -> data_writer.ExportFormat:
     return data_writer.ExportFormat(anno_format.lower())
+
+
+def format_type_from_executor_config(executor_config: dict) -> Tuple[data_writer.ExportFormat, data_writer.AssetFormat]:
+    if 'export_format' not in executor_config:
+        return (data_writer.ExportFormat.EXPORT_FORMAT_ARK, data_writer.AssetFormat.ASSET_FORMAT_RAW)
+
+    ef, af = executor_config['export_format'].split(':')
+    return (data_writer.ExportFormat(ef), data_writer.AssetFormat(af))
 
 
 def export(mir_root: str,
