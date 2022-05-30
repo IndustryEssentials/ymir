@@ -13,7 +13,8 @@ async def task_create(task: Task):
         res.code = 1002
         res.error = "task tid already exists"
         return res.dict
-    celery_res = load_task_data.delay(task)
+    # celery_res = load_task_data.delay(task)
+    celery_res = load_task_data(task)
     celery_task_msg = {"tid": str(task.tid), "celery_id": celery_res.id}
     new_celery_task = await add_task(celery_task_msg)
     logger.info(f"new_celery_task: {new_celery_task}")

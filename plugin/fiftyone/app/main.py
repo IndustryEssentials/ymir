@@ -1,15 +1,24 @@
 import uvicorn  # type: ignore
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from app.routes.api import router as api_router
 from conf.configs import conf
 from conf.logger import init_logging
+from app.models.schemas import BaseResponseBody
 
 
 def get_application() -> FastAPI:
     init_logging()
     _app = FastAPI()
+
+    @_app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request, exc):
+        res = BaseResponseBody()
+        res.code = 1006
+        res.error = str(exc)
+        return JSONResponse(res.dict, status_code=200)
 
     _app.add_middleware(
         CORSMiddleware,

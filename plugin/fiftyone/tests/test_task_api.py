@@ -1,6 +1,6 @@
 import pytest
-from unittest.mock import MagicMock
-from app.models import db
+
+from app.routes import task as task_routes
 
 
 @pytest.mark.parametrize(
@@ -21,7 +21,6 @@ from app.models import db
         ),
         (
             {
-                "tid": "akbb23",
                 "datas": [
                     {
                         "id": "32423xfcd33xxx",
@@ -30,15 +29,15 @@ from app.models import db
                     }
                 ],
             },
-            {"code": 1002, "data": {}, "error": "task tid already exists"},
+            {"code": 1006, "data": None, "error": "tid is required"},
         ),
     ],
 )
 def test_task_create(test_app, task, response_body, monkeypatch):
     async def mock_get_task(payload):
-        return response_body.get("code")
+        return {"code": 0, "data": {"tid": payload.tid}, "error": None}
 
-    monkeypatch.setattr(db, "get_task", mock_get_task)
+    monkeypatch.setattr(task_routes, "task_create", mock_get_task)
 
     response = test_app.post(
         "/task/",
@@ -47,4 +46,4 @@ def test_task_create(test_app, task, response_body, monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json() == response_body
+    assert response.json().get("code") == response_body.get("code")

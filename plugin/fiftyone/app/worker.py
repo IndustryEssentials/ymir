@@ -12,9 +12,9 @@ from app.models.schemas import Task
 from conf.configs import conf
 
 celery = Celery(__name__)
-celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
-celery.conf.result_backend = os.environ.get(
-    "CELERY_RESULT_BACKEND", "redis://localhost:6379"
+celery.conf.broker_url = f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
+celery.conf.result_backend = (
+    f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
 )
 
 celery.conf.task_serializer = "pickle"
