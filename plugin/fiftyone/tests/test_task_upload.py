@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-import fiftyone as fo
+import fiftyone as fo  # type: ignore
 
 from app.worker import build_detections, build_sample
 

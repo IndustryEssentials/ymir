@@ -1,4 +1,4 @@
-import motor.motor_asyncio
+import motor.motor_asyncio  # type: ignore
 
 from conf.configs import conf
 import asyncio

@@ -29,7 +29,7 @@ from app.routes import task as task_routes
                     }
                 ],
             },
-            {"code": 1006, "data": None, "error": "tid is required"},
+            {"code": 1010, "data": None, "error": "tid is required"},
         ),
     ],
 )

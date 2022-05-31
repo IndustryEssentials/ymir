@@ -1,6 +1,6 @@
 import csv
-import os
 from pathlib import Path
+from typing import List
 
 import fiftyone as fo  # type: ignore
 import fiftyone.core.metadata as fom  # type: ignore
@@ -33,7 +33,7 @@ def load_task_data(task: Task):
     :type task: Task
     """
     base_path = Path(conf.base_path)
-    samples: list[fo.Sample] = []
+    samples: List[fo.Sample] = []
     for d in task.datas:
         data_dir = base_path / Path(d.data_dir)
         tsv_file = data_dir / "img.tsv"
@@ -79,7 +79,7 @@ def build_sample(
 
 def build_detections(
     objects: list, ymir_data_name: str, width: int, height: int
-) -> list[fo.Detection]:
+) -> List[fo.Detection]:
     detections = []
     for obj in objects:
         label = obj["name"]
