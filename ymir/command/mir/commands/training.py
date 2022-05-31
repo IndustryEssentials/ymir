@@ -147,14 +147,6 @@ def _get_task_parameters(config: dict) -> str:
     return config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
 
 
-def _get_export_format(executor_config: dict) -> Tuple[data_writer.AnnoFormat, data_writer.AssetFormat]:
-    if 'export_format' not in executor_config:
-        return (data_writer.AnnoFormat.ANNO_FORMAT_ARK, data_writer.AssetFormat.ASSET_FORMAT_RAW)
-
-    components = executor_config['export_format'].split(':')
-    return (data_writer.AnnoFormat(components[0]), data_writer.AssetFormat(components[1]))
-
-
 class CmdTrain(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command train: %s", self.args)
