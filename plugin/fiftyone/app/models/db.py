@@ -1,9 +1,10 @@
-import motor.motor_asyncio  # type: ignore
-
-from conf.configs import conf
 import asyncio
 
-client = motor.motor_asyncio.AsyncIOMotorClient(conf.mongo_uri)
+from motor import motor_asyncio
+
+from conf.configs import conf
+
+client = motor_asyncio.AsyncIOMotorClient(conf.mongo_uri)
 client.get_io_loop = asyncio.get_event_loop
 database = client.fiftyone
 

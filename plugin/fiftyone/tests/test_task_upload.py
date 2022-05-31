@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
 
-import fiftyone as fo  # type: ignore
+import fiftyone as fo
 
-from app.worker import build_detections, build_sample
+from app.worker import _build_detections, _build_sample
 
 
 def test_build_detections():
@@ -21,7 +21,7 @@ def test_build_detections():
             },
         }
     ]
-    res = build_detections(objects, "ymir_data233", 1080, 1080)
+    res = _build_detections(objects, "ymir_data233", 1080, 1080)
     item = fo.Detection(
         label="人",
         bounding_box=[
@@ -49,7 +49,7 @@ def test_build_sample():
         "tests/test_data/voc/labels/241294009_432213948218468_252149922899382953_n.xml"
     )
 
-    sample = build_sample(base_path, img_path, annotation_path, "ymir_data233")
+    sample = _build_sample(base_path, img_path, annotation_path, "ymir_data233")
 
     assert sample["ground_truth"].detections[0].label == "人"
     assert sample["ground_truth"].detections[0].bounding_box == [

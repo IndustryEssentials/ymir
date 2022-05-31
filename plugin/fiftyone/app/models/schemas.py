@@ -1,16 +1,17 @@
-from typing import List, Union
+from typing import List
 
 from pydantic import BaseModel, Field
 
+from utils.errors import FiftyOneResponseCode
+
 
 class DataSet(BaseModel):
-    id: str
+    data_id: str = Field(..., alias="id")
     name: str = Field(...)
     data_dir: str = Field(...)
 
     class Config:
         allow_population_by_field_name = True
-        arbitrary_types_allowed = True
         schema_extra = {
             "example": {
                 "id": "32423xfcd33xxx",
@@ -22,39 +23,29 @@ class DataSet(BaseModel):
 
 class Task(BaseModel):
     tid: str
-    datas: Union[List[DataSet]]
+    datas: List[DataSet]
 
 
 class BaseResponse(BaseModel):
-    code: int = 0
+    code: int = FiftyOneResponseCode.FO_OK
     error: str = ""
 
     class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
         schema_extra = {
             "example": {
-                "id": "32423xfcd33xxx",
-                "code": 0,
+                "code": FiftyOneResponseCode.FO_OK,
                 "error": "",
             }
         }
 
 
-class BaseResponseBody:
-    def __init__(self):
-        self.code = 0
-        self.data = {}
-        self.error = None
-
-    @property
-    def dict(self):
-        return self.__dict__
-
-
 class TaskCreateBody(BaseModel):
-    tid: str
+    tid: str = ""
 
 
 class TaskCreateResponse(BaseResponse):
-    data: TaskCreateBody
+    data: TaskCreateBody = TaskCreateBody()
+
+
+class ErrorResponse(BaseResponse):
+    data: dict = {}

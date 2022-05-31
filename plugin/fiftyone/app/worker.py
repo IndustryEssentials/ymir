@@ -2,33 +2,47 @@ import csv
 from pathlib import Path
 from typing import List
 
-import fiftyone as fo  # type: ignore
-import fiftyone.core.metadata as fom  # type: ignore
-import xmltodict  # type: ignore
-from celery import Celery  # type: ignore
-from fiftyone.utils.voc import VOCBoundingBox  # type: ignore
+import fiftyone as fo
+import fiftyone.core.metadata as fom
+import xmltodict
+from celery import current_app as current_celery_app
+from celery import shared_task
+from fiftyone.utils.voc import VOCBoundingBox
 
 from app.models.schemas import Task
 from conf.configs import conf
 
-celery = Celery(__name__)
-celery.conf.broker_url = f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
-celery.conf.result_backend = (
-    f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
-)
 
-celery.conf.task_serializer = "pickle"
-celery.conf.result_serializer = "pickle"
-celery.conf.event_serializer = "json"
-celery.conf.accept_content = ["application/json", "application/x-python-serialize"]
-celery.conf.result_accept_content = [
-    "application/json",
-    "application/x-python-serialize",
-]
+def create_celery() -> current_celery_app:
+    """
+    Create a celery app
+    run: celery -A app.main.celery worker --loglevel=INFO
+    """
+    celery_app = current_celery_app
+    celery_app.conf.broker_url = (
+        f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
+    )
+    celery_app.conf.result_backend = (
+        f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
+    )
+
+    celery_app.conf.task_serializer = "pickle"
+    celery_app.conf.result_serializer = "pickle"
+    celery_app.conf.event_serializer = "json"
+    celery_app.conf.accept_content = [
+        "application/json",
+        "application/x-python-serialize",
+    ]
+    celery_app.conf.result_accept_content = [
+        "application/json",
+        "application/x-python-serialize",
+    ]
+
+    return celery_app
 
 
-@celery.task(name="load_task_data")
-def load_task_data(task: Task):
+@shared_task(name="load_task_data")
+def load_task_data(task: Task) -> None:
     """
     :type task: Task
     """
@@ -40,7 +54,7 @@ def load_task_data(task: Task):
         with tsv_file.open() as fd:
             rd = csv.reader(fd, delimiter="\t", quotechar='"')
             samples.extend(
-                build_sample(base_path, row[0], row[1], d.name) for row in rd
+                _build_sample(base_path, row[0], row[1], d.name) for row in rd
             )
     # Create dataset
     dataset = fo.Dataset(task.tid)
@@ -48,7 +62,7 @@ def load_task_data(task: Task):
     dataset.persistent = True
 
 
-def build_sample(
+def _build_sample(
     base_path: Path, img_path: str, annotation_path: str, ymir_data_name: str
 ) -> fo.Sample:
     annotation_file = base_path / annotation_path
@@ -69,7 +83,7 @@ def build_sample(
         objects.append(annotation["object"])
     else:
         objects = annotation["object"]
-    detections = build_detections(objects, ymir_data_name, width, height)
+    detections = _build_detections(objects, ymir_data_name, width, height)
 
     sample = fo.Sample(filepath=base_path / img_path)
     sample["ground_truth"] = fo.Detections(detections=detections)
@@ -77,7 +91,7 @@ def build_sample(
     return sample
 
 
-def build_detections(
+def _build_detections(
     objects: list, ymir_data_name: str, width: int, height: int
 ) -> List[fo.Detection]:
     detections = []

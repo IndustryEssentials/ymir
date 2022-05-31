@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=TaskCreateResponse)
-async def create_task(task: Task):
+async def create_task(task: Task) -> JSONResponse:
     logger.info(f"task: {task}")
     res = await task_create(task)
     return JSONResponse(content=res)

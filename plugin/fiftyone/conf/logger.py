@@ -11,7 +11,7 @@ class InterceptHandler(logging.Handler):
     See https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging
     """
 
-    def emit(self, record: logging.LogRecord):
+    def emit(self, record: logging.LogRecord) -> None:
         # Get corresponding Loguru level if it exists
         try:
             level = logger.level(record.levelname).name
@@ -29,7 +29,7 @@ class InterceptHandler(logging.Handler):
         )
 
 
-def init_logging():
+def init_logging() -> None:
     """
     Replaces logging handlers with a handler for using the custom handler.
 
