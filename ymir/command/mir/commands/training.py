@@ -7,14 +7,13 @@ import subprocess
 from subprocess import CalledProcessError
 import traceback
 from typing import Any, List, Optional, Set, Tuple
-from mir.tools import data_writer
 
 from tensorboardX import SummaryWriter
 import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, context, data_exporter, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, context, data_reader, data_writer, mir_storage_ops, revs_parser
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
@@ -290,71 +289,84 @@ class CmdTrain(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
+        type_ids_set = set(type_ids_list)
 
-        export_format, asset_format = data_exporter.format_type_from_executor_config(executor_config)
+        export_format, asset_format = data_writer.format_type_from_executor_config(executor_config)
 
+        dw: data_writer.BaseDataWriter
         if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
             # export train set
-            data_exporter.export_raw(mir_root=mir_root,
-                                     assets_location=media_location,
-                                     class_type_ids=type_id_idx_mapping,
-                                     asset_ids=train_ids,
-                                     asset_dir=asset_dir,
-                                     annotation_dir=work_dir_annotations,
-                                     need_ext=True,
-                                     need_id_sub_folder=True,
-                                     base_branch=src_typ_rev_tid.rev,
-                                     base_task_id=src_typ_rev_tid.tid,
-                                     format_type=export_format,
-                                     index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
-                                     index_assets_prefix='/in/assets',
-                                     index_annotations_prefix='/in/annotations')
+            dw = data_writer.RawDataWriter(mir_root=mir_root,
+                                           assets_location=media_location,
+                                           assets_dir=asset_dir,
+                                           annotations_dir=work_dir_annotations,
+                                           need_ext=True,
+                                           need_id_sub_folder=True,
+                                           overwrite=False,
+                                           class_ids_mapping=type_id_idx_mapping,
+                                           format_type=export_format,
+                                           index_file_path=os.path.join(work_dir_in, 'train-index/tsv'),
+                                           index_assets_prefix='/in/assets',
+                                           index_annotations_prefix='/in/annotations')
+            with data_reader.MirDataReader(mir_root=mir_root,
+                                           typ_rev_tid=src_typ_rev_tid,
+                                           asset_ids=train_ids,
+                                           class_ids=type_ids_set) as dr:
+                dw.write_all(dr)
 
             # export validation set
-            data_exporter.export_raw(mir_root=mir_root,
-                                     assets_location=media_location,
-                                     class_type_ids=type_id_idx_mapping,
-                                     asset_ids=val_ids,
-                                     asset_dir=asset_dir,
-                                     annotation_dir=work_dir_annotations,
-                                     need_ext=True,
-                                     need_id_sub_folder=True,
-                                     base_branch=src_typ_rev_tid.rev,
-                                     base_task_id=src_typ_rev_tid.tid,
-                                     format_type=export_format,
-                                     index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
-                                     index_assets_prefix='/in/assets',
-                                     index_annotations_prefix='/in/annotations')
+            dw = data_writer.RawDataWriter(mir_root=mir_root,
+                                           assets_location=media_location,
+                                           assets_dir=asset_dir,
+                                           annotations_dir=work_dir_annotations,
+                                           need_ext=True,
+                                           need_id_sub_folder=True,
+                                           overwrite=False,
+                                           class_ids_mapping=type_id_idx_mapping,
+                                           format_type=export_format,
+                                           index_file_path=os.path.join(work_dir_in, 'val-index/tsv'),
+                                           index_assets_prefix='/in/assets',
+                                           index_annotations_prefix='/in/annotations')
+            with data_reader.MirDataReader(mir_root=mir_root,
+                                           typ_rev_tid=src_typ_rev_tid,
+                                           asset_ids=val_ids,
+                                           class_ids=type_ids_set) as dr:
+                dw.write_all(dr)
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             # export train set
             if asset_cache_dir:
                 train_lmdb_dir = os.path.join(asset_cache_dir, f"tr:{src_revs}")
             else:
                 train_lmdb_dir = os.path.join(work_dir_in, 'train')
-            data_exporter.export_lmdb(mir_root=mir_root,
-                                      assets_location=media_location,
-                                      class_type_ids=type_id_idx_mapping,
-                                      asset_ids=train_ids,
-                                      base_branch=src_typ_rev_tid.rev,
-                                      base_task_id=src_typ_rev_tid.tid,
-                                      format_type=export_format,
-                                      lmdb_dir=train_lmdb_dir,
-                                      index_file_path=os.path.join(work_dir_in, 'train-index.tsv'))
+
+            dw = data_writer.LmdbDataWriter(mir_root=mir_root,
+                                            assets_location=media_location,
+                                            lmdb_dir=train_lmdb_dir,
+                                            class_ids_mapping=type_id_idx_mapping,
+                                            format_type=export_format,
+                                            index_file_path=os.path.join(work_dir_in, 'train-index.tsv'))
+            with data_reader.MirDataReader(mir_root=mir_root,
+                                           typ_rev_tid=src_typ_rev_tid,
+                                           asset_ids=train_ids,
+                                           class_ids=type_ids_set) as dr:
+                dw.write_all(dr)
 
             # export validation set
             if asset_cache_dir:
                 val_lmdb_dir = os.path.join(asset_cache_dir, f"va:{src_revs}")
             else:
                 val_lmdb_dir = os.path.join(work_dir_in, 'val')
-            data_exporter.export_lmdb(mir_root=mir_root,
-                                      assets_location=media_location,
-                                      class_type_ids=type_id_idx_mapping,
-                                      asset_ids=val_ids,
-                                      base_branch=src_typ_rev_tid.rev,
-                                      base_task_id=src_typ_rev_tid.tid,
-                                      format_type=export_format,
-                                      lmdb_dir=val_lmdb_dir,
-                                      index_file_path=os.path.join(work_dir_in, 'val-index.tsv'))
+            dw = data_writer.LmdbDataWriter(mir_root=mir_root,
+                                            assets_location=media_location,
+                                            lmdb_dir=val_lmdb_dir,
+                                            class_ids_mapping=type_id_idx_mapping,
+                                            format_type=export_format,
+                                            index_file_path=os.path.join(work_dir_in, 'val-index.tsv'))
+            with data_reader.MirDataReader(mir_root=mir_root,
+                                           typ_rev_tid=src_typ_rev_tid,
+                                           asset_ids=val_ids,
+                                           class_ids=type_ids_set) as dr:
+                dw.write_all(dr)
 
             # copy cache to destination
             if asset_cache_dir:

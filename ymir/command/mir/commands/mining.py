@@ -10,7 +10,7 @@ import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, mir_storage_ops, revs_parser, utils as mir_utils
+from mir.tools import checker, class_ids, data_reader, data_writer, mir_storage_ops, revs_parser, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.data_writer import AnnoFormat
@@ -327,19 +327,20 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
 def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_tid: revs_parser.TypRevTid,
                     media_location: str, work_asset_path: str, work_index_file: str) -> None:
     img_list = set(mir_metadatas.attributes.keys())
-    data_exporter.export_raw(mir_root=mir_root,
-                             assets_location=media_location,
-                             class_type_ids={},
-                             asset_ids=img_list,
-                             asset_dir=work_asset_path,
-                             annotation_dir='',
-                             need_ext=True,
-                             need_id_sub_folder=True,
-                             base_branch=src_rev_tid.rev,
-                             base_task_id=src_rev_tid.tid,
-                             format_type=AnnoFormat.ANNO_FORMAT_NO_ANNOTATION,
-                             index_file_path=work_index_file,
-                             index_assets_prefix=work_asset_path)
+    dw = data_writer.RawDataWriter(mir_root=mir_root,
+                                   assets_location=media_location,
+                                   assets_dir=work_asset_path,
+                                   annotations_dir='',
+                                   need_ext=True,
+                                   need_id_sub_folder=True,
+                                   overwrite=False,
+                                   class_ids_mapping={},
+                                   format_type=AnnoFormat.ANNO_FORMAT_NO_ANNOTATION,
+                                   index_file_path=work_index_file,
+                                   index_assets_prefix=work_asset_path)
+    with data_reader.MirDataReader(mir_root=mir_root, typ_rev_tid=src_rev_tid, asset_ids=img_list,
+                                   class_ids=set()) as dr:
+        dw.write_all(dr)
 
 
 def _get_shm_size(mining_config_file_path: str) -> str:

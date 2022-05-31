@@ -2,7 +2,7 @@ from enum import Enum
 import json
 import os
 import shutil
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -10,7 +10,7 @@ import lmdb
 from PIL import Image, UnidentifiedImageError
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids
+from mir.tools import class_ids, data_reader
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -27,6 +27,34 @@ class AnnoFormat(str, Enum):
     ANNO_FORMAT_ARK = 'ark'
     ANNO_FORMAT_VOC = 'voc'
     ANNO_FORMAT_LS_JSON = 'ls_json'  # label studio json format
+
+
+def check_support_format(anno_format: str) -> bool:
+    return anno_format in support_format_type()
+
+
+def support_format_type() -> List[str]:
+    return [f.value for f in AnnoFormat]
+
+
+def support_asset_format_type() -> List[str]:
+    return [f.value for f in AssetFormat]
+
+
+def format_type_from_str(anno_format: str) -> AnnoFormat:
+    return AnnoFormat(anno_format.lower())
+
+
+def asset_format_type_from_str(asset_format: str) -> AssetFormat:
+    return AssetFormat(asset_format.lower())
+
+
+def format_type_from_executor_config(executor_config: dict) -> Tuple[AnnoFormat, AssetFormat]:
+    if 'export_format' not in executor_config:
+        return (AnnoFormat.ANNO_FORMAT_ARK, AssetFormat.ASSET_FORMAT_RAW)
+
+    ef, af = executor_config['export_format'].split(':')
+    return (AnnoFormat(ef), AssetFormat(af))
 
 
 def _format_file_output_func(anno_format: AnnoFormat) -> Callable:
@@ -213,6 +241,11 @@ class BaseDataWriter:
         close writer
         """
         pass
+
+    def write_all(self, dr: data_reader.MirDataReader) -> None:
+        for v in dr.read():
+            self.write(*v)
+        self.close()
 
 
 class RawDataWriter(BaseDataWriter):

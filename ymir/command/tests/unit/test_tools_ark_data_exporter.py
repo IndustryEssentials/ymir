@@ -7,7 +7,7 @@ from google.protobuf import json_format
 import lmdb
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_exporter, data_reader, data_writer, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import data_reader, data_writer, hash_utils, mir_storage_ops, revs_parser
 from tests import utils as test_utils
 
 
@@ -227,105 +227,42 @@ class TestArkDataExporter(unittest.TestCase):
         lmdb_env.close()
 
     # public: test cases
-    def test_normal_00(self):
-        ''' normal case: ark format '''
-        asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
-        train_path = os.path.join(self._dest_root, 'train')
-
-        data_exporter.export_raw(mir_root=self._mir_root,
-                                 assets_location=self._assets_location,
-                                 class_type_ids={
-                                     2: 0,
-                                     52: 1
-                                 },
-                                 asset_ids=asset_ids,
-                                 asset_dir=train_path,
-                                 annotation_dir=train_path,
-                                 need_ext=True,
-                                 need_id_sub_folder=False,
-                                 base_branch='a',
-                                 base_task_id='a',
-                                 format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                                 index_file_path=os.path.join(train_path, 'index.tsv'),
-                                 index_assets_prefix='')
-
-        # check result
-        self.__check_result(asset_ids=asset_ids,
-                            format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                            export_path=train_path,
-                            index_file_path=os.path.join(train_path, 'index.tsv'))
-        self.__check_ark_annotations(asset_id='430df22960b0f369318705800139fcc8ec38a3e4',
-                                     export_path=train_path,
-                                     expected_first_two_cols=[(1, 104), (1, 133), (0, 195), (0, 26)])
-
-    def test_normal_01(self):
-        ''' normal case: voc format '''
-        asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
-        train_path = os.path.join(self._dest_root, 'train')
-
-        data_exporter.export_raw(mir_root=self._mir_root,
-                             assets_location=self._assets_location,
-                             class_type_ids={
-                                 2: 0,
-                                 52: 1
-                             },
-                             asset_ids=asset_ids,
-                             asset_dir=train_path,
-                             annotation_dir=train_path,
-                             need_ext=True,
-                             need_id_sub_folder=False,
-                             base_branch='a',
-                             base_task_id='a',
-                             format_type=data_writer.AnnoFormat.ANNO_FORMAT_VOC,
-                             index_file_path=os.path.join(train_path, 'index.tsv'),
-                             index_assets_prefix='')
-
-        # check result
-        self.__check_result(asset_ids=asset_ids,
-                            format_type=data_writer.AnnoFormat.ANNO_FORMAT_VOC,
-                            export_path=train_path,
-                            index_file_path=os.path.join(train_path, 'index.tsv'))
-
     def test_data_reader_00(self):
-        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+        with data_reader.MirDataReader(mir_root=self._mir_root,
                                            typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
                                            asset_ids=set(),
-                                           class_ids=set())
-        self.assertEqual(2, len(list(reader.read())))
+                                           class_ids=set()) as reader:
+            self.assertEqual(2, len(list(reader.read())))
 
         asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
-        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+        with data_reader.MirDataReader(mir_root=self._mir_root,
                                            typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
                                            asset_ids=asset_ids,
-                                           class_ids=set())
-        self.assertEqual(2, len(list(reader.read())))
-        self.assertEqual(0, reader.empty_annotations_count)
+                                           class_ids=set()) as reader:
+            self.assertEqual(2, len(list(reader.read())))
+            self.assertEqual(0, reader.empty_annotations_count)
 
-        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+        with data_reader.MirDataReader(mir_root=self._mir_root,
                                            typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
                                            asset_ids=asset_ids,
-                                           class_ids={2})
-        for asset_id, attrs, annotations in reader.read():
-            if asset_id == '430df22960b0f369318705800139fcc8ec38a3e4':
-                self.assertEqual(2, len(annotations))
-                self.assertEqual((500, 281), (attrs.width, attrs.height))
-        self.assertEqual(2, len(list(reader.read())))
+                                           class_ids={2}) as reader:
+            for asset_id, attrs, annotations in reader.read():
+                if asset_id == '430df22960b0f369318705800139fcc8ec38a3e4':
+                    self.assertEqual(2, len(annotations))
+                    self.assertEqual((500, 281), (attrs.width, attrs.height))
+            self.assertEqual(2, len(list(reader.read())))
 
         asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4'}
-        reader = data_reader.MirDataReader(mir_root=self._mir_root,
+        with data_reader.MirDataReader(mir_root=self._mir_root,
                                            typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
                                            asset_ids=asset_ids,
-                                           class_ids=set())
-        self.assertEqual(1, len(list(reader.read())))
+                                           class_ids=set()) as reader:
+            self.assertEqual(1, len(list(reader.read())))
 
     def test_data_rw_00(self):
         train_path = os.path.join(self._dest_root, 'train')
-        index_file_path = os.path.join(train_path, 'index.tsv')
 
-        reader = data_reader.MirDataReader(mir_root=self._mir_root,
-                                           typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                           asset_ids=set(),
-                                           class_ids=set())
+        index_file_path = os.path.join(train_path, 'index.tsv')
         raw_writer = data_writer.RawDataWriter(mir_root=self._mir_root,
                                                assets_location=self._assets_location,
                                                assets_dir=train_path,
@@ -339,7 +276,6 @@ class TestArkDataExporter(unittest.TestCase):
                                                },
                                                format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
                                                index_file_path=index_file_path)
-
         lmdb_index_file_path = os.path.join(train_path, 'index-lmdb.tsv')
         lmdb_writer = data_writer.LmdbDataWriter(mir_root=self._mir_root,
                                                  assets_location=self._assets_location,
@@ -351,12 +287,12 @@ class TestArkDataExporter(unittest.TestCase):
                                                  format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
                                                  index_file_path=lmdb_index_file_path)
 
-        for asset_id, attrs, annotations in reader.read():
-            raw_writer.write(asset_id=asset_id, attrs=attrs, annotations=annotations)
-            lmdb_writer.write(asset_id=asset_id, attrs=attrs, annotations=annotations)
-
-        raw_writer.close()
-        lmdb_writer.close()
+        with data_reader.MirDataReader(mir_root=self._mir_root,
+                                           typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
+                                           asset_ids=set(),
+                                           class_ids=set()) as reader:
+            raw_writer.write_all(reader)
+            lmdb_writer.write_all(reader)
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
