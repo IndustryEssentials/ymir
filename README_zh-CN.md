@@ -327,7 +327,7 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 2.把VOC2012放到 `ymir-workplace/ymir-sharing` 下面；
 
-3.选择路径导入，填上路径地址`/ymir-sharing/voc2012`。
+3.选择路径导入，填上路径地址`voc2012`。
 
 完成初始数据集的导入后，点击【迭代数据准备】，完成对应的数据集和挖掘策略设置。其中训练集已设置为创建项目时默认的系统训练集，不可变更。
 
@@ -519,31 +519,62 @@ $ mir init # 将此目录初始化成一个mir repo
 $ mkdir ~/ymir-assets ~/ymir-models # 建立资源和模型存储目录，所有的图像资源都会保存在此目录中，而在mir repo中只会保留对这些资源的引用
 ```
 
-mir repo 中的标签通过标签文件进行统一管理，打开标签文件 `~/mir-demo-repo/labels.csv`，可以看到以下内容：
+mir repo 中的标签通过标签文件进行统一管理，打开标签文件 `~/mir-demo-repo/.mir/labels.yaml`，可以看到类似以下内容：
 
-```
-# type_id, preserved, main type name, alias...
+``` yaml
+labels:
+- create_time: 1646728410.570311
+  id: 0
+  update_time: 1646728410.570311
+  name: frisbee
+- create_time: 1646728410.570311
+  id: 1
+  update_time: 1646728410.570311
+  name: car
 ```
 
-在这个文件中，每一行代表一个类别标签，依次是标签 id（从 0 开始增长），留空，主标签名，一个或多个标签别名，例如，如果想要导入的数据集中含有 person, cat 和 tv 这几个标签，可以编辑此文件为：
+可以添加自己的标签，就像下面这样：
 
-```
-0,,person
-1,,cat
-2,,tv
+
+``` yaml
+labels:
+- create_time: 1646728410.570311
+  id: 0
+  update_time: 1646728410.570311
+  name: frisbee
+- create_time: 1646728410.570311
+  id: 1
+  update_time: 1646728410.570311
+  name: car
+- create_time: 1646728410.570311
+  id: 2
+  update_time: 1646728410.570311
+  name: tv
 ```
 
-一个类别标签可以指定一个或多个别名，例如，如果指定 television 作为 tv 的别名，则 `labels.csv` 文件可更改为：
+一个类别标签可以指定一个或多个别名，例如，如果指定 television 和 tv_monitor 作为 tv 的别名，则 `labels.yaml` 文件可更改为：
 
-```
-0,,person
-1,,cat
-2,,tv,television
+``` yaml
+- create_time: 1646728410.570311
+  id: 0
+  update_time: 1646728410.570311
+  name: frisbee
+- create_time: 1646728410.570311
+  id: 1
+  update_time: 1646728410.570311
+  name: car
+- create_time: 1646728410.570311
+  id: 2
+  update_time: 1646728410.570311
+  name: tv
+  aliases:
+  - television
+  - tv_monitor
 ```
 
 可以使用vi，或其他的编辑工具对此文件进行编辑，用户可以添加类别的别名，也可以增加新的类别，但不建议更改或删除已经有的类别的主名和id。
 
-`labels.csv` 文件可以通过建立软链接的方式，在多个 mir repo 之间共享。
+`labels.yaml` 文件可以通过建立软链接的方式，在多个 mir repo 之间共享。
 
 用户需要事先准备三个数据集：
 

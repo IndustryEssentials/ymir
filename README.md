@@ -344,7 +344,7 @@ Users can download the example **Sample.zip** for reference as follows:
 
 2. Place dataset VOC2012 under `ymir-workplace/ymir-sharing`.
 
-3. Select 'path import' and enter the absolute path of the dataset in the server: `/ymir-sharing/voc2012`, as shown in the figure below:
+3. Select 'path import' and enter the absolute path of the dataset in the server: `voc2012`, as shown in the figure below:
 
 ![path import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/path%20import.jpg)
 
@@ -540,31 +540,61 @@ $ mir init # init this directory to a mir repo
 $ mkdir ~/ymir-assets ~/ymir-models # Creates assets and models storage directory, mir repo only keeps reference to assets and models
 ```
 
-All type labels in mir repo are managed by `labels.csv`. Open file `~/mir-demo-repo/labels.csv`, and you can see the following contents:
+All type labels in mir repo are managed by `labels.yaml`. Open file `~/mir-demo-repo/.mir/labels.yaml`, and you can see the following contents:
 
-```
-# type_id, preserved, main type name, alias...
+``` yaml
+labels:
+- create_time: 1646728410.570311
+  id: 0
+  update_time: 1646728410.570311
+  name: frisbee
+- create_time: 1646728410.570311
+  id: 1
+  update_time: 1646728410.570311
+  name: car
 ```
 
-In `labels.csv`, each line represents a type label: type_id (start from 0), empty, main type name, alias. If the dataset contains person, cat and tv as it's label names, you can edit this file as follow:
+You can add your own class ids and names, just like:
 
-```
-0,,person
-1,,cat
-2,,tv
+``` yaml
+labels:
+- create_time: 1646728410.570311
+  id: 0
+  update_time: 1646728410.570311
+  name: frisbee
+- create_time: 1646728410.570311
+  id: 1
+  update_time: 1646728410.570311
+  name: car
+- create_time: 1646728410.570311
+  id: 2
+  update_time: 1646728410.570311
+  name: tv
 ```
 
-There could be one or more alias for each type label, for example: if television is sepecified as the alias for tv, the `labels.csv` could be changed to:
+There could be one or more alias for each type label, for example: if television and tv_monitor sepecified as the alias for tv, the `labels.yaml` could be changed to:
 
-```
-0,,person
-1,,cat
-2,,tv,television
+``` yaml
+- create_time: 1646728410.570311
+  id: 0
+  update_time: 1646728410.570311
+  name: frisbee
+- create_time: 1646728410.570311
+  id: 1
+  update_time: 1646728410.570311
+  name: car
+- create_time: 1646728410.570311
+  id: 2
+  update_time: 1646728410.570311
+  name: tv
+  aliases:
+  - television
+  - tv_monitor
 ```
 
 You can edit this file by vi and other text editing tools. You can add alias to type labels or add new type labels, but it is not recommended to change or remove the id and name of any type label that already exists.
 
-The file `labels.csv` can be shared among multiple mir repos by establishing soft links.
+The file `labels.yaml` can be shared among multiple mir repos by establishing soft links.
 
 Users are required to prepare three data sets in advance.
 
