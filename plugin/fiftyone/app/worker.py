@@ -69,7 +69,7 @@ def build_sample(
         objects.append(annotation["object"])
     else:
         objects = annotation["object"]
-    detections = build_detections(objects, annotation, width, height)
+    detections = build_detections(objects, ymir_data_name, width, height)
 
     sample = fo.Sample(filepath=base_path / img_path)
     sample["ground_truth"] = fo.Detections(detections=detections)
