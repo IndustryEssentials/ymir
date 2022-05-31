@@ -232,22 +232,22 @@ class TestArkDataExporter(unittest.TestCase):
         asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
         train_path = os.path.join(self._dest_root, 'train')
 
-        data_exporter.export(mir_root=self._mir_root,
-                             assets_location=self._assets_location,
-                             class_type_ids={
-                                 2: 0,
-                                 52: 1
-                             },
-                             asset_ids=asset_ids,
-                             asset_dir=train_path,
-                             annotation_dir=train_path,
-                             need_ext=True,
-                             need_id_sub_folder=False,
-                             base_branch='a',
-                             base_task_id='a',
-                             format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                             index_file_path=os.path.join(train_path, 'index.tsv'),
-                             index_assets_prefix='')
+        data_exporter.export_raw(mir_root=self._mir_root,
+                                 assets_location=self._assets_location,
+                                 class_type_ids={
+                                     2: 0,
+                                     52: 1
+                                 },
+                                 asset_ids=asset_ids,
+                                 asset_dir=train_path,
+                                 annotation_dir=train_path,
+                                 need_ext=True,
+                                 need_id_sub_folder=False,
+                                 base_branch='a',
+                                 base_task_id='a',
+                                 format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
+                                 index_file_path=os.path.join(train_path, 'index.tsv'),
+                                 index_assets_prefix='')
 
         # check result
         self.__check_result(asset_ids=asset_ids,
@@ -263,7 +263,7 @@ class TestArkDataExporter(unittest.TestCase):
         asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
         train_path = os.path.join(self._dest_root, 'train')
 
-        data_exporter.export(mir_root=self._mir_root,
+        data_exporter.export_raw(mir_root=self._mir_root,
                              assets_location=self._assets_location,
                              class_type_ids={
                                  2: 0,

@@ -191,7 +191,7 @@ class TestCmdExport(unittest.TestCase):
         return {}
 
     # private: test cases
-    @mock.patch('mir.tools.data_exporter.export', side_effect='__mock_export')
+    @mock.patch('mir.tools.data_exporter.export_raw', side_effect='__mock_export')
     @mock.patch('mir.tools.data_exporter.export_lmdb', side_effect='__mock_export_lmdb')
     def test_normal_00(self, mock_export_lmdb, mock_export):
         # normal case: voc:raw

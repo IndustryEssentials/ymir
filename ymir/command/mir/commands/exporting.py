@@ -79,17 +79,17 @@ class CmdExport(base.BaseCommand):
         # export
         class_type_ids = {type_id: type_id for type_id in type_ids_list}
         if asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_RAW:
-            data_exporter.export(mir_root=mir_root,
-                                 assets_location=media_location,
-                                 class_type_ids=class_type_ids,
-                                 asset_ids=asset_ids,
-                                 asset_dir=asset_dir,
-                                 annotation_dir=annotation_dir,
-                                 need_ext=True,
-                                 need_id_sub_folder=False,
-                                 base_branch=src_rev_tid.rev,
-                                 base_task_id=src_rev_tid.tid,
-                                 format_type=anno_format_type)
+            data_exporter.export_raw(mir_root=mir_root,
+                                     assets_location=media_location,
+                                     class_type_ids=class_type_ids,
+                                     asset_ids=asset_ids,
+                                     asset_dir=asset_dir,
+                                     annotation_dir=annotation_dir,
+                                     need_ext=True,
+                                     need_id_sub_folder=False,
+                                     base_branch=src_rev_tid.rev,
+                                     base_task_id=src_rev_tid.tid,
+                                     format_type=anno_format_type)
         elif asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             data_exporter.export_lmdb(mir_root=mir_root,
                                       assets_location=media_location,

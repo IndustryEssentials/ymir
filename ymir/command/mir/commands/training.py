@@ -295,36 +295,36 @@ class CmdTrain(base.BaseCommand):
 
         if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
             # export train set
-            data_exporter.export(mir_root=mir_root,
-                                 assets_location=media_location,
-                                 class_type_ids=type_id_idx_mapping,
-                                 asset_ids=train_ids,
-                                 asset_dir=asset_dir,
-                                 annotation_dir=work_dir_annotations,
-                                 need_ext=True,
-                                 need_id_sub_folder=True,
-                                 base_branch=src_typ_rev_tid.rev,
-                                 base_task_id=src_typ_rev_tid.tid,
-                                 format_type=export_format,
-                                 index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
-                                 index_assets_prefix='/in/assets',
-                                 index_annotations_prefix='/in/annotations')
+            data_exporter.export_raw(mir_root=mir_root,
+                                     assets_location=media_location,
+                                     class_type_ids=type_id_idx_mapping,
+                                     asset_ids=train_ids,
+                                     asset_dir=asset_dir,
+                                     annotation_dir=work_dir_annotations,
+                                     need_ext=True,
+                                     need_id_sub_folder=True,
+                                     base_branch=src_typ_rev_tid.rev,
+                                     base_task_id=src_typ_rev_tid.tid,
+                                     format_type=export_format,
+                                     index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
+                                     index_assets_prefix='/in/assets',
+                                     index_annotations_prefix='/in/annotations')
 
             # export validation set
-            data_exporter.export(mir_root=mir_root,
-                                 assets_location=media_location,
-                                 class_type_ids=type_id_idx_mapping,
-                                 asset_ids=val_ids,
-                                 asset_dir=asset_dir,
-                                 annotation_dir=work_dir_annotations,
-                                 need_ext=True,
-                                 need_id_sub_folder=True,
-                                 base_branch=src_typ_rev_tid.rev,
-                                 base_task_id=src_typ_rev_tid.tid,
-                                 format_type=export_format,
-                                 index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
-                                 index_assets_prefix='/in/assets',
-                                 index_annotations_prefix='/in/annotations')
+            data_exporter.export_raw(mir_root=mir_root,
+                                     assets_location=media_location,
+                                     class_type_ids=type_id_idx_mapping,
+                                     asset_ids=val_ids,
+                                     asset_dir=asset_dir,
+                                     annotation_dir=work_dir_annotations,
+                                     need_ext=True,
+                                     need_id_sub_folder=True,
+                                     base_branch=src_typ_rev_tid.rev,
+                                     base_task_id=src_typ_rev_tid.tid,
+                                     format_type=export_format,
+                                     index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
+                                     index_assets_prefix='/in/assets',
+                                     index_annotations_prefix='/in/annotations')
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             # export train set
             if asset_cache_dir:

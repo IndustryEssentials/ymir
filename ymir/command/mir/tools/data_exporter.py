@@ -35,20 +35,20 @@ def format_type_from_executor_config(executor_config: dict) -> Tuple[data_writer
     return (data_writer.AnnoFormat(ef), data_writer.AssetFormat(af))
 
 
-def export(mir_root: str,
-           assets_location: str,
-           class_type_ids: Dict[int, int],
-           asset_ids: Set[str],
-           asset_dir: str,
-           annotation_dir: str,
-           need_ext: bool,
-           need_id_sub_folder: bool,
-           base_branch: str,
-           base_task_id: str,
-           format_type: data_writer.AnnoFormat,
-           index_file_path: str = '',
-           index_assets_prefix: str = '',
-           index_annotations_prefix: str = '') -> bool:
+def export_raw(mir_root: str,
+               assets_location: str,
+               class_type_ids: Dict[int, int],
+               asset_ids: Set[str],
+               asset_dir: str,
+               annotation_dir: str,
+               need_ext: bool,
+               need_id_sub_folder: bool,
+               base_branch: str,
+               base_task_id: str,
+               format_type: data_writer.AnnoFormat,
+               index_file_path: str = '',
+               index_assets_prefix: str = '',
+               index_annotations_prefix: str = '') -> bool:
     """
     export assets and annotations
 
