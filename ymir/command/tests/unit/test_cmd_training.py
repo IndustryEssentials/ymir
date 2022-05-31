@@ -35,7 +35,7 @@ class TestCmdTraining(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        # self.__deprepare_dirs()
+        self.__deprepare_dirs()
         return super().tearDown()
 
     # private: prepare env
