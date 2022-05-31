@@ -1,10 +1,9 @@
-import pytest
-import fiftyone as fo
-from app.routes import task as task_routes
-from app.worker import build_detections
-from pathlib import Path
-import xmltodict
 import os
+from pathlib import Path
+
+import fiftyone as fo
+
+from app.worker import build_detections, build_sample
 
 
 def test_build_detections():
@@ -43,38 +42,15 @@ def test_build_detections():
 def test_build_sample():
     base_path = Path(os.getcwd())
 
-    # base_path = Path("./test_data/voc")
-    img_path = "test_data/voc/data/241294009_432213948218468_252149922899382953_n.jpg"
-    annotation_path = base_path.joinpath(
-        "test_data/voc/labels/241294009_432213948218468_252149922899382953_n.xml"
+    img_path = (
+        "tests/test_data/voc/data/241294009_432213948218468_252149922899382953_n.jpg"
     )
-    ymir_data_name = "ymir_data233"
-    size = {
-        "width": 1080,
-        "height": 1080,
-        "depth": 3,
-    }
-    with open(annotation_path.as_posix(), "r", encoding="utf-8") as ad:
-        annotation = xmltodict.parse(ad.read()).get("annotation")
-    width = int(size.get("width", 0))
-    height = int(size.get("height", 0))
-    depth = int(size.get("depth", 0))
-    metadata = fo.ImageMetadata(
-        width=width,
-        height=height,
-        num_channels=depth,
+    annotation_path = (
+        "tests/test_data/voc/labels/241294009_432213948218468_252149922899382953_n.xml"
     )
 
-    objects = []
-    if isinstance(annotation["object"], dict):
-        objects.append(annotation["object"])
-    else:
-        objects = annotation["object"]
-    detections = build_detections(objects, ymir_data_name, width, height)
+    sample = build_sample(base_path, img_path, annotation_path, "ymir_data233")
 
-    sample = fo.Sample(filepath=base_path / img_path)
-    sample["ground_truth"] = fo.Detections(detections=detections)
-    sample["metadata"] = metadata
     assert sample["ground_truth"].detections[0].label == "人"
     assert sample["ground_truth"].detections[0].bounding_box == [
         0.08981481481481482,

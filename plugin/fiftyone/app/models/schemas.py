@@ -22,7 +22,7 @@ class DataSet(BaseModel):
 
 class Task(BaseModel):
     tid: str
-    datas: Union[List[DataSet], None] = None
+    datas: Union[List[DataSet]]
 
 
 class BaseResponse(BaseModel):
