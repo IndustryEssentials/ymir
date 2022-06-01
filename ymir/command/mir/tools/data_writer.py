@@ -2,7 +2,7 @@ from enum import Enum
 import json
 import os
 import shutil
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -376,8 +376,8 @@ class LmdbDataWriter(BaseDataWriter):
         self._lmdb_dir = lmdb_dir
         self._lmdb_env = lmdb.open(lmdb_dir, map_size=1099511627776)  # 1TB
         self._lmdb_tnx = self._lmdb_env.begin(write=True)
-        self._lmdb_index = open(os.path.join(lmdb_dir, 'index.mdb'), 'w') if index_file_path else None
         self._index_file_path = index_file_path
+        self._lmdb_index: Any  # see write_all
 
     def exists(self) -> bool:
         data_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'data.mdb'))
@@ -432,7 +432,14 @@ class LmdbDataWriter(BaseDataWriter):
             shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
 
     def write_all(self, dr: data_reader.MirDataReader) -> None:
+        # no need to write when:
+        #   * destination files already exist
+        #   * has tid (branch may change without tid)
         if self.exists() and dr._typ_rev_tid.tid:
+            if self._index_file_path:
+                shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
             return
 
+        # write all
+        self._lmdb_index = open(os.path.join(self._lmdb_dir, 'index.mdb'), 'w')
         super().write_all(dr)
