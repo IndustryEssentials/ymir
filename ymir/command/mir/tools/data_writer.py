@@ -379,9 +379,7 @@ class LmdbDataWriter(BaseDataWriter):
         self._lmdb_index = open(os.path.join(lmdb_dir, 'index.mdb'), 'w') if index_file_path else None
         self._index_file_path = index_file_path
 
-        self.need_write = self._get_need_write()
-
-    def _get_need_write(self) -> bool:
+    def exists(self) -> bool:
         data_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'data.mdb'))
         lock_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'lock.mdb'))
 
@@ -390,7 +388,7 @@ class LmdbDataWriter(BaseDataWriter):
         index_file_path = os.path.join(self._lmdb_dir, 'index.mdb')
         index_empty = os.stat(index_file_path).st_size == 0 if os.path.isfile(index_file_path) else True
 
-        return not data_exists or not lock_exists or index_empty
+        return data_exists and lock_exists and not index_empty
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         # read asset
@@ -432,3 +430,9 @@ class LmdbDataWriter(BaseDataWriter):
             self._lmdb_index = None
         if self._index_file_path:
             shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
+
+    def write_all(self, dr: data_reader.MirDataReader) -> None:
+        if self.exists() and dr._typ_rev_tid.tid:
+            return
+
+        super().write_all(dr)
