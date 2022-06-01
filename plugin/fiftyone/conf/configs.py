@@ -6,6 +6,7 @@ env = Env()
 
 
 class Config:
+    debug: bool = env.bool("FIFTYONE_DEBUG", False)
     mongo_uri: str = env.str("FIFTYONE_DATABASE_URI", "mongodb://localhost:27017")
     redis_host: str = env.str("FIFTYONE_REDIS_HOST", "localhost")
     redis_port: int = env.int("FIFTYONE_REDIS_PORT", 6379)

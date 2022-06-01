@@ -13,7 +13,7 @@ from app.routes import task as task_routes
                     {
                         "id": "32423xfcd33xxx",
                         "name": "ymir_data233",
-                        "data_dir": "./ymir-workplace/voc",
+                        "data_dir": "./tests/test_data/voc",
                     }
                 ],
             },
@@ -25,7 +25,7 @@ from app.routes import task as task_routes
                     {
                         "id": "32423xfcd33xxx",
                         "name": "ymir_data233",
-                        "data_dir": "./ymir-workplace/voc",
+                        "data_dir": "./tests/test_data/voc",
                     }
                 ],
             },
