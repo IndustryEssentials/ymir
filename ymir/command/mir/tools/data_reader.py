@@ -40,7 +40,8 @@ class MirDataReader:
             image_annotations = self._task_annotations.image_annotations.get(asset_id, None)
             if image_annotations:
                 for annotation in image_annotations.annotations:
-                    if not self._class_ids or annotation.class_id in self._class_ids:
-                        annotations.append(annotation)
+                    if self._class_ids and annotation.class_id not in self._class_ids:
+                        continue
+                    annotations.append(annotation)
 
             yield (asset_id, attributes, annotations)
