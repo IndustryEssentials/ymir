@@ -345,11 +345,6 @@ class CmdTrain(base.BaseCommand):
                                                 class_ids_mapping=type_id_idx_mapping,
                                                 format_type=export_format,
                                                 index_file_path=os.path.join(work_dir_in, 'val-index.tsv'))
-
-            # copy cache to destination
-            if asset_cache_dir:
-                shutil.copytree(train_lmdb_dir, os.path.join(work_dir_in, 'train'), dirs_exist_ok=True)
-                shutil.copytree(val_lmdb_dir, os.path.join(work_dir_in, 'val'), dirs_exist_ok=True)
         else:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"training unsupported asset format: {asset_format}")
