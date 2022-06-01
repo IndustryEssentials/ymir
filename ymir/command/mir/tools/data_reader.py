@@ -11,7 +11,6 @@ class MirDataReader:
         self._typ_rev_tid = typ_rev_tid
         self._asset_ids = asset_ids
         self._class_ids = class_ids
-        self._empty_annotations_count = -1
 
     def __enter__(self) -> Any:
         mir_metadatas: mirpb.MirMetadatas
@@ -32,12 +31,7 @@ class MirDataReader:
     def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
         pass
 
-    @property
-    def empty_annotations_count(self) -> int:
-        return self._empty_annotations_count
-
     def read(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, List[mirpb.Annotation]]]:
-        self._empty_annotations_count = 0
         for asset_id, attributes in self._mir_metadatas.attributes.items():
             if asset_id not in self._asset_ids:
                 continue
@@ -48,8 +42,5 @@ class MirDataReader:
                 for annotation in image_annotations.annotations:
                     if not self._class_ids or annotation.class_id in self._class_ids:
                         annotations.append(annotation)
-
-            if not annotations:
-                self._empty_annotations_count += 1
 
             yield (asset_id, attributes, annotations)

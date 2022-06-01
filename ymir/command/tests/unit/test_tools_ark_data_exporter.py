@@ -240,7 +240,6 @@ class TestArkDataExporter(unittest.TestCase):
                                            asset_ids=asset_ids,
                                            class_ids=set()) as reader:
             self.assertEqual(2, len(list(reader.read())))
-            self.assertEqual(0, reader.empty_annotations_count)
 
         with data_reader.MirDataReader(mir_root=self._mir_root,
                                            typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
