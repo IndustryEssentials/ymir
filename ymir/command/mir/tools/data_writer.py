@@ -225,7 +225,7 @@ class BaseDataWriter:
         self._class_ids_mapping = class_ids_mapping
         self._format_type = format_type
 
-    def write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         """
         write assets and annotations to destination with proper format
 
@@ -236,7 +236,7 @@ class BaseDataWriter:
         """
         raise NotImplementedError('not implemented')
 
-    def close(self) -> None:
+    def _close(self) -> None:
         """
         close writer
         """
@@ -244,8 +244,8 @@ class BaseDataWriter:
 
     def write_all(self, dr: data_reader.MirDataReader) -> None:
         for v in dr.read():
-            self.write(*v)
-        self.close()
+            self._write(*v)
+        self._close()
 
 
 class RawDataWriter(BaseDataWriter):
@@ -298,7 +298,7 @@ class RawDataWriter(BaseDataWriter):
         self._index_annotations_prefix = index_annotations_prefix
         self._overwrite = overwrite
 
-    def write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         # write asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
@@ -344,7 +344,7 @@ class RawDataWriter(BaseDataWriter):
             else:
                 self._index_file.write(f"{asset_path_in_index_file}\n")
 
-    def close(self) -> None:
+    def _close(self) -> None:
         if not self._index_file:
             return
 
@@ -392,7 +392,7 @@ class LmdbDataWriter(BaseDataWriter):
 
         return not data_exists or not lock_exists or index_empty
 
-    def write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         # read asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         with open(asset_src_path, 'rb') as f:
@@ -421,7 +421,7 @@ class LmdbDataWriter(BaseDataWriter):
             else:
                 self._lmdb_index.write(f"{asset_key_name}\n")
 
-    def close(self) -> None:
+    def _close(self) -> None:
         if self._lmdb_env:
             self._lmdb_tnx.commit()
             self._lmdb_tnx = None
