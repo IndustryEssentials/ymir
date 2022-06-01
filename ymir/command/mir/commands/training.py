@@ -293,45 +293,33 @@ class CmdTrain(base.BaseCommand):
 
         export_format, asset_format = data_writer.format_type_from_executor_config(executor_config)
 
-        dw: data_writer.BaseDataWriter
+        dw_train: data_writer.BaseDataWriter
+        dw_val: data_writer.BaseDataWriter
         if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
-            # export train set
-            dw = data_writer.RawDataWriter(mir_root=mir_root,
-                                           assets_location=media_location,
-                                           assets_dir=asset_dir,
-                                           annotations_dir=work_dir_annotations,
-                                           need_ext=True,
-                                           need_id_sub_folder=True,
-                                           overwrite=False,
-                                           class_ids_mapping=type_id_idx_mapping,
-                                           format_type=export_format,
-                                           index_file_path=os.path.join(work_dir_in, 'train-index/tsv'),
-                                           index_assets_prefix='/in/assets',
-                                           index_annotations_prefix='/in/annotations')
-            with data_reader.MirDataReader(mir_root=mir_root,
-                                           typ_rev_tid=src_typ_rev_tid,
-                                           asset_ids=train_ids,
-                                           class_ids=type_ids_set) as dr:
-                dw.write_all(dr)
-
-            # export validation set
-            dw = data_writer.RawDataWriter(mir_root=mir_root,
-                                           assets_location=media_location,
-                                           assets_dir=asset_dir,
-                                           annotations_dir=work_dir_annotations,
-                                           need_ext=True,
-                                           need_id_sub_folder=True,
-                                           overwrite=False,
-                                           class_ids_mapping=type_id_idx_mapping,
-                                           format_type=export_format,
-                                           index_file_path=os.path.join(work_dir_in, 'val-index/tsv'),
-                                           index_assets_prefix='/in/assets',
-                                           index_annotations_prefix='/in/annotations')
-            with data_reader.MirDataReader(mir_root=mir_root,
-                                           typ_rev_tid=src_typ_rev_tid,
-                                           asset_ids=val_ids,
-                                           class_ids=type_ids_set) as dr:
-                dw.write_all(dr)
+            dw_train = data_writer.RawDataWriter(mir_root=mir_root,
+                                                 assets_location=media_location,
+                                                 assets_dir=asset_dir,
+                                                 annotations_dir=work_dir_annotations,
+                                                 need_ext=True,
+                                                 need_id_sub_folder=True,
+                                                 overwrite=False,
+                                                 class_ids_mapping=type_id_idx_mapping,
+                                                 format_type=export_format,
+                                                 index_file_path=os.path.join(work_dir_in, 'train-index/tsv'),
+                                                 index_assets_prefix='/in/assets',
+                                                 index_annotations_prefix='/in/annotations')
+            dw_val = data_writer.RawDataWriter(mir_root=mir_root,
+                                               assets_location=media_location,
+                                               assets_dir=asset_dir,
+                                               annotations_dir=work_dir_annotations,
+                                               need_ext=True,
+                                               need_id_sub_folder=True,
+                                               overwrite=False,
+                                               class_ids_mapping=type_id_idx_mapping,
+                                               format_type=export_format,
+                                               index_file_path=os.path.join(work_dir_in, 'val-index/tsv'),
+                                               index_assets_prefix='/in/assets',
+                                               index_annotations_prefix='/in/annotations')
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             # export train set
             if asset_cache_dir:
@@ -339,34 +327,24 @@ class CmdTrain(base.BaseCommand):
             else:
                 train_lmdb_dir = os.path.join(work_dir_in, 'train')
 
-            dw = data_writer.LmdbDataWriter(mir_root=mir_root,
-                                            assets_location=media_location,
-                                            lmdb_dir=train_lmdb_dir,
-                                            class_ids_mapping=type_id_idx_mapping,
-                                            format_type=export_format,
-                                            index_file_path=os.path.join(work_dir_in, 'train-index.tsv'))
-            with data_reader.MirDataReader(mir_root=mir_root,
-                                           typ_rev_tid=src_typ_rev_tid,
-                                           asset_ids=train_ids,
-                                           class_ids=type_ids_set) as dr:
-                dw.write_all(dr)
+            dw_train = data_writer.LmdbDataWriter(mir_root=mir_root,
+                                                  assets_location=media_location,
+                                                  lmdb_dir=train_lmdb_dir,
+                                                  class_ids_mapping=type_id_idx_mapping,
+                                                  format_type=export_format,
+                                                  index_file_path=os.path.join(work_dir_in, 'train-index.tsv'))
 
             # export validation set
             if asset_cache_dir:
                 val_lmdb_dir = os.path.join(asset_cache_dir, f"va:{src_revs}")
             else:
                 val_lmdb_dir = os.path.join(work_dir_in, 'val')
-            dw = data_writer.LmdbDataWriter(mir_root=mir_root,
-                                            assets_location=media_location,
-                                            lmdb_dir=val_lmdb_dir,
-                                            class_ids_mapping=type_id_idx_mapping,
-                                            format_type=export_format,
-                                            index_file_path=os.path.join(work_dir_in, 'val-index.tsv'))
-            with data_reader.MirDataReader(mir_root=mir_root,
-                                           typ_rev_tid=src_typ_rev_tid,
-                                           asset_ids=val_ids,
-                                           class_ids=type_ids_set) as dr:
-                dw.write_all(dr)
+            dw_val = data_writer.LmdbDataWriter(mir_root=mir_root,
+                                                assets_location=media_location,
+                                                lmdb_dir=val_lmdb_dir,
+                                                class_ids_mapping=type_id_idx_mapping,
+                                                format_type=export_format,
+                                                index_file_path=os.path.join(work_dir_in, 'val-index.tsv'))
 
             # copy cache to destination
             if asset_cache_dir:
@@ -375,6 +353,22 @@ class CmdTrain(base.BaseCommand):
         else:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"training unsupported asset format: {asset_format}")
+
+        with data_reader.MirDataReader(mir_root=mir_root,
+                                       typ_rev_tid=src_typ_rev_tid,
+                                       asset_ids=train_ids,
+                                       class_ids=type_ids_set) as dr:
+            dw_train.write_all(dr)
+        with data_reader.MirDataReader(mir_root=mir_root,
+                                       typ_rev_tid=src_typ_rev_tid,
+                                       asset_ids=val_ids,
+                                       class_ids=type_ids_set) as dr:
+            dw_val.write_all(dr)
+
+        # copy cached files
+        if asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB and asset_cache_dir:
+            shutil.copytree(train_lmdb_dir, os.path.join(work_dir_in, 'train'), dirs_exist_ok=True)
+            shutil.copytree(val_lmdb_dir, os.path.join(work_dir_in, 'val'), dirs_exist_ok=True)
 
         logging.info("starting train docker container")
 
