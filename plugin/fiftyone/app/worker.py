@@ -2,11 +2,11 @@ import csv
 from pathlib import Path
 from typing import List
 
-import fiftyone as fo
-import fiftyone.core.metadata as fom
 import xmltodict
 from celery import current_app as current_celery_app
 from celery import shared_task
+from fiftyone import Detection, Dataset, Sample, Detections
+from fiftyone.core.metadata import ImageMetadata
 from fiftyone.utils.voc import VOCBoundingBox
 
 from app.models.schemas import Task
@@ -47,7 +47,7 @@ def load_task_data(task: Task) -> None:
     :type task: Task
     """
     base_path = Path(conf.base_path)
-    samples: List[fo.Sample] = []
+    samples: List[Sample] = []
     for d in task.datas:
         data_dir = base_path / Path(d.data_dir)
         tsv_file = data_dir / "img.tsv"
@@ -57,50 +57,52 @@ def load_task_data(task: Task) -> None:
                 _build_sample(base_path, row[0], row[1], d.name) for row in rd
             )
     # Create dataset
-    dataset = fo.Dataset(task.tid)
+    dataset = Dataset(task.tid)
     dataset.add_samples(samples)
     dataset.persistent = True
 
 
 def _build_sample(
     base_path: Path, img_path: str, annotation_path: str, ymir_data_name: str
-) -> fo.Sample:
+) -> Sample:
     annotation_file = base_path / annotation_path
     with annotation_file.open("r", encoding="utf-8") as ad:
         annotation = xmltodict.parse(ad.read()).get("annotation")
     size = annotation["size"]
-    width = int(size.get("width", 0))
-    height = int(size.get("height", 0))
-    depth = int(size.get("depth", 0))
-    metadata = fom.ImageMetadata(
+    width = int(size["width"])
+    height = int(size["height"])
+    depth = int(size["depth"])
+    metadata = ImageMetadata(
         width=width,
         height=height,
         num_channels=depth,
     )
 
-    objects = []
+    voc_objects = []
     if isinstance(annotation["object"], dict):
-        objects.append(annotation["object"])
+        voc_objects.append(annotation["object"])
+    elif isinstance(annotation["object"], list):
+        voc_objects = annotation["object"]
     else:
-        objects = annotation["object"]
-    detections = _build_detections(objects, ymir_data_name, width, height)
+        raise ValueError(f"Invalid object type: {type(annotation['object'])}")
+    detections = _build_detections(voc_objects, ymir_data_name, width, height)
 
-    sample = fo.Sample(filepath=base_path / img_path)
-    sample["ground_truth"] = fo.Detections(detections=detections)
+    sample = Sample(filepath=base_path / img_path)
+    sample["ground_truth"] = Detections(detections=detections)
     sample["metadata"] = metadata
     return sample
 
 
 def _build_detections(
-    objects: list, ymir_data_name: str, width: int, height: int
-) -> List[fo.Detection]:
+    voc_objects: list, ymir_data_name: str, width: int, height: int
+) -> List[Detection]:
     detections = []
-    for obj in objects:
+    for obj in voc_objects:
         label = obj["name"]
         bndbox = VOCBoundingBox.from_bndbox_dict(obj["bndbox"]).to_detection_format(
             frame_size=(width, height)
         )
-        item = fo.Detection(
+        item = Detection(
             label=label,
             bounding_box=bndbox,
         )
