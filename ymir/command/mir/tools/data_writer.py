@@ -240,12 +240,13 @@ class BaseDataWriter:
         """
         close writer
         """
-        pass
+        raise NotImplementedError('not implemented')
 
     def write_all(self, dr: data_reader.MirDataReader) -> None:
-        for v in dr.read():
-            self._write(*v)
-        self._close()
+        """
+        write all datas from data reader
+        """
+        raise NotImplementedError('not implemented')
 
 
 class RawDataWriter(BaseDataWriter):
@@ -351,6 +352,11 @@ class RawDataWriter(BaseDataWriter):
         self._index_file.close()
         self._index_file = None
 
+    def write_all(self, dr: data_reader.MirDataReader) -> None:
+        for v in dr.read():
+            self._write(*v)
+        self._close()
+
 
 class LmdbDataWriter(BaseDataWriter):
     def __init__(self,
@@ -442,4 +448,6 @@ class LmdbDataWriter(BaseDataWriter):
 
         # write all
         self._lmdb_index = open(os.path.join(self._lmdb_dir, 'index.mdb'), 'w')
-        super().write_all(dr)
+        for v in dr.read():
+            self._write(*v)
+        self._close()
