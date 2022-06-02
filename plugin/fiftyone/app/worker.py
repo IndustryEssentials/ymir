@@ -142,14 +142,13 @@ def _add_detections(
         voc_objects = annotation["object"]
     else:
         raise ValueError(f"Invalid object type: {type(annotation['object'])}")
-    polylines = _build_polylines(voc_objects, ymir_data_name, sample["metadata"]["width"], sample["metadata"]["height"])
+
+    polylines = _build_polylines(voc_objects, sample["metadata"]["width"], sample["metadata"]["height"])
     sample[ymir_data_name] = Polylines(polylines=polylines)
     return sample
 
 
-def _build_polylines(
-    voc_objects: list, ymir_data_name: str, width: int, height: int
-) -> List[Polyline]:
+def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polyline]:
     polylines = []
     for obj in voc_objects:
         label = obj["name"]
@@ -159,9 +158,6 @@ def _build_polylines(
             points=[points],
             closed=True
         )
-        polyline.tags = [
-            ymir_data_name,
-        ]
         polylines.append(polyline)
     return polylines
 
@@ -172,12 +168,12 @@ def _get_points_from_bndbox(bndbox: Dict, width: int, height: int) -> list:
     angle = float(bndbox.get("rotate_angle", 0)) * math.pi
 
     cx, cy = (xmin + xmax) / 2, (ymin + ymax) / 2
-    w, h = xmax - xmin, ymax - ymin
+    half_w, half_h = (xmax - xmin) / 2, (ymax - ymin) / 2
 
-    p0x, p0y = _rotate_point(cx, cy, cx - w / 2, cy - h / 2, -angle, width, height)
-    p1x, p1y = _rotate_point(cx, cy, cx + w / 2, cy - h / 2, -angle, width, height)
-    p2x, p2y = _rotate_point(cx, cy, cx + w / 2, cy + h / 2, -angle, width, height)
-    p3x, p3y = _rotate_point(cx, cy, cx - w / 2, cy + h / 2, -angle, width, height)
+    p0x, p0y = _rotate_point(cx, cy, cx - half_w, cy - half_h, -angle, width, height)
+    p1x, p1y = _rotate_point(cx, cy, cx + half_w, cy - half_h, -angle, width, height)
+    p2x, p2y = _rotate_point(cx, cy, cx + half_w, cy + half_h, -angle, width, height)
+    p3x, p3y = _rotate_point(cx, cy, cx - half_w, cy + half_h, -angle, width, height)
 
     points = [(p0x, p0y), (p1x, p1y), (p2x, p2y), (p3x, p3y)]
 

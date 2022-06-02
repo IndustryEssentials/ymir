@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fiftyone import Sample, Polyline
 
+
 from app.worker import (
     _build_polylines,
     _get_annotation,
@@ -71,7 +72,7 @@ def test_build_polylines():
             },
         }
     ]
-    res = _build_polylines(voc_objects, "ymir_data233", 1080, 1080)
+    res = _build_polylines(voc_objects, 1080, 1080)
     polyline = Polyline(
         label="人",
         points=[[(0.3575148463553896, 0.2536834726595991),
