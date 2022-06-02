@@ -88,34 +88,13 @@ def _build_sample(
         raise ValueError(f"Invalid object type: {type(annotation['object'])}")
 
     sample = Sample(filepath=base_path / img_path)
-    polylines = _build_polylines(voc_objects, ymir_data_name, width, height)
+    polylines = _build_polylines(voc_objects, width, height)
     sample["ground_truth"] = Polylines(polylines=polylines)
     sample["metadata"] = metadata
     return sample
 
 
-def _build_detections(
-    voc_objects: list, ymir_data_name: str, width: int, height: int
-) -> List[Detection]:
-    detections = []
-    for obj in voc_objects:
-        label = obj["name"]
-        bndbox = VOCBoundingBox.from_bndbox_dict(obj["bndbox"]).to_detection_format(
-            frame_size=(width, height)
-        )
-        item = Detection(
-            label=label,
-            bounding_box=bndbox,
-        )
-        item.tags = [
-            ymir_data_name,
-        ]
-        detections.append(item)
-    return detections
-
-
-def _build_polylines(
-    voc_objects: list, ymir_data_name: str, width: int, height: int
+def _build_polylines(voc_objects: list, width: int, height: int
 ) -> List[Polyline]:
     polylines = []
     for obj in voc_objects:
@@ -126,9 +105,6 @@ def _build_polylines(
             points=[points],
             closed=True
         )
-        polyline.tags = [
-            ymir_data_name,
-        ]
         polylines.append(polyline)
     return polylines
 
