@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-
 from fiftyone import Sample, Polyline
 
 from app.worker import (
@@ -72,6 +71,7 @@ def test_build_polylines():
             },
         }
     ]
+
     res = _build_polylines(voc_objects, 1080, 1080)
     polyline = Polyline(
         label="人",
