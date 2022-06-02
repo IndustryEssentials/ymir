@@ -1,11 +1,12 @@
 import csv
+import math
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Tuple
 
 import xmltodict
 from celery import current_app as current_celery_app
 from celery import shared_task
-from fiftyone import Detection, Dataset, Sample, Detections
+from fiftyone import Detection, Dataset, Sample, Polyline, Polylines
 from fiftyone.core.metadata import ImageMetadata
 from fiftyone.utils.voc import VOCBoundingBox
 
@@ -23,7 +24,7 @@ def create_celery() -> current_celery_app:
         f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
     )
     celery_app.conf.result_backend = (
-        f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
+        conf.mongo_uri
     )
 
     celery_app.conf.task_serializer = "pickle"
@@ -85,10 +86,10 @@ def _build_sample(
         voc_objects = annotation["object"]
     else:
         raise ValueError(f"Invalid object type: {type(annotation['object'])}")
-    detections = _build_detections(voc_objects, ymir_data_name, width, height)
 
     sample = Sample(filepath=base_path / img_path)
-    sample["ground_truth"] = Detections(detections=detections)
+    polylines = _build_polylines(voc_objects, ymir_data_name, width, height)
+    sample["ground_truth"] = Polylines(polylines=polylines)
     sample["metadata"] = metadata
     return sample
 
@@ -111,3 +112,53 @@ def _build_detections(
         ]
         detections.append(item)
     return detections
+
+
+def _build_polylines(
+    voc_objects: list, ymir_data_name: str, width: int, height: int
+) -> List[Polyline]:
+    polylines = []
+    for obj in voc_objects:
+        label = obj["name"]
+        points = _get_points_from_bndbox(obj["bndbox"])
+        points = [(point[0] / width, point[1] / height) for point in points]
+        polyline = Polyline(
+            label=label,
+            points=[points],
+            closed=True
+        )
+        polyline.tags = [
+            ymir_data_name,
+        ]
+        polylines.append(polyline)
+    return polylines
+
+
+def _get_points_from_bndbox(bndbox: Dict) -> list:
+    xmin, ymin = int(float(bndbox.get("xmin", 0))), int(float(bndbox.get("ymin", 0)))
+    xmax, ymax = int(float(bndbox.get("xmax", 0))), int(float(bndbox.get("ymax", 0)))
+    angle = float(bndbox.get("rotate_angle", 0))
+
+    cx, cy = (xmin + xmax) / 2, (ymin + ymax) / 2
+    w, h = xmax - xmin, ymax - ymin
+
+    p0x, p0y = _rotate_point(cx, cy, cx - w / 2, cy - h / 2, -angle)
+    p1x, p1y = _rotate_point(cx, cy, cx + w / 2, cy - h / 2, -angle)
+    p2x, p2y = _rotate_point(cx, cy, cx + w / 2, cy + h / 2, -angle)
+    p3x, p3y = _rotate_point(cx, cy, cx - w / 2, cy + h / 2, -angle)
+
+    points = [(p0x, p0y), (p1x, p1y), (p2x, p2y), (p3x, p3y)]
+
+    return points
+
+
+def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float) -> Tuple[int, int]:
+    xoff = xp-xc
+    yoff = yp-yc
+
+    cos_theta = math.cos(theta)
+    sin_theta = math.sin(theta)
+    resx = cos_theta * xoff + sin_theta * yoff
+    resy = - sin_theta * xoff + cos_theta * yoff
+
+    return int(xc + resx), int(yc + resy)
