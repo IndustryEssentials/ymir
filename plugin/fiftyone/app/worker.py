@@ -110,6 +110,7 @@ def _build_detections(
         item.tags = [
             ymir_data_name,
         ]
+        item.to_polyline()
         detections.append(item)
     return detections
 
@@ -151,7 +152,8 @@ def _get_points_from_bndbox(bndbox: Dict, width: int, height: int) -> list:
     return points
 
 
-def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float, width: int, height: int) -> Tuple[float, float]:
+def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float, width: int,
+                  height: int) -> Tuple[float, float]:
     xoff = xp - xc
     yoff = yp - yc
 
