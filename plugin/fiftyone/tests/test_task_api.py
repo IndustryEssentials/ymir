@@ -13,6 +13,7 @@ from app.routes import task as task_routes
                     {
                         "id": "32423xfcd33xxx",
                         "name": "ymir_data233",
+                        "data_type": "ground_truth",
                         "data_dir": "./tests/test_data/voc",
                     }
                 ],
@@ -25,6 +26,7 @@ from app.routes import task as task_routes
                     {
                         "id": "32423xfcd33xxx",
                         "name": "ymir_data233",
+                        "data_type": "prediction",
                         "data_dir": "./tests/test_data/voc",
                     }
                 ],

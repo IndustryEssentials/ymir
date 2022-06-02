@@ -5,11 +5,13 @@ from loguru import logger
 from pydantic import BaseModel, Field, validator
 
 from conf.configs import conf
+from utils.constants import DataSetResultTypes
 from utils.errors import FiftyOneResponseCode
 
 
 class DataSet(BaseModel):
     data_id: str = Field(..., alias="id")
+    data_type: DataSetResultTypes = DataSetResultTypes.GROUND_TRUTH
     name: str = Field(...)
     data_dir: str = Field(...)
 
@@ -27,6 +29,7 @@ class DataSet(BaseModel):
             "example": {
                 "id": "32423xfcd33xxx",
                 "name": "ymir_data233",
+                "data_type": "ground_truth",
                 "data_dir": "ymir-workplace/voc",
             }
         }
