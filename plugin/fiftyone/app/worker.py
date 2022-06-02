@@ -201,8 +201,8 @@ def _get_points_from_bndbox(bndbox: Dict) -> list:
 
 
 def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float) -> Tuple[int, int]:
-    xoff = xp-xc
-    yoff = yp-yc
+    xoff = xp - xc
+    yoff = yp - yc
 
     cos_theta = math.cos(theta)
     sin_theta = math.sin(theta)
