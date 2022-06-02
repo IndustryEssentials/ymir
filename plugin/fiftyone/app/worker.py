@@ -25,7 +25,7 @@ def create_celery() -> current_celery_app:
         f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
     )
     celery_app.conf.result_backend = (
-        conf.mongo_uri
+        conf.mongo_uri + "/" + conf.FIFTYONE_DATABASE_NAME
     )
 
     celery_app.conf.task_serializer = "pickle"
