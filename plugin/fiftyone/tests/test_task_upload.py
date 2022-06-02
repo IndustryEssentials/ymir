@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fiftyone import Sample, Polyline
 
+
 from app.worker import (
     _build_polylines,
     _get_annotation,
