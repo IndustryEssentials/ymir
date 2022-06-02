@@ -6,9 +6,8 @@ from typing import List, Dict, Tuple
 import xmltodict
 from celery import current_app as current_celery_app
 from celery import shared_task
-from fiftyone import Detection, Dataset, Sample, Polyline, Polylines
+from fiftyone import Dataset, Sample, Polyline, Polylines
 from fiftyone.core.metadata import ImageMetadata
-from fiftyone.utils.voc import VOCBoundingBox
 
 from app.models.schemas import Task
 from conf.configs import conf
