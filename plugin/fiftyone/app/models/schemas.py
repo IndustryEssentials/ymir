@@ -11,7 +11,7 @@ from utils.errors import FiftyOneResponseCode
 
 class DataSet(BaseModel):
     data_id: str = Field(..., alias="id")
-    data_type: DataSetResultTypes = DataSetResultTypes.GROUND_TRUTH
+    data_type: DataSetResultTypes = Field(...)
     name: str = Field(...)
     data_dir: str = Field(...)
 
@@ -29,7 +29,7 @@ class DataSet(BaseModel):
             "example": {
                 "id": "32423xfcd33xxx",
                 "name": "ymir_data233",
-                "data_type": "ground_truth",
+                "data_type": 0,
                 "data_dir": "ymir-workplace/voc",
             }
         }
@@ -38,6 +38,18 @@ class DataSet(BaseModel):
 class Task(BaseModel):
     tid: str
     datas: List[DataSet]
+
+    @validator("datas")
+    def check_ground_truth_once(cls, v):
+        count = 0
+        for d in v:
+            if d.data_type == DataSetResultTypes.GROUND_TRUTH:
+                count += 1
+                if count > 1:
+                    raise ValueError(
+                        f"Only one ground truth dataset is allowed. Found {count}."
+                    )
+        return v
 
 
 class BaseResponse(BaseModel):

@@ -63,7 +63,7 @@ def load_task_data(task: Task) -> None:
                     sample = Sample(filepath=base_path / img_path)
                     sample_pool[img_path] = sample
                 if d.data_type == DataSetResultTypes.GROUND_TRUTH:
-                    _build_sample(base_path, row[1], d.data_type, sample)
+                    _build_sample(base_path, row[1], "ground_truth", sample)
                 else:
                     _build_sample(base_path, row[1], d.name, sample)
 

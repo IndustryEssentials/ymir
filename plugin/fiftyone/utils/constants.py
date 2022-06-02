@@ -1,7 +1,7 @@
-from enum import unique, Enum
+from enum import unique, IntEnum
 
 
 @unique
-class DataSetResultTypes(str, Enum):
-    GROUND_TRUTH = "ground_truth"
-    PREDICTION = "prediction"
+class DataSetResultTypes(IntEnum):
+    GROUND_TRUTH = 0  # ground_truth
+    PREDICTION = 1  # prediction
