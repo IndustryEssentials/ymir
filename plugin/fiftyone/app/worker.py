@@ -110,7 +110,6 @@ def _build_detections(
         item.tags = [
             ymir_data_name,
         ]
-        item.to_polyline()
         detections.append(item)
     return detections
 
