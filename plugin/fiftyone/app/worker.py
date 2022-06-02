@@ -25,7 +25,7 @@ def create_celery() -> current_celery_app:
         f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
     )
     celery_app.conf.result_backend = (
-        conf.mongo_uri + "/" + conf.FIFTYONE_DATABASE_NAME
+        conf.mongo_uri + "/" + conf.fiftyone_database_name
     )
 
     celery_app.conf.task_serializer = "pickle"
@@ -168,8 +168,7 @@ def _build_polylines(
     polylines = []
     for obj in voc_objects:
         label = obj["name"]
-        points = _get_points_from_bndbox(obj["bndbox"])
-        points = [(point[0] / width, point[1] / height) for point in points]
+        points = _get_points_from_bndbox(obj["bndbox"], width, height)
         polyline = Polyline(
             label=label,
             points=[points],
@@ -182,25 +181,25 @@ def _build_polylines(
     return polylines
 
 
-def _get_points_from_bndbox(bndbox: Dict) -> list:
-    xmin, ymin = int(float(bndbox.get("xmin", 0))), int(float(bndbox.get("ymin", 0)))
-    xmax, ymax = int(float(bndbox.get("xmax", 0))), int(float(bndbox.get("ymax", 0)))
-    angle = float(bndbox.get("rotate_angle", 0))
+def _get_points_from_bndbox(bndbox: Dict, width: int, height: int) -> list:
+    xmin, ymin = float(bndbox.get("xmin", 0)), float(bndbox.get("ymin", 0))
+    xmax, ymax = float(bndbox.get("xmax", 0)), float(bndbox.get("ymax", 0))
+    angle = float(bndbox.get("rotate_angle", 0)) * math.pi
 
     cx, cy = (xmin + xmax) / 2, (ymin + ymax) / 2
     w, h = xmax - xmin, ymax - ymin
 
-    p0x, p0y = _rotate_point(cx, cy, cx - w / 2, cy - h / 2, -angle)
-    p1x, p1y = _rotate_point(cx, cy, cx + w / 2, cy - h / 2, -angle)
-    p2x, p2y = _rotate_point(cx, cy, cx + w / 2, cy + h / 2, -angle)
-    p3x, p3y = _rotate_point(cx, cy, cx - w / 2, cy + h / 2, -angle)
+    p0x, p0y = _rotate_point(cx, cy, cx - w / 2, cy - h / 2, -angle, width, height)
+    p1x, p1y = _rotate_point(cx, cy, cx + w / 2, cy - h / 2, -angle, width, height)
+    p2x, p2y = _rotate_point(cx, cy, cx + w / 2, cy + h / 2, -angle, width, height)
+    p3x, p3y = _rotate_point(cx, cy, cx - w / 2, cy + h / 2, -angle, width, height)
 
     points = [(p0x, p0y), (p1x, p1y), (p2x, p2y), (p3x, p3y)]
 
     return points
 
 
-def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float) -> Tuple[int, int]:
+def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float, width: int, height: int) -> Tuple[float, float]:
     xoff = xp - xc
     yoff = yp - yc
 
@@ -209,4 +208,4 @@ def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float) -> T
     resx = cos_theta * xoff + sin_theta * yoff
     resy = - sin_theta * xoff + cos_theta * yoff
 
-    return int(xc + resx), int(yc + resy)
+    return (xc + resx) / width, (yc + resy) / height
