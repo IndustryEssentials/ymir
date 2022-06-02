@@ -147,21 +147,6 @@ def _add_detections(
     return sample
 
 
-def _build_detections(voc_objects: list, width: int, height: int) -> List[Detection]:
-    detections = []
-    for obj in voc_objects:
-        label = obj["name"]
-        bndbox = VOCBoundingBox.from_bndbox_dict(obj["bndbox"]).to_detection_format(
-            frame_size=(width, height)
-        )
-        item = Detection(
-            label=label,
-            bounding_box=bndbox,
-        )
-        detections.append(item)
-    return detections
-
-
 def _build_polylines(
     voc_objects: list, ymir_data_name: str, width: int, height: int
 ) -> List[Polyline]:
@@ -199,13 +184,14 @@ def _get_points_from_bndbox(bndbox: Dict, width: int, height: int) -> list:
     return points
 
 
-def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float, width: int, height: int) -> Tuple[float, float]:
-    xoff = xp - xc
-    yoff = yp - yc
+def _rotate_point(cx: float, cy: float, xp: float, yp: float, theta: float, width: int,
+                  height: int) -> Tuple[float, float]:
+    xoff = xp - cx
+    yoff = yp - cy
 
     cos_theta = math.cos(theta)
     sin_theta = math.sin(theta)
     resx = cos_theta * xoff + sin_theta * yoff
     resy = - sin_theta * xoff + cos_theta * yoff
 
-    return (xc + resx) / width, (yc + resy) / height
+    return (cx + resx) / width, (cy + resy) / height
