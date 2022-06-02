@@ -31,6 +31,10 @@ class MirDataReader:
     def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
         pass
 
+    @property
+    def typ_rev_tid(self) -> revs_parser.TypRevTid:
+        return self._typ_rev_tid
+
     def read(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, List[mirpb.Annotation]]]:
         for asset_id, attributes in self._mir_metadatas.attributes.items():
             if asset_id not in self._asset_ids:
