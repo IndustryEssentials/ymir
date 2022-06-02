@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from fiftyone import Detection, Polyline
+from fiftyone import Polyline
 
 from app.worker import _build_sample, _build_polylines
 
