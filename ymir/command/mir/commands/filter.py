@@ -189,10 +189,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                               parents=[parent_parser],
                                               description="use this command to filter assets",
                                               help="filter assets")
-    filter_arg_parser.add_argument("-p", dest="in_cis", type=str, help="type names")
-    filter_arg_parser.add_argument("-P", dest="ex_cis", type=str, help="exclusive type names")
-    filter_arg_parser.add_argument("-c", dest="in_cks", type=str, help="customized keywords")
-    filter_arg_parser.add_argument("-C", dest="ex_cks", type=str, help="excludsive customized keywords")
+    filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, help="type names")
+    filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, help="exclusive type names")
+    filter_arg_parser.add_argument("-c", '--cks', dest="in_cks", type=str, help="customized keywords")
+    filter_arg_parser.add_argument("-C", '--ex-cks', dest="ex_cks", type=str, help="excludsive customized keywords")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
     filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
