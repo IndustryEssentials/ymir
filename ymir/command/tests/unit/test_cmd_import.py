@@ -118,7 +118,7 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 2.0,
-                        }]
+                        }],
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'annotations': [{
@@ -140,7 +140,8 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 2.0,
-                        }]
+                        }],
+                        'customized_keywords': ['blue sky', 'sunny', 'camera 0'],
                     }
                 }
             }
@@ -157,7 +158,7 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 2.0,
-                        }]
+                        }],
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'annotations': [{
@@ -199,7 +200,8 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 2,
                             'score': 2.0,
-                        }]
+                        }],
+                        'customized_keywords': ['blue sky', 'sunny', 'camera 0'],
                     }
                 }
             }

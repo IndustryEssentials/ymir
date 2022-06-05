@@ -83,6 +83,17 @@ def _xml_obj_to_type_name(obj: xml.dom.minidom.Element) -> str:
     return _get_dom_xml_tag_data(obj, "name").lower()
 
 
+def _xml_obj_to_customized_keywords(obj: xml.dom.minidom.Element) -> List[str]:
+    ck_str = _get_dom_xml_tag_data(node=obj, tag_name='customized_keywords').replace('\n', '')
+    cks = []
+    for ck in ck_str.split(';'):
+        ck = ck.strip()
+        if not ck:
+            continue
+        cks.append(ck)
+    return cks
+
+
 def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
                        in_sha1_file: str, mir_root: str,
                        annotations_dir_path: str, task_id: str, phase: str) -> Tuple[int, Dict[str, int]]:
@@ -143,6 +154,10 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
                 logging.error(f"cannot open annotation_file: {annotation_file}")
                 return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
 
+            # customized keywords
+            image_annotations[asset_hash].customized_keywords.extend(_xml_obj_to_customized_keywords(dom_tree))
+
+            # annotations
             collection = dom_tree.documentElement
             objects = collection.getElementsByTagName("object")
             for idx, obj in enumerate(objects):
