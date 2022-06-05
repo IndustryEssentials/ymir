@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import shutil
 import time
 import subprocess
 from subprocess import CalledProcessError
@@ -14,7 +13,7 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, context, data_reader, data_writer, mir_storage_ops, revs_parser
-from mir.tools import settings as mir_settings, utils as mir_utils
+from mir.tools import settings as mir_settings, utils as mir_utils, hash_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -180,7 +179,7 @@ class CmdTrain(base.BaseCommand):
         if not model_upload_location:
             logging.error("empty --model-location, abort")
             return MirCode.RC_CMD_INVALID_ARGS
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=True)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         if not work_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty work_dir')
@@ -323,7 +322,8 @@ class CmdTrain(base.BaseCommand):
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             # export train set
             if asset_cache_dir:
-                train_lmdb_dir = os.path.join(asset_cache_dir, f"tr:{src_revs}")
+                cache_hash = hash_utils.sha1sum_for_string(f"tr:{src_revs}")
+                train_lmdb_dir = os.path.join(asset_cache_dir, cache_hash[-2:], cache_hash)
             else:
                 train_lmdb_dir = os.path.join(work_dir_in, 'train')
 
@@ -336,7 +336,8 @@ class CmdTrain(base.BaseCommand):
 
             # export validation set
             if asset_cache_dir:
-                val_lmdb_dir = os.path.join(asset_cache_dir, f"va:{src_revs}")
+                cache_hash = hash_utils.sha1sum_for_string(f"va:{src_revs}")
+                val_lmdb_dir = os.path.join(asset_cache_dir, cache_hash[-2:], cache_hash)
             else:
                 val_lmdb_dir = os.path.join(work_dir_in, 'val')
             dw_val = data_writer.LmdbDataWriter(mir_root=mir_root,
@@ -360,11 +361,6 @@ class CmdTrain(base.BaseCommand):
                                        class_ids=type_ids_set) as dr:
             dw_val.write_all(dr)
 
-        # copy cached files
-        if asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB and asset_cache_dir:
-            shutil.copytree(train_lmdb_dir, os.path.join(work_dir_in, 'train'), dirs_exist_ok=True)
-            shutil.copytree(val_lmdb_dir, os.path.join(work_dir_in, 'val'), dirs_exist_ok=True)
-
         logging.info("starting train docker container")
 
         available_gpu_id = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
@@ -382,7 +378,14 @@ class CmdTrain(base.BaseCommand):
         # start train docker and wait
         path_binds = []
         path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
-        path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
+        if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
+            path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
+        elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
+            # make this two dirs here to avoid permission problems
+            os.makedirs(os.path.join(work_dir_in, 'train'), exist_ok=True)
+            os.makedirs(os.path.join(work_dir_in, 'val'), exist_ok=True)
+            path_binds.append(f"-v{train_lmdb_dir}/data.mdb:/in/train/data.mdb")
+            path_binds.append(f"-v{val_lmdb_dir}/data.mdb:/in/val/data.mdb")
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
 

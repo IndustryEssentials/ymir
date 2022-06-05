@@ -441,7 +441,7 @@ class LmdbDataWriter(BaseDataWriter):
         # no need to write when:
         #   * destination files already exist
         #   * has tid (branch may change without tid)
-        if self.exists() and dr.typ_rev_tid.tid:
+        if self.exists():
             if self._index_file_path:
                 shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
             return
