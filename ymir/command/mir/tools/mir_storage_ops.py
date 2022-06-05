@@ -83,18 +83,25 @@ class MirStorageOps():
         for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
             mir_keywords.keywords[asset_id].predifined_keyids[:] = set(
                 [annotation.class_id for annotation in single_image_annotations.annotations])
+            mir_keywords.keywords[asset_id].customized_keywords[:] = single_image_annotations.customized_keywords
 
-        # build mir_keywords.index_predefined_keyids
+        # build mir_keywords.index_predefined_keyids and index_customized_keywords
         mir_keywords.index_predefined_keyids.clear()
+        mir_keywords.index_customized_keywords.clear()
 
         for asset_id, keywords in mir_keywords.keywords.items():
             for key_id in keywords.predifined_keyids:
                 mir_keywords.index_predefined_keyids[key_id].asset_ids.append(asset_id)
+            for keyword in keywords.customized_keywords:
+                mir_keywords.index_customized_keywords[keyword].asset_ids.append(asset_id)
 
         # Remove redundant index values and sort
-        for key_id, assets in mir_keywords.index_predefined_keyids.items():
+        for key_id, _ in mir_keywords.index_predefined_keyids.items():
             mir_keywords.index_predefined_keyids[key_id].asset_ids[:] = sorted(
                 set(mir_keywords.index_predefined_keyids[key_id].asset_ids))
+        for keyword, _ in mir_keywords.index_customized_keywords.items():
+            mir_keywords.index_customized_keywords[keyword].asset_ids[:] = sorted(
+                set(mir_keywords.index_customized_keywords[keyword].asset_ids))
 
     @classmethod
     def __build_mir_context(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
@@ -102,6 +109,8 @@ class MirStorageOps():
                             mir_context: mirpb.MirContext) -> None:
         for key_id, assets in mir_keywords.index_predefined_keyids.items():
             mir_context.predefined_keyids_cnt[key_id] = len(assets.asset_ids)
+        for keyword, assets in mir_keywords.index_customized_keywords.items():
+            mir_context.customized_keywords_cnt[keyword] = len(assets.asset_ids)
 
         # project_predefined_keyids_cnt: assets count for project class ids
         #   suppose we have: 13 images for key 5, 15 images for key 6, and proejct_class_ids = [3, 5]

@@ -233,6 +233,7 @@ class TestCmdImport(unittest.TestCase):
                         },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
                             'predifined_keyids': [1],
+                            'customized_keywords': ['blue sky', 'sunny', 'camera 0'],
                         }
                     },
                     'index_predefined_keyids': {
@@ -240,6 +241,17 @@ class TestCmdImport(unittest.TestCase):
                             'asset_ids':
                             ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
                         }
+                    },
+                    'index_customized_keywords': {
+                        'blue sky': {
+                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4'],
+                        },
+                        'camera 0': {
+                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4'],
+                        },
+                        'sunny': {
+                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4'],
+                        },
                     },
                 }
                 dict_context_expected = {
@@ -250,7 +262,11 @@ class TestCmdImport(unittest.TestCase):
                         1: 2,
                     },
                     'project_predefined_keyids_cnt': {},
-                    'customized_keywords_cnt': {},
+                    'customized_keywords_cnt': {
+                        'blue sky': 1,
+                        'sunny': 1,
+                        'camera 0': 1,
+                    },
                 }
             else:
                 dict_keywords_expect = {
@@ -260,6 +276,7 @@ class TestCmdImport(unittest.TestCase):
                         },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
                             'predifined_keyids': [1, 2],
+                            'customized_keywords': ['blue sky', 'sunny', 'camera 0'],
                         }
                     },
                     'index_predefined_keyids': {
@@ -271,6 +288,17 @@ class TestCmdImport(unittest.TestCase):
                             ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
                         }
                     },
+                    'index_customized_keywords': {
+                        'blue sky': {
+                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4'],
+                        },
+                        'camera 0': {
+                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4'],
+                        },
+                        'sunny': {
+                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4'],
+                        },
+                    },
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
@@ -281,7 +309,11 @@ class TestCmdImport(unittest.TestCase):
                         2: 1,
                     },
                     'project_predefined_keyids_cnt': {},
-                    'customized_keywords_cnt': {},
+                    'customized_keywords_cnt': {
+                        'blue sky': 1,
+                        'sunny': 1,
+                        'camera 0': 1,
+                    },
                 }
             try:
                 self.assertDictEqual(dict_keywords, dict_keywords_expect)
