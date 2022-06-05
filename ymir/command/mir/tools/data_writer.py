@@ -383,18 +383,15 @@ class LmdbDataWriter(BaseDataWriter):
         self._lmdb_env = lmdb.open(lmdb_dir, map_size=1099511627776)  # 1TB
         self._lmdb_tnx = self._lmdb_env.begin(write=True)
         self._index_file_path = index_file_path
+        self._finish_file_path = os.path.join(self._lmdb_dir, '.finish')
         self._lmdb_index: Any  # see write_all
 
     def exists(self) -> bool:
         data_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'data.mdb'))
         lock_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'lock.mdb'))
+        finish_file_exists = os.path.isfile(self._finish_file_path)
 
-        # check index file exists and not empty
-        # if not exists, or exists but empty, need write
-        index_file_path = os.path.join(self._lmdb_dir, 'index.mdb')
-        index_empty = os.stat(index_file_path).st_size == 0 if os.path.isfile(index_file_path) else True
-
-        return data_exists and lock_exists and not index_empty
+        return data_exists and lock_exists and finish_file_exists
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         # read asset
@@ -438,9 +435,7 @@ class LmdbDataWriter(BaseDataWriter):
             shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
 
     def write_all(self, dr: data_reader.MirDataReader) -> None:
-        # no need to write when:
-        #   * destination files already exist
-        #   * has tid (branch may change without tid)
+        # if already exists, no need to write, only copy index file to destination
         if self.exists():
             if self._index_file_path:
                 shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
@@ -451,3 +446,5 @@ class LmdbDataWriter(BaseDataWriter):
         for v in dr.read():
             self._write(*v)
         self._close()
+        # touch a finish file
+        open(self._finish_file_path, 'w').close()
