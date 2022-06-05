@@ -2,6 +2,7 @@ from enum import Enum
 import json
 import os
 import shutil
+import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
@@ -380,18 +381,26 @@ class LmdbDataWriter(BaseDataWriter):
             os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
 
         self._lmdb_dir = lmdb_dir
-        self._lmdb_env = lmdb.open(lmdb_dir, map_size=1099511627776)  # 1TB
-        self._lmdb_tnx = self._lmdb_env.begin(write=True)
         self._index_file_path = index_file_path
         self._finish_file_path = os.path.join(self._lmdb_dir, '.finish')
-        self._lmdb_index: Any  # see write_all
+        self._lmdb_env: Any  # see write_all
+        self._lmdb_tnx: Any
+        self._lmdb_index: Any
 
     def exists(self) -> bool:
         data_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'data.mdb'))
         lock_exists = os.path.isfile(os.path.join(self._lmdb_dir, 'lock.mdb'))
-        finish_file_exists = os.path.isfile(self._finish_file_path)
+        if not data_exists or not lock_exists:
+            return False
 
-        return data_exists and lock_exists and finish_file_exists
+        counter = 0
+        while not os.path.isfile(self._finish_file_path):
+            time.sleep(30)
+            counter += 1
+            if counter >= 3:
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message='lmdb writer: others are writing')
+        return True
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
         # read asset
@@ -442,6 +451,8 @@ class LmdbDataWriter(BaseDataWriter):
             return
 
         # write all
+        self._lmdb_env = lmdb.open(self._lmdb_dir, map_size=1099511627776)  # 1TB
+        self._lmdb_tnx = self._lmdb_env.begin(write=True)
         self._lmdb_index = open(os.path.join(self._lmdb_dir, 'index.mdb'), 'w')
         for v in dr.read():
             self._write(*v)
