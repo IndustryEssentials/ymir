@@ -84,23 +84,23 @@ class MirStorageOps():
             mir_keywords.keywords[asset_id].predifined_keyids[:] = set(
                 [annotation.class_id for annotation in single_image_annotations.annotations])
 
-        # build mir_keywords.index_predifined_keyids
-        mir_keywords.index_predifined_keyids.clear()
+        # build mir_keywords.index_predefined_keyids
+        mir_keywords.index_predefined_keyids.clear()
 
         for asset_id, keywords in mir_keywords.keywords.items():
             for key_id in keywords.predifined_keyids:
-                mir_keywords.index_predifined_keyids[key_id].asset_ids.append(asset_id)
+                mir_keywords.index_predefined_keyids[key_id].asset_ids.append(asset_id)
 
         # Remove redundant index values and sort
-        for key_id, assets in mir_keywords.index_predifined_keyids.items():
-            mir_keywords.index_predifined_keyids[key_id].asset_ids[:] = sorted(
-                set(mir_keywords.index_predifined_keyids[key_id].asset_ids))
+        for key_id, assets in mir_keywords.index_predefined_keyids.items():
+            mir_keywords.index_predefined_keyids[key_id].asset_ids[:] = sorted(
+                set(mir_keywords.index_predefined_keyids[key_id].asset_ids))
 
     @classmethod
     def __build_mir_context(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
                             mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
                             mir_context: mirpb.MirContext) -> None:
-        for key_id, assets in mir_keywords.index_predifined_keyids.items():
+        for key_id, assets in mir_keywords.index_predefined_keyids.items():
             mir_context.predefined_keyids_cnt[key_id] = len(assets.asset_ids)
 
         # project_predefined_keyids_cnt: assets count for project class ids
@@ -110,7 +110,7 @@ class MirStorageOps():
         for key_id in project_class_ids:
             if key_id in mir_context.predefined_keyids_cnt:
                 mir_context.project_predefined_keyids_cnt[key_id] = mir_context.predefined_keyids_cnt[key_id]
-                project_positive_asset_ids.update(mir_keywords.index_predifined_keyids[key_id].asset_ids)
+                project_positive_asset_ids.update(mir_keywords.index_predefined_keyids[key_id].asset_ids)
             else:
                 mir_context.project_predefined_keyids_cnt[key_id] = 0
 
@@ -350,7 +350,7 @@ class MirStorageOps():
         return dict(
             all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),    # ordered list.
             asset_ids_detail=asset_ids_detail,
-            class_ids_index={k: v["asset_ids"] for k, v in mir_storage_keywords["index_predifined_keyids"].items()},
+            class_ids_index={k: v["asset_ids"] for k, v in mir_storage_keywords["index_predefined_keyids"].items()},
         )
 
     @classmethod

@@ -146,7 +146,7 @@ class TestMirStorage(unittest.TestCase):
                     'predifined_keyids': [3]
                 },
             },
-            'index_predifined_keyids': {
+            'index_predefined_keyids': {
                 1: {
                     'asset_ids': ['a001']
                 },
