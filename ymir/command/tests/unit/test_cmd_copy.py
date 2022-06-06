@@ -64,8 +64,8 @@ class TestCmdCopy(unittest.TestCase):
             self.__create_image_annotations(type_ids=[3]))
 
         mir_keywords = mirpb.MirKeywords()
-        mir_keywords.keywords['asset0'].predifined_keyids.extend([1, 2, 3])
-        mir_keywords.keywords['asset1'].predifined_keyids.extend([3])
+        mir_keywords.keywords['asset0'].predefined_keyids.extend([1, 2, 3])
+        mir_keywords.keywords['asset1'].predefined_keyids.extend([3])
 
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id='t0',
@@ -118,8 +118,8 @@ class TestCmdCopy(unittest.TestCase):
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
             self.assertEqual({}, asset1_idx_ids)
 
-            self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predifined_keyids))
-            self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predifined_keyids))
+            self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predefined_keyids))
+            self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predefined_keyids))
 
         self.assertEqual(dst_tid, mir_tasks.head_task_id)
         mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision

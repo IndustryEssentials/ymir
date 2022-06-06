@@ -150,11 +150,11 @@ class TestArkDataExporter(unittest.TestCase):
         keywords_dict = {
             'keywords': {
                 '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'predifined_keyids': [2, 52],
+                    'predefined_keyids': [2, 52],
                     'customized_keywords': ['pascal']
                 },
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'predifined_keyids': [52],
+                    'predefined_keyids': [52],
                     'customized_keywords': ['pascal']
                 },
             }
