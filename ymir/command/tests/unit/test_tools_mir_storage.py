@@ -137,13 +137,13 @@ class TestMirStorage(unittest.TestCase):
         dict_keywords = {
             'keywords': {
                 'a001': {
-                    'predifined_keyids': [1, 2]
+                    'predefined_keyids': [1, 2]
                 },
                 'a002': {
-                    'predifined_keyids': [2, 3]
+                    'predefined_keyids': [2, 3]
                 },
                 'a003': {
-                    'predifined_keyids': [3]
+                    'predefined_keyids': [3]
                 },
             },
             'index_predefined_keyids': {

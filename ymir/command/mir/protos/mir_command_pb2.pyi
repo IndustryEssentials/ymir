@@ -475,10 +475,10 @@ global___Assets = Assets
 
 class Keywords(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    PREDIFINED_KEYIDS_FIELD_NUMBER: builtins.int
+    PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
     CUSTOMIZED_KEYWORDS_FIELD_NUMBER: builtins.int
     @property
-    def predifined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
+    def predefined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """predefined: managed id-keyword map"""
         pass
     @property
@@ -487,10 +487,10 @@ class Keywords(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        predifined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
+        predefined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         customized_keywords : typing.Optional[typing.Iterable[typing.Text]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["customized_keywords",b"customized_keywords","predifined_keyids",b"predifined_keyids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["customized_keywords",b"customized_keywords","predefined_keyids",b"predefined_keyids"]) -> None: ...
 global___Keywords = Keywords
 
 class MirTasks(google.protobuf.message.Message):

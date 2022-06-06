@@ -81,7 +81,7 @@ class MirStorageOps():
         """
         # build mir_keywords.keywords
         for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
-            mir_keywords.keywords[asset_id].predifined_keyids[:] = set(
+            mir_keywords.keywords[asset_id].predefined_keyids[:] = set(
                 [annotation.class_id for annotation in single_image_annotations.annotations])
             mir_keywords.keywords[asset_id].customized_keywords[:] = single_image_annotations.customized_keywords
 
@@ -90,7 +90,7 @@ class MirStorageOps():
         mir_keywords.index_customized_keywords.clear()
 
         for asset_id, keywords in mir_keywords.keywords.items():
-            for key_id in keywords.predifined_keyids:
+            for key_id in keywords.predefined_keyids:
                 mir_keywords.index_predefined_keyids[key_id].asset_ids.append(asset_id)
             for keyword in keywords.customized_keywords:
                 mir_keywords.index_customized_keywords[keyword].asset_ids.append(asset_id)
@@ -347,7 +347,7 @@ class MirStorageOps():
         for asset_id, asset_metadata in mir_storage_metadatas["attributes"].items():
             asset_annotations = annotations[asset_id]["annotations"] if asset_id in annotations else {}
             asset_class_ids = (
-                keyword_keyids_list[asset_id]["predifined_keyids"]
+                keyword_keyids_list[asset_id]["predefined_keyids"]
                 if asset_id in keyword_keyids_list
                 else []
             )

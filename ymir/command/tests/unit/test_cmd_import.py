@@ -220,8 +220,8 @@ class TestCmdImport(unittest.TestCase):
         dict_context = MessageToDict(mir_context, preserving_proto_field_name=True, including_default_value_fields=True)
         if with_annotations:
             dup_asset_id = '430df22960b0f369318705800139fcc8ec38a3e4'
-            dict_keywords['keywords'][dup_asset_id]['predifined_keyids'] = sorted(
-                dict_keywords['keywords'][dup_asset_id]['predifined_keyids'])  # list is unsorted
+            dict_keywords['keywords'][dup_asset_id]['predefined_keyids'] = sorted(
+                dict_keywords['keywords'][dup_asset_id]['predefined_keyids'])  # list is unsorted
             dup_keywords_id = 1
             dict_keywords['index_predefined_keyids'][dup_keywords_id]['asset_ids'] = sorted(
                 dict_keywords['index_predefined_keyids'][dup_keywords_id]['asset_ids'])
@@ -229,10 +229,10 @@ class TestCmdImport(unittest.TestCase):
                 dict_keywords_expect = {
                     'keywords': {
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predifined_keyids': [1],
+                            'predefined_keyids': [1],
                         },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predifined_keyids': [1],
+                            'predefined_keyids': [1],
                             'customized_keywords': ['blue sky', 'sunny', 'camera 0'],
                         }
                     },
@@ -272,10 +272,10 @@ class TestCmdImport(unittest.TestCase):
                 dict_keywords_expect = {
                     'keywords': {
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predifined_keyids': [1],
+                            'predefined_keyids': [1],
                         },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predifined_keyids': [1, 2],
+                            'predefined_keyids': [1, 2],
                             'customized_keywords': ['blue sky', 'sunny', 'camera 0'],
                         }
                     },

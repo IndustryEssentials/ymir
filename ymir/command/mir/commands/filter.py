@@ -117,8 +117,8 @@ class CmdFilter(base.BaseCommand):
 
         asset_ids_set = set(mir_metadatas.attributes.keys())
         match_functions: List[Tuple[__IncludeExcludeCallableType, Union[Set[str], Set[int]], str, str]] = [
-            (CmdFilter.__include_match, preds_set, 'predifined_keyids', 'select cis'),
-            (CmdFilter.__exclude_match, excludes_set, 'predifined_keyids', 'exclude cis'),
+            (CmdFilter.__include_match, preds_set, 'predefined_keyids', 'select cis'),
+            (CmdFilter.__exclude_match, excludes_set, 'predefined_keyids', 'exclude cis'),
             (CmdFilter.__include_match, ck_preds_set, 'customized_keywords', 'select cks'),
             (CmdFilter.__exclude_match, ck_excludes_set, 'customized_keywords', 'exclude cks')
         ]

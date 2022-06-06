@@ -148,7 +148,7 @@ message Assets {
 
 message Keywords {
     // predefined: managed id-keyword map
-    repeated int32 predifined_keyids = 1;
+    repeated int32 predefined_keyids = 1;
     // customized: arbitrary user defined keywords
     repeated string customized_keywords = 2;
 };
