@@ -112,8 +112,11 @@ class CmdFilter(base.BaseCommand):
         class_manager = class_ids.ClassIdManager(mir_root=mir_root)
         preds_set = CmdFilter.__preds_set_from_str(in_cis, class_manager)  # type: Set[int]
         excludes_set = CmdFilter.__preds_set_from_str(ex_cis, class_manager)  # type: Set[int]
+
         ck_preds_set = {ck.strip() for ck in in_cks.split(";")} if in_cks else set()
+        ck_preds_set = {ck for ck in ck_preds_set if ck}
         ck_excludes_set = {ck.strip() for ck in ex_cks.split(";")} if ex_cks else set()
+        ck_excludes_set = {ck for ck in ck_excludes_set if ck}
 
         asset_ids_set = set(mir_metadatas.attributes.keys())
         match_functions: List[Tuple[__IncludeExcludeCallableType, Union[Set[str], Set[int]], str, str]] = [
