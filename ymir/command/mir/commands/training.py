@@ -145,14 +145,6 @@ def _get_task_parameters(config: dict) -> str:
     return config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
 
 
-def _format_type_from_executor_config(executor_config: dict) -> Tuple[data_writer.AnnoFormat, data_writer.AssetFormat]:
-    if 'export_format' not in executor_config:
-        return (data_writer.AnnoFormat.ANNO_FORMAT_ARK, data_writer.AssetFormat.ASSET_FORMAT_RAW)
-
-    ef, af = executor_config['export_format'].split(':')
-    return (data_writer.AnnoFormat(ef), data_writer.AssetFormat(af))
-
-
 class CmdTrain(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command train: %s", self.args)
@@ -298,7 +290,7 @@ class CmdTrain(base.BaseCommand):
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
         type_ids_set = set(type_ids_list)
 
-        export_format, asset_format = _format_type_from_executor_config(executor_config)
+        export_format, asset_format = data_writer.get_export_type(type_str=executor_config.get('export_format', ''))
 
         dw_train: data_writer.BaseDataWriter
         dw_val: data_writer.BaseDataWriter

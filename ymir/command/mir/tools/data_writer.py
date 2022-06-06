@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -48,6 +48,14 @@ def format_type_from_str(anno_format: str) -> AnnoFormat:
 
 def asset_format_type_from_str(asset_format: str) -> AssetFormat:
     return AssetFormat(asset_format.lower())
+
+
+def get_export_type(type_str: str) -> Tuple[AnnoFormat, AssetFormat]:
+    if not type_str:
+        return (AnnoFormat.ANNO_FORMAT_ARK, AssetFormat.ASSET_FORMAT_RAW)
+
+    ef, af = type_str.split(':')
+    return (AnnoFormat(ef), AssetFormat(af))
 
 
 def _format_file_output_func(anno_format: AnnoFormat) -> Callable:
