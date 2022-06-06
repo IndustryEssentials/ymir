@@ -1,3 +1,4 @@
+from collections import Counter
 from pathlib import Path
 from typing import List
 
@@ -41,14 +42,11 @@ class Task(BaseModel):
 
     @validator("datas")
     def check_ground_truth_once(cls, v):
-        count = 0
-        for d in v:
-            if d.data_type == DataSetResultTypes.GROUND_TRUTH:
-                count += 1
-                if count > 1:
-                    raise ValueError(
-                        f"Only one ground truth dataset is allowed. Found {count}."
-                    )
+        type_cnt = Counter(d.data_type for d in v)
+        if type_cnt[DataSetResultTypes.GROUND_TRUTH] > 1:
+            raise ValueError(
+                f"Only one ground truth dataset is allowed. Found {type_cnt[DataSetResultTypes.GROUND_TRUTH]}."
+            )
         return v
 
 

@@ -3,7 +3,12 @@ from pathlib import Path
 
 from fiftyone import Sample, Detection
 
-from app.worker import _build_detections, _build_sample
+from app.worker import (
+    _build_detections,
+    _get_annotation,
+    _add_detections,
+    _set_metadata,
+)
 
 
 def test_build_detections():
@@ -36,7 +41,29 @@ def test_build_detections():
     assert res[0].label == [item][0].label
 
 
-def test_build_sample():
+def test_get_annotation():
+    base_path = Path(os.getcwd())
+    annotation_path = (
+        "tests/test_data/voc/labels/241294009_432213948218468_252149922899382953_n.xml"
+    )
+    annotation = _get_annotation(base_path, annotation_path)
+    assert annotation["object"]["name"] == "人"
+
+
+def test_set_metadata():
+    base_path = Path(os.getcwd())
+    annotation_path = (
+        "tests/test_data/voc/labels/241294009_432213948218468_252149922899382953_n.xml"
+    )
+    annotation = _get_annotation(base_path, annotation_path)
+    sample = Sample(filepath=base_path / annotation_path)
+    sample = _set_metadata(annotation, sample)
+    assert sample["metadata"].width == 1080
+    assert sample["metadata"].height == 1080
+    assert sample["metadata"].num_channels == 3
+
+
+def test_add_detections():
     base_path = Path(os.getcwd())
     dataset_type = "ground_truth"
 
@@ -47,7 +74,9 @@ def test_build_sample():
         "tests/test_data/voc/labels/241294009_432213948218468_252149922899382953_n.xml"
     )
     sample = Sample(filepath=base_path / img_path)
-    sample = _build_sample(base_path, annotation_path, dataset_type, sample)
+    annotation = _get_annotation(base_path, annotation_path)
+    sample = _set_metadata(annotation, sample)
+    sample = _add_detections(annotation, dataset_type, sample)
 
     assert sample[dataset_type].detections[0].label == "人"
     assert sample[dataset_type].detections[0].bounding_box == [

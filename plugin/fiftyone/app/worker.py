@@ -45,7 +45,9 @@ def create_celery() -> current_celery_app:
 @shared_task(name="load_task_data")
 def load_task_data(task: Task) -> None:
     """
+    load task data
     :type task: Task
+    return: None
     """
     base_path = Path(conf.base_path)
     sample_pool: Dict[str, Sample] = {}
@@ -56,16 +58,22 @@ def load_task_data(task: Task) -> None:
             rd = csv.reader(fd, delimiter="\t", quotechar='"')
 
             for row in rd:
-                img_path: str = row[0]
-                if img_path in sample_pool:
-                    sample = sample_pool[img_path]
+                img_path = Path(row[0])
+                annotation = _get_annotation(base_path, row[1])
+
+                if img_path.name in sample_pool:
+                    sample = sample_pool[img_path.name]
                 else:
                     sample = Sample(filepath=base_path / img_path)
-                    sample_pool[img_path] = sample
-                if d.data_type == DataSetResultTypes.GROUND_TRUTH:
-                    _build_sample(base_path, row[1], "ground_truth", sample)
-                else:
-                    _build_sample(base_path, row[1], d.name, sample)
+                    sample_pool[img_path.name] = sample
+                    _set_metadata(annotation, sample)
+
+                dataset_name = (
+                    "ground_truth"
+                    if d.data_type == DataSetResultTypes.GROUND_TRUTH
+                    else d.name
+                )
+                _add_detections(annotation, dataset_name, sample)
 
     # Create dataset
     dataset = Dataset(task.tid)
@@ -73,15 +81,31 @@ def load_task_data(task: Task) -> None:
     dataset.persistent = True
 
 
-def _build_sample(
+def _get_annotation(
     base_path: Path,
     annotation_path: str,
-    ymir_data_name: str,
-    sample: Sample,
-) -> Sample:
+) -> dict:
+    """
+    get annotation from voc xml file
+    :type base_path: Path
+    :type annotation_path: str
+    return: dict
+    """
     annotation_file = base_path / annotation_path
     with annotation_file.open("r", encoding="utf-8") as ad:
-        annotation = xmltodict.parse(ad.read()).get("annotation")
+        return xmltodict.parse(ad.read()).get("annotation")
+
+
+def _set_metadata(
+    annotation: dict,
+    sample: Sample,
+) -> Sample:
+    """
+    set metadata to sample
+    :type annotation: dict
+    :type sample: Sample
+    return: sample
+    """
     size = annotation["size"]
     width = int(size["width"])
     height = int(size["height"])
@@ -91,7 +115,22 @@ def _build_sample(
         height=height,
         num_channels=depth,
     )
+    sample["metadata"] = metadata
+    return sample
 
+
+def _add_detections(
+    annotation: dict,
+    ymir_data_name: str,
+    sample: Sample,
+) -> Sample:
+    """
+    add detections to sample
+    :type annotation: dict
+    :type ymir_data_name: str
+    :type sample: Sample
+    return: sample
+    """
     voc_objects = []
     if isinstance(annotation["object"], dict):
         voc_objects.append(annotation["object"])
@@ -99,10 +138,11 @@ def _build_sample(
         voc_objects = annotation["object"]
     else:
         raise ValueError(f"Invalid object type: {type(annotation['object'])}")
-    detections = _build_detections(voc_objects, width, height)
+    detections = _build_detections(
+        voc_objects, sample["metadata"]["width"], sample["metadata"]["height"]
+    )
 
     sample[ymir_data_name] = Detections(detections=detections)
-    sample["metadata"] = metadata
     return sample
 
 
