@@ -162,8 +162,9 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
 
 
 def _get_points_from_bndbox(bndbox: Dict, width: int, height: int) -> list:
-    xmin, ymin = float(bndbox.get("xmin", 0)), float(bndbox.get("ymin", 0))
-    xmax, ymax = float(bndbox.get("xmax", 0)), float(bndbox.get("ymax", 0))
+    # raise error if parameter not exist
+    xmin, ymin = float(bndbox["xmin"]), float(bndbox["ymin"])
+    xmax, ymax = float(bndbox["xmax"]), float(bndbox["ymax"])
     angle = float(bndbox.get("rotate_angle", 0)) * math.pi
 
     cx, cy = (xmin + xmax) / 2, (ymin + ymax) / 2
@@ -174,9 +175,7 @@ def _get_points_from_bndbox(bndbox: Dict, width: int, height: int) -> list:
     p2x, p2y = _rotate_point(cx, cy, cx + half_w, cy + half_h, -angle, width, height)
     p3x, p3y = _rotate_point(cx, cy, cx - half_w, cy + half_h, -angle, width, height)
 
-    points = [(p0x, p0y), (p1x, p1y), (p2x, p2y), (p3x, p3y)]
-
-    return points
+    return [(p0x, p0y), (p1x, p1y), (p2x, p2y), (p3x, p3y)]
 
 
 def _rotate_point(cx: float, cy: float, xp: float, yp: float, theta: float, width: int,
