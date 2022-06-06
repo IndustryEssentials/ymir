@@ -13,7 +13,7 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, context, data_reader, data_writer, mir_storage_ops, revs_parser
-from mir.tools import settings as mir_settings, utils as mir_utils, hash_utils
+from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -322,8 +322,7 @@ class CmdTrain(base.BaseCommand):
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             # export train set
             if asset_cache_dir:
-                cache_hash = hash_utils.sha1sum_for_string(f"tr:{src_revs}")
-                train_lmdb_dir = os.path.join(asset_cache_dir, cache_hash[-2:], cache_hash)
+                train_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
             else:
                 train_lmdb_dir = os.path.join(work_dir_in, 'train')
 
@@ -336,8 +335,7 @@ class CmdTrain(base.BaseCommand):
 
             # export validation set
             if asset_cache_dir:
-                cache_hash = hash_utils.sha1sum_for_string(f"va:{src_revs}")
-                val_lmdb_dir = os.path.join(asset_cache_dir, cache_hash[-2:], cache_hash)
+                val_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
             else:
                 val_lmdb_dir = os.path.join(work_dir_in, 'val')
             dw_val = data_writer.LmdbDataWriter(mir_root=mir_root,

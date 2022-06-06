@@ -12,8 +12,3 @@ def sha1sum_for_file(file_path: str) -> str:
             chunk = f.read(h.block_size)
             h.update(chunk)
     return h.hexdigest()
-
-
-def sha1sum_for_string(s: str) -> str:
-    h = hashlib.sha1(s.encode('utf-8'))
-    return h.hexdigest()
