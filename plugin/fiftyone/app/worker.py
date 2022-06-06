@@ -108,31 +108,30 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
 
 
 def _get_points_from_bndbox(bndbox: Dict, width: int, height: int) -> list:
-    xmin, ymin = float(bndbox.get("xmin", 0)), float(bndbox.get("ymin", 0))
-    xmax, ymax = float(bndbox.get("xmax", 0)), float(bndbox.get("ymax", 0))
+    # raise error if parameter not exist
+    xmin, ymin = float(bndbox["xmin"]), float(bndbox["ymin"])
+    xmax, ymax = float(bndbox["xmax"]), float(bndbox["ymax"])
     angle = float(bndbox.get("rotate_angle", 0)) * math.pi
 
     cx, cy = (xmin + xmax) / 2, (ymin + ymax) / 2
-    w, h = xmax - xmin, ymax - ymin
+    half_w, half_h = (xmax - xmin) / 2, (ymax - ymin) / 2
 
-    p0x, p0y = _rotate_point(cx, cy, cx - w / 2, cy - h / 2, -angle, width, height)
-    p1x, p1y = _rotate_point(cx, cy, cx + w / 2, cy - h / 2, -angle, width, height)
-    p2x, p2y = _rotate_point(cx, cy, cx + w / 2, cy + h / 2, -angle, width, height)
-    p3x, p3y = _rotate_point(cx, cy, cx - w / 2, cy + h / 2, -angle, width, height)
+    p0x, p0y = _rotate_point(cx, cy, cx - half_w, cy - half_h, -angle, width, height)
+    p1x, p1y = _rotate_point(cx, cy, cx + half_w, cy - half_h, -angle, width, height)
+    p2x, p2y = _rotate_point(cx, cy, cx + half_w, cy + half_h, -angle, width, height)
+    p3x, p3y = _rotate_point(cx, cy, cx - half_w, cy + half_h, -angle, width, height)
 
-    points = [(p0x, p0y), (p1x, p1y), (p2x, p2y), (p3x, p3y)]
-
-    return points
+    return [(p0x, p0y), (p1x, p1y), (p2x, p2y), (p3x, p3y)]
 
 
-def _rotate_point(xc: float, yc: float, xp: float, yp: float, theta: float, width: int,
+def _rotate_point(cx: float, cy: float, xp: float, yp: float, theta: float, width: int,
                   height: int) -> Tuple[float, float]:
-    xoff = xp - xc
-    yoff = yp - yc
+    xoff = xp - cx
+    yoff = yp - cy
 
     cos_theta = math.cos(theta)
     sin_theta = math.sin(theta)
     resx = cos_theta * xoff + sin_theta * yoff
     resy = - sin_theta * xoff + cos_theta * yoff
 
-    return (xc + resx) / width, (yc + resy) / height
+    return (cx + resx) / width, (cy + resy) / height
