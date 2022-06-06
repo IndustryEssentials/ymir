@@ -111,6 +111,7 @@ message SingleTaskAnnotations {
 
 message SingleImageAnnotations {
     repeated Annotation annotations = 2;
+    repeated string customized_keywords = 3;
 };
 
 message Annotation {
@@ -134,7 +135,9 @@ message MirKeywords {
     // cnt: count of keywords
     map<string, Keywords> keywords = 1;
     // key: class id, value: assert ids
-    map<int32, Assets> index_predifined_keyids = 6;
+    map<int32, Assets> index_predefined_keyids = 6;
+    // key: customized keyword, value: asset ids
+    map<string, Assets> index_customized_keywords = 7;
 
     reserved 2, 3, 4, 5;
 };

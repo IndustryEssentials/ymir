@@ -221,8 +221,8 @@ class TestCmdImport(unittest.TestCase):
             dict_keywords['keywords'][dup_asset_id]['predifined_keyids'] = sorted(
                 dict_keywords['keywords'][dup_asset_id]['predifined_keyids'])  # list is unsorted
             dup_keywords_id = 1
-            dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'] = sorted(
-                dict_keywords['index_predifined_keyids'][dup_keywords_id]['asset_ids'])
+            dict_keywords['index_predefined_keyids'][dup_keywords_id]['asset_ids'] = sorted(
+                dict_keywords['index_predefined_keyids'][dup_keywords_id]['asset_ids'])
             if with_person_ignored:
                 dict_keywords_expect = {
                     'keywords': {
@@ -233,7 +233,7 @@ class TestCmdImport(unittest.TestCase):
                             'predifined_keyids': [1],
                         }
                     },
-                    'index_predifined_keyids': {
+                    'index_predefined_keyids': {
                         1: {
                             'asset_ids':
                             ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
@@ -260,7 +260,7 @@ class TestCmdImport(unittest.TestCase):
                             'predifined_keyids': [1, 2],
                         }
                     },
-                    'index_predifined_keyids': {
+                    'index_predefined_keyids': {
                         2: {
                             'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4']
                         },
