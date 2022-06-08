@@ -5,6 +5,7 @@ import React, { useEffect } from "react"
 import { ConfigProvider, Layout, message } from "antd"
 import Loading from "@/components/common/loading"
 import Foot from "@/components/common/footer"
+import LeftMenu from "@/components/common/leftMenu"
 import Empty from '@/components/empty/default'
 import '@/assets/icons/iconfont.css'
 import QuickActions from "@/components/common/quickActions"
@@ -36,24 +37,22 @@ function BasicLayout(props) {
           <HeaderNav></HeaderNav>
         </Header>
         <Layout>
-          {/* <Sider className={commonStyles.sider}>
-            <LeftMenu></LeftMenu>
-          </Sider>
-          <Layout> */}
-          <Content
-            className={commonStyles.content}
-            style={{
-              minHeight: document.documentElement.clientHeight - 60 - 50,
-            }}
-          >
-            {props.children}
-          </Content>
-          <Footer className={commonStyles.footer}>
-            <Foot></Foot>
-          </Footer>
+          <LeftMenu></LeftMenu>
+          <Layout>
+            <Content
+              className={commonStyles.content}
+              style={{
+                minHeight: document.documentElement.clientHeight - 60 - 50,
+              }}
+            >
+              {props.children}
+            </Content>
+            <Footer className={commonStyles.footer}>
+              <Foot></Foot>
+            </Footer>
+          </Layout>
         </Layout>
       </Layout>
-      {/* </Layout> */}
       <Loading />
       {/* <QuickActions />
       <Guide /> */}
