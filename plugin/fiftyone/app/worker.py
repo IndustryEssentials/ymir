@@ -142,12 +142,13 @@ def _add_detections(
     else:
         raise ValueError(f"Invalid object type: {type(annotation['object'])}")
 
-    polylines = _build_polylines(voc_objects, sample["metadata"]["width"], sample["metadata"]["height"])
+    polylines = _build_polylines(voc_objects, sample["metadata"]["width"], sample["metadata"]["height"],
+                                 annotation.get("ck", {}))
     sample[ymir_data_name] = Polylines(polylines=polylines)
     return sample
 
 
-def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polyline]:
+def _build_polylines(voc_objects: list, width: int, height: int, ck: dict) -> List[Polyline]:
     polylines = []
     for obj in voc_objects:
         label = obj["name"]
@@ -156,7 +157,8 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
             label=label,
             points=[points],
             confidence=obj.get("confidence"),
-            ck=obj.get("ck"),
+            tag=obj.get("tag", {}),
+            ck=ck,
             closed=True
         )
         polylines.append(polyline)
