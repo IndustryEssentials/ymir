@@ -46,4 +46,4 @@ celery = app.celery_app  # type: ignore
 
 if __name__ == "__main__":
     # in docker start by >>> uvicorn --host=0.0.0.0 --port={FIFTYONE_PORT} app.main:app
-    uvicorn.run("main:app", host="0.0.0.0", port=8888, debug=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8888, reload=True)
