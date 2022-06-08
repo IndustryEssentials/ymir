@@ -155,6 +155,8 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
         polyline = Polyline(
             label=label,
             points=[points],
+            confidence=obj.get("confidence"),
+            ck=obj.get("ck"),
             closed=True
         )
         polylines.append(polyline)
