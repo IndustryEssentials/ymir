@@ -76,7 +76,11 @@ def test_task_create(test_app, task, response_body, monkeypatch):
     [
         (
             "akbb23",
-            {"code": 0, "data": {"status": "ready", "url": "http://127.0.0.1:8888/fiftyone/datasets/akbb23"}, "error": None}
+            {
+                "code": 0,
+                "data": {"status": "ready", "url": "http://127.0.0.1:8888/fiftyone/datasets/akbb23"},
+                "error": None
+            }
         ),
         (
             "akbb25",
@@ -86,7 +90,8 @@ def test_task_create(test_app, task, response_body, monkeypatch):
 )
 def test_task_query(test_app, tid, response_body, monkeypatch):
     async def mock_query_task(tid: str):
-        return {"code": 0, "data": {"status": "ready", "url": "http://127.0.0.1:8888/fiftyone/datasets/akbb23"}, "error": None}
+        return {"code": 0, "data": {"status": "ready", "url": "http://127.0.0.1:8888/fiftyone/datasets/akbb23"},
+                "error": None}
 
     monkeypatch.setattr(task_routes, "task_query", mock_query_task)
 
