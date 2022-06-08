@@ -41,7 +41,7 @@ async def task_query(tid: str) -> dict:
 
     res.data.status = _celery_status_to_task_status(AsyncResult(task["celery_id"]).status)
     if res.data.status == FiftyoneTaskStatus.READY.value:
-        res.data.url = conf.base_url + f"fiftyone/datasets/{tid}"
+        res.data.url = conf.base_url + f"/fiftyone/datasets/{tid}"
     return res.dict()
 
 
