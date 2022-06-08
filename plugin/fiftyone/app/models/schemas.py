@@ -71,5 +71,18 @@ class TaskCreateResponse(BaseResponse):
     data: TaskCreateBody = TaskCreateBody()
 
 
+class TaskQueryBody(BaseModel):
+    status: str = ""
+    url: str = ""
+
+
+class TaskQueryResponse(BaseResponse):
+    data: TaskQueryBody = TaskQueryBody()
+
+
+class TaskDeleteResponse(BaseResponse):
+    data: dict = {}
+
+
 class ErrorResponse(BaseResponse):
     data: dict = {}
