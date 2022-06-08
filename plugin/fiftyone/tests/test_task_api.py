@@ -13,6 +13,7 @@ from app.routes import task as task_routes
                     {
                         "id": "32423xfcd33xxx",
                         "name": "ymir_data233",
+                        "data_type": 0,
                         "data_dir": "./tests/test_data/voc",
                     }
                 ],
@@ -25,11 +26,32 @@ from app.routes import task as task_routes
                     {
                         "id": "32423xfcd33xxx",
                         "name": "ymir_data233",
+                        "data_type": 0,
                         "data_dir": "./tests/test_data/voc",
                     }
                 ],
             },
             {"code": 1010, "data": None, "error": "tid is required"},
+        ),
+        (
+            {
+                "tid": "akbb23",
+                "datas": [
+                    {
+                        "id": "32423xfcd33xxx",
+                        "name": "ymir_data233",
+                        "data_type": 0,
+                        "data_dir": "./tests/test_data/voc",
+                    },
+                    {
+                        "id": "32423xfcd33xxx2",
+                        "name": "ymir_data233",
+                        "data_type": 0,
+                        "data_dir": "./tests/test_data/voc",
+                    },
+                ],
+            },
+            {"code": 1010, "data": None, "error": None},
         ),
     ],
 )

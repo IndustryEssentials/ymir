@@ -1,6 +1,6 @@
 import csv
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import xmltodict
 from celery import current_app as current_celery_app
@@ -11,12 +11,13 @@ from fiftyone.utils.voc import VOCBoundingBox
 
 from app.models.schemas import Task
 from conf.configs import conf
+from utils.constants import DataSetResultTypes
 
 
 def create_celery() -> current_celery_app:
     """
     Create a celery app
-    run: celery -A app.main.celery worker --loglevel=INFO
+    run: celery -A app.main.celery worker --loglevel=INFO -P threads
     """
     celery_app = current_celery_app
     celery_app.conf.broker_url = (
@@ -44,30 +45,70 @@ def create_celery() -> current_celery_app:
 @shared_task(name="load_task_data")
 def load_task_data(task: Task) -> None:
     """
+    load task data
     :type task: Task
+    return: None
     """
     base_path = Path(conf.base_path)
-    samples: List[Sample] = []
+    sample_pool: Dict[str, Sample] = {}
     for d in task.datas:
         data_dir = base_path / Path(d.data_dir)
         tsv_file = data_dir / "img.tsv"
         with tsv_file.open() as fd:
             rd = csv.reader(fd, delimiter="\t", quotechar='"')
-            samples.extend(
-                _build_sample(base_path, row[0], row[1], d.name) for row in rd
-            )
+
+            for row in rd:
+                img_path = Path(row[0])
+                annotation = _get_annotation(base_path, row[1])
+
+                if img_path.name in sample_pool:
+                    sample = sample_pool[img_path.name]
+                else:
+                    sample = Sample(filepath=base_path / img_path)
+                    sample_pool[img_path.name] = sample
+                    _set_metadata(annotation, sample)
+                # if object is empty, skip
+                if "object" not in annotation:
+                    continue
+
+                dataset_name = (
+                    "ground_truth"
+                    if d.data_type == DataSetResultTypes.GROUND_TRUTH
+                    else d.name
+                )
+                _add_detections(annotation, dataset_name, sample)
+
     # Create dataset
     dataset = Dataset(task.tid)
-    dataset.add_samples(samples)
+    dataset.add_samples(sample_pool.values())
     dataset.persistent = True
 
 
-def _build_sample(
-    base_path: Path, img_path: str, annotation_path: str, ymir_data_name: str
-) -> Sample:
+def _get_annotation(
+    base_path: Path,
+    annotation_path: str,
+) -> dict:
+    """
+    get annotation from voc xml file
+    :type base_path: Path
+    :type annotation_path: str
+    return: dict
+    """
     annotation_file = base_path / annotation_path
     with annotation_file.open("r", encoding="utf-8") as ad:
-        annotation = xmltodict.parse(ad.read()).get("annotation")
+        return xmltodict.parse(ad.read()).get("annotation")
+
+
+def _set_metadata(
+    annotation: dict,
+    sample: Sample,
+) -> Sample:
+    """
+    set metadata to sample
+    :type annotation: dict
+    :type sample: Sample
+    return: sample
+    """
     size = annotation["size"]
     width = int(size["width"])
     height = int(size["height"])
@@ -77,7 +118,22 @@ def _build_sample(
         height=height,
         num_channels=depth,
     )
+    sample["metadata"] = metadata
+    return sample
 
+
+def _add_detections(
+    annotation: dict,
+    ymir_data_name: str,
+    sample: Sample,
+) -> Sample:
+    """
+    add detections to sample
+    :type annotation: dict
+    :type ymir_data_name: str
+    :type sample: Sample
+    return: sample
+    """
     voc_objects = []
     if isinstance(annotation["object"], dict):
         voc_objects.append(annotation["object"])
@@ -85,17 +141,15 @@ def _build_sample(
         voc_objects = annotation["object"]
     else:
         raise ValueError(f"Invalid object type: {type(annotation['object'])}")
-    detections = _build_detections(voc_objects, ymir_data_name, width, height)
+    detections = _build_detections(
+        voc_objects, sample["metadata"]["width"], sample["metadata"]["height"]
+    )
 
-    sample = Sample(filepath=base_path / img_path)
-    sample["ground_truth"] = Detections(detections=detections)
-    sample["metadata"] = metadata
+    sample[ymir_data_name] = Detections(detections=detections)
     return sample
 
 
-def _build_detections(
-    voc_objects: list, ymir_data_name: str, width: int, height: int
-) -> List[Detection]:
+def _build_detections(voc_objects: list, width: int, height: int) -> List[Detection]:
     detections = []
     for obj in voc_objects:
         label = obj["name"]
@@ -106,8 +160,5 @@ def _build_detections(
             label=label,
             bounding_box=bndbox,
         )
-        item.tags = [
-            ymir_data_name,
-        ]
         detections.append(item)
     return detections

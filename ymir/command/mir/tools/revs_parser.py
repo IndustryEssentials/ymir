@@ -27,6 +27,10 @@ class TypRevTid:
     def rev_tid(self) -> str:
         return join_rev_tid(self.rev, self.tid)
 
+    @property
+    def typ_rev_tid(self) -> str:
+        return f"{self.typ}:{self.rev_tid}" if self.typ else self.rev_tid
+
 
 # public: parse methods
 def parse_arg_revs(src_revs: str) -> List[TypRevTid]:

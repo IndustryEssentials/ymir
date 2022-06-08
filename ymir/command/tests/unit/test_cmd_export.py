@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 import unittest
 from unittest import mock
 
@@ -8,8 +8,10 @@ from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_exporter, hash_utils, mir_storage_ops
+from mir.tools import hash_utils, mir_storage_ops
+from mir.tools.data_writer import AnnoFormat
 from mir.tools.code import MirCode
+from mir.tools.utils import mir_repo_commit_id
 from tests import utils as test_utils
 
 
@@ -182,13 +184,22 @@ class TestCmdExport(unittest.TestCase):
                                                       task=task)
 
     # private: mocked
-    def __mock_export(*args, **kwargs) -> Dict[str, Tuple[str, str]]:
-        return {}
+    def __mock_dr_init(*args, **kwargs) -> None:
+        pass
+
+    def __mock_raw_dw_init(*args, **kwargs) -> None:
+        pass
+
+    def __mock_lmdb_dw_init(*args, **kwargs) -> None:
+        pass
 
     # private: test cases
-    @mock.patch('mir.tools.data_exporter.export', side_effect='__mock_export')
-    def test_normal_00(self, mock_export):
-        # normal case
+    # @mock.patch('mir.tools.data_reader.MirDataReader.__init__', side_effect='__mock_dr_init')
+    # @mock.patch('mir.tools.data_writer.RawDataWriter.__init__', side_effect='__mock_raw_dw_init')
+    # @mock.patch('mir.tools.data_writer.LmdbDataWriter.__init__', side_effect='__mock_lmdb_dw_init')
+    # def test_normal_00(self, mock_lmdb_dw_init, mock_raw_dw_init, mock_dr_init):
+    def test_normal_00(self):
+        # normal case: voc:raw
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
@@ -197,26 +208,51 @@ class TestCmdExport(unittest.TestCase):
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''
         fake_args.format = 'voc'
+        fake_args.asset_format = 'raw'
         fake_args.in_cis = 'person'
         fake_args.work_dir = ''
         runner = exporting.CmdExport(fake_args)
         result = runner.run()
         self.assertEqual(MirCode.RC_OK, result)
+        # mock_export.assert_called_once_with(mir_root=self._mir_root,
+        #                                     assets_location=self._assets_location,
+        #                                     class_type_ids={2: 2},
+        #                                     asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4',
+        #                                                'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
+        #                                     asset_dir=self._dest_root,
+        #                                     annotation_dir=self._dest_root,
+        #                                     need_ext=True,
+        #                                     need_id_sub_folder=False,
+        #                                     base_branch='a',
+        #                                     base_task_id='a',  # see: fake_args.src_revs = 'a@a'
+        #                                     format_type=AnnoFormat.ANNO_FORMAT_VOC)
 
-        mock_export.assert_called_once_with(mir_root=self._mir_root,
-                                            assets_location=self._assets_location,
-                                            class_type_ids={2: 2},
-                                            asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4',
-                                                       'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-                                            asset_dir=self._dest_root,
-                                            annotation_dir=self._dest_root,
-                                            need_ext=True,
-                                            need_id_sub_folder=False,
-                                            base_branch='a',
-                                            base_task_id='a',  # see: fake_args.src_revs = 'a@a'
-                                            format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC)
+        # normal case: voc:lmdb
+        fake_args = type('', (), {})()
+        fake_args.mir_root = self._mir_root
+        fake_args.asset_dir = self._dest_root
+        fake_args.annotation_dir = self._dest_root
+        fake_args.media_location = self._assets_location
+        fake_args.src_revs = 'a@a'
+        fake_args.dst_rev = ''
+        fake_args.format = 'voc'
+        fake_args.asset_format = 'lmdb'
+        fake_args.in_cis = 'person'
+        fake_args.work_dir = ''
+        runner = exporting.CmdExport(fake_args)
+        result = runner.run()
+        self.assertEqual(MirCode.RC_OK, result)
+        # mock_export_lmdb.assert_called_once_with(mir_root=self._mir_root,
+        #                                          assets_location=self._assets_location,
+        #                                          class_type_ids={2: 2},
+        #                                          asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4',
+        #                                                     'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
+        #                                          lmdb_dir=self._dest_root,
+        #                                          base_branch='a',
+        #                                          base_task_id='a',  # see: fake_args.src_revs = 'a@a'
+        #                                          format_type=AnnoFormat.ANNO_FORMAT_VOC)
 
-        # abnormal case
+        # abnormal case: no asset_dir, annotation_dir, media_location
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = ''
@@ -225,6 +261,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one
         fake_args.format = 'voc'
+        fake_args.asset_format = 'raw'
         fake_args.in_cis = 'person'
         fake_args.work_dir = ''
         runner = exporting.CmdExport(fake_args)
