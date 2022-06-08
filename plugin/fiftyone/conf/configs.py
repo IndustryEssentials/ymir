@@ -18,6 +18,7 @@ class Config:
         "",
     )
     allowed_hosts: List[str] = ["*"]
+    base_url = env.str("FIFTYONE_BASE_URL", "http://127.0.0.1:8888")
 
 
 conf = Config()
