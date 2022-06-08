@@ -92,7 +92,7 @@ class TestMergeCmd(unittest.TestCase):
 
     @staticmethod
     def _generate_keywords_for_asset(predefined: List[int], customized: List[str]):
-        return {'predifined_keyids': predefined, 'customized_keywords': customized}
+        return {'predefined_keyids': predefined, 'customized_keywords': customized}
 
     @staticmethod
     def _generate_task(task_id: str, name: str, type: int, timestamp: int):
@@ -232,8 +232,8 @@ class TestMergeCmd(unittest.TestCase):
             for asset_id, expected_keywords in expected_dict_keywords["keywords"].items():
                 actual_keywords = actual_dict_keywords["keywords"][asset_id]
                 try:
-                    self.assertEqual(set(expected_keywords["predifined_keyids"]),
-                                     set(actual_keywords["predifined_keyids"]))
+                    self.assertEqual(set(expected_keywords["predefined_keyids"]),
+                                     set(actual_keywords["predefined_keyids"]))
                 except AssertionError as e:
                     logging.info(f"e: {expected_keywords}")
                     logging.info(f"a: {actual_keywords}")
