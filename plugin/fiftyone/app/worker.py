@@ -67,6 +67,9 @@ def load_task_data(task: Task) -> None:
                     sample = Sample(filepath=base_path / img_path)
                     sample_pool[img_path.name] = sample
                     _set_metadata(annotation, sample)
+                # if object is empty, skip
+                if "object" not in annotation:
+                    continue
 
                 dataset_name = (
                     "ground_truth"
