@@ -132,11 +132,11 @@ message Rect {
 
 // continous or discrete customized keywords
 // for continous cks:
-//     they have a string key and float or int value
+//     they have a string key and float value
 //     for example: {image_quality: 0.75}, {fp: 0}, {fn: 1}
 // for discrete cks:
-//     they have a string key and string value
-//     for example: {color: red}, {camera: camera0}
+//     they have a string key and string or int value
+//     for example: {color: red}, {camera: camera0}, {fp: 1}
 // cks can be associated to both image and box
 message CustomizedKeywords {
     map<string, CKValue> kvs = 1;
@@ -158,9 +158,9 @@ message MirKeywords {
     // key: class id, value: assert ids
     map<int32, Assets> index_predefined_keyids = 6;
     // key: customized keyword, value: asset ids
-    //      for discrete customized keywords, for example: {color: red} and {color: white}
-    //          key: 'color', 'color/red', 'color/white'
-    //          value: image ids which have keyword color red or color white as it's discrete keyword or tag
+    //      for discrete customized keywords, for example: {color: red}, {color: white}, {fp: 1}
+    //          key: 'color', 'color/red', 'color/white', 'fp/1'
+    //          value: image ids which have keyword color red or color white or fp 1 as it's discrete keyword or tag
     //      NO CONTINOUS CK INCLUDED!
     map<string, Assets> index_customized_keywords = 7;
 

@@ -395,11 +395,11 @@ global___Rect = Rect
 class CustomizedKeywords(google.protobuf.message.Message):
     """continous or discrete customized keywords
     for continous cks:
-        they have a string key and float or int value
+        they have a string key and float value
         for example: {image_quality: 0.75}, {fp: 0}, {fn: 1}
     for discrete cks:
-        they have a string key and string value
-        for example: {color: red}, {camera: camera0}
+        they have a string key and string or int value
+        for example: {color: red}, {camera: camera0}, {fp: 1}
     cks can be associated to both image and box
     """
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -511,9 +511,9 @@ class MirKeywords(google.protobuf.message.Message):
     @property
     def index_customized_keywords(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Assets]:
         """key: customized keyword, value: asset ids
-             for discrete customized keywords, for example: {color: red} and {color: white}
-                 key: 'color', 'color/red', 'color/white'
-                 value: image ids which have keyword color red or color white as it's discrete keyword or tag
+             for discrete customized keywords, for example: {color: red}, {color: white}, {fp: 1}
+                 key: 'color', 'color/red', 'color/white', 'fp/1'
+                 value: image ids which have keyword color red or color white or fp 1 as it's discrete keyword or tag
              NO CONTINOUS CK INCLUDED!
         """
         pass
