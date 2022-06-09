@@ -24,11 +24,13 @@ const Signup = ({ signupApi, loginApi, history }) => {
       return Promise.resolve()
     },
   })
-  const signup = async ({ email, username, phone = '', password }) => {
+  const signup = async ({ email, username, phone = '', password, scene = '', organization = '' }) => {
     const params = {
       email,
       username: username.trim(),
       phone: phone.trim(),
+      organization: organization.trim(),
+      scene: scene.trim(),
       password,
     }
     const res = await signupApi(params)
@@ -121,7 +123,7 @@ const Signup = ({ signupApi, loginApi, history }) => {
               </Form.Item>
               <Form.Item
                 label={t("signup.scence")}
-                name="scence"
+                name="scene"
               >
                 <Input allowClear placeholder={t('signup.scence.placeholder')} prefix={<SmartphoneIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>

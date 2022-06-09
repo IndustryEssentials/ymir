@@ -6,7 +6,7 @@ function sha1(value) {
   return CryptoJS.SHA1(value).toString()
 }
 
-export function signup({ email, username, password, phone = null, organization, scence }) {
+export function signup({ email, username, password, phone = null, organization, scene }) {
   password = sha1(password)
   return request.post("/users/", {
     email,
@@ -14,7 +14,7 @@ export function signup({ email, username, password, phone = null, organization, 
     password,
     phone,
     organization,
-    scence,
+    scene,
   })
 }
 
