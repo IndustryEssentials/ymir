@@ -65,7 +65,8 @@ def load_task_data(task: Task) -> None:
                     sample = sample_pool[img_path.name]
                 else:
                     sample = Sample(filepath=base_path / img_path)
-                    sample["ck"] = annotation.get("ck", {})
+                    for k, v in annotation.get("ck", {}).items():
+                        sample[k] = v
                     sample_pool[img_path.name] = sample
                     _set_metadata(annotation, sample)
                 # if object is empty, skip
@@ -157,9 +158,10 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
             label=label,
             points=[points],
             confidence=obj.get("confidence"),
-            tag=obj.get("tag", {}),
             closed=True
         )
+        for k, v in obj.get("tag", {}).items():
+            polyline[k] = v
         polylines.append(polyline)
     return polylines
 
