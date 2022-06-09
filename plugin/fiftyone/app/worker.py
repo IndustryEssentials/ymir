@@ -65,6 +65,7 @@ def load_task_data(task: Task) -> None:
                     sample = sample_pool[img_path.name]
                 else:
                     sample = Sample(filepath=base_path / img_path)
+                    sample["ck"] = annotation.get("ck", {})
                     sample_pool[img_path.name] = sample
                     _set_metadata(annotation, sample)
                 # if object is empty, skip
@@ -142,13 +143,12 @@ def _add_detections(
     else:
         raise ValueError(f"Invalid object type: {type(annotation['object'])}")
 
-    polylines = _build_polylines(voc_objects, sample["metadata"]["width"], sample["metadata"]["height"],
-                                 annotation.get("ck", {}))
+    polylines = _build_polylines(voc_objects, sample["metadata"]["width"], sample["metadata"]["height"])
     sample[ymir_data_name] = Polylines(polylines=polylines)
     return sample
 
 
-def _build_polylines(voc_objects: list, width: int, height: int, ck: dict) -> List[Polyline]:
+def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polyline]:
     polylines = []
     for obj in voc_objects:
         label = obj["name"]
@@ -158,7 +158,6 @@ def _build_polylines(voc_objects: list, width: int, height: int, ck: dict) -> Li
             points=[points],
             confidence=obj.get("confidence"),
             tag=obj.get("tag", {}),
-            ck=ck,
             closed=True
         )
         polylines.append(polyline)
