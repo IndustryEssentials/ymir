@@ -1,5 +1,5 @@
-from loguru import logger
 from celery.result import AsyncResult
+from loguru import logger
 
 from app.models.db import add_task, get_task, delete_task
 from app.models.schemas import Task, TaskCreateResponse, TaskQueryResponse, TaskDeleteResponse
@@ -67,6 +67,5 @@ async def task_delete(tid: str) -> dict:
             FiftyOneResponseCode.TASK_NOT_FOUND.value,
             f"can not find task by tid({tid})",
         )
-        return res.dict()
 
     return res.dict()
