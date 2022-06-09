@@ -7,6 +7,7 @@ from tensorboardX import SummaryWriter
 from ymir_exc import env
 
 TASK_STATE_RUNNING = 2
+_TENSORBOARD_GLOBAL_STEP = 0
 
 
 def write_monitor_logger(percent: float) -> None:
@@ -21,11 +22,9 @@ def write_tensorboard_text() -> None:
     executor_log_file = env_config.output.executor_log_file
     writer = SummaryWriter(tb_log_file)
 
-    # static variable
-    if not hasattr(write_tensorboard_text, "step"):
-        write_tensorboard_text.step = 0
-
-    # always return the new line
+    # Pygtail always return the new lines
     for line in Pygtail(executor_log_file):
-        writer.add_text(tag='ymir-executor', text_string=line, global_step=write_tensorboard_text.step)
-        write_tensorboard_text.step += 1
+        writer.add_text(tag='ymir-executor', text_string=line, global_step=_TENSORBOARD_GLOBAL_STEP)
+        _TENSORBOARD_GLOBAL_STEP += 1
+
+    writer.close()
