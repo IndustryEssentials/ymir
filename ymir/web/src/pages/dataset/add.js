@@ -145,7 +145,7 @@ const Add = (props) => {
     if (result) {
       message.success(t('dataset.add.success.msg'))
       props.clearCache()
-      history.push(`/home/project/detail/${pid}`)
+      history.push(`/home/project/${pid}/detail`)
     }
   }
 

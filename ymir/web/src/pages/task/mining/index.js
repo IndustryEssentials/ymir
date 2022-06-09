@@ -136,7 +136,7 @@ function Mining({ datasetCache, datasets, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/detail/${pid}`)
+      history.replace(`/home/project/${pid}/detail`)
     }
   }
 
