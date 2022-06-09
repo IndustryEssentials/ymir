@@ -142,8 +142,8 @@ message Rect {
 //     for example: {color: red}, {camera: camera0}
 // cks can be associated to both image and box
 message CustomizedKeywords {
-    map<string, string> discrete = 1;
-    map<string, float> continous = 2;
+    map<string, string> disc = 1;
+    map<string, float> cont = 2;
 }
 
 /// ========== keywords.mir ==========
