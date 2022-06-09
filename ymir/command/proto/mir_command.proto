@@ -103,6 +103,7 @@ message MirAnnotations {
     map<string, SingleTaskAnnotations> task_annotations = 1;
     string head_task_id = 2;
     SingleTaskAnnotations ground_truth = 3;
+    SingleTaskAnnotations prediction = 4;
 };
 
 message SingleTaskAnnotations {
@@ -137,20 +138,13 @@ message Rect {
 //     they have a string key and float value
 //     for example: {image_quality: 0.75}, {fp: 0}, {fn: 1}
 // for discrete cks:
-//     they have a string key and string or int value
-//     for example: {color: red}, {camera: camera0}, {fp: 1}
+//     they have a string key and string value
+//     for example: {color: red}, {camera: camera0}
 // cks can be associated to both image and box
 message CustomizedKeywords {
-    map<string, CKValue> kvs = 1;
+    map<string, string> discrete = 1;
+    map<string, float> continous = 2;
 }
-
-message CKValue {
-    oneof value {
-        string s = 1;
-        float f = 2;
-        int32 i = 3;
-    }
-};
 
 /// ========== keywords.mir ==========
 message MirKeywords {
@@ -159,18 +153,18 @@ message MirKeywords {
     map<string, Keywords> keywords = 1;
     // key: class id, value: assert ids
     map<int32, Assets> index_predefined_keyids = 6;
-    // key: customized keyword, value: asset ids
-    //      for discrete customized keywords, for example: {color: red}, {color: white}, {fp: 1}
-    //          key: 'color', 'color/red', 'color/white', 'fp/1'
-    //          value: image ids which have keyword color red or color white or fp 1 as it's discrete keyword or tag
-    //      NO CONTINOUS CK INCLUDED!
-    map<string, Assets> index_customized_keywords = 7;
-    // ci to asset ids, generated from ground truth
-    map<int32, Assets> gt_index_predefined_keyids = 8;
-    // ck to asset ids, generated from ground truth
-    map<string, Assets> gt_index_customized_keywords = 9;
+
+    KeywordIndexedAssets pred_idx = 7;
+    KeywordIndexedAssets gt_idx = 8;
 
     reserved 2, 3, 4, 5;
+};
+
+message KeywordIndexedAssets {
+    // key: ci, value: assets
+    map<int32, Assets> cis = 1;
+    // key: ck main key, value: assets and assets of sub keys
+    map<string, SingleCkAssets> cks = 2;
 };
 
 message Assets {
@@ -180,9 +174,18 @@ message Assets {
 message Keywords {
     // predefined: managed id-keyword map
     repeated int32 predefined_keyids = 1;
-    // customized: arbitrary user defined keywords
-    repeated string customized_keywords = 2;
 };
+
+// assets for a discrete ck
+// e.g. a dataset with following cks:
+//      {'color': 'red'} for 1000 images
+//      {'color': 'green'} for 2000 images
+//      this message should be: assets: 3000 images for key 'color'
+//          sub_assets: {'red': 1000 images for subkey red, 'green': 2000 images for subkey green}
+message SingleCkAssets {
+    Assets assets = 1;
+    map<string, Assets> sub_assets = 2;
+}
 
 /// ========== tasks.mir ==========
 message MirTasks {
