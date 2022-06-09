@@ -72,7 +72,7 @@ class TaskCreateResponse(BaseResponse):
 
 
 class TaskQueryBody(BaseModel):
-    status: str = FiftyoneTaskStatus.PENDING.value
+    status: int = FiftyoneTaskStatus.PENDING.value
     url: str = ""
 
 

@@ -45,7 +45,7 @@ async def task_query(tid: str) -> dict:
     return res.dict()
 
 
-def _celery_status_to_task_status(celery_status: str) -> str:
+def _celery_status_to_task_status(celery_status: str) -> int:
     if celery_status == CeleryTaskStatus.PENDING.value:
         task_status = FiftyoneTaskStatus.PENDING.value
     elif celery_status == CeleryTaskStatus.STARTED.value or celery_status == CeleryTaskStatus.RETRY.value:

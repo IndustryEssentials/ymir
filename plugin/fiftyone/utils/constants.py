@@ -18,9 +18,9 @@ class CeleryTaskStatus(Enum):
 
 
 @unique
-class FiftyoneTaskStatus(Enum):
-    PENDING = "penging"
-    PROCESSING = "processing"
-    READY = "ready"
-    ERROR = "error"
-    OBSOLETE = "obsolete"
+class FiftyoneTaskStatus(IntEnum):
+    PENDING = 1
+    PROCESSING = 2
+    READY = 3
+    OBSOLETE = 4
+    ERROR = 5
