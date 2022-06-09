@@ -190,7 +190,7 @@ const ProjectList = ({ list, query, ...func }) => {
 
     return <List.Item>
       <Skeleton active loading={item.loading}>
-        <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/detail/${item.id}`)}>
+        <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/${item.id}/detail`)}>
         </List.Item.Meta>
       </Skeleton>
     </List.Item>

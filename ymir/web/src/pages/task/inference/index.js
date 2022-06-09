@@ -149,7 +149,7 @@ function Inference({ datasetCache, datasets, ...func }) {
         message.warn(t('task.inference.failure.some'))
       }
       await func.clearCache()
-      history.replace(`/home/project/detail/${pid}`)
+      history.replace(`/home/project/${pid}/detail`)
     }
   }
 

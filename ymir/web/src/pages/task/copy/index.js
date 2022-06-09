@@ -42,7 +42,7 @@ function Copy({ allDatasets, datasetCache, ...props }) {
     if (result) {
       message.success(t('dataset.copy.success.msg'))
       props.clearCache()
-      history.replace(`/home/project/detail/${pid}`)
+      history.replace(`/home/project/${pid}/detail`)
     }
   }
 
