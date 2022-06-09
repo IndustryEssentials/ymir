@@ -6,7 +6,7 @@ from loguru import logger
 from pydantic import BaseModel, Field, validator
 
 from conf.configs import conf
-from utils.constants import DataSetResultTypes
+from utils.constants import DataSetResultTypes, FiftyoneTaskStatus
 from utils.errors import FiftyOneResponseCode
 
 
@@ -72,7 +72,7 @@ class TaskCreateResponse(BaseResponse):
 
 
 class TaskQueryBody(BaseModel):
-    status: str = ""
+    status: str = FiftyoneTaskStatus.PENDING.value
     url: str = ""
 
 
