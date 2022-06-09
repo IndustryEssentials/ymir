@@ -1,5 +1,8 @@
 const model = {
   "model.detail.title": { en: "Model Detail", cn: "模型详情", },
+  "model.diagnose": { en: "Model Diagnose", cn: "模型诊断", },
+  "model.management": { en: "Model Management", cn: "模型管理", },
+  "model.list": { en: "Model List", cn: "模型列表", },
   "model.column.name": { en: "Model Name", cn: "模型名称", },
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },

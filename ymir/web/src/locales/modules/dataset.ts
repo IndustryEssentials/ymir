@@ -1,4 +1,5 @@
 const dataset = {
+  "dataset.list": { cn: "数据集管理", en: "Datasets", },
   "dataset.detail.title": { cn: "数据集详情", en: "Dataset Detail", },
   "dataset.asset.title": { cn: "数据详情", en: "Dataset Assets", },
   "dataset.state.ready": { cn: "进行中", en: "Running", },
