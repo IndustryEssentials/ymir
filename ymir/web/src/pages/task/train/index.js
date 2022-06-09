@@ -167,7 +167,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/detail/${pid}#model`)
+      history.replace(`/home/project/${pid}/detail#model`)
     }
   }
 
