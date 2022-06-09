@@ -4,9 +4,9 @@ from loguru import logger
 from app.models.db import add_task, get_task, delete_task
 from app.models.schemas import Task, TaskCreateResponse, TaskQueryResponse, TaskDeleteResponse
 from app.worker import load_task_data
-from utils.errors import FiftyOneResponseCode
-from utils.constants import CeleryTaskStatus, FiftyoneTaskStatus
 from conf.configs import conf
+from utils.constants import CeleryTaskStatus, FiftyoneTaskStatus
+from utils.errors import FiftyOneResponseCode
 
 
 async def task_create(task: Task) -> dict:
