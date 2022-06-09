@@ -102,11 +102,13 @@ message MirAnnotations {
     /// key: task id, value: annotations of that single task
     map<string, SingleTaskAnnotations> task_annotations = 1;
     string head_task_id = 2;
+    SingleTaskAnnotations ground_truth = 3;
 };
 
 message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
+    string task_id = 2;
 };
 
 message SingleImageAnnotations {
@@ -163,6 +165,10 @@ message MirKeywords {
     //          value: image ids which have keyword color red or color white or fp 1 as it's discrete keyword or tag
     //      NO CONTINOUS CK INCLUDED!
     map<string, Assets> index_customized_keywords = 7;
+    // ci to asset ids, generated from ground truth
+    map<int32, Assets> gt_index_predefined_keyids = 8;
+    // ck to asset ids, generated from ground truth
+    map<string, Assets> gt_index_customized_keywords = 9;
 
     reserved 2, 3, 4, 5;
 };
