@@ -9,7 +9,7 @@ class DataSetResultTypes(IntEnum):
 
 @unique
 class CeleryTaskStatus(Enum):
-    PENDING = "penging"
+    PENDING = "pending"
     STARTED = "started"
     RETRY = "retry"
     PROCESSING = "processing"

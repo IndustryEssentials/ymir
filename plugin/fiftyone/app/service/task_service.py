@@ -46,17 +46,14 @@ async def task_query(tid: str) -> dict:
 
 
 def _celery_status_to_task_status(celery_status: str) -> int:
-    if celery_status == CeleryTaskStatus.PENDING.value:
-        task_status = FiftyoneTaskStatus.PENDING.value
-    elif celery_status == CeleryTaskStatus.STARTED.value or celery_status == CeleryTaskStatus.RETRY.value:
-        task_status = FiftyoneTaskStatus.PROCESSING.value
-    elif celery_status == CeleryTaskStatus.SUCCESS.value:
-        task_status = FiftyoneTaskStatus.READY.value
-    elif celery_status == CeleryTaskStatus.FAILURE.value:
-        task_status = FiftyoneTaskStatus.ERROR.value
-    else:
-        task_status = FiftyoneTaskStatus.OBSOLETE.value
-    return task_status
+    transform_dict = {
+        CeleryTaskStatus.PENDING.value: FiftyoneTaskStatus.PENDING.value,
+        CeleryTaskStatus.STARTED.value: FiftyoneTaskStatus.PROCESSING.value,
+        CeleryTaskStatus.RETRY.value: FiftyoneTaskStatus.PROCESSING.value,
+        CeleryTaskStatus.SUCCESS.value: FiftyoneTaskStatus.READY.value,
+        CeleryTaskStatus.FAILURE.value: FiftyoneTaskStatus.ERROR.value
+    }
+    return transform_dict[celery_status] if celery_status in transform_dict else FiftyoneTaskStatus.OBSOLETE.value
 
 
 async def task_delete(tid: str) -> dict:
