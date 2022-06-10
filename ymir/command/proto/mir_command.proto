@@ -114,7 +114,10 @@ message SingleTaskAnnotations {
 
 message SingleImageAnnotations {
     repeated Annotation annotations = 2;
-    CustomizedKeywords customized_keywords = 3;
+    float image_quality = 3;
+    map<string, string> cks = 4;
+
+    reserved 1;
 };
 
 message Annotation {
@@ -123,7 +126,8 @@ message Annotation {
     Rect box = 2;
     int32 class_id = 3;
     double score = 4;
-    CustomizedKeywords tags = 5;
+    float anno_quality = 5;
+    map<string, string> tags = 6;
 };
 
 message Rect {
@@ -133,19 +137,6 @@ message Rect {
     int32 h = 4;
 };
 
-// continous or discrete customized keywords
-// for continous cks:
-//     they have a string key and float value
-//     for example: {image_quality: 0.75}, {fp: 0}, {fn: 1}
-// for discrete cks:
-//     they have a string key and string value
-//     for example: {color: red}, {camera: camera0}
-// cks can be associated to both image and box
-message CustomizedKeywords {
-    map<string, string> disc = 1;
-    map<string, float> cont = 2;
-}
-
 /// ========== keywords.mir ==========
 message MirKeywords {
     // key: asset hash, value: keywords list
@@ -154,38 +145,49 @@ message MirKeywords {
     // key: class id, value: assert ids
     map<int32, Assets> index_predefined_keyids = 6;
 
-    KeywordIndexedAssets pred_idx = 7;
-    KeywordIndexedAssets gt_idx = 8;
+    KeywordToIndex pred_idx = 7;
+    KeywordToIndex gt_idx = 8;
 
     reserved 2, 3, 4, 5;
 };
 
-message KeywordIndexedAssets {
+message KeywordToIndex {
     // key: ci, value: assets
-    map<int32, Assets> cis = 1;
+    map<int32, SingleCkIndex> asset_cis = 1;
     // key: ck main key, value: assets and assets of sub keys
-    map<string, SingleCkAssets> cks = 2;
+    map<string, SingleCkIndex> asset_cks = 2;
+    // key: ci, value: annos 
+    map<int32, SingleCkIndex> anno_cis = 3;
+    // key: ck main key, value: annos and annos of sub keys
+    map<string, SingleCkIndex> anno_cks = 4;
+
+    map<string, int32> asset_quality_hist = 5; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9 value: count, increment 0.1
+    map<string, int32> anno_quality_hist = 6; // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
+    map<int32, int32> anno_area_hist = 7;
 };
 
 message Assets {
     repeated string asset_ids = 1;
 };
 
+message AssetAnnoPairList {
+    repeated AssetAnnoPair pairs = 1;
+};
+
+message AssetAnnoPair {
+    string asset_id = 1;
+    int32 anno_idx = 2;
+}
+
 message Keywords {
     // predefined: managed id-keyword map
     repeated int32 predefined_keyids = 1;
 };
 
-// assets for a discrete ck
-// e.g. a dataset with following cks:
-//      {'color': 'red'} for 1000 images
-//      {'color': 'green'} for 2000 images
-//      this message should be: assets: 3000 images for key 'color'
-//          sub_assets: {'red': 1000 images for subkey red, 'green': 2000 images for subkey green}
-message SingleCkAssets {
-    Assets assets = 1;
-    map<string, Assets> sub_assets = 2;
-}
+message SingleCkIndex {
+    repeated AssetAnnoPair indexes = 1;  // for main key
+    map<string, AssetAnnoPairList> sub_indexes = 2;  // for sub key
+};
 
 /// ========== tasks.mir ==========
 message MirTasks {
