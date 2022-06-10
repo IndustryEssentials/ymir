@@ -25,7 +25,7 @@ const model = {
   'model.detail.label.source': { en: 'Source', cn: '模型来源', },
   'model.detail.label.image': { en: 'Train Image', cn: '训练镜像', },
   'model.detail.label.training_dataset': { en: 'Training Dataset', cn: '训练集', },
-  'model.detail.label.test_dataset': { en: 'Test Dataset', cn: '测试集', },
+  'model.detail.label.test_dataset': { en: 'Validation Dataset', cn: '验证集', },
   'model.detail.label.train_type': { en: 'Train Type', cn: '训练类型', },
   'model.detail.label.train_goal': { en: 'Train Classes', cn: '训练目标', },
   'model.detail.label.framework': { en: 'Network', cn: '算法框架', },
