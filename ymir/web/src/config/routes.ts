@@ -257,7 +257,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.add',
   },
   {
-    path: "/home/project/hidden/:id",
+    path: "/home/project/:id/hidden",
     name: "hidden",
     component: "@/pages/project/hidden",
     title: "project.hidden.title",
