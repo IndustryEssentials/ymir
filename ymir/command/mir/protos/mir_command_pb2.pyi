@@ -623,11 +623,11 @@ class KeywordToIndex(google.protobuf.message.Message):
         pass
     @property
     def asset_quality_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """key: 0.1 (upper bnd), 0.2, ..., 1 value: count"""
+        """key: 0 (lower bnd), 0.1, 0.2, ..., 0.9 value: count, increment 0.1"""
         pass
     @property
     def anno_quality_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """ranges: 50 (upper bnd), 500, 2500, 5000, 10000, 50000, 100000, 200000, >200000"""
+        """ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000"""
         pass
     @property
     def anno_area_hist(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]: ...
