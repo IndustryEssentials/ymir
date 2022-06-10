@@ -19,12 +19,15 @@ function LeftMenu() {
   const [items, setItems] = useState([])
 
   useEffect(() => {
+    setDefaultKeys(pathname)
+  }, [pathname])
+
+  useEffect(() => {
     const projectModule = /^.*\/project\/(\d+).*$/
     const showLeftMenu = projectModule.test(pathname)
     const id = pathname.replace(projectModule, '$1')
-    console.log('id:', id, pathname, showLeftMenu)
-    setItems(showLeftMenu ? [
-      getGroupItem(t('breadcrumbs.projects'), 'project', [
+    setItems([
+      getGroupItem(t('breadcrumbs.projects'), 'project', showLeftMenu ? [
         getItem(t('project.summary'), `/home/project/${id}/detail`, <BarchartIcon />,),
         getItem(t('dataset.list'), `/home/project/${id}/dataset`, <NavDatasetIcon />,),
         getItem(t('model.management'), 'model', <MymodelIcon />, [
@@ -32,6 +35,8 @@ function LeftMenu() {
           getItem(t('breadcrumbs.task.training'), `/home/task/train/${id}`),
           getItem(t('model.diagnose'), `/home/project/${id}/diagnose`),
         ]),
+      ] : [
+        getItem(t('projects.title'), `/home/project`, <BarchartIcon />,),
       ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
         getItem(t('breadcrumbs.keyword'), '/home/keyword', <FlagIcon />,),
@@ -43,10 +48,11 @@ function LeftMenu() {
       { type: 'divider' },
       getItem(t('user.settings'), '/home/user', <UserIcon />,),
       getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'github',),
-    ] : [])
+    ])
   }, [pathname])
 
   const clickHandle = ({ key }) => {
+    console.log('key:', key)
     setDefaultKeys([key])
     history.push(key)
   }
