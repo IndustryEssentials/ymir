@@ -22,6 +22,10 @@ const signup = {
   "signup.phone.placeholder": { cn: "请输入手机号码", en: "Please input your phone", },
   "signup.pwd.placeholder": { cn: "请输入密码", en: "Please input your password", },
   "signup.repwd.placeholder": { cn: "请再次输入密码", en: "Please input your password again", },
+  "signup.org": { cn: "所属机构", en: "Organization", },
+  "signup.org.placeholder": { cn: "请输入您所在的机构/学校名称", en: "Please input school/org. your worked for", },
+  "signup.scene": { cn: "应用场景", en: "Usage Scene", },
+  "signup.scene.placeholder": { cn: "请输入你的具体应用场景描述", en: "Please describe usage scene", },
 }
 
 export default signup

@@ -15,6 +15,7 @@ const breadcrumbs = {
   'breadcrumbs.dataset.compare': { cn: '数据集比对', en: 'Dataset Comparison', },
   'breadcrumbs.model.add': { cn: '导入模型', en: 'Model Import', },
   'breadcrumbs.model': { cn: '模型详情', en: 'Model Detail', },
+  'breadcrumbs.model.diagnose': { cn: '模型诊断', en: 'Model Diagnose', },
   'breadcrumbs.model.verify': { cn: '模型验证', en: 'Model Verification', },
   'breadcrumbs.history': { cn: '历史树', en: 'History Tree', },
   'breadcrumbs.keyword': { cn: '标签管理', en: 'Keyword List', },
