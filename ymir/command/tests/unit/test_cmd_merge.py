@@ -92,7 +92,7 @@ class TestMergeCmd(unittest.TestCase):
 
     @staticmethod
     def _generate_keywords_for_asset(predefined: List[int], customized: List[str]):
-        return {'predefined_keyids': predefined, 'customized_keywords': customized}
+        return {'predefined_keyids': predefined}
 
     @staticmethod
     def _generate_task(task_id: str, name: str, type: int, timestamp: int):
