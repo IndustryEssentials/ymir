@@ -114,7 +114,7 @@ message SingleTaskAnnotations {
 
 message SingleImageAnnotations {
     repeated Annotation annotations = 2;
-    CustomizedKeywords customized_keywords = 3;
+    map<string, string> cks = 3;
 };
 
 message Annotation {
@@ -123,7 +123,7 @@ message Annotation {
     Rect box = 2;
     int32 class_id = 3;
     double score = 4;
-    CustomizedKeywords tags = 5;
+    map<string, string> tags = 5;
 };
 
 message Rect {
@@ -133,19 +133,6 @@ message Rect {
     int32 h = 4;
 };
 
-// continous or discrete customized keywords
-// for continous cks:
-//     they have a string key and float value
-//     for example: {image_quality: 0.75}, {fp: 0}, {fn: 1}
-// for discrete cks:
-//     they have a string key and string value
-//     for example: {color: red}, {camera: camera0}
-// cks can be associated to both image and box
-message CustomizedKeywords {
-    map<string, string> disc = 1;
-    map<string, float> cont = 2;
-}
-
 /// ========== keywords.mir ==========
 message MirKeywords {
     // key: asset hash, value: keywords list
@@ -154,8 +141,10 @@ message MirKeywords {
     // key: class id, value: assert ids
     map<int32, Assets> index_predefined_keyids = 6;
 
-    KeywordIndexedAssets pred_idx = 7;
-    KeywordIndexedAssets gt_idx = 8;
+    KeywordIndexedAssets pred_asset_idx = 7;
+    KeywordIndexedAssets gt_asset_idx = 8;
+    KeywordIndexedAnnos pred_asset_anno_idx = 9;
+    KeywordIndexedAnnos gt_asset_anno_idx = 10;
 
     reserved 2, 3, 4, 5;
 };
@@ -167,9 +156,23 @@ message KeywordIndexedAssets {
     map<string, SingleCkAssets> cks = 2;
 };
 
+message KeywordIndexedAnnos {
+    map<int32, SingleCkAnnos> cis = 1;
+    map<string, SingleCkAnnos> cks = 2;
+}
+
 message Assets {
     repeated string asset_ids = 1;
 };
+
+message AssetAnnoIdxes {
+    repeated AssetAnno asset_anno = 1;
+};
+
+message AssetAnno {
+    string asset_id = 1;
+    int32 anno_idx = 2;
+}
 
 message Keywords {
     // predefined: managed id-keyword map
@@ -185,7 +188,12 @@ message Keywords {
 message SingleCkAssets {
     Assets assets = 1;
     map<string, Assets> sub_assets = 2;
-}
+};
+
+message SingleCkAnnos {
+    AssetAnnoIdxes anno_idxes = 1;
+    map<string, AssetAnnoIdxes> sub_anno_idxes = 2;
+};
 
 /// ========== tasks.mir ==========
 message MirTasks {
