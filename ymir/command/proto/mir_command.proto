@@ -161,8 +161,8 @@ message KeywordToIndex {
     // key: ck main key, value: annos and annos of sub keys
     map<string, SingleCkIndex> anno_cks = 4;
 
-    map<string, int32> asset_quality_hist = 5; // key: 0, 0.01, 0.02, ... value: count, step: 0.01
-    map<string, int32> anno_quality_hist = 6;
+    map<string, int32> asset_quality_hist = 5; // key: 0.1 (upper bnd), 0.2, ..., 1 value: count
+    map<string, int32> anno_quality_hist = 6; // ranges: 50 (upper bnd), 500, 2500, 5000, 10000, 50000, 100000, 200000, >200000
     map<int32, int32> anno_area_hist = 7;
 };
 
