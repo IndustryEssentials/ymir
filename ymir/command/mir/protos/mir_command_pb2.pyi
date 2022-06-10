@@ -572,19 +572,6 @@ class KeywordToIndex(google.protobuf.message.Message):
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class AssetAreaHistEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.int = ...
-        value: builtins.int = ...
-        def __init__(self,
-            *,
-            key : builtins.int = ...,
-            value : builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     class AnnoQualityHistEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
@@ -616,7 +603,6 @@ class KeywordToIndex(google.protobuf.message.Message):
     ANNO_CIS_FIELD_NUMBER: builtins.int
     ANNO_CKS_FIELD_NUMBER: builtins.int
     ASSET_QUALITY_HIST_FIELD_NUMBER: builtins.int
-    ASSET_AREA_HIST_FIELD_NUMBER: builtins.int
     ANNO_QUALITY_HIST_FIELD_NUMBER: builtins.int
     ANNO_AREA_HIST_FIELD_NUMBER: builtins.int
     @property
@@ -640,8 +626,6 @@ class KeywordToIndex(google.protobuf.message.Message):
         """key: 0, 0.01, 0.02, ... value: count, step: 0.01"""
         pass
     @property
-    def asset_area_hist(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]: ...
-    @property
     def anno_quality_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]: ...
     @property
     def anno_area_hist(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]: ...
@@ -652,11 +636,10 @@ class KeywordToIndex(google.protobuf.message.Message):
         anno_cis : typing.Optional[typing.Mapping[builtins.int, global___SingleCkIndex]] = ...,
         anno_cks : typing.Optional[typing.Mapping[typing.Text, global___SingleCkIndex]] = ...,
         asset_quality_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
-        asset_area_hist : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         anno_quality_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         anno_area_hist : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_area_hist",b"anno_area_hist","anno_cis",b"anno_cis","anno_cks",b"anno_cks","anno_quality_hist",b"anno_quality_hist","asset_area_hist",b"asset_area_hist","asset_cis",b"asset_cis","asset_cks",b"asset_cks","asset_quality_hist",b"asset_quality_hist"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_area_hist",b"anno_area_hist","anno_cis",b"anno_cis","anno_cks",b"anno_cks","anno_quality_hist",b"anno_quality_hist","asset_cis",b"asset_cis","asset_cks",b"asset_cks","asset_quality_hist",b"asset_quality_hist"]) -> None: ...
 global___KeywordToIndex = KeywordToIndex
 
 class Assets(google.protobuf.message.Message):

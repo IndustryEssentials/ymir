@@ -162,9 +162,8 @@ message KeywordToIndex {
     map<string, SingleCkIndex> anno_cks = 4;
 
     map<string, int32> asset_quality_hist = 5; // key: 0, 0.01, 0.02, ... value: count, step: 0.01
-    map<int32, int32> asset_area_hist = 6;
-    map<string, int32> anno_quality_hist = 7;
-    map<int32, int32> anno_area_hist = 8;
+    map<string, int32> anno_quality_hist = 6;
+    map<int32, int32> anno_area_hist = 7;
 };
 
 message Assets {
