@@ -20,3 +20,8 @@ async def add_task(task_data: dict) -> dict:
 async def get_task(tid: str) -> dict:
     new_item = await plugin_collection.find_one({"tid": tid})
     return new_item
+
+
+async def delete_task(tid: str) -> dict:
+    new_item = await plugin_collection.delete_one({"tid": tid})
+    return new_item
