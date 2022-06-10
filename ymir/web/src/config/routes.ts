@@ -233,7 +233,7 @@ export const homeRoutes = [
     path: "/home/project/:id/diagnose",
     name: "diagnose",
     component: "@/pages/project/diagnose",
-    title: "models.diagnose.title",
+    title: "model.diagnose.title",
     pid: 24,
     id: 34,
     breadcrumbLabel: 'breadcrumbs.model.diagnose',
