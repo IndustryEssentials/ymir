@@ -91,7 +91,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
       if (result) {
         const pid = result.id || id
         message.success(t(`project.${action}.success`))
-        history.push(`/home/project/detail/${pid}`)
+        history.push(`/home/project/${pid}/detail`)
       }
     }
     // edit project
