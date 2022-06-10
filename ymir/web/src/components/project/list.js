@@ -63,7 +63,7 @@ export const Lists = ({ projects = [], more = '' }) => {
     </>
 
     return <List.Item 
-      onClick={() => { history.push(`/home/project/detail/${item.id}`) }}>
+      onClick={() => { history.push(`/home/project/${item.id}/detail`) }}>
       <Skeleton active loading={item.loading}>
         <List.Item.Meta title={title} description={desc}>
         </List.Item.Meta>
