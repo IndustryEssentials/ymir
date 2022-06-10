@@ -25,6 +25,7 @@ const breadcrumbs = {
   'breadcrumbs.image': { cn: '镜像详情', en: 'Image', },
   'breadcrumbs.projects': { cn: '项目管理', en: 'Project', },
   'breadcrumbs.project': { cn: '项目详情', en: 'Detail', },
+  'breadcrumbs.project.summary': { cn: '项目概览', en: 'Summary', },
   'breadcrumbs.project.add': { cn: '创建项目', en: 'Create', },
   'breadcrumbs.project.edit': { cn: '项目设置', en: 'Settings', },
   'breadcrumbs.project.iterations': { cn: '迭代列表', en: 'Iterations', },

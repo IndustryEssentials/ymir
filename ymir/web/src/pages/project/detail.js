@@ -1,44 +1,23 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Card, Col, Popover, Row, Space } from "antd"
-import { useLocation, useParams, connect, Link, useHistory } from "umi"
-
+import { Card, Col, Row } from "antd"
+import { useParams, connect, useHistory } from "umi"
 import t from "@/utils/t"
-import { getStageLabel, tabs } from '@/constants/project'
 import Breadcrumbs from "@/components/common/breadcrumb"
-import Iteration from './components/iteration'
-import Datasets from '@/components/dataset/list'
-import Models from '@/components/model/list'
-
 import s from "./detail.less"
-import Prepare from "./components/prepare"
-import KeywordRates from "@/components/dataset/keywordRates"
-import { EditIcon, SearchEyeIcon, EyeOffIcon } from "../../components/common/icons"
-import CheckProjectDirty from "../../components/common/CheckProjectDirty"
+import { TrainIcon, NavDatasetIcon, ArrowRightIcon } from "@/components/common/icons"
+import { NoIterationDetail } from "./components/noIterationDetail"
+import Detail from './components/detail'
 
 function ProjectDetail(func) {
   const history = useHistory()
-  const location = useLocation()
   const { id } = useParams()
   const [iterations, setIterations] = useState([])
-  const [group, setGroup] = useState(0)
   const [project, setProject] = useState({})
-  const [active, setActive] = useState(tabs[0].key)
-  const content = {
-    [tabs[0].key]: <Datasets pid={id} project={project} group={group} iterations={iterations} />,
-    [tabs[1].key]: <Models pid={id} project={project} group={group} iterations={iterations} />
-  }
 
   useEffect(() => {
     id && fetchProject(true)
     id && fetchIterations(id)
   }, [id])
-
-  useEffect(() => {
-    const locationHash = location.hash.replace(/^#/, '')
-    const [tabKey, gid] = (locationHash || '').split('_')
-    setGroup(gid)
-    setActive(tabKey || tabs[0].key)
-  }, [location.hash])
 
   async function fetchProject(force) {
     const result = await func.getProject(id, force)
@@ -50,10 +29,6 @@ function ProjectDetail(func) {
     fetchProject(true)
   }, [])
 
-  function tabChange(key) {
-    history.push(`#${key}`)
-  }
-
   async function fetchIterations(pid) {
     const iterations = await func.getIterations(pid)
     if (iterations) {
@@ -61,74 +36,60 @@ function ProjectDetail(func) {
     }
   }
 
-  function renderProjectDatasetLabel() {
-    const getDsName = (ds = {}) => ds.name ? (ds.name + ' ' + (ds.versionName || '')) : ''
-    const maps = [
-      { label: 'project.add.form.training.set', name: getDsName(project.trainSet) },
-      { dataset: project.testSet, label: 'project.add.form.test.set', name: getDsName(project.testSet) },
-      { dataset: project.miningSet, label: 'project.add.form.mining.set', name: getDsName(project.miningSet) },
-    ]
-
-    return maps.map(({ name, label, dataset }) => {
-      const rlabel = <span>{t(label)}: {name}</span>
-      return <Col key={label} className={s.ellipsis} span={8} title={name}>
-        {dataset ? renderPop(rlabel, dataset) : rlabel}
-      </Col>
-    })
+  function datasetTitle() {
+    return <div className={s.cardTitle}><NavDatasetIcon className={s.titleIcon} /><span className={s.titleLabel}>{t('project.tab.set.title')}</span></div>
   }
 
-
-  function renderPop(label, dataset = {}) {
-    dataset.project = project
-    const content = <KeywordRates dataset={dataset} progressWidth={0.4}></KeywordRates>
-    return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
-      <span>{label}</span>
-    </Popover>
+  function modelTitle() {
+    return <div className={s.cardTitle}><TrainIcon className={s.titleIcon} /><span className={s.titleLabel}>{t('project.iteration.stage.training')}</span></div>
   }
 
   return (
-    <div className={s.projectDetail}>
+    <div>
       <Breadcrumbs />
       <div className={s.header}>
-        <Row>
-          <Col flex={1}>
-            <Space className={s.detailPanel} wrap>
-              <span className={s.name}>{project.name}</span>
-              <span className={s.iterationInfo}>
-                {t('project.detail.info.iteration', {
-                  stageLabel: <span className={s.orange}>{t(getStageLabel(project.currentStage, project.round))}</span>,
-                  current: <span className={s.orange}>{project.round}</span>,
-                })}
-              </span>
-              <span>{t('project.train_classes')}: <span className={s.black}>{project?.keywords?.join(',')}</span></span>
-              {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
-            </Space>
-          </Col>
-          <Col>
-            <Space>
-              <Link to={`/home/project/add/${id}`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
-              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
-              <Link to={`/home/project/hidden/${id}`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
-            </Space>
-          </Col>
-        </Row>
-        {project.round > 0 ?
-          <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
-        <Row className={s.setsPanel} gutter={0} align='middle' style={{ textAlign: 'center' }}>
-          {renderProjectDatasetLabel()}
-        </Row>
+        {project.iteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
       </div>
-      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} tabBarExtraContent={<CheckProjectDirty pid={id} />}
-        activeTabKey={active} onTabChange={tabChange} className='noShadow'
-        style={{ margin: '-20px -5vw 0', background: 'transparent' }}
-        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '10px' }}
-        bodyStyle={{ padding: '0 5vw' }}>
-        {content[active]}
-      </Card>
+      <div className={`list ${s.projectOverview}`}>
+        <Row gutter={10}>
+          <Col span={12}>
+            <Card title={datasetTitle()} 
+              onClick={() => { history.push(`/home/project/${project.id}/dataset`) }} 
+              extra={<ArrowRightIcon className={s.rightIcon} />}>
+              <Row className='content' justify="center">
+                <Col span={12}>
+                  <div className='contentLabel'>{t('project.tab.set.title')}</div>
+                  <div className={s.num}>{project.setCount}</div>
+                </Col>
+                <Col span={12}>
+                  <div className='contentLabel'>{t('project.detail.datavolume')}</div>
+                  <div className={`${s.num} ${s.blue}`}></div>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card title={modelTitle()} 
+              onClick={() => { history.push(`/home/project/${project.id}/model`) }} 
+              extra={<ArrowRightIcon className={s.rightIcon} />}>
+              <Row className='content' justify="center">
+                <Col span={12}>
+                  <div className='contentLabel'>{t('project.tab.model.title')}</div>
+                  <div className={s.num}>{project.modelCount}</div>
+                </Col>
+                <Col span={12}>
+                  <div className='contentLabel'>{t('project.detail.runningtasks')}/{t('project.detail.totaltasks')}</div>
+                  <div className={s.num}><span className={s.red}></span>/<span></span></div>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+
+      </div>
     </div>
   )
 }
-
 
 const actions = (dispatch) => {
   return {

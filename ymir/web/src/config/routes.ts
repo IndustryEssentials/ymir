@@ -206,10 +206,10 @@ export const homeRoutes = [
     path: "/home/project/:id/detail",
     name: "projectDetail",
     component: "@/pages/project/detail",
-    title: "project.title",
+    title: "project.summary",
     pid: 24,
     id: 25,
-    breadcrumbLabel: 'breadcrumbs.project',
+    breadcrumbLabel: 'breadcrumbs.project.summary',
   },
   {
     path: "/home/project/:id/dataset",
