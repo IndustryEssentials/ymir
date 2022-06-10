@@ -106,8 +106,8 @@ function ProjectDetail(func) {
           </Col>
           <Col>
             <Space>
-              <Link to={`/home/project/add/${id}`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
-              <Link to={`/home/project/iterations/${id}`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
+              <Link to={`/home/project/${id}/add`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
+              <Link to={`/home/project/${id}/iterations`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
               <Link to={`/home/project/${id}/hidden`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
             </Space>
           </Col>

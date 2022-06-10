@@ -239,8 +239,8 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.model.diagnose',
   },
   {
-    path: "/home/project/add/:id",
-    name: "projectAdd",
+    path: "/home/project/:id/add",
+    name: "projectEdit",
     component: "@/pages/project/add",
     title: "project.settings.title",
     pid: 25,
@@ -266,7 +266,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.hidden',
   },
   {
-    path: "/home/project/iterations/:id",
+    path: "/home/project/:id/iterations",
     name: "projectIteration",
     component: "@/pages/project/iterations",
     title: "project.iterations.title",
@@ -275,7 +275,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.iterations',
   },
   {
-    path: "/home/project/initmodel/:id",
+    path: "/home/project/:id/initmodel",
     name: "initModel",
     component: "@/pages/iteration/initModel",
     title: "project.iteration.initmodel",
