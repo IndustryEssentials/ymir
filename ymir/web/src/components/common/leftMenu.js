@@ -32,7 +32,7 @@ function LeftMenu() {
         getItem(t('dataset.list'), `/home/project/${id}/dataset`, <NavDatasetIcon />,),
         getItem(t('model.management'), 'model', <MymodelIcon />, [
           getItem(t('model.list'), `/home/project/${id}/model`),
-          getItem(t('breadcrumbs.task.training'), `/home/task/train/${id}`),
+          getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`),
           getItem(t('model.diagnose'), `/home/project/${id}/diagnose`),
         ]),
       ] : [

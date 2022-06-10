@@ -23,7 +23,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.portal',
   },
   {
-    path: "/home/task/fusion/:id",
+    path: "/home/project/:id/fusion",
     name: "taskFilter",
     component: "@/pages/task/fusion/index",
     title: 'task.fusion.title',
@@ -32,7 +32,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.fusion',
   },
   {
-    path: "/home/task/mining/:id",
+    path: "/home/project/:id/mining",
     name: "taskMining",
     component: "@/pages/task/mining/index",
     title: 'task.mining.title',
@@ -41,7 +41,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.mining',
   },
   {
-    path: "/home/task/train/:id",
+    path: "/home/project/:id/train",
     name: "taskTrain",
     component: "@/pages/task/train/index",
     title: 'task.train.title',
@@ -50,7 +50,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.training',
   },
   {
-    path: "/home/task/inference/:id",
+    path: "/home/project/:id/inference",
     name: "taskInference",
     component: "@/pages/task/inference/index",
     title: 'task.inference.title',
@@ -59,7 +59,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.inference',
   },
   {
-    path: "/home/task/label/:id",
+    path: "/home/project/:id/label",
     name: "taskLabel",
     component: "@/pages/task/label/index",
     title: 'task.label.title',
@@ -68,7 +68,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.label',
   },
   {
-    path: "/home/task/copy/:id",
+    path: "/home/project/:id/copy",
     name: "taskCopy",
     component: "@/pages/task/copy/index",
     title: 'dataset.copy.title',
