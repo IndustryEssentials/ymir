@@ -1,5 +1,8 @@
 const model = {
   "model.detail.title": { en: "Model Detail", cn: "模型详情", },
+  "model.diagnose": { en: "Model Diagnose", cn: "模型诊断", },
+  "model.management": { en: "Model Management", cn: "模型管理", },
+  "model.list": { en: "Model List", cn: "模型列表", },
   "model.column.name": { en: "Model Name", cn: "模型名称", },
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },
@@ -49,6 +52,10 @@ const model = {
   "model.verify.model.param.fold": { cn: '点击收起', en: 'Fold', },
   "model.verify.model.param.unfold": { cn: '点击展开', en: 'Unfold', },
   'model.verify.upload.tip': { cn: '模型验证需要较长时间，请耐心等待', en: 'Verification need more time, be patient...' },
+  "model.diagnose.tab.analysis": { cn: '数据分析', en: 'Data Analysis', },
+  "model.diagnose.tab.metrics": { cn: '衡量指标', en: 'Metrics', },
+  "model.diagnose.tab.training": { cn: '训练过程', en: 'Training Fitting', },
+  "model.diagnose.tab.visualization": { cn: '图像可视化', en: 'Image Visualization', },
 }
 
 export default model

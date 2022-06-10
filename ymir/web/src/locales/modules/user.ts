@@ -60,6 +60,7 @@ const user = {
   "user.state.deactived": { cn: "已注销", en: "Closed", },
   "user.signup.success": { cn: "注册成功，正在等待管理员审核", en: "Registry success, please waiting for approving.", },
   "user.signup.success.active": { cn: "注册成功，请登录", en: "Registry success, please login.", },
+  "user.settings": { cn: "个人中心", en: "User Settings", },
 }
 
 export default user
