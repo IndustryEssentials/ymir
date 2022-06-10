@@ -141,35 +141,30 @@ message MirKeywords {
     // key: class id, value: assert ids
     map<int32, Assets> index_predefined_keyids = 6;
 
-    KeywordIndexedAssets pred_asset_idx = 7;
-    KeywordIndexedAssets gt_asset_idx = 8;
-    KeywordIndexedAnnos pred_asset_anno_idx = 9;
-    KeywordIndexedAnnos gt_asset_anno_idx = 10;
+    KeywordToIndex pred_asset_idx = 7;
+    KeywordToIndex gt_asset_idx = 8;
+    KeywordToIndex pred_anno_idx = 9;
+    KeywordToIndex gt_anno_idx = 10;
 
     reserved 2, 3, 4, 5;
 };
 
-message KeywordIndexedAssets {
+message KeywordToIndex {
     // key: ci, value: assets
-    map<int32, Assets> cis = 1;
+    map<int32, SingleCkIndex> cis = 1;
     // key: ck main key, value: assets and assets of sub keys
-    map<string, SingleCkAssets> cks = 2;
+    map<string, SingleCkIndex> cks = 2;
 };
-
-message KeywordIndexedAnnos {
-    map<int32, SingleCkAnnos> cis = 1;
-    map<string, SingleCkAnnos> cks = 2;
-}
 
 message Assets {
     repeated string asset_ids = 1;
 };
 
-message AssetAnnoIdxes {
-    repeated AssetAnno asset_anno = 1;
+message AssetAnnoPairList {
+    repeated AssetAnnoPair pairs = 1;
 };
 
-message AssetAnno {
+message AssetAnnoPair {
     string asset_id = 1;
     int32 anno_idx = 2;
 }
@@ -179,20 +174,9 @@ message Keywords {
     repeated int32 predefined_keyids = 1;
 };
 
-// assets for a discrete ck
-// e.g. a dataset with following cks:
-//      {'color': 'red'} for 1000 images
-//      {'color': 'green'} for 2000 images
-//      this message should be: assets: 3000 images for key 'color'
-//          sub_assets: {'red': 1000 images for subkey red, 'green': 2000 images for subkey green}
-message SingleCkAssets {
-    Assets assets = 1;
-    map<string, Assets> sub_assets = 2;
-};
-
-message SingleCkAnnos {
-    AssetAnnoIdxes anno_idxes = 1;
-    map<string, AssetAnnoIdxes> sub_anno_idxes = 2;
+message SingleCkIndex {
+    repeated AssetAnnoPair indexes = 1;  // for main key
+    map<string, AssetAnnoPairList> sub_indexes = 2;  // for sub key
 };
 
 /// ========== tasks.mir ==========
