@@ -56,6 +56,8 @@ const model = {
   "model.diagnose.tab.metrics": { cn: '衡量指标', en: 'Metrics', },
   "model.diagnose.tab.training": { cn: '训练过程', en: 'Training Fitting', },
   "model.diagnose.tab.visualization": { cn: '图像可视化', en: 'Image Visualization', },
+  "model.diagnose.form.model": { cn: '诊断模型', en: 'Diagnosing Models', },
+  "model.action.diagnose.training.retry": { cn: '重新诊断', en: 'Retry', },
 }
 
 export default model
