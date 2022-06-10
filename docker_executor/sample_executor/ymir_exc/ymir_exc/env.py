@@ -77,6 +77,7 @@ class EnvOutputConfig(BaseModel):
     mining_result_file: str = '/out/result.tsv'
     infer_result_file: str = '/out/infer-result.json'
     monitor_file: str = '/out/monitor.txt'
+    executor_log_file: str = '/out/ymir-executor-out.log'
 
 
 class EnvConfig(BaseModel):
