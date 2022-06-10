@@ -27,16 +27,17 @@ function LeftMenu() {
     const showLeftMenu = projectModule.test(pathname)
     const id = pathname.replace(projectModule, '$1')
     setItems([
-      getGroupItem(t('breadcrumbs.projects'), 'project', showLeftMenu ? [
-        getItem(t('project.summary'), `/home/project/${id}/detail`, <BarchartIcon />,),
-        getItem(t('dataset.list'), `/home/project/${id}/dataset`, <NavDatasetIcon />,),
-        getItem(t('model.management'), 'model', <MymodelIcon />, [
-          getItem(t('model.list'), `/home/project/${id}/model`),
-          getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`),
-          getItem(t('model.diagnose'), `/home/project/${id}/diagnose`),
-        ]),
-      ] : [
+      getGroupItem(t('breadcrumbs.projects'), 'project', [
         getItem(t('projects.title'), `/home/project`, <BarchartIcon />,),
+        ...(showLeftMenu ? [
+          getItem(t('project.summary'), `/home/project/${id}/detail`, <BarchartIcon />,),
+          getItem(t('dataset.list'), `/home/project/${id}/dataset`, <NavDatasetIcon />,),
+          getItem(t('model.management'), 'model', <MymodelIcon />, [
+            getItem(t('model.list'), `/home/project/${id}/model`),
+            getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`),
+            getItem(t('model.diagnose'), `/home/project/${id}/diagnose`),
+          ]),
+        ] : [])
       ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
         getItem(t('breadcrumbs.keyword'), '/home/keyword', <FlagIcon />,),
