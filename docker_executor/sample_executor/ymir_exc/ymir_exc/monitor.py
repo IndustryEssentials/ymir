@@ -27,7 +27,10 @@ class YmirTensorboardLog:
         overwrite history log text with the same `tag` and `global_step`
         """
         now = int(round(time.time() * 1000))
-        tag = tag if tag else str(now)
+        tag = tag if tag else "default"
+
+        # show the raw text format instead of markdown
+        text = "```\n" + text + "\n```"
         self.writer.add_text(tag=tag, text_string=text, global_step=now)
 
     def write_final_executor_log(self,
@@ -35,6 +38,4 @@ class YmirTensorboardLog:
         env_config = env.get_current_env()
         exe_log_file = env_config.output.executor_log_file
         with open(exe_log_file) as f:
-            # use the raw text format instead of markdown
-            text = "```\n" + f.read() + "\n```"
-            self.write_tensorboard_text(text, tag=tag)
+            self.write_tensorboard_text(f.read(), tag=tag)
