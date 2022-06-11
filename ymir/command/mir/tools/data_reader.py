@@ -1,4 +1,4 @@
-from typing import Any, Iterator, List, Set, Tuple
+from typing import Any, Iterator, Set, Tuple
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops, revs_parser
@@ -31,17 +31,22 @@ class MirDataReader:
     def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
         pass
 
-    def read(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, List[mirpb.Annotation]]]:
+    def read(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, mirpb.SingleImageAnnotations]]:
         for asset_id, attributes in self._mir_metadatas.attributes.items():
             if asset_id not in self._asset_ids:
                 continue
 
-            annotations = []
             image_annotations = self._task_annotations.image_annotations.get(asset_id, None)
+            filtered_image_annotations = mirpb.SingleImageAnnotations()
+
             if image_annotations:
+                # need to keep cks and image_quality
+                filtered_image_annotations.CopyFrom(image_annotations)
+                del filtered_image_annotations.annotations[:]
+
                 for annotation in image_annotations.annotations:
                     if self._class_ids and annotation.class_id not in self._class_ids:
                         continue
-                    annotations.append(annotation)
+                    filtered_image_annotations.annotations.append(annotation)
 
-            yield (asset_id, attributes, annotations)
+            yield (asset_id, attributes, filtered_image_annotations)

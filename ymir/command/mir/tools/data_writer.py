@@ -77,10 +77,11 @@ def _format_file_ext(anno_format: AnnoFormat) -> str:
 
 
 def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttributes,
-                                     annotations: List[mirpb.Annotation], class_type_mapping: Optional[Dict[int, int]],
-                                     cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
+                                     image_annotations: mirpb.SingleImageAnnotations,
+                                     class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
+                                     asset_filename: str) -> str:
     output_str = ""
-    for annotation in annotations:
+    for annotation in image_annotations.annotations:
         mapped_id = class_type_mapping[annotation.class_id] if class_type_mapping else annotation.class_id
         output_str += f"{mapped_id}, {annotation.box.x}, {annotation.box.y}, "
         output_str += f"{annotation.box.x + annotation.box.w - 1}, {annotation.box.y + annotation.box.h - 1}\n"
@@ -88,8 +89,11 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttribu
 
 
 def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttributes,
-                                     annotations: List[mirpb.Annotation], class_type_mapping: Optional[Dict[int, int]],
-                                     cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
+                                     image_annotations: mirpb.SingleImageAnnotations,
+                                     class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
+                                     asset_filename: str) -> str:
+    annotations = image_annotations.annotations
+
     # annotation
     annotation_node = ElementTree.Element('annotation')
 
@@ -172,9 +176,11 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
 
 
 def _single_image_annotations_to_ls_json(asset_id: str, attrs: mirpb.MetadataAttributes,
-                                         annotations: List[mirpb.Annotation], class_type_mapping: Optional[Dict[int,
-                                                                                                                int]],
+                                         image_annotations: mirpb.SingleImageAnnotations,
+                                         class_type_mapping: Optional[Dict[int, int]],
                                          cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
+    annotations = image_annotations.annotations
+
     out_type = "predictions"  # out_type: annotation type - "annotations" or "predictions"
     to_name = 'image'  # to_name: object name from Label Studio labeling config
     from_name = 'label'  # control tag name from Label Studio labeling config
@@ -226,14 +232,15 @@ class BaseDataWriter:
         self._class_ids_mapping = class_ids_mapping
         self._format_type = format_type
 
-    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
+               image_annotations: mirpb.SingleImageAnnotations) -> None:
         """
         write assets and annotations to destination with proper format
 
         Args:
             asset_id (str): asset hash code
             attrs (mirpb.MetadataAttributes): attributes to this asset
-            annotations (List[mirpb.Annotation]): annotations to this asset
+            image_annotations (mirpb.SingleImageAnnotations): annotations to this asset
         """
         raise NotImplementedError('not implemented')
 
@@ -300,7 +307,8 @@ class RawDataWriter(BaseDataWriter):
         self._index_annotations_prefix = index_annotations_prefix
         self._overwrite = overwrite
 
-    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
+               image_annotations: mirpb.SingleImageAnnotations) -> None:
         # write asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
@@ -325,7 +333,7 @@ class RawDataWriter(BaseDataWriter):
             format_func = _format_file_output_func(anno_format=self._format_type)
             anno_str: str = format_func(asset_id=asset_id,
                                         attrs=attrs,
-                                        annotations=annotations,
+                                        image_annotations=image_annotations,
                                         class_type_mapping=self._class_ids_mapping,
                                         cls_id_mgr=self._class_id_manager,
                                         asset_filename=asset_file_name)
@@ -402,7 +410,8 @@ class LmdbDataWriter(BaseDataWriter):
                                       error_message='lmdb writer: others are writing')
         return True
 
-    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, annotations: List[mirpb.Annotation]) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
+               image_annotations: mirpb.SingleImageAnnotations) -> None:
         # read asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         with open(asset_src_path, 'rb') as f:
@@ -414,7 +423,7 @@ class LmdbDataWriter(BaseDataWriter):
             format_func = _format_file_output_func(anno_format=self._format_type)
             anno_data: bytes = format_func(asset_id=asset_id,
                                            attrs=attrs,
-                                           annotations=annotations,
+                                           image_annotations=image_annotations,
                                            class_type_mapping=self._class_ids_mapping,
                                            cls_id_mgr=self._class_id_manager,
                                            asset_filename='').encode()
