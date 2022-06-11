@@ -52,9 +52,8 @@ function ProjectDetail() {
       <Breadcrumbs />
       <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))}
         activeTabKey={active} onTabChange={tabChange} className='noShadow'
-        style={{ margin: '0 calc(20px - 5vw)' }}
         headStyle={{ background: '#fff', marginBottom: '10px' }}
-      >
+        bodyStyle={{ padding: '0 20px' }}>
         {content[active]}
       </Card>
     </div>

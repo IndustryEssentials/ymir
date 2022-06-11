@@ -23,7 +23,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.portal',
   },
   {
-    path: "/home/task/fusion/:id",
+    path: "/home/project/:id/fusion",
     name: "taskFilter",
     component: "@/pages/task/fusion/index",
     title: 'task.fusion.title',
@@ -32,7 +32,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.fusion',
   },
   {
-    path: "/home/task/mining/:id",
+    path: "/home/project/:id/mining",
     name: "taskMining",
     component: "@/pages/task/mining/index",
     title: 'task.mining.title',
@@ -41,7 +41,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.mining',
   },
   {
-    path: "/home/task/train/:id",
+    path: "/home/project/:id/train",
     name: "taskTrain",
     component: "@/pages/task/train/index",
     title: 'task.train.title',
@@ -50,7 +50,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.training',
   },
   {
-    path: "/home/task/inference/:id",
+    path: "/home/project/:id/inference",
     name: "taskInference",
     component: "@/pages/task/inference/index",
     title: 'task.inference.title',
@@ -59,7 +59,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.inference',
   },
   {
-    path: "/home/task/label/:id",
+    path: "/home/project/:id/label",
     name: "taskLabel",
     component: "@/pages/task/label/index",
     title: 'task.label.title',
@@ -68,7 +68,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.task.label',
   },
   {
-    path: "/home/task/copy/:id",
+    path: "/home/project/:id/copy",
     name: "taskCopy",
     component: "@/pages/task/copy/index",
     title: 'dataset.copy.title',
@@ -239,8 +239,8 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.model.diagnose',
   },
   {
-    path: "/home/project/add/:id",
-    name: "projectAdd",
+    path: "/home/project/:id/add",
+    name: "projectEdit",
     component: "@/pages/project/add",
     title: "project.settings.title",
     pid: 25,
@@ -257,7 +257,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.add',
   },
   {
-    path: "/home/project/hidden/:id",
+    path: "/home/project/:id/hidden",
     name: "hidden",
     component: "@/pages/project/hidden",
     title: "project.hidden.title",
@@ -266,7 +266,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.hidden',
   },
   {
-    path: "/home/project/iterations/:id",
+    path: "/home/project/:id/iterations",
     name: "projectIteration",
     component: "@/pages/project/iterations",
     title: "project.iterations.title",
@@ -275,7 +275,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.iterations',
   },
   {
-    path: "/home/project/initmodel/:id",
+    path: "/home/project/:id/initmodel",
     name: "initModel",
     component: "@/pages/iteration/initModel",
     title: "project.iteration.initmodel",

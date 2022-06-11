@@ -110,7 +110,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
       <div className={styles.info}>
         <Row className={styles.infoRow} align="center" wrap={false}>
           <Col flex={'20px'} style={{ alignSelf: 'center' }}><LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} /></Col>
-          <Col flex={1} className={styles.asset_img}>
+          <Col flex={1} className={`${styles.asset_img} scrollbar`}>
             {asset.annotations ? (
               <AssetAnnotation
                 url={asset.url}
