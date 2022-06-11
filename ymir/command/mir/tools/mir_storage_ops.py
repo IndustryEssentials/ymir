@@ -79,38 +79,41 @@ class MirStorageOps():
             single_task_annotations (mirpb.SingleTaskAnnotations)
             mir_keywords (mirpb.MirKeywords)
         """
-        # build mir_keywords.keywords
         for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
+            # TODO: old fields to be deprecated
             mir_keywords.keywords[asset_id].predefined_keyids[:] = set(
                 [annotation.class_id for annotation in single_image_annotations.annotations])
-            mir_keywords.keywords[asset_id].customized_keywords[:] = single_image_annotations.customized_keywords
 
-        # build mir_keywords.index_predefined_keyids and index_customized_keywords
-        mir_keywords.index_predefined_keyids.clear()
-        mir_keywords.index_customized_keywords.clear()
+            # cis and tags to annos
+            for annotation in single_image_annotations.annotations:
+                # anno_cis: cis to annos
+                mir_keywords.pred_idx.anno_cis[annotation.class_id].indexes.append(
+                    mirpb.AssetAnnoPair(asset_id=asset_id, anno_idx=annotation.index))
 
-        for asset_id, keywords in mir_keywords.keywords.items():
-            for key_id in keywords.predefined_keyids:
-                mir_keywords.index_predefined_keyids[key_id].asset_ids.append(asset_id)
-            for keyword in keywords.customized_keywords:
-                mir_keywords.index_customized_keywords[keyword].asset_ids.append(asset_id)
+                # anno_cks: tags to annos
+                for k, v in annotation.tags.items():
+                    asset_anno_pair = mirpb.AssetAnnoPair(asset_id=asset_id, anno_idx=annotation.index)
+                    mir_keywords.pred_idx.anno_cks[k].indexes.append(asset_anno_pair)
+                    mir_keywords.pred_idx.anno_cks[k].sub_indexes[v].pairs.append(asset_anno_pair)
 
-        # Remove redundant index values and sort
-        for key_id, _ in mir_keywords.index_predefined_keyids.items():
-            mir_keywords.index_predefined_keyids[key_id].asset_ids[:] = sorted(
-                set(mir_keywords.index_predefined_keyids[key_id].asset_ids))
-        for keyword, _ in mir_keywords.index_customized_keywords.items():
-            mir_keywords.index_customized_keywords[keyword].asset_ids[:] = sorted(
-                set(mir_keywords.index_customized_keywords[keyword].asset_ids))
+            # asset_cks: cks to assets
+            for k, v in single_image_annotations.cks.items():
+                asset_anno_pair = mirpb.AssetAnnoPair(asset_id=asset_id, anno_idx=-1)
+                mir_keywords.pred_idx.asset_cks[k].indexes.append(asset_anno_pair)
+                mir_keywords.pred_idx.asset_cks[k].sub_indexes[v].pairs.append(asset_anno_pair)
+
+        # asset_cis: cis to assets (from anno_cis)
+        for ci, annos in mir_keywords.pred_idx.anno_cis.items():
+            asset_ids_set = {v.asset_id for v in annos.indexes}  # remove duplicated
+            mir_keywords.pred_idx.asset_cis[ci].indexes.extend(
+                [mirpb.AssetAnnoPair(asset_id=asset_id, anno_idx=-1) for asset_id in asset_ids_set])
 
     @classmethod
     def __build_mir_context(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
                             mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
                             mir_context: mirpb.MirContext) -> None:
-        for key_id, assets in mir_keywords.index_predefined_keyids.items():
-            mir_context.predefined_keyids_cnt[key_id] = len(assets.asset_ids)
-        for keyword, assets in mir_keywords.index_customized_keywords.items():
-            mir_context.customized_keywords_cnt[keyword] = len(assets.asset_ids)
+        for ci, ci_assets in mir_keywords.pred_idx.asset_cis.items():
+            mir_context.predefined_keyids_cnt[ci] = len(ci_assets.indexes)
 
         # project_predefined_keyids_cnt: assets count for project class ids
         #   suppose we have: 13 images for key 5, 15 images for key 6, and proejct_class_ids = [3, 5]
@@ -119,7 +122,8 @@ class MirStorageOps():
         for key_id in project_class_ids:
             if key_id in mir_context.predefined_keyids_cnt:
                 mir_context.project_predefined_keyids_cnt[key_id] = mir_context.predefined_keyids_cnt[key_id]
-                project_positive_asset_ids.update(mir_keywords.index_predefined_keyids[key_id].asset_ids)
+                # project_positive_asset_ids.update(mir_keywords.index_predefined_keyids[key_id].asset_ids)
+                project_positive_asset_ids.update([x.asset_id for x in mir_keywords.pred_idx.asset_cis[key_id].indexes])
             else:
                 mir_context.project_predefined_keyids_cnt[key_id] = 0
 
@@ -130,6 +134,24 @@ class MirStorageOps():
         if project_class_ids:
             mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
             # if no project_class_ids, project_negative_images_cnt set to 0
+
+        # cks cnt
+        for ck, ck_to_assets in mir_keywords.pred_idx.asset_cks.items():
+            mir_context.cks_cnt[ck].cnt = len(ck_to_assets.indexes)
+            for sub_ck, sub_ck_to_assets in ck_to_assets.sub_indexes.items():
+                mir_context.cks_cnt[ck].sub_cnt[sub_ck] = len(sub_ck_to_assets.pairs)
+
+        # tags cnt
+        for tag, tag_to_annos in mir_keywords.pred_idx.anno_cks.items():
+            mir_context.tags_cnt[tag].cnt = len(tag_to_annos.indexes)
+            for sub_tag, sub_tag_to_annos in tag_to_annos.sub_indexes.items():
+                mir_context.tags_cnt[tag].sub_cnt[sub_tag] = len(sub_tag_to_annos.pairs)
+
+        # asset_quality_hist
+
+        # anno_quality_hist
+
+        # anno_area_hist
 
     @classmethod
     def __add_git_tag(cls, mir_root: str, tag: str) -> None:
@@ -346,20 +368,18 @@ class MirStorageOps():
         keyword_keyids_list = mir_storage_keywords["keywords"]
         for asset_id, asset_metadata in mir_storage_metadatas["attributes"].items():
             asset_annotations = annotations[asset_id]["annotations"] if asset_id in annotations else {}
-            asset_class_ids = (
-                keyword_keyids_list[asset_id]["predefined_keyids"]
-                if asset_id in keyword_keyids_list
-                else []
-            )
+            asset_class_ids = (keyword_keyids_list[asset_id]["predefined_keyids"]
+                               if asset_id in keyword_keyids_list else [])
             asset_ids_detail[asset_id] = dict(
                 metadata=asset_metadata,
                 annotations=asset_annotations,
                 class_ids=asset_class_ids,
             )
         return dict(
-            all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),    # ordered list.
+            all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),  # ordered list.
             asset_ids_detail=asset_ids_detail,
-            class_ids_index={k: v["asset_ids"] for k, v in mir_storage_keywords["index_predefined_keyids"].items()},
+            class_ids_index={k: v["asset_ids"]
+                             for k, v in mir_storage_keywords["index_predefined_keyids"].items()},
         )
 
     @classmethod
