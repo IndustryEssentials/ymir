@@ -10,7 +10,7 @@ import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings, utils as mir_utils
+from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -45,7 +45,7 @@ class TestCmdTraining(unittest.TestCase):
         test_utils.remake_dirs(self._models_location)
         test_utils.remake_dirs(self._mir_root)
         test_utils.remake_dirs(self._working_root)
-        
+
     def __prepare_mir_repo(self):
         self.__prepare_mir_repo_branch_a()
         self.__prepare_mir_repo_branch_b()
@@ -301,5 +301,5 @@ class TestCmdTraining(unittest.TestCase):
 
         cmd = training.CmdTrain(fake_args)
         with self.assertRaises(MirRuntimeError):
-            cmd_run_result = cmd.run()
+            cmd.run()
         self.assertTrue(mir_repo_utils.mir_check_branch_exists(self._mir_root, 'b@test_training_cmd'))

@@ -1,4 +1,4 @@
-//颜色
+//color
 @white:           #FFFFFF;
 @black:           #000000;
 @color85:         rgba(0, 0, 0, 0.85);
@@ -9,14 +9,14 @@
 @font-bule:       #2CBDE9;
 @font-red:        #F2637B;
 
-//字体
+// font size
 @font-size12:     12px;
 @font-size14:     14px;
 @font-size16:     16px;
 @font-size18:     18px;
 @font-size20:     20px;
 
-//间距
+//gap
 @gap5:            5px;
 @gap8:            8px;
 @gap10:           10px;
@@ -24,20 +24,20 @@
 @gap20:           20px;
 @gap24:           24px;
 
-//投影变量
+//shadow class
 @shadow:   0px 0px 3px;
 @shadow-color: rgba(0, 0, 0, 5%);
 .box-shadow(@style: @shadow, @color: @shadow-color) {
   box-shadow: @style @color;
 }
 
-//圆角变量
+//radius class
 @radius:   5px;
 .box-radius(@style: @radius) {
   border-radius: @style;
 }
 
-//高度变量
+//hight class
 @minus: 180px;
 .calc-height(@minus: @minus) {
   min-height: calc(100vh - @minus);
@@ -46,6 +46,24 @@
 
 html, body, #root {
   height: 100%;
+}
+ol, ul {
+  margin: 0;
+  padding: 0;
+}
+
+// public class
+.scrollbar {
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    width: 1px;
+    background-color: #f4f4f4;
+  }
+  &::-webkit-scrollbar-thumb {
+    width: 10px;
+    background-color: #ddd;
+    border-radius: 10px;
+  }
 }
 
 body {
@@ -185,8 +203,8 @@ body {
   height: 50px;
   line-height: 50px;
   background: @white;
-  margin: 0 -5vw 20px;
-  padding: 0 5vw;
+  margin: 0 -20px 20px;
+  padding: 0 20px;
   .box-shadow();
   .breadcrumbContent {
     line-height: 50px;

@@ -169,7 +169,7 @@ function Verify({ getModel, verify }) {
       <Breadcrumb />
       <Card className={styles.info} bodyStyle={{ padding: 20, height: '100%' }} title={renderTitle}>
         <Row className={styles.infoRow} wrap={false}>
-          <Col span={18} className={styles.asset_img}>
+          <Col span={18} className={`${styles.asset_img} scrollbar`}>
             {url ? (
               <AssetAnnotation
                 url={url}
@@ -188,7 +188,7 @@ function Verify({ getModel, verify }) {
               </Form.Item></Form>
             ) : null}
           </Col>
-          <Col span={6} className={styles.asset_info}>
+          <Col span={6} className={`${styles.asset_info} scrollbar`}>
             <Card
               title={<><NavDatasetIcon /> {t("model.verify.model.info.title")}</>}
               bordered={false}

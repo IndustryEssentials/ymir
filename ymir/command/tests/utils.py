@@ -7,10 +7,8 @@ import yaml
 
 from mir.commands.init import CmdInit
 from mir.commands.checkout import CmdCheckout
-from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids
 from mir.tools.code import MirCode
-from mir.tools.mir_storage_ops import MirStorageOps
 
 
 def dir_test_root(sub_dirs: List[str]) -> str:
