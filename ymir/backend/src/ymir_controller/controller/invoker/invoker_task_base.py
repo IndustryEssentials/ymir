@@ -1,3 +1,4 @@
+from distutils.util import strtobool
 import logging
 import os
 import threading
@@ -90,7 +91,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                       class_names: List,
                                       task_parameters: str,
                                       output_config_file: str,
-                                      openpai_config: Dict = None) -> bool:
+                                      openpai_config: Dict = {}) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
         task_context: Dict[str, Any] = {}
 
@@ -113,13 +114,10 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if task_parameters:
             task_context["task_parameters"] = task_parameters
 
-        if executor_config.get("openpai_enable", False):
-            if not openpai_config:
-                raise errors.MirCtrError(
-                    CTLResponseCode.INVOKER_INVALID_ARGS,
-                    "openpai enabled, but openpai_config is not set.",
-                )
+        if bool(strtobool(executor_config.get("openpai_enable", "False"))):
+            logging.info(f"Openpai_config: {openpai_config}")
 
+            task_context["openpai_enable"] = True
             openpai_host = openpai_config.get("openpai_host", None)
             openpai_token = openpai_config.get("openpai_token", None)
             if not openpai_host or not openpai_token:
@@ -127,7 +125,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                     CTLResponseCode.INVOKER_INVALID_ARGS,
                     f"openpai enabled, but invalid openpai_host: {openpai_host} or token: {openpai_token}",
                 )
-            task_context["openpai_enable"] = True
             task_context["openpai_host"] = openpai_host
             task_context["openpai_token"] = openpai_token
 
