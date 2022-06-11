@@ -304,7 +304,7 @@ class CmdTrain(base.BaseCommand):
                                                  overwrite=False,
                                                  class_ids_mapping=type_id_idx_mapping,
                                                  format_type=export_format,
-                                                 index_file_path=os.path.join(work_dir_in, 'train-index/tsv'),
+                                                 index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
                                                  index_assets_prefix='/in/assets',
                                                  index_annotations_prefix='/in/annotations')
             dw_val = data_writer.RawDataWriter(mir_root=mir_root,
@@ -316,7 +316,7 @@ class CmdTrain(base.BaseCommand):
                                                overwrite=False,
                                                class_ids_mapping=type_id_idx_mapping,
                                                format_type=export_format,
-                                               index_file_path=os.path.join(work_dir_in, 'val-index/tsv'),
+                                               index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
                                                index_assets_prefix='/in/assets',
                                                index_annotations_prefix='/in/annotations')
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
