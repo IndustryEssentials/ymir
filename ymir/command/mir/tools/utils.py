@@ -340,7 +340,7 @@ def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str
 
 
 def get_docker_executable(gpu_ids: str) -> str:
-    if gpu_ids:  # check nvidia-docker env.
+    if gpu_ids:
         return 'nvidia-docker'
 
     return 'docker'

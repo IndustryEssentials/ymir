@@ -150,7 +150,7 @@ class TestCmdInfer(unittest.TestCase):
         # check running result
         self.assertEqual(MirCode.RC_OK, cmd_result)
 
-        expected_cmd = ['nvidia-docker', 'run', '--rm']
+        expected_cmd = ['docker', 'run', '--rm']
         expected_cmd.append(f"-v{fake_args.work_dir}:/in/assets:ro")
         expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'models')}:/in/models:ro")
         expected_cmd.append(
