@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import os
 import shutil
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set
 import unittest
 
 from google.protobuf import json_format
@@ -51,31 +51,31 @@ class TestCmdFilter(unittest.TestCase):
 
         metadatas_dict = {
             "attributes": {
-                self.__asset_id(0): {
+                "a0000000000000000000000000000000000000000000000000": {
                     'assetType': 'AssetTypeImageJpeg',
                     'width': 1080,
                     'height': 1620,
                     'imageChannels': 3
                 },
-                self.__asset_id(1): {
+                "a0000000000000000000000000000000000000000000000001": {
                     'assetType': 'AssetTypeImageJpeg',
                     'width': 1080,
                     'height': 1620,
                     'imageChannels': 3
                 },
-                self.__asset_id(2): {
+                "a0000000000000000000000000000000000000000000000002": {
                     'assetType': 'AssetTypeImageJpeg',
                     'width': 1080,
                     'height': 1620,
                     'imageChannels': 3
                 },
-                self.__asset_id(3): {
+                "a0000000000000000000000000000000000000000000000003": {
                     'assetType': 'AssetTypeImageJpeg',
                     'width': 1080,
                     'height': 1620,
                     'imageChannels': 3
                 },
-                self.__asset_id(4): {
+                "a0000000000000000000000000000000000000000000000004": {
                     'assetType': 'AssetTypeImageJpeg',
                     'width': 1080,
                     'height': 1620,
@@ -90,16 +90,16 @@ class TestCmdFilter(unittest.TestCase):
             "task_annotations": {
                 "t0": {
                     "image_annotations": {
-                        self.__asset_id(0):
-                        self.__annotations_for_single_image(cis=[0, 1, 2, 3, 4, 5], cks=['a', 'b']),
-                        self.__asset_id(1):
-                        self.__annotations_for_single_image(cis=[4], cks=['a', 'c']),
-                        self.__asset_id(2):
-                        self.__annotations_for_single_image(cis=[3], cks=['b', 'c']),
-                        self.__asset_id(3):
-                        self.__annotations_for_single_image(cis=[2], cks=['a', 'b', 'c']),
-                        self.__asset_id(4):
-                        self.__annotations_for_single_image(cis=[0, 1], cks=[]),
+                        "a0000000000000000000000000000000000000000000000000":
+                        TestCmdFilter.__annotations_for_single_image([0, 1, 2, 3, 4, 5]),
+                        "a0000000000000000000000000000000000000000000000001":
+                        TestCmdFilter.__annotations_for_single_image([4]),
+                        "a0000000000000000000000000000000000000000000000002":
+                        TestCmdFilter.__annotations_for_single_image([3]),
+                        "a0000000000000000000000000000000000000000000000003":
+                        TestCmdFilter.__annotations_for_single_image([2]),
+                        "a0000000000000000000000000000000000000000000000004":
+                        TestCmdFilter.__annotations_for_single_image([0, 1]),
                     }
                 }
             },
@@ -121,18 +121,10 @@ class TestCmdFilter(unittest.TestCase):
                                       },
                                       task=task)
 
-    @classmethod
-    def __asset_id(cls, id: int) -> str:
-        return f"a{id:03}"
-
-    @classmethod
-    def __asset_ids(cls, *ids: Tuple[int]) -> Set[str]:
-        return {cls.__asset_id(id) for id in ids}
-
-    @classmethod
-    def __annotations_for_single_image(cls, cis: List[int], cks: List[str]) -> Dict[str, list]:
+    @staticmethod
+    def __annotations_for_single_image(type_ids: List[int]) -> Dict[str, list]:
         annotations = []
-        for idx, type_id in enumerate(cis):
+        for idx, type_id in enumerate(type_ids):
             annotations.append({
                 "index": idx,
                 "box": {
@@ -144,11 +136,11 @@ class TestCmdFilter(unittest.TestCase):
                 "score": 0.5,
                 "class_id": type_id,
             })
-        return {"annotations": annotations, 'customized_keywords': cks}
+        return {"annotations": annotations}
 
     # public: test cases
     def test_all(self):
-        self.__test_cmd_filter_normal()
+        self.__test_cmd_filter_normal_01()
 
         # test for write lock
         pipe0 = mp.Pipe()
@@ -162,44 +154,20 @@ class TestCmdFilter(unittest.TestCase):
         self.assertEqual(MirCode.RC_OK, pipe0[0].recv())
         self.assertEqual(MirCode.RC_OK, pipe1[0].recv())
 
-    def __test_cmd_filter_normal(self):
-        self.__test_cmd_filter_normal_cases(in_cis='frisbee; person; ChAiR',  # 0; 2; 15
-                                            ex_cis='Cat',  # 4
-                                            in_cks='',
-                                            ex_cks='',
-                                            task_id='t1',
-                                            expected_asset_ids=self.__asset_ids(3, 4))
+    def __test_cmd_filter_normal_01(self):
+        preds = "frisbee; person; ChAiR"  # 0; 2; 15
+        excludes = "Cat"  # 4
+        expected_asset_ids = {
+            "a0000000000000000000000000000000000000000000000003", "a0000000000000000000000000000000000000000000000004"
+        }
+        self.__test_cmd_filter_normal_cases(in_cis=preds,
+                                            ex_cis=excludes,
+                                            in_cks="",
+                                            ex_cks="",
+                                            dst_branch='__test_cmd_filter_normal_01',
+                                            expected_asset_ids=expected_asset_ids)
 
-        self.__test_cmd_filter_normal_cases(in_cis='',
-                                            ex_cis='',
-                                            in_cks='a;b',
-                                            ex_cks='',
-                                            task_id='t2',
-                                            expected_asset_ids=self.__asset_ids(0, 1, 2, 3))
-
-        self.__test_cmd_filter_normal_cases(in_cis='',
-                                            ex_cis='',
-                                            in_cks='a;b',
-                                            ex_cks='z',
-                                            task_id='t3',
-                                            expected_asset_ids=self.__asset_ids(0, 1, 2, 3))
-
-        self.__test_cmd_filter_normal_cases(in_cis='',
-                                            ex_cis='',
-                                            in_cks=' a; b ;',
-                                            ex_cks='c',
-                                            task_id='t4',
-                                            expected_asset_ids=self.__asset_ids(0))
-
-        self.__test_cmd_filter_normal_cases(in_cis='frisbee; person; CaT',
-                                            ex_cis='',
-                                            in_cks='',
-                                            ex_cks='c',
-                                            task_id='t5',
-                                            expected_asset_ids=self.__asset_ids(0, 4))
-
-
-    def __test_cmd_filter_normal_cases(self, in_cis: str, ex_cis: str, in_cks: str, ex_cks: str, task_id: str,
+    def __test_cmd_filter_normal_cases(self, in_cis: str, ex_cis: str, in_cks: str, ex_cks: str, dst_branch: str,
                                        expected_asset_ids: Set[str]):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
@@ -208,7 +176,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.in_cks = in_cks
         fake_args.ex_cks = ex_cks
         fake_args.src_revs = "a@t0"  # src branch name and base task id
-        fake_args.dst_rev = f"{task_id}@{task_id}"
+        fake_args.dst_rev = f"{dst_branch}@t1"
         fake_args.work_dir = ''
         cmd = cmd_filter.CmdFilter(fake_args)
         cmd_run_result = cmd.run()
@@ -224,13 +192,13 @@ class TestCmdFilter(unittest.TestCase):
         self.assertEqual(expected_asset_ids, set(mir_metadatas.attributes.keys()))
         self.assertEqual(expected_asset_ids, set(mir_keywords.keywords.keys()))
         self.assertEqual(1, len(mir_annotations.task_annotations))
-        self.assertEqual(expected_asset_ids, set(mir_annotations.task_annotations[task_id].image_annotations.keys()))
+        self.assertEqual(expected_asset_ids, set(mir_annotations.task_annotations['t1'].image_annotations.keys()))
         self.assertEqual(1, len(mir_tasks.tasks))
-        self.assertEqual(task_id, mir_tasks.head_task_id)
-        self.assertEqual(task_id, mir_annotations.head_task_id)
+        self.assertEqual('t1', mir_tasks.head_task_id)
+        self.assertEqual('t1', mir_annotations.head_task_id)
 
         current_branch_name = mir_utils.mir_repo_head_name(self._mir_root)
-        self.assertEqual(task_id, current_branch_name)
+        self.assertEqual(dst_branch, current_branch_name)
 
     def __test_multiprocess(self, dst_branch: str, child_conn):
         fake_args = type('', (), {})()
