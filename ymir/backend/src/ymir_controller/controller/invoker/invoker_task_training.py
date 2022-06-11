@@ -25,7 +25,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             class_names=class_names,
             task_parameters=request.task_parameters,
             output_config_file=output_config_file,
-            openpai_config=Dict(
+            openpai_config=dict(
                 openpai_host=assets_config["openpai_host"],
                 openpai_token=assets_config["openpai_token"],
             ),

@@ -132,7 +132,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             task_context["openpai_token"] = openpai_token
 
         with open(output_config_file, "w") as f:
-            yaml.safe_dump(Dict(
+            yaml.safe_dump(dict(
                 executor_config=executor_config,
                 task_context=task_context,
             ), f)
