@@ -298,7 +298,7 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
                    out_path: str, executor: str, executant_name: str, shm_size: Optional[str], task_type: str,
                    gpu_id: str) -> int:
     """ runs infer or mining docker container """
-    cmd = ['nvidia-docker', 'run', '--rm']
+    cmd = [mir_utils.get_docker_executable(gpu_ids=gpu_id), 'run', '--rm']
     # path bindings
     cmd.append(f"-v{asset_path}:/in/assets:ro")
     cmd.append(f"-v{model_path}:/in/models:ro")

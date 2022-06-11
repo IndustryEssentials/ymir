@@ -4,6 +4,7 @@ import linecache
 import logging
 import os
 import pathlib
+import subprocess
 import time
 import requests
 import shutil
@@ -337,3 +338,14 @@ def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str
 
     joint_tail_lines = ''.join(tail_lines)
     return f"EXECUTOR OUTLOG TAIL FROM: {out_log_path}\n{joint_tail_lines}"
+
+
+def get_docker_executable(gpu_ids: str) -> str:
+    nvidia_executable = 'nvidia-docker'
+    docker_executable = 'docker'
+    if gpu_ids:  # check nvidia-docker env.
+        subprocess.run([nvidia_executable, '--version'], check=True, text=True)
+        return nvidia_executable
+
+    subprocess.run([docker_executable, '--version'], check=True, text=True)
+    return docker_executable

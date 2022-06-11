@@ -361,8 +361,6 @@ class CmdTrain(base.BaseCommand):
 
         logging.info("starting train docker container")
 
-        available_gpu_id = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
-
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
         executor_config = _generate_config(
@@ -372,6 +370,9 @@ class CmdTrain(base.BaseCommand):
             pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
         mir_utils.generate_training_env_config_file(task_id=task_id,
                                                     env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
+
+        task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
+        available_gpu_id = task_config.get('available_gpu_id', '')
 
         # start train docker and wait
         path_binds = []
@@ -387,7 +388,10 @@ class CmdTrain(base.BaseCommand):
         path_binds.append(f"-v{work_dir_out}:/out")
         path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
 
-        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
+        cmd = [
+            mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
+            f"--shm-size={_get_shm_size(executor_config=executor_config)}"
+        ]
         cmd.extend(path_binds)
         if available_gpu_id:
             cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
