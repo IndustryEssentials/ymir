@@ -51,7 +51,7 @@ function ProjectDetail(func) {
         <Detail project={project} iterations={iterations} fresh={fresh} />
       </div>
       <Card className='noShadow'
-        style={{ margin: '20px -20px', background: 'transparent' }}
+        style={{ margin: '10px -20px 0', background: 'transparent' }}
         bodyStyle={{ padding: '0 20px' }}
       >
         <Models pid={id} project={project} group={group} iterations={iterations} />
