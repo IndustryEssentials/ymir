@@ -19,11 +19,16 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
         class_names = self._user_labels.get_main_names(class_ids=list(train_request.in_class_ids))
+        assets_config = self._assets_config
         gpu_lock_ret = self.gen_executor_config_lock_gpus(
             req_executor_config=request.docker_image_config,
             class_names=class_names,
             task_parameters=request.task_parameters,
             output_config_file=output_config_file,
+            openpai_config=dict(
+                openpai_host=assets_config["openpai_host"],
+                openpai_token=assets_config["openpai_token"],
+            ),
         )
         if not gpu_lock_ret:
             return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
@@ -68,7 +73,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op
 
-        tensorboard_root = assets_config['tensorboard_root']
+        tensorboard_root = assets_config["tensorboard_root"]
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
@@ -113,8 +118,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
             '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
             '--src-revs', f"{in_dataset_id}@{his_task_id}", '--task-config-file', config_file, '--executor',
-            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard,
-            '--asset-cache-dir', asset_cache_dir
+            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
+            asset_cache_dir
         ]
         if model_hash:
             training_cmd.append('--model-hash')

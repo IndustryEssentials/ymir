@@ -10,6 +10,8 @@ ASSETS:
   modelsuploadlocation: ${MODELS_PATH}
   modelsuploadprotocol: file
   tensorboard_root: ${TENSORBOARD_ROOT}
+  openpai_host: ${OPENPAI_HOST}
+  openpai_token: ${OPENPAI_TOKEN}
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
