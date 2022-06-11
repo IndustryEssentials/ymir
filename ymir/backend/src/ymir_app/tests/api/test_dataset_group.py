@@ -34,6 +34,33 @@ class TestListDatasetGroups:
         total = r.json()["result"]["total"]
         assert len(items) == total == 1
 
+    def test_get_dataset_groups_light(
+        self,
+        db: Session,
+        client: TestClient,
+        user_id: int,
+        normal_user_token_headers: Dict[str, str],
+        mocker,
+    ):
+        project_id = randint(1000, 2000)
+        for idx in range(3):
+            grp = create_dataset_group_record(db, user_id, project_id)
+            if idx == 2:
+                create_dataset_record(db, user_id, project_id, grp.id)
+        r = client.get(
+            f"{settings.API_V1_STR}/dataset_groups/light",
+            headers=normal_user_token_headers,
+            params={"project_id": project_id},
+        )
+        items = r.json()["result"]["items"]
+        for item in items:
+            assert "name" in item
+            assert "datasets" in item
+            assert len(item["datasets"]) > 0
+            for dataset in item["datasets"]:
+                assert "id" in dataset
+                assert "version_num" in dataset
+
 
 class TestDeleteDatasetGroup:
     def test_delete_dataset_group(

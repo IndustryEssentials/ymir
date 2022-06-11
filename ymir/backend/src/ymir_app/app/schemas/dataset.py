@@ -104,6 +104,13 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
         orm_mode = True
 
 
+class DatasetLight(IdModelMixin):
+    version_num: int = Field(description="version num from related dataset group")
+
+    class Config:
+        orm_mode = True
+
+
 # Properties to return to caller
 class Dataset(DatasetInDBBase):
     keywords: Optional[str]

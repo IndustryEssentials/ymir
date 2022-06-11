@@ -70,4 +70,16 @@ class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUp
         return query.offset(offset).limit(limit).all(), query.count()
 
 
+    def get_dataset_groups(
+        self,
+        db: Session,
+        *,
+        user_id: int,
+    ) -> List[DatasetGroup]:
+        query = db.query(self.model)
+        query = query.filter(self.model.user_id == user_id, self.model.visible_datasets, not_(self.model.is_deleted))
+
+        return query.all()
+
+
 dataset_group = CRUDDatasetGroup(DatasetGroup)

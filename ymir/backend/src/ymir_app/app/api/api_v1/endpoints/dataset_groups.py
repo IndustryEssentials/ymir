@@ -49,6 +49,18 @@ def list_dataset_groups(
     return {"result": {"total": total, "items": dataset_groups}}
 
 
+@router.get("/light", response_model=schemas.DatasetGroupLightOut)
+def get_dataset_groups_light(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    dataset_groups = crud.dataset_group.get_dataset_groups(
+        db,
+        user_id=current_user.id,
+    )
+    return {"result": {"items": dataset_groups}}
+
+
 @router.post("/", response_model=schemas.DatasetGroupOut)
 def create_dataset_group(
     *,

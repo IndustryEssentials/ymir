@@ -8,7 +8,7 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
-from app.schemas.dataset import Dataset
+from app.schemas.dataset import Dataset, DatasetLight
 
 
 class DatasetGroupBase(BaseModel):
@@ -34,6 +34,14 @@ class DatasetGroupInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin
         orm_mode = True
 
 
+class DatasetGroupInDBLight(BaseModel):
+    datasets: List[DatasetLight]
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class DatasetGroup(DatasetGroupInDBBase):
     pass
 
@@ -41,6 +49,10 @@ class DatasetGroup(DatasetGroupInDBBase):
 class DatasetGroupPagination(BaseModel):
     total: int
     items: List[DatasetGroup]
+
+
+class DatasetGroupLight(BaseModel):
+    items: List[DatasetGroupInDBLight]
 
 
 class DatasetGroupOut(Common):
@@ -53,3 +65,7 @@ class DatasetGroupsOut(Common):
 
 class DatasetGroupPaginationOut(Common):
     result: DatasetGroupPagination
+
+
+class DatasetGroupLightOut(Common):
+    result: DatasetGroupLight

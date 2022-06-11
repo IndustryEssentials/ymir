@@ -15,6 +15,7 @@ from .dataset_group import (
     DatasetGroupCreate,
     DatasetGroupUpdate,
     DatasetGroupPaginationOut,
+    DatasetGroupLightOut,
 )
 from .graph import Graph, GraphOut
 from .image import (
