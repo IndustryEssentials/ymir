@@ -1,5 +1,8 @@
 const model = {
   "model.detail.title": { en: "Model Detail", cn: "模型详情", },
+  "model.diagnose": { en: "Model Diagnose", cn: "模型诊断", },
+  "model.management": { en: "Model Management", cn: "模型管理", },
+  "model.list": { en: "Model List", cn: "模型列表", },
   "model.column.name": { en: "Model Name", cn: "模型名称", },
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },
@@ -22,7 +25,7 @@ const model = {
   'model.detail.label.source': { en: 'Source', cn: '模型来源', },
   'model.detail.label.image': { en: 'Train Image', cn: '训练镜像', },
   'model.detail.label.training_dataset': { en: 'Training Dataset', cn: '训练集', },
-  'model.detail.label.test_dataset': { en: 'Test Dataset', cn: '测试集', },
+  'model.detail.label.test_dataset': { en: 'Validation Dataset', cn: '验证集', },
   'model.detail.label.train_type': { en: 'Train Type', cn: '训练类型', },
   'model.detail.label.train_goal': { en: 'Train Classes', cn: '训练目标', },
   'model.detail.label.framework': { en: 'Network', cn: '算法框架', },
@@ -49,6 +52,12 @@ const model = {
   "model.verify.model.param.fold": { cn: '点击收起', en: 'Fold', },
   "model.verify.model.param.unfold": { cn: '点击展开', en: 'Unfold', },
   'model.verify.upload.tip': { cn: '模型验证需要较长时间，请耐心等待', en: 'Verification need more time, be patient...' },
+  "model.diagnose.tab.analysis": { cn: '数据分析', en: 'Data Analysis', },
+  "model.diagnose.tab.metrics": { cn: '衡量指标', en: 'Metrics', },
+  "model.diagnose.tab.training": { cn: '训练过程', en: 'Training Fitting', },
+  "model.diagnose.tab.visualization": { cn: '图像可视化', en: 'Image Visualization', },
+  "model.diagnose.form.model": { cn: '诊断模型', en: 'Diagnosing Models', },
+  "model.action.diagnose.training.retry": { cn: '重新诊断', en: 'Retry', },
 }
 
 export default model

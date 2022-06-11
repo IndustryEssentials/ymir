@@ -15,6 +15,7 @@ const routeTitle = {
   "asset.title": { cn: `${SysName}-数据详情`, en: `${SysName} - Asset Detail`, },
   "models.title": { cn: `${SysName}-模型列表`, en: `${SysName} - Model List`, },
   "model.title": { cn: `${SysName}-模型详情`, en: `${SysName} - Model Detail`, },
+  "model.diagnose.title": { cn: `${SysName}-模型诊断`, en: `${SysName} - Model Diagnose`, },
   "model.verify.title": { cn: `${SysName}-模型验证`, en: `${SysName} - Model Verify`, },
   "task.fusion.title": { cn: `${SysName}-数据预处理`, en: `${SysName} - Data Pretreatment`, },
   "task.train.title": { cn: `${SysName}-模型训练`, en: `${SysName} - Model Training`, },

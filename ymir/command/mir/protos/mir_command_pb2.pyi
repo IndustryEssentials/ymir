@@ -285,17 +285,26 @@ class MirAnnotations(google.protobuf.message.Message):
 
     TASK_ANNOTATIONS_FIELD_NUMBER: builtins.int
     HEAD_TASK_ID_FIELD_NUMBER: builtins.int
+    GROUND_TRUTH_FIELD_NUMBER: builtins.int
+    PREDICTION_FIELD_NUMBER: builtins.int
     @property
     def task_annotations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTaskAnnotations]:
         """/ key: task id, value: annotations of that single task"""
         pass
     head_task_id: typing.Text = ...
+    @property
+    def ground_truth(self) -> global___SingleTaskAnnotations: ...
+    @property
+    def prediction(self) -> global___SingleTaskAnnotations: ...
     def __init__(self,
         *,
         task_annotations : typing.Optional[typing.Mapping[typing.Text, global___SingleTaskAnnotations]] = ...,
         head_task_id : typing.Text = ...,
+        ground_truth : typing.Optional[global___SingleTaskAnnotations] = ...,
+        prediction : typing.Optional[global___SingleTaskAnnotations] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["head_task_id",b"head_task_id","task_annotations",b"task_annotations"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["ground_truth",b"ground_truth","prediction",b"prediction"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ground_truth",b"ground_truth","head_task_id",b"head_task_id","prediction",b"prediction","task_annotations",b"task_annotations"]) -> None: ...
 global___MirAnnotations = MirAnnotations
 
 class SingleTaskAnnotations(google.protobuf.message.Message):
@@ -316,39 +325,73 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     IMAGE_ANNOTATIONS_FIELD_NUMBER: builtins.int
+    TASK_ID_FIELD_NUMBER: builtins.int
     @property
     def image_annotations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleImageAnnotations]:
         """/ key: image id, value: annotations of that single image"""
         pass
+    task_id: typing.Text = ...
     def __init__(self,
         *,
         image_annotations : typing.Optional[typing.Mapping[typing.Text, global___SingleImageAnnotations]] = ...,
+        task_id : typing.Text = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["image_annotations",b"image_annotations"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["image_annotations",b"image_annotations","task_id",b"task_id"]) -> None: ...
 global___SingleTaskAnnotations = SingleTaskAnnotations
 
 class SingleImageAnnotations(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class CksEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        value: typing.Text = ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Text = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
     ANNOTATIONS_FIELD_NUMBER: builtins.int
-    CUSTOMIZED_KEYWORDS_FIELD_NUMBER: builtins.int
+    IMAGE_QUALITY_FIELD_NUMBER: builtins.int
+    CKS_FIELD_NUMBER: builtins.int
     @property
     def annotations(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___Annotation]: ...
+    image_quality: builtins.float = ...
     @property
-    def customized_keywords(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
+    def cks(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]: ...
     def __init__(self,
         *,
         annotations : typing.Optional[typing.Iterable[global___Annotation]] = ...,
-        customized_keywords : typing.Optional[typing.Iterable[typing.Text]] = ...,
+        image_quality : builtins.float = ...,
+        cks : typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["annotations",b"annotations","customized_keywords",b"customized_keywords"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["annotations",b"annotations","cks",b"cks","image_quality",b"image_quality"]) -> None: ...
 global___SingleImageAnnotations = SingleImageAnnotations
 
 class Annotation(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class TagsEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        value: typing.Text = ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Text = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
     INDEX_FIELD_NUMBER: builtins.int
     BOX_FIELD_NUMBER: builtins.int
     CLASS_ID_FIELD_NUMBER: builtins.int
     SCORE_FIELD_NUMBER: builtins.int
+    ANNO_QUALITY_FIELD_NUMBER: builtins.int
+    TAGS_FIELD_NUMBER: builtins.int
     index: builtins.int = ...
     """Index of this annotation in current single image, may be different from the index in repeated field."""
 
@@ -356,15 +399,20 @@ class Annotation(google.protobuf.message.Message):
     def box(self) -> global___Rect: ...
     class_id: builtins.int = ...
     score: builtins.float = ...
+    anno_quality: builtins.float = ...
+    @property
+    def tags(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]: ...
     def __init__(self,
         *,
         index : builtins.int = ...,
         box : typing.Optional[global___Rect] = ...,
         class_id : builtins.int = ...,
         score : builtins.float = ...,
+        anno_quality : builtins.float = ...,
+        tags : typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["box",b"box","class_id",b"class_id","index",b"index","score",b"score"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","index",b"index","score",b"score","tags",b"tags"]) -> None: ...
 global___Annotation = Annotation
 
 class Rect(google.protobuf.message.Message):
@@ -420,24 +468,10 @@ class MirKeywords(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class IndexCustomizedKeywordsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text = ...
-        @property
-        def value(self) -> global___Assets: ...
-        def __init__(self,
-            *,
-            key : typing.Text = ...,
-            value : typing.Optional[global___Assets] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     KEYWORDS_FIELD_NUMBER: builtins.int
     INDEX_PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
-    INDEX_CUSTOMIZED_KEYWORDS_FIELD_NUMBER: builtins.int
+    PRED_IDX_FIELD_NUMBER: builtins.int
+    GT_IDX_FIELD_NUMBER: builtins.int
     @property
     def keywords(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Keywords]:
         """key: asset hash, value: keywords list
@@ -449,17 +483,166 @@ class MirKeywords(google.protobuf.message.Message):
         """key: class id, value: assert ids"""
         pass
     @property
-    def index_customized_keywords(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Assets]:
-        """key: customized keyword, value: asset ids"""
-        pass
+    def pred_idx(self) -> global___KeywordToIndex: ...
+    @property
+    def gt_idx(self) -> global___KeywordToIndex: ...
     def __init__(self,
         *,
         keywords : typing.Optional[typing.Mapping[typing.Text, global___Keywords]] = ...,
         index_predefined_keyids : typing.Optional[typing.Mapping[builtins.int, global___Assets]] = ...,
-        index_customized_keywords : typing.Optional[typing.Mapping[typing.Text, global___Assets]] = ...,
+        pred_idx : typing.Optional[global___KeywordToIndex] = ...,
+        gt_idx : typing.Optional[global___KeywordToIndex] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["index_customized_keywords",b"index_customized_keywords","index_predefined_keyids",b"index_predefined_keyids","keywords",b"keywords"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["gt_idx",b"gt_idx","pred_idx",b"pred_idx"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["gt_idx",b"gt_idx","index_predefined_keyids",b"index_predefined_keyids","keywords",b"keywords","pred_idx",b"pred_idx"]) -> None: ...
 global___MirKeywords = MirKeywords
+
+class KeywordToIndex(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class AssetCisEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        @property
+        def value(self) -> global___SingleCkIndex: ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : typing.Optional[global___SingleCkIndex] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class AssetCksEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleCkIndex: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleCkIndex] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class AnnoCisEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        @property
+        def value(self) -> global___SingleCkIndex: ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : typing.Optional[global___SingleCkIndex] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class AnnoCksEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleCkIndex: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleCkIndex] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class AssetQualityHistEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class AnnoQualityHistEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class AnnoAreaHistEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    ASSET_CIS_FIELD_NUMBER: builtins.int
+    ASSET_CKS_FIELD_NUMBER: builtins.int
+    ANNO_CIS_FIELD_NUMBER: builtins.int
+    ANNO_CKS_FIELD_NUMBER: builtins.int
+    ASSET_QUALITY_HIST_FIELD_NUMBER: builtins.int
+    ANNO_QUALITY_HIST_FIELD_NUMBER: builtins.int
+    ANNO_AREA_HIST_FIELD_NUMBER: builtins.int
+    @property
+    def asset_cis(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleCkIndex]:
+        """key: ci, value: assets"""
+        pass
+    @property
+    def asset_cks(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleCkIndex]:
+        """key: ck main key, value: assets and assets of sub keys"""
+        pass
+    @property
+    def anno_cis(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleCkIndex]:
+        """key: ci, value: annos"""
+        pass
+    @property
+    def anno_cks(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleCkIndex]:
+        """key: ck main key, value: annos and annos of sub keys"""
+        pass
+    @property
+    def asset_quality_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
+        """key: 0 (lower bnd), 0.1, 0.2, ..., 0.9 value: count, increment 0.1"""
+        pass
+    @property
+    def anno_quality_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
+        """ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000"""
+        pass
+    @property
+    def anno_area_hist(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]: ...
+    def __init__(self,
+        *,
+        asset_cis : typing.Optional[typing.Mapping[builtins.int, global___SingleCkIndex]] = ...,
+        asset_cks : typing.Optional[typing.Mapping[typing.Text, global___SingleCkIndex]] = ...,
+        anno_cis : typing.Optional[typing.Mapping[builtins.int, global___SingleCkIndex]] = ...,
+        anno_cks : typing.Optional[typing.Mapping[typing.Text, global___SingleCkIndex]] = ...,
+        asset_quality_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
+        anno_quality_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
+        anno_area_hist : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_area_hist",b"anno_area_hist","anno_cis",b"anno_cis","anno_cks",b"anno_cks","anno_quality_hist",b"anno_quality_hist","asset_cis",b"asset_cis","asset_cks",b"asset_cks","asset_quality_hist",b"asset_quality_hist"]) -> None: ...
+global___KeywordToIndex = KeywordToIndex
 
 class Assets(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -473,25 +656,80 @@ class Assets(google.protobuf.message.Message):
     def ClearField(self, field_name: typing_extensions.Literal["asset_ids",b"asset_ids"]) -> None: ...
 global___Assets = Assets
 
+class AssetAnnoPairList(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    PAIRS_FIELD_NUMBER: builtins.int
+    @property
+    def pairs(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___AssetAnnoPair]: ...
+    def __init__(self,
+        *,
+        pairs : typing.Optional[typing.Iterable[global___AssetAnnoPair]] = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["pairs",b"pairs"]) -> None: ...
+global___AssetAnnoPairList = AssetAnnoPairList
+
+class AssetAnnoPair(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    ASSET_ID_FIELD_NUMBER: builtins.int
+    ANNO_IDX_FIELD_NUMBER: builtins.int
+    asset_id: typing.Text = ...
+    anno_idx: builtins.int = ...
+    def __init__(self,
+        *,
+        asset_id : typing.Text = ...,
+        anno_idx : builtins.int = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_idx",b"anno_idx","asset_id",b"asset_id"]) -> None: ...
+global___AssetAnnoPair = AssetAnnoPair
+
 class Keywords(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
-    CUSTOMIZED_KEYWORDS_FIELD_NUMBER: builtins.int
     @property
     def predefined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """predefined: managed id-keyword map"""
         pass
-    @property
-    def customized_keywords(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]:
-        """customized: arbitrary user defined keywords"""
-        pass
     def __init__(self,
         *,
         predefined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
-        customized_keywords : typing.Optional[typing.Iterable[typing.Text]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["customized_keywords",b"customized_keywords","predefined_keyids",b"predefined_keyids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["predefined_keyids",b"predefined_keyids"]) -> None: ...
 global___Keywords = Keywords
+
+class SingleCkIndex(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class SubIndexesEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___AssetAnnoPairList: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___AssetAnnoPairList] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    INDEXES_FIELD_NUMBER: builtins.int
+    SUB_INDEXES_FIELD_NUMBER: builtins.int
+    @property
+    def indexes(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___AssetAnnoPair]:
+        """for main key"""
+        pass
+    @property
+    def sub_indexes(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___AssetAnnoPairList]:
+        """for sub key"""
+        pass
+    def __init__(self,
+        *,
+        indexes : typing.Optional[typing.Iterable[global___AssetAnnoPair]] = ...,
+        sub_indexes : typing.Optional[typing.Mapping[typing.Text, global___AssetAnnoPairList]] = ...,
+        ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["indexes",b"indexes","sub_indexes",b"sub_indexes"]) -> None: ...
+global___SingleCkIndex = SingleCkIndex
 
 class MirTasks(google.protobuf.message.Message):
     """/ ========== tasks.mir =========="""
@@ -894,7 +1132,7 @@ class MirContext(google.protobuf.message.Message):
         pass
     @property
     def customized_keywords_cnt(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """/ key: customized keywords, value: images count"""
+        """/ key: discrete customized keywords or tags, value: images count"""
         pass
     def __init__(self,
         *,
