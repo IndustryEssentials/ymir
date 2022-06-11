@@ -44,6 +44,7 @@ class CmdInfer(base.BaseCommand):
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
                                       executant_name=self.args.executant_name,
+                                      run_as_root=self.args.run_as_root,
                                       run_infer=True,
                                       run_mining=False)
 
@@ -57,6 +58,7 @@ class CmdInfer(base.BaseCommand):
                       config_file: str,
                       executor: str,
                       executant_name: str,
+                      run_as_root: bool,
                       task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
                       run_infer: bool = False,
@@ -163,13 +165,15 @@ class CmdInfer(base.BaseCommand):
                        out_path=work_out_path,
                        executor=executor,
                        executant_name=executant_name,
+                       run_as_root=run_as_root,
                        shm_size=shm_size,
                        task_type=task_id,
                        gpu_id=available_gpu_id)
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
-                                   max_boxes=_get_max_boxes(config_file), mir_root=mir_root)
+                                   max_boxes=_get_max_boxes(config_file),
+                                   mir_root=mir_root)
 
         return MirCode.RC_OK
 
@@ -296,7 +300,7 @@ def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> No
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, env_file_path: str,
                    out_path: str, executor: str, executant_name: str, shm_size: Optional[str], task_type: str,
-                   gpu_id: str) -> int:
+                   gpu_id: str, run_as_root: bool) -> int:
     """ runs infer or mining docker container """
     cmd = ['nvidia-docker', 'run', '--rm']
     # path bindings
@@ -307,7 +311,8 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.append(f"-v{env_file_path}:/in/env.yaml")
     cmd.append(f"-v{out_path}:/out")
     # permissions and shared memory
-    cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
+    if not run_as_root:
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
     if gpu_id:
         cmd.extend(['--gpus', f"\"device={gpu_id}\""])
     if shm_size:
@@ -361,4 +366,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   dest='executant_name',
                                   type=str,
                                   help='docker container name for infer or mining')
+    infer_arg_parser.add_argument("--run-as-root",
+                                  dest="run_as_root",
+                                  action='store_true',
+                                  help="run executor as root user")
     infer_arg_parser.set_defaults(func=CmdInfer)

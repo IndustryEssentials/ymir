@@ -248,6 +248,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file
         fake_args.asset_cache_dir = ''
+        fake_args.run_as_root = False
 
         cmd = training.CmdTrain(fake_args)
         cmd_run_result = cmd.run()
@@ -273,6 +274,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.executant_name = 'executor-instance'
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file_lmdb
+        fake_args.run_as_root = False
         fake_args.asset_cache_dir = ''
 
         cmd = training.CmdTrain(fake_args)
@@ -297,6 +299,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.executant_name = 'executor-instance'
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file
+        fake_args.run_as_root = False
         fake_args.asset_cache_dir = ''
 
         cmd = training.CmdTrain(fake_args)

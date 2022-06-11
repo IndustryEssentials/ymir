@@ -144,6 +144,7 @@ class TestCmdInfer(unittest.TestCase):
         fake_args.config_file = self._config_file
         fake_args.executor = 'infer-executor:fake'
         fake_args.executant_name = 'executor-instance'
+        fake_args.run_as_root = False
         cmd_instance = CmdInfer(fake_args)
         cmd_result = cmd_instance.run()
 

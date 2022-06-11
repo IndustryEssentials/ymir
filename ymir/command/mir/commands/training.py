@@ -160,6 +160,7 @@ class CmdTrain(base.BaseCommand):
                                       tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
                                       executant_name=self.args.executant_name,
+                                      run_as_root=self.args.run_as_root,
                                       config_file=self.args.config_file)
 
     @staticmethod
@@ -174,6 +175,7 @@ class CmdTrain(base.BaseCommand):
                       dst_rev: str,
                       config_file: Optional[str],
                       tensorboard_dir: str,
+                      run_as_root: bool,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
         if not model_upload_location:
@@ -391,7 +393,8 @@ class CmdTrain(base.BaseCommand):
         cmd.extend(path_binds)
         if available_gpu_id:
             cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+        if not run_as_root:
+            cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
         cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
         cmd.append(executor)
 
@@ -510,4 +513,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   required=False,
                                   help="tensorboard log directory")
+    train_arg_parser.add_argument("--run-as-root",
+                                  dest="run_as_root",
+                                  action='store_true',
+                                  help="run executor as root user")
     train_arg_parser.set_defaults(func=CmdTrain)

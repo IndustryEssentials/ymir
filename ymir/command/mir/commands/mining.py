@@ -43,7 +43,8 @@ class CmdMining(base.BaseCommand):
                                        topk=self.args.topk,
                                        add_annotations=self.args.add_annotations,
                                        executor=self.args.executor,
-                                       executant_name=self.args.executant_name)
+                                       executant_name=self.args.executant_name,
+                                       run_as_root=self.args.run_as_root)
 
     @staticmethod
     @command_run_in_out
@@ -58,6 +59,7 @@ class CmdMining(base.BaseCommand):
                       config_file: str,
                       executor: str,
                       executant_name: str,
+                      run_as_root: bool,
                       topk: int = None,
                       add_annotations: bool = False) -> int:
         """
@@ -163,6 +165,7 @@ class CmdMining(base.BaseCommand):
                                          shm_size=_get_shm_size(config_file),
                                          executor=executor,
                                          executant_name=executant_name,
+                                         run_as_root=run_as_root,
                                          run_infer=add_annotations,
                                          run_mining=(topk is not None))
         except CalledProcessError:
@@ -417,4 +420,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='executant_name',
                                    type=str,
                                    help='docker container name for mining')
+    mining_arg_parser.add_argument("--run-as-root",
+                                   dest="run_as_root",
+                                   action='store_true',
+                                   help="run executor as root user")
     mining_arg_parser.set_defaults(func=CmdMining)
