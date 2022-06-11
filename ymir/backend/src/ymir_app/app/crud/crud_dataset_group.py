@@ -69,7 +69,6 @@ class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUp
 
         return query.offset(offset).limit(limit).all(), query.count()
 
-
     def get_dataset_groups(
         self,
         db: Session,
