@@ -134,19 +134,6 @@ class TestMirStorage(unittest.TestCase):
         }
         pb_format.ParseDict(dict_annotations, mir_annotations)
 
-        # dict_keywords = {
-        #     'keywords': {
-        #         'a001': {
-        #             'predefined_keyids': [1, 2]
-        #         },
-        #         'a002': {
-        #             'predefined_keyids': [2, 3]
-        #         },
-        #         'a003': {
-        #             'predefined_keyids': [3]
-        #         },
-        #     },
-        # }
         dict_keywords = {
             'keywords': {
                 'a001': {
@@ -226,6 +213,43 @@ class TestMirStorage(unittest.TestCase):
                 3: 2,
                 4: 0
             } if with_project else {}),
+            'asset_quality_hist': {
+                '0.00': 3,
+                '0.10': 0,
+                '0.20': 0,
+                '0.30': 0,
+                '0.40': 0,
+                '0.50': 0,
+                '0.60': 0,
+                '0.70': 0,
+                '0.80': 0,
+                '0.90': 0,
+                '1.00': 0
+            },
+            'anno_quality_hist': {
+                '0.00': 6,
+                '0.10': 0,
+                '0.20': 0,
+                '0.30': 0,
+                '0.40': 0,
+                '0.50': 0,
+                '0.60': 0,
+                '0.70': 0,
+                '0.80': 0,
+                '0.90': 0,
+                '1.00': 0
+            },
+            'anno_area_hist': {
+                0: 0,
+                50: 0,
+                500: 6,
+                2500: 0,
+                5000: 0,
+                10000: 0,
+                50000: 0,
+                100000: 0,
+                200000: 0
+            },
         }
         pb_format.ParseDict(dict_context, mir_context)
 
@@ -283,7 +307,9 @@ class TestMirStorage(unittest.TestCase):
                                                                                 ms=mirpb.MirStorage.MIR_KEYWORDS,
                                                                                 mir_task_id='mining-task-id',
                                                                                 as_dict=False)
-        self.assertDictEqual(pb_format.MessageToDict(mir_keywords)['keywords'], pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
+        self.assertDictEqual(
+            pb_format.MessageToDict(mir_keywords)['keywords'],
+            pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
         loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
                                                                                mir_branch='a',
                                                                                ms=mirpb.MirStorage.MIR_CONTEXT,
@@ -390,7 +416,9 @@ class TestMirStorage(unittest.TestCase):
                                                                                 ms=mirpb.MirStorage.MIR_KEYWORDS,
                                                                                 mir_task_id='mining-task-id',
                                                                                 as_dict=False)
-        self.assertDictEqual(pb_format.MessageToDict(mir_keywords)['keywords'], pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
+        self.assertDictEqual(
+            pb_format.MessageToDict(mir_keywords)['keywords'],
+            pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
         loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
                                                                                mir_branch='a',
                                                                                ms=mirpb.MirStorage.MIR_CONTEXT,

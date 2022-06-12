@@ -128,9 +128,9 @@ class MirStorageOps():
                 mir_context.project_predefined_keyids_cnt[key_id] = 0
 
         # image_cnt, negative_images_cnt, project_negative_images_cnt
+        image_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations
         mir_context.images_cnt = len(mir_metadatas.attributes)
-        mir_context.negative_images_cnt = mir_context.images_cnt - len(
-            mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations)
+        mir_context.negative_images_cnt = mir_context.images_cnt - len(image_annotations)
         if project_class_ids:
             mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
             # if no project_class_ids, project_negative_images_cnt set to 0
@@ -148,10 +148,38 @@ class MirStorageOps():
                 mir_context.tags_cnt[tag].sub_cnt[sub_tag] = len(sub_tag_to_annos.pairs)
 
         # asset_quality_hist
+        asset_quality_hist = cls.__build_hist(values=[x.image_quality for x in image_annotations.values()],
+                                              desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
+        mir_context.asset_quality_hist.update({f"{k:.2f}": v for k, v in asset_quality_hist.items()})
 
         # anno_quality_hist
+        all_annotations = [
+            annotation for image_annotation in image_annotations.values() for annotation in image_annotation.annotations
+        ]
+        anno_quality_hist: Dict[float, int] = cls.__build_hist(
+            values=[annotation.anno_quality for annotation in all_annotations],
+            desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
+        mir_context.anno_quality_hist.update({f"{k:.2f}": v for k, v in anno_quality_hist.items()})
 
         # anno_area_hist
+        anno_area_hist: Dict[int, int] = cls.__build_hist(
+            values=[annotation.box.w * annotation.box.h for annotation in all_annotations],
+            desc_lower_bnds=mir_settings.ANNO_AREA_DESC_LOWER_BNDS)
+        mir_context.anno_area_hist.update(anno_area_hist)
+
+    @classmethod
+    def __build_hist(cls, values: List[Any], desc_lower_bnds: List[Any]) -> Dict[Any, int]:
+        hist = {}
+        if not desc_lower_bnds:
+            raise ValueError('empty desc_lower_bnds')
+        for x in desc_lower_bnds:
+            hist[x] = 0
+        for y in values:
+            for x in desc_lower_bnds:
+                if y >= x:
+                    hist[x] += 1
+                    break
+        return hist
 
     @classmethod
     def __add_git_tag(cls, mir_root: str, tag: str) -> None:
