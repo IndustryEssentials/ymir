@@ -12,6 +12,7 @@ ASSETS:
   tensorboard_root: ${TENSORBOARD_ROOT}
   openpai_host: ${OPENPAI_HOST}
   openpai_token: ${OPENPAI_TOKEN}
+  openpai_storage: ${OPENPAI_STORAGE}
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
