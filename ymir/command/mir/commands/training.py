@@ -4,7 +4,6 @@ import os
 import time
 import subprocess
 from subprocess import CalledProcessError
-import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import traceback
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -511,75 +510,16 @@ def _execute_in_openpai(
     res_cpu=15,
     res_memory_in_mb=30965,
 ) -> None:
-    gpu_count = len(available_gpu_id.split(",")) if available_gpu_id else 1
-
-    openpai_host = openpai_config["openpai_host"]
-    openpai_token = openpai_config["openpai_token"]
-    openpai_storage = openpai_config["openpai_storage"]
-
-    with requests.Session() as session:
-        headers = {"Authorization": f"Bearer {openpai_token}", "Content-Type": "text/plain"}
-        payload = {
-            "protocolVersion": 2,
-            "name": executant_name,
-            "type": "job",
-            "jobRetryCount": 0,
-            "prerequisites": [{
-                "type": "dockerimage",
-                "uri": executor,
-                "name": "docker_image_0"
-            }],
-            "taskRoles": {
-                "taskrole": {
-                    "instances":
-                    1,
-                    "completion": {
-                        "minFailedInstances": 1
-                    },
-                    "taskRetryCount":
-                    0,
-                    "dockerImage":
-                    "docker_image_0",
-                    "resourcePerInstance": {
-                        "gpu": gpu_count,
-                        "cpu": res_cpu,
-                        "memoryMB": res_memory_in_mb
-                    },
-                    "commands": [
-                        f"ln -s {work_dir_in} /in",
-                        f"ln -s {work_dir_out} /out",
-                        "python /app/start.py",
-                    ],
-                }
-            },
-            "defaults": {
-                "virtualCluster": "default"
-            },
-            "extras": {
-                "com.microsoft.pai.runtimeplugin": [
-                    {
-                        "plugin": "teamwise_storage",
-                        "parameters": {
-                            "storageConfigNames": [openpai_storage]
-                        },
-                    },
-                ],
-                "hivedScheduler": {
-                    "taskRoles": {
-                        "taskrole": {
-                            "skuNum": 1,
-                            "skuType": "gpu-machine"
-                        }
-                    }
-                },
-            },
-        }
-        resp = session.post(f"{openpai_host}/rest-server/api/v2/jobs", data=yaml.safe_dump(payload), headers=headers)
-        if not resp.ok:
-            resp.raise_for_status()
-
-        logging.info("[openpai] job submitted")
-        return
+    _execute_locally(
+        work_dir_in=work_dir_in,
+        work_dir_out=work_dir_out,
+        asset_dir=asset_dir,
+        tensorboard_dir=tensorboard_dir,
+        executor=executor,
+        executant_name=executant_name,
+        executor_config=executor_config,
+        available_gpu_id=available_gpu_id,
+    )
 
 
 def _execute_locally(
