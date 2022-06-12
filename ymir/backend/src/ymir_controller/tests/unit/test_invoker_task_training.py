@@ -122,6 +122,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'openpai_host': '',
             'openpai_token': '',
             'openpai_storage': '',
+            'openpai_user': '',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
