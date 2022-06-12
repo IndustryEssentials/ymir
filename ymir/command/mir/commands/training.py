@@ -507,10 +507,10 @@ def _execute_in_openpai(
     executor_config: Dict,
     available_gpu_id: str,
     openpai_config: Dict,
-    res_cpu=15,
-    res_memory_in_mb=30965,
+    res_cpu: int = 15,
+    res_memory_in_mb: int = 30965,
 ) -> None:
-    _execute_locally(
+    return _execute_locally(
         work_dir_in=work_dir_in,
         work_dir_out=work_dir_out,
         asset_dir=asset_dir,
