@@ -174,7 +174,7 @@ class CmdTrain(base.BaseCommand):
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
-                      tensorboard_dir: str,
+                      tensorboard_dir_ext: str,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
         if not model_upload_location:
@@ -227,8 +227,13 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(work_dir, exist_ok=True)
 
         work_dir_in = os.path.join(work_dir, "in")
-        asset_dir = asset_cache_dir or os.path.join(work_dir_in, 'assets')
-        os.makedirs(asset_dir, exist_ok=True)
+        # assets folder, fixed location at work_dir_in/assets.
+        asset_dir = os.path.join(work_dir_in, 'assets')
+        if asset_cache_dir:
+            if asset_cache_dir != asset_dir:
+                os.link(asset_cache_dir, asset_dir)
+        else:
+            os.makedirs(asset_dir, exist_ok=True)
         work_dir_annotations = os.path.join(work_dir_in, 'annotations')
         os.makedirs(work_dir_annotations, exist_ok=True)
 
@@ -236,9 +241,12 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(work_dir_out, exist_ok=True)
         out_model_dir = os.path.join(work_dir_out, 'models')
         os.makedirs(out_model_dir, exist_ok=True)
-        if not tensorboard_dir:
-            tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
-        os.makedirs(tensorboard_dir, exist_ok=True)
+        tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
+        if tensorboard_dir_ext:
+            if tensorboard_dir != tensorboard_dir_ext:
+                os.link(tensorboard_dir_ext, tensorboard_dir)
+        else:
+            os.makedirs(tensorboard_dir, exist_ok=True)
         os.system(f"chmod -R 777 {work_dir_out}")
 
         # if have model_hash, export model
@@ -390,11 +398,8 @@ class CmdTrain(base.BaseCommand):
         return_msg = ''
         try:
             _execute_training(
-                work_dir=work_dir,
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
-                asset_dir=asset_dir,
-                tensorboard_dir=tensorboard_dir,
                 executor=executor,
                 executant_name=executant_name,
                 executor_config=executor_config,
@@ -457,11 +462,8 @@ class CmdTrain(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _execute_training(work_dir: str,
-                      work_dir_in: str,
+def _execute_training(work_dir_in: str,
                       work_dir_out: str,
-                      asset_dir: str,
-                      tensorboard_dir: str,
                       executor: str,
                       executant_name: str,
                       executor_config: Dict,
@@ -473,8 +475,6 @@ def _execute_training(work_dir: str,
             _execute_in_openpai(
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
-                asset_dir=asset_dir,
-                tensorboard_dir=tensorboard_dir,
                 executor=executor,
                 executant_name=executant_name,
                 executor_config=executor_config,
@@ -488,8 +488,6 @@ def _execute_training(work_dir: str,
         _execute_locally(
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
-            asset_dir=asset_dir,
-            tensorboard_dir=tensorboard_dir,
             executor=executor,
             executant_name=executant_name,
             executor_config=executor_config,
@@ -500,8 +498,6 @@ def _execute_training(work_dir: str,
 def _execute_in_openpai(
     work_dir_in: str,
     work_dir_out: str,
-    asset_dir: str,
-    tensorboard_dir: str,
     executor: str,
     executant_name: str,
     executor_config: Dict,
@@ -513,8 +509,6 @@ def _execute_in_openpai(
     return _execute_locally(
         work_dir_in=work_dir_in,
         work_dir_out=work_dir_out,
-        asset_dir=asset_dir,
-        tensorboard_dir=tensorboard_dir,
         executor=executor,
         executant_name=executant_name,
         executor_config=executor_config,
@@ -525,8 +519,6 @@ def _execute_in_openpai(
 def _execute_locally(
     work_dir_in: str,
     work_dir_out: str,
-    asset_dir: str,
-    tensorboard_dir: str,
     executor: str,
     executant_name: str,
     executor_config: Dict,
@@ -535,9 +527,7 @@ def _execute_locally(
     # start train docker and wait
     path_binds = []
     path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
-    path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
     path_binds.append(f"-v{work_dir_out}:/out")
-    path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
 
     cmd = [
         mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
