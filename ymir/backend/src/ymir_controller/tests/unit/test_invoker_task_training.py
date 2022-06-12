@@ -121,6 +121,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'tensorboard_root': self._tensorboard_root,
             'openpai_host': '',
             'openpai_token': '',
+            'openpai_storage': '',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
