@@ -339,6 +339,9 @@ class MirStorageOps():
             "total_images_cnt": 1,
         }
         """
+        mir_storage_tasks: mirpb.MirTasks
+        mir_storage_context: mirpb.MirContext
+
         mir_storage_tasks, mir_storage_context = cls.load_multiple_storages(
             mir_root=mir_root,
             mir_branch=mir_branch,
@@ -349,7 +352,7 @@ class MirStorageOps():
         task_storage = mir_storage_tasks.tasks[mir_storage_tasks.head_task_id]
 
         class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-        return dict(
+        pred = dict(
             class_ids_count={k: v
                              for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             class_names_count={
@@ -363,7 +366,17 @@ class MirStorageOps():
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
             ),
             total_images_cnt=mir_storage_context.images_cnt,
+            cks_count_total={k: v.cnt for k, v in mir_storage_context.cks_cnt.items()},
+            cks_count={k: v.sub_cnt for k, v in mir_storage_context.cks_cnt.items()},
+            tags_cnt_total={k: v.cnt for k, v in mir_storage_context.tags_cnt.items()},
+            tags_cnt={k: v.sub_cnt for k, v in mir_storage_context.tags_cnt.items()},
+            hist=dict(
+                asset_quality={k: v for k, v in mir_storage_context.asset_quality_hist.items()},
+                anno_quality={k: v for k, v in mir_storage_context.anno_quality_hist.items()},
+                anno_area={k: v for k, v in mir_storage_context.anno_area_hist.items()},
+            ),
         )
+        return dict(pred=pred, gt={})
 
     @classmethod
     def load_assets_content(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
