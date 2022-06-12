@@ -29,6 +29,7 @@ services:
       - OPENPAI_HOST=${OPENPAI_HOST}
       - OPENPAI_TOKEN=${OPENPAI_TOKEN}
       - OPENPAI_STORAGE=${OPENPAI_STORAGE}
+      - OPENPAI_USER=${OPENPAI_USER}
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"
