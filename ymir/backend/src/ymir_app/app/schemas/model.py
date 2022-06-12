@@ -9,6 +9,7 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
+from app.schemas.model_stage import ModelStageBase
 from app.schemas.task import TaskInternal
 
 
@@ -64,6 +65,7 @@ class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Model
     version_num: int
     related_task: Optional[TaskInternal]
     is_visible: bool
+    related_stages: List[ModelStageBase]
 
     class Config:
         orm_mode = True

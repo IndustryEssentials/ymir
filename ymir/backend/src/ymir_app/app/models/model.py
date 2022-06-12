@@ -14,6 +14,7 @@ from sqlalchemy.orm import relationship
 from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
+from app.models.model_stage import ModelStage  # noqa
 
 
 class Model(Base):
@@ -38,6 +39,13 @@ class Model(Base):
         primaryjoin="foreign(Task.id)==Model.task_id",
         backref="result_model",
         uselist=False,
+        viewonly=True,
+    )
+    related_stages = relationship(
+        "ModelStage",
+        primaryjoin="foreign(ModelStage.model_id)==Model.id",
+        backref="model",
+        uselist=True,
         viewonly=True,
     )
 

@@ -9,6 +9,7 @@ from app import schemas
 from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Model
+from app.models import ModelStage
 from app.schemas.model import ModelCreate, ModelUpdate
 
 
@@ -145,6 +146,17 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             model.hash = result["hash"]
 
         model.result_state = int(result_state)
+        # TODO add stage to model, mock this for now
+        if result.get("model_stages") is None:
+            for i in range(10):
+                stage = ModelStage(
+                    model_id=model.id,
+                    name=f"stage_{i}",
+                    map= 0.1*i,
+                    timestamp=100000001,
+                    is_best=True if i ==0 else False,
+                )
+                model.model_stages.append(stage)
 
         db.add(model)
         db.commit()
