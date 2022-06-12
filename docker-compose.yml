@@ -25,6 +25,10 @@ services:
       # monitor
       - MONITOR_URL=http://127.0.0.1:9098
       - APP_API_HOST=127.0.0.1:80
+      # OpenPai
+      - OPENPAI_HOST=${OPENPAI_HOST}
+      - OPENPAI_TOKEN=${OPENPAI_TOKEN}
+      - OPENPAI_STORAGE=${OPENPAI_STORAGE}
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"

@@ -100,7 +100,7 @@ class TestCmdInfer(unittest.TestCase):
             executor_config = yaml.safe_load(f)
         with open(self._config_file, 'w') as f:
             yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config}, f)
-            
+
     def _prepare_infer_result_file(self):
         fake_infer_output_dict = {
             'detection': {
@@ -151,7 +151,7 @@ class TestCmdInfer(unittest.TestCase):
         # check running result
         self.assertEqual(MirCode.RC_OK, cmd_result)
 
-        expected_cmd = ['nvidia-docker', 'run', '--rm']
+        expected_cmd = ['docker', 'run', '--rm']
         expected_cmd.append(f"-v{fake_args.work_dir}:/in/assets:ro")
         expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'models')}:/in/models:ro")
         expected_cmd.append(

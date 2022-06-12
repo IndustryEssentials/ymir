@@ -10,6 +10,9 @@ ASSETS:
   modelsuploadlocation: /tmp/ymir-controller-sandbox-root/ymir-models/
   modelsuploadprotocol: file
   tensorboard_root: /tmp/ymir-controller-sandbox-root/ymir-tensorboard-logs
+  openpai_host: 127.0.0.1
+  openpai_token: fake_token
+  openpai_storage: fake_storage
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root

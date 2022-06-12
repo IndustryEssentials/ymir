@@ -1,7 +1,8 @@
+from distutils.util import strtobool
 import logging
 import os
 import threading
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import yaml
 
@@ -86,10 +87,13 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         return os.path.join(work_dir, "task_config.yaml")
 
     @staticmethod
-    def gen_executor_config_lock_gpus(req_executor_config: str, class_names: List, task_parameters: str,
-                                      output_config_file: str) -> bool:
+    def gen_executor_config_lock_gpus(req_executor_config: str,
+                                      class_names: List,
+                                      task_parameters: str,
+                                      output_config_file: str,
+                                      openpai_config: Dict = {}) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
-        task_context = {}
+        task_context: Dict[str, Any] = {}
 
         if class_names:
             executor_config["class_names"] = class_names
@@ -102,18 +106,36 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                 return False
 
             task_context["available_gpu_id"] = gpu_ids
-            executor_config['gpu_id'] = ','.join([str(i) for i in range(gpu_count)])
+            executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
         else:
             task_context["available_gpu_id"] = ''
-            executor_config['gpu_id'] = ''
+            executor_config["gpu_id"] = ""
 
         if task_parameters:
-            task_context['task_parameters'] = task_parameters
+            task_context["task_parameters"] = task_parameters
 
-        config = {'executor_config': executor_config, 'task_context': task_context}
+        if bool(strtobool(executor_config.get("openpai_enable", "False"))):
+            logging.info(f"Openpai_config: {openpai_config}")
+
+            task_context["openpai_enable"] = True
+            openpai_host = openpai_config.get("openpai_host", None)
+            openpai_token = openpai_config.get("openpai_token", None)
+            openpai_storage = openpai_config.get("openpai_storage", None)
+            if not openpai_host or not openpai_token or not openpai_storage:
+                raise errors.MirCtrError(
+                    CTLResponseCode.INVOKER_INVALID_ARGS,
+                    (f"openpai enabled, but invalid openpai_host: {openpai_host} "
+                     "or token: {openpai_token} or storage: {openpai_storage}"),
+                )
+            task_context["openpai_host"] = openpai_host
+            task_context["openpai_token"] = openpai_token
+            task_context["openpai_storage"] = openpai_storage
 
         with open(output_config_file, "w") as f:
-            yaml.dump(config, f)
+            yaml.safe_dump(dict(
+                executor_config=executor_config,
+                task_context=task_context,
+            ), f)
 
         return True
 

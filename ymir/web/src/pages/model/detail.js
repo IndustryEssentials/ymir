@@ -83,9 +83,9 @@ function ModelDetail({ modelCache, getModel }) {
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>{!model.hidden ? <>
             {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
             <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/task/inference/${model.projectId}?mid=${id}`)}>{t('dataset.action.inference')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/mining?mid=${id}`)}>{t('dataset.action.mining')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${id}`)}>{t('dataset.action.inference')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${id}`)}>{t('dataset.action.train')}</Button>
             <Button type='primary' onClick={() => hide(model)}>{t('common.action.hide')}</Button>
           </> :
             <Button type="primary" onClick={restore}>

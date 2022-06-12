@@ -29,9 +29,9 @@ function Hidden() {
       <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={active} onTabChange={tabChange}
         className='noShadow'
         bordered={false}
-        style={{ margin: '-20px -5vw 0', background: 'transparent' }}
-        headStyle={{ padding: '0 5vw', background: '#fff', marginBottom: '20px' }}
-        bodyStyle={{ padding: '0 5vw' }}>
+        style={{ margin: '-20px -20px 0', background: 'transparent' }}
+        headStyle={{ padding: '0 20px', background: '#fff', marginBottom: '20px' }}
+        bodyStyle={{ padding: '0 20px' }}>
         <HiddenList module={active} pid={id} />
       </Card>
     </div>
