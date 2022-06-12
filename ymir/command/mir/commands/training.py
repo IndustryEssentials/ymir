@@ -408,13 +408,13 @@ class CmdTrain(base.BaseCommand):
                     tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
         # gen task_context
-        task_context = {
+        task_context = task_config.update({
             'src_revs': src_revs,
             'dst_rev': dst_rev,
             'executor': executor,
             mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
             mir_settings.TASK_CONTEXT_PARAMETERS_KEY: task_parameters
-        }
+        })
 
         # save model
         logging.info("saving models")
