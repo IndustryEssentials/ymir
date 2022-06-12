@@ -1,12 +1,14 @@
 import argparse
+from functools import partial
 import logging
 import os
 import time
 import subprocess
 from subprocess import CalledProcessError
+import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import traceback
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from tensorboardX import SummaryWriter
 import yaml
@@ -454,22 +456,31 @@ class CmdTrain(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _execute_training(work_dir: str, work_dir_in: str, work_dir_out: str, asset_dir: str, tensorboard_dir: str,
-                      executor: str, executant_name: str, executor_config: Dict, available_gpu_id: str,
+def _execute_training(work_dir: str,
+                      work_dir_in: str,
+                      work_dir_out: str,
+                      asset_dir: str,
+                      tensorboard_dir: str,
+                      executor: str,
+                      executant_name: str,
+                      executor_config: Dict,
+                      available_gpu_id: str,
                       openpai_config: Dict = {}) -> None:
     if openpai_config.get("openpai_enable", False):
         logging.info("Run training task on OpenPai.")
         try:
-            _execute_in_openpai(work_dir=work_dir,
-                                work_dir_in=work_dir_in,
-                                work_dir_out=work_dir_out,
-                                asset_dir=asset_dir,
-                                tensorboard_dir=tensorboard_dir,
-                                executor=executor,
-                                executant_name=executant_name,
-                                executor_config=executor_config,
-                                available_gpu_id=available_gpu_id,
-                                openpai_config=openpai_config,)
+            _execute_in_openpai(
+                work_dir=work_dir,
+                work_dir_in=work_dir_in,
+                work_dir_out=work_dir_out,
+                asset_dir=asset_dir,
+                tensorboard_dir=tensorboard_dir,
+                executor=executor,
+                executant_name=executant_name,
+                executor_config=executor_config,
+                available_gpu_id=available_gpu_id,
+                openpai_config=openpai_config,
+            )
         except (ConnectionError, HTTPError, Timeout):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_OPENPAI_ERROR, error_message='OpenPai Error')
     else:
@@ -487,20 +498,113 @@ def _execute_training(work_dir: str, work_dir_in: str, work_dir_out: str, asset_
         )
 
 
-def _execute_in_openpai(work_dir: str, work_dir_in: str, work_dir_out: str, asset_dir: str, tensorboard_dir: str,
-                        executor: str, executant_name: str, executor_config: Dict, available_gpu_id: str,
-                        openpai_config: Dict) -> None:
-    _execute_locally(
-        work_dir=work_dir,
-        work_dir_in=work_dir_in,
-        work_dir_out=work_dir_out,
-        asset_dir=asset_dir,
-        tensorboard_dir=tensorboard_dir,
-        executor=executor,
-        executant_name=executant_name,
-        executor_config=executor_config,
-        available_gpu_id=available_gpu_id,
-    )
+def is_job_finished(session: requests.Session, host: str, openpai_token: str, executant_name) -> bool:
+    headers = {"Authorization": f"Bearer {openpai_token}"}
+    # last part of api route is `username~job_name`
+    # ymir has a special user in OpenPAI system, `ymir`
+    resp = session.get(f"{host}/rest-server/api/v2/jobs/ymir~{executant_name}", headers=headers)
+    if not resp.ok:
+        resp.raise_for_status()
+    progress = resp.json()["jobStatus"]["appProgress"]
+    return progress == 1
+
+
+def _execute_in_openpai(
+    work_dir: str,
+    work_dir_in: str,
+    work_dir_out: str,
+    asset_dir: str,
+    tensorboard_dir: str,
+    executor: str,
+    executant_name: str,
+    executor_config: Dict,
+    available_gpu_id: str,
+    openpai_config: Dict,
+    res_cpu=15,
+    res_memory_in_mb=30965,
+) -> None:
+    gpu_count = len(available_gpu_id.split(",")) if available_gpu_id else 1
+
+    openpai_host = openpai_config["openpai_host"]
+    openpai_token = openpai_config["openpai_token"]
+    openpai_storage = openpai_config["openpai_storage"]
+
+    with requests.Session() as session:
+        headers = {"Authorization": f"Bearer {openpai_token}", "Content-Type": "text/plain"}
+        payload = {
+            "protocolVersion": 2,
+            "name": executant_name,
+            "type": "job",
+            "jobRetryCount": 0,
+            "prerequisites": [{
+                "type": "dockerimage",
+                "uri": executor,
+                "name": "docker_image_0"
+            }],
+            "taskRoles": {
+                "taskrole": {
+                    "instances": 1,
+                    "completion": {
+                        "minFailedInstances": 1
+                    },
+                    "taskRetryCount": 0,
+                    "dockerImage": "docker_image_0",
+                    "resourcePerInstance": {
+                        "gpu": gpu_count,
+                        "cpu": res_cpu,
+                        "memoryMB": res_memory_in_mb
+                    },
+                    "commands": [
+                        "ls -l /mnt",
+                    ],
+                }
+            },
+            "defaults": {
+                "virtualCluster": "default"
+            },
+            "extras": {
+                "com.microsoft.pai.runtimeplugin": [
+                    {
+                        "plugin": "teamwise_storage",
+                        "parameters": {
+                            "storageConfigNames": [openpai_storage]
+                        },
+                    },
+                ],
+                "hivedScheduler": {
+                    "taskRoles": {
+                        "taskrole": {
+                            "skuNum": 1,
+                            "skuType": "gpu-machine"
+                        }
+                    }
+                },
+            },
+        }
+        resp = session.post(f"{openpai_host}/rest-server/api/v2/jobs", data=yaml.safe_dump(payload), headers=headers)
+        if not resp.ok:
+            resp.raise_for_status()
+
+        logging.info("[openpai] job submitted")
+        finished = False
+        while not finished:
+            checker = partial(is_job_finished, session, openpai_host, openpai_token, executant_name)
+            # if we cannot get job status after 3 attempts, give up and raise error
+            finished = retry(checker)
+            time.sleep(1)
+        logging.info("[openpai] job done")
+        return
+
+
+def retry(func: Callable, n_times: int = 3, wait: float = 1) -> Any:
+    for i in range(n_times - 1):
+        try:
+            return func()
+        except Exception:
+            if wait > 0:
+                time.sleep(wait)
+    logging.error(f"Failed after {n_times} {func} attempts")
+    return func()
 
 
 def _execute_locally(
