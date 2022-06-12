@@ -224,14 +224,30 @@ class CmdTrain(base.BaseCommand):
         task_id = dst_typ_rev_tid.tid
         if not executant_name:
             executant_name = f"default-training-{task_id}"
+
+        # setting up paths.
+        os.makedirs(work_dir, exist_ok=True)
+
+        work_dir_in = os.path.join(work_dir, "in")
+        asset_dir = asset_cache_dir or os.path.join(work_dir_in, 'assets')
+        os.makedirs(asset_dir, exist_ok=True)
+        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
+        os.makedirs(work_dir_annotations, exist_ok=True)
+
+        work_dir_out = os.path.join(work_dir, "out")
+        os.makedirs(work_dir_out, exist_ok=True)
+        out_model_dir = os.path.join(work_dir_out, 'models')
+        os.makedirs(out_model_dir, exist_ok=True)
         if not tensorboard_dir:
-            tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
-        asset_dir = asset_cache_dir or os.path.join(work_dir, 'in', 'assets')
+            tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
+        os.makedirs(tensorboard_dir, exist_ok=True)
+        os.system(f"chmod -R 777 {work_dir_out}")
+
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
                                                             model_hash=pretrained_model_hash,
-                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'))
+                                                            dst_model_dir=os.path.join(work_dir_in, 'models'))
 
         # get train_ids and val_ids
         train_ids = set()  # type: Set[str]
@@ -261,20 +277,6 @@ class CmdTrain(base.BaseCommand):
 
         # export
         logging.info("exporting assets")
-
-        os.makedirs(work_dir, exist_ok=True)
-
-        work_dir_in = os.path.join(work_dir, "in")
-        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
-        os.makedirs(work_dir_annotations, exist_ok=True)
-
-        work_dir_out = os.path.join(work_dir, "out")
-        os.makedirs(work_dir_out, exist_ok=True)
-        out_model_dir = os.path.join(work_dir, 'out', 'models')
-        os.makedirs(out_model_dir, exist_ok=True)
-
-        os.makedirs(asset_dir, exist_ok=True)
-        os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
@@ -414,7 +416,8 @@ class CmdTrain(base.BaseCommand):
                     tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
         # gen task_context
-        task_context = task_config.update({
+        task_context = task_config
+        task_context.update({
             'src_revs': src_revs,
             'dst_rev': dst_rev,
             'executor': executor,
@@ -423,7 +426,7 @@ class CmdTrain(base.BaseCommand):
         })
 
         # save model
-        logging.info("saving models")
+        logging.info(f"saving models:\n task_context: {task_context}")
         model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
                                                        model_upload_location=model_upload_location,
                                                        executor_config=executor_config,
@@ -558,7 +561,9 @@ def _execute_in_openpai(
                         "memoryMB": res_memory_in_mb
                     },
                     "commands": [
-                        "ls -l /mnt",
+                        f"ln -s {work_dir_in} /in",
+                        f"ln -s {work_dir_out} /out",
+                        "python /app/start.py",
                     ],
                 }
             },

@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   backend:
-    image: industryessentials/ymir-backend
+    image: industryessentials/ymir-backend:xhuang
     env_file:
       - .env
     runtime: ${SERVER_RUNTIME}
@@ -74,7 +74,7 @@ services:
       - ymirnetwork
 
   web:
-    image: industryessentials/ymir-web
+    image: industryessentials/ymir-web:xhuang
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
