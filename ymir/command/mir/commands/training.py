@@ -227,6 +227,8 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(work_dir, exist_ok=True)
 
         work_dir_in = os.path.join(work_dir, "in")
+        os.makedirs(work_dir_in, exist_ok=True)
+
         # assets folder, fixed location at work_dir_in/assets.
         asset_dir = os.path.join(work_dir_in, 'assets')
         if asset_cache_dir:
