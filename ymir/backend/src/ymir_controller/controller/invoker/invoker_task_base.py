@@ -120,13 +120,16 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             task_context["openpai_enable"] = True
             openpai_host = openpai_config.get("openpai_host", None)
             openpai_token = openpai_config.get("openpai_token", None)
-            if not openpai_host or not openpai_token:
+            openpai_storage = openpai_config.get("openpai_storage", None)
+            if not openpai_host or not openpai_token or not openpai_storage:
                 raise errors.MirCtrError(
                     CTLResponseCode.INVOKER_INVALID_ARGS,
-                    f"openpai enabled, but invalid openpai_host: {openpai_host} or token: {openpai_token}",
+                    (f"openpai enabled, but invalid openpai_host: {openpai_host} "
+                     "or token: {openpai_token} or storage: {openpai_storage}"),
                 )
             task_context["openpai_host"] = openpai_host
             task_context["openpai_token"] = openpai_token
+            task_context["openpai_storage"] = openpai_storage
 
         with open(output_config_file, "w") as f:
             yaml.safe_dump(dict(

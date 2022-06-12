@@ -28,6 +28,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             openpai_config=dict(
                 openpai_host=assets_config["openpai_host"],
                 openpai_token=assets_config["openpai_token"],
+                openpai_storage=assets_config["openpai_storage"],
             ),
         )
         if not gpu_lock_ret:
