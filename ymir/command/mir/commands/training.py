@@ -1,5 +1,4 @@
 import argparse
-from functools import partial
 import logging
 import os
 import time
@@ -8,7 +7,7 @@ from subprocess import CalledProcessError
 import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from tensorboardX import SummaryWriter
 import yaml
@@ -243,7 +242,6 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(tensorboard_dir, exist_ok=True)
         os.system(f"chmod -R 777 {work_dir_out}")
 
-
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
                                                             model_hash=pretrained_model_hash,
@@ -474,7 +472,6 @@ def _execute_training(work_dir: str,
         logging.info("Run training task on OpenPai.")
         try:
             _execute_in_openpai(
-                work_dir=work_dir,
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
                 asset_dir=asset_dir,
@@ -490,7 +487,6 @@ def _execute_training(work_dir: str,
     else:
         logging.info("Run training task on locally.")
         _execute_locally(
-            work_dir=work_dir,
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
             asset_dir=asset_dir,
@@ -502,20 +498,7 @@ def _execute_training(work_dir: str,
         )
 
 
-def is_job_finished(session: requests.Session, host: str, openpai_user: str, openpai_token: str,
-                    executant_name: str) -> bool:
-    headers = {"Authorization": f"Bearer {openpai_token}"}
-    # last part of api route is `username~job_name`
-    # ymir has a special user in OpenPAI system, `ymir`
-    resp = session.get(f"{host}/rest-server/api/v2/jobs/{openpai_user}~{executant_name}", headers=headers)
-    if not resp.ok:
-        resp.raise_for_status()
-    progress = resp.json()["jobStatus"]["appProgress"]
-    return progress == 1
-
-
 def _execute_in_openpai(
-    work_dir: str,
     work_dir_in: str,
     work_dir_out: str,
     asset_dir: str,
@@ -533,7 +516,6 @@ def _execute_in_openpai(
     openpai_host = openpai_config["openpai_host"]
     openpai_token = openpai_config["openpai_token"]
     openpai_storage = openpai_config["openpai_storage"]
-    openpai_user = openpai_config["openpai_user"]
 
     with requests.Session() as session:
         headers = {"Authorization": f"Bearer {openpai_token}", "Content-Type": "text/plain"}
@@ -549,12 +531,15 @@ def _execute_in_openpai(
             }],
             "taskRoles": {
                 "taskrole": {
-                    "instances": 1,
+                    "instances":
+                    1,
                     "completion": {
                         "minFailedInstances": 1
                     },
-                    "taskRetryCount": 0,
-                    "dockerImage": "docker_image_0",
+                    "taskRetryCount":
+                    0,
+                    "dockerImage":
+                    "docker_image_0",
                     "resourcePerInstance": {
                         "gpu": gpu_count,
                         "cpu": res_cpu,
@@ -562,6 +547,7 @@ def _execute_in_openpai(
                     },
                     "commands": [
                         f"ln -s {work_dir_in} /in",
+                        f"ln -s {asset_dir} /in/assets",
                         f"ln -s {work_dir_out} /out",
                         "python /app/start.py",
                     ],
@@ -594,29 +580,10 @@ def _execute_in_openpai(
             resp.raise_for_status()
 
         logging.info("[openpai] job submitted")
-        finished = False
-        while not finished:
-            checker = partial(is_job_finished, session, openpai_host, openpai_user, openpai_token, executant_name)
-            # if we cannot get job status after 3 attempts, give up and raise error
-            finished = retry(checker)
-            time.sleep(1)
-        logging.info("[openpai] job done")
         return
 
 
-def retry(func: Callable, n_times: int = 3, wait: float = 1) -> Any:
-    for i in range(n_times - 1):
-        try:
-            return func()
-        except Exception:
-            if wait > 0:
-                time.sleep(wait)
-    logging.error(f"Failed after {n_times} {func} attempts")
-    return func()
-
-
 def _execute_locally(
-    work_dir: str,
     work_dir_in: str,
     work_dir_out: str,
     asset_dir: str,
