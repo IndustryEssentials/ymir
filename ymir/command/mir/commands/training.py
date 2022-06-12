@@ -547,7 +547,6 @@ def _execute_in_openpai(
                     },
                     "commands": [
                         f"ln -s {work_dir_in} /in",
-                        f"ln -s {asset_dir} /in/assets",
                         f"ln -s {work_dir_out} /out",
                         "python /app/start.py",
                     ],
