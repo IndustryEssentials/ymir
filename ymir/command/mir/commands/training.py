@@ -174,7 +174,7 @@ class CmdTrain(base.BaseCommand):
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
-                      tensorboard_dir_ext: str,
+                      tensorboard_dir: str,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
         if not model_upload_location:
@@ -239,14 +239,19 @@ class CmdTrain(base.BaseCommand):
 
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_out, exist_ok=True)
+
+        # Build tensorbaord folder, fixed location at work_dir_out/tensorboard
+        tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
+        if tensorboard_dir:
+            if tensorboard_dir != tensorboard_dir_local:
+                os.link(tensorboard_dir, tensorboard_dir_local)
+        else:
+            os.makedirs(tensorboard_dir_local, exist_ok=True)
+        tensorboard_dir = tensorboard_dir_local
+
         out_model_dir = os.path.join(work_dir_out, 'models')
         os.makedirs(out_model_dir, exist_ok=True)
-        tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
-        if tensorboard_dir_ext:
-            if tensorboard_dir != tensorboard_dir_ext:
-                os.link(tensorboard_dir_ext, tensorboard_dir)
-        else:
-            os.makedirs(tensorboard_dir, exist_ok=True)
+
         os.system(f"chmod -R 777 {work_dir_out}")
 
         # if have model_hash, export model
