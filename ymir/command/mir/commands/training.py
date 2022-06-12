@@ -383,6 +383,7 @@ class CmdTrain(base.BaseCommand):
             openpai_host=task_config.get("openpai_host", ""),
             openpai_token=task_config.get("openpai_token", ""),
             openpai_storage=task_config.get("openpai_storage", ""),
+            openpai_user=task_config.get("openpai_user", ""),
         )
         task_code = MirCode.RC_OK
         return_msg = ''
@@ -454,22 +455,31 @@ class CmdTrain(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _execute_training(work_dir: str, work_dir_in: str, work_dir_out: str, asset_dir: str, tensorboard_dir: str,
-                      executor: str, executant_name: str, executor_config: Dict, available_gpu_id: str,
+def _execute_training(work_dir: str,
+                      work_dir_in: str,
+                      work_dir_out: str,
+                      asset_dir: str,
+                      tensorboard_dir: str,
+                      executor: str,
+                      executant_name: str,
+                      executor_config: Dict,
+                      available_gpu_id: str,
                       openpai_config: Dict = {}) -> None:
     if openpai_config.get("openpai_enable", False):
         logging.info("Run training task on OpenPai.")
         try:
-            _execute_in_openpai(work_dir=work_dir,
-                                work_dir_in=work_dir_in,
-                                work_dir_out=work_dir_out,
-                                asset_dir=asset_dir,
-                                tensorboard_dir=tensorboard_dir,
-                                executor=executor,
-                                executant_name=executant_name,
-                                executor_config=executor_config,
-                                available_gpu_id=available_gpu_id,
-                                openpai_config=openpai_config,)
+            _execute_in_openpai(
+                work_dir=work_dir,
+                work_dir_in=work_dir_in,
+                work_dir_out=work_dir_out,
+                asset_dir=asset_dir,
+                tensorboard_dir=tensorboard_dir,
+                executor=executor,
+                executant_name=executant_name,
+                executor_config=executor_config,
+                available_gpu_id=available_gpu_id,
+                openpai_config=openpai_config,
+            )
         except (ConnectionError, HTTPError, Timeout):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_OPENPAI_ERROR, error_message='OpenPai Error')
     else:

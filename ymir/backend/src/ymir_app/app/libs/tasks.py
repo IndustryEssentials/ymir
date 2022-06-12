@@ -343,24 +343,26 @@ class TaskResult:
             logger.error("[update task] task result record not found, skip")
             return
 
-        if self.result_type is ResultType.model and self.model_info:
+        model_info = self.model_info
+        logger.info(f"[viz_model] model_info: {model_info}")
+        if self.result_type is ResultType.model and model_info:
             # special path for model
             # as long as we can get model_info, set model as ready and
             # save related task parameters and config accordingly
             crud.task.update_parameters_and_config(
                 self.db,
                 task=task_in_db,
-                parameters=self.model_info.task_parameters,
-                config=json.dumps(self.model_info.executor_config),
+                parameters=model_info.task_parameters,
+                config=json.dumps(model_info.executor_config),
             )
-            crud.model.finish(self.db, result_record.id, result_state=ResultState.ready, result=asdict(self.model_info))
+            crud.model.finish(self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info))
             try:
-                self.save_model_stats(self.model_info)
+                self.save_model_stats(model_info)
             except FailedToConnectClickHouse:
                 logger.exception("Failed to write model stats to clickhouse, continue anyway")
             return
 
-        if task_result.state is TaskState.done:
+        if task_result.state is TaskState.done and self.result_info:
             crud_func.finish(
                 self.db,
                 result_record.id,

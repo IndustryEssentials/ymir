@@ -13,6 +13,7 @@ ASSETS:
   openpai_host: ${OPENPAI_HOST}
   openpai_token: ${OPENPAI_TOKEN}
   openpai_storage: ${OPENPAI_STORAGE}
+  openpai_user: ${OPENPAI_USER}
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
