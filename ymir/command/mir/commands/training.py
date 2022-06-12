@@ -400,6 +400,7 @@ class CmdTrain(base.BaseCommand):
                 executor_config=executor_config,
                 available_gpu_id=available_gpu_id,
                 openpai_config=openpai_config,
+                run_as_root=run_as_root,
             )
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
@@ -457,8 +458,8 @@ class CmdTrain(base.BaseCommand):
 
 
 def _execute_training(work_dir: str, work_dir_in: str, work_dir_out: str, asset_dir: str, tensorboard_dir: str,
-                      executor: str, executant_name: str, executor_config: Dict, available_gpu_id: str,
-                      openpai_config: Dict = {}) -> None:
+                      executor: str, executant_name: str, run_as_root: bool, executor_config: Dict,
+                      available_gpu_id: str, openpai_config: Dict = {}) -> None:
     if openpai_config.get("openpai_enable", False):
         logging.info("Run training task on OpenPai.")
         try:
@@ -486,6 +487,7 @@ def _execute_training(work_dir: str, work_dir_in: str, work_dir_out: str, asset_
             executant_name=executant_name,
             executor_config=executor_config,
             available_gpu_id=available_gpu_id,
+            run_as_root=run_as_root,
         )
 
 
@@ -515,6 +517,7 @@ def _execute_locally(
     executant_name: str,
     executor_config: Dict,
     available_gpu_id: str,
+    run_as_root: bool = False,
 ) -> None:
     # start train docker and wait
     path_binds = []
@@ -530,7 +533,8 @@ def _execute_locally(
     cmd.extend(path_binds)
     if available_gpu_id:
         cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-    cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+    if not run_as_root:
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
     cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
     cmd.append(executor)
 
