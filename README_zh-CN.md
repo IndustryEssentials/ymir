@@ -916,7 +916,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 尚未在Windows服务器完备测试，暂时无法提供服务支持。
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/All%20Contributors-9-brightgreen)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 <a href="https://github.com/phoenix-xhuang"><img src="https://avatars.githubusercontent.com/u/89957974?v=4" class="avatar-user" width="18px;"/></a>
@@ -927,3 +927,4 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 <a href="https://github.com/under-chaos"><img src="https://avatars.githubusercontent.com/u/90446262?v=4" class="avatar-user" width="18px;"/></a>
 <a href="https://github.com/Zhang-SJ930104"><img src="https://avatars.githubusercontent.com/u/91466580?v=4" class="avatar-user" width="18px;"/></a>
 <a href="https://github.com/LuciferZap"><img src="https://avatars.githubusercontent.com/u/92283801?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/yzbx"><img src="https://avatars.githubusercontent.com/u/5005182?v=4" class="avatar-user" width="18px;"/></a>
