@@ -153,18 +153,17 @@ message MirKeywords {
     KeywordToIndex pred_idx = 7;
     KeywordToIndex gt_idx = 8;
 
+    // key: ck main key, value: assets and assets with sub keys
+    map<string, AssetAnnoIndex> ck_idx = 9;
+
     reserved 2, 3, 4, 5;
 };
 
 message KeywordToIndex {
-    // key: ci, value: assets
-    map<int32, AssetAnnoIndex> asset_cis = 1;
-    // key: ck main key, value: assets and assets with sub keys
-    map<string, AssetAnnoIndex> asset_cks = 2;
     // key: ci, value: annos
-    map<int32, AssetAnnoIndex> anno_cis = 3;
+    map<int32, MapStringToInt32List> cis = 1;
     // key: ck main key, value: annos and annos with sub keys
-    map<string, AssetAnnoIndex> anno_cks = 4;
+    map<string, AssetAnnoIndex> tags = 2;
 };
 
 message StringList {
@@ -172,16 +171,11 @@ message StringList {
 };
 
 message MapStringToInt32List {
-    map<string, Int32List> key_ids = 1; 
+    map<string, Int32List> key_ids = 1;
 };
 
 message Int32List {
     repeated int32 ids = 1;
-}
-
-message AssetAnnoPair {
-    string asset_id = 1;
-    int32 anno_idx = 2;
 }
 
 message Keywords {
@@ -190,8 +184,8 @@ message Keywords {
 };
 
 message AssetAnnoIndex {
-    map<string, Int32List> asset_annos = 1;
-    map<string, MapStringToInt32List> sub_indexes = 2;
+    map<string, Int32List> asset_annos = 1;  // key: asset id, value: annotation indexes
+    map<string, MapStringToInt32List> sub_indexes = 2;  // key: ck value, value: asset and it's annotation indexes
 };
 
 /// ========== tasks.mir ==========

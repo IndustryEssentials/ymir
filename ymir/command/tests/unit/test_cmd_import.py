@@ -103,8 +103,29 @@ class TestCmdImport(unittest.TestCase):
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
             mir_annotations.ParseFromString(f.read())
         dict_annotations = MessageToDict(mir_annotations, preserving_proto_field_name=True)
+        dict_asset_cks = dict_annotations.get('image_cks', {})
+
         task_id = list(dict_annotations['task_annotations'].keys())[0]
         dict_annotations = dict_annotations['task_annotations'][task_id]
+
+        dict_asset_cks_expected = {
+            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                'cks': {
+                    'weather': 'rainy',
+                    'camera': 'camera 1',
+                    'theme': 'gray sky'
+                },
+                'image_quality': 0.83
+            },
+            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                'cks': {
+                    'camera': 'camera 0',
+                    'theme': 'blue sky',
+                    'weather': 'sunny'
+                },
+                'image_quality': 0.95
+            }
+        } if with_annotations else {}
         if with_person_ignored:
             dict_annotations_expect = {
                 'image_annotations': {
@@ -118,7 +139,13 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 2.0,
-                        }]
+                            'tags': {
+                                'difficult': '0',
+                                'color': 'pink',
+                                'pose': 'Unspecified'
+                            },
+                            'anno_quality': 0.75,
+                        }],
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'annotations': [{
@@ -130,6 +157,12 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 0.5,
+                            'tags': {
+                                'difficult': '0',
+                                'color': 'white',
+                                'pose': 'Frontal'
+                            },
+                            'anno_quality': 0.62,
                         }, {
                             'index': 1,
                             'box': {
@@ -140,7 +173,13 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 2.0,
-                        }]
+                            'tags': {
+                                'difficult': '0',
+                                'color': 'blue',
+                                'pose': 'Left'
+                            },
+                            'anno_quality': 0.75,
+                        }],
                     }
                 }
             }
@@ -157,6 +196,12 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 2.0,
+                            'anno_quality': 0.75,
+                            'tags': {
+                                'difficult': '0',
+                                'pose': 'Unspecified',
+                                'color': 'pink'
+                            }
                         }]
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
@@ -169,6 +214,12 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 0.5,
+                            'anno_quality': 0.62,
+                            'tags': {
+                                'color': 'white',
+                                'pose': 'Frontal',
+                                'difficult': '0'
+                            }
                         }, {
                             'index': 1,
                             'box': {
@@ -179,6 +230,12 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 1,
                             'score': 2.0,
+                            'anno_quality': 0.75,
+                            'tags': {
+                                'difficult': '0',
+                                'pose': 'Left',
+                                'color': 'blue'
+                            }
                         }, {
                             'index': 2,
                             'box': {
@@ -189,6 +246,11 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 2,
                             'score': 2.0,
+                            'anno_quality': 0.23,
+                            'tags': {
+                                'difficult': '1',
+                                'pose': 'Rear'
+                            }
                         }, {
                             'index': 3,
                             'box': {
@@ -199,6 +261,11 @@ class TestCmdImport(unittest.TestCase):
                             },
                             'class_id': 2,
                             'score': 2.0,
+                            'anno_quality': 0.35,
+                            'tags': {
+                                'difficult': '1',
+                                'pose': 'Rear'
+                            }
                         }]
                     }
                 }
@@ -206,39 +273,201 @@ class TestCmdImport(unittest.TestCase):
         if not with_annotations:
             dict_annotations_expect = {}
         self.assertDictEqual(dict_annotations_expect, dict_annotations)
+        self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
 
         # check keywords.mir and contexts.mir
         mir_keywords = mirpb.MirKeywords()
         mir_context = mirpb.MirContext()
         with open(os.path.join(repo_root, 'keywords.mir'), 'rb') as f:
             mir_keywords.ParseFromString(f.read())
+            # sort asset-anno pairs before compare, they don't have orders when save
+            # for _, ci_to_assets in mir_keywords.pred_idx.asset_cis.items():
+            #     ci_to_assets.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
+            # for _, ci_to_annos in mir_keywords.pred_idx.anno_cis.items():
+            #     ci_to_annos.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
+            # for _, ck_to_assets in mir_keywords.pred_idx.asset_cks.items():
+            #     ck_to_assets.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
+            #     for _, sub_ck_to_assets in ck_to_assets.sub_indexes.items():
+            #         sub_ck_to_assets.pairs.sort(key=lambda x: (x.asset_id, x.anno_idx))
+            # for _, ck_to_annos in mir_keywords.pred_idx.anno_cks.items():
+            #     ck_to_annos.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
+            #     for _, sub_ck_to_annos in ck_to_annos.sub_indexes.items():
+            #         sub_ck_to_annos.pairs.sort(key=lambda x: (x.asset_id, x.anno_idx))
         with open(os.path.join(repo_root, 'context.mir'), 'rb') as f:
             mir_context.ParseFromString(f.read())
         dict_keywords = MessageToDict(mir_keywords, preserving_proto_field_name=True)
         dict_context = MessageToDict(mir_context, preserving_proto_field_name=True, including_default_value_fields=True)
         if with_annotations:
-            dup_asset_id = '430df22960b0f369318705800139fcc8ec38a3e4'
-            dict_keywords['keywords'][dup_asset_id]['predefined_keyids'] = sorted(
-                dict_keywords['keywords'][dup_asset_id]['predefined_keyids'])  # list is unsorted
-            dup_keywords_id = 1
-            dict_keywords['index_predefined_keyids'][dup_keywords_id]['asset_ids'] = sorted(
-                dict_keywords['index_predefined_keyids'][dup_keywords_id]['asset_ids'])
             if with_person_ignored:
                 dict_keywords_expect = {
                     'keywords': {
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1],
+                            'predefined_keyids': [1]
                         },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1],
+                            'predefined_keyids': [1]
                         }
                     },
-                    'index_predefined_keyids': {
-                        1: {
-                            'asset_ids':
-                            ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
+                    'pred_idx': {
+                        'cis': {
+                            1: {
+                                'key_ids': {
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1]
+                                    },
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    }
+                                }
+                            }
+                        },
+                        'tags': {
+                            'pose': {
+                                'asset_annos': {
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    },
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1]
+                                    }
+                                },
+                                'sub_indexes': {
+                                    'Left': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [1]
+                                            }
+                                        }
+                                    },
+                                    'Unspecified': {
+                                        'key_ids': {
+                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    },
+                                    'Frontal': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            'difficult': {
+                                'asset_annos': {
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    },
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1]
+                                    }
+                                },
+                                'sub_indexes': {
+                                    '0': {
+                                        'key_ids': {
+                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                                'ids': [0]
+                                            },
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [0, 1]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            'color': {
+                                'asset_annos': {
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    },
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1]
+                                    }
+                                },
+                                'sub_indexes': {
+                                    'blue': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [1]
+                                            }
+                                        }
+                                    },
+                                    'pink': {
+                                        'key_ids': {
+                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    },
+                                    'white': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
+                    'ck_idx': {
+                        'theme': {
+                            'asset_annos': {
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {},
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                            },
+                            'sub_indexes': {
+                                'blue sky': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                                    }
+                                },
+                                'gray sky': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                                    }
+                                }
+                            }
+                        },
+                        'weather': {
+                            'asset_annos': {
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {},
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                            },
+                            'sub_indexes': {
+                                'sunny': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                                    }
+                                },
+                                'rainy': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                                    }
+                                }
+                            }
+                        },
+                        'camera': {
+                            'asset_annos': {
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {},
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                            },
+                            'sub_indexes': {
+                                'camera 1': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                                    }
+                                },
+                                'camera 0': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
@@ -248,31 +477,282 @@ class TestCmdImport(unittest.TestCase):
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
-                    'cks_cnt': {},
-                    'tags_cnt': {},
-                    'asset_quality_hist': {},
-                    'anno_quality_hist': {},
-                    'anno_area_hist': {}
+                    'cks_cnt': {
+                        'weather': {
+                            'cnt': 2,
+                            'sub_cnt': {
+                                'sunny': 1,
+                                'rainy': 1,
+                            },
+                        },
+                        'camera': {
+                            'cnt': 2,
+                            'sub_cnt': {
+                                'camera 0': 1,
+                                'camera 1': 1,
+                            },
+                        },
+                        'theme': {
+                            'cnt': 2,
+                            'sub_cnt': {
+                                'blue sky': 1,
+                                'gray sky': 1,
+                            },
+                        }
+                    },
+                    'tags_cnt': {
+                        'difficult': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                '0': 3,
+                            },
+                        },
+                        'color': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'white': 1,
+                                'blue': 1,
+                                'pink': 1,
+                            },
+                        },
+                        'pose': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'Left': 1,
+                                'Frontal': 1,
+                                'Unspecified': 1,
+                            },
+                        },
+                    },
+                    'asset_quality_hist': {
+                        '1.00': 0,
+                        '0.90': 1,
+                        '0.80': 1,
+                        '0.70': 0,
+                        '0.60': 0,
+                        '0.50': 0,
+                        '0.40': 0,
+                        '0.30': 0,
+                        '0.20': 0,
+                        '0.10': 0,
+                        '0.00': 0,
+                    },
+                    'anno_quality_hist': {
+                        '1.00': 0,
+                        '0.90': 0,
+                        '0.80': 0,
+                        '0.70': 2,
+                        '0.60': 1,
+                        '0.50': 0,
+                        '0.40': 0,
+                        '0.30': 0,
+                        '0.20': 0,
+                        '0.10': 0,
+                        '0.00': 0,
+                    },
+                    'anno_area_hist': {
+                        200000: 0,
+                        100000: 0,
+                        50000: 0,
+                        10000: 1,
+                        5000: 1,
+                        2500: 0,
+                        500: 1,
+                        50: 0,
+                        0: 0,
+                    },
                 }
             else:
                 dict_keywords_expect = {
                     'keywords': {
-                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1],
-                        },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1, 2],
-                        }
-                    },
-                    'index_predefined_keyids': {
-                        2: {
-                            'asset_ids': ['430df22960b0f369318705800139fcc8ec38a3e4']
+                            'predefined_keyids': [1, 2]
                         },
-                        1: {
-                            'asset_ids':
-                            ['430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f']
+                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                            'predefined_keyids': [1]
                         }
                     },
+                    'pred_idx': {
+                        'cis': {
+                            2: {
+                                'key_ids': {
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [2, 3]
+                                    }
+                                }
+                            },
+                            1: {
+                                'key_ids': {
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    },
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1]
+                                    }
+                                }
+                            }
+                        },
+                        'tags': {
+                            'color': {
+                                'asset_annos': {
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1]
+                                    },
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    }
+                                },
+                                'sub_indexes': {
+                                    'pink': {
+                                        'key_ids': {
+                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    },
+                                    'white': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    },
+                                    'blue': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [1]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            'pose': {
+                                'asset_annos': {
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1, 2, 3]
+                                    },
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    }
+                                },
+                                'sub_indexes': {
+                                    'Frontal': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    },
+                                    'Unspecified': {
+                                        'key_ids': {
+                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                                'ids': [0]
+                                            }
+                                        }
+                                    },
+                                    'Left': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [1]
+                                            }
+                                        }
+                                    },
+                                    'Rear': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [2, 3]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            'difficult': {
+                                'asset_annos': {
+                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                        'ids': [0]
+                                    },
+                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                        'ids': [0, 1, 2, 3]
+                                    }
+                                },
+                                'sub_indexes': {
+                                    '1': {
+                                        'key_ids': {
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [2, 3]
+                                            }
+                                        }
+                                    },
+                                    '0': {
+                                        'key_ids': {
+                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                                'ids': [0]
+                                            },
+                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                                'ids': [0, 1]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'ck_idx': {
+                        'camera': {
+                            'asset_annos': {
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {},
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                            },
+                            'sub_indexes': {
+                                'camera 1': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                                    }
+                                },
+                                'camera 0': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                                    }
+                                }
+                            }
+                        },
+                        'weather': {
+                            'asset_annos': {
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {},
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                            },
+                            'sub_indexes': {
+                                'rainy': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                                    }
+                                },
+                                'sunny': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                                    }
+                                }
+                            }
+                        },
+                        'theme': {
+                            'asset_annos': {
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {},
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                            },
+                            'sub_indexes': {
+                                'gray sky': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {}
+                                    }
+                                },
+                                'blue sky': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {}
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
@@ -283,11 +763,92 @@ class TestCmdImport(unittest.TestCase):
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
-                    'cks_cnt': {},
-                    'tags_cnt': {},
-                    'asset_quality_hist': {},
-                    'anno_quality_hist': {},
-                    'anno_area_hist': {}
+                    'cks_cnt': {
+                        'weather': {
+                            'cnt': 2,
+                            'sub_cnt': {
+                                'sunny': 1,
+                                'rainy': 1,
+                            },
+                        },
+                        'camera': {
+                            'cnt': 2,
+                            'sub_cnt': {
+                                'camera 0': 1,
+                                'camera 1': 1,
+                            },
+                        },
+                        'theme': {
+                            'cnt': 2,
+                            'sub_cnt': {
+                                'blue sky': 1,
+                                'gray sky': 1,
+                            },
+                        }
+                    },
+                    'tags_cnt': {
+                        'difficult': {
+                            'cnt': 5,
+                            'sub_cnt': {
+                                '0': 3,
+                                '1': 2,
+                            },
+                        },
+                        'color': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'white': 1,
+                                'blue': 1,
+                                'pink': 1,
+                            },
+                        },
+                        'pose': {
+                            'cnt': 5,
+                            'sub_cnt': {
+                                'Left': 1,
+                                'Frontal': 1,
+                                'Unspecified': 1,
+                                'Rear': 2,
+                            },
+                        },
+                    },
+                    'asset_quality_hist': {
+                        '1.00': 0,
+                        '0.90': 1,
+                        '0.80': 1,
+                        '0.70': 0,
+                        '0.60': 0,
+                        '0.50': 0,
+                        '0.40': 0,
+                        '0.30': 0,
+                        '0.20': 0,
+                        '0.10': 0,
+                        '0.00': 0,
+                    },
+                    'anno_quality_hist': {
+                        '1.00': 0,
+                        '0.90': 0,
+                        '0.80': 0,
+                        '0.70': 2,
+                        '0.60': 1,
+                        '0.50': 0,
+                        '0.40': 0,
+                        '0.30': 1,
+                        '0.20': 1,
+                        '0.10': 0,
+                        '0.00': 0,
+                    },
+                    'anno_area_hist': {
+                        200000: 0,
+                        100000: 0,
+                        50000: 0,
+                        10000: 1,
+                        5000: 1,
+                        2500: 0,
+                        500: 3,
+                        50: 0,
+                        0: 0,
+                    },
                 }
             try:
                 self.assertDictEqual(dict_keywords, dict_keywords_expect)

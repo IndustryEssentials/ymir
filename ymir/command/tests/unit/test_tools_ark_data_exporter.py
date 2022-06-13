@@ -243,9 +243,9 @@ class TestArkDataExporter(unittest.TestCase):
                                            typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
                                            asset_ids=asset_ids,
                                            class_ids={2}) as reader:
-            for asset_id, attrs, annotations in reader.read():
+            for asset_id, attrs, image_annotations, *_ in reader.read():
                 if asset_id == '430df22960b0f369318705800139fcc8ec38a3e4':
-                    self.assertEqual(2, len(annotations))
+                    self.assertEqual(2, len(image_annotations.annotations))
                     self.assertEqual((500, 281), (attrs.width, attrs.height))
             self.assertEqual(2, len(list(reader.read())))
 

@@ -12,6 +12,12 @@
 		<depth>3</depth>
 	</size>
 	<segmented>1</segmented>
+	<image_quality>0.95</image_quality>
+	<cks>
+		<weather>sunny</weather>
+		<camera> camera 0 </camera>
+		<theme>blue sky</theme>
+	</cks>
 	<object>
 		<name>aeroplane</name>
 		<pose>Frontal</pose>
@@ -23,7 +29,13 @@
 			<xmax>375</xmax>
 			<ymax>183</ymax>
 		</bndbox>
-		<score>0.5</score>
+		<confidence>0.5</confidence>
+		<box_quality>0.62</box_quality>
+		<tags>
+			<difficult>0</difficult>
+			<color>white</color>
+			<pose>Frontal</pose>
+		</tags>
 	</object>
 	<object>
 		<name>aeroplane</name>
@@ -36,6 +48,12 @@
 			<xmax>197</xmax>
 			<ymax>123</ymax>
 		</bndbox>
+		<box_quality>0.75</box_quality>
+		<tags>
+			<difficult>0</difficult>
+			<color>blue</color>
+			<pose>Left</pose>
+		</tags>
 	</object>
 	<object>
 		<name>person</name>
@@ -48,6 +66,11 @@
 			<xmax>213</xmax>
 			<ymax>229</ymax>
 		</bndbox>
+		<box_quality>0.23</box_quality>
+		<tags>
+			<difficult>1</difficult>
+			<pose>Rear</pose>
+		</tags>
 	</object>
 	<object>
 		<name>PERSON</name>
@@ -60,5 +83,10 @@
 			<xmax>44</xmax>
 			<ymax>238</ymax>
 		</bndbox>
+		<box_quality>0.35</box_quality>
+		<tags>
+			<difficult>1</difficult>
+			<pose>Rear</pose>
+		</tags>
 	</object>
 </annotation>
