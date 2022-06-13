@@ -42,10 +42,6 @@ class MirDataReader:
             filtered_image_annotations = mirpb.SingleImageAnnotations()
 
             if image_annotations:
-                # need to keep cks and image_quality
-                filtered_image_annotations.CopyFrom(image_annotations)
-                del filtered_image_annotations.annotations[:]
-
                 for annotation in image_annotations.annotations:
                     if self._class_ids and annotation.class_id not in self._class_ids:
                         continue
