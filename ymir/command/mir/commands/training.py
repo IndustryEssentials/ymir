@@ -4,8 +4,9 @@ import os
 import time
 import subprocess
 from subprocess import CalledProcessError
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 import traceback
-from typing import Any, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from tensorboardX import SummaryWriter
 import yaml
@@ -221,14 +222,44 @@ class CmdTrain(base.BaseCommand):
         task_id = dst_typ_rev_tid.tid
         if not executant_name:
             executant_name = f"default-training-{task_id}"
-        if not tensorboard_dir:
-            tensorboard_dir = os.path.join(work_dir, 'out', 'tensorboard')
-        asset_dir = asset_cache_dir or os.path.join(work_dir, 'in', 'assets')
+
+        # setting up paths.
+        os.makedirs(work_dir, exist_ok=True)
+
+        work_dir_in = os.path.join(work_dir, "in")
+        os.makedirs(work_dir_in, exist_ok=True)
+
+        # assets folder, fixed location at work_dir_in/assets.
+        asset_dir = os.path.join(work_dir_in, 'assets')
+        if asset_cache_dir:
+            if asset_cache_dir != asset_dir:
+                os.link(asset_cache_dir, asset_dir)
+        else:
+            os.makedirs(asset_dir, exist_ok=True)
+        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
+        os.makedirs(work_dir_annotations, exist_ok=True)
+
+        work_dir_out = os.path.join(work_dir, "out")
+        os.makedirs(work_dir_out, exist_ok=True)
+
+        # Build tensorbaord folder, fixed location at work_dir_out/tensorboard
+        tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
+        if tensorboard_dir:
+            if tensorboard_dir != tensorboard_dir_local:
+                os.link(tensorboard_dir, tensorboard_dir_local)
+        else:
+            os.makedirs(tensorboard_dir_local, exist_ok=True)
+        tensorboard_dir = tensorboard_dir_local
+
+        out_model_dir = os.path.join(work_dir_out, 'models')
+        os.makedirs(out_model_dir, exist_ok=True)
+
+        os.system(f"chmod -R 777 {work_dir_out}")
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
                                                             model_hash=pretrained_model_hash,
-                                                            dst_model_dir=os.path.join(work_dir, 'in', 'models'))
+                                                            dst_model_dir=os.path.join(work_dir_in, 'models'))
 
         # get train_ids and val_ids
         train_ids = set()  # type: Set[str]
@@ -258,20 +289,6 @@ class CmdTrain(base.BaseCommand):
 
         # export
         logging.info("exporting assets")
-
-        os.makedirs(work_dir, exist_ok=True)
-
-        work_dir_in = os.path.join(work_dir, "in")
-        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
-        os.makedirs(work_dir_annotations, exist_ok=True)
-
-        work_dir_out = os.path.join(work_dir, "out")
-        os.makedirs(work_dir_out, exist_ok=True)
-        out_model_dir = os.path.join(work_dir, 'out', 'models')
-        os.makedirs(out_model_dir, exist_ok=True)
-
-        os.makedirs(asset_dir, exist_ok=True)
-        os.makedirs(tensorboard_dir, exist_ok=True)
 
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
@@ -304,7 +321,7 @@ class CmdTrain(base.BaseCommand):
                                                  overwrite=False,
                                                  class_ids_mapping=type_id_idx_mapping,
                                                  format_type=export_format,
-                                                 index_file_path=os.path.join(work_dir_in, 'train-index/tsv'),
+                                                 index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
                                                  index_assets_prefix='/in/assets',
                                                  index_annotations_prefix='/in/annotations')
             dw_val = data_writer.RawDataWriter(mir_root=mir_root,
@@ -316,15 +333,17 @@ class CmdTrain(base.BaseCommand):
                                                overwrite=False,
                                                class_ids_mapping=type_id_idx_mapping,
                                                format_type=export_format,
-                                               index_file_path=os.path.join(work_dir_in, 'val-index/tsv'),
+                                               index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
                                                index_assets_prefix='/in/assets',
                                                index_annotations_prefix='/in/annotations')
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
+            asset_dir = os.path.join(work_dir_in, 'lmdb')
             # export train set
+            train_lmdb_dir = os.path.join(asset_dir, 'train')
             if asset_cache_dir:
-                train_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
+                os.link(os.path.join(asset_cache_dir, 'tr', src_revs), train_lmdb_dir)
             else:
-                train_lmdb_dir = os.path.join(work_dir_in, 'train')
+                os.makedirs(train_lmdb_dir, exist_ok=True)
 
             dw_train = data_writer.LmdbDataWriter(mir_root=mir_root,
                                                   assets_location=media_location,
@@ -334,10 +353,12 @@ class CmdTrain(base.BaseCommand):
                                                   index_file_path=os.path.join(work_dir_in, 'train-index.tsv'))
 
             # export validation set
+            val_lmdb_dir = os.path.join(asset_dir, 'val')
             if asset_cache_dir:
-                val_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
+                os.link(os.path.join(asset_cache_dir, 'va', src_revs), val_lmdb_dir)
             else:
-                val_lmdb_dir = os.path.join(work_dir_in, 'val')
+                os.makedirs(val_lmdb_dir, exist_ok=True)
+
             dw_val = data_writer.LmdbDataWriter(mir_root=mir_root,
                                                 assets_location=media_location,
                                                 lmdb_dir=val_lmdb_dir,
@@ -361,8 +382,6 @@ class CmdTrain(base.BaseCommand):
 
         logging.info("starting train docker container")
 
-        available_gpu_id = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
-
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
         executor_config = _generate_config(
@@ -373,32 +392,27 @@ class CmdTrain(base.BaseCommand):
         mir_utils.generate_training_env_config_file(task_id=task_id,
                                                     env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
-        # start train docker and wait
-        path_binds = []
-        path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
-        if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
-            path_binds.append(f"-v{asset_dir}:/in/assets:ro")  # assets
-        elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
-            # make this two dirs here to avoid permission problems
-            os.makedirs(os.path.join(work_dir_in, 'train'), exist_ok=True)
-            os.makedirs(os.path.join(work_dir_in, 'val'), exist_ok=True)
-            path_binds.append(f"-v{train_lmdb_dir}/data.mdb:/in/train/data.mdb")
-            path_binds.append(f"-v{val_lmdb_dir}/data.mdb:/in/val/data.mdb")
-        path_binds.append(f"-v{work_dir_out}:/out")
-        path_binds.append(f"-v{tensorboard_dir}:/out/tensorboard")
-
-        cmd = ['nvidia-docker', 'run', '--rm', f"--shm-size={_get_shm_size(executor_config=executor_config)}"]
-        cmd.extend(path_binds)
-        if available_gpu_id:
-            cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
-        cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
-        cmd.append(executor)
-
+        task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
+        available_gpu_id = task_config.get('available_gpu_id', '')
+        openpai_config = dict(
+            openpai_enable=task_config.get("openpai_enable", False),
+            openpai_host=task_config.get("openpai_host", ""),
+            openpai_token=task_config.get("openpai_token", ""),
+            openpai_storage=task_config.get("openpai_storage", ""),
+            openpai_user=task_config.get("openpai_user", ""),
+        )
         task_code = MirCode.RC_OK
         return_msg = ''
         try:
-            _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
+            _execute_training(
+                work_dir_in=work_dir_in,
+                work_dir_out=work_dir_out,
+                executor=executor,
+                executant_name=executant_name,
+                executor_config=executor_config,
+                available_gpu_id=available_gpu_id,
+                openpai_config=openpai_config,
+            )
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
@@ -411,16 +425,17 @@ class CmdTrain(base.BaseCommand):
                     tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
         # gen task_context
-        task_context = {
+        task_context = task_config
+        task_context.update({
             'src_revs': src_revs,
             'dst_rev': dst_rev,
             'executor': executor,
             mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
             mir_settings.TASK_CONTEXT_PARAMETERS_KEY: task_parameters
-        }
+        })
 
         # save model
-        logging.info("saving models")
+        logging.info(f"saving models:\n task_context: {task_context}")
         model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
                                                        model_upload_location=model_upload_location,
                                                        executor_config=executor_config,
@@ -452,6 +467,87 @@ class CmdTrain(base.BaseCommand):
         logging.info("training done")
 
         return MirCode.RC_OK
+
+
+def _execute_training(work_dir_in: str,
+                      work_dir_out: str,
+                      executor: str,
+                      executant_name: str,
+                      executor_config: Dict,
+                      available_gpu_id: str,
+                      openpai_config: Dict = {}) -> None:
+    if openpai_config.get("openpai_enable", False):
+        logging.info("Run training task on OpenPai.")
+        try:
+            _execute_in_openpai(
+                work_dir_in=work_dir_in,
+                work_dir_out=work_dir_out,
+                executor=executor,
+                executant_name=executant_name,
+                executor_config=executor_config,
+                available_gpu_id=available_gpu_id,
+                openpai_config=openpai_config,
+            )
+        except (ConnectionError, HTTPError, Timeout):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_OPENPAI_ERROR, error_message='OpenPai Error')
+    else:
+        logging.info("Run training task on locally.")
+        _execute_locally(
+            work_dir_in=work_dir_in,
+            work_dir_out=work_dir_out,
+            executor=executor,
+            executant_name=executant_name,
+            executor_config=executor_config,
+            available_gpu_id=available_gpu_id,
+        )
+
+
+def _execute_in_openpai(
+    work_dir_in: str,
+    work_dir_out: str,
+    executor: str,
+    executant_name: str,
+    executor_config: Dict,
+    available_gpu_id: str,
+    openpai_config: Dict,
+    res_cpu: int = 15,
+    res_memory_in_mb: int = 30965,
+) -> None:
+    return _execute_locally(
+        work_dir_in=work_dir_in,
+        work_dir_out=work_dir_out,
+        executor=executor,
+        executant_name=executant_name,
+        executor_config=executor_config,
+        available_gpu_id=available_gpu_id,
+    )
+
+
+def _execute_locally(
+    work_dir_in: str,
+    work_dir_out: str,
+    executor: str,
+    executant_name: str,
+    executor_config: Dict,
+    available_gpu_id: str,
+) -> None:
+    # start train docker and wait
+    path_binds = []
+    path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
+    path_binds.append(f"-v{work_dir_out}:/out")
+
+    cmd = [
+        mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
+        f"--shm-size={_get_shm_size(executor_config=executor_config)}"
+    ]
+    cmd.extend(path_binds)
+    if available_gpu_id:
+        cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
+    cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+    cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
+    cmd.append(executor)
+
+    _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:

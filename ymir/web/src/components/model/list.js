@@ -255,21 +255,21 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "mining",
         label: t("dataset.action.mining"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/mining/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/mining?mid=${id}`),
         icon: <VectorIcon />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/train/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/train?mid=${id}`),
         icon: <TrainIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/inference/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/inference?mid=${id}`),
         icon: <WajueIcon />,
       },
       {
@@ -305,7 +305,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
 
   const multipleInfer = () => {
     const ids = Object.values(selectedVersions)
-    history.push(`/home/task/inference/${pid}?mid=${ids}`)
+    history.push(`/home/project/${pid}/inference?mid=${ids}`)
   }
 
   const multipleHide = () => {

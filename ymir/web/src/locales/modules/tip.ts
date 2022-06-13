@@ -24,12 +24,12 @@ const tip = {
     en: "Samples expected.",
   },
   "tip.task.filter.testsets": {
-    cn: "训练集和测试集的图片不可重复",
-    en: "The images of the training set and the testing set cannot be duplicated.",
+    cn: "训练集和验证集的图片不可重复",
+    en: "The images of the training set and the validation set cannot be duplicated.",
   },
   "tip.task.filter.keywords": {
-    cn: "训练目标标签必须同时包含在训练集和测试集中",
-    en: "Both the training and testing sets must contain target keyword",
+    cn: "训练目标标签必须同时包含在训练集和验证集中",
+    en: "Both the training and validation sets must contain target keyword",
   },
   "tip.task.train.image": {
     cn: "平台提供默认训练镜像，同时支持开发者自主开发并接入。镜像会附带默认配置参数，可按需调整。",

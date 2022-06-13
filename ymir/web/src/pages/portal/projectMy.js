@@ -40,7 +40,7 @@ const MyProject = ({ count = 6, ...func }) => {
       title={<Title title={<><MydatasetIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.project.my.title')}</span></>} link='/home/project'>
       </Title>}
     >
-      <div className={styles.rowContainer}>
+      <div className={`${styles.rowContainer} scrollbar`}>
         <div className={styles.addBtn}>
           <Link className={styles.emptyBoxAction} to={'/home/project/add'}>
             <AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />
