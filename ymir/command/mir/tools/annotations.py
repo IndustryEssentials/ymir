@@ -99,8 +99,8 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             annos_dict: dict = xmltodict.parse(annos_xml_str)['annotation']
 
             # cks
-            image_annotations[asset_hash].cks.update(annos_dict.get('cks', {}))
-            image_annotations[asset_hash].image_quality = float(annos_dict.get('image_quality', '2.0'))
+            mir_annotation.image_cks[asset_hash].cks.update(annos_dict.get('cks', {}))
+            mir_annotation.image_cks[asset_hash].image_quality = float(annos_dict.get('image_quality', '-1.0'))
 
             # annotations and tags
             objects: Union[List[dict], dict] = annos_dict.get('object', [])
