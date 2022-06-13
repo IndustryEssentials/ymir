@@ -4,6 +4,7 @@ import shutil
 import unittest
 
 import google.protobuf.json_format as pb_format
+from google.protobuf.json_format import MessageToDict
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import context, mir_storage, mir_storage_ops
@@ -146,57 +147,6 @@ class TestMirStorage(unittest.TestCase):
                     'predefined_keyids': [3]
                 },
             },
-            'pred_idx': {
-                'asset_cis': {
-                    3: {
-                        'indexes': [{
-                            'asset_id': 'a002',
-                            'anno_idx': -1
-                        }, {
-                            'asset_id': 'a003',
-                            'anno_idx': -1
-                        }]
-                    },
-                    2: {
-                        'indexes': [{
-                            'asset_id': 'a001',
-                            'anno_idx': -1
-                        }, {
-                            'asset_id': 'a002',
-                            'anno_idx': -1
-                        }]
-                    },
-                    1: {
-                        'indexes': [{
-                            'asset_id': 'a001',
-                            'anno_idx': -1
-                        }]
-                    }
-                },
-                'anno_cis': {
-                    1: {
-                        'indexes': [{
-                            'asset_id': 'a001'
-                        }]
-                    },
-                    3: {
-                        'indexes': [{
-                            'asset_id': 'a002'
-                        }, {
-                            'asset_id': 'a003'
-                        }, {
-                            'asset_id': 'a003'
-                        }]
-                    },
-                    2: {
-                        'indexes': [{
-                            'asset_id': 'a001'
-                        }, {
-                            'asset_id': 'a002'
-                        }]
-                    }
-                }
-            }
         }
         pb_format.ParseDict(dict_keywords, mir_keywords)
 
@@ -214,7 +164,7 @@ class TestMirStorage(unittest.TestCase):
                 4: 0
             } if with_project else {}),
             'asset_quality_hist': {
-                '0.00': 3,
+                '0.00': 0,
                 '0.10': 0,
                 '0.20': 0,
                 '0.30': 0,
@@ -318,8 +268,8 @@ class TestMirStorage(unittest.TestCase):
         try:
             self.assertEqual(loaded_mir_context, mir_context)
         except AssertionError as e:
-            logging.info(f"expected: {mir_context}")
-            logging.info(f"actual: {loaded_mir_context}")
+            logging.info(f"expected: {MessageToDict(mir_context, preserving_proto_field_name=True)}")
+            logging.info(f"actual: {MessageToDict(loaded_mir_context, preserving_proto_field_name=True)}")
             raise e
 
         # add another commit a@t2, which has empty dataset

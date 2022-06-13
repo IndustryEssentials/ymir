@@ -23,6 +23,7 @@ class MirDataReader:
 
         self._mir_metadatas = mir_metadatas
         self._task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
+        self._image_cks = mir_annotations.image_cks
         if not self._asset_ids:
             self._asset_ids = {asset_id for asset_id in self._mir_metadatas.attributes.keys()}
 
@@ -31,7 +32,8 @@ class MirDataReader:
     def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
         pass
 
-    def read(self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, mirpb.SingleImageAnnotations]]:
+    def read(
+            self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, mirpb.SingleImageCks]]:
         for asset_id, attributes in self._mir_metadatas.attributes.items():
             if asset_id not in self._asset_ids:
                 continue
@@ -49,4 +51,4 @@ class MirDataReader:
                         continue
                     filtered_image_annotations.annotations.append(annotation)
 
-            yield (asset_id, attributes, filtered_image_annotations)
+            yield (asset_id, attributes, filtered_image_annotations, self._image_cks[asset_id])

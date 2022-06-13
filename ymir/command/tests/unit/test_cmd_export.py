@@ -138,8 +138,6 @@ class TestCmdExport(unittest.TestCase):
                                 'anno_quality': 0.95,
                                 'tags': {'fake tag name': 'fake tag data'},
                             }],
-                            'image_quality': 0.3,
-                            'cks': {'weather': 'sunny'},
                         },
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
                             'annotations': [{
@@ -155,10 +153,22 @@ class TestCmdExport(unittest.TestCase):
                                 'anno_quality': 0.95,
                                 'tags': {'fake tag name': 'fake tag data'},
                             }],
-                            'image_quality': 0.5,
-                            'cks': {'weather': 'sunny'},
                         },
                     }
+                }
+            },
+            'image_cks': {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'cks': {
+                        'weather': 'sunny',
+                    },
+                    'image_quality': 0.5
+                },
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'cks': {
+                        'weather': 'sunny',
+                    },
+                    'image_quality': 0.3
                 }
             }
         }

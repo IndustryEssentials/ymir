@@ -78,6 +78,7 @@ def _format_file_ext(anno_format: AnnoFormat) -> str:
 
 def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttributes,
                                      image_annotations: mirpb.SingleImageAnnotations,
+                                     image_cks: mirpb.SingleImageCks,
                                      class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
                                      asset_filename: str) -> str:
     output_str = ""
@@ -90,6 +91,7 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttribu
 
 def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttributes,
                                      image_annotations: mirpb.SingleImageAnnotations,
+                                     image_cks: mirpb.SingleImageCks,
                                      class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
                                      asset_filename: str) -> str:
     annotations = image_annotations.annotations
@@ -141,12 +143,12 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
 
     # annotation: cks and sub nodes
     cks_node = ElementTree.SubElement(annotation_node, 'cks')
-    for k, v in image_annotations.cks.items():
+    for k, v in image_cks.cks.items():
         ElementTree.SubElement(cks_node, k).text = v
 
     # annotation: image_quality
     image_quality_node = ElementTree.SubElement(annotation_node, 'image_quality')
-    image_quality_node.text = f"{image_annotations.image_quality:.4f}"
+    image_quality_node.text = f"{image_cks.image_quality:.4f}"
 
     # annotation: object(s)
     for annotation in annotations:
@@ -193,6 +195,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
 
 def _single_image_annotations_to_ls_json(asset_id: str, attrs: mirpb.MetadataAttributes,
                                          image_annotations: mirpb.SingleImageAnnotations,
+                                         image_cks: mirpb.SingleImageCks,
                                          class_type_mapping: Optional[Dict[int, int]],
                                          cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
     annotations = image_annotations.annotations
@@ -249,7 +252,7 @@ class BaseDataWriter:
         self._format_type = format_type
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
-               image_annotations: mirpb.SingleImageAnnotations) -> None:
+               image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         """
         write assets and annotations to destination with proper format
 
@@ -257,6 +260,7 @@ class BaseDataWriter:
             asset_id (str): asset hash code
             attrs (mirpb.MetadataAttributes): attributes to this asset
             image_annotations (mirpb.SingleImageAnnotations): annotations to this asset
+            image_cks (mirpb.SingleImageCks): cks to this asset
         """
         raise NotImplementedError('not implemented')
 
@@ -324,7 +328,7 @@ class RawDataWriter(BaseDataWriter):
         self._overwrite = overwrite
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
-               image_annotations: mirpb.SingleImageAnnotations) -> None:
+               image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         # write asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
@@ -350,6 +354,7 @@ class RawDataWriter(BaseDataWriter):
             anno_str: str = format_func(asset_id=asset_id,
                                         attrs=attrs,
                                         image_annotations=image_annotations,
+                                        image_cks=image_cks,
                                         class_type_mapping=self._class_ids_mapping,
                                         cls_id_mgr=self._class_id_manager,
                                         asset_filename=asset_file_name)
@@ -427,7 +432,7 @@ class LmdbDataWriter(BaseDataWriter):
         return True
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
-               image_annotations: mirpb.SingleImageAnnotations) -> None:
+               image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         # read asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         with open(asset_src_path, 'rb') as f:
@@ -440,6 +445,7 @@ class LmdbDataWriter(BaseDataWriter):
             anno_data: bytes = format_func(asset_id=asset_id,
                                            attrs=attrs,
                                            image_annotations=image_annotations,
+                                           image_cks=image_cks,
                                            class_type_mapping=self._class_ids_mapping,
                                            cls_id_mgr=self._class_id_manager,
                                            asset_filename='').encode()
