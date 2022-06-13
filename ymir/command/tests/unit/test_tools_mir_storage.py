@@ -173,7 +173,6 @@ class TestMirStorage(unittest.TestCase):
                 3: 2,
                 4: 0
             } if with_project else {}),
-            'customized_keywords_cnt': {},
         }
         pb_format.ParseDict(dict_context, mir_context)
 

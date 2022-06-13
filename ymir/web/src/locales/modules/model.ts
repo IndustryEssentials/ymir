@@ -25,7 +25,7 @@ const model = {
   'model.detail.label.source': { en: 'Source', cn: '模型来源', },
   'model.detail.label.image': { en: 'Train Image', cn: '训练镜像', },
   'model.detail.label.training_dataset': { en: 'Training Dataset', cn: '训练集', },
-  'model.detail.label.test_dataset': { en: 'Test Dataset', cn: '测试集', },
+  'model.detail.label.test_dataset': { en: 'Validation Dataset', cn: '验证集', },
   'model.detail.label.train_type': { en: 'Train Type', cn: '训练类型', },
   'model.detail.label.train_goal': { en: 'Train Classes', cn: '训练目标', },
   'model.detail.label.framework': { en: 'Network', cn: '算法框架', },
@@ -56,6 +56,8 @@ const model = {
   "model.diagnose.tab.metrics": { cn: '衡量指标', en: 'Metrics', },
   "model.diagnose.tab.training": { cn: '训练过程', en: 'Training Fitting', },
   "model.diagnose.tab.visualization": { cn: '图像可视化', en: 'Image Visualization', },
+  "model.diagnose.form.model": { cn: '诊断模型', en: 'Diagnosing Models', },
+  "model.action.diagnose.training.retry": { cn: '重新诊断', en: 'Retry', },
 }
 
 export default model

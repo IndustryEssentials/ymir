@@ -152,7 +152,8 @@ def command_run_in_out(f: Callable) -> Callable:
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
 
-        _cleanup(work_dir=work_dir)
+        # should not cleanup task env if failed.
+        # _cleanup(work_dir=work_dir)
 
         raise exc
 
