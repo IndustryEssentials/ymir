@@ -161,6 +161,7 @@ class CmdTrain(base.BaseCommand):
                                       tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
                                       executant_name=self.args.executant_name,
+                                      run_as_root=self.args.run_as_root,
                                       config_file=self.args.config_file)
 
     @staticmethod
@@ -175,6 +176,7 @@ class CmdTrain(base.BaseCommand):
                       dst_rev: str,
                       config_file: Optional[str],
                       tensorboard_dir: str,
+                      run_as_root: bool,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
         if not model_upload_location:
@@ -412,6 +414,7 @@ class CmdTrain(base.BaseCommand):
                 executor_config=executor_config,
                 available_gpu_id=available_gpu_id,
                 openpai_config=openpai_config,
+                run_as_root=run_as_root,
             )
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
@@ -474,6 +477,7 @@ def _execute_training(work_dir_in: str,
                       executor: str,
                       executant_name: str,
                       executor_config: Dict,
+                      run_as_root: bool,
                       available_gpu_id: str,
                       openpai_config: Dict = {}) -> None:
     if openpai_config.get("openpai_enable", False):
@@ -499,6 +503,7 @@ def _execute_training(work_dir_in: str,
             executant_name=executant_name,
             executor_config=executor_config,
             available_gpu_id=available_gpu_id,
+            run_as_root=run_as_root,
         )
 
 
@@ -530,6 +535,7 @@ def _execute_locally(
     executant_name: str,
     executor_config: Dict,
     available_gpu_id: str,
+    run_as_root: bool = False,
 ) -> None:
     # start train docker and wait
     path_binds = []
@@ -543,7 +549,8 @@ def _execute_locally(
     cmd.extend(path_binds)
     if available_gpu_id:
         cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-    cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+    if not run_as_root:
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
     cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
     cmd.append(executor)
 
@@ -606,4 +613,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   required=False,
                                   help="tensorboard log directory")
+    train_arg_parser.add_argument("--run-as-root",
+                                  dest="run_as_root",
+                                  action='store_true',
+                                  help="run executor as root user")
     train_arg_parser.set_defaults(func=CmdTrain)
