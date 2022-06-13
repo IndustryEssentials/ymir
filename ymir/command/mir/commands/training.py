@@ -235,7 +235,7 @@ class CmdTrain(base.BaseCommand):
         asset_dir = os.path.join(work_dir_in, 'assets')
         if asset_cache_dir:
             if asset_cache_dir != asset_dir:
-                os.link(asset_cache_dir, asset_dir)
+                os.symlink(asset_cache_dir, asset_dir)
         else:
             os.makedirs(asset_dir, exist_ok=True)
         work_dir_annotations = os.path.join(work_dir_in, 'annotations')
@@ -248,7 +248,7 @@ class CmdTrain(base.BaseCommand):
         tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
         if tensorboard_dir:
             if tensorboard_dir != tensorboard_dir_local:
-                os.link(tensorboard_dir, tensorboard_dir_local)
+                os.symlink(tensorboard_dir, tensorboard_dir_local)
         else:
             os.makedirs(tensorboard_dir_local, exist_ok=True)
         tensorboard_dir = tensorboard_dir_local
@@ -343,7 +343,7 @@ class CmdTrain(base.BaseCommand):
             # export train set
             train_lmdb_dir = os.path.join(asset_dir, 'train')
             if asset_cache_dir:
-                os.link(os.path.join(asset_cache_dir, 'tr', src_revs), train_lmdb_dir)
+                os.symlink(os.path.join(asset_cache_dir, 'tr', src_revs), train_lmdb_dir)
             else:
                 os.makedirs(train_lmdb_dir, exist_ok=True)
 
@@ -357,7 +357,7 @@ class CmdTrain(base.BaseCommand):
             # export validation set
             val_lmdb_dir = os.path.join(asset_dir, 'val')
             if asset_cache_dir:
-                os.link(os.path.join(asset_cache_dir, 'va', src_revs), val_lmdb_dir)
+                os.symlink(os.path.join(asset_cache_dir, 'va', src_revs), val_lmdb_dir)
             else:
                 os.makedirs(val_lmdb_dir, exist_ok=True)
 
