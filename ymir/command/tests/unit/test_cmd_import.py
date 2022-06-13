@@ -493,11 +493,11 @@ class TestCmdImport(unittest.TestCase):
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
+                    'predefined_keyids_cnt': {
+                        1: 2
+                    },
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
-                    'predefined_keyids_cnt': {
-                        1: 2,
-                    },
                     'project_predefined_keyids_cnt': {},
                     'cks_cnt': {
                         'weather': {
@@ -818,12 +818,12 @@ class TestCmdImport(unittest.TestCase):
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
-                    'negative_images_cnt': 0,
-                    'project_negative_images_cnt': 0,
                     'predefined_keyids_cnt': {
                         1: 2,
-                        2: 1,
+                        2: 1
                     },
+                    'negative_images_cnt': 0,
+                    'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
                     'cks_cnt': {
                         'weather': {
