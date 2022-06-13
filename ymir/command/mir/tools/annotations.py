@@ -32,7 +32,7 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
     annotation.box.h = height
     annotation.score = float(object_dict.get('confidence', '2.0'))
     annotation.tags.update(object_dict.get('tags', {}))
-    annotation.anno_quality = float(object_dict.get('box_quality', '2.0'))
+    annotation.anno_quality = float(object_dict.get('box_quality', '-1.0'))
     return annotation
 
 
