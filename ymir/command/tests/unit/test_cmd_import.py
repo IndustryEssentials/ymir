@@ -242,13 +242,17 @@ class TestCmdImport(unittest.TestCase):
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
+                    'predefined_keyids_cnt': {
+                        1: 2
+                    },
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
-                    'predefined_keyids_cnt': {
-                        1: 2,
-                    },
                     'project_predefined_keyids_cnt': {},
-                    'customized_keywords_cnt': {},
+                    'cks_cnt': {},
+                    'tags_cnt': {},
+                    'asset_quality_hist': {},
+                    'anno_quality_hist': {},
+                    'anno_area_hist': {}
                 }
             else:
                 dict_keywords_expect = {
@@ -272,14 +276,18 @@ class TestCmdImport(unittest.TestCase):
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
-                    'negative_images_cnt': 0,
-                    'project_negative_images_cnt': 0,
                     'predefined_keyids_cnt': {
                         1: 2,
-                        2: 1,
+                        2: 1
                     },
+                    'negative_images_cnt': 0,
+                    'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
-                    'customized_keywords_cnt': {},
+                    'cks_cnt': {},
+                    'tags_cnt': {},
+                    'asset_quality_hist': {},
+                    'anno_quality_hist': {},
+                    'anno_area_hist': {}
                 }
             try:
                 self.assertDictEqual(dict_keywords, dict_keywords_expect)
@@ -331,8 +339,7 @@ class TestCmdImport(unittest.TestCase):
         with open(os.path.join(repo_root, 'tasks.mir'), 'rb') as f:
             mir_tasks.ParseFromString(f.read())
         dict_tasks = MessageToDict(mir_tasks, preserving_proto_field_name=True)
-        assert ('import-task-0' in dict_tasks['tasks']
-                or 'import-task-1' in dict_tasks['tasks']
+        assert ('import-task-0' in dict_tasks['tasks'] or 'import-task-1' in dict_tasks['tasks']
                 or 'import-task-2' in dict_tasks['tasks'])
 
     # custom: env prepare
