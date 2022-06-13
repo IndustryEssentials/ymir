@@ -116,7 +116,6 @@ message SingleTaskAnnotations {
 
 message SingleImageAnnotations {
     repeated Annotation annotations = 2;
-    float image_quality = 3;
 
     reserved 1;
 };
