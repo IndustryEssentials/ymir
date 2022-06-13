@@ -104,6 +104,8 @@ message MirAnnotations {
     string head_task_id = 2;
     SingleTaskAnnotations ground_truth = 3;
     SingleTaskAnnotations prediction = 4;
+    // key: asset id, value: cks and image quality
+    map<string, SingleImageCks> image_cks = 5;
 };
 
 message SingleTaskAnnotations {
@@ -115,10 +117,14 @@ message SingleTaskAnnotations {
 message SingleImageAnnotations {
     repeated Annotation annotations = 2;
     float image_quality = 3;
-    map<string, string> cks = 4;
 
     reserved 1;
 };
+
+message SingleImageCks {
+    map<string, string> cks = 1;
+    float image_quality = 2;
+}
 
 message Annotation {
     // Index of this annotation in current single image, may be different from the index in repeated field.
@@ -154,16 +160,12 @@ message MirKeywords {
 message KeywordToIndex {
     // key: ci, value: assets
     map<int32, SingleCkIndex> asset_cis = 1;
-    // key: ck main key, value: assets and assets of sub keys
+    // key: ck main key, value: assets and assets with sub keys
     map<string, SingleCkIndex> asset_cks = 2;
-    // key: ci, value: annos 
+    // key: ci, value: annos
     map<int32, SingleCkIndex> anno_cis = 3;
-    // key: ck main key, value: annos and annos of sub keys
+    // key: ck main key, value: annos and annos with sub keys
     map<string, SingleCkIndex> anno_cks = 4;
-
-    map<string, int32> asset_quality_hist = 5; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9 value: count, increment 0.1
-    map<string, int32> anno_quality_hist = 6; // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
-    map<int32, int32> anno_area_hist = 7;
 };
 
 message Assets {
@@ -283,6 +285,16 @@ message MirContext {
     map<int32, int32> predefined_keyids_cnt = 4;
     /// key: class id (only in this project), value: images count
     map<int32, int32> project_predefined_keyids_cnt = 5;
-    /// key: discrete customized keywords or tags, value: images count
-    map<string, int32> customized_keywords_cnt = 6;
+
+    map<string, SingleCkCount> cks_cnt = 6;
+    map<string, SingleCkCount> tags_cnt = 7;
+
+    map<string, int32> asset_quality_hist = 8; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9 value: count, increment 0.1
+    map<string, int32> anno_quality_hist = 9; // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
+    map<int32, int32> anno_area_hist = 10;
+}
+
+message SingleCkCount {
+    int32 cnt = 1;
+    map<string, int32> sub_cnt = 2;
 }
