@@ -192,8 +192,7 @@ message Keywords {
 
 message AssetAnnoIndex {
     map<string, Int32List> asset_annos = 1;
-    // repeated AssetAnnoPair indexes = 1;  // for main key
-    map<string, MapStringToInt32List> sub_indexes = 2;  // for sub key
+    map<string, MapStringToInt32List> sub_indexes = 2;
 };
 
 /// ========== tasks.mir ==========

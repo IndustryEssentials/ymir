@@ -737,11 +737,7 @@ class AssetAnnoIndex(google.protobuf.message.Message):
     @property
     def asset_annos(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Int32List]: ...
     @property
-    def sub_indexes(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___MapStringToInt32List]:
-        """repeated AssetAnnoPair indexes = 1;  // for main key
-        for sub key
-        """
-        pass
+    def sub_indexes(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___MapStringToInt32List]: ...
     def __init__(self,
         *,
         asset_annos : typing.Optional[typing.Mapping[typing.Text, global___Int32List]] = ...,
