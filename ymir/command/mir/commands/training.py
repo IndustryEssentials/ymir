@@ -248,6 +248,7 @@ class CmdTrain(base.BaseCommand):
         tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
         if tensorboard_dir:
             if tensorboard_dir != tensorboard_dir_local:
+                os.system(f"chmod -R 777 {tensorboard_dir}")
                 os.symlink(tensorboard_dir, tensorboard_dir_local)
         else:
             os.makedirs(tensorboard_dir_local, exist_ok=True)
