@@ -130,17 +130,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             model.hash = result["hash"]
 
         model.result_state = int(result_state)
-        # TODO add stage to model, mock this for now
-        # if result.get("model_stages") is None: # type: ignore
-        #     for i in range(10):
-        #         stage = ModelStage(
-        #             model_id=model.id,
-        #             name=f"stage_{i}",
-        #             map=0.1, # type: ignore
-        #             timestamp=100000001,
-        #             is_best=True if i == 0 else False,
-        #         )
-        #         model.model_stages.append(stage) # type: ignore
 
         db.add(model)
         db.commit()

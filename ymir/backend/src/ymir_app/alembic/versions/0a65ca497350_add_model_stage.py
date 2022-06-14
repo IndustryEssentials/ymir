@@ -26,7 +26,6 @@ def upgrade() -> None:
         sa.Column("name", sa.String(length=100), nullable=True),
         sa.Column("map", sa.Float(), nullable=True),
         sa.Column("timestamp", sa.Float(), nullable=True),
-        sa.Column("is_recommended", sa.Boolean(), nullable=False),
         sa.Column("model_id", sa.Integer(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
         sa.Column("create_datetime", sa.DateTime(), nullable=False),
