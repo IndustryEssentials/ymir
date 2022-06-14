@@ -3,6 +3,7 @@ from math import ceil
 import os
 import time
 from typing import Any, List, Dict, Optional, Set
+from attr import attr
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
@@ -131,7 +132,7 @@ class MirStorageOps():
             # if no project_class_ids, project_negative_images_cnt set to 0
 
         total_asset_bytes = reduce(lambda s, v: s + v.byte_size, mir_metadatas.attributes.values(), 0)
-        mir_context.total_asset_mbytes = ceil(total_asset_bytes / 1048576)
+        mir_context.total_asset_mbytes = ceil(total_asset_bytes / mir_settings.BYTES_PER_MB)
 
         # cks cnt
         for ck, ck_assets in mir_keywords.ck_idx.items():
@@ -153,6 +154,16 @@ class MirStorageOps():
                                               desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
         mir_context.asset_quality_hist.update({f"{k:.2f}": v for k, v in asset_quality_hist.items()})
 
+        # asset bytes hist
+        asset_bytes_hist = cls.__build_hist(values=[x.byte_size for x in mir_metadatas.attributes.values()],
+                                            desc_lower_bnds=mir_settings.ASSET_BYTES_DESC_LOWER_BNDS)
+        mir_context.asset_bytes_hist.update({f"{k/mir_settings.BYTES_PER_MB:.1f}MB": v for k, v in asset_bytes_hist.items()})
+
+        # asset area hist
+        asset_area_hist = cls.__build_hist(values=[x.width * x.height for x in mir_metadatas.attributes.values()],
+                                           desc_lower_bnds=mir_settings.ASSET_AREA_DESC_LOWER_BNDS)
+        mir_context.asset_area_hist.update(asset_area_hist)
+
         # pred_stats.quality_hist
         all_annotations = [
             annotation for image_annotation in image_annotations.values() for annotation in image_annotation.annotations
@@ -167,6 +178,17 @@ class MirStorageOps():
             values=[annotation.box.w * annotation.box.h for annotation in all_annotations],
             desc_lower_bnds=mir_settings.ANNO_AREA_DESC_LOWER_BNDS)
         mir_context.pred_stats.area_hist.update(anno_area_hist)
+
+        # pred_stats.area_ratio_hist
+        all_area_ratios = []
+        for asset_id, image_annotation in image_annotations.items():
+            attrs = mir_metadatas.attributes[asset_id]
+            asset_area = attrs.width * attrs.height
+            for annotation in image_annotation.annotations:
+                all_area_ratios.append(annotation.box.w * annotation.box.h / asset_area if asset_area else -1)
+        anno_area_ratio_hist = cls.__build_hist(values=all_area_ratios,
+                                                desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
+        mir_context.pred_stats.area_ratio_hist.update({f"{k:.2f}": v for k, v in anno_area_ratio_hist.items()})
 
     @classmethod
     def __build_hist(cls, values: List[Any], desc_lower_bnds: List[Any]) -> Dict[Any, int]:
