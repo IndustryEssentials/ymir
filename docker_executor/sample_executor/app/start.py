@@ -49,14 +49,20 @@ def _run_training(env_config: env.EnvConfig) -> None:
     # suppose we have a long time training, and have saved the final model
     #! use `env_config.output.models_dir` to get model output dir
     with open(os.path.join(env_config.output.models_dir, 'model-0000.params'), 'w') as f:
-        f.write('fake params')
+        f.write('fake model-0000.params')
     with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
-        f.write('fake json')
+        f.write('fake model-symbols.json')
 
     #! use `rw.write_model_stage` to save training result
-    rw.write_model_stage(stage_name='stage-0', files=['model-0000.params', 'model-symbols.json', '0000.weights'], mAP=expected_mAP / 3)
+    rw.write_model_stage(stage_name='stage-00', files=['model-0000.params', 'model-symbols.json'], mAP=expected_mAP / 3)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+
+    with open(os.path.join(env.output.models_dir, 'model-0010.params'), 'w') as f:
+        f.write('fake model-0010.params')
+    with open(os.path.join(env.output.models_dir, 'model-symbols.json'), 'w') as f:
+        f.write('fake model-symbols.json')
+    rw.write_model_stage(stage_name='stage-10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP / 3)
 
     #! if task done, write 100% percent log
     logging.info('training done')
