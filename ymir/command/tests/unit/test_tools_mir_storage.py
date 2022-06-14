@@ -213,7 +213,9 @@ class TestMirStorage(unittest.TestCase):
                     'model': {
                         'model_hash': 'abc123',
                         'mean_average_precision': 0.5,
-                        'context': 'fake_context'
+                        'context': 'fake_context',
+                        'stages': {},
+                        'best_stage_name': '',
                     }
                 }
             },
@@ -332,7 +334,9 @@ class TestMirStorage(unittest.TestCase):
                 'mean_average_precision': 0.5,
                 'context': 'fake_context',
                 'executor_config': {},
-                'task_parameters': ''
+                'task_parameters': '',
+                'stages': {},
+                'best_stage_name': '',
             })
         # load_single_model: have no model
         with self.assertRaises(MirError):
