@@ -248,6 +248,7 @@ class CmdTrain(base.BaseCommand):
         tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
         if tensorboard_dir:
             if tensorboard_dir != tensorboard_dir_local:
+                os.system(f"chmod -R 777 {tensorboard_dir}")
                 os.symlink(tensorboard_dir, tensorboard_dir_local)
         else:
             os.makedirs(tensorboard_dir_local, exist_ok=True)
@@ -257,8 +258,6 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(out_model_dir, exist_ok=True)
 
         os.system(f"chmod -R 777 {work_dir_out}")
-        os.system(f"chmod -R 777 {tensorboard_dir}")
-        os.system(f"chmod -R 777 {out_model_dir}")
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
