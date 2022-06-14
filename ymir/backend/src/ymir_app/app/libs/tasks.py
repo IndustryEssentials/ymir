@@ -97,10 +97,11 @@ def normalize_parameters(
             raise DatasetNotFound()
         normalized["validation_dataset_hash"] = validation_dataset.hash
 
-    if parameters.model_id:
-        model = crud.model.get(db, id=parameters.model_id)
-        if model:
-            normalized["model_hash"] = model.hash
+    if parameters.model_stage_id:
+        model_stage = crud.model_stage.get(db, id=parameters.model_stage_id)
+        if model_stage:
+            normalized["model_hash"] = model_stage.model.hash  # type: ignore
+            normalized["model_stage_name"] = model_stage.name
 
     if parameters.keywords:
         normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
