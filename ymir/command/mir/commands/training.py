@@ -258,6 +258,8 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(out_model_dir, exist_ok=True)
 
         os.system(f"chmod -R 777 {work_dir_out}")
+        os.system(f"chmod -R 777 {tensorboard_dir}")
+        os.system(f"chmod -R 777 {out_model_dir}")
 
         # if have model_hash, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
