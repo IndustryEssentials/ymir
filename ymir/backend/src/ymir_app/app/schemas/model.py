@@ -66,7 +66,7 @@ class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Model
     related_task: Optional[TaskInternal]
     is_visible: bool
     related_stages: List[ModelStageBase]
-    recommended_stage: int = 0
+    recommended_stage: Optional[int] = None
 
     class Config:
         orm_mode = True

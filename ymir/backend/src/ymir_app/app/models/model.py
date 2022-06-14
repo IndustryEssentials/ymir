@@ -48,7 +48,7 @@ class Model(Base):
         uselist=True,
         viewonly=True,
     )
-    recommended_stage = Column(Integer, index=True, default=0, nullable=False)
+    recommended_stage = Column(Integer, nullable=True)
 
     is_visible = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
