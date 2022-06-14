@@ -1181,11 +1181,11 @@ class MirContext(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.int = ...
+        key: typing.Text = ...
         value: builtins.int = ...
         def __init__(self,
             *,
-            key : builtins.int = ...,
+            key : typing.Text = ...,
             value : builtins.int = ...,
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
@@ -1230,11 +1230,11 @@ class MirContext(google.protobuf.message.Message):
         pass
     @property
     def asset_area_hist(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
-        """key: 0 (lower bnd), 1M, 2M, 4M, 8M unit: pixel"""
+        """key: 0 (lower bnd), 10, 50, 100, 200, 400, 600, 800, unit: 10000 pixels"""
         pass
     @property
-    def asset_bytes_hist(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
-        """key: 0, 100K, 200K, 300K, ..., 900K, 1000K, step: 100K, unit: byte"""
+    def asset_bytes_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
+        """key: 0, 0.5, ..., 5, unit: mbytes"""
         pass
     total_asset_mbytes: builtins.int = ...
     @property
@@ -1252,7 +1252,7 @@ class MirContext(google.protobuf.message.Message):
         tags_cnt : typing.Optional[typing.Mapping[typing.Text, global___SingleMapCount]] = ...,
         asset_quality_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         asset_area_hist : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
-        asset_bytes_hist : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
+        asset_bytes_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         total_asset_mbytes : builtins.int = ...,
         pred_stats : typing.Optional[global___AnnoStats] = ...,
         gt_stats : typing.Optional[global___AnnoStats] = ...,
