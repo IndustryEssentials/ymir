@@ -3,7 +3,6 @@ from math import ceil
 import os
 import time
 from typing import Any, List, Dict, Optional, Set
-from attr import attr
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
@@ -34,8 +33,7 @@ class MirStorageOps():
 
         # gen mir_keywords
         mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
-        cls.__build_mir_keywords(mir_annotations=mir_annotations,
-                                 mir_keywords=mir_keywords)
+        cls.__build_mir_keywords(mir_annotations=mir_annotations, mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
         # gen mir_context
@@ -73,8 +71,7 @@ class MirStorageOps():
         mir_annotations.head_task_id = head_task_id
 
     @classmethod
-    def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations,
-                             mir_keywords: mirpb.MirKeywords) -> None:
+    def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
         """
         build mir_keywords from single_task_annotations
 
@@ -157,7 +154,9 @@ class MirStorageOps():
         # asset bytes hist
         asset_bytes_hist = cls.__build_hist(values=[x.byte_size for x in mir_metadatas.attributes.values()],
                                             desc_lower_bnds=mir_settings.ASSET_BYTES_DESC_LOWER_BNDS)
-        mir_context.asset_bytes_hist.update({f"{k/mir_settings.BYTES_PER_MB:.1f}MB": v for k, v in asset_bytes_hist.items()})
+        mir_context.asset_bytes_hist.update(
+            {f"{k/mir_settings.BYTES_PER_MB:.1f}MB": v
+             for k, v in asset_bytes_hist.items()})
 
         # asset area hist
         asset_area_hist = cls.__build_hist(values=[x.width * x.height for x in mir_metadatas.attributes.values()],
@@ -389,17 +388,34 @@ class MirStorageOps():
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
             ),
             total_images_cnt=mir_storage_context.images_cnt,
-            cks_count_total={k: v.cnt for k, v in mir_storage_context.cks_cnt.items()},
-            cks_count={k: v.sub_cnt for k, v in mir_storage_context.cks_cnt.items()},
-            tags_cnt_total={k: v.cnt for k, v in mir_storage_context.tags_cnt.items()},
-            tags_cnt={k: v.sub_cnt for k, v in mir_storage_context.tags_cnt.items()},
+            cks_count_total={k: v.cnt
+                             for k, v in mir_storage_context.cks_cnt.items()},
+            cks_count={k: v.sub_cnt
+                       for k, v in mir_storage_context.cks_cnt.items()},
+            tags_cnt_total={k: v.cnt
+                            for k, v in mir_storage_context.tags_cnt.items()},
+            tags_cnt={k: v.sub_cnt
+                      for k, v in mir_storage_context.tags_cnt.items()},
             hist=dict(
-                asset_quality={k: v for k, v in mir_storage_context.asset_quality_hist.items()},
-                anno_quality={k: v for k, v in mir_storage_context.pred_stats.quality_hist.items()},
-                anno_area={k: v for k, v in mir_storage_context.pred_stats.area_hist.items()},
+                anno_quality={k: v
+                              for k, v in mir_storage_context.pred_stats.quality_hist.items()},
+                anno_area={k: v
+                           for k, v in mir_storage_context.pred_stats.area_hist.items()},
+                anno_area_ratio={k: v
+                                 for k, v in mir_storage_context.pred_stats.area_ratio_hist.items()},
             ),
         )
-        return dict(pred=pred, gt={})
+        result = dict(
+            asset_quality={k: v
+                           for k, v in mir_storage_context.asset_quality_hist.items()},
+            asset_bytes={k: v
+                         for k, v in mir_storage_context.asset_bytes_hist.items()},
+            asset_area={k: v
+                        for k, v in mir_storage_context.asset_area_hist.items()},
+            pred=pred,
+            gt={},
+        )
+        return result
 
     @classmethod
     def load_assets_content(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
