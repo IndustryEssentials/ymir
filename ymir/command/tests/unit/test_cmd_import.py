@@ -477,7 +477,7 @@ class TestCmdImport(unittest.TestCase):
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
-                    'total_asset_mbytes': 0,
+                    'total_asset_mbytes': 1,
                     'asset_area_hist': {},
                     'asset_bytes_hist': {},
                     'cks_cnt': {
@@ -772,7 +772,7 @@ class TestCmdImport(unittest.TestCase):
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
-                    'total_asset_mbytes': 0,
+                    'total_asset_mbytes': 1,
                     'asset_area_hist': {},
                     'asset_bytes_hist': {},
                     'cks_cnt': {
