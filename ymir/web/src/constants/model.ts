@@ -44,5 +44,6 @@ export function transferModel (data: BackendData): ModelVersion {
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: data.related_task,
     hidden: !data.is_visible,
+    stages: data.related_stages || [],
   }
 }
