@@ -29,6 +29,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
                 openpai_host=assets_config["openpai_host"],
                 openpai_token=assets_config["openpai_token"],
                 openpai_storage=assets_config["openpai_storage"],
+                openpai_user=assets_config["openpai_user"],
             ),
         )
         if not gpu_lock_ret:
@@ -78,8 +79,10 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_asset_cache")
+        os.makedirs(asset_cache_dir, exist_ok=True)
+
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_assset_cache")
         executant_name = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,

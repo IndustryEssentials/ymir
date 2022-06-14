@@ -192,6 +192,7 @@ class TestMiningCmd(unittest.TestCase):
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
         args.executant_name = 'executor-instance'
+        args.run_as_root = False
         mining_instance = CmdMining(args)
         mining_instance.run()
 
@@ -206,6 +207,7 @@ class TestMiningCmd(unittest.TestCase):
                                          shm_size='16G',
                                          executor=args.executor,
                                          executant_name=args.executant_name,
+                                         run_as_root=args.run_as_root,
                                          run_infer=args.add_annotations,
                                          run_mining=True)
 

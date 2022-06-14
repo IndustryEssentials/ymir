@@ -13,6 +13,7 @@ ASSETS:
   openpai_host: 127.0.0.1
   openpai_token: fake_token
   openpai_storage: fake_storage
+  openpai_user: fake_user
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root

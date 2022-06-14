@@ -122,6 +122,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'openpai_host': '',
             'openpai_token': '',
             'openpai_storage': '',
+            'openpai_user': '',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
@@ -161,7 +162,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self.assertDictEqual(expected_config, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
-        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "training_assset_cache")
+        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "training_asset_cache")
 
         training_cmd = ("mir train --root {0} --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --task-config-file {5} --executor {6} "
