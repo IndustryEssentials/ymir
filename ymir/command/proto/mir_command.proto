@@ -88,6 +88,7 @@ message MetadataAttributes {
     int32 width = 5;  /// column number
     int32 height = 6;  /// row number
     int32 image_channels = 7;  /// (for images) channel count
+    int32 byte_size = 8;
 };
 
 message Timestamp {
@@ -295,12 +296,25 @@ message MirContext {
     map<string, SingleMapCount> cks_cnt = 6;
     map<string, SingleMapCount> tags_cnt = 7;
 
-    map<string, int32> asset_quality_hist = 8; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9 value: count, increment 0.1
-    map<string, int32> anno_quality_hist = 9; // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
-    map<int32, int32> anno_area_hist = 10;
-}
+    map<string, int32> asset_quality_hist = 8; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
+    map<int32, int32> asset_area_hist = 9; // key: 0 (lower bnd), 1M, 2M, 4M, 8M unit: pixel
+    map<int32, int32> asset_bytes_hist = 10;  // key: 0, 100K, 200K, 300K, ..., 900K, 1000K, step: 100K, unit: byte
+    int32 total_asset_mbytes = 11;
+
+    AnnoStats pred_stats = 100;
+    AnnoStats gt_stats = 101;
+};
 
 message SingleMapCount {
     int32 cnt = 1;
     map<string, int32> sub_cnt = 2;
-}
+};
+
+message AnnoStats {
+    int32 total_cnt = 1;
+    int32 positive_asset_cnt = 2;
+    int32 negative_asset_cnt = 3;
+    map<string, int32> quality_hist = 4;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
+    map<int32, int32> area_hist = 5;  // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
+    map<string, int32> area_ratio_hist = 6;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
+};

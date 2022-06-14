@@ -155,13 +155,13 @@ class MirStorageOps():
         anno_quality_hist: Dict[float, int] = cls.__build_hist(
             values=[annotation.anno_quality for annotation in all_annotations],
             desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
-        mir_context.anno_quality_hist.update({f"{k:.2f}": v for k, v in anno_quality_hist.items()})
+        mir_context.pred_stats.quality_hist.update({f"{k:.2f}": v for k, v in anno_quality_hist.items()})
 
         # anno_area_hist
         anno_area_hist: Dict[int, int] = cls.__build_hist(
             values=[annotation.box.w * annotation.box.h for annotation in all_annotations],
             desc_lower_bnds=mir_settings.ANNO_AREA_DESC_LOWER_BNDS)
-        mir_context.anno_area_hist.update(anno_area_hist)
+        mir_context.pred_stats.area_hist.update(anno_area_hist)
 
     @classmethod
     def __build_hist(cls, values: List[Any], desc_lower_bnds: List[Any]) -> Dict[Any, int]:
@@ -368,8 +368,8 @@ class MirStorageOps():
             tags_cnt={k: v.sub_cnt for k, v in mir_storage_context.tags_cnt.items()},
             hist=dict(
                 asset_quality={k: v for k, v in mir_storage_context.asset_quality_hist.items()},
-                anno_quality={k: v for k, v in mir_storage_context.anno_quality_hist.items()},
-                anno_area={k: v for k, v in mir_storage_context.anno_area_hist.items()},
+                anno_quality={k: v for k, v in mir_storage_context.pred_stats.quality_hist.items()},
+                anno_area={k: v for k, v in mir_storage_context.pred_stats.area_hist.items()},
             ),
         )
         return dict(pred=pred, gt={})
