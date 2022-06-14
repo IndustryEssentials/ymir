@@ -1,3 +1,5 @@
+from functools import reduce
+from math import ceil
 import os
 import time
 from typing import Any, List, Dict, Optional, Set
@@ -128,6 +130,9 @@ class MirStorageOps():
             mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
             # if no project_class_ids, project_negative_images_cnt set to 0
 
+        total_asset_bytes = reduce(lambda s, v: s + v.byte_size, mir_metadatas.attributes.values(), 0)
+        mir_context.total_asset_mbytes = ceil(total_asset_bytes / 1048576)
+
         # cks cnt
         for ck, ck_assets in mir_keywords.ck_idx.items():
             mir_context.cks_cnt[ck].cnt = len(ck_assets.asset_annos)
@@ -148,20 +153,20 @@ class MirStorageOps():
                                               desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
         mir_context.asset_quality_hist.update({f"{k:.2f}": v for k, v in asset_quality_hist.items()})
 
-        # anno_quality_hist
+        # pred_stats.quality_hist
         all_annotations = [
             annotation for image_annotation in image_annotations.values() for annotation in image_annotation.annotations
         ]
         anno_quality_hist: Dict[float, int] = cls.__build_hist(
             values=[annotation.anno_quality for annotation in all_annotations],
             desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
-        mir_context.anno_quality_hist.update({f"{k:.2f}": v for k, v in anno_quality_hist.items()})
+        mir_context.pred_stats.quality_hist.update({f"{k:.2f}": v for k, v in anno_quality_hist.items()})
 
-        # anno_area_hist
+        # pred_stats.area_hist
         anno_area_hist: Dict[int, int] = cls.__build_hist(
             values=[annotation.box.w * annotation.box.h for annotation in all_annotations],
             desc_lower_bnds=mir_settings.ANNO_AREA_DESC_LOWER_BNDS)
-        mir_context.anno_area_hist.update(anno_area_hist)
+        mir_context.pred_stats.area_hist.update(anno_area_hist)
 
     @classmethod
     def __build_hist(cls, values: List[Any], desc_lower_bnds: List[Any]) -> Dict[Any, int]:
@@ -368,8 +373,8 @@ class MirStorageOps():
             tags_cnt={k: v.sub_cnt for k, v in mir_storage_context.tags_cnt.items()},
             hist=dict(
                 asset_quality={k: v for k, v in mir_storage_context.asset_quality_hist.items()},
-                anno_quality={k: v for k, v in mir_storage_context.anno_quality_hist.items()},
-                anno_area={k: v for k, v in mir_storage_context.anno_area_hist.items()},
+                anno_quality={k: v for k, v in mir_storage_context.pred_stats.quality_hist.items()},
+                anno_area={k: v for k, v in mir_storage_context.pred_stats.area_hist.items()},
             ),
         )
         return dict(pred=pred, gt={})
