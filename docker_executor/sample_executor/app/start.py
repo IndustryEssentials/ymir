@@ -53,11 +53,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake json')
 
-    #! use `rw.write_training_result` to save training result
-    rw.write_training_result(model_names=['model-0000.params', 'model-symbols.json'],
-                             mAP=expected_mAP,
-                             classAPs={class_name: expected_mAP
-                                       for class_name in class_names})
+    #! use `rw.write_model_stage` to save training result
+    rw.write_model_stage(stage_name='stage-0', files=['model-0000.params', 'model-symbols.json', '0000.weights'], mAP=expected_mAP / 3)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
