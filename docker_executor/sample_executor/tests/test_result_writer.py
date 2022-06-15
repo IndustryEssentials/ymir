@@ -93,6 +93,9 @@ class TestResultWriter(unittest.TestCase):
                                  as_best=(idx == 8))
         self._check_model_stages()
 
+    def test_write_training_result(self) -> None:
+        rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
+
     def test_write_mining_result(self) -> None:
         mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]
         rw.write_mining_result(mining_result=mining_result)

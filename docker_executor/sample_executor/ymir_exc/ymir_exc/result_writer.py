@@ -24,19 +24,6 @@ class Annotation(BaseModel):
     box: Box
 
 
-def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
-    training_result = {
-        'model': model_names,
-        'map': mAP,
-        'class_aps': classAPs,
-    }
-    training_result.update(kwargs)
-
-    env_config = env.get_current_env()
-    with open(env_config.output.training_result_file, 'w') as f:
-        yaml.safe_dump(training_result, f)
-
-
 def write_model_stage(stage_name: str,
                       model_files: List[str],
                       mAP: float,
@@ -81,6 +68,12 @@ def write_model_stage(stage_name: str,
     # save all
     with open(env_config.output.training_result_file, 'w') as f:
         yaml.safe_dump(data=training_result, stream=f)
+
+
+def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
+    write_model_stage(stage_name='default-stage',
+                      model_files=model_names,
+                      mAP=mAP)
 
 
 def write_mining_result(mining_result: List[Tuple[str, float]]) -> None:
