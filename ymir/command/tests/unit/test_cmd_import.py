@@ -549,8 +549,8 @@ class TestCmdImport(unittest.TestCase):
                         '0.0MB': 2,
                     },
                     'pred_stats': {
-                        'total_cnt': 0,
-                        'positive_asset_cnt': 0,
+                        'total_cnt': 3,
+                        'positive_asset_cnt': 2,
                         'negative_asset_cnt': 0,
                         'quality_hist': {
                             '1.00': 0,
@@ -879,8 +879,8 @@ class TestCmdImport(unittest.TestCase):
                         '0.0MB': 2,
                     },
                     'pred_stats': {
-                        'total_cnt': 0,
-                        'positive_asset_cnt': 0,
+                        'total_cnt': 5,
+                        'positive_asset_cnt': 2,
                         'negative_asset_cnt': 0,
                         'quality_hist': {
                             '1.00': 0,
