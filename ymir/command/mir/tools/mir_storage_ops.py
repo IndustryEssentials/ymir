@@ -124,6 +124,8 @@ class MirStorageOps():
         image_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations
         mir_context.images_cnt = len(mir_metadatas.attributes)
         mir_context.negative_images_cnt = mir_context.images_cnt - len(image_annotations)
+        mir_context.pred_stats.negative_asset_cnt = mir_context.negative_images_cnt
+        mir_context.pred_stats.positive_asset_cnt = mir_context.images_cnt - mir_context.pred_stats.negative_asset_cnt
         if project_class_ids:
             mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
             # if no project_class_ids, project_negative_images_cnt set to 0
@@ -167,6 +169,7 @@ class MirStorageOps():
         all_annotations = [
             annotation for image_annotation in image_annotations.values() for annotation in image_annotation.annotations
         ]
+        mir_context.pred_stats.total_cnt = len(all_annotations)
         anno_quality_hist: Dict[float, int] = cls.__build_hist(
             values=[annotation.anno_quality for annotation in all_annotations],
             desc_lower_bnds=mir_settings.QUALITY_DESC_LOWER_BNDS)
@@ -404,14 +407,21 @@ class MirStorageOps():
                 anno_area_ratio={k: v
                                  for k, v in mir_storage_context.pred_stats.area_ratio_hist.items()},
             ),
+            annos_cnt=mir_storage_context.pred_stats.total_cnt,
+            positive_asset_cnt=mir_storage_context.pred_stats.positive_asset_cnt,
+            negative_asset_cnt=mir_storage_context.pred_stats.negative_asset_cnt,
         )
         result = dict(
-            asset_quality={k: v
-                           for k, v in mir_storage_context.asset_quality_hist.items()},
-            asset_bytes={k: v
-                         for k, v in mir_storage_context.asset_bytes_hist.items()},
-            asset_area={k: v
-                        for k, v in mir_storage_context.asset_area_hist.items()},
+            total_asset_mbytes=mir_storage_context.total_asset_mbytes,
+            total_assets_cnt=mir_storage_context.images_cnt,
+            hist=dict(
+                asset_quality={k: v
+                               for k, v in mir_storage_context.asset_quality_hist.items()},
+                asset_bytes={k: v
+                             for k, v in mir_storage_context.asset_bytes_hist.items()},
+                asset_area={k: v
+                            for k, v in mir_storage_context.asset_area_hist.items()},
+            ),
             pred=pred,
             gt={},
         )
