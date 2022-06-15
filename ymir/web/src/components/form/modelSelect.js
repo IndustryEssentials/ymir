@@ -12,8 +12,9 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   const [_, getModels] = useFetch('model/queryAllModels')
 
   useEffect(() => {
-    getModels(pid)
-  }, [])
+    console.log('pid:', pid)
+    pid && getModels(pid)
+  }, [pid])
 
   useEffect(() => {
     if (options.length) {
@@ -43,12 +44,12 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
       const name = `${model.name} ${model.versionName}`
       const map = model.map
       return {
-        label: <span>{name} (mAP: <strong title={map}>{percent(map)}</strong></span>,
+        label: name,
         model,
         value: model.id,
-        children: model.stages.map(stage => ({ 
-          label: `${name} ${stage.name}`, 
-          value: stage.id, 
+        children: model.stages.map(stage => ({
+          label: <span>{stage.name} {percent(stage.map)}</span>,
+          value: stage.id,
         })),
       }
     })
@@ -57,7 +58,7 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
 
   function labelRender(labels, options) {
     console.log('render: ', labels, options)
-    return labels.join('-')
+    return <span>{labels.map(label => label)}</span>
   }
 
   return (
