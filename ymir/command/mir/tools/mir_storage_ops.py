@@ -354,14 +354,36 @@ class MirStorageOps():
         """
         exampled return data:
         {
-            "class_ids_count": {3: 34},
-            "class_names_count": {'cat': 34},
-            "ignored_labels": {'cat':5, },
-            "negative_info": {
-                "negative_images_cnt": 0,
-                "project_negative_images_cnt": 0,
+            "total_asset_mbytes":222,
+            "total_assets_cnt":1420,
+            "hist":{
+                "asset_quality":[],
+                "asset_bytes":[],
+                "asset_area":[]
             },
-            "total_images_cnt": 1,
+            "pred":{
+                "class_ids_count":{},
+                "class_names_count":{},
+                "ignored_labels":{},
+                "negative_info":{
+                    "negative_images_cnt":14,
+                    "project_negative_images_cnt":0
+                },
+                "total_images_cnt":1420,
+                "cks_count_total":{},
+                "cks_count":{},
+                "tags_cnt_total":{},
+                "tags_cnt":{},
+                "hist":{
+                    "anno_quality":[],
+                    "anno_area":[],
+                    "anno_area_ratio":[]
+                },
+                "annos_cnt":10006,
+                "positive_asset_cnt":1406,
+                "negative_asset_cnt":14
+            },
+            "gt":{}
         }
         """
         mir_storage_tasks: mirpb.MirTasks
@@ -400,12 +422,13 @@ class MirStorageOps():
             tags_cnt={k: v.sub_cnt
                       for k, v in mir_storage_context.tags_cnt.items()},
             hist=dict(
-                anno_quality={k: v
-                              for k, v in mir_storage_context.pred_stats.quality_hist.items()},
-                anno_area={k: v
-                           for k, v in mir_storage_context.pred_stats.area_hist.items()},
-                anno_area_ratio={k: v
-                                 for k, v in mir_storage_context.pred_stats.area_ratio_hist.items()},
+                anno_quality=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.pred_stats.quality_hist.items()],
+                                    key=lambda e: e['x']),  # type: ignore
+                anno_area=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.pred_stats.area_hist.items()],
+                                 key=lambda e: e['x']),  # type: ignore
+                anno_area_ratio=sorted([{'x': k, 'y': v}
+                                        for k, v in mir_storage_context.pred_stats.area_ratio_hist.items()],
+                                       key=lambda e: e['x']),  # type: ignore
             ),
             annos_cnt=mir_storage_context.pred_stats.total_cnt,
             positive_asset_cnt=mir_storage_context.pred_stats.positive_asset_cnt,
@@ -415,12 +438,12 @@ class MirStorageOps():
             total_asset_mbytes=mir_storage_context.total_asset_mbytes,
             total_assets_cnt=mir_storage_context.images_cnt,
             hist=dict(
-                asset_quality={k: v
-                               for k, v in mir_storage_context.asset_quality_hist.items()},
-                asset_bytes={k: v
-                             for k, v in mir_storage_context.asset_bytes_hist.items()},
-                asset_area={k: v
-                            for k, v in mir_storage_context.asset_area_hist.items()},
+                asset_quality=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.asset_quality_hist.items()],
+                                     key=lambda e: e['x']),  # type: ignore
+                asset_bytes=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.asset_bytes_hist.items()],
+                                   key=lambda e: e['x']),  # type: ignore
+                asset_area=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.asset_area_hist.items()],
+                                  key=lambda e: e['x']),  # type: ignore
             ),
             pred=pred,
             gt={},
