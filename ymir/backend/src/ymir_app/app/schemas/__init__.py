@@ -44,6 +44,7 @@ from .model import (
     ModelPaginationOut,
     ModelsOut,
     ModelUpdate,
+    StageChange,
 )
 from .model_group import (
     ModelGroupOut,

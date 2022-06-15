@@ -72,12 +72,29 @@ class TestModel:
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
+            "model_stages": {
+                "epoch-1000": {
+                    "mAP": -1,
+                    "timestamp": 100000000,
+                },
+                "epoch-2000": {
+                    "mAP": 0.3,
+                    "timestamp": 100000001,
+                },
+                "epoch-3000": {
+                    "mAP": 0.83,
+                    "timestamp": 100000002,
+                },
+            },
+            "best_model_stage": "epoch-3000",
         }
         M = m.ModelMetaData.from_viz_res(res)
         assert M.hash == res["model_id"]
         assert M.map == res["model_mAP"]
         assert M.task_parameters == res["task_parameters"]
         assert M.executor_config == res["executor_config"]
+        assert M.model_stages == res["model_stages"]
+        assert M.best_model_stage == res["best_model_stage"]
 
 
 class TestDataset:
@@ -181,6 +198,21 @@ class TestVizClient:
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
+            "model_stages": {
+                "epoch-1000": {
+                    "mAP": -1,
+                    "timestamp": 100000000,
+                },
+                "epoch-2000": {
+                    "mAP": 0.3,
+                    "timestamp": 100000001,
+                },
+                "epoch-3000": {
+                    "mAP": 0.83,
+                    "timestamp": 100000002,
+                },
+            },
+            "best_model_stage": "epoch-3000",
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp

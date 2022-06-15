@@ -99,3 +99,7 @@ class ModelsOut(Common):
 
 class ModelPaginationOut(Common):
     result: ModelPagination
+
+
+class StageChange(BaseModel):
+    stage_id: int

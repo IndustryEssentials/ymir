@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app import schemas
 from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
-from app.models import Model
+from app.models import Model, ModelStage
 from app.schemas.model import ModelCreate, ModelUpdate
 
 
@@ -118,6 +118,16 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db.refresh(model)
         return model
 
+    def update_recommonded_stage(self, db: Session, *, model_id: int, stage_id: int,) -> Optional[Model]:
+        model = self.get(db, id=model_id)
+        if not model:
+            return model
+        model.recommended_stage = stage_id
+        db.add(model)
+        db.commit()
+        db.refresh(model)
+        return model
+
     def finish(
         self, db: Session, model_id: int, result_state: ResultState = ResultState.ready, result: Optional[Dict] = None,
     ) -> Optional[Model]:
@@ -128,12 +138,21 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if result:
             model.map = result["map"]
             model.hash = result["hash"]
+            for stage_name, body in result["model_stages"].items():
+                stage_obj = ModelStage(name=stage_name, map=body["mAP"], timestamp=body["timestamp"])
+                model.related_stages.append(stage_obj)
 
         model.result_state = int(result_state)
 
         db.add(model)
         db.commit()
         db.refresh(model)
+
+        if result:
+            for stage in model.related_stages:
+                if stage.name == result["best_model_stage"]:
+                    return self.update_recommonded_stage(db, model_id=model_id, stage_id=stage.id)
+
         return model
 
     def remove_group_resources(self, db: Session, *, group_id: int) -> List[Model]:
