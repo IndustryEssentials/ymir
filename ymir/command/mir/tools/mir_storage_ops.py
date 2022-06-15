@@ -422,13 +422,9 @@ class MirStorageOps():
             tags_cnt={k: v.sub_cnt
                       for k, v in mir_storage_context.tags_cnt.items()},
             hist=dict(
-                anno_quality=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.pred_stats.quality_hist.items()],
-                                    key=lambda e: e['x']),  # type: ignore
-                anno_area=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.pred_stats.area_hist.items()],
-                                 key=lambda e: e['x']),  # type: ignore
-                anno_area_ratio=sorted([{'x': k, 'y': v}
-                                        for k, v in mir_storage_context.pred_stats.area_ratio_hist.items()],
-                                       key=lambda e: e['x']),  # type: ignore
+                anno_quality=cls._gen_viz_hist(mir_storage_context.pred_stats.quality_hist),
+                anno_area=cls._gen_viz_hist(mir_storage_context.pred_stats.area_hist),
+                anno_area_ratio=cls._gen_viz_hist(mir_storage_context.pred_stats.area_ratio_hist),
             ),
             annos_cnt=mir_storage_context.pred_stats.total_cnt,
             positive_asset_cnt=mir_storage_context.pred_stats.positive_asset_cnt,
@@ -438,12 +434,9 @@ class MirStorageOps():
             total_asset_mbytes=mir_storage_context.total_asset_mbytes,
             total_assets_cnt=mir_storage_context.images_cnt,
             hist=dict(
-                asset_quality=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.asset_quality_hist.items()],
-                                     key=lambda e: e['x']),  # type: ignore
-                asset_bytes=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.asset_bytes_hist.items()],
-                                   key=lambda e: e['x']),  # type: ignore
-                asset_area=sorted([{'x': k, 'y': v} for k, v in mir_storage_context.asset_area_hist.items()],
-                                  key=lambda e: e['x']),  # type: ignore
+                asset_quality=cls._gen_viz_hist(mir_storage_context.asset_quality_hist),
+                asset_bytes=cls._gen_viz_hist(mir_storage_context.asset_bytes_hist),
+                asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
             ),
             pred=pred,
             gt={},
@@ -508,6 +501,10 @@ class MirStorageOps():
 
         dataset_evaluations = cls.__message_to_dict(task.evaluation)
         return dataset_evaluations["dataset_evaluations"]
+
+    @classmethod
+    def _gen_viz_hist(cls, hist_dict: Any) -> List[dict]:
+        return sorted([{'x': k, 'y': v} for k, v in hist_dict.items()], key=lambda e: e['x']),  # type: ignore
 
 
 def create_task(task_type: 'mirpb.TaskType.V',
