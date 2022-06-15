@@ -66,21 +66,16 @@ def write_model_stage(stage_name: str,
     }
     if as_best:
         training_result['best_model_stage'] = stage_name
+        training_result['map'] = model_stages[stage_name]['mAP']
 
     # if too many stages, remove a smallest one
-    sorted_model_stages = sorted(model_stages.values(), key=lambda x: x.get('timestamp', 0))
-    best_model_stage = training_result.get('best_model_stage', '')
     if len(model_stages) > _MAX_MODEL_STAGES_COUNT_:
+        sorted_model_stages = sorted(model_stages.values(), key=lambda x: x.get('timestamp', 0))
         del_stage_name = sorted_model_stages[0]['stage_name']
-        if del_stage_name == best_model_stage:
+        if del_stage_name == training_result.get('best_model_stage', ''):
             del_stage_name = sorted_model_stages[1]['stage_name']
         del model_stages[del_stage_name]
     training_result['model_stages'] = model_stages
-
-    # best stage and best map
-    if not best_model_stage:
-        training_result['best_model_stage'] = sorted_model_stages[-1]['stage_name']
-    training_result['map'] = model_stages[training_result['best_model_stage']]['mAP']
 
     # save all
     with open(env_config.output.training_result_file, 'w') as f:
