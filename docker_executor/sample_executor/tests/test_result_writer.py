@@ -66,8 +66,8 @@ class TestResultWriter(unittest.TestCase):
 
         for idx in range(1, 11):
             self.assertTrue(f"epoch-{idx}" in result_obj['model_stages'])
-        self.assertEqual('epoch-10', result_obj['best_model_stage'])
-        self.assertEqual(1, result_obj['map'])
+        self.assertEqual('epoch-8', result_obj['best_model_stage'])
+        self.assertEqual(0.8, result_obj['map'])
 
 
     def _check_mining_result(self, mining_result: List[Tuple[str, float]]) -> None:
@@ -83,13 +83,14 @@ class TestResultWriter(unittest.TestCase):
             infer_result_obj = json.loads(f.read())
             self.assertEqual(set(infer_result_obj['detection'].keys()), set(infer_result.keys()))
 
+    # public: test cases
     def test_write_model_stage(self) -> None:
         for idx in range(0, 11):
             rw.write_model_stage(stage_name=f"epoch-{idx}",
                                  model_files=[f"model-{idx}.params", 'model-symbol.json'],
-                                 mAP=idx // 10,
+                                 mAP=idx / 10,
                                  timestamp=10 * idx + 1000000,
-                                 as_best=True)
+                                 as_best=(idx == 8))
         self._check_model_stages()
 
     def test_write_mining_result(self) -> None:

@@ -64,6 +64,7 @@ def write_model_stage(stage_name: str,
         'timestamp': timestamp or time.time(),
         'mAP': mAP
     }
+
     if as_best:
         training_result['best_model_stage'] = stage_name
         training_result['map'] = model_stages[stage_name]['mAP']
