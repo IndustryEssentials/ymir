@@ -9,11 +9,12 @@ const useFetch = (effect) => {
   })
   const [result, setResult] = useState(null)
 
-  const getResult = async ({...payload}) => {
+  const getResult = async (payload) => {
     const result = await fetch(payload)
     if (result) {
       setResult(result)
     }
+    return result
   }
 
   return [result, getResult]
