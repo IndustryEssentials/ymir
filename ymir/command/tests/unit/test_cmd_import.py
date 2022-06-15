@@ -280,19 +280,6 @@ class TestCmdImport(unittest.TestCase):
         mir_context = mirpb.MirContext()
         with open(os.path.join(repo_root, 'keywords.mir'), 'rb') as f:
             mir_keywords.ParseFromString(f.read())
-            # sort asset-anno pairs before compare, they don't have orders when save
-            # for _, ci_to_assets in mir_keywords.pred_idx.asset_cis.items():
-            #     ci_to_assets.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
-            # for _, ci_to_annos in mir_keywords.pred_idx.anno_cis.items():
-            #     ci_to_annos.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
-            # for _, ck_to_assets in mir_keywords.pred_idx.asset_cks.items():
-            #     ck_to_assets.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
-            #     for _, sub_ck_to_assets in ck_to_assets.sub_indexes.items():
-            #         sub_ck_to_assets.pairs.sort(key=lambda x: (x.asset_id, x.anno_idx))
-            # for _, ck_to_annos in mir_keywords.pred_idx.anno_cks.items():
-            #     ck_to_annos.indexes.sort(key=lambda x: (x.asset_id, x.anno_idx))
-            #     for _, sub_ck_to_annos in ck_to_annos.sub_indexes.items():
-            #         sub_ck_to_annos.pairs.sort(key=lambda x: (x.asset_id, x.anno_idx))
         with open(os.path.join(repo_root, 'context.mir'), 'rb') as f:
             mir_context.ParseFromString(f.read())
         dict_keywords = MessageToDict(mir_keywords, preserving_proto_field_name=True)
@@ -477,6 +464,7 @@ class TestCmdImport(unittest.TestCase):
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
+                    'total_asset_mbytes': 1,
                     'cks_cnt': {
                         'weather': {
                             'cnt': 2,
@@ -537,29 +525,70 @@ class TestCmdImport(unittest.TestCase):
                         '0.10': 0,
                         '0.00': 0,
                     },
-                    'anno_quality_hist': {
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 2,
-                        '0.60': 1,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 0,
-                        '0.10': 0,
-                        '0.00': 0,
-                    },
-                    'anno_area_hist': {
-                        200000: 0,
-                        100000: 0,
-                        50000: 0,
-                        10000: 1,
-                        5000: 1,
-                        2500: 0,
-                        500: 1,
-                        50: 0,
+                    'asset_area_hist': {
+                        8000000: 0,
+                        6000000: 0,
+                        4000000: 0,
+                        2000000: 0,
+                        1000000: 0,
+                        500000: 0,
+                        100000: 2,
                         0: 0,
+                    },
+                    'asset_bytes_hist': {
+                        '5.0MB': 0,
+                        '4.5MB': 0,
+                        '4.0MB': 0,
+                        '3.5MB': 0,
+                        '3.0MB': 0,
+                        '2.5MB': 0,
+                        '2.0MB': 0,
+                        '1.5MB': 0,
+                        '1.0MB': 0,
+                        '0.5MB': 0,
+                        '0.0MB': 2,
+                    },
+                    'pred_stats': {
+                        'total_cnt': 3,
+                        'positive_asset_cnt': 2,
+                        'negative_asset_cnt': 0,
+                        'quality_hist': {
+                            '1.00': 0,
+                            '0.90': 0,
+                            '0.80': 0,
+                            '0.70': 2,
+                            '0.60': 1,
+                            '0.50': 0,
+                            '0.40': 0,
+                            '0.30': 0,
+                            '0.20': 0,
+                            '0.10': 0,
+                            '0.00': 0,
+                        },
+                        'area_hist': {
+                            200000: 0,
+                            100000: 0,
+                            50000: 0,
+                            10000: 1,
+                            5000: 1,
+                            2500: 0,
+                            500: 1,
+                            50: 0,
+                            0: 0,
+                        },
+                        'area_ratio_hist': {
+                            '1.00': 0,
+                            '0.90': 0,
+                            '0.80': 0,
+                            '0.70': 0,
+                            '0.60': 0,
+                            '0.50': 0,
+                            '0.40': 0,
+                            '0.30': 0,
+                            '0.20': 1,
+                            '0.10': 0,
+                            '0.00': 2,
+                        },
                     },
                 }
             else:
@@ -763,6 +792,7 @@ class TestCmdImport(unittest.TestCase):
                     'negative_images_cnt': 0,
                     'project_negative_images_cnt': 0,
                     'project_predefined_keyids_cnt': {},
+                    'total_asset_mbytes': 1,
                     'cks_cnt': {
                         'weather': {
                             'cnt': 2,
@@ -825,29 +855,70 @@ class TestCmdImport(unittest.TestCase):
                         '0.10': 0,
                         '0.00': 0,
                     },
-                    'anno_quality_hist': {
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 2,
-                        '0.60': 1,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 1,
-                        '0.20': 1,
-                        '0.10': 0,
-                        '0.00': 0,
-                    },
-                    'anno_area_hist': {
-                        200000: 0,
-                        100000: 0,
-                        50000: 0,
-                        10000: 1,
-                        5000: 1,
-                        2500: 0,
-                        500: 3,
-                        50: 0,
+                    'asset_area_hist': {
+                        8000000: 0,
+                        6000000: 0,
+                        4000000: 0,
+                        2000000: 0,
+                        1000000: 0,
+                        500000: 0,
+                        100000: 2,
                         0: 0,
+                    },
+                    'asset_bytes_hist': {
+                        '5.0MB': 0,
+                        '4.5MB': 0,
+                        '4.0MB': 0,
+                        '3.5MB': 0,
+                        '3.0MB': 0,
+                        '2.5MB': 0,
+                        '2.0MB': 0,
+                        '1.5MB': 0,
+                        '1.0MB': 0,
+                        '0.5MB': 0,
+                        '0.0MB': 2,
+                    },
+                    'pred_stats': {
+                        'total_cnt': 5,
+                        'positive_asset_cnt': 2,
+                        'negative_asset_cnt': 0,
+                        'quality_hist': {
+                            '1.00': 0,
+                            '0.90': 0,
+                            '0.80': 0,
+                            '0.70': 2,
+                            '0.60': 1,
+                            '0.50': 0,
+                            '0.40': 0,
+                            '0.30': 1,
+                            '0.20': 1,
+                            '0.10': 0,
+                            '0.00': 0,
+                        },
+                        'area_hist': {
+                            200000: 0,
+                            100000: 0,
+                            50000: 0,
+                            10000: 1,
+                            5000: 1,
+                            2500: 0,
+                            500: 3,
+                            50: 0,
+                            0: 0,
+                        },
+                        'area_ratio_hist': {
+                            '1.00': 0,
+                            '0.90': 0,
+                            '0.80': 0,
+                            '0.70': 0,
+                            '0.60': 0,
+                            '0.50': 0,
+                            '0.40': 0,
+                            '0.30': 0,
+                            '0.20': 1,
+                            '0.10': 0,
+                            '0.00': 4,
+                        },
                     },
                 }
             try:

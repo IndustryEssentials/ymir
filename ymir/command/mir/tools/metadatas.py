@@ -33,7 +33,7 @@ def _generate_metadata_mir_pb(mir_metadatas: mirpb.MirMetadatas, dataset_name: s
         # read file
         # if any exception occured, exit without any handler
         hashed_asset_path = os.path.join(hashed_asset_root, val)
-        asset_type, width, height, channel = _type_shape_for_asset(hashed_asset_path)
+        asset_type, width, height, channel, byte_size = _type_shape_size_for_asset(hashed_asset_path)
         if asset_type == mirpb.AssetTypeUnknown:
             logging.warning(f"ignore asset with unknown format, id: {val}")
             unknown_format_count += 1
@@ -42,6 +42,7 @@ def _generate_metadata_mir_pb(mir_metadatas: mirpb.MirMetadatas, dataset_name: s
         metadata_attributes.width = width
         metadata_attributes.height = height
         metadata_attributes.image_channels = channel
+        metadata_attributes.byte_size = byte_size
 
         mir_metadatas.attributes[val].CopyFrom(metadata_attributes)
 
@@ -62,10 +63,10 @@ _ASSET_TYPE_STR_TO_ENUM_MAPPING = {
 }
 
 
-def _type_shape_for_asset(asset_path: str) -> Tuple['mirpb.AssetType.V', int, int, int]:
+def _type_shape_size_for_asset(asset_path: str) -> Tuple['mirpb.AssetType.V', int, int, int, int]:
     if not asset_path:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='_type_shape_for_asset: empty asset_path')
+                              error_message='_type_shape_size_for_asset: empty asset_path')
 
     try:
         asset_image = Image.open(asset_path)
@@ -77,9 +78,9 @@ def _type_shape_for_asset(asset_path: str) -> Tuple['mirpb.AssetType.V', int, in
     if asset_type_str in _ASSET_TYPE_STR_TO_ENUM_MAPPING:
         width, height = asset_image.size
         channel = len(asset_image.getbands())
-        return (_ASSET_TYPE_STR_TO_ENUM_MAPPING[asset_type_str], width, height, channel)
+        return (_ASSET_TYPE_STR_TO_ENUM_MAPPING[asset_type_str], width, height, channel, os.stat(asset_path).st_size)
     else:
-        return (mirpb.AssetTypeUnknown, 0, 0, 0)
+        return (mirpb.AssetTypeUnknown, 0, 0, 0, os.stat(asset_path).st_size)
 
 
 def import_metadatas(mir_metadatas: mirpb.MirMetadatas,

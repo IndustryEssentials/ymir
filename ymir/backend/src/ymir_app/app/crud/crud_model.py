@@ -32,19 +32,14 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
     ) -> Tuple[List[Model], int]:
         query = db.query(self.model)
         query = query.filter(
-            self.model.user_id == user_id,
-            self.model.is_visible == int(visible),
-            not_(self.model.is_deleted),
+            self.model.user_id == user_id, self.model.is_visible == int(visible), not_(self.model.is_deleted),
         )
 
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
             _end_time = datetime.utcfromtimestamp(end_time)
             query = query.filter(
-                and_(
-                    self.model.create_datetime >= _start_time,
-                    self.model.create_datetime <= _end_time,
-                )
+                and_(self.model.create_datetime >= _start_time, self.model.create_datetime <= _end_time,)
             )
 
         if source:
@@ -100,7 +95,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return db_obj
 
     def create_as_task_result(
-        self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
+        self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str,
     ) -> Model:
         model_in = ModelCreate(
             hash=task.hash,
@@ -113,13 +108,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         )
         return self.create_with_version(db, obj_in=model_in, dest_group_name=dest_group_name)
 
-    def update_state(
-        self,
-        db: Session,
-        *,
-        model_id: int,
-        new_state: ResultState,
-    ) -> Optional[Model]:
+    def update_state(self, db: Session, *, model_id: int, new_state: ResultState,) -> Optional[Model]:
         model = self.get(db, id=model_id)
         if not model:
             return model
@@ -130,11 +119,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return model
 
     def finish(
-        self,
-        db: Session,
-        model_id: int,
-        result_state: ResultState = ResultState.ready,
-        result: Optional[Dict] = None,
+        self, db: Session, model_id: int, result_state: ResultState = ResultState.ready, result: Optional[Dict] = None,
     ) -> Optional[Model]:
         model = self.get(db, id=model_id)
         if not model:
