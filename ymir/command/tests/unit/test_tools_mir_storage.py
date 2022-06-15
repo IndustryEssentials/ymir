@@ -200,6 +200,9 @@ class TestMirStorage(unittest.TestCase):
                 0: 0,
             },
             'pred_stats': {
+                'total_cnt': 6,
+                'positive_asset_cnt': 3,
+                'negative_asset_cnt': 0,
                 'quality_hist': {
                     '0.00': 6,
                     '0.10': 0,
