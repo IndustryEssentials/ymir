@@ -124,6 +124,7 @@ message GeneralReq {
     string task_parameters = 24;
     LabelCollection label_collection = 25;
     EvaluateConfig evaluate_config = 26;
+    string model_stage = 27;
     ReqCreateTask req_create_task = 1001;
 
     reserved 17, 1002;
