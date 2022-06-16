@@ -169,7 +169,7 @@ export function createLabelTask({
  * {string} network
  * {number} trainType
  * {number} strategy
- * {number} stageId
+ * {array[number, number]} modelStage
  * {string} image
  * } 
  * @returns 
@@ -178,8 +178,10 @@ export function createTrainTask({
   iteration, stage,
   name, projectId, datasetId, keywords, testset,
   backbone, config, network, trainType, strategy,
-  stageId, image, imageId,
+  modelStage = [], image, imageId,
 }) {
+  const model = modelStage[0]
+  const stageId = modelStage[1]
   return createTask({
     name,
     project_id: projectId,
@@ -195,6 +197,7 @@ export function createTrainTask({
       backbone,
       network,
       train_type: trainType,
+      model_id: model,
       model_stage_id: stageId,
       docker_image: image,
       docker_image_id: imageId,
@@ -204,9 +207,11 @@ export function createTrainTask({
 
 export function createMiningTask({
   iteration, stage,
-  projectId, datasetId, stageId, topk, algorithm,
+  projectId, datasetId, modelStage = [], topk, algorithm,
   config, strategy, inference, name, image, imageId,
 }) {
+  const model = modelStage[0]
+  const stageId = modelStage[1]
   return createTask({
     type: TASKTYPES.MINING,
     project_id: projectId,
@@ -216,6 +221,7 @@ export function createMiningTask({
     docker_image_config: config,
     parameters: {
       strategy,
+      model_id: model,
       model_stage_id: stageId,
       dataset_id: datasetId,
       mining_algorithm: algorithm,
@@ -234,7 +240,7 @@ export function createMiningTask({
  * {number} projectId
  * {number} datasetId
  * {object} config
- * {number} stages
+ * {array<array<model, stage>>} stages
  * {string} image
  * {string} imageId
  * {string} description
@@ -251,13 +257,14 @@ export function createInferenceTask({
   imageId,
   description,
 }) {
-  const params = stages.map(stage => ({
+  const params = stages.map(([model, stage]) => ({
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
     description,
     docker_image_config: config,
     parameters: {
+      model_id: model,
       model_stage_id: stage,
       generate_annotations: true,
       dataset_id: datasetId,
