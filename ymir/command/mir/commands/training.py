@@ -29,47 +29,66 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
         model hash, model mAP and ModelStorage
     """
     out_model_dir = os.path.join(out_root, "models")
-    model_paths, model_mAP = _find_models(out_model_dir)
-    if not model_paths:
+    model_stages, best_stage_name = _find_model_stages(out_model_dir)
+    if not model_stages:
         # if have no models
-        return '', model_mAP
+        return ('', 0)
+    best_mAP = model_stages[best_stage_name].mAP
 
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
                                            task_context=dict(**task_context,
-                                                             mAP=model_mAP,
+                                                             mAP=best_mAP,
                                                              type=mirpb.TaskType.TaskTypeTraining),
-                                           models=[os.path.basename(model_path) for model_path in model_paths])
+                                           model_stages=model_stages,
+                                           best_stage_name=best_stage_name)
     model_sha1 = mir_utils.pack_and_copy_models(model_storage=model_storage,
                                                 model_dir_path=out_model_dir,
                                                 model_location=model_upload_location)
 
-    return model_sha1, model_mAP
+    return model_sha1, best_mAP
 
 
-def _find_models(model_root: str) -> Tuple[List[str], float]:
+def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageStorage], str]:
     """
-    find models in `model_root`, and returns model names and mAP
+    find models in `model_root`, and returns all model stages
 
     Args:
         model_root (str): model root
 
     Returns:
-        Tuple[List[str], float]: list of model names and map
+        Tuple[Dict[str, mir_utils.ModelStageStorage], str]: all model stages and best model stage name
     """
-    model_names = []
-    model_mAP = 0.0
+    # model_names = []
+    # model_mAP = 0.0
+    model_stages: Dict[str, mir_utils.ModelStageStorage] = {}
+    best_stage_name = ''
 
     result_yaml_path = os.path.join(model_root, "result.yaml")
     try:
         with open(result_yaml_path, "r") as f:
             yaml_obj = yaml.safe_load(f.read())
+        if 'model' in yaml_obj:
+            # old trainig result file: read models from `model` field
             model_names = yaml_obj["model"]
             model_mAP = float(yaml_obj["map"])
+
+            best_stage_name = 'default-stage'
+            model_stages[best_stage_name] = mir_utils.ModelStageStorage(stage_name=best_stage_name,
+                                                                        models=model_names,
+                                                                        mAP=model_mAP)
+        elif 'model_stages' in yaml_obj:
+            # new training result file: read from model stages
+            for k, v in yaml_obj['model_stages']:
+                model_stages[k] = mir_utils.ModelStageStorage(stage_name=k,
+                                                              files=v['models'],
+                                                              mAP=float(v['mAP']),
+                                                              timestamp=v['timestamp'])
+            best_stage_name = yaml_obj['best_stage_name']
     except FileNotFoundError:
         logging.warning(traceback.format_exc())
-        return [], 0.0
+        return (model_stages, best_stage_name)
 
-    return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
+    return (model_stages, best_stage_name)
 
 
 # private: process
@@ -446,11 +465,17 @@ class CmdTrain(base.BaseCommand):
                                                        task_context=task_context)
 
         # commit task
+        model_dict = {
+            'mean_average_precision': model_mAP,
+            'model_hash': model_sha1,
+            'stages': {},
+            'best_stage_name': '',
+        }
+        # TODO: CHANGE OTHERS
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',
-                                           model_mAP=model_mAP,
-                                           model_hash=model_sha1,
+                                           model_dict=model_dict,
                                            return_code=task_code,
                                            return_msg=return_msg,
                                            serialized_task_parameters=task_parameters,

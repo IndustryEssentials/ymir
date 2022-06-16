@@ -179,17 +179,26 @@ def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str,
 
 
 @dataclass
+class ModelStageStorage:
+    stage_name: str = field(default_factory=str)
+    files: List[str] = field(default_factory=list)
+    mAP: float = field(default_factory=float)
+    timestamp: int = field(default_factory=int)
+
+
+@dataclass
 class ModelStorage:
-    models: List[str] = field(default_factory=list)
     executor_config: Dict[str, Any] = field(default_factory=dict)
     task_context: Dict[str, Any] = field(default_factory=dict)
     class_names: List[str] = field(init=False)
+    model_stages: Dict[str, ModelStageStorage] = field(default_factory=dict)
+    best_stage_name: str = field(default_factory=str)
 
     def __post_init__(self) -> None:
         self.class_names = self.executor_config.get('class_names', [])
 
         # check valid
-        if not self.models or not self.executor_config or not self.task_context or not self.class_names:
+        if not self.model_stages or not self.executor_config or not self.task_context or not self.class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='ModelStorage invalid: not enough infomations')
 
@@ -248,18 +257,24 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
 
     tar_file_path = os.path.join(model_dir_path, 'model.tar.gz')
     with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:
-        for model_name in model_storage.models:
-            model_path = os.path.join(model_dir_path, model_name)
-            logging.info(f"    packing {model_path} -> {model_name}")
-            tar_gz_f.add(model_path, model_name)
-        logging.info(f"    packing {ymir_info_file_path} -> {ymir_info_file_name}")
+        # packing models
+        for stage_name, mss in model_storage.model_stages.items():
+            logging.info(f"  model stage: {stage_name}")
+            for model_name in mss.files:
+                model_path = os.path.join(model_dir_path, model_name)
+                logging.info(f"    packing {model_path} -> {model_name}")
+                tar_gz_f.add(model_path, model_name)
+
+        # packing ymir-info.yaml
+        logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")
         tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
 
     model_hash = hash_utils.sha1sum_for_file(tar_file_path)
     shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
     os.remove(tar_file_path)
 
-    logging.info(f"pack success, model hash: {model_hash}")
+    logging.info(f"pack success, model hash: {model_hash}, best_stage_name: {model_storage.best_stage_name}, "
+                 f"mAP: {model_storage.model_stages[model_storage.best_stage_name].mAP}")
 
     return model_hash
 
