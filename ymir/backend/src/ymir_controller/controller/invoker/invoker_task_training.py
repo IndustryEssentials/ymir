@@ -98,6 +98,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             executant_name=executant_name,
             tensorboard=tensorboard_dir,
             model_hash=request.model_hash,
+            model_stage=request.model_stage,
         )
         return train_response
 
@@ -117,6 +118,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         executant_name: str,
         tensorboard: str,
         model_hash: str,
+        model_stage: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
@@ -125,8 +127,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
             asset_cache_dir
         ]
-        if model_hash:
+        if model_hash and model_stage:
             training_cmd.append('--model-hash')
-            training_cmd.append(model_hash)
+            training_cmd.append(f"{model_hash}@{model_stage}")
 
         return utils.run_command(training_cmd)
