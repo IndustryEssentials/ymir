@@ -138,9 +138,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if result:
             model.map = result["map"]
             model.hash = result["hash"]
-            for stage_name, body in result["model_stages"].items():
-                stage_obj = ModelStage(name=stage_name, map=body["mAP"], timestamp=body["timestamp"])
-                model.related_stages.append(stage_obj)
 
         model.result_state = int(result_state)
 
@@ -149,6 +146,13 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db.refresh(model)
 
         if result:
+            stage_list = []
+            for stage_name, body in result["model_stages"].items():
+                stage_obj = ModelStage(name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=model.id)
+                stage_list.append(stage_obj)
+            db.add_all(stage_list)
+            db.commit()
+            db.refresh(model)
             for stage in model.related_stages:
                 if stage.name == result["best_model_stage"]:
                     return self.update_recommonded_stage(db, model_id=model_id, stage_id=stage.id)
