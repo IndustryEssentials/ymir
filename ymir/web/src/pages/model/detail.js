@@ -67,6 +67,11 @@ function ModelDetail({ modelCache, getModel }) {
     }
   }
 
+  function getModelStage() {
+    const stage = model?.stages.find(st => st.is_best)
+    return stage ? [id, stage.id].toString() : ''
+  }
+
   return (
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
@@ -83,9 +88,9 @@ function ModelDetail({ modelCache, getModel }) {
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>{!model.hidden ? <>
             {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
             <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/mining?mid=${id}`)}>{t('dataset.action.mining')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${id}`)}>{t('dataset.action.inference')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${id}`)}>{t('dataset.action.train')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/mining?mid=${getModelStage()}`)}>{t('dataset.action.mining')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${getModelStage()}`)}>{t('dataset.action.inference')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${getModelStage()}`)}>{t('dataset.action.train')}</Button>
             <Button type='primary' onClick={() => hide(model)}>{t('common.action.hide')}</Button>
           </> :
             <Button type="primary" onClick={restore}>

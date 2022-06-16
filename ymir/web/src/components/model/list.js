@@ -234,7 +234,9 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, taskState, taskType, task, isProtected } = record
+    const { id, name, url, state, taskState, taskType, task, isProtected, stages } = record
+    const defaultStage = stages.find(stage => stage.is_best)
+
     const actions = [
       {
         key: "verify",
@@ -255,21 +257,21 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "mining",
         label: t("dataset.action.mining"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/project/${pid}/mining?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/mining?mid=${id},${defaultStage.id}`),
         icon: <VectorIcon />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/project/${pid}/train?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/train?mid=${id},${defaultStage.id}`),
         icon: <TrainIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/project/${pid}/inference?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/inference?mid=${id},${defaultStage.id}`),
         icon: <WajueIcon />,
       },
       {
@@ -305,7 +307,12 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
 
   const multipleInfer = () => {
     const ids = Object.values(selectedVersions)
-    history.push(`/home/project/${pid}/inference?mid=${ids}`)
+    const versionsObject = Object.values(versions).flat()
+    const selected = versionsObject.filter(md => ids.includes(md.id)).map(md => {
+      const stage = md.stages.find(st => st.is_best)
+      return [md.id, stage.id].toString()
+    }).join('|')
+    history.push(`/home/project/${pid}/inference?mid=${selected}`)
   }
 
   const multipleHide = () => {
