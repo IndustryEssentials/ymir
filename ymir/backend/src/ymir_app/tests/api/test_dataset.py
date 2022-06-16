@@ -152,6 +152,26 @@ class TestGetDataset:
         assert dataset_res
 
 
+class TestGetDatasetAnalyses:
+    def test_get_dataset_analyses(
+        self,
+        client: TestClient,
+        normal_user_token_headers,
+        mocker,
+        db: Session,
+        user_id: int,
+    ):
+        r = create_dataset_record(db, user_id=user_id)
+        r = client.get(
+            f"{settings.API_V1_STR}/datasets/analysis",
+            headers=normal_user_token_headers,
+        )
+        assert r.status_code == 200
+        assert r.json()["code"] == 0
+        res = r.json()["result"]
+        assert res
+
+
 class TestGetAssets:
     def test_get_assets_of_dataset_succeed(
         self,

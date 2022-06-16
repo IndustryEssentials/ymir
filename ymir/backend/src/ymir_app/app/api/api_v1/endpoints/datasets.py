@@ -50,6 +50,45 @@ def batch_get_datasets(
     return {"result": datasets}
 
 
+@router.get(
+    "/analysis",
+    response_model=schemas.DatasetsAnalysesOut,
+)
+def get_datasets_analysis(
+    db: Session = Depends(deps.get_db),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    ids = [int(i) for i in dataset_ids.split(",")]
+    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    if not datasets:
+        raise DatasetNotFound()
+    
+    for dataset in datasets:
+        viz_client.initialize(
+            user_id=current_user.id,
+            project_id=dataset.project_id,
+            branch_id=dataset.hash,
+        )
+        res = viz_client.get_dataset(user_labels=user_labels)
+        dataset.total_asset_mbytes = res.total_asset_mbytes
+        dataset.total_assets_cnt = res.total_assets_cnt
+        dataset.annos_cnt = res.pred["annos_cnt"]
+        dataset.ave_annos_cnt = dataset.annos_cnt / res.total_assets_cnt if res.total_assets_cnt else 0
+        dataset.positive_asset_cnt = res.pred["positive_asset_cnt"]
+        dataset.negative_asset_cnt = res.pred["negative_asset_cnt"]
+        dataset.asset_bytes = res.hist["asset_bytes"][0]
+        dataset.asset_area = res.hist["asset_area"][0]
+        dataset.asset_quality = res.hist["asset_quality"][0]
+        dataset.asset_hw_ratio = res.hist["asset_hw_ratio"][0]
+        dataset.anno_area_ratio = res.pred["hist"]["anno_area_ratio"][0]
+        dataset.anno_quality = res.pred["hist"]["anno_quality"][0]
+        dataset.class_names_count = res.pred["class_names_count"]
+    return {"result": {"datasets": datasets}}
+
+
 @router.post(
     "/batch",
     response_model=schemas.DatasetsOut,

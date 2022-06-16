@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 from fastapi.logger import logger
@@ -86,6 +86,11 @@ class VizDataset(BaseModel):
     class_ids_count: Dict[int, int]
     ignored_labels: Dict[str, int]
     negative_info: Dict[str, int]
+    gt: Dict
+    pred: Dict
+    hist: Dict
+    total_asset_mbytes: int
+    total_assets_cnt: int
 
 
 @dataclass
@@ -95,9 +100,19 @@ class DatasetMetaData:
     negative_info: Dict[str, int]
     asset_count: int
     keyword_count: int
+    gt: Dict
+    pred: Dict
+    hist: Dict
+    total_asset_mbytes: int
+    total_assets_cnt: int
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
+        # for compatible
+        res["total_images_cnt"] = res["pred"]["total_images_cnt"]
+        res["class_ids_count"] = res["pred"]["class_ids_count"]
+        res["ignored_labels"] = res["pred"]["ignored_labels"]
+        res["negative_info"] = res["pred"]["negative_info"]
         viz_dataset = VizDataset(**res)
         keywords = {
             user_labels.get_main_names(class_id)[0]: count for class_id, count in viz_dataset.class_ids_count.items()
@@ -108,6 +123,11 @@ class DatasetMetaData:
             negative_info=viz_dataset.negative_info,
             asset_count=viz_dataset.total_images_cnt,
             keyword_count=len(keywords),
+            gt=viz_dataset.gt,
+            pred=viz_dataset.pred,
+            hist=viz_dataset.hist,
+            total_asset_mbytes=viz_dataset.total_asset_mbytes,
+            total_assets_cnt=viz_dataset.total_assets_cnt,
         )
 
 
@@ -197,6 +217,7 @@ class VizClient:
         url = f"{self._url_prefix}/datasets"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
+        logger.info("[viz] get_dataset response: %s", res)
         return DatasetMetaData.from_viz_res(res, user_labels)
 
     def get_evaluations(self, user_labels: UserLabels) -> Dict:
