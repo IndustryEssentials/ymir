@@ -37,8 +37,8 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
 
 
 def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
-                       mir_root: str, annotations_dir_path: str, task_id: str,
-                       phase: str) -> Tuple[int, Dict[str, int]]:
+                       in_sha1_gt_file: str, mir_root: str, annotations_dir_path: str, groundtruth_dir_path: str,
+                       task_id: str, phase: str) -> Tuple[int, Dict[str, int]]:
     """
     imports annotations
 
@@ -46,8 +46,10 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
         mir_annotation (mirpb.MirAnnotations): data buf for annotations.mir
         mir_keywords (mirpb.MirKeywords): data buf for keywords.mir
         in_sha1_file (str): path to sha1 file
+        in_sha1_gt_file (str): path to gt sha1 file
         mir_root (str): path to mir repo
         annotations_dir_path (str): path to annotations root
+        groundtruth_dir_path (str): path to groundtruth root
         task_id (str): task id
         phase (str): process phase
 
@@ -56,15 +58,43 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     """
     unknown_types_and_count: Dict[str, int] = defaultdict(int)
 
-    if not in_sha1_file:
-        logging.error("empty sha1_file")
-        return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
-
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
     logging.info("loaded type id and names: %d", class_type_manager.size())
 
-    image_annotations = mir_annotation.task_annotations[task_id].image_annotations
+    if in_sha1_file:
+        logging.info("wrting annotation in {annotations_dir_path}")
+        _import_annotations_from_dir(
+            mir_metadatas=mir_metadatas,
+            mir_annotation=mir_annotation,
+            in_sha1_file=in_sha1_file,
+            annotations_dir_path=annotations_dir_path,
+            unknown_types_and_count=unknown_types_and_count,
+            class_type_manager=class_type_manager,
+            image_annotations=mir_annotation.task_annotations[task_id],
+        )
+    PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
+
+    if groundtruth_dir_path:
+        logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
+        _import_annotations_from_dir(
+            mir_metadatas=mir_metadatas,
+            mir_annotation=mir_annotation,
+            in_sha1_file=in_sha1_gt_file,
+            annotations_dir_path=groundtruth_dir_path,
+            unknown_types_and_count=unknown_types_and_count,
+            class_type_manager=class_type_manager,
+            image_annotations=mir_annotation.ground_truth,
+        )
+    PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
+
+    return MirCode.RC_OK, unknown_types_and_count
+
+
+def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
+                                 in_sha1_file: str, annotations_dir_path: str, unknown_types_and_count: Dict[str, int],
+                                 class_type_manager: class_ids.ClassIdManager,
+                                 image_annotations: mirpb.SingleTaskAnnotations):
 
     assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
     with open(in_sha1_file, "r") as in_file:
@@ -82,7 +112,6 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     total_assethash_count = len(assethash_filename_list)
     logging.info(f"wrting {total_assethash_count} annotations")
 
-    counter = 0
     missing_annotations_counter = 0
     for asset_hash, main_file_name in assethash_filename_list:
         # for each asset, import it's annotations
@@ -114,16 +143,9 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
                 if class_type_manager.has_name(type_name):
                     annotation = _object_dict_to_annotation(object_dict, class_type_manager)
                     annotation.index = anno_idx
-                    image_annotations[asset_hash].annotations.append(annotation)
+                    image_annotations.image_annotations[asset_hash].annotations.append(annotation)
                     anno_idx += 1
                 else:
                     unknown_types_and_count[type_name] += 1
 
-        counter += 1
-        if counter % 5000 == 0:
-            PhaseLoggerCenter.update_phase(phase=phase, local_percent=(counter / total_assethash_count))
-
-    if missing_annotations_counter > 0:
-        logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
-
-    return MirCode.RC_OK, unknown_types_and_count
+    logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")

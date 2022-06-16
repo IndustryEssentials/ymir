@@ -77,8 +77,7 @@ def _format_file_ext(anno_format: AnnoFormat) -> str:
 
 
 def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttributes,
-                                     image_annotations: mirpb.SingleImageAnnotations,
-                                     image_cks: mirpb.SingleImageCks,
+                                     image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks,
                                      class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
                                      asset_filename: str) -> str:
     output_str = ""
@@ -91,8 +90,7 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttribu
 
 
 def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttributes,
-                                     image_annotations: mirpb.SingleImageAnnotations,
-                                     image_cks: mirpb.SingleImageCks,
+                                     image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks,
                                      class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
                                      asset_filename: str) -> str:
     annotations = image_annotations.annotations
@@ -196,8 +194,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
 
 def _single_image_annotations_to_ls_json(asset_id: str, attrs: mirpb.MetadataAttributes,
                                          image_annotations: mirpb.SingleImageAnnotations,
-                                         image_cks: mirpb.SingleImageCks,
-                                         class_type_mapping: Optional[Dict[int, int]],
+                                         image_cks: mirpb.SingleImageCks, class_type_mapping: Optional[Dict[int, int]],
                                          cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
     annotations = image_annotations.annotations
 
@@ -252,8 +249,8 @@ class BaseDataWriter:
         self._class_ids_mapping = class_ids_mapping
         self._format_type = format_type
 
-    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
-               image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
+               gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         """
         write assets and annotations to destination with proper format
 
@@ -284,27 +281,33 @@ class RawDataWriter(BaseDataWriter):
                  assets_location: str,
                  assets_dir: str,
                  annotations_dir: str,
+                 gt_dir: str,
                  need_ext: bool,
                  need_id_sub_folder: bool,
                  overwrite: bool,
                  class_ids_mapping: Dict[int, int],
                  format_type: AnnoFormat,
                  index_file_path: str = '',
+                 gt_index_file_path: str = '',
                  index_assets_prefix: str = '',
-                 index_annotations_prefix: str = '') -> None:
+                 index_annotations_prefix: str = '',
+                 index_gt_prefix: str = '') -> None:
         """
         Args:
             assets_location (str): path to assets storage directory
             assets_dir (str): export asset directory
             annotations_dir (str): export annotation directory, if format_type is NO_ANNOTATION, this could be None
+            gt_dir (str): export ground-truth directory, if format_type is NO_ANNOTATION, this could be None
             need_ext (bool): if true, all export assets will have it's type as ext, jpg, png, etc.
             need_id_sub_folder (bool): if True, use last 2 chars of asset id as a sub folder name
             format_type (AnnoFormat): format type, NONE means exports no annotations
             overwrite (bool): if true, export assets even if they are exist in destination position
             class_ids_mapping (Dict[int, int]): key: ymir class id, value: class id in exported annotation files
             index_file_path (str): path to index file, if None, generates no index file
+            gt_index_file_path (str): path to gt_index file, if None, generates no index file
             index_assets_prefix (str): prefix path added to each asset index path
             index_annotations_prefix (str): prefix path added to each annotation index path
+            index_gt_prefix (str): prefix path added to each groundtruth index path
         """
         super().__init__(mir_root=mir_root,
                          assets_location=assets_location,
@@ -315,21 +318,28 @@ class RawDataWriter(BaseDataWriter):
         os.makedirs(assets_dir, exist_ok=True)
         if annotations_dir:
             os.makedirs(annotations_dir, exist_ok=True)
+        if gt_dir:
+            os.makedirs(gt_dir, exist_ok=True)
         if index_file_path:
             os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
+        if gt_index_file_path:
+            os.makedirs(os.path.dirname(gt_index_file_path), exist_ok=True)
 
         self._assets_dir = assets_dir
         self._annotations_dir = annotations_dir
+        self._gt_dir = annotations_dir
         self._need_ext = need_ext
         self._need_id_sub_folder = need_id_sub_folder
         self._format_type = format_type
         self._index_file = open(index_file_path, 'w') if index_file_path else None
+        self._gt_index_file = open(gt_index_file_path, 'w') if gt_index_file_path else None
         self._index_assets_prefix = index_assets_prefix
         self._index_annotations_prefix = index_annotations_prefix
+        self._index_gt_prefix = index_gt_prefix
         self._overwrite = overwrite
 
-    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
-               image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
+               gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         # write asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
@@ -348,40 +358,65 @@ class RawDataWriter(BaseDataWriter):
         if self._overwrite or not os.path.isfile(asset_dest_path):
             shutil.copyfile(asset_src_path, asset_dest_path)
 
-        # write annotations
-        anno_file_name = ''
+        anno_file_name = f"{asset_id}{_format_file_ext(self._format_type)}"
         if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
             format_func = _format_file_output_func(anno_format=self._format_type)
-            anno_str: str = format_func(asset_id=asset_id,
-                                        attrs=attrs,
-                                        image_annotations=image_annotations,
-                                        image_cks=image_cks,
-                                        class_type_mapping=self._class_ids_mapping,
-                                        cls_id_mgr=self._class_id_manager,
-                                        asset_filename=asset_file_name)
+            # write annotations
+            if self._annotations_dir:
+                anno_str: str = format_func(asset_id=asset_id,
+                                            attrs=attrs,
+                                            image_annotations=image_annotations,
+                                            image_cks=image_cks,
+                                            class_type_mapping=self._class_ids_mapping,
+                                            cls_id_mgr=self._class_id_manager,
+                                            asset_filename=asset_file_name)
 
-            anno_dest_dir = os.path.join(self._annotations_dir, sub_folder_name)
-            os.makedirs(anno_dest_dir, exist_ok=True)
-            anno_file_name = f"{asset_id}{_format_file_ext(self._format_type)}"
-            anno_dest_path = os.path.join(anno_dest_dir, anno_file_name)
-            with open(anno_dest_path, 'w') as f:
-                f.write(anno_str)
+                anno_dest_dir = os.path.join(self._annotations_dir, sub_folder_name)
+                os.makedirs(anno_dest_dir, exist_ok=True)
+                anno_dest_path = os.path.join(anno_dest_dir, anno_file_name)
+                with open(anno_dest_path, 'w') as f:
+                    f.write(anno_str)
+
+            # write groundtruth
+            if self._gt_dir:
+                gt_str: str = format_func(asset_id=asset_id,
+                                          attrs=attrs,
+                                          image_annotations=gt_annotations,
+                                          image_cks=image_cks,
+                                          class_type_mapping=self._class_ids_mapping,
+                                          cls_id_mgr=self._class_id_manager,
+                                          asset_filename=asset_file_name)
+
+                gt_dest_dir = os.path.join(self._gt_dir, sub_folder_name)
+                os.makedirs(gt_dest_dir, exist_ok=True)
+                gt_dest_path = os.path.join(gt_dest_dir, anno_file_name)
+                with open(gt_dest_path, 'w') as f:
+                    f.write(gt_str)
 
         # write index file
+        asset_path_in_index_file = os.path.join(self._index_assets_prefix, sub_folder_name, asset_file_name)
         if self._index_file:
-            asset_path_in_index_file = os.path.join(self._index_assets_prefix, sub_folder_name, asset_file_name)
             if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
                 anno_path_in_index_file = os.path.join(self._index_annotations_prefix, sub_folder_name, anno_file_name)
                 self._index_file.write(f"{asset_path_in_index_file}\t{anno_path_in_index_file}\n")
             else:
                 self._index_file.write(f"{asset_path_in_index_file}\n")
 
-    def _close(self) -> None:
-        if not self._index_file:
-            return
+        if self._gt_index_file:
+            if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
+                gt_path_in_index_file = os.path.join(self._index_gt_prefix, sub_folder_name, anno_file_name)
+                self._gt_index_file.write(f"{asset_path_in_index_file}\t{gt_path_in_index_file}\n")
+            else:
+                self._gt_index_file.write(f"{asset_path_in_index_file}\n")
 
-        self._index_file.close()
-        self._index_file = None
+    def _close(self) -> None:
+        if self._index_file:
+            self._index_file.close()
+            self._index_file = None
+
+        if self._gt_index_file:
+            self._gt_index_file.close()
+            self._gt_index_file = None
 
     def write_all(self, dr: data_reader.MirDataReader) -> None:
         for v in dr.read():
@@ -432,8 +467,8 @@ class LmdbDataWriter(BaseDataWriter):
                                       error_message='lmdb writer: others are writing')
         return True
 
-    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes,
-               image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
+    def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
+               gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         # read asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
         with open(asset_src_path, 'rb') as f:

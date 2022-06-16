@@ -20,7 +20,9 @@ class CmdImport(base.BaseCommand):
 
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        index_file=self.args.index_file,
+                                       gt_index_file=self.args.gt_index_file,
                                        anno_abs=self.args.anno,
+                                       gt_abs=self.args.gt_dir,
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
                                        dst_rev=self.args.dst_rev,
@@ -30,14 +32,21 @@ class CmdImport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, index_file: str, anno_abs: str, gen_abs: str, dataset_name: str,
-                      dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
+    def run_with_args(mir_root: str, index_file: str, gt_index_file: str, anno_abs: str, gt_abs: str, gen_abs: str,
+                      dataset_name: str, dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         if anno_abs and not os.path.isdir(anno_abs):
             logging.error(f"annotations dir invalid: {anno_abs}")
+            return MirCode.RC_CMD_INVALID_ARGS
+        if gt_abs:  # need to import ground-truth data.
+            if not os.path.isdir(gt_abs):
+                logging.error(f"groundtruth dir invalid: {gt_abs}")
+                return MirCode.RC_CMD_INVALID_ARGS
+            if not gt_index_file or not os.path.isfile(gt_index_file):
+                logging.error(f"invalid gt_index_file: {gt_index_file}")
             return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
@@ -63,6 +72,15 @@ class CmdImport(base.BaseCommand):
             logging.error(f"generate hash error: {ret}")
             return ret
 
+        sha1_gt_index_abs = ""
+        if gt_index_file and gt_index_file != index_file:  # a seperate gt_index_file is provided.
+            sha1_gt_index_abs = os.path.join(
+                gen_abs, f"{os.path.basename(gt_index_file)}-{dst_typ_rev_tid.rev}-{random.randint(0, 100)}.sha1")
+            ret = _generate_sha_and_copy(gt_index_file, sha1_gt_index_abs, gen_abs)
+            if ret != MirCode.RC_OK:
+                logging.error(f"generate gt_index hash error: {ret}")
+                return ret
+
         # Step 3 import metadat and annotations:
         mir_metadatas = mirpb.MirMetadatas()
         ret = metadatas.import_metadatas(mir_metadatas=mir_metadatas,
@@ -78,8 +96,10 @@ class CmdImport(base.BaseCommand):
         ret_code, unknown_types = annotations.import_annotations(mir_metadatas=mir_metadatas,
                                                                  mir_annotation=mir_annotation,
                                                                  in_sha1_file=sha1_index_abs,
+                                                                 in_sha1_gt_file=sha1_gt_index_abs,
                                                                  mir_root=mir_root,
                                                                  annotations_dir_path=anno_abs,
+                                                                 groundtruth_dir_path=gt_abs,
                                                                  task_id=dst_typ_rev_tid.tid,
                                                                  phase='import.others')
         if ret_code != MirCode.RC_OK:
@@ -92,12 +112,14 @@ class CmdImport(base.BaseCommand):
                 raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
 
         # create and write tasks
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeImportData,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message=f"importing {index_file}-{anno_abs}-{gen_abs} as {dataset_name}",
-                                           unknown_types=unknown_types,
-                                           src_revs=src_revs,
-                                           dst_rev=dst_rev)
+        task = mir_storage_ops.create_task(
+            task_type=mirpb.TaskTypeImportData,
+            task_id=dst_typ_rev_tid.tid,
+            message=f"importing {index_file}-{anno_abs}-{gt_abs}-{gen_abs} as {dataset_name}",
+            unknown_types=unknown_types,
+            src_revs=src_revs,
+            dst_rev=dst_rev,
+        )
 
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
@@ -166,6 +188,15 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       type=str,
                                       required=False,
                                       help="corresponding annotation folder")
+    importing_arg_parser.add_argument("--gt-index-file",
+                                      dest="gt_index_file",
+                                      type=str,
+                                      help="index of input gt annotation, one file per line")
+    importing_arg_parser.add_argument("--gt-dir",
+                                      dest="gt_dir",
+                                      type=str,
+                                      required=False,
+                                      help="corresponding ground-truth folder")
     importing_arg_parser.add_argument("--gen-dir", dest="gen", type=str, help="storage path of generated data files")
     importing_arg_parser.add_argument("--dataset-name",
                                       dest="dataset_name",
