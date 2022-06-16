@@ -100,11 +100,19 @@ class DatasetMetaData:
     negative_info: Dict[str, int]
     asset_count: int
     keyword_count: int
-    gt: Dict
-    pred: Dict
-    hist: Dict
     total_asset_mbytes: int
     total_assets_cnt: int
+    annos_cnt: int
+    ave_annos_cnt: float
+    positive_asset_cnt: int
+    negative_asset_cnt: int
+    asset_bytes: List[Dict]
+    asset_area: List[Dict]
+    asset_quality: List[Dict]
+    asset_hw_ratio: List[Dict]
+    anno_area_ratio: List[Dict]
+    anno_quality: List[Dict]
+    class_names_count: Dict[str, int]
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
@@ -123,11 +131,20 @@ class DatasetMetaData:
             negative_info=viz_dataset.negative_info,
             asset_count=viz_dataset.total_images_cnt,
             keyword_count=len(keywords),
-            gt=viz_dataset.gt,
-            pred=viz_dataset.pred,
-            hist=viz_dataset.hist,
             total_asset_mbytes=viz_dataset.total_asset_mbytes,
             total_assets_cnt=viz_dataset.total_assets_cnt,
+            annos_cnt=viz_dataset.pred["annos_cnt"],
+            ave_annos_cnt=(viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt
+                           if viz_dataset.total_assets_cnt else 0),
+            positive_asset_cnt=viz_dataset.pred["positive_asset_cnt"],
+            negative_asset_cnt=viz_dataset.pred["negative_asset_cnt"],
+            asset_bytes=viz_dataset.hist["asset_bytes"][0],
+            asset_area=viz_dataset.hist["asset_area"][0],
+            asset_quality=viz_dataset.hist["asset_quality"][0],
+            asset_hw_ratio=viz_dataset.hist["asset_hw_ratio"][0],
+            anno_area_ratio=viz_dataset.pred["hist"]["anno_area_ratio"][0],
+            anno_quality=viz_dataset.pred["hist"]["anno_quality"][0],
+            class_names_count=viz_dataset.pred["class_names_count"]
         )
 
 
