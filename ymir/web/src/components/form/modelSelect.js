@@ -3,6 +3,7 @@ import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import { percent } from '@/utils/number'
+import t from '@/utils/t'
 import useFetch from '../../hooks/useFetch'
 
 
@@ -39,7 +40,6 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   }, [models])
 
   function generateOptions() {
-    console.log('models:', models)
     const opts = models.map(model => {
       const name = `${model.name} ${model.versionName}`
       const map = model.map
@@ -48,7 +48,7 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
         model,
         value: model.id,
         children: model.stages.map(stage => ({
-          label: <span>{stage.name} {percent(stage.map)}</span>,
+          label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.is_best ? t('common.recommend') : ''}`,
           value: stage.id,
         })),
       }
@@ -57,12 +57,16 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   }
 
   function labelRender(labels, options) {
-    console.log('render: ', labels, options)
     return <span>{labels.map(label => label)}</span>
   }
 
+  function filter(input, path) {
+    return path.some(({ label = '' }) => label.toLowerCase().indexOf(input.toLowerCase()) > -1)
+  }
+
   return (
-    <Cascader value={value} {...resProps} onChange={onChange} options={options} displayRender={labelRender} allowClear></Cascader>
+    <Cascader value={value} {...resProps} onChange={onChange} options={options} 
+    displayRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
   )
 }
 
