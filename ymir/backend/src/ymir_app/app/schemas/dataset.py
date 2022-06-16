@@ -145,7 +145,9 @@ class DatasetHist(BaseModel):
     class_names_count: Dict[str, int]
 
 
-class DatasetsAnalysis(Dataset, DatasetHist):
+class DatasetsAnalysis(DatasetHist):
+    group_name: str
+    version_num: int
     total_asset_mbytes: int
     total_assets_cnt: int
     annos_cnt: int
