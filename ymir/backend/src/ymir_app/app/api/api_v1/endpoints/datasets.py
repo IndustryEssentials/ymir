@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from operator import attrgetter
 import enum
 import random
@@ -73,9 +74,9 @@ def get_datasets_analysis(
             project_id=dataset.project_id,
             branch_id=dataset.hash,
         )
-        res = viz_client.get_dataset(user_labels=user_labels)
-        res.group_name = dataset.group_name
-        res.version_num = dataset.version_num
+        res = asdict(viz_client.get_dataset(user_labels=user_labels))
+        res["group_name"] = dataset.group_name
+        res["version_num"] = dataset.version_num
         results.append(res)
     return {"result": {"datasets": results}}
 
