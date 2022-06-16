@@ -162,13 +162,14 @@ export function createLabelTask({
  * {string} name
  * {number} projectId
  * {number} datasetId
+ * {number} stage
  * {number} testset
  * {string} backbone
  * {object} config
  * {string} network
  * {number} trainType
  * {number} strategy
- * {number} model
+ * {number} stageId
  * {string} image
  * } 
  * @returns 
@@ -177,7 +178,7 @@ export function createTrainTask({
   iteration, stage,
   name, projectId, datasetId, keywords, testset,
   backbone, config, network, trainType, strategy,
-  model, image, imageId,
+  stageId, image, imageId,
 }) {
   return createTask({
     name,
@@ -194,7 +195,7 @@ export function createTrainTask({
       backbone,
       network,
       train_type: trainType,
-      model_id: model,
+      model_stage_id: stageId,
       docker_image: image,
       docker_image_id: imageId,
     }
@@ -203,7 +204,7 @@ export function createTrainTask({
 
 export function createMiningTask({
   iteration, stage,
-  projectId, datasetId, model, topk, algorithm,
+  projectId, datasetId, stageId, topk, algorithm,
   config, strategy, inference, name, image, imageId,
 }) {
   return createTask({
@@ -215,7 +216,7 @@ export function createMiningTask({
     docker_image_config: config,
     parameters: {
       strategy,
-      model_id: model,
+      model_stage_id: stageId,
       dataset_id: datasetId,
       mining_algorithm: algorithm,
       top_k: topk,
@@ -233,7 +234,7 @@ export function createMiningTask({
  * {number} projectId
  * {number} datasetId
  * {object} config
- * {number} model
+ * {number} stages
  * {string} image
  * {string} imageId
  * {string} description
@@ -244,20 +245,20 @@ export function createInferenceTask({
   name,
   projectId,
   datasetId,
-  model = [],
+  stages = [],
   config,
   image,
   imageId,
   description,
 }) {
-  const params = model.map(md => ({
+  const params = stages.map(stage => ({
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
     description,
     docker_image_config: config,
     parameters: {
-      model_id: md,
+      model_stage_id: stage,
       generate_annotations: true,
       dataset_id: datasetId,
       docker_image: image,
