@@ -74,6 +74,7 @@ class TestInvokerCMDInference(unittest.TestCase):
         }
         inference_image = "test_infer_image"
         model_hash = "model_hash_id"
+        model_stage = "model_stage_name"
         assets_config = {
             "modelskvlocation": self._storage_root,
         }
@@ -108,6 +109,7 @@ class TestInvokerCMDInference(unittest.TestCase):
                 singleton_op=inference_image,
                 docker_image_config=json.dumps(training_config),
                 model_hash=model_hash,
+                model_stage=model_stage,
             )
 
         working_dir = os.path.join(self._sandbox_root, "work_dir",
@@ -118,7 +120,7 @@ class TestInvokerCMDInference(unittest.TestCase):
         index_file = os.path.join(working_dir, "inference_pic_index.txt")
 
         cmd = (f"mir infer --root {self._mir_repo_root} -w {working_dir} --model-location {self._storage_root} "
-               f"--index-file {index_file} --model-hash {model_hash} "
+               f"--index-file {index_file} --model-hash {model_hash}@{model_stage} "
                f"--task-config-file {config_file} --executor {inference_image}")
 
         mock_run.assert_has_calls(calls=[
