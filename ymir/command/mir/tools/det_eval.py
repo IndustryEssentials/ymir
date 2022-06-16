@@ -37,7 +37,7 @@ class MirCoco:
         # key: asset id, value: index in `self._ordered_asset_ids`
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
-        self._ordered_class_ids = sorted(list(k.index_predefined_keyids.keys()))
+        self._ordered_class_ids = sorted(list(k.pred_idx.cis.keys()))
 
         self.img_cat_to_annotations = defaultdict(list)
         annos = self._get_annotations(asset_idxes=self.get_asset_idxes(),

@@ -79,8 +79,10 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_asset_cache")
+        os.makedirs(asset_cache_dir, exist_ok=True)
+
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_assset_cache")
         executant_name = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,
@@ -96,6 +98,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             executant_name=executant_name,
             tensorboard=tensorboard_dir,
             model_hash=request.model_hash,
+            model_stage=request.model_stage,
         )
         return train_response
 
@@ -115,6 +118,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         executant_name: str,
         tensorboard: str,
         model_hash: str,
+        model_stage: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
@@ -123,8 +127,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
             asset_cache_dir
         ]
-        if model_hash:
+        if model_hash and model_stage:
             training_cmd.append('--model-hash')
-            training_cmd.append(model_hash)
+            training_cmd.append(f"{model_hash}@{model_stage}")
 
         return utils.run_command(training_cmd)

@@ -112,8 +112,11 @@ class CmdFilter(base.BaseCommand):
         class_manager = class_ids.ClassIdManager(mir_root=mir_root)
         preds_set = CmdFilter.__preds_set_from_str(in_cis, class_manager)  # type: Set[int]
         excludes_set = CmdFilter.__preds_set_from_str(ex_cis, class_manager)  # type: Set[int]
+
         ck_preds_set = {ck.strip() for ck in in_cks.split(";")} if in_cks else set()
+        ck_preds_set = {ck for ck in ck_preds_set if ck}
         ck_excludes_set = {ck.strip() for ck in ex_cks.split(";")} if ex_cks else set()
+        ck_excludes_set = {ck for ck in ck_excludes_set if ck}
 
         asset_ids_set = set(mir_metadatas.attributes.keys())
         match_functions: List[Tuple[__IncludeExcludeCallableType, Union[Set[str], Set[int]], str, str]] = [
@@ -177,8 +180,8 @@ class CmdFilter(base.BaseCommand):
         return CmdFilter.run_with_args(mir_root=self.args.mir_root,
                                        in_cis=self.args.in_cis,
                                        ex_cis=self.args.ex_cis,
-                                       in_cks=self.args.in_cks,
-                                       ex_cks=self.args.ex_cks,
+                                       in_cks='',
+                                       ex_cks='',
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        work_dir=self.args.work_dir)
@@ -189,10 +192,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                               parents=[parent_parser],
                                               description="use this command to filter assets",
                                               help="filter assets")
-    filter_arg_parser.add_argument("-p", dest="in_cis", type=str, help="type names")
-    filter_arg_parser.add_argument("-P", dest="ex_cis", type=str, help="exclusive type names")
-    filter_arg_parser.add_argument("-c", dest="in_cks", type=str, help="customized keywords")
-    filter_arg_parser.add_argument("-C", dest="ex_cks", type=str, help="excludsive customized keywords")
+    filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, help="type names")
+    filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, help="exclusive type names")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
     filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')

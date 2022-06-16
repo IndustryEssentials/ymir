@@ -18,6 +18,7 @@ def make_cmd_request(user_id: str = None,
                      asset_dir: str = None,
                      model_config: str = None,
                      model_hash: str = None,
+                     model_stage: str = None,
                      force: bool = None,
                      commit_message: str = None,
                      executant_name: str = None,
@@ -64,6 +65,8 @@ def make_cmd_request(user_id: str = None,
         request.model_config = model_config
     if model_hash is not None:
         request.model_hash = model_hash
+    if model_stage is not None:
+        request.model_stage = model_stage
     if req_create_task is not None:
         request.req_create_task.CopyFrom(req_create_task)
     if executant_name is not None:
@@ -107,6 +110,7 @@ def make_invoker_cmd_call(invoker: Any,
                           async_mode: bool = False,
                           merge_strategy: int = None,
                           model_hash: str = None,
+                          model_stage: str = None,
                           docker_image_config: str = None,
                           terminated_task_type: str = None,
                           sampling_count: int = None,
@@ -131,6 +135,7 @@ def make_invoker_cmd_call(invoker: Any,
                                executant_name=executant_name,
                                merge_strategy=merge_strategy,
                                model_hash=model_hash,
+                               model_stage=model_stage,
                                docker_image_config=docker_image_config,
                                terminated_task_type=terminated_task_type,
                                sampling_count=sampling_count,
