@@ -161,10 +161,12 @@ class TestGetDatasetAnalyses:
         db: Session,
         user_id: int,
     ):
-        r = create_dataset_record(db, user_id=user_id)
+        dataset = create_dataset_record(db, user_id=user_id)
+        params = {"ids": str(dataset.id)}
         r = client.get(
             f"{settings.API_V1_STR}/datasets/analysis",
             headers=normal_user_token_headers,
+            params=params,
         )
         assert r.status_code == 200
         assert r.json()["code"] == 0
