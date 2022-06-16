@@ -53,7 +53,11 @@ class TestCmdCopy(unittest.TestCase):
 
         mir_metadatas = mirpb.MirMetadatas()
         mir_metadatas.attributes['asset0']
+        mir_metadatas.attributes['asset0'].width = 30
+        mir_metadatas.attributes['asset0'].height = 30
         mir_metadatas.attributes['asset1']
+        mir_metadatas.attributes['asset1'].width = 30
+        mir_metadatas.attributes['asset1'].height = 30
 
         mir_annotations = mirpb.MirAnnotations()
         mir_annotations.head_task_id = 't0'
