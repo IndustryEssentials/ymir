@@ -144,11 +144,19 @@ export function updateModel(id, name) {
 
 /**
  * model verification
- * @param {number} model_id model id
- * @param {array} image_urls image urls
+ * @param {array<model, stage>} modelStage model stage
+ * @param {array} urls image urls
  * @param {number} image docker image url
+ * @param {object<key: value>} config docker image configure
  * @returns 
  */
-export function verify(model_id, image_urls, image, config) {
-  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image, docker_image_config: config })
+export function verify({ modelStage, urls, image, config }) {
+  const [model, stage] = modelStage
+  return request.post(`/inferences/`, {
+    model_id: model,
+    model_stage_id: stage,
+    image_urls: urls,
+    docker_image: image,
+    docker_image_config: config
+  })
 }

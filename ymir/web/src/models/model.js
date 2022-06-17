@@ -171,8 +171,7 @@ export default {
       }
     },
     *verify({ payload }, { call }) {
-      const { id, urls, image, config } = payload
-      const { code, result } = yield call(verify, id, urls, image, config)
+      const { code, result } = yield call(verify, payload)
       if (code === 0) {
         return result
       }

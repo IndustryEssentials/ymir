@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useDispatch } from 'umi'
 
-const useFetch = (effect) => {
+const useFetch = (effect, initResult = null) => {
   const dispatch = useDispatch()
   const fetch = payload => dispatch({
     type: effect,
     payload,
   })
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState(initResult)
 
   const getResult = async (payload) => {
     const result = await fetch(payload)
