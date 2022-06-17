@@ -1,9 +1,9 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate,
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
@@ -280,6 +280,13 @@ export default {
       const { code, result } = yield call(evaluate, payload)
       if (code === 0) {
         return result
+      }
+    },
+    *analysis({ payload }, { call, put }) {
+      const { code, result } = yield call(analysis, payload)
+      if (code === 0) {
+        const dss = result.datasets.map(item => transferDatasetAnalysis(item))
+        return dss
       }
     },
   },

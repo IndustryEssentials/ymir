@@ -1,5 +1,5 @@
 import { getLocale } from "umi"
-import { DatasetGroup, Dataset } from "@/interface/dataset"
+import { DatasetGroup, Dataset, DatasetAnalysis } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
 import { getIterationVersion, transferIteration } from "./project"
 import { BackendData } from "@/interface/common"
@@ -60,5 +60,26 @@ export function transferDataset (data: BackendData): Dataset {
     taskName: data.related_task.name,
     task: data.related_task,
     hidden: !data.is_visible,
+  }
+}
+
+export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
+  return {
+    name: data.group_name,
+    version: data.version_num || 0,
+    versionName: getIterationVersion(data.version_num),
+    assetCount: data.total_assets_cnt || 0,
+    totalAssetMbytes: data.total_asset_mbytes,
+    annosCnt: data.annos_cnt,
+    aveAnnosCnt: data.ave_annos_cnt,
+    positiveAssetCnt: data.positive_asset_cnt,
+    negativeAssetCnt: data.negative_asset_cnt,
+    assetBytes: data.asset_bytes,
+    assetHWRatio: data.asset_hw_ratio,
+    assetArea: data.asset_area,
+    assetQuality: data.asset_quality,
+    annoAreaRatio: data.anno_area_ratio,
+    annoQuality: data.anno_quality, 
+    classNamesCount: data.class_names_count,
   }
 }
