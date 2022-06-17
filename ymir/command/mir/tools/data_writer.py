@@ -85,7 +85,8 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttribu
     for annotation in image_annotations.annotations:
         mapped_id = class_type_mapping[annotation.class_id] if class_type_mapping else annotation.class_id
         output_str += f"{mapped_id}, {annotation.box.x}, {annotation.box.y}, "
-        output_str += f"{annotation.box.x + annotation.box.w - 1}, {annotation.box.y + annotation.box.h - 1}\n"
+        output_str += f"{annotation.box.x + annotation.box.w - 1}, {annotation.box.y + annotation.box.h - 1}, "
+        output_str += f"{annotation.anno_quality}\n"
     return output_str
 
 

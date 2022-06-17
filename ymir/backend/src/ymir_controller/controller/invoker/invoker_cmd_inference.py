@@ -92,6 +92,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             config_file=config_file,
             model_location=self._assets_config["modelskvlocation"],
             model_hash=self._request.model_hash,
+            model_stage=self._request.model_stage,
             index_file=index_file,
             executor=self._request.singleton_op,
         )
@@ -101,10 +102,10 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def inference_cmd(cls, repo_root: str, work_dir: str, model_location: str, config_file: str, model_hash: str,
-                      index_file: str, executor: str) -> backend_pb2.GeneralResp:
+                      model_stage: str, index_file: str, executor: str) -> backend_pb2.GeneralResp:
         infer_cmd = [
             utils.mir_executable(), 'infer', '--root', repo_root, '-w', work_dir, '--model-location', model_location,
-            '--index-file', index_file, '--model-hash', model_hash, '--task-config-file', config_file, "--executor",
-            executor
+            '--index-file', index_file, '--model-hash', f"{model_hash}@{model_stage}",
+            '--task-config-file', config_file, "--executor", executor
         ]
         return utils.run_command(infer_cmd)

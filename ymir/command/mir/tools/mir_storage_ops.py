@@ -165,6 +165,11 @@ class MirStorageOps():
                                            desc_lower_bnds=mir_settings.ASSET_AREA_DESC_LOWER_BNDS)
         mir_context.asset_area_hist.update(asset_area_hist)
 
+        # asset hw ratio hist
+        asset_hw_ratio_hist = cls.__build_hist(values=[x.height / x.width for x in mir_metadatas.attributes.values()],
+                                               desc_lower_bnds=mir_settings.ASSET_HW_RATIO_DESC_LOWER_BNDS)
+        mir_context.asset_hw_ratio_hist.update({f"{k:.2f}": v for k, v in asset_hw_ratio_hist.items()})
+
         # pred_stats.quality_hist
         all_annotations = [
             annotation for image_annotation in image_annotations.values() for annotation in image_annotation.annotations
@@ -357,9 +362,10 @@ class MirStorageOps():
             "total_asset_mbytes":222,
             "total_assets_cnt":1420,
             "hist":{
-                "asset_quality":[],
-                "asset_bytes":[],
-                "asset_area":[]
+                "asset_quality": [],
+                "asset_bytes": [],
+                "asset_area": [],
+                "asset_hw_ratio": [],
             },
             "pred":{
                 "class_ids_count":{},
@@ -437,6 +443,7 @@ class MirStorageOps():
                 asset_quality=cls._gen_viz_hist(mir_storage_context.asset_quality_hist),
                 asset_bytes=cls._gen_viz_hist(mir_storage_context.asset_bytes_hist),
                 asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
+                asset_hw_ratio=cls._gen_viz_hist(mir_storage_context.asset_hw_ratio_hist),
             ),
             pred=pred,
             gt={},
