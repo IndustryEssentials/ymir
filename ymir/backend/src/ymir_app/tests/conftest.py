@@ -90,23 +90,17 @@ def fake_viz_client() -> Generator:
             negative_info={},
             asset_count=400,
             keyword_count=5,
-            gt={},
-            pred={
-                "annos_cnt": 20,
-                "positive_asset_cnt": 277,
-                "negative_asset_cnt": 23,
-                "hist": {
-                    "anno_area_ratio": [[{"x": 1, "y": 2}]],
-                    "anno_quality": [[{"x": 1, "y": 2}]]
-                },
-                "class_names_count": {"cat": 20}
-            },
-            hist={
-                "asset_bytes": [[{"x": 1, "y": 2}]],
-                "asset_area": [[{"x": 1, "y": 2}]],
-                "asset_quality": [[{"x": 1, "y": 2}]],
-                "asset_hw_ratio": [[{"x": 1, "y": 2}]]
-            },
+            asset_bytes=[[{"x": 1, "y": 2}]],
+            asset_area=[[{"x": 1, "y": 2}]],
+            asset_quality=[[{"x": 1, "y": 2}]],
+            asset_hw_ratio=[[{"x": 1, "y": 2}]],
+            anno_area_ratio=[[{"x": 1, "y": 2}]],
+            anno_quality=[[{"x": 1, "y": 2}]],
+            class_names_count={"cat": 20},
+            annos_cnt=20,
+            ave_annos_cnt=1.175,
+            positive_asset_cnt=277,
+            negative_asset_cnt=23,
             total_asset_mbytes=20,
             total_assets_cnt=400
         )
