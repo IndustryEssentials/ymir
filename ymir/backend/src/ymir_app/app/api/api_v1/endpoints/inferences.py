@@ -11,7 +11,7 @@ from app.api.errors.errors import (
     FailedToCallInference,
     FailedtoDownloadError,
     InvalidInferenceConfig,
-    ModelNotFound,
+    ModelStageNotFound,
 )
 from app.config import settings
 from app.utils.files import FailedToDownload, save_files
@@ -37,7 +37,7 @@ def call_inference(
     model_stage = crud.model_stage.get(db, id=inference_in.model_stage_id)
     if not model_stage:
         logger.error("Failed to find model stage id: %s", inference_in.model_stage_id)
-        raise ModelNotFound()
+        raise ModelStageNotFound()
 
     docker_image = crud.docker_image.get_inference_docker_image(db, url=inference_in.docker_image)
     if not docker_image:

@@ -189,9 +189,10 @@ class DatasetsFusionParameter(RequestParameterBase):
 
 class DatasetEvaluationCreate(BaseModel):
     project_id: int
-    gt_dataset_id: int
-    other_dataset_ids: List[int]
+    dataset_ids: List[int]
     confidence_threshold: float
+    iou_threshold: float
+    require_average_iou: bool
 
 
 class DatasetEvaluationOut(Common):

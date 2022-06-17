@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.api.errors.errors import (
     FailedtoDownloadError,
     InvalidInferenceConfig,
-    ModelNotFound,
+    ModelStageNotFound,
 )
 from app.config import settings
 from tests.utils.images import create_docker_image_and_configs
@@ -29,7 +29,7 @@ class TestPostInference:
             headers=normal_user_token_headers,
             json=j,
         )
-        assert r.json()["code"] == ModelNotFound.code
+        assert r.json()["code"] == ModelStageNotFound.code
 
     def test_call_inference_invalid_docker(
         self,

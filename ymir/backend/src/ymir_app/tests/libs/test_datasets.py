@@ -14,19 +14,19 @@ class TestImportDatasetPaths:
 
 
 class TestEvaluateDataset:
-    def test_evaluate_dataset(self, mocker: Any) -> None:
+    def test_evaluate_datasets(self, mocker: Any) -> None:
         user_id = randint(100, 200)
         project_id = randint(1000, 2000)
         confidence_threshold = 0.233
+        iou = 0.5
+        require_average_iou = True
         ctrl = mocker.Mock()
         viz = mocker.Mock()
         viz.get_evaluations.return_value = {}
         user_labels = mocker.Mock()
-        gt_dataset = mocker.Mock()
-        other_datasets = [mocker.Mock()]
-        m.evaluate_dataset(
-            ctrl, viz, user_id, project_id, user_labels, confidence_threshold, gt_dataset, other_datasets
+        datasets = [mocker.Mock()]
+        m.evaluate_datasets(
+            ctrl, viz, user_id, project_id, user_labels, confidence_threshold, iou, require_average_iou, datasets
         )
 
-        ctrl.evaluate_dataset.assert_called()
         viz.get_evaluations.assert_called()
