@@ -222,6 +222,65 @@ paths:
                 $ref: "#/components/schemas/DatasetEvaluationResult"
         "400":
           description: DatasetEvaluation not exists
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/model/{model_id}/evaluate":
+    get:
+      tags:
+        - evaluation
+      summary: "evaluate dataset and get result"
+      description: "evaluate dataset and get result"
+      operationId: evaluate_dataset
+      parameters:
+        - name: user_id
+          in: path
+          description: user_id
+          required: true
+          schema:
+            type: string
+        - name: repo_id
+          in: path
+          description: repo_id
+          required: true
+          schema:
+            type: string
+        - name: branch_id
+          in: path
+          description: branch_id
+          required: true
+          schema:
+            type: string
+        - name: model_id
+          in: path
+          description: model_id
+          required: true
+          schema:
+            type: string
+        - name: conf_thr
+          in: query
+          description: conf_thr
+          required: true
+          schema:
+            type: number
+            maximum: 1.0
+            minimum: 0.0
+            example: 0.0005
+        - name: iou_thr
+          in: query
+          description: iou_thr
+          required: true
+          schema:
+            type: number
+            maximum: 1.0
+            minimum: 0.0
+            example: 0.5
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetEvaluationResult"
+        "400":
+          description: Dataset evaluation failed
 components:
   schemas:
     AssetInfo:
