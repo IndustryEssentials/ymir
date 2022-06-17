@@ -6,25 +6,22 @@
   border: 1px solid rgba(0, 0, 0, 0.06);
   height: calc(100vh - 270px);
   overflow-y: auto;
-  :global(.ant-table-thead > tr > th) {
+  .tableClass {
+    max-width: calc(100% + 20px);
+    margin: 0 -10px;
+  }
+  .rowClass {
+    height: 40px;
+  }
+  tr.rowClass:hover > td {
+    background-color: rgba(232, 185, 0, 0.1); 
+  }
+  th.colunmClass {
     background: rgba(232, 185, 0, 0.2);
   }
-  :global(.ant-table-thead > tr > th::before) {
-    content: none;
+  td.colunmClass {
+    background: rgba(232, 185, 0, 0.1);
   }
-  :global(.ant-table-tbody > tr.ant-table-row:hover > td) {
-    background: none;
-  }
-}
-
-.tableClass {
-  max-width: calc(100% + 20px);
-  margin: 0 -10px;
-}
-
-.rowClass {
-  height: 40px;
-  background: rgba(232, 185, 0, 0.1);
 }
 
 .echartTitle {

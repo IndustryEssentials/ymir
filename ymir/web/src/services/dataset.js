@@ -135,10 +135,10 @@ export function evaluate({ projectId, datasets, gt, confidence }) {
 }
 
 /**
- * @param {number} datasets  analysis datasets
+ * @param {array} datasets  analysis datasets
  * @returns 
  */
- export function analysis({ datasets }) {
+ export function analysis(datasets) {
   return request.get(`/datasets/analysis`, { params: { ids: datasets.toString() }})
 }
 

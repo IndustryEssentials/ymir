@@ -5,6 +5,7 @@ import s from "./index.less"
 import style from "./analysis.less"
 
 import t from "@/utils/t"
+import useFetch from "@/hooks/useFetch"
 import { humanize } from "@/utils/number"
 import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
@@ -13,7 +14,7 @@ import AnalysisChart from "./components/analysisChart"
 
 function Analysis({pid, project, ...func}) {
   const [form] = Form.useForm()
-  const [source, setSource] = useState(null)
+  const [source, fetchSource] = useFetch('dataset/analysis')
   const [datasets, setDatasets] = useState([])
   const [tableSource, setTableSource] = useState([])
   const [chartsData, setChartsData] = useState([])
@@ -125,12 +126,9 @@ function Analysis({pid, project, ...func}) {
 
   const onFinish = async (values) => {
     const params = {
-      datasets: values.datasets.join(',')
+      datasets: values.datasets
     }
-    const result = await func.analysis(params)
-    if (result) {
-      setSource(result)
-    }
+    fetchSource(params)
   }
 
   function onFinishFailed(errorInfo) {
@@ -151,6 +149,7 @@ function Analysis({pid, project, ...func}) {
       dataIndex: "name",
       ellipsis: true,
       align: 'center',
+      className: style.colunmClass,
     },
     {
       title: showTitle('model.diagnose.analysis.column.version'),
@@ -158,12 +157,14 @@ function Analysis({pid, project, ...func}) {
       ellipsis: true,
       align: 'center',
       width: 80,
+      className: style.colunmClass,
     },
     {
       title: showTitle('model.diagnose.analysis.column.size'),
       dataIndex: "totalAssetMbytes",
       ellipsis: true,
       align: 'center',
+      className: style.colunmClass,
       render: (num) => {
         return num && <span>{num}MB</span>;
       },
@@ -173,6 +174,7 @@ function Analysis({pid, project, ...func}) {
       dataIndex: 'annosCnt',
       ellipsis: true,
       align: 'center',
+      className: style.colunmClass,
       render: (num) => humanize(num),
     },
     {
@@ -180,6 +182,7 @@ function Analysis({pid, project, ...func}) {
       dataIndex: 'aveAnnosCnt',
       ellipsis: true,
       align: 'center',
+      className: style.colunmClass,
       render: (num) => humanize(num),
     },
     {
@@ -187,6 +190,7 @@ function Analysis({pid, project, ...func}) {
       dataIndex: 'metrics',
       ellipsis: true,
       align: 'center',
+      className: style.colunmClass,
       render: (text, record) => <span>{humanize(record.positiveAssetCnt)}/{humanize(record.assetCount)}</span>,
     },
   ]
@@ -235,7 +239,7 @@ function Analysis({pid, project, ...func}) {
               colon={false}
             >
               <Form.Item
-                label={t('model.diagnose.analysis.param.dataset')}
+                label={t('model.diagnose.analysis.column.name')}
                 name='datasets'
                 rules={[
                   { required: true }
@@ -257,15 +261,4 @@ function Analysis({pid, project, ...func}) {
   )
 }
 
-const dis = (dispatch) => {
-  return {
-    analysis(payload) {
-      return dispatch({
-        type: "dataset/analysis",
-        payload,
-      })
-    },
-  }
-}
-
-export default connect(null, dis)(Analysis)
+export default Analysis

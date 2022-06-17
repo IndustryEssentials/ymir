@@ -283,10 +283,10 @@ export default {
       }
     },
     *analysis({ payload }, { call, put }) {
-      const { code, result } = yield call(analysis, payload)
+      const { datasets } = payload
+      const { code, result } = yield call(analysis, datasets)
       if (code === 0) {
-        const dss = result.datasets.map(item => transferDatasetAnalysis(item))
-        return dss
+        return result.datasets.map(item => transferDatasetAnalysis(item))
       }
     },
   },
