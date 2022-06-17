@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import requests
 from fastapi.logger import logger

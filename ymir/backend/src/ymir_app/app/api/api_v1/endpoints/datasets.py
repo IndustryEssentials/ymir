@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from operator import attrgetter
 import enum
 import random
@@ -66,7 +65,7 @@ def get_datasets_analysis(
     datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
     if not datasets:
         raise DatasetNotFound()
-    
+
     results = []
     for dataset in datasets:
         if dataset.result_state != int(ResultState.ready):
@@ -77,8 +76,8 @@ def get_datasets_analysis(
             branch_id=dataset.hash,
         )
         res = viz_client.get_dataset(user_labels=user_labels)
-        res.group_name = dataset.group_name
-        res.version_num = dataset.version_num
+        res.group_name = dataset.group_name  # type: ignore
+        res.version_num = dataset.version_num  # type: ignore
         results.append(res)
     return {"result": {"datasets": results}}
 
