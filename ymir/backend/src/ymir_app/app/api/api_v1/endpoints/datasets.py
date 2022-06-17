@@ -69,14 +69,16 @@ def get_datasets_analysis(
     
     results = []
     for dataset in datasets:
+        if dataset.result_state != int(ResultState.ready):
+            raise DatasetNotFound()
         viz_client.initialize(
             user_id=current_user.id,
             project_id=dataset.project_id,
             branch_id=dataset.hash,
         )
-        res = asdict(viz_client.get_dataset(user_labels=user_labels))
-        res["group_name"] = dataset.group_name
-        res["version_num"] = dataset.version_num
+        res = viz_client.get_dataset(user_labels=user_labels)
+        res.group_name = dataset.group_name
+        res.version_num = dataset.version_num
         results.append(res)
     return {"result": {"datasets": results}}
 

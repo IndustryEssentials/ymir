@@ -144,6 +144,9 @@ class DatasetHist(BaseModel):
     anno_quality: List[Dict]
     class_names_count: Dict[str, int]
 
+    class Config:
+        orm_mode = True
+
 
 class DatasetsAnalysis(DatasetHist):
     group_name: str
