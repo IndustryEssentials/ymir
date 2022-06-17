@@ -22,7 +22,7 @@ from mir.tools.errors import MirContainerError, MirRuntimeError
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> Tuple[str, float]:
+                           task_context: dict) -> Tuple[str, float, mir_utils.ModelStorage]:
     """
     find and save models
     Returns:
@@ -45,7 +45,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                                 model_dir_path=out_model_dir,
                                                 model_location=model_upload_location)
 
-    return model_sha1, best_mAP
+    return model_sha1, best_mAP, model_storage
 
 
 def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageStorage], str]:
@@ -459,17 +459,17 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
-        model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
-                                                       model_upload_location=model_upload_location,
-                                                       executor_config=executor_config,
-                                                       task_context=task_context)
+        model_sha1, model_mAP, model_storage = _process_model_storage(out_root=work_dir_out,
+                                                                      model_upload_location=model_upload_location,
+                                                                      executor_config=executor_config,
+                                                                      task_context=task_context)
 
         # commit task
         model_dict = {
             'mean_average_precision': model_mAP,
             'model_hash': model_sha1,
-            'stages': {},
-            'best_stage_name': '',
+            'stages': model_storage.as_dict()['model_stages'],
+            'best_stage_name': model_storage.best_stage_name,
         }
         # TODO: CHANGE OTHERS
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
