@@ -471,6 +471,10 @@ components:
             $ref: "#/components/schemas/DatasetEvaluationElement"
         ci_averaged_evaluation:
           $ref: "#/components/schemas/DatasetEvaluationElement"
+        ck_evaluations:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/DatasetEvaluationElement"
     DatasetEvaluationElement:
       type: object
       properties:

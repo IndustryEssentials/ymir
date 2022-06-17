@@ -15,7 +15,7 @@ class DatasetEvaluation(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, ci_evaluations: Dict[str, DatasetEvaluationElement]=None, topic_evaluations: Dict[str, DatasetEvaluationElement]=None, ci_averaged_evaluation: DatasetEvaluationElement=None):  # noqa: E501
+    def __init__(self, ci_evaluations: Dict[str, DatasetEvaluationElement]=None, topic_evaluations: Dict[str, DatasetEvaluationElement]=None, ci_averaged_evaluation: DatasetEvaluationElement=None, ck_evaluations: Dict[str, DatasetEvaluationElement]=None):  # noqa: E501
         """DatasetEvaluation - a model defined in Swagger
 
         :param ci_evaluations: The ci_evaluations of this DatasetEvaluation.  # noqa: E501
@@ -24,21 +24,26 @@ class DatasetEvaluation(Model):
         :type topic_evaluations: Dict[str, DatasetEvaluationElement]
         :param ci_averaged_evaluation: The ci_averaged_evaluation of this DatasetEvaluation.  # noqa: E501
         :type ci_averaged_evaluation: DatasetEvaluationElement
+        :param ck_evaluations: The ck_evaluations of this DatasetEvaluation.  # noqa: E501
+        :type ck_evaluations: Dict[str, DatasetEvaluationElement]
         """
         self.swagger_types = {
             'ci_evaluations': Dict[str, DatasetEvaluationElement],
             'topic_evaluations': Dict[str, DatasetEvaluationElement],
-            'ci_averaged_evaluation': DatasetEvaluationElement
+            'ci_averaged_evaluation': DatasetEvaluationElement,
+            'ck_evaluations': Dict[str, DatasetEvaluationElement]
         }
 
         self.attribute_map = {
             'ci_evaluations': 'ci_evaluations',
             'topic_evaluations': 'topic_evaluations',
-            'ci_averaged_evaluation': 'ci_averaged_evaluation'
+            'ci_averaged_evaluation': 'ci_averaged_evaluation',
+            'ck_evaluations': 'ck_evaluations'
         }
         self._ci_evaluations = ci_evaluations
         self._topic_evaluations = topic_evaluations
         self._ci_averaged_evaluation = ci_averaged_evaluation
+        self._ck_evaluations = ck_evaluations
 
     @classmethod
     def from_dict(cls, dikt) -> 'DatasetEvaluation':
@@ -113,3 +118,24 @@ class DatasetEvaluation(Model):
         """
 
         self._ci_averaged_evaluation = ci_averaged_evaluation
+
+    @property
+    def ck_evaluations(self) -> Dict[str, DatasetEvaluationElement]:
+        """Gets the ck_evaluations of this DatasetEvaluation.
+
+
+        :return: The ck_evaluations of this DatasetEvaluation.
+        :rtype: Dict[str, DatasetEvaluationElement]
+        """
+        return self._ck_evaluations
+
+    @ck_evaluations.setter
+    def ck_evaluations(self, ck_evaluations: Dict[str, DatasetEvaluationElement]):
+        """Sets the ck_evaluations of this DatasetEvaluation.
+
+
+        :param ck_evaluations: The ck_evaluations of this DatasetEvaluation.
+        :type ck_evaluations: Dict[str, DatasetEvaluationElement]
+        """
+
+        self._ck_evaluations = ck_evaluations
