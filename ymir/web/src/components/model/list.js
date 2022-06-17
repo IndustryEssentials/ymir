@@ -306,7 +306,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const multipleInfer = () => {
-    const ids = Object.values(selectedVersions)
+    const ids = Object.values(selectedVersions).flat()
     const versionsObject = Object.values(versions).flat()
     const selected = versionsObject.filter(md => ids.includes(md.id)).map(md => {
       const stage = md.stages.find(st => st.is_best)

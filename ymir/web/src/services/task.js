@@ -238,7 +238,7 @@ export function createMiningTask({
  * @param {object} task {
  * {string} name
  * {number} projectId
- * {number} datasetId
+ * {array<number>} datasets
  * {object} config
  * {array<array<model, stage>>} stages
  * {string} image
@@ -250,14 +250,15 @@ export function createMiningTask({
 export function createInferenceTask({
   name,
   projectId,
-  datasetId,
+  datasets,
   stages = [],
   config,
   image,
   imageId,
   description,
 }) {
-  const params = stages.map(([model, stage]) => ({
+  const maps = datasets.map(dataset => stages.map(([model, stage]) => ({dataset, model, stage }))).flat()
+  const params = maps.map(({model, stage, dataset}) => ({
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
@@ -267,7 +268,7 @@ export function createInferenceTask({
       model_id: model,
       model_stage_id: stage,
       generate_annotations: true,
-      dataset_id: datasetId,
+      dataset_id: dataset,
       docker_image: image,
       docker_image_id: imageId,
     }
