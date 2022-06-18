@@ -32,7 +32,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     model_stages, best_stage_name = _find_model_stages(out_model_dir)
     if not model_stages:
         # if have no models
-        return ('', 0)
+        return ('', 0, None)
     best_mAP = model_stages[best_stage_name].mAP
 
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
@@ -78,12 +78,14 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
                                                                         mAP=model_mAP)
         elif 'model_stages' in yaml_obj:
             # new training result file: read from model stages
-            for k, v in yaml_obj['model_stages']:
+            for k, v in yaml_obj['model_stages'].items():
                 model_stages[k] = mir_utils.ModelStageStorage(stage_name=k,
-                                                              files=v['models'],
+                                                              files=v['files'],
                                                               mAP=float(v['mAP']),
                                                               timestamp=v['timestamp'])
+
             best_stage_name = yaml_obj['best_stage_name']
+        breakpoint()
     except FileNotFoundError:
         logging.warning(traceback.format_exc())
         return (model_stages, best_stage_name)

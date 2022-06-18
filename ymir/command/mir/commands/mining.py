@@ -173,10 +173,15 @@ class CmdMining(base.BaseCommand):
             return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
         # catch other exceptions in command_run_in_out
 
+        model_dict = {
+            'model_hash': model_hash,
+            'stages': {},
+        }
+        # TODO: ADD MODEL STAGE HERE
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='mining',
-                                           model_hash=model_hash,
+                                           model_dict=model_dict,
                                            src_revs=src_typ_rev_tid.rev_tid,
                                            dst_rev=dst_typ_rev_tid.rev_tid,
                                            return_code=return_code,

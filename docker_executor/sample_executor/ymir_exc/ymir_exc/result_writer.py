@@ -25,12 +25,12 @@ class Annotation(BaseModel):
 
 
 def write_model_stage(stage_name: str,
-                      model_files: List[str],
+                      files: List[str],
                       mAP: float,
                       as_best: bool = False,
                       timestamp: int = None) -> None:
-    if not stage_name or not model_files:
-        raise ValueError('empty stage_name or model_files')
+    if not stage_name or not files:
+        raise ValueError('empty stage_name or files')
 
     training_result: dict = {}  # key: stage name, value: stage name, files, timestamp, mAP
 
@@ -47,13 +47,13 @@ def write_model_stage(stage_name: str,
 
     model_stages[stage_name] = {
         'stage_name': stage_name,
-        'files': model_files,
-        'timestamp': timestamp or time.time(),
+        'files': files,
+        'timestamp': timestamp or int(time.time()),
         'mAP': mAP
     }
 
     if as_best:
-        training_result['best_model_stage'] = stage_name
+        training_result['best_stage_name'] = stage_name
         training_result['map'] = model_stages[stage_name]['mAP']
 
     # if too many stages, remove a smallest one
@@ -72,7 +72,7 @@ def write_model_stage(stage_name: str,
 
 def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
     write_model_stage(stage_name='default-stage',
-                      model_files=model_names,
+                      files=model_names,
                       mAP=mAP)
 
 

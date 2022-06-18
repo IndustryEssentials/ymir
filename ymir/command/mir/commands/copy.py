@@ -108,6 +108,7 @@ class CmdCopy(base.BaseCommand):
             'mean_average_precision': orig_task.model.mean_average_precision,
             'stages': orig_task.model.stages,
         }
+        # TODO: BUG FIX
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",

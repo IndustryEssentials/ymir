@@ -87,7 +87,7 @@ class TestResultWriter(unittest.TestCase):
     def test_write_model_stage(self) -> None:
         for idx in range(0, 11):
             rw.write_model_stage(stage_name=f"epoch-{idx}",
-                                 model_files=[f"model-{idx}.params", 'model-symbol.json'],
+                                 files=[f"model-{idx}.params", 'model-symbol.json'],
                                  mAP=idx / 10,
                                  timestamp=10 * idx + 1000000,
                                  as_best=(idx == 8))

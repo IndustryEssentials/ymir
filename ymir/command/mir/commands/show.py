@@ -133,5 +133,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                             description='use this command to show current workspace informations',
                                             help='show current workspace informations')
     show_arg_parser.add_argument('--verbose', dest='verbose', action='store_true', help='show verbose info')
-    show_arg_parser.add_argument('--src-revs', dest='src_revs', type=str, help='rev@bid: source rev and base task id')
+    show_arg_parser.add_argument('--src-revs',
+                                 dest='src_revs',
+                                 type=str,
+                                 default='HEAD',
+                                 help='rev@bid: source rev and base task id')
     show_arg_parser.set_defaults(func=CmdShow)

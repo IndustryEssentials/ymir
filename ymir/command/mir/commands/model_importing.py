@@ -69,11 +69,15 @@ class CmdModelImport(base.BaseCommand):
         shutil.rmtree(extract_model_dir_path)
 
         # create task and commit
+        model_dict = {
+            'model_hash': model_hash,
+            'model_mAP': float(model_storage.task_context.get('mAP', 0)),
+        }
+        # TODO: BUG FIX AND ADD MODEL STAGE INFOS
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportModel,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"import model {package_path} as {model_hash}",
-                                           model_hash=model_hash,
-                                           model_mAP=float(model_storage.task_context.get('mAP', 0)),
+                                           model_dict=model_dict,
                                            return_code=MirCode.RC_OK,
                                            return_msg='',
                                            src_revs=src_revs,
