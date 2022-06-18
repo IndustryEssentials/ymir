@@ -26,6 +26,7 @@ def get_model_info(user_id: str, repo_id: str, branch_id: str) -> ModelResult:
         branch_id=branch_id,
         task_id=branch_id,
     ).get_model_info()
+    logging.info(f"model_info: {model_info}")
 
     resp = utils.suss_resp()
     resp.update({
