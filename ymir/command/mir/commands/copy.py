@@ -3,6 +3,8 @@ from collections import defaultdict
 import logging
 from typing import Dict, List, Set, Tuple
 
+from google.protobuf.json_format import MessageToDict
+
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage, mir_storage_ops
@@ -106,8 +108,9 @@ class CmdCopy(base.BaseCommand):
         model_dict = {
             'model_hash': orig_task.model.model_hash,
             'mean_average_precision': orig_task.model.mean_average_precision,
-            'stages': orig_task.model.stages,
+            'stages': MessageToDict(orig_task.model, preserving_proto_field_name=True)['stages'],
         }
+        breakpoint()
         # TODO: BUG FIX
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
                                            task_id=dst_typ_rev_tid.tid,
