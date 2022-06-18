@@ -39,7 +39,7 @@ class CmdInfer(base.BaseCommand):
                                       mir_root=self.args.mir_root,
                                       media_path=self.args.work_dir,
                                       model_location=self.args.model_location,
-                                      model_hash=self.args.model_hash,
+                                      model_hash_stage=self.args.model_hash_stage,
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
@@ -53,7 +53,7 @@ class CmdInfer(base.BaseCommand):
                       mir_root: str,
                       media_path: str,
                       model_location: str,
-                      model_hash: str,
+                      model_hash_stage: str,
                       index_file: str,
                       config_file: str,
                       executor: str,
@@ -72,7 +72,7 @@ class CmdInfer(base.BaseCommand):
             media_path (str): media path, all medias in `index_file` should all in this `media_path`
                 in cmd infer, set it to work_dir, in cmd mining, set it to media_cache or work_dir
             model_location (str): model location
-            model_hash (str): model package hash (or model package name)
+            model_hash_stage (str): model_hash@stage_name
             index_file (str): index file, each line means an image abs path
             config_file (str): configuration file passed to infer executor
             executor (str): docker image name used to infer
@@ -94,7 +94,7 @@ class CmdInfer(base.BaseCommand):
         if not model_location:
             logging.error('empty --model-location, abort')
             return MirCode.RC_CMD_INVALID_ARGS
-        if not model_hash:
+        if not model_hash_stage:
             logging.error('empty --model-hash, abort')
             return MirCode.RC_CMD_INVALID_ARGS
         if not index_file or not os.path.isfile(index_file):
@@ -130,14 +130,16 @@ class CmdInfer(base.BaseCommand):
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_storage = mir_utils.prepare_model(model_location=model_location,
-                                                model_hash=model_hash,
-                                                dst_model_path=work_model_path)
-        model_names = model_storage.models
+        model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
+        model_storage: mir_utils.ModelStorage = mir_utils.prepare_model(model_location=model_location,
+                                                                        model_hash=model_hash,
+                                                                        stage_name=stage_name,
+                                                                        dst_model_path=work_model_path)
+        model_names = model_storage.stages[stage_name].files
         class_names = model_storage.class_names
         if not class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                                  error_message=f"empty class names in model: {model_hash}")
+                                  error_message=f"empty class names in model: {model_hash_stage}")
 
         with open(config_file, 'r') as f:
             config = yaml.safe_load(f)
@@ -347,10 +349,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   help='model storage location for models')
     infer_arg_parser.add_argument('--model-hash',
-                                  dest='model_hash',
+                                  dest='model_hash_stage',
                                   type=str,
                                   required=True,
-                                  help='model hash to be used')
+                                  help='model hash@stage to be used')
     infer_arg_parser.add_argument('--task-config-file',
                                   dest='config_file',
                                   type=str,

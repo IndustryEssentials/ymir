@@ -93,7 +93,9 @@ class CmdShow(base.BaseCommand):
             print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
                   f"    model hash: {task.model.model_hash}\n"
                   f"    map: {task.model.mean_average_precision}\n"
-                  f"    executor: {task.executor}")
+                  f"    executor: {task.executor}\n"
+                  f"    stages: {list(task.model.stages.keys())}\n"
+                  f"    best stage name: {task.model.best_stage_name}")
         else:
             print(f"tasks.mir: {json_format.MessageToDict(mir_tasks, preserving_proto_field_name=True)}")
 

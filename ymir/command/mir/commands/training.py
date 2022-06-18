@@ -156,11 +156,13 @@ def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_m
     """
     if not model_hash_stage:
         return []
+    model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
     model_storage = mir_utils.prepare_model(model_location=model_location,
-                                            model_hash_stage=model_hash_stage,
+                                            model_hash=model_hash,
+                                            stage_name=stage_name,
                                             dst_model_path=dst_model_dir)
 
-    return model_storage.models
+    return model_storage.stages[stage_name].files
 
 
 def _get_task_parameters(config: dict) -> str:

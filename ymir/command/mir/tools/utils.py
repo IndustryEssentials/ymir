@@ -7,7 +7,7 @@ import time
 import requests
 import shutil
 import tarfile
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, root_validator
@@ -197,7 +197,6 @@ class ModelStageStorage(BaseModel):
 class ModelStorage(BaseModel):
     executor_config: Dict[str, Any]
     task_context: Dict[str, Any]
-    class_names: List[str]
     stages: Dict[str, ModelStageStorage]
     best_stage_name: str
 
@@ -210,17 +209,29 @@ class ModelStorage(BaseModel):
             or not values.get('task_context')):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"ModelStorage check failed with args: {values}")
-        values['class_names'] = values.get('executor_config')['class_names']
         return values
 
+    @property
+    def class_names(self) -> List[str]:
+        return self.executor_config['class_names']
 
-def prepare_model(model_location: str, model_hash_stage: str, files: List[str], dst_model_path: str) -> ModelStorage:
+
+def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
+    model_hash, stage_name = model_hash_stage.split('@')
+    if not model_hash or not stage_name:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"invalid model hash stage: {model_hash_stage}")
+    return (model_hash, stage_name)
+
+
+def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_model_path: str) -> ModelStorage:
     """
     unpack model to `dst_model_path`
 
     Args:
         model_location (str): model storage dir
-        model_hash_stage (str): hash and stage name of model package, <model_hash>@<stage_name>
+        model_hash (str): hash of model package
+        stage_name (str): model stage name
         dst_model_path (str): path to destination model directory
 
     Raises:
@@ -231,8 +242,6 @@ def prepare_model(model_location: str, model_hash_stage: str, files: List[str], 
     Returns:
         ModelStorage: rel path to params, json, weights file and config file (start from dest_root)
     """
-    model_hash, stage_name = model_hash_stage.split('@')
-
     tar_file_path = os.path.join(model_location, model_hash)
     if not os.path.isfile(tar_file_path):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -240,22 +249,17 @@ def prepare_model(model_location: str, model_hash_stage: str, files: List[str], 
 
     os.makedirs(dst_model_path, exist_ok=True)
 
-    logging.info(f"extracting models from {tar_file_path}")
-    tar_file = tarfile.open(tar_file_path, 'r')
+    logging.info(f"extracting models: {tar_file_path}, stage: {stage_name}")
+    with tarfile.open(tar_file_path, 'r') as tar_file:
+        # get model_stage of this package
+        tar_file.extract('ymir-info.yaml', dst_model_path)
+        with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
+            ymir_info_dict = yaml.safe_load(f.read())
+        model_storage = ModelStorage.parse_obj(ymir_info_dict)
 
-    # get model_stage of this package
-    tar_file.extract('ymir-info.yaml', dst_model_path)
-    with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
-        ymir_info_dict = yaml.safe_load(f.read())
-    model_storage = ModelStorage(models=ymir_info_dict['models'],
-                                 executor_config=ymir_info_dict[mir_settings.EXECUTOR_CONFIG_KEY],
-                                 task_context=ymir_info_dict[mir_settings.TASK_CONTEXT_KEY])
-
-    for item in tar_file:
-        logging.info(f"extracting {item} -> {dst_model_path}")
-        tar_file.extract(item, dst_model_path)
-    
-    tar_file.close()
+        for file_name in model_storage.stages[stage_name].files:
+            logging.info(f"    extracting {file_name} -> {dst_model_path}")
+            tar_file.extract(file_name, dst_model_path)
 
     return model_storage
 
@@ -264,7 +268,7 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     """
     pack model, returns model hash of the new model package
     """
-    logging.info(f"packing models {model_dir_path} -> {model_location}")
+    logging.info(f"packing models: {model_dir_path} -> {model_location}")
 
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
