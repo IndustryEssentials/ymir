@@ -475,7 +475,6 @@ class CmdTrain(base.BaseCommand):
             'stages': {k: v.dict() for k, v in model_storage.stages.items()},
             'best_stage_name': model_storage.best_stage_name,
         }
-        # TODO: CHANGE OTHERS
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',

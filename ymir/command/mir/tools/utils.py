@@ -226,12 +226,12 @@ def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
 
 def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_model_path: str) -> ModelStorage:
     """
-    unpack model to `dst_model_path`
+    unpack model to `dst_model_path` and returns ModelStorage instance
 
     Args:
         model_location (str): model storage dir
         model_hash (str): hash of model package
-        stage_name (str): model stage name
+        stage_name (str): model stage name, empty string to unpack all model files
         dst_model_path (str): path to destination model directory
 
     Raises:
@@ -240,7 +240,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         MirRuntimeError: if model package is invalid (lacks params, json or config file)
 
     Returns:
-        ModelStorage: rel path to params, json, weights file and config file (start from dest_root)
+        ModelStorage
     """
     tar_file_path = os.path.join(model_location, model_hash)
     if not os.path.isfile(tar_file_path):
@@ -257,7 +257,12 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
             ymir_info_dict = yaml.safe_load(f.read())
         model_storage = ModelStorage.parse_obj(ymir_info_dict)
 
-        for file_name in model_storage.stages[stage_name].files:
+        files: List[str]
+        if stage_name:
+            files = model_storage.stages[stage_name].files
+        else:
+            files = list({f for v in model_storage.stages.values() for f in v.files})
+        for file_name in files:
             logging.info(f"    extracting {file_name} -> {dst_model_path}")
             tar_file.extract(file_name, dst_model_path)
 

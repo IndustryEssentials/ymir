@@ -50,6 +50,7 @@ class CmdModelImport(base.BaseCommand):
         extract_model_dir_path = os.path.join(work_dir, 'model')
         model_storage = mir_utils.prepare_model(model_location=os.path.dirname(package_path),
                                                 model_hash=os.path.basename(package_path),
+                                                stage_name='',
                                                 dst_model_path=extract_model_dir_path)
 
         logging.info(f"importing model with storage: {model_storage}")
@@ -70,10 +71,11 @@ class CmdModelImport(base.BaseCommand):
 
         # create task and commit
         model_dict = {
+            'mean_average_precision': float(model_storage.task_context.get('mAP', 0)),
             'model_hash': model_hash,
-            'model_mAP': float(model_storage.task_context.get('mAP', 0)),
+            'stages': {k: v.dict() for k, v in model_storage.stages.items()},
+            'best_stage_name': model_storage.best_stage_name,
         }
-        # TODO: BUG FIX AND ADD MODEL STAGE INFOS
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportModel,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"import model {package_path} as {model_hash}",
