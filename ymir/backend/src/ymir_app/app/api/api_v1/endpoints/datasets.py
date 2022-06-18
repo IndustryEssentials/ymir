@@ -50,6 +50,38 @@ def batch_get_datasets(
     return {"result": datasets}
 
 
+@router.get(
+    "/analysis",
+    response_model=schemas.DatasetsAnalysesOut,
+)
+def get_datasets_analysis(
+    db: Session = Depends(deps.get_db),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    ids = [int(i) for i in dataset_ids.split(",")]
+    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    if not datasets:
+        raise DatasetNotFound()
+
+    results = []
+    for dataset in datasets:
+        if dataset.result_state != int(ResultState.ready):
+            raise DatasetNotFound()
+        viz_client.initialize(
+            user_id=current_user.id,
+            project_id=dataset.project_id,
+            branch_id=dataset.hash,
+        )
+        res = viz_client.get_dataset(user_labels=user_labels)
+        res.group_name = dataset.group_name  # type: ignore
+        res.version_num = dataset.version_num  # type: ignore
+        results.append(res)
+    return {"result": {"datasets": results}}
+
+
 @router.post(
     "/batch",
     response_model=schemas.DatasetsOut,
