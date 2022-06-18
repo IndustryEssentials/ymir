@@ -74,8 +74,9 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
 
             best_stage_name = 'default-stage'
             model_stages[best_stage_name] = mir_utils.ModelStageStorage(stage_name=best_stage_name,
-                                                                        models=model_names,
-                                                                        mAP=model_mAP)
+                                                                        files=model_names,
+                                                                        mAP=model_mAP,
+                                                                        timestamp=int(time.time()))
         elif 'model_stages' in yaml_obj:
             # new training result file: read from model stages
             for k, v in yaml_obj['model_stages'].items():
@@ -85,7 +86,6 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
                                                               timestamp=v['timestamp'])
 
             best_stage_name = yaml_obj['best_stage_name']
-        breakpoint()
     except FileNotFoundError:
         logging.warning(traceback.format_exc())
         return (model_stages, best_stage_name)

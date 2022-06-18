@@ -47,7 +47,6 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
 
 
 def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
-    return
     if not os.path.isdir(dir):
         return
 
