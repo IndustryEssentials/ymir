@@ -31,8 +31,8 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     out_model_dir = os.path.join(out_root, "models")
     model_stages, best_stage_name = _find_model_stages(out_model_dir)
     if not model_stages:
-        # if have no models
-        return ('', 0, None)
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='can not find model stages in result.yaml')
     best_mAP = model_stages[best_stage_name].mAP
 
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,

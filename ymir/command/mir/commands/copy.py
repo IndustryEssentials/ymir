@@ -105,7 +105,8 @@ class CmdCopy(base.BaseCommand):
 
         # save and commit
         orig_task: mirpb.Task = mir_tasks.tasks[orig_head_task_id]
-        stages_dict = MessageToDict(orig_task.model, preserving_proto_field_name=True)['stages'] if orig_task.model.stages else {}
+        stages_dict = MessageToDict(orig_task.model,
+                                    preserving_proto_field_name=True)['stages'] if orig_task.model.stages else {}
         model_dict = {
             'model_hash': orig_task.model.model_hash,
             'mean_average_precision': orig_task.model.mean_average_precision,

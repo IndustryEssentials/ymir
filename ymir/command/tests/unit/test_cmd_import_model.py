@@ -1,6 +1,7 @@
 import os
 import shutil
 import tarfile
+import time
 import unittest
 
 import yaml
@@ -52,14 +53,19 @@ class TestCmdImportModel(unittest.TestCase):
         with open(os.path.join(self._src_model_root, 'best.weights'), 'w') as f:
             f.write('fake darknet weights model')
         # note: unknown-car is not in user labels, we still expect it success
-        model_storage = mir_utils.ModelStorage(models=['best.weights'],
-                                               executor_config={'class_names': ['cat', 'person', 'unknown-car']},
+        mss = mir_utils.ModelStageStorage(stage_name='default_stage',
+                                          files=['best.weights'],
+                                          mAP=0.5,
+                                          timestamp=int(time.time()))
+        model_storage = mir_utils.ModelStorage(executor_config={'class_names': ['cat', 'person', 'unknown-car']},
                                                task_context={
                                                    mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
                                                    'mAP': 0.5
-                                               })
+                                               },
+                                               stages={mss.stage_name: mss},
+                                               best_stage_name=mss.stage_name)
         with open(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'w') as f:
-            yaml.safe_dump(model_storage.as_dict(), f)
+            yaml.safe_dump(model_storage.dict(), f)
         with tarfile.open(self._src_model_package_path, 'w:gz') as tar_gz_f:
             tar_gz_f.add(os.path.join(self._src_model_root, 'best.weights'), 'best.weights')
             tar_gz_f.add(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'ymir-info.yaml')

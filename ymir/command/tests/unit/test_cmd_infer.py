@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import tarfile
+import time
 import unittest
 from unittest import mock
 
@@ -40,6 +41,8 @@ class TestCmdInfer(unittest.TestCase):
 
     # protected: setup and teardown
     def _prepare_dir(self):
+        if os.path.isdir(self._test_root):
+            shutil.rmtree(self._test_root)
         os.makedirs(self._test_root, exist_ok=True)
         os.makedirs(self._models_location, exist_ok=True)
         os.makedirs(self._working_root, exist_ok=True)
@@ -50,7 +53,6 @@ class TestCmdInfer(unittest.TestCase):
         shutil.rmtree(self._test_root)
 
     def _prepare_mir_root(self):
-        breakpoint()
         test_utils.mir_repo_init(self._mir_repo_root)
         test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['person', 'cat'])
 
@@ -78,15 +80,20 @@ class TestCmdInfer(unittest.TestCase):
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
         training_config['class_names'] = ['person', 'cat', 'unknown-car']
 
-        model_storage = mir_utils.ModelStorage(models=['model.params', 'model.json'],
-                                               executor_config=training_config,
+        model_stage = mir_utils.ModelStageStorage(stage_name='default_stage',
+                                                  files=['model.params', 'model.json'],
+                                                  mAP=0.5,
+                                                  timestamp=int(time.time()))
+        model_storage = mir_utils.ModelStorage(executor_config=training_config,
                                                task_context={
                                                    'src_revs': 'master',
                                                    'dst_rev': 'a'
-                                               })
+                                               },
+                                               stages={model_stage.stage_name: model_stage},
+                                               best_stage_name=model_stage.stage_name)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
-            yaml.dump(model_storage.as_dict(), f)
+            yaml.dump(model_storage.dict(), f)
 
         # pack model
         with tarfile.open(os.path.join(self._models_location, 'fake_model_hash'), "w:gz") as dest_tar_gz:
@@ -140,7 +147,7 @@ class TestCmdInfer(unittest.TestCase):
         fake_args.work_dir = self._working_root
         fake_args.mir_root = self._mir_repo_root
         fake_args.model_location = self._models_location
-        fake_args.model_hash = 'fake_model_hash'
+        fake_args.model_hash_stage = 'fake_model_hash@default_stage'
         fake_args.index_file = self._assets_index_file
         fake_args.config_file = self._config_file
         fake_args.executor = 'infer-executor:fake'

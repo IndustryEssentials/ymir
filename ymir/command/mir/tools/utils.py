@@ -185,10 +185,8 @@ class ModelStageStorage(BaseModel):
 
     @root_validator(pre=True)
     def check_values(cls, values: dict) -> dict:
-        if (not values.get('stage_name')
-            or not values.get('files')
-            or not values.get('timestamp')
-            or values.get('mAP') < 0 or values.get('mAP') > 1):
+        if (not values['stage_name'] or not values['files'] or not values['timestamp'] or values['mAP'] < 0
+                or values['mAP'] > 1):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"ModelStageStorage check failed with args: {values}")
         return values
@@ -202,11 +200,8 @@ class ModelStorage(BaseModel):
 
     @root_validator(pre=True)
     def check_values(cls, values: dict) -> dict:
-        if (not values.get('stages') 
-            or not values.get('best_stage_name')
-            or not values.get('executor_config')
-            or 'class_names' not in values.get('executor_config')
-            or not values.get('task_context')):
+        if (not values.get('stages') or not values.get('best_stage_name') or not values.get('executor_config')
+                or 'class_names' not in values.get('executor_config', {}) or not values.get('task_context')):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"ModelStorage check failed with args: {values}")
         return values
