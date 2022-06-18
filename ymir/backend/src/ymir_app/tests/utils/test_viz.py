@@ -87,6 +87,29 @@ class TestDataset:
             "ignored_labels": {"cat": 5},
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
+            "pred": {
+                "total_images_cnt": 1,
+                "class_ids_count": {3: 34},
+                "ignored_labels": {"cat": 5},
+                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+                "annos_cnt": 28,
+                "positive_asset_cnt": 1,
+                "negative_asset_cnt": 1,
+                "class_names_count": {"cat": 3},
+                "hist": {
+                    "anno_area_ratio": [[{"x": 1, "y": 2}]],
+                    "anno_quality": [[{"x": 1, "y": 2}]]
+                }
+            },
+            "gt": {},
+            "hist": {
+                "asset_area": [[{"x": 1, "y": 2}]],
+                "asset_bytes": [[{"x": 1, "y": 2}]],
+                "asset_hw_ratio": [[{"x": 1, "y": 2}]],
+                "asset_quality": [[{"x": 1, "y": 2}]]
+            },
+            "total_asset_mbytes": 10,
+            "total_assets_cnt": 1
         }
         M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
         assert M.keyword_count == len(res["class_ids_count"])
@@ -207,6 +230,29 @@ class TestVizClient:
             "ignored_labels": {"cat": 5},
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
+            "pred": {
+                "total_images_cnt": 1,
+                "class_ids_count": {3: 34},
+                "ignored_labels": {"cat": 5},
+                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+                "annos_cnt": 28,
+                "positive_asset_cnt": 1,
+                "negative_asset_cnt": 1,
+                "class_names_count": {"cat": 3},
+                "hist": {
+                    "anno_area_ratio": [[{"x": 1, "y": 2}]],
+                    "anno_quality": [[{"x": 1, "y": 2}]]
+                }
+            },
+            "gt": {},
+            "hist": {
+                "asset_area": [[{"x": 1, "y": 2}]],
+                "asset_bytes": [[{"x": 1, "y": 2}]],
+                "asset_hw_ratio": [[{"x": 1, "y": 2}]],
+                "asset_quality": [[{"x": 1, "y": 2}]]
+            },
+            "total_asset_mbytes": 10,
+            "total_assets_cnt": 1
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
