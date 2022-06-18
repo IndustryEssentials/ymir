@@ -57,17 +57,12 @@ class TestResultWriter(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # protected: check results
-    def _check_model_stages(self, best_stage_name: str) -> None:
+    def _check_model_stages(self, best_stage_name: str, mAP: float, stage_names: List[str]) -> None:
         with open(self._training_result_file, 'r') as f:
             result_obj: dict = yaml.safe_load(f)
-        self.assertTrue('model_stages' in result_obj)
-        self.assertTrue('best_stage_name' in result_obj)
-        self.assertEqual(10, len(result_obj['model_stages']))
-
-        for idx in range(1, 11):
-            self.assertTrue(f"epoch-{idx}" in result_obj['model_stages'])
+        self.assertEqual(set(stage_names), set(result_obj['model_stages'].keys()))
         self.assertEqual(best_stage_name, result_obj['best_stage_name'])
-        self.assertEqual(0.8, result_obj['map'])
+        self.assertEqual(mAP, result_obj['map'])
 
 
     def _check_mining_result(self, mining_result: List[Tuple[str, float]]) -> None:
@@ -84,17 +79,30 @@ class TestResultWriter(unittest.TestCase):
             self.assertEqual(set(infer_result_obj['detection'].keys()), set(infer_result.keys()))
 
     # public: test cases
-    def test_write_model_stage(self) -> None:
-        for idx in range(0, 11):
-            rw.write_model_stage(stage_name=f"epoch-{idx}",
+    def test_write_model_stage_00(self) -> None:
+        stage_names = [f"epoch-{idx}" for idx in range(0, 11)]
+        for idx, stage_name in enumerate(stage_names):
+            rw.write_model_stage(stage_name=stage_name,
                                  files=[f"model-{idx}.params", 'model-symbol.json'],
                                  mAP=idx / 10,
                                  timestamp=10 * idx + 1000000,
                                  as_best=(idx == 8))
-        self._check_model_stages(best_stage_name='epoch-8')
+        expected_stage_names = [f"epoch-{idx}" for idx in range(1, 11)]
+        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch-8', mAP=0.8)
+
+    def test_write_model_stage_01(self) -> None:
+        stage_names = [f"epoch-{idx}" for idx in range(0, 11)]
+        for idx, stage_name in enumerate(stage_names):
+            rw.write_model_stage(stage_name=stage_name,
+                                 files=[f"model-{idx}.params", 'model-symbol.json'],
+                                 mAP=idx / 10,
+                                 timestamp=10 * idx + 1000000)
+        expected_stage_names = [f"epoch-{idx}" for idx in range(1, 11)]
+        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch-10', mAP=1.0)
 
     def test_write_training_result(self) -> None:
         rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
+        self._check_model_stages(stage_names=['default-stage'], best_stage_name='default-stage', mAP=0.9)
 
     def test_write_mining_result(self) -> None:
         mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]

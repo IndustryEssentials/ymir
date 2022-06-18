@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 from typing import Dict, List, Tuple
@@ -65,6 +66,7 @@ def write_model_stage(stage_name: str,
         if del_stage_name == training_result.get('best_model_stage', ''):
             del_stage_name = sorted_model_stages[1]['stage_name']
         del model_stages[del_stage_name]
+        logging.info(f"data_writer removed model stage: {del_stage_name}")
     training_result['model_stages'] = model_stages
 
     # save all
