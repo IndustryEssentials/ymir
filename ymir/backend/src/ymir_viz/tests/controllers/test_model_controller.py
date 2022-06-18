@@ -25,6 +25,6 @@ class TestModelController:
             "model_mAP": 0.88,
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
-            'stages': {},
+            'model_stages': {},
             'best_stage_name': 'best',
         }
