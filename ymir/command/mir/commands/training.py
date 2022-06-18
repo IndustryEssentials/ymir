@@ -39,7 +39,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                            task_context=dict(**task_context,
                                                              mAP=best_mAP,
                                                              type=mirpb.TaskType.TaskTypeTraining),
-                                           model_stages=model_stages,
+                                           stages=model_stages,
                                            best_stage_name=best_stage_name)
     model_sha1 = mir_utils.pack_and_copy_models(model_storage=model_storage,
                                                 model_dir_path=out_model_dir,
@@ -140,7 +140,7 @@ def _get_shm_size(executor_config: dict) -> str:
     return executor_config['shm_size']
 
 
-def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str) -> List[str]:
+def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_model_dir: str) -> List[str]:
     """
     prepare pretrained models
     * extract models to dst_model_dir
@@ -148,16 +148,16 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
 
     Args:
         model_location (str): model location
-        model_hash (str): model package hash
+        model_hash_stage (str): model package hash
         dst_model_dir (str): dir where you want to extract model files to
 
     Returns:
         List[str]: model names
     """
-    if not model_hash:
+    if not model_hash_stage:
         return []
     model_storage = mir_utils.prepare_model(model_location=model_location,
-                                            model_hash=model_hash,
+                                            model_hash_stage=model_hash_stage,
                                             dst_model_path=dst_model_dir)
 
     return model_storage.models
@@ -174,7 +174,7 @@ class CmdTrain(base.BaseCommand):
         return CmdTrain.run_with_args(work_dir=self.args.work_dir,
                                       asset_cache_dir=self.args.asset_cache_dir,
                                       model_upload_location=self.args.model_path,
-                                      pretrained_model_hash=self.args.model_hash,
+                                      pretrained_model_hash_stage=self.args.model_hash_stage,
                                       src_revs=self.args.src_revs,
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
@@ -190,7 +190,7 @@ class CmdTrain(base.BaseCommand):
     def run_with_args(work_dir: str,
                       asset_cache_dir: Optional[str],
                       model_upload_location: str,
-                      pretrained_model_hash: str,
+                      pretrained_model_hash_stage: str,
                       executor: str,
                       executant_name: str,
                       src_revs: str,
@@ -280,9 +280,9 @@ class CmdTrain(base.BaseCommand):
 
         os.system(f"chmod -R 777 {work_dir_out}")
 
-        # if have model_hash, export model
+        # if have model_hash_stage, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
-                                                            model_hash=pretrained_model_hash,
+                                                            model_hash_stage=pretrained_model_hash_stage,
                                                             dst_model_dir=os.path.join(work_dir_in, 'models'))
 
         # get train_ids and val_ids
@@ -470,7 +470,7 @@ class CmdTrain(base.BaseCommand):
         model_dict = {
             'mean_average_precision': model_mAP,
             'model_hash': model_sha1,
-            'stages': model_storage.as_dict()['model_stages'],
+            'stages': {k: v.dict() for k, v in model_storage.stages.items()},
             'best_stage_name': model_storage.best_stage_name,
         }
         # TODO: CHANGE OTHERS
@@ -601,7 +601,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   help="media storage location for models")
     train_arg_parser.add_argument('--model-hash',
-                                  dest='model_hash',
+                                  dest='model_hash_stage',
                                   type=str,
                                   required=False,
                                   help='model hash to be used')

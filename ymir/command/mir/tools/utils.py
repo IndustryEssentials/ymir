@@ -1,4 +1,3 @@
-from dataclasses import asdict, dataclass, field
 from functools import wraps
 import linecache
 import logging
@@ -11,7 +10,7 @@ import tarfile
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from PIL import Image, UnidentifiedImageError
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 import yaml
 
 from mir import scm
@@ -178,41 +177,50 @@ def _get_assets_location(asset_ids: List[str], asset_location: str) -> Dict[str,
     return {id: os.path.join(asset_location, id) for id in asset_ids}
 
 
-@dataclass
-class ModelStageStorage:
-    stage_name: str = field(default_factory=str)
-    files: List[str] = field(default_factory=list)
-    mAP: float = field(default_factory=float)
-    timestamp: int = field(default_factory=int)
+class ModelStageStorage(BaseModel):
+    stage_name: str
+    files: List[str]
+    mAP: float
+    timestamp: int
 
-
-@dataclass
-class ModelStorage:
-    executor_config: Dict[str, Any] = field(default_factory=dict)
-    task_context: Dict[str, Any] = field(default_factory=dict)
-    class_names: List[str] = field(init=False)
-    model_stages: Dict[str, ModelStageStorage] = field(default_factory=dict)
-    best_stage_name: str = field(default_factory=str)
-
-    def __post_init__(self) -> None:
-        self.class_names = self.executor_config.get('class_names', [])
-
-        # check valid
-        if not self.model_stages or not self.executor_config or not self.task_context or not self.class_names:
+    @root_validator(pre=True)
+    def check_values(cls, values: dict) -> dict:
+        if (not values.get('stage_name')
+            or not values.get('files')
+            or not values.get('timestamp')
+            or values.get('mAP') < 0 or values.get('mAP') > 1):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='ModelStorage invalid: not enough infomations')
-
-    def as_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+                                  error_message=f"ModelStageStorage check failed with args: {values}")
+        return values
 
 
-def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> ModelStorage:
+class ModelStorage(BaseModel):
+    executor_config: Dict[str, Any]
+    task_context: Dict[str, Any]
+    class_names: List[str]
+    stages: Dict[str, ModelStageStorage]
+    best_stage_name: str
+
+    @root_validator(pre=True)
+    def check_values(cls, values: dict) -> dict:
+        if (not values.get('stages') 
+            or not values.get('best_stage_name')
+            or not values.get('executor_config')
+            or 'class_names' not in values.get('executor_config')
+            or not values.get('task_context')):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"ModelStorage check failed with args: {values}")
+        values['class_names'] = values.get('executor_config')['class_names']
+        return values
+
+
+def prepare_model(model_location: str, model_hash_stage: str, files: List[str], dst_model_path: str) -> ModelStorage:
     """
     unpack model to `dst_model_path`
 
     Args:
         model_location (str): model storage dir
-        model_hash (str): hash or name of model package
+        model_hash_stage (str): hash and stage name of model package, <model_hash>@<stage_name>
         dst_model_path (str): path to destination model directory
 
     Raises:
@@ -223,23 +231,31 @@ def prepare_model(model_location: str, model_hash: str, dst_model_path: str) -> 
     Returns:
         ModelStorage: rel path to params, json, weights file and config file (start from dest_root)
     """
-    tar_file = os.path.join(model_location, model_hash)
-    if not os.path.isfile(tar_file):
+    model_hash, stage_name = model_hash_stage.split('@')
+
+    tar_file_path = os.path.join(model_location, model_hash)
+    if not os.path.isfile(tar_file_path):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"tar_file is not a file: {tar_file}")
+                              error_message=f"tar_file is not a file: {tar_file_path}")
 
     os.makedirs(dst_model_path, exist_ok=True)
-    logging.info(f"extracting models from {tar_file}")
-    with tarfile.open(tar_file, 'r') as tar_gz:
-        for item in tar_gz:
-            logging.info(f"extracting {item} -> {dst_model_path}")
-            tar_gz.extract(item, dst_model_path)
 
+    logging.info(f"extracting models from {tar_file_path}")
+    tar_file = tarfile.open(tar_file_path, 'r')
+
+    # get model_stage of this package
+    tar_file.extract('ymir-info.yaml', dst_model_path)
     with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
     model_storage = ModelStorage(models=ymir_info_dict['models'],
                                  executor_config=ymir_info_dict[mir_settings.EXECUTOR_CONFIG_KEY],
                                  task_context=ymir_info_dict[mir_settings.TASK_CONTEXT_KEY])
+
+    for item in tar_file:
+        logging.info(f"extracting {item} -> {dst_model_path}")
+        tar_file.extract(item, dst_model_path)
+    
+    tar_file.close()
 
     return model_storage
 
@@ -253,17 +269,17 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
     with open(ymir_info_file_path, 'w') as f:
-        yaml.safe_dump(model_storage.as_dict(), f)
+        yaml.safe_dump(model_storage.dict(), f)
 
     tar_file_path = os.path.join(model_dir_path, 'model.tar.gz')
     with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:
         # packing models
-        for stage_name, mss in model_storage.model_stages.items():
+        for stage_name, stage in model_storage.stages.items():
             logging.info(f"  model stage: {stage_name}")
-            for model_name in mss.files:
-                model_path = os.path.join(model_dir_path, model_name)
-                logging.info(f"    packing {model_path} -> {model_name}")
-                tar_gz_f.add(model_path, model_name)
+            for file_name in stage.files:
+                file_path = os.path.join(model_dir_path, file_name)
+                logging.info(f"    packing {file_path} -> {file_name}")
+                tar_gz_f.add(file_path, file_name)
 
         # packing ymir-info.yaml
         logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")
@@ -274,7 +290,7 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     os.remove(tar_file_path)
 
     logging.info(f"pack success, model hash: {model_hash}, best_stage_name: {model_storage.best_stage_name}, "
-                 f"mAP: {model_storage.model_stages[model_storage.best_stage_name].mAP}")
+                 f"mAP: {model_storage.stages[model_storage.best_stage_name].mAP}")
 
     return model_hash
 
