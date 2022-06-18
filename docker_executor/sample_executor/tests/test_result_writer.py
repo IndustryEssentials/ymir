@@ -57,16 +57,16 @@ class TestResultWriter(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # protected: check results
-    def _check_model_stages(self) -> None:
+    def _check_model_stages(self, best_stage_name: str) -> None:
         with open(self._training_result_file, 'r') as f:
             result_obj: dict = yaml.safe_load(f)
         self.assertTrue('model_stages' in result_obj)
-        self.assertTrue('best_model_stage' in result_obj)
+        self.assertTrue('best_stage_name' in result_obj)
         self.assertEqual(10, len(result_obj['model_stages']))
 
         for idx in range(1, 11):
             self.assertTrue(f"epoch-{idx}" in result_obj['model_stages'])
-        self.assertEqual('epoch-8', result_obj['best_model_stage'])
+        self.assertEqual(best_stage_name, result_obj['best_stage_name'])
         self.assertEqual(0.8, result_obj['map'])
 
 
@@ -91,7 +91,7 @@ class TestResultWriter(unittest.TestCase):
                                  mAP=idx / 10,
                                  timestamp=10 * idx + 1000000,
                                  as_best=(idx == 8))
-        self._check_model_stages()
+        self._check_model_stages(best_stage_name='epoch-8')
 
     def test_write_training_result(self) -> None:
         rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})

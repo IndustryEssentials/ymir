@@ -53,8 +53,10 @@ def write_model_stage(stage_name: str,
     }
 
     if as_best:
-        training_result['best_stage_name'] = stage_name
-        training_result['map'] = model_stages[stage_name]['mAP']
+        training_result['user_defined_best_stage_name'] = stage_name
+
+    training_result['best_stage_name'] = training_result.get('user_defined_best_stage_name', stage_name)
+    training_result['map'] = model_stages[training_result['best_stage_name']]['mAP']
 
     # if too many stages, remove a smallest one
     if len(model_stages) > _MAX_MODEL_STAGES_COUNT_:
