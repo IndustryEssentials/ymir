@@ -50,6 +50,7 @@ class TestCmdInfer(unittest.TestCase):
         shutil.rmtree(self._test_root)
 
     def _prepare_mir_root(self):
+        breakpoint()
         test_utils.mir_repo_init(self._mir_repo_root)
         test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['person', 'cat'])
 

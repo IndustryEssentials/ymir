@@ -74,7 +74,7 @@ class TestCmdCopy(unittest.TestCase):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id='t0',
                                            message='training',
-                                           model_mAP=0.3)
+                                           model_dict={'mean_average_precision': 0.3})
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._src_mir_root,
                                                       mir_branch='a',
