@@ -80,29 +80,29 @@ class TestResultWriter(unittest.TestCase):
 
     # public: test cases
     def test_write_model_stage_00(self) -> None:
-        stage_names = [f"epoch-{idx}" for idx in range(0, 11)]
+        stage_names = [f"epoch_{idx}" for idx in range(0, 11)]
         for idx, stage_name in enumerate(stage_names):
             rw.write_model_stage(stage_name=stage_name,
                                  files=[f"model-{idx}.params", 'model-symbol.json'],
                                  mAP=idx / 10,
                                  timestamp=10 * idx + 1000000,
                                  as_best=(idx == 8))
-        expected_stage_names = [f"epoch-{idx}" for idx in range(1, 11)]
-        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch-8', mAP=0.8)
+        expected_stage_names = [f"epoch_{idx}" for idx in range(1, 11)]
+        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch_8', mAP=0.8)
 
     def test_write_model_stage_01(self) -> None:
-        stage_names = [f"epoch-{idx}" for idx in range(0, 11)]
+        stage_names = [f"epoch_{idx}" for idx in range(0, 11)]
         for idx, stage_name in enumerate(stage_names):
             rw.write_model_stage(stage_name=stage_name,
                                  files=[f"model-{idx}.params", 'model-symbol.json'],
                                  mAP=idx / 10,
                                  timestamp=10 * idx + 1000000)
-        expected_stage_names = [f"epoch-{idx}" for idx in range(1, 11)]
-        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch-10', mAP=1.0)
+        expected_stage_names = [f"epoch_{idx}" for idx in range(1, 11)]
+        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch_10', mAP=1.0)
 
     def test_write_training_result(self) -> None:
         rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
-        self._check_model_stages(stage_names=['default-stage'], best_stage_name='default-stage', mAP=0.9)
+        self._check_model_stages(stage_names=['default_stage'], best_stage_name='default_stage', mAP=0.9)
 
     def test_write_mining_result(self) -> None:
         mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]

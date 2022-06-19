@@ -72,7 +72,7 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
             model_names = yaml_obj["model"]
             model_mAP = float(yaml_obj["map"])
 
-            best_stage_name = 'default-stage'
+            best_stage_name = 'default_stage'
             model_stages[best_stage_name] = mir_utils.ModelStageStorage(stage_name=best_stage_name,
                                                                         files=model_names,
                                                                         mAP=model_mAP,

@@ -32,6 +32,9 @@ def write_model_stage(stage_name: str,
                       timestamp: int = None) -> None:
     if not stage_name or not files:
         raise ValueError('empty stage_name or files')
+    if not stage_name.isidentifier():
+        raise ValueError(
+            f"invalid stage_name: {stage_name}, need alphabets, numbers and underlines, start with alphabets")
 
     training_result: dict = {}  # key: stage name, value: stage name, files, timestamp, mAP
 
@@ -75,9 +78,7 @@ def write_model_stage(stage_name: str,
 
 
 def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
-    write_model_stage(stage_name='default-stage',
-                      files=model_names,
-                      mAP=mAP)
+    write_model_stage(stage_name='default_stage', files=model_names, mAP=mAP)
 
 
 def write_mining_result(mining_result: List[Tuple[str, float]]) -> None:
