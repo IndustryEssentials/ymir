@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   51plugin_app:
-    image: ymir_plugin/fiftyone
+    image: industryessentials/fiftyone_app
     env_file:
       - .env
     environment:
@@ -15,8 +15,22 @@ services:
     depends_on:
       - 51plugin_mongo
 
+  51plugin_backend:
+    image: industryessentials/fiftyone_backend
+    env_file:
+      - .env
+    environment:
+      FIFTYONE_DATABASE_URI: "mongodb://51plugin_mongo:27017"
+      FIFTYONE_REDIS_HOST: "51plugin_redis"
+      FIFTYONE_BASE_PATH: ${BACKEND_SANDBOX_ROOT}
+    restart: always
+    networks:
+      - 51pluginnetwork
+    depends_on:
+      - 51plugin_mongo
+
   51plugin_worker:
-    image: ymir_plugin/51api:v1
+    image: industryessentials/fiftyone_backend
     env_file:
       - .env
     environment:
@@ -34,24 +48,10 @@ services:
       - 51plugin_mongo
 
   51plugin_web:
-    image: ymir_plugin/fiftyone_web:v1
+    image: industryessentials/fiftyone_web
     restart: always
     ports:
       - "${FIFTYONE_HOST_PORT}:80"
-    networks:
-      - 51pluginnetwork
-    depends_on:
-      - 51plugin_mongo
-
-  51plugin_backend:
-    image: ymir_plugin/51api:v1
-    env_file:
-      - .env
-    environment:
-      FIFTYONE_DATABASE_URI: "mongodb://51plugin_mongo:27017"
-      FIFTYONE_REDIS_HOST: "51plugin_redis"
-      FIFTYONE_BASE_PATH: ${BACKEND_SANDBOX_ROOT}
-    restart: always
     networks:
       - 51pluginnetwork
     depends_on:
