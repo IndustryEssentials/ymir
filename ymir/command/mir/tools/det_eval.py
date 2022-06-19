@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, List, Optional, Set, Union
+from typing import Any, Iterable, List, Optional, Set, Union
 from mir.tools.code import MirCode
 
 import numpy as np
@@ -10,7 +10,20 @@ from mir.protos import mir_command_pb2 as mirpb
 
 
 class MirCoco:
-    def __init__(self, mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float) -> None:
+    def __init__(self,
+                 mir_root: str,
+                 rev_tid: revs_parser.TypRevTid,
+                 conf_thr: float,
+                 asset_ids: Iterable[str] = None) -> None:
+        """
+        creates MirCoco instance
+
+        Args:
+            mir_root (str): root of mir repo
+            rev_tid (TypRevTid): branch and task_id for dataset
+            conf_thr (float): lower bound of annotation confidence score
+            asset_ids (Iterable[str]): asset ids you want to include in MirCoco instance, None means include all
+        """
         m: mirpb.MirMetadatas
         a: mirpb.MirAnnotations
         k: mirpb.MirKeywords
@@ -33,7 +46,7 @@ class MirCoco:
         self._mir_annotations = a
 
         # ordered list of asset / image ids
-        self._ordered_asset_ids = sorted(list(self._mir_metadatas.attributes.keys()))
+        self._ordered_asset_ids = sorted(asset_ids or self._mir_metadatas.attributes.keys())
         # key: asset id, value: index in `self._ordered_asset_ids`
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
@@ -50,16 +63,10 @@ class MirCoco:
 
     def load_dts_from_gt(self, mir_root: str, rev_tids: List[revs_parser.TypRevTid],
                          conf_thr: float) -> List['MirCoco']:
-        gt_asset_ids_set = set(self.get_asset_ids())
-        mir_dts: List['MirCoco'] = []
-        for rev_tid in rev_tids:
-            mir_dt = MirCoco(mir_root=mir_root, rev_tid=rev_tid, conf_thr=conf_thr)
-            if set(mir_dt.mir_metadatas.attributes.keys()) != gt_asset_ids_set:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                      error_message='prediction and ground truth have different assets')
-
-            mir_dts.append(mir_dt)
-        return mir_dts
+        return [
+            MirCoco(mir_root=mir_root, rev_tid=rev_tid, conf_thr=conf_thr, asset_ids=self.get_asset_ids())
+            for rev_tid in rev_tids
+        ]
 
     @property
     def mir_metadatas(self) -> mirpb.MirMetadatas:
@@ -139,9 +146,8 @@ class MirCoco:
 
 
 class MirDetEval:
-    def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params' = None):
-        self.cocoGt = coco_gt  # ground truth COCO API
-        self.cocoDt = coco_dt  # detections COCO API
+    def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params' = None, asset_ids: Iterable[str] = None):
+        # TODO: asset_ids
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
         self._gts: dict = coco_gt.img_cat_to_annotations  # gt for evaluation
@@ -628,7 +634,8 @@ def det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluate
     evaluation.config.CopyFrom(config)
 
     for mir_dt in mir_dts:
-        evaluator = MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+        # TODO: wanted to pass asset_ids into MirDetEval, so i can evaluate different cks in a loop here
+        evaluator = MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params, asset_ids=None)
         evaluator.evaluate()
         evaluator.accumulate()
 
