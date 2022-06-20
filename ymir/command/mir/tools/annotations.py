@@ -63,7 +63,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     logging.info("loaded type id and names: %d", class_type_manager.size())
 
     if in_sha1_file:
-        logging.info("wrting annotation in {annotations_dir_path}")
+        logging.info(f"wrting annotation in {annotations_dir_path}")
         _import_annotations_from_dir(
             mir_metadatas=mir_metadatas,
             mir_annotation=mir_annotation,
@@ -94,7 +94,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
 def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
                                  in_sha1_file: str, annotations_dir_path: str, unknown_types_and_count: Dict[str, int],
                                  class_type_manager: class_ids.ClassIdManager,
-                                 image_annotations: mirpb.SingleTaskAnnotations):
+                                 image_annotations: mirpb.SingleTaskAnnotations) -> Tuple[int, Dict[str, int]]:
 
     assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
     with open(in_sha1_file, "r") as in_file:
@@ -149,3 +149,5 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
                     unknown_types_and_count[type_name] += 1
 
     logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
+
+    return MirCode.RC_OK, unknown_types_and_count

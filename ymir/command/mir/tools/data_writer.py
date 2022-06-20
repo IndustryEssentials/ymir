@@ -319,15 +319,21 @@ class RawDataWriter(BaseDataWriter):
         if annotations_dir:
             os.makedirs(annotations_dir, exist_ok=True)
         if gt_dir:
+            if gt_dir == annotations_dir:
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message='cannot set same value for annotations_dir/gt_dir')
             os.makedirs(gt_dir, exist_ok=True)
         if index_file_path:
             os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
         if gt_index_file_path:
+            if index_file_path == gt_index_file_path:
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message='cannot set same value for index_file_path/gt_index_file_path')
             os.makedirs(os.path.dirname(gt_index_file_path), exist_ok=True)
 
         self._assets_dir = assets_dir
         self._annotations_dir = annotations_dir
-        self._gt_dir = annotations_dir
+        self._gt_dir = gt_dir
         self._need_ext = need_ext
         self._need_id_sub_folder = need_id_sub_folder
         self._format_type = format_type
