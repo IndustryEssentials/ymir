@@ -285,7 +285,7 @@ class RawDataWriter(BaseDataWriter):
                  need_id_sub_folder: bool,
                  overwrite: bool,
                  class_ids_mapping: Dict[int, int],
-                 format_type,
+                 format_type: AnnoFormat,
                  index_file_path: str = '',
                  gt_dir: str = '',
                  gt_index_file_path: str = '',

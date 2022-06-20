@@ -47,7 +47,7 @@ class CmdImport(base.BaseCommand):
                 return MirCode.RC_CMD_INVALID_ARGS
             if not gt_index_file or not os.path.isfile(gt_index_file):
                 logging.error(f"invalid gt_index_file: {gt_index_file}")
-            return MirCode.RC_CMD_INVALID_ARGS
+                return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
 
