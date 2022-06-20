@@ -70,10 +70,19 @@ class ModelMetaData:
     map: float
     task_parameters: str
     executor_config: str
+    model_stages: dict
+    best_model_stage: str
 
     @classmethod
     def from_viz_res(cls, res: Dict) -> "ModelMetaData":
-        return cls(res["model_id"], res["model_mAP"], res["task_parameters"], res["executor_config"])
+        return cls(
+            res["model_id"],
+            res["model_mAP"],
+            res["task_parameters"],
+            res["executor_config"],
+            res["model_stages"],
+            res["best_model_stage"],
+        )
 
 
 class VizDataset(BaseModel):

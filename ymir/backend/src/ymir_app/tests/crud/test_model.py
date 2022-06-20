@@ -115,3 +115,15 @@ class TestUpdateModelState:
 
         crud.model.update_state(db, model_id=model.id, new_state=ResultState.ready)
         assert model.result_state == ResultState.ready
+
+
+class TestUpdateModelRecommondedStage:
+    def test_update_model_recommonded_stage(self, db: Session) -> None:
+        user_id = randint(100, 200)
+        project_id = randint(1000, 2000)
+        stage_id = randint(1, 100)
+        model = create_model(db, user_id, project_id)
+        assert model.result_state == ResultState.processing
+
+        crud.model.update_recommonded_stage(db, model_id=model.id, stage_id=stage_id)
+        assert model.recommended_stage == stage_id
