@@ -30,8 +30,8 @@ export function getTasks({
   is_desc,
   order_by,
 }) {
-  const stageIds = stages.toString()
-  const datasetIds = datasets.toString()
+  const stageIds = stages.toString() || null
+  const datasetIds = datasets.toString() || null
   return request.get("/tasks/", {
     params: {
       name,

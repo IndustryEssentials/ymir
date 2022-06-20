@@ -1,6 +1,6 @@
 import { Checkbox, Col, Row, Select } from 'antd'
 import { connect } from 'dva'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import useFetch from '@/hooks/useFetch'
 import ModelSelect from './modelSelect'
@@ -14,18 +14,19 @@ const sameConfigs = (config, configs) => {
   })
 }
 
-const ConfigSelect = ({ tasks = [], onChange = () => { } }) => {
+const ConfigSelect = ({ configs = [], onChange = () => { } }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
-    const opts = tasks.reduce((prev, task) => {
-      const config = task.config
-      return sameConfigs(config, prev) ? prev : prev.concat(config)
-    }, []).map((config, index) => ({ value: index, label: `config${index + 1}`, config: config }))
+    const opts = configs.map((config, index) => ({ value: index, label: `config${index + 1}`, config }))
     setOptions(opts)
-  }, [tasks])
+  }, [configs])
 
-  return <Checkbox.Group options={options} onChange={onChange}></Checkbox.Group>
+  const change = (values) => {
+    onChange(values, values.map(index => options[index]))
+  }
+
+  return <Checkbox.Group options={options} onChange={change}></Checkbox.Group>
 }
 
 const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
@@ -34,23 +35,46 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   const [selectedDatasets, setSelectedDatasets] = useState([])
   const [configs, setConfigs] = useState([])
   const [selectedConfigs, setSelectedConfigs] = useState([])
-  const [tasks, fetchInferTask] = useFetch('task/queryTask')
+  const [inferTasks, fetchInferTask] = useFetch('task/queryInferTasks', [])
   const [selectedTasks, setSelectedTasks] = useState([])
+  const [tasks, setTasks] = useState([])
   const [inferResult, setInferResult] = useState([])
 
   useEffect(() => {
+    setTasks(inferTasks)
+  }, [inferTasks])
+
+  useEffect(() => {
     const stages = selectedStages.map(([model, stage]) => stage)
-    fetchInferTask({ stages })
+    if (stages.length) {
+      fetchInferTask({ stages })
+    } else {
+      setTasks([])
+    }
   }, [selectedStages])
 
   useEffect(() => {
     const selected = tasks
-      ?.filter(({ dataset_ids: [dataset], config }) => (selectedDatasets ? selectedDatasets.includes(dataset) : true)
+      .filter(({ parameters:{ dataset_id }}) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true))
+      .map(({ config }) => config)
+      setConfigs(selected)
+  }, [selectedDatasets])
+
+  useEffect(() => {
+    const selected = tasks
+      .filter(({ parameters:{ dataset_id }, config }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true)
         && (selectedConfigs.length ? sameConfigs(config, selectedConfigs) : true))
     setSelectedTasks(selected)
-  }, [selectedDatasets, selectedConfigs])
+  }, [selectedConfigs])
+
+  useEffect(() => {
+    onChange({
+      tasks: selectedTasks,
+    })
+  }, [selectedTasks])
 
   function modelChange(values) {
+    console.log('model change values:', values)
     setSelectedStages(values)
   }
 
@@ -59,19 +83,20 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   }
 
   function configChange(values, options) {
-    setSelectedConfigs(options.map(option => option.config))
+    setSelectedConfigs(options.map(({ config }) => config))
   }
 
-  function filterDatasets(datasets) {
-    const testingDatasets = tasks.map(({ dataset_ids }) => dataset_ids[0])
+  const filterDatasets = useCallback((datasets) => {
+    console.log('filter datasets tasks:', tasks)
+    const testingDatasets = tasks.map(({ parameters: { dataset_id } }) => dataset_id)
     return datasets.filter(({ id }) => testingDatasets.includes(id))
-  }
+  }, [tasks])
 
   return (
     <>
       <ModelSelect pid={pid} multiple onChange={modelChange} />
-      { tasks?.length ? <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} /> : null }
-      { selectedTasks?.length ? <ConfigSelect data={selectedTasks} onChange={configChange} /> : null }
+      {tasks.length ? <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} /> : null}
+      {configs.length ? <ConfigSelect configs={configs} onChange={configChange} /> : null}
     </>
   )
 }
