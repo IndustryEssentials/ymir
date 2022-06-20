@@ -58,7 +58,7 @@ server {
         return 307 ${LABEL_TOOL_HOST_URL};
     }
 
-    location /fifyone/ {
+    location /fiftyone/ {
         return 307 ${FIFTYONE_HOST_URL};
     }
 
