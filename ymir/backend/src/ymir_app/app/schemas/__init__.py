@@ -9,6 +9,7 @@ from .dataset import (
     DatasetUpdate,
     ImportStrategy,
     DatasetsFusionParameter,
+    DatasetsAnalysesOut,
 )
 from .dataset_group import (
     DatasetGroupOut,
@@ -44,6 +45,7 @@ from .model import (
     ModelPaginationOut,
     ModelsOut,
     ModelUpdate,
+    StageChange,
 )
 from .model_stage import ModelStage, ModelStageCreate, ModelStageUpdate
 from .model_group import (

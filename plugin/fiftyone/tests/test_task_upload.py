@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-
 from fiftyone import Sample, Polyline
 
 from app.worker import (
@@ -9,7 +8,23 @@ from app.worker import (
     _get_annotation,
     _add_detections,
     _set_metadata,
+    _get_samples
 )
+
+
+def test_get_samples():
+    base_path = Path(os.getcwd())
+    annotation_dir = "tests/test_data/voc"
+
+    data_name = "pd_ymir_dataset001"
+    sample_pool = {}
+    _get_samples(base_path, Path(annotation_dir), data_name, sample_pool)
+    assert (
+        sample_pool["241294009_432213948218468_252149922899382953_n.jpg"][data_name]
+        .polylines[0]
+        .label
+        == "人"
+    )
 
 
 def test_get_annotation():
