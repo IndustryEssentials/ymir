@@ -12,10 +12,14 @@ import { TASKTYPES } from "@/constants/task"
  * end_time   {timestamp}   end time of create time (for filter)
  * offset     {number}      start offset
  * limit      {number}      items of fetch, as page size
+ * stages     {array<number>} main stages for task
+ * datasets   {array<number>} main dataset for task
  * }
  * @returns {Promise<Array>}
  */
 export function getTasks({
+  stages = [],
+  datasets = [],
   name,
   type,
   state,
@@ -26,6 +30,8 @@ export function getTasks({
   is_desc,
   order_by,
 }) {
+  const stageIds = stages.toString()
+  const datasetIds = datasets.toString()
   return request.get("/tasks/", {
     params: {
       name,
@@ -37,6 +43,8 @@ export function getTasks({
       limit,
       is_desc,
       order_by,
+      model_stage_ids: stageIds,
+      dataset_ids: datasetIds,
     },
   })
 }
