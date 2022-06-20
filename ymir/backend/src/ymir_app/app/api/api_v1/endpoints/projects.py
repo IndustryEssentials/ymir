@@ -1,7 +1,7 @@
 import enum
 import json
 import time
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Path, Query, BackgroundTasks
 from fastapi.logger import logger
@@ -18,7 +18,7 @@ from app.api.errors.errors import (
     DatasetNotFound,
 )
 from app.config import settings
-from app.constants.state import ResultState, RunningStates, TaskType, TrainingType
+from app.constants.state import ResultState, RunningStates, TaskType, TrainingType, TaskState
 from app.utils.cache import CacheClient
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
@@ -67,6 +67,9 @@ def list_projects(
         start_time=start_time,
         end_time=end_time,
     )
+    for project in projects:
+        _add_testing_datasets(project, db)
+
     return {"result": {"total": total, "items": projects}}
 
 
@@ -92,6 +95,8 @@ def create_sample_project(
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
     project_task_hash = gen_task_hash(current_user.id, project.id)
+
+    _add_testing_datasets(project, db)
 
     try:
         user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
@@ -122,6 +127,14 @@ def create_sample_project(
     return {"result": project}
 
 
+def _add_testing_datasets(project: Optional[models.Project], db: Session) -> None:
+    if project and project.testing_dataset_ids:
+        ids = [int(id) for id in project.testing_dataset_ids.split(",")]
+    else:
+        ids = []
+    project.testing_datasets = crud.dataset.get_multi_by_ids(db, ids=ids)  # type: ignore
+
+
 @router.post("/", response_model=schemas.ProjectOut)
 def create_project(
     *,
@@ -139,6 +152,8 @@ def create_project(
 
     # 1.create project to get task_id for sending to controller
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
+
+    _add_testing_datasets(project, db)
 
     task_id = gen_task_hash(current_user.id, project.id)
 
@@ -159,32 +174,33 @@ def create_project(
         db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
     )
 
-    # 3.create dataset group to build dataset info
-    dataset_name = f"{project_in.name}_training_dataset"
-    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
-    dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=dataset_paras)
+    if project_in.enable_iteration:
+        # 3.create dataset group to build dataset info
+        dataset_name = f"{project_in.name}_training_dataset"
+        dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
+        dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=dataset_paras)
 
-    # 4.create init dataset
-    dataset_in = schemas.DatasetCreate(
-        name=dataset_name,
-        hash=task_id,
-        dataset_group_id=dataset_group.id,
-        project_id=project.id,
-        user_id=current_user.id,
-        source=task.type,
-        result_state=ResultState.ready,
-        task_id=task.id,
-    )
-    initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
+        # 4.create init dataset
+        dataset_in = schemas.DatasetCreate(
+            name=dataset_name,
+            hash=task_id,
+            dataset_group_id=dataset_group.id,
+            project_id=project.id,
+            user_id=current_user.id,
+            source=task.type,
+            result_state=ResultState.ready,
+            task_id=task.id,
+        )
+        initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
 
-    # 5.update project info
-    project = crud.project.update_resources(
-        db,
-        project_id=project.id,
-        project_update=schemas.ProjectUpdate(
-            training_dataset_group_id=dataset_group.id, initial_training_dataset_id=initial_dataset.id
-        ),
-    )
+        # 5.update project info
+        project = crud.project.update_resources(
+            db,
+            project_id=project.id,
+            project_update=schemas.ProjectUpdate(
+                training_dataset_group_id=dataset_group.id, initial_training_dataset_id=initial_dataset.id
+            ),
+        )
 
     try:
         clickhouse.save_project_parameter(
@@ -222,6 +238,21 @@ def get_project(
     project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
+
+    total_asset_count, running_task_count, total_task_count = 0, 0, 0
+    for dataset in project.datasets:
+        if dataset.asset_count:
+            total_asset_count += dataset.asset_count
+        total_task_count += 1
+        if dataset.related_task.state == TaskState.running:
+            running_task_count += 1
+    project.total_asset_count = total_asset_count  # type: ignore
+    project.running_task_count = running_task_count  # type: ignore
+    project.total_task_count = total_task_count  # type: ignore
+    # for compatible
+    project.enable_iteration = True if project.enable_iteration is None else project.enable_iteration
+    _add_testing_datasets(project, db)
+
     return {"result": project}
 
 
@@ -250,6 +281,9 @@ def update_project(
             raise NoDatasetPermission()
 
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
+
+    _add_testing_datasets(project, db)
+
     return {"result": project}
 
 
@@ -272,6 +306,8 @@ def delete_project(
         raise ProjectNotFound()
 
     project = crud.project.soft_remove(db, id=project_id)
+
+    _add_testing_datasets(project, db)
 
     unfinished_tasks = crud.task.get_tasks_by_states(
         db,

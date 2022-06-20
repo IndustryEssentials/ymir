@@ -30,6 +30,8 @@ class ProjectBase(BaseModel):
     training_dataset_count_target: Optional[int]
     is_example: Optional[bool] = False
 
+    enable_iteration: Optional[bool] = True
+
 
 # Sufficient properties to create a project
 class ProjectCreate(ProjectBase):
@@ -51,7 +53,8 @@ class ProjectUpdate(BaseModel):
     mining_strategy: MiningStrategy = MiningStrategy.chunk
     chunk_size: Optional[int]
     mining_dataset_id: Optional[int]
-    testing_dataset_id: Optional[int]
+    validation_dataset_id: Optional[int]
+    testing_dataset_ids: Optional[str]
     description: Optional[str]
     initial_model_id: Optional[int]
     initial_model_stage_id: Optional[int]
@@ -76,14 +79,14 @@ class ProjectUpdate(BaseModel):
 class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ProjectBase):
     training_dataset_group_id: Optional[int]
     mining_dataset_id: Optional[int]
-    testing_dataset_id: Optional[int]
+    validation_dataset_id: Optional[int]
     initial_model_id: Optional[int]
     initial_model_stage_id: Optional[int]
     initial_training_dataset_id: Optional[int]
 
     current_iteration: Optional[Iteration]
     training_dataset_group: Optional[DatasetGroup]
-    testing_dataset: Optional[Dataset]
+    validation_dataset: Optional[Dataset]
     mining_dataset: Optional[Dataset]
 
     referenced_model_ids: List[int]
@@ -99,6 +102,10 @@ class Project(ProjectInDBBase):
     model_count: int = 0
     training_keywords: List[str]
     current_iteration_id: Optional[int]
+    total_asset_count: int = 0
+    running_task_count: int = 0
+    total_task_count: int = 0
+    testing_datasets: List[Dataset]
 
     @validator("training_keywords", pre=True)
     def unpack_keywords(cls, v: str) -> List[str]:

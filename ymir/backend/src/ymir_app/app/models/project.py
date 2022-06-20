@@ -39,10 +39,12 @@ class Project(Base):
     training_keywords = Column(Text(settings.TEXT_LEN_LIMIT), nullable=False)
     training_dataset_group_id = Column(Integer, index=True)
     mining_dataset_id = Column(Integer, index=True)
-    testing_dataset_id = Column(Integer, index=True)
+    validation_dataset_id = Column(Integer, index=True)
+    testing_dataset_ids = Column(String(settings.LONG_STRING_LEN_LIMIT))
     initial_model_id = Column(Integer, index=True)
     initial_model_stage_id = Column(Integer, index=True)
     initial_training_dataset_id = Column(Integer, index=True)
+    enable_iteration = Column(Boolean, default=True, nullable=False)
 
     # for project haven't finish initialization, current_iteration_id is None
     current_iteration_id = Column(Integer)
@@ -60,9 +62,9 @@ class Project(Base):
         uselist=True,
         viewonly=True,
     )
-    testing_dataset = relationship(
+    validation_dataset = relationship(
         "Dataset",
-        primaryjoin="foreign(Dataset.id)==Project.testing_dataset_id",
+        primaryjoin="foreign(Dataset.id)==Project.validation_dataset_id",
         uselist=False,
         viewonly=True,
     )
@@ -123,7 +125,7 @@ class Project(Base):
         - datasets and models of current iteration
         - all the training dataset of all the iterations
         """
-        project_dataset_ids = [self.testing_dataset_id, self.mining_dataset_id, self.initial_training_dataset_id]
+        project_dataset_ids = [self.validation_dataset_id, self.mining_dataset_id, self.initial_training_dataset_id]
         current_iteration_dataset_ids = self.current_iteration.referenced_dataset_ids if self.current_iteration else []
         all_iterations_training_dataset_ids = [i.training_input_dataset_id for i in self.iterations]
         dataset_ids = filter(
