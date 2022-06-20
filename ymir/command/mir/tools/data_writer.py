@@ -319,9 +319,6 @@ class RawDataWriter(BaseDataWriter):
         if annotations_dir:
             os.makedirs(annotations_dir, exist_ok=True)
         if gt_dir:
-            if gt_dir == annotations_dir:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                      error_message='cannot set same value for annotations_dir/gt_dir')
             os.makedirs(gt_dir, exist_ok=True)
         if index_file_path:
             os.makedirs(os.path.dirname(index_file_path), exist_ok=True)

@@ -48,8 +48,10 @@ class TestCmdImport(unittest.TestCase):
         args.src_revs = ''
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
+        args.gt_index_file = self._gt_idx_file
         args.ck_file = self._ck_file
         args.anno = self._data_xml_path
+        args.gt_dir = self._data_xml_path
         args.gen = gen_folder
         args.dataset_name = ''
         args.work_dir = self._work_dir
@@ -1024,6 +1026,7 @@ class TestCmdImport(unittest.TestCase):
         os.makedirs(self._data_root)
 
         self._idx_file = os.path.join(self._data_root, 'idx.txt')
+        self._gt_idx_file = os.path.join(self._data_root, 'gt_idx.txt')
         self._ck_file = os.path.join(self._data_root, 'ck.tsv')
         self._data_img_path = os.path.join(self._data_root, 'img')
         os.makedirs(self._data_img_path)
@@ -1032,22 +1035,24 @@ class TestCmdImport(unittest.TestCase):
 
         self._prepare_data(data_root=self._data_root,
                            idx_file=self._idx_file,
+                           gt_idx_file=self._gt_idx_file,
                            ck_file=self._ck_file,
                            data_img_path=self._data_img_path,
                            data_xml_path=self._data_xml_path)
 
-    def _prepare_data(self, data_root, idx_file, ck_file, data_img_path, data_xml_path):
+    def _prepare_data(self, data_root, idx_file, gt_idx_file, ck_file, data_img_path, data_xml_path):
         local_data_root = 'tests/assets'
 
         # Copy img files.
         img_files = ['2007_000032.jpg', '2007_000243.jpg']
-        with open(idx_file, 'w') as idx_f, open(ck_file, 'w') as ck_f:
+        with open(idx_file, 'w') as idx_f, open(gt_idx_file, 'w') as gt_idx_f, open(ck_file, 'w') as ck_f:
             for file in img_files:
                 src = os.path.join(local_data_root, file)
                 dst = os.path.join(data_img_path, file)
                 shutil.copyfile(src, dst)
 
                 idx_f.writelines(dst + '\n')
+                gt_idx_f.writelines(dst + '\n')
                 ck_f.write(f"{dst}\tck0\n")
 
         # Copy xml files.
