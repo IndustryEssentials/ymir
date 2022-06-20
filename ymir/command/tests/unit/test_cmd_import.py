@@ -75,6 +75,7 @@ class TestCmdImport(unittest.TestCase):
 
         # have no annotations
         args.anno = None
+        args.gt_dir = None
         args.ignore_unknown_types = False
         args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-2'
