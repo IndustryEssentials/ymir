@@ -368,7 +368,7 @@ class TaskResult:
                     stages_in.append(stage_obj)
                 crud.model_stage.batch_create(self.db, objs_in=stages_in)
                 crud.model.update_recommonded_stage_by_name(
-                    self.db, model_id=current_model.id, stage_name=model_info.best_model_stage
+                    self.db, model_id=current_model.id, stage_name=model_info.best_stage_name
                 )
             try:
                 self.save_model_stats(model_info)

@@ -71,7 +71,7 @@ class ModelMetaData:
     task_parameters: str
     executor_config: str
     model_stages: dict
-    best_model_stage: str
+    best_stage_name: str
 
     @classmethod
     def from_viz_res(cls, res: Dict) -> "ModelMetaData":
@@ -81,7 +81,7 @@ class ModelMetaData:
             res["task_parameters"],
             res["executor_config"],
             res["model_stages"],
-            res["best_model_stage"],
+            res["best_stage_name"],
         )
 
 
@@ -143,8 +143,9 @@ class DatasetMetaData:
             total_asset_mbytes=viz_dataset.total_asset_mbytes,
             total_assets_cnt=viz_dataset.total_assets_cnt,
             annos_cnt=viz_dataset.pred["annos_cnt"],
-            ave_annos_cnt=(viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt
-                           if viz_dataset.total_assets_cnt else 0),
+            ave_annos_cnt=(
+                viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt if viz_dataset.total_assets_cnt else 0
+            ),
             positive_asset_cnt=viz_dataset.pred["positive_asset_cnt"],
             negative_asset_cnt=viz_dataset.pred["negative_asset_cnt"],
             asset_bytes=viz_dataset.hist["asset_bytes"][0],
@@ -153,7 +154,7 @@ class DatasetMetaData:
             asset_hw_ratio=viz_dataset.hist["asset_hw_ratio"][0],
             anno_area_ratio=viz_dataset.pred["hist"]["anno_area_ratio"][0],
             anno_quality=viz_dataset.pred["hist"]["anno_quality"][0],
-            class_names_count=viz_dataset.pred["class_names_count"]
+            class_names_count=viz_dataset.pred["class_names_count"],
         )
 
 
