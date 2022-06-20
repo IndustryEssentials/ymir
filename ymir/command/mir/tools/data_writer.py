@@ -281,13 +281,13 @@ class RawDataWriter(BaseDataWriter):
                  assets_location: str,
                  assets_dir: str,
                  annotations_dir: str,
-                 gt_dir: str,
                  need_ext: bool,
                  need_id_sub_folder: bool,
                  overwrite: bool,
                  class_ids_mapping: Dict[int, int],
-                 format_type: AnnoFormat,
+                 format_type,
                  index_file_path: str = '',
+                 gt_dir: str = '',
                  gt_index_file_path: str = '',
                  index_assets_prefix: str = '',
                  index_annotations_prefix: str = '',
@@ -361,8 +361,9 @@ class RawDataWriter(BaseDataWriter):
         if self._overwrite or not os.path.isfile(asset_dest_path):
             shutil.copyfile(asset_src_path, asset_dest_path)
 
-        anno_file_name = f"{asset_id}{_format_file_ext(self._format_type)}"
+        anno_file_name = ''
         if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
+            anno_file_name = f"{asset_id}{_format_file_ext(self._format_type)}"
             format_func = _format_file_output_func(anno_format=self._format_type)
             # write annotations
             if self._annotations_dir:
