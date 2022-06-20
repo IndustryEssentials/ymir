@@ -429,13 +429,15 @@ class RawDataWriter(BaseDataWriter):
 
 
 class LmdbDataWriter(BaseDataWriter):
-    def __init__(self,
-                 mir_root: str,
-                 assets_location: str,
-                 lmdb_dir: str,
-                 class_ids_mapping: Dict[int, int],
-                 format_type: AnnoFormat,
-                 index_file_path: str = '') -> None:
+    def __init__(
+        self,
+        mir_root: str,
+        assets_location: str,
+        lmdb_dir: str,
+        class_ids_mapping: Dict[int, int],
+        format_type: AnnoFormat,
+        index_file_path: str = '',
+    ) -> None:
         super().__init__(mir_root=mir_root,
                          assets_location=assets_location,
                          class_ids_mapping=class_ids_mapping,
@@ -490,15 +492,25 @@ class LmdbDataWriter(BaseDataWriter):
                                            cls_id_mgr=self._class_id_manager,
                                            asset_filename='').encode()
 
+            gt_data: bytes = format_func(asset_id=asset_id,
+                                         attrs=attrs,
+                                         image_annotations=gt_annotations,
+                                         image_cks=image_cks,
+                                         class_type_mapping=self._class_ids_mapping,
+                                         cls_id_mgr=self._class_id_manager,
+                                         asset_filename='').encode()
+
             asset_key_name = f"asset_{asset_id}"
             anno_key_name = f"anno_{asset_id}"
+            gt_key_name = f"gt_{asset_id}"
             self._lmdb_tnx.put(asset_key_name.encode(), asset_data)
             self._lmdb_tnx.put(anno_key_name.encode(), anno_data)
+            self._lmdb_tnx.put(gt_key_name.encode(), gt_data)
 
         # write index file
         if self._lmdb_index:
             if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
-                self._lmdb_index.write(f"{asset_key_name}\t{anno_key_name}\n")
+                self._lmdb_index.write(f"{asset_key_name}\t{anno_key_name}\t{gt_key_name}\n")
             else:
                 self._lmdb_index.write(f"{asset_key_name}\n")
 
