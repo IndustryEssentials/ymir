@@ -5,7 +5,6 @@ import time
 import subprocess
 from subprocess import CalledProcessError
 from requests.exceptions import ConnectionError, HTTPError, Timeout
-import traceback
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from tensorboardX import SummaryWriter
@@ -87,8 +86,9 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
 
             best_stage_name = yaml_obj['best_stage_name']
     except FileNotFoundError:
-        logging.warning(traceback.format_exc())
-        return (model_stages, best_stage_name)
+        error_message = f"can not find file: {result_yaml_path}, executor may have errors, see ymir-executor-out.log"
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=error_message)
 
     return (model_stages, best_stage_name)
 

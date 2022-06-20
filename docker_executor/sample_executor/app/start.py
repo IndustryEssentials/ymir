@@ -55,7 +55,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `rw.write_model_stage` to save training result
     rw.write_model_stage(stage_name='stage_00',
                          files=['model-0000.params', 'model-symbols.json'],
-                         mAP=expected_mAP / 3,
+                         mAP=expected_mAP / 2,
                          as_best=True)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
@@ -64,7 +64,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
         f.write('fake model-0010.params')
     with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
-    rw.write_model_stage(stage_name='stage_10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP / 2)
+    rw.write_model_stage(stage_name='stage_10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
 
     #! if task done, write 100% percent log
     logging.info('training done')
