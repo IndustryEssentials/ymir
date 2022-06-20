@@ -220,6 +220,27 @@ def delete_model(
     return {"result": model}
 
 
+@router.patch(
+    "/{model_id}",
+    response_model=schemas.ModelOut,
+    responses={
+        400: {"description": "No permission"},
+        404: {"description": "Model Not Found"},
+    },
+)
+def update_model(
+    *,
+    db: Session = Depends(deps.get_db),
+    model_id: int = Path(..., example="12"),
+    stage: schemas.StageChange,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+
+    model = crud.model.update_recommonded_stage(db, model_id=model_id, stage_id=stage.stage_id)
+
+    return {"result": model}
+
+
 @router.get(
     "/{model_id}",
     response_model=schemas.ModelOut,
