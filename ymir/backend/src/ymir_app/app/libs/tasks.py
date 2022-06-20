@@ -355,7 +355,20 @@ class TaskResult:
                 parameters=model_info.task_parameters,
                 config=json.dumps(model_info.executor_config),
             )
-            crud.model.finish(self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info))
+            current_model = crud.model.finish(
+                self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info)
+            )
+            if current_model:
+                stages_in = []
+                for stage_name, body in model_info.model_stages.items():
+                    stage_obj = schemas.ModelStageCreate(
+                        name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=current_model.id
+                    )
+                    stages_in.append(stage_obj)
+                crud.model_stage.batch_create(self.db, objs_in=stages_in)
+                crud.model.update_recommonded_stage_by_name(
+                    self.db, model_id=current_model.id, stage_name=model_info.best_model_stage
+                )
             try:
                 self.save_model_stats(model_info)
             except FailedToConnectClickHouse:
