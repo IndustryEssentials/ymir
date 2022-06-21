@@ -104,6 +104,7 @@ describe("constants: project", () => {
       miningSet: undefined,
       setCount: 6,
       model: 0,
+      modelStage: 0,
       modelCount: 0,
       miningStrategy: 0,
       chunkSize: 0,
