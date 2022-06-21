@@ -28,6 +28,7 @@ enum TaskType {
     TaskTypeImportModel = 13;
     TaskTypeCopyModel = 14;
     TaskTypeDatasetInfer = 15;
+    TaskTypeVisualization = 17;
 
     reserved 12, 16;
 };
