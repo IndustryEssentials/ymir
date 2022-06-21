@@ -14,6 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.config import settings
+from app.constants.state import TaskState
 from app.db.base_class import Base
 from app.models.dataset import Dataset  # noqa
 from app.models.dataset_group import DatasetGroup  # noqa
@@ -116,6 +117,25 @@ class Project(Base):
     @property
     def model_count(self) -> int:
         return len(self.models)
+
+    @property
+    def total_asset_count(self) -> int:
+        total_asset_count = 0
+        for dataset in self.datasets:
+            if dataset.asset_count:
+                total_asset_count += dataset.asset_count
+        return total_asset_count
+
+    @property
+    def running_task_count(self) -> int:
+        for dataset in self.datasets:
+            if dataset.related_task.state == TaskState.running:
+                running_task_count += 1
+        return len(self.models)
+
+    @property
+    def total_task_count(self) -> int:
+        return len(self.datasets)
 
     @property
     def referenced_dataset_ids(self) -> List[int]:

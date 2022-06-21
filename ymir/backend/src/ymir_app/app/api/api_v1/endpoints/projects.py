@@ -239,16 +239,6 @@ def get_project(
     if not project:
         raise ProjectNotFound()
 
-    total_asset_count, running_task_count, total_task_count = 0, 0, 0
-    for dataset in project.datasets:
-        if dataset.asset_count:
-            total_asset_count += dataset.asset_count
-        total_task_count += 1
-        if dataset.related_task.state == TaskState.running:
-            running_task_count += 1
-    project.total_asset_count = total_asset_count  # type: ignore
-    project.running_task_count = running_task_count  # type: ignore
-    project.total_task_count = total_task_count  # type: ignore
     # for compatible
     project.enable_iteration = True if project.enable_iteration is None else project.enable_iteration
     _add_testing_datasets(project, db)
