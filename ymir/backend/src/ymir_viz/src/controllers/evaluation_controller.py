@@ -34,6 +34,6 @@ def get_dataset_evaluations(user_id: str, repo_id: str, branch_id: str) -> Datas
     return DatasetEvaluationResult(**resp)
 
 
-def evaluate_dataset(user_id: str, repo_id: str, branch_id: str, model_id: str, conf_thr: float,
-                     iou_thr: float) -> DatasetEvaluationResult:
+def dataset_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr: float,
+                       iou_thr: float) -> DatasetEvaluationResult:
     return DatasetEvaluationResult()
