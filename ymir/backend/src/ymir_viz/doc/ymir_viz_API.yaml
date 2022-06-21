@@ -222,13 +222,13 @@ paths:
                 $ref: "#/components/schemas/DatasetEvaluationResult"
         "400":
           description: DatasetEvaluation not exists
-  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_evaluation":
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_fast_evaluation":
     get:
       tags:
         - evaluation
       summary: "evaluate dataset and get result"
       description: "evaluate dataset and get result"
-      operationId: dataset_evaluation
+      operationId: dataset_fast_evaluation
       parameters:
         - name: user_id
           in: path
