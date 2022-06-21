@@ -108,7 +108,7 @@ const tip = {
     en: 'Classes annotations required, training data will update in every iterations',
   },
   "project.add.testset.tip": {
-    cn: '用于指导训练集进行训练和测试，可获得更客观的模型效果评估结果，该数据集需要有标注。',
+    cn: '用于指导训练集进行训练和验证，可获得更客观的模型效果评估结果，该数据集需要有标注。',
     en: 'It is used to guide the training set for training and testing, which can obtain more objective results for model effect evaluation. This dataset needs to be annotated.',
   },
   "project.add.miningset.tip": {

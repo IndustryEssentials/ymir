@@ -44,6 +44,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
   const [testSet, setTestSet] = useState(null)
+  const [testingSetIds, setTestingSetIds] = useState([])
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
@@ -77,6 +78,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
+    const ids = project?.testingSets?.map(dataset => dataset.id);
+    setTestingSetIds(ids)
     form.setFieldsValue({ datasetId: visibleValue })
   }, [allDatasets, project])
 
@@ -219,7 +222,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                     onChange={trainSetChange}
                     showArrow
                   >
-                    {datasets.filter(ds => ds.id !== testSet).map(item =>
+                    {datasets.filter(ds => !testingSetIds.includes(ds.id)).map(item =>
                       <Option value={item.id} key={item.id}>
                         {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>

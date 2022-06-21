@@ -18,7 +18,7 @@ export const TestingSet = ({ project }) => {
       })
     }
     const maps = [
-      { label: 'project.add.form.testing.set', datasetGroup: getDatasetGroup(project.testingSetGroup) }
+      { label: 'project.add.form.testing.set', datasetGroup: getDatasetGroup(project.testingSets) }
     ]
 
     return maps.map(({ label, datasetGroup }) => {

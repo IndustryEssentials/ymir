@@ -48,7 +48,7 @@ function ProjectDetail(func) {
     <div>
       <Breadcrumbs />
       <div className={s.header}>
-        {project.iteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
+        {project.enableIteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
       </div>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
@@ -63,7 +63,7 @@ function ProjectDetail(func) {
                 </Col>
                 <Col span={12}>
                   <div className='contentLabel'>{t('project.detail.datavolume')}</div>
-                  <div className={`${s.num} ${s.blue}`}></div>
+                  <div className={`${s.num} ${s.blue}`}>{project.totalAssetCount}</div>
                 </Col>
               </Row>
             </Card>
@@ -79,7 +79,7 @@ function ProjectDetail(func) {
                 </Col>
                 <Col span={12}>
                   <div className='contentLabel'>{t('project.detail.runningtasks')}/{t('project.detail.totaltasks')}</div>
-                  <div className={s.num}><span className={s.red}></span>/<span></span></div>
+                  <div className={s.num}><span className={s.red}></span>{project.runningTaskCount}/{project.totalTaskCount}<span></span></div>
                 </Col>
               </Row>
             </Card>

@@ -58,11 +58,13 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
 
   function initForm(project = {}) {
     const { name, keywords: kws, trainSetVersion,
-      description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
+      description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize, enableIteration, testingSets: testingDatasets } = project
     if (name) {
       form.setFieldsValue({
         name, keywords: kws, description,
         trainSetVersion,
+        enableIteration,
+        testingSets: testingDatasets?.map(dataset => dataset.id),
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
         strategy: miningStrategy || 0,
@@ -191,6 +193,31 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                     ))}
                   </Select>
                 </Form.Item>
+                <Form.Item
+                  label={t('project.add.form.enableIteration')}
+                  name='enableIteration'
+                  initialValue={true}
+                  required
+                  tooltip={t('project.add.form.enableIteration.tip')}
+                >
+                  <Radio.Group disabled={isEdit} options={[
+                    { value: true, label: t('common.yes') },
+                    { value: false, label: t('common.no') },
+                  ]} />
+                </Form.Item>
+                {isEdit ? <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
+                  <Form.Item label={t('project.add.form.testing.set')} name="testingSets" rules={[
+                      { required: true, message: t('project.add.form.testingset.required') },
+                    ]} tooltip={t('project.add.form.testingset.tip')}>
+                    <DatasetSelect
+                      pid={id}
+                      mode='multiple'
+                      filters={datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id)}
+                      onChange={(value) => setTestSet(value)}
+                      allowClear
+                    />
+                  </Form.Item>
+                </ConfigProvider> : null}
                 <Form.Item label={t('project.add.form.desc')} name='description'
                   rules={[
                     { max: 500 },
@@ -199,7 +226,7 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
                   <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
                 </Form.Item>
             </Panel> : null}
-            {isEdit ? <Panel label={t('project.iteration.settings.title')} visible={settingsVisible} setVisible={() => setSettingsVisible(!settingsVisible)}>
+            {isEdit && project.enableIteration ? <Panel label={t('project.iteration.settings.title')} visible={settingsVisible} setVisible={() => setSettingsVisible(!settingsVisible)}>
               <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
                   <Form.Item label={t('project.add.form.training.set')} tooltip={t('project.add.trainset.tip')}>
                     {project.trainSet?.name}

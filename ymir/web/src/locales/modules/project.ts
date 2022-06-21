@@ -41,6 +41,16 @@ const project = {
     en: 'The target tags used for training need to match the categories in the user\'s tag list. If the input tag does not exist in the current user\'s tag list, it will be prompted to add it to the list when creating the project.',
     cn: '用于训练的目标标签，需要和用户的标签列表里的类别一致，如果输入的标签在当前用户的标签列表中不存在，则会在创建项目时提示将其加入列表。',
   },
+  'project.add.form.enableIteration': { en: 'Open a semi-automated iterative process', cn: '开启半自动化迭代流程', },
+  'project.add.form.enableIteration.tip': {
+    en: 'To assist users to achieve iterative optimization of the model through a fixed process, recommended for novice users.',
+    cn: '通过固定流程辅助用户实现模型的迭代优化，推荐新手用户选择。',
+  },
+  'project.add.form.testingset.required': { en: 'Testing dataset is required', cn: '测试集为必选项', },
+  'project.add.form.testingset.tip': {
+    en: 'Used to test the effect of the model in various data sets, note: the test set cannot be used for training.',
+    cn: '用于测试模型在各类数据集的效果指标，注：测试集不可用于训练。',
+  },
   'project.add.form.target': { en: 'Project Target', cn: '目标设置', },
   'project.add.form.target.map': { en: 'mAP', cn: 'mAP', },
   'project.add.form.target.map.placeholder': { en: 'Please input mAP as target', cn: '请输入目标mAP', },
@@ -72,7 +82,7 @@ const project = {
   'project.iteration.settings.title': { en: 'Iterations Settings', cn: '迭代设置', },
   'project.add.form.training.set': { en: 'Training Dataset', cn: '训练集', },
   'project.add.form.test.set': { en: 'Validation Dataset', cn: '验证集', },
-  'project.add.form.testing.set': { en: 'Validation Dataset', cn: '测试集', },
+  'project.add.form.testing.set': { en: 'Testing Dataset', cn: '测试集', },
   'project.add.form.mining.set': { en: 'Mining Dataset', cn: '挖掘集', },
   'project.add.form.mining.strategy': { en: 'Mining Strategy', cn: '挖掘策略', },
   'project.add.form.mining.chunksize': { en: 'Chunk Size', cn: '每块数据量大小', },
@@ -104,6 +114,7 @@ const project = {
   'project.tag.train': { en: 'Training Dataset', cn: '训练集', },
   'project.tag.test': { en: 'Validation Dataset {version}', cn: '验证集 {version}', },
   'project.tag.mining': { en: 'Mining Dataset {version}', cn: '挖掘集 {version}', },
+  'project.tag.testing': { en: 'Testing Dataset', cn: '测试集', },
   'project.tag.model': { en: 'Initial Model {version}', cn: '初始模型 {version}', },
   'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
   'project.del.confirm.content': {
