@@ -53,7 +53,7 @@ function ProjectDetail(func) {
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
-            <Card title={datasetTitle()} 
+            <Card title={datasetTitle()} className={s.cardContainer} 
               onClick={() => { history.push(`/home/project/${project.id}/dataset`) }} 
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">
@@ -69,7 +69,7 @@ function ProjectDetail(func) {
             </Card>
           </Col>
           <Col span={12}>
-            <Card title={modelTitle()} 
+            <Card title={modelTitle()} className={s.cardContainer}  
               onClick={() => { history.push(`/home/project/${project.id}/model`) }} 
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">

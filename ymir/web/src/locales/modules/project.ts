@@ -41,7 +41,7 @@ const project = {
     en: 'The target tags used for training need to match the categories in the user\'s tag list. If the input tag does not exist in the current user\'s tag list, it will be prompted to add it to the list when creating the project.',
     cn: '用于训练的目标标签，需要和用户的标签列表里的类别一致，如果输入的标签在当前用户的标签列表中不存在，则会在创建项目时提示将其加入列表。',
   },
-  'project.add.form.enableIteration': { en: 'Open a semi-automated iterative process', cn: '开启半自动化迭代流程', },
+  'project.add.form.enableIteration': { en: 'Open A Semi-automated Iterative Process', cn: '开启半自动化迭代流程', },
   'project.add.form.enableIteration.tip': {
     en: 'To assist users to achieve iterative optimization of the model through a fixed process, recommended for novice users.',
     cn: '通过固定流程辅助用户实现模型的迭代优化，推荐新手用户选择。',
