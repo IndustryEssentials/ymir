@@ -12,6 +12,7 @@ import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
+import { string2Array } from '@/utils/string'
 import { TYPES } from '@/constants/image'
 import { useHistory, useParams, useLocation } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -43,6 +44,7 @@ function Mining({ datasetCache, datasets, ...func }) {
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, currentStage, outputKey } = location.query
+  const stage = string2Array(mid)
   const did = Number(location.query.did)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
@@ -136,7 +138,7 @@ function Mining({ datasetCache, datasets, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/${pid}/detail`)
+      history.replace(`/home/project/${pid}/model`)
     }
   }
 
@@ -148,13 +150,13 @@ function Mining({ datasetCache, datasets, ...func }) {
     id && setDataset(datasets.find(ds => ds.id === id))
   }
 
-  function modelChange(id, { model }) {
-    model && setSelectedModel(model)
+  function modelChange(id, options) {
+    setSelectedModel(options ? options[0].model : [])
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
-    model: mid ? parseInt(mid) : undefined,
+    modelStage: stage,
     image: image ? parseInt(image) : undefined,
     datasetId: did ? did : undefined,
     algorithm: getCheckedValue(Algorithm()),
@@ -209,7 +211,7 @@ function Mining({ datasetCache, datasets, ...func }) {
               <Tip content={t('tip.task.filter.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
-                  name="model"
+                  name="modelStage"
                   rules={[
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}

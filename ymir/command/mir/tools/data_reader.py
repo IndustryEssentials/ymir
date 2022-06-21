@@ -23,6 +23,7 @@ class MirDataReader:
 
         self._mir_metadatas = mir_metadatas
         self._task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
+        self._gt_annotations = mir_annotations.ground_truth
         self._image_cks = mir_annotations.image_cks
         if not self._asset_ids:
             self._asset_ids = {asset_id for asset_id in self._mir_metadatas.attributes.keys()}
@@ -33,18 +34,27 @@ class MirDataReader:
         pass
 
     def read(
-            self) -> Iterator[Tuple[str, mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, mirpb.SingleImageCks]]:
+        self
+    ) -> Iterator[Tuple[str, mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, mirpb.SingleImageAnnotations,
+                        mirpb.SingleImageCks]]:
+        image_annotations = self._task_annotations.image_annotations
+        gt_annotations = self._gt_annotations.image_annotations
         for asset_id, attributes in self._mir_metadatas.attributes.items():
             if asset_id not in self._asset_ids:
                 continue
 
-            image_annotations = self._task_annotations.image_annotations.get(asset_id, None)
             filtered_image_annotations = mirpb.SingleImageAnnotations()
-
-            if image_annotations:
-                for annotation in image_annotations.annotations:
+            if asset_id in image_annotations:
+                for annotation in image_annotations[asset_id].annotations:
                     if self._class_ids and annotation.class_id not in self._class_ids:
                         continue
                     filtered_image_annotations.annotations.append(annotation)
 
-            yield (asset_id, attributes, filtered_image_annotations, self._image_cks[asset_id])
+            filtered_gt_annotations = mirpb.SingleImageAnnotations()
+            if asset_id in gt_annotations:
+                for annotation in gt_annotations[asset_id].annotations:
+                    if self._class_ids and annotation.class_id not in self._class_ids:
+                        continue
+                    filtered_gt_annotations.annotations.append(annotation)
+
+            yield (asset_id, attributes, filtered_image_annotations, filtered_gt_annotations, self._image_cks[asset_id])

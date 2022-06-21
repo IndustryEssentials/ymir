@@ -22,6 +22,7 @@ const model = {
   "model.pager.total.label": { en: "Total {total} items", cn: "共 {total} 项", },
   'model.detail.label.name': { en: 'Model Name', cn: '模型名称', },
   'model.detail.label.map': { en: 'mAP', cn: 'mAP值', },
+  'model.detail.label.stage': { en: 'Stages', cn: '阶段模型', },
   'model.detail.label.source': { en: 'Source', cn: '模型来源', },
   'model.detail.label.image': { en: 'Train Image', cn: '训练镜像', },
   'model.detail.label.training_dataset': { en: 'Training Dataset', cn: '训练集', },

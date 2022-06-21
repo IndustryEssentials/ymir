@@ -77,7 +77,7 @@ export function addExampleProject() {
  * {number} trainSetVersion
  * {number} miningSet
  * {number} testSet
- * {number} model
+ * {number} [modelStage]
  * }
  * @returns 
  */
@@ -90,8 +90,9 @@ export function updateProject(id, {
   trainSetVersion,
   miningSet,
   testSet,
-  model,
+  modelStage = [],
 }) {
+  const [model, stage] = modelStage
   return request({
     method: "patch",
     url: `/projects/${id}`,
@@ -104,6 +105,7 @@ export function updateProject(id, {
       testing_dataset_id: testSet,
       description,
       initial_model_id: model,
+      initial_model_stage_id: stage,
       initial_training_dataset_id: trainSetVersion,
     },
   })

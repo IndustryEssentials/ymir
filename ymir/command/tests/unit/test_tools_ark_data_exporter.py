@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from typing import List, Tuple
@@ -147,6 +148,7 @@ class TestArkDataExporter(unittest.TestCase):
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
+        mir_annotations.ground_truth.CopyFrom(mir_annotations.task_annotations[mir_annotations.head_task_id])
 
         # keywords
         keywords_dict = {
@@ -210,39 +212,41 @@ class TestArkDataExporter(unittest.TestCase):
                 self.assertEqual(expected_first_two_cols[line_idx][col_idx], int(line_components[col_idx].strip()))
 
     def __check_lmdb_result(self, asset_ids, format_type, export_path, index_file_path):
-        expected_asset_and_anno_keys = {(f"asset_{asset_id}", f"anno_{asset_id}") for asset_id in asset_ids}
-        asset_and_anno_keys = set()
+        expected_asset_and_anno_and_gt_keys = {(f"asset_{asset_id}", f"anno_{asset_id}", f"gt_{asset_id}")
+                                               for asset_id in asset_ids}
+        asset_and_anno_and_gt_keys = set()
         with open(index_file_path, 'r') as f:
             for line in f:
-                asset_key, anno_key = line.split()
-                asset_and_anno_keys.add((asset_key, anno_key))
-        self.assertEqual(expected_asset_and_anno_keys, asset_and_anno_keys)
-        plained_asset_and_anno_keys = {k for t in expected_asset_and_anno_keys for k in t}
+                asset_key, anno_key, gt_key = line.split()
+                asset_and_anno_and_gt_keys.add((asset_key, anno_key, gt_key))
+        self.assertEqual(expected_asset_and_anno_and_gt_keys, asset_and_anno_and_gt_keys)
+        plained_asset_and_anno_and_gtkeys = {k for t in expected_asset_and_anno_and_gt_keys for k in t}
         lmdb_env = lmdb.open(export_path)
         lmdb_tnx = lmdb_env.begin(write=False)
-        for k in plained_asset_and_anno_keys:
+        for k in plained_asset_and_anno_and_gtkeys:
+            logging.info(f"plained_asset_and_anno_and_gtkeys: {k}")
             self.assertTrue(lmdb_tnx.get(k.encode()))
         lmdb_env.close()
 
     # public: test cases
     def test_data_reader_00(self):
         with data_reader.MirDataReader(mir_root=self._mir_root,
-                                           typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                           asset_ids=set(),
-                                           class_ids=set()) as reader:
+                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
+                                       asset_ids=set(),
+                                       class_ids=set()) as reader:
             self.assertEqual(2, len(list(reader.read())))
 
         asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
         with data_reader.MirDataReader(mir_root=self._mir_root,
-                                           typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
-                                           asset_ids=asset_ids,
-                                           class_ids=set()) as reader:
+                                       typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
+                                       asset_ids=asset_ids,
+                                       class_ids=set()) as reader:
             self.assertEqual(2, len(list(reader.read())))
 
         with data_reader.MirDataReader(mir_root=self._mir_root,
-                                           typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
-                                           asset_ids=asset_ids,
-                                           class_ids={2}) as reader:
+                                       typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
+                                       asset_ids=asset_ids,
+                                       class_ids={2}) as reader:
             for asset_id, attrs, image_annotations, *_ in reader.read():
                 if asset_id == '430df22960b0f369318705800139fcc8ec38a3e4':
                     self.assertEqual(2, len(image_annotations.annotations))
@@ -251,9 +255,9 @@ class TestArkDataExporter(unittest.TestCase):
 
         asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4'}
         with data_reader.MirDataReader(mir_root=self._mir_root,
-                                           typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                           asset_ids=asset_ids,
-                                           class_ids=set()) as reader:
+                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
+                                       asset_ids=asset_ids,
+                                       class_ids=set()) as reader:
             self.assertEqual(1, len(list(reader.read())))
 
     def test_data_rw_00(self):
@@ -285,9 +289,9 @@ class TestArkDataExporter(unittest.TestCase):
                                                  index_file_path=lmdb_index_file_path)
 
         with data_reader.MirDataReader(mir_root=self._mir_root,
-                                           typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                           asset_ids=set(),
-                                           class_ids=set()) as reader:
+                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
+                                       asset_ids=set(),
+                                       class_ids=set()) as reader:
             raw_writer.write_all(reader)
             lmdb_writer.write_all(reader)
 

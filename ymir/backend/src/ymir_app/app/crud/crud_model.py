@@ -118,6 +118,28 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db.refresh(model)
         return model
 
+    def update_recommonded_stage(self, db: Session, *, model_id: int, stage_id: int,) -> Optional[Model]:
+        model = self.get(db, id=model_id)
+        if not model:
+            return model
+        model.recommended_stage = stage_id
+        db.add(model)
+        db.commit()
+        db.refresh(model)
+        return model
+
+    def update_recommonded_stage_by_name(self, db: Session, *, model_id: int, stage_name: str,) -> Optional[Model]:
+        model = self.get(db, id=model_id)
+        if not model:
+            return model
+        for stage in model.related_stages:
+            if stage.name == stage_name:
+                model.recommended_stage = stage.id
+        db.add(model)
+        db.commit()
+        db.refresh(model)
+        return model
+
     def finish(
         self, db: Session, model_id: int, result_state: ResultState = ResultState.ready, result: Optional[Dict] = None,
     ) -> Optional[Model]:
