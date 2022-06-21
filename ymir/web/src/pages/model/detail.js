@@ -67,6 +67,11 @@ function ModelDetail({ modelCache, getModel }) {
     }
   }
 
+  function getModelStage() {
+    const stage = model?.stages.find(st => st.is_best)
+    return stage ? [id, stage.id].toString() : ''
+  }
+
   return (
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
@@ -76,6 +81,7 @@ function ModelDetail({ modelCache, getModel }) {
             <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
             {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
             <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
+            <Item label={t('model.detail.label.stage')}>{model.stages.map(stage => <Tag title={stage.map}>{stage.name} {percent(stage.map)}</Tag>)}</Item>
           </Descriptions>
           <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
           {model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null}
@@ -83,9 +89,9 @@ function ModelDetail({ modelCache, getModel }) {
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>{!model.hidden ? <>
             {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
             <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/mining?mid=${id}`)}>{t('dataset.action.mining')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${id}`)}>{t('dataset.action.inference')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${id}`)}>{t('dataset.action.train')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/mining?mid=${getModelStage()}`)}>{t('dataset.action.mining')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${getModelStage()}`)}>{t('dataset.action.inference')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${getModelStage()}`)}>{t('dataset.action.train')}</Button>
             <Button type='primary' onClick={() => hide(model)}>{t('common.action.hide')}</Button>
           </> :
             <Button type="primary" onClick={restore}>

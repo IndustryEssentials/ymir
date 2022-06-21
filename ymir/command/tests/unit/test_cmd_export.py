@@ -1,17 +1,14 @@
 import os
 import shutil
-from typing import Any, Dict, List, Tuple
+from typing import List, Tuple
 import unittest
-from unittest import mock
 
 from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import hash_utils, mir_storage_ops
-from mir.tools.data_writer import AnnoFormat
 from mir.tools.code import MirCode
-from mir.tools.utils import mir_repo_commit_id
 from tests import utils as test_utils
 
 
@@ -22,6 +19,7 @@ class TestCmdExport(unittest.TestCase):
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._assets_location = os.path.join(self._test_root, 'assets_location')
         self._dest_root = os.path.join(self._test_root, 'export_dest')
+        self._gt_root = os.path.join(self._dest_root, 'gt_dir')
         self._mir_root = os.path.join(self._test_root, 'mir-repo')
 
     def setUp(self) -> None:
@@ -197,6 +195,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
         fake_args.annotation_dir = self._dest_root
+        fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''
@@ -213,6 +212,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
         fake_args.annotation_dir = self._dest_root
+        fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''
@@ -229,6 +229,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = ''
         fake_args.annotation_dir = ''
+        fake_args.gt_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one

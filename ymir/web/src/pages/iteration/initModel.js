@@ -50,10 +50,10 @@ const InitModel = ({ projects = {}, ...props }) => {
 
 
   function initForm(project = {}) {
-    const { model } = project
+    const { model, modelStage } = project
     if (model) {
       form.setFieldsValue({
-        model,
+        modelStage: [model, modelStage],
       })
     }
   }
@@ -81,7 +81,7 @@ const InitModel = ({ projects = {}, ...props }) => {
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={id} />}>
               <Form.Item
                 label={t('task.mining.form.model.label')}
-                name="model"
+                name="modelStage"
                 rules={[
                   { required: true, message: t('task.mining.form.model.required') },
                 ]}
