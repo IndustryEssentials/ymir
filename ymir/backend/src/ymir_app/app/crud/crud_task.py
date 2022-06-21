@@ -194,9 +194,9 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             query = query.filter(self.model.state == int(state))
 
         if dataset_ids:
-            query = query.filter(self.model.dataset_id in dataset_ids)
+            query = query.filter(self.model.dataset_id.in_(dataset_ids))
         if model_stage_ids:
-            query = query.filter(self.model.model_stage_id in model_stage_ids)
+            query = query.filter(self.model.model_stage_id.in_(model_stage_ids))
 
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
