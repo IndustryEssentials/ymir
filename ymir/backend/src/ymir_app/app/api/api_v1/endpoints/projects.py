@@ -169,12 +169,12 @@ def create_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
-    # 3.create task info
-    task = crud.task.create_placeholder(
-        db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
-    )
-
     if project_in.enable_iteration:
+        # 3.create task info
+        task = crud.task.create_placeholder(
+            db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
+        )
+
         # 3.create dataset group to build dataset info
         dataset_name = f"{project_in.name}_training_dataset"
         dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
