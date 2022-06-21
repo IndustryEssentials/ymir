@@ -265,7 +265,7 @@ paths:
         "400":
           description: DatasetEvaluation not exists
       x-openapi-router-controller: src.controllers.evaluation_controller
-  /users/{user_id}/repositories/{repo_id}/branches/{branch_id}/model/{model_id}/evaluate:
+  /users/{user_id}/repositories/{repo_id}/branches/{branch_id}/evaluate_dataset:
     get:
       tags:
       - evaluation

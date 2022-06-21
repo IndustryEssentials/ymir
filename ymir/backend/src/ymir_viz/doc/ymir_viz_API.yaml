@@ -222,7 +222,7 @@ paths:
                 $ref: "#/components/schemas/DatasetEvaluationResult"
         "400":
           description: DatasetEvaluation not exists
-  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/model/{model_id}/evaluate":
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/evaluate_dataset":
     get:
       tags:
         - evaluation
