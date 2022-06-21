@@ -12,6 +12,7 @@ export interface Project {
   setCount: number,
   trainSetVersion?: number,
   model?: number,
+  modelStage?: number,
   modelCount: number,
   miningStrategy: number,
   chunkSize?: number,
