@@ -468,7 +468,7 @@ components:
     DatasetEvaluationTotalSubElement:
       type: object
       properties:
-        total:
+        total:  # averaged by sub cks
           $ref: "#/components/schemas/DatasetEvaluationElement"
         sub:
           type: object
