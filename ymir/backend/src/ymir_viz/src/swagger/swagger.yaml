@@ -433,8 +433,8 @@ components:
         ck_evaluations:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/DatasetEvaluationCkElement'
-    DatasetEvaluationCkElement:
+            $ref: '#/components/schemas/DatasetEvaluationTotalSubElement'
+    DatasetEvaluationTotalSubElement:
       type: object
       properties:
         total:
