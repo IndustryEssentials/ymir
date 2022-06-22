@@ -9,11 +9,13 @@ import shutil
 import tarfile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from google.protobuf import json_format
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, root_validator
 import yaml
 
 from mir import scm
+from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import hash_utils, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -210,13 +212,16 @@ class ModelStorage(BaseModel):
     def class_names(self) -> List[str]:
         return self.executor_config['class_names']
 
-    def get_model_meta_dict(self, model_hash: str) -> dict:
-        return {
+    def get_model_meta(self, model_hash: str) -> mirpb.ModelMeta:
+        d = {
             'mean_average_precision': self.stages[self.best_stage_name].mAP,
             'model_hash': model_hash,
             'stages': {k: v.dict() for k, v in self.stages.items()},
             'best_stage_name': self.best_stage_name,
         }
+        model_meta = mirpb.ModelMeta()
+        json_format.ParseDict(d, model_meta)
+        return model_meta
 
 
 def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:

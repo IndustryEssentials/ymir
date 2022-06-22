@@ -71,10 +71,11 @@ class TestCmdCopy(unittest.TestCase):
         mir_keywords.keywords['asset0'].predefined_keyids.extend([1, 2, 3])
         mir_keywords.keywords['asset1'].predefined_keyids.extend([3])
 
+        model_meta = mirpb.ModelMeta(mean_average_precision=0.3)
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id='t0',
                                            message='training',
-                                           model_dict={'mean_average_precision': 0.3})
+                                           model_meta=model_meta)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._src_mir_root,
                                                       mir_branch='a',

@@ -472,7 +472,7 @@ class CmdTrain(base.BaseCommand):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',
-                                           model_dict=model_storage.get_model_meta_dict(model_hash=model_sha1),
+                                           model_meta=model_storage.get_model_meta(model_hash=model_sha1),
                                            return_code=task_code,
                                            return_msg=return_msg,
                                            serialized_task_parameters=task_parameters,

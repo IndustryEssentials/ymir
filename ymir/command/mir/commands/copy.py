@@ -105,12 +105,11 @@ class CmdCopy(base.BaseCommand):
 
         # save and commit
         orig_task: mirpb.Task = mir_tasks.tasks[orig_head_task_id]
-        model_dict = MessageToDict(orig_task.model, preserving_proto_field_name=True)
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",
                                            unknown_types=unknown_types,
-                                           model_dict=model_dict,
+                                           model_meta=orig_task.model,
                                            serialized_task_parameters=orig_task.serialized_task_parameters,
                                            serialized_executor_config=orig_task.serialized_executor_config,
                                            executor=orig_task.executor,

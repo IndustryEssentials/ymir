@@ -73,7 +73,7 @@ class CmdModelImport(base.BaseCommand):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportModel,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"import model {package_path} as {model_hash}",
-                                           model_dict=model_storage.get_model_meta_dict(model_hash=model_hash),
+                                           model_meta=model_storage.get_model_meta(model_hash=model_hash),
                                            return_code=MirCode.RC_OK,
                                            return_msg='',
                                            src_revs=src_revs,
