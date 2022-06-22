@@ -48,12 +48,12 @@ function ProjectDetail(func) {
     <div>
       <Breadcrumbs />
       <div className={s.header}>
-        {project.iteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
+        {project.enableIteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
       </div>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
-            <Card title={datasetTitle()} 
+            <Card title={datasetTitle()} className={s.cardContainer} 
               onClick={() => { history.push(`/home/project/${project.id}/dataset`) }} 
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">
@@ -63,13 +63,13 @@ function ProjectDetail(func) {
                 </Col>
                 <Col span={12}>
                   <div className='contentLabel'>{t('project.detail.datavolume')}</div>
-                  <div className={`${s.num} ${s.blue}`}></div>
+                  <div className={`${s.num} ${s.blue}`}>{project.totalAssetCount}</div>
                 </Col>
               </Row>
             </Card>
           </Col>
           <Col span={12}>
-            <Card title={modelTitle()} 
+            <Card title={modelTitle()} className={s.cardContainer}  
               onClick={() => { history.push(`/home/project/${project.id}/model`) }} 
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">
@@ -79,7 +79,7 @@ function ProjectDetail(func) {
                 </Col>
                 <Col span={12}>
                   <div className='contentLabel'>{t('project.detail.runningtasks')}/{t('project.detail.totaltasks')}</div>
-                  <div className={s.num}><span className={s.red}></span>/<span></span></div>
+                  <div className={s.num}><span className={s.red}></span>{project.runningTaskCount}/{project.totalTaskCount}<span></span></div>
                 </Col>
               </Row>
             </Card>

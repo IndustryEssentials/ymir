@@ -24,11 +24,19 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         state: int = int(TaskState.pending),
         percent: float = 0,
     ) -> Task:
+        if obj_in.parameters:
+            parameters = obj_in.parameters.json()
+            dataset_id = obj_in.parameters.dataset_id
+            model_stage_id = obj_in.parameters.model_stage_id
+        else:
+            parameters, dataset_id, model_stage_id = None, None, None  # type: ignore
         db_obj = Task(
             name=obj_in.name,
             type=obj_in.type,
             config=obj_in.docker_image_config if obj_in.docker_image_config else None,
-            parameters=obj_in.parameters.json() if obj_in.parameters else None,
+            parameters=parameters,
+            dataset_id=dataset_id,
+            model_stage_id=model_stage_id,
             project_id=obj_in.project_id,
             hash=task_hash,
             user_id=user_id,
@@ -166,6 +174,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         name: Optional[str] = None,
         type_: Optional[TaskType] = None,
         state: Optional[TaskState] = None,
+        dataset_ids: List[int],
+        model_stage_ids: List[int],
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
         offset: int = 0,
@@ -182,6 +192,12 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
             query = query.filter(self.model.type == int(type_))
         if state:
             query = query.filter(self.model.state == int(state))
+
+        if dataset_ids:
+            query = query.filter(self.model.dataset_id.in_(dataset_ids))
+        if model_stage_ids:
+            query = query.filter(self.model.model_stage_id.in_(model_stage_ids))
+
         if start_time and end_time:
             _start_time = datetime.utcfromtimestamp(start_time)
             _end_time = datetime.utcfromtimestamp(end_time)

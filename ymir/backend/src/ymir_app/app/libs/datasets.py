@@ -10,7 +10,6 @@ from app import crud, schemas, models
 from app.api.errors.errors import (
     DatasetNotFound,
     FailedtoCreateDataset,
-    FailedToEvaluate,
 )
 from app.config import settings
 from app.constants.state import ResultState
@@ -112,33 +111,23 @@ class ImportDatasetPaths:
         return pathlib.Path(self._data_dir)
 
 
-def evaluate_dataset(
+def evaluate_datasets(
     controller: ControllerClient,
     viz: VizClient,
     user_id: int,
     project_id: int,
     user_labels: UserLabels,
     confidence_threshold: float,
-    gt_dataset: models.Dataset,
-    other_datasets: List[models.Dataset],
+    iou_threshold: float,
+    require_average_iou: bool,
+    datasets: List[models.Dataset],
 ) -> Dict:
     # temporary task hash used to fetch evaluation result later
     task_hash = gen_task_hash(user_id, project_id)
-    try:
-        controller.evaluate_dataset(
-            user_id,
-            project_id,
-            task_hash,
-            confidence_threshold,
-            gt_dataset.hash,
-            [dataset.hash for dataset in other_datasets],
-        )
-    except ValueError:
-        logger.exception("Failed to evaluate via controller")
-        raise FailedToEvaluate()
-    # todo refactor
-    viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_hash)
-    evaluations = viz.get_evaluations(user_labels)
 
-    dataset_id_mapping = {dataset.hash: dataset.id for dataset in other_datasets}
+    # todo update according to viz
+    viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_hash)
+    evaluations = viz.get_fast_evaluation(user_labels, confidence_threshold, iou_threshold, require_average_iou)
+
+    dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
     return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}

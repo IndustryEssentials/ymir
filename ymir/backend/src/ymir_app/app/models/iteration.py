@@ -21,6 +21,7 @@ class Iteration(Base):
     label_output_dataset_id = Column(Integer)
     training_input_dataset_id = Column(Integer)
     training_output_model_id = Column(Integer)
+    training_output_model_stage_id = Column(Integer)
     testing_dataset_id = Column(Integer)
 
     user_id = Column(Integer, index=True, nullable=False)
