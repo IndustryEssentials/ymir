@@ -99,7 +99,7 @@ export const homeRoutes = [
     name: "datasetDetail",
     component: "@/pages/dataset/detail",
     title: "dataset.title",
-    pid: 25,
+    pid: 32,
     id: 10,
     breadcrumbLabel: 'breadcrumbs.dataset',
   },
