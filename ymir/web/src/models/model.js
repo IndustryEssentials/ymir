@@ -175,7 +175,7 @@ export default {
       const { model, stage } = payload
       const { code, result } = yield call(setRecommendStage, model, stage)
       if (code === 0) {
-        return result
+        return transferModel(result)
       }
     },
     *verify({ payload }, { call }) {

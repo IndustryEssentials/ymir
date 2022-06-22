@@ -258,7 +258,7 @@ describe("models: model", () => {
     const modelId = 13412
     const stage = 23234
     const params = { modelId, stage, }
-    const expected = { id: modelId, recommended_stage: stage, }
+    const expected = md(modelId)
     const creator = {
       type: "setRecommendStage",
       payload: params,
@@ -271,7 +271,7 @@ describe("models: model", () => {
       result: expected,
     })
 
-    expect(end.value).toEqual(expected)
+    expect(end.value).toEqual(transferModel(expected))
     expect(end.done).toBe(true)
   })
   it("effects: verify", () => {
