@@ -1,4 +1,4 @@
-import { Checkbox, Col, Row, Select } from 'antd'
+import { Checkbox, Col, Form, Row, Select, Tooltip } from 'antd'
 import { connect } from 'dva'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -18,7 +18,11 @@ const ConfigSelect = ({ configs = [], onChange = () => { } }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
-    const opts = configs.map((config, index) => ({ value: index, label: `config${index + 1}`, config }))
+    const opts = configs.map((config, index) => ({
+      value: index,
+      label: <Tooltip color={'blue'} title={JSON.stringify(config)}>config{index + 1}</Tooltip>,
+      config
+    }))
     setOptions(opts)
   }, [configs])
 
@@ -55,14 +59,16 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
 
   useEffect(() => {
     const selected = tasks
-      .filter(({ parameters:{ dataset_id }}) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true))
-      .map(({ config }) => config)
-      setConfigs(selected)
+      .filter(({ parameters: { dataset_id } }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true))
+      .reduce((prev, { config }) => {
+        return sameConfigs(config, prev) ? prev : [...prev, config]
+      }, [])
+    setConfigs(selected)
   }, [selectedDatasets])
 
   useEffect(() => {
     const selected = tasks
-      .filter(({ parameters:{ dataset_id }, config }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true)
+      .filter(({ parameters: { dataset_id }, config }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true)
         && (selectedConfigs.length ? sameConfigs(config, selectedConfigs) : true))
     setSelectedTasks(selected)
   }, [selectedConfigs])
@@ -74,7 +80,6 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   }, [selectedTasks])
 
   function modelChange(values) {
-    console.log('model change values:', values)
     setSelectedStages(values)
   }
 
@@ -87,17 +92,30 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   }
 
   const filterDatasets = useCallback((datasets) => {
-    console.log('filter datasets tasks:', tasks)
     const testingDatasets = tasks.map(({ parameters: { dataset_id } }) => dataset_id)
-    return datasets.filter(({ id }) => testingDatasets.includes(id))
+    const crossDatasets = testingDatasets.filter(dataset => {
+      const targetTasks = tasks.filter(({ parameters: { dataset_id }}) => dataset_id === dataset)
+      return selectedStages.map(([model, stage]) => model).every(model => targetTasks.map(({ parameters: { model_stage_id }})=> model_stage_id).includes(model))
+    })
+    return datasets.filter(({ id }) => crossDatasets.includes(id))
   }, [tasks])
 
   return (
-    <>
-      <ModelSelect pid={pid} multiple onChange={modelChange} />
-      {tasks.length ? <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} /> : null}
-      {configs.length ? <ConfigSelect configs={configs} onChange={configChange} /> : null}
-    </>
+    <Form layout='vertical'>
+      <Form.Item label={'model'}>
+        <ModelSelect pid={pid} multiple onChange={modelChange} />
+      </Form.Item>
+      {tasks.length ?
+        <Form.Item label={'testing dataset'}>
+          <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} />
+        </Form.Item>
+        : null}
+      {configs.length ?
+        <Form.Item label={'parameters config'}>
+          <ConfigSelect configs={configs} onChange={configChange} />
+        </Form.Item>
+        : null}
+    </Form>
   )
 }
 
