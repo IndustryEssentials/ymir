@@ -22,11 +22,11 @@ class TestEvaluateDataset:
         require_average_iou = True
         ctrl = mocker.Mock()
         viz = mocker.Mock()
-        viz.get_evaluations.return_value = {}
+        viz.get_fast_evaluation.return_value = {}
         user_labels = mocker.Mock()
         datasets = [mocker.Mock()]
         m.evaluate_datasets(
             ctrl, viz, user_id, project_id, user_labels, confidence_threshold, iou, require_average_iou, datasets
         )
 
-        viz.get_evaluations.assert_called()
+        viz.get_fast_evaluation.assert_called()

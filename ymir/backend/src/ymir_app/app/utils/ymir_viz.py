@@ -257,6 +257,23 @@ class VizClient:
         convert_class_id_to_keyword(evaluations, user_labels)
         return evaluations
 
+    def get_fast_evaluation(
+        self, user_labels: UserLabels, confidence_threshold: float, iou_threshold: float, require_average_iou: bool
+    ) -> Dict:
+        url = f"{self._url_prefix}/dataset_fast_evaluation"
+        params = {
+            "conf_thr": confidence_threshold,
+            "iou_thr": iou_threshold,
+            "require_average_iou": require_average_iou,
+        }
+        resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
+        res = self.parse_resp(resp)
+        evaluations = {
+            dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
+        }
+        convert_class_id_to_keyword(evaluations, user_labels)
+        return evaluations
+
     def parse_resp(self, resp: requests.Response) -> Dict:
         """
         response falls in three categories:

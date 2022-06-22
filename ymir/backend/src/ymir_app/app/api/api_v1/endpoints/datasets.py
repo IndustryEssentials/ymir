@@ -541,8 +541,8 @@ def batch_evaluate_datasets(
     """
     evaluate datasets by themselves
     """
-    dataset_ids = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.dataset_ids)
-    if len(evaluation_in.dataset_ids) != len(dataset_ids):
+    datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.dataset_ids)
+    if len(evaluation_in.dataset_ids) != len(datasets):
         raise DatasetNotFound()
 
     evaluations = evaluate_datasets(
@@ -552,6 +552,8 @@ def batch_evaluate_datasets(
         evaluation_in.project_id,
         user_labels,
         evaluation_in.confidence_threshold,
-        dataset_ids,
+        evaluation_in.iou_threshold,
+        evaluation_in.require_average_iou,
+        datasets,
     )
     return {"result": evaluations}

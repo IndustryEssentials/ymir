@@ -127,7 +127,7 @@ def evaluate_datasets(
 
     # todo update according to viz
     viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_hash)
-    evaluations = viz.get_evaluations(user_labels)
+    evaluations = viz.get_fast_evaluation(user_labels, confidence_threshold, iou_threshold, require_average_iou)
 
     dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
     return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}
