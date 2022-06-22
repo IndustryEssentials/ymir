@@ -80,7 +80,7 @@ def _get_samples(base_path: Path, labels_dir: Path, dataset_name, sample_pool,) 
                 sample = sample_pool[img_path.name]
             else:
                 sample = Sample(filepath=base_path / img_path)
-                for k, v in annotation.get("ck", {}).items():
+                for k, v in annotation.get("cks", {}).items():
                     sample[k] = v
                 sample_pool[img_path.name] = sample
                 _set_metadata(annotation, sample)
@@ -165,7 +165,7 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
             confidence=obj.get("confidence"),
             closed=True
         )
-        for k, v in obj.get("tag", {}).items():
+        for k, v in obj.get("tags", {}).items():
             polyline[k] = v
         polylines.append(polyline)
     return polylines
