@@ -240,11 +240,6 @@ class TaskResult:
             logger.warning("[update task] found no model to save model stats(%s)", result)
             return
         project_in_db = crud.project.get(self.db, id=self.project_id)
-        if project_in_db and project_in_db.testing_dataset_ids:
-            ids = [int(id) for id in project_in_db.testing_dataset_ids.split(",")]
-        else:
-            ids = []
-        project_in_db.testing_datasets = crud.dataset.get_multi_by_ids(self.db, ids=ids)  # type: ignore
         keywords = schemas.Project.from_orm(project_in_db).training_keywords
         clickhouse = YmirClickHouse()
         clickhouse.save_model_result(

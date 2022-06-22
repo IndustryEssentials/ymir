@@ -91,6 +91,7 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
 
     referenced_model_ids: List[int]
     referenced_dataset_ids: List[int]
+    testing_dataset_ids: Optional[str]
 
     class Config:
         orm_mode = True
@@ -105,7 +106,6 @@ class Project(ProjectInDBBase):
     total_asset_count: int = 0
     running_task_count: int = 0
     total_task_count: int = 0
-    testing_datasets: List[Dataset]
 
     @validator("training_keywords", pre=True)
     def unpack_keywords(cls, v: str) -> List[str]:

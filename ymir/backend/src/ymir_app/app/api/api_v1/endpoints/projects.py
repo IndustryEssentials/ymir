@@ -67,8 +67,6 @@ def list_projects(
         start_time=start_time,
         end_time=end_time,
     )
-    for project in projects:
-        _add_testing_datasets(project, db)
 
     return {"result": {"total": total, "items": projects}}
 
@@ -95,8 +93,6 @@ def create_sample_project(
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
     project_task_hash = gen_task_hash(current_user.id, project.id)
-
-    _add_testing_datasets(project, db)
 
     try:
         user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
@@ -127,14 +123,6 @@ def create_sample_project(
     return {"result": project}
 
 
-def _add_testing_datasets(project: Optional[models.Project], db: Session) -> None:
-    if project and project.testing_dataset_ids:
-        ids = [int(id) for id in project.testing_dataset_ids.split(",")]
-    else:
-        ids = []
-    project.testing_datasets = crud.dataset.get_multi_by_ids(db, ids=ids)  # type: ignore
-
-
 @router.post("/", response_model=schemas.ProjectOut)
 def create_project(
     *,
@@ -152,8 +140,6 @@ def create_project(
 
     # 1.create project to get task_id for sending to controller
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
-
-    _add_testing_datasets(project, db)
 
     task_id = gen_task_hash(current_user.id, project.id)
 
@@ -241,7 +227,6 @@ def get_project(
 
     # for compatible
     project.enable_iteration = True if project.enable_iteration is None else project.enable_iteration
-    _add_testing_datasets(project, db)
 
     return {"result": project}
 
@@ -272,8 +257,6 @@ def update_project(
 
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
 
-    _add_testing_datasets(project, db)
-
     return {"result": project}
 
 
@@ -296,8 +279,6 @@ def delete_project(
         raise ProjectNotFound()
 
     project = crud.project.soft_remove(db, id=project_id)
-
-    _add_testing_datasets(project, db)
 
     unfinished_tasks = crud.task.get_tasks_by_states(
         db,

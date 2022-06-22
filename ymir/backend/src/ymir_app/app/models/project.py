@@ -128,10 +128,11 @@ class Project(Base):
 
     @property
     def running_task_count(self) -> int:
+        running_task_count = 0
         for dataset in self.datasets:
             if dataset.related_task.state == TaskState.running:
                 running_task_count += 1
-        return len(self.models)
+        return running_task_count
 
     @property
     def total_task_count(self) -> int:
