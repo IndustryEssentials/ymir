@@ -250,6 +250,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         tar_file.extract('ymir-info.yaml', dst_model_path)
         with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())
+        # TODO: HANDLE OLD MODEL FORMAT
         model_storage = ModelStorage.parse_obj(ymir_info_dict)
 
         files: List[str]
