@@ -3,8 +3,6 @@ from collections import defaultdict
 import logging
 from typing import Dict, List, Set, Tuple
 
-from google.protobuf.json_format import MessageToDict
-
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage, mir_storage_ops
