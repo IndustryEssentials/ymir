@@ -120,19 +120,11 @@ class Project(Base):
 
     @property
     def total_asset_count(self) -> int:
-        total_asset_count = 0
-        for dataset in self.datasets:
-            if dataset.asset_count:
-                total_asset_count += dataset.asset_count
-        return total_asset_count
+        return sum([dataset.asset_count for dataset in self.datasets if dataset.asset_count])
 
     @property
     def running_task_count(self) -> int:
-        running_task_count = 0
-        for dataset in self.datasets:
-            if dataset.related_task.state == TaskState.running:
-                running_task_count += 1
-        return running_task_count
+        return sum([dataset.related_task.state == TaskState.running for dataset in self.datasets])
 
     @property
     def total_task_count(self) -> int:
