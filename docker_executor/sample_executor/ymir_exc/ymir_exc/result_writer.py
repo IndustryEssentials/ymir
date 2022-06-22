@@ -9,7 +9,7 @@ import yaml
 
 from ymir_exc import env
 
-_MAX_MODEL_STAGES_COUNT_ = 10
+_MAX_MODEL_STAGES_COUNT_ = 11  # 10 latest stages, 1 best stage
 
 
 class Box(BaseModel):
@@ -28,7 +28,6 @@ class Annotation(BaseModel):
 def write_model_stage(stage_name: str,
                       files: List[str],
                       mAP: float,
-                      as_best: bool = False,
                       timestamp: int = None) -> None:
     if not stage_name or not files:
         raise ValueError('empty stage_name or files')
@@ -56,17 +55,16 @@ def write_model_stage(stage_name: str,
         'mAP': mAP
     }
 
-    if as_best:
-        training_result['__user_defined_best_stage_name'] = stage_name
+    # best stage
+    sorted_model_stages = sorted(model_stages.values(), key=lambda x: (x.get('mAP', 0), x.get('timestamp', 0)))
+    training_result['best_stage_name'] = sorted_model_stages[-1]['stage_name']
+    training_result['map'] = sorted_model_stages[-1]['mAP']
 
-    training_result['best_stage_name'] = training_result.get('__user_defined_best_stage_name', stage_name)
-    training_result['map'] = model_stages[training_result['best_stage_name']]['mAP']
-
-    # if too many stages, remove a smallest one
+    # if too many stages, remove a earlest one
     if len(model_stages) > _MAX_MODEL_STAGES_COUNT_:
         sorted_model_stages = sorted(model_stages.values(), key=lambda x: x.get('timestamp', 0))
         del_stage_name = sorted_model_stages[0]['stage_name']
-        if del_stage_name == training_result.get('best_model_stage', ''):
+        if del_stage_name == training_result['best_stage_name']:
             del_stage_name = sorted_model_stages[1]['stage_name']
         del model_stages[del_stage_name]
         logging.info(f"data_writer removed model stage: {del_stage_name}")

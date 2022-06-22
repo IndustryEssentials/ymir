@@ -64,7 +64,6 @@ class TestResultWriter(unittest.TestCase):
         self.assertEqual(best_stage_name, result_obj['best_stage_name'])
         self.assertEqual(mAP, result_obj['map'])
 
-
     def _check_mining_result(self, mining_result: List[Tuple[str, float]]) -> None:
         with open(self._mining_result_file, 'r') as f:
             lines = f.read().splitlines()
@@ -80,25 +79,19 @@ class TestResultWriter(unittest.TestCase):
 
     # public: test cases
     def test_write_model_stage_00(self) -> None:
-        stage_names = [f"epoch_{idx}" for idx in range(0, 11)]
+        stage_names = [f"epoch_{idx}" for idx in range(0, 12)]
         for idx, stage_name in enumerate(stage_names):
             rw.write_model_stage(stage_name=stage_name,
                                  files=[f"model-{idx}.params", 'model-symbol.json'],
-                                 mAP=idx / 10,
-                                 timestamp=10 * idx + 1000000,
-                                 as_best=(idx == 8))
-        expected_stage_names = [f"epoch_{idx}" for idx in range(1, 11)]
-        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch_8', mAP=0.8)
-
-    def test_write_model_stage_01(self) -> None:
-        stage_names = [f"epoch_{idx}" for idx in range(0, 11)]
-        for idx, stage_name in enumerate(stage_names):
-            rw.write_model_stage(stage_name=stage_name,
-                                 files=[f"model-{idx}.params", 'model-symbol.json'],
-                                 mAP=idx / 10,
+                                 mAP=idx / 22,
                                  timestamp=10 * idx + 1000000)
-        expected_stage_names = [f"epoch_{idx}" for idx in range(1, 11)]
-        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='epoch_10', mAP=1.0)
+        rw.write_model_stage(stage_name='best',
+                             files=[f"model-best.params", 'model-symbol.json'],
+                             mAP=1,
+                             timestamp=900000)
+        expected_stage_names = [f"epoch_{idx}" for idx in range(2, 12)]
+        expected_stage_names.append('best')
+        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='best', mAP=1.0)
 
     def test_write_training_result(self) -> None:
         rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
