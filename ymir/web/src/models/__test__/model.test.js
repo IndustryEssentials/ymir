@@ -135,6 +135,7 @@ describe("models: model", () => {
   errorCode(model, 'delModel')
   errorCode(model, 'importModel')
   errorCode(model, 'updateModel')
+  errorCode(model, 'setRecommendStage')
   errorCode(model, 'verify')
   errorCode(model, 'getModelsByMap', 10025, { keywords: [], kmodels: {} })
   errorCode(model, 'getModelVersions', { id: 235234, force: true })
@@ -250,6 +251,27 @@ describe("models: model", () => {
     })
 
     expect(end.value.id).toBe(expected.id)
+    expect(end.done).toBe(true)
+  })
+  it("effects: setRecommendStage", () => {
+    const saga = model.effects.setRecommendStage
+    const modelId = 13412
+    const stage = 23234
+    const params = { modelId, stage, }
+    const expected = { id: modelId, recommended_stage: stage, }
+    const creator = {
+      type: "setRecommendStage",
+      payload: params,
+    }
+
+    const generator = saga(creator, { put, call })
+    const start = generator.next()
+    const end = generator.next({
+      code: 0,
+      result: expected,
+    })
+
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: verify", () => {
