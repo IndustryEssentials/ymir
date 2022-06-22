@@ -1,7 +1,7 @@
 import enum
 import json
 import time
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, Path, Query, BackgroundTasks
 from fastapi.logger import logger
@@ -18,7 +18,7 @@ from app.api.errors.errors import (
     DatasetNotFound,
 )
 from app.config import settings
-from app.constants.state import ResultState, RunningStates, TaskType, TrainingType, TaskState
+from app.constants.state import ResultState, RunningStates, TaskType, TrainingType
 from app.utils.cache import CacheClient
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_controller import ControllerClient, gen_task_hash

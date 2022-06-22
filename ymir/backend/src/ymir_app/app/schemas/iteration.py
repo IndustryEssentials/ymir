@@ -55,7 +55,6 @@ class IterationUpdate(BaseModel):
     training_output_model_stage_id: Optional[int]
     validation_dataset_id: Optional[int]
 
-
     class Config:
         use_enum_values = True
 
