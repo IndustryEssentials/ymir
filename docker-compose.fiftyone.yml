@@ -38,6 +38,7 @@ services:
       FIFTYONE_REDIS_HOST: "51plugin_redis"
       FIFTYONE_BASE_PATH: ${BACKEND_SANDBOX_ROOT}
       FIFTYONE_SHOW_PROGRESS_BARS: "False"
+      C_FORCE_ROOT: "true"
     volumes:
       - ${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}
     command: "celery -A app.main.celery worker --loglevel=INFO"
