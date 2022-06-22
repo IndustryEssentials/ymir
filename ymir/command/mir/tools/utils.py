@@ -213,14 +213,15 @@ class ModelStorage(BaseModel):
         return self.executor_config['class_names']
 
     def get_model_meta(self, model_hash: str) -> mirpb.ModelMeta:
-        d = {
-            'mean_average_precision': self.stages[self.best_stage_name].mAP,
-            'model_hash': model_hash,
-            'stages': {k: v.dict() for k, v in self.stages.items()},
-            'best_stage_name': self.best_stage_name,
-        }
         model_meta = mirpb.ModelMeta()
-        json_format.ParseDict(d, model_meta)
+        json_format.ParseDict(
+            {
+                'mean_average_precision': self.stages[self.best_stage_name].mAP,
+                'model_hash': model_hash,
+                'stages': {k: v.dict()
+                           for k, v in self.stages.items()},
+                'best_stage_name': self.best_stage_name,
+            }, model_meta)
         return model_meta
 
 
