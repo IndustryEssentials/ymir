@@ -47,7 +47,7 @@ export function createIteration({
     iteration_round: iterationRound,
     project_id: projectId,
     previous_iteration: prevIteration,
-    testing_dataset_id: testSet,
+    validation_dataset_id: testSet,
   })
 }
 /**
