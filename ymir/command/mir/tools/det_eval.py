@@ -150,14 +150,15 @@ class MirDetEval:
         # TODO: asset_ids
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
-        self._gts: dict = coco_gt.img_cat_to_annotations  # gt for evaluation
-        self._dts: dict = coco_dt.img_cat_to_annotations  # dt for evaluation
+        self._gts: dict = coco_gt.img_cat_to_annotations  # gt for eval, key: (img_idx, cat_idx), value: annos list
+        self._dts: dict = coco_dt.img_cat_to_annotations  # dt for eval, key: (img_idx, cat_idx), value: annos list
         self.params = params or Params()  # parameters
         self.stats: np.ndarray = np.zeros(1)  # result summarization
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
         self.params.imgIdxes = coco_gt.get_asset_idxes()
         self.params.catIds = coco_gt.get_class_ids()
+        breakpoint()
 
     def evaluate(self) -> None:
         '''
