@@ -210,6 +210,14 @@ class ModelStorage(BaseModel):
     def class_names(self) -> List[str]:
         return self.executor_config['class_names']
 
+    def get_model_meta_dict(self, model_hash: str) -> dict:
+        return {
+            'mean_average_precision': self.stages[self.best_stage_name].mAP,
+            'model_hash': model_hash,
+            'stages': {k: v.dict() for k, v in self.stages.items()},
+            'best_stage_name': self.best_stage_name,
+        }
+
 
 def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
     model_hash, stage_name = model_hash_stage.split('@')

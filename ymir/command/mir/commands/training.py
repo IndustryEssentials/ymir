@@ -463,22 +463,16 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
-        model_sha1, model_mAP, model_storage = _process_model_storage(out_root=work_dir_out,
-                                                                      model_upload_location=model_upload_location,
-                                                                      executor_config=executor_config,
-                                                                      task_context=task_context)
+        model_sha1, _, model_storage = _process_model_storage(out_root=work_dir_out,
+                                                              model_upload_location=model_upload_location,
+                                                              executor_config=executor_config,
+                                                              task_context=task_context)
 
         # commit task
-        model_dict = {
-            'mean_average_precision': model_mAP,
-            'model_hash': model_sha1,
-            'stages': {k: v.dict() for k, v in model_storage.stages.items()},
-            'best_stage_name': model_storage.best_stage_name,
-        }
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',
-                                           model_dict=model_dict,
+                                           model_dict=model_storage.get_model_meta_dict(model_hash=model_sha1),
                                            return_code=task_code,
                                            return_msg=return_msg,
                                            serialized_task_parameters=task_parameters,
