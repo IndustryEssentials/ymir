@@ -76,7 +76,7 @@ def write_model_stage(stage_name: str,
 
 
 def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
-    write_model_stage(stage_name='default_stage', files=model_names, mAP=mAP)
+    write_model_stage(stage_name='default_best_stage', files=model_names, mAP=mAP)
 
 
 def write_mining_result(mining_result: List[Tuple[str, float]]) -> None:

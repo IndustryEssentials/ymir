@@ -53,7 +53,7 @@ class TestCmdImportModel(unittest.TestCase):
         with open(os.path.join(self._src_model_root, 'best.weights'), 'w') as f:
             f.write('fake darknet weights model')
         # note: unknown-car is not in user labels, we still expect it success
-        mss = mir_utils.ModelStageStorage(stage_name='default_stage',
+        mss = mir_utils.ModelStageStorage(stage_name='default_best_stage',
                                           files=['best.weights'],
                                           mAP=0.5,
                                           timestamp=int(time.time()))

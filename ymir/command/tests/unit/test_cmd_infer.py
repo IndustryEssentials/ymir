@@ -80,7 +80,7 @@ class TestCmdInfer(unittest.TestCase):
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
         training_config['class_names'] = ['person', 'cat', 'unknown-car']
 
-        model_stage = mir_utils.ModelStageStorage(stage_name='default_stage',
+        model_stage = mir_utils.ModelStageStorage(stage_name='default_best_stage',
                                                   files=['model.params', 'model.json'],
                                                   mAP=0.5,
                                                   timestamp=int(time.time()))
@@ -147,7 +147,7 @@ class TestCmdInfer(unittest.TestCase):
         fake_args.work_dir = self._working_root
         fake_args.mir_root = self._mir_repo_root
         fake_args.model_location = self._models_location
-        fake_args.model_hash_stage = 'fake_model_hash@default_stage'
+        fake_args.model_hash_stage = 'fake_model_hash@default_best_stage'
         fake_args.index_file = self._assets_index_file
         fake_args.config_file = self._config_file
         fake_args.executor = 'infer-executor:fake'

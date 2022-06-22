@@ -95,7 +95,7 @@ class TestResultWriter(unittest.TestCase):
 
     def test_write_training_result(self) -> None:
         rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
-        self._check_model_stages(stage_names=['default_stage'], best_stage_name='default_stage', mAP=0.9)
+        self._check_model_stages(stage_names=['default_best_stage'], best_stage_name='default_best_stage', mAP=0.9)
 
     def test_write_mining_result(self) -> None:
         mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]
