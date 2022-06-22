@@ -1,3 +1,6 @@
+from collections import ChainMap
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from typing import Any, Dict, Optional, List
 import tempfile
 import pathlib
@@ -19,7 +22,6 @@ from app.utils.ymir_controller import (
     ControllerClient,
     gen_user_hash,
     gen_repo_hash,
-    gen_task_hash,
 )
 from common_utils.labels import UserLabels
 
@@ -119,8 +121,21 @@ class ImportDatasetPaths:
         return pathlib.Path(self._data_dir)
 
 
+def evaluate_dataset(
+    viz: VizClient,
+    confidence_threshold: float,
+    iou_threshold: float,
+    require_average_iou: bool,
+    need_pr_curve: bool,
+    dataset_hash: str,
+) -> Dict:
+    if require_average_iou:
+        # special placeholder for average iou
+        iou_threshold = -1
+    return viz.get_fast_evaluation(dataset_hash, confidence_threshold, iou_threshold, need_pr_curve)
+
+
 def evaluate_datasets(
-    controller: ControllerClient,
     viz: VizClient,
     user_id: int,
     project_id: int,
@@ -128,14 +143,16 @@ def evaluate_datasets(
     confidence_threshold: float,
     iou_threshold: float,
     require_average_iou: bool,
+    need_pr_curve: bool,
     datasets: List[models.Dataset],
 ) -> Dict:
-    # temporary task hash used to fetch evaluation result later
-    task_hash = gen_task_hash(user_id, project_id)
-
-    # todo update according to viz
-    viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_hash)
-    evaluations = viz.get_fast_evaluation(user_labels, confidence_threshold, iou_threshold, require_average_iou)
-
     dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
+    viz.initialize(user_id=user_id, project_id=project_id, user_labels=user_labels)
+
+    f_evaluate = partial(evaluate_dataset, viz, confidence_threshold, iou_threshold, require_average_iou, need_pr_curve)
+    with ThreadPoolExecutor() as executor:
+        res = executor.map(f_evaluate, dataset_id_mapping.keys())
+
+    evaluations = ChainMap(*res)
+
     return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}
