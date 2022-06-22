@@ -428,13 +428,18 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/DatasetEvaluationElement'
-        topic_evaluations:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/DatasetEvaluationElement'
         ci_averaged_evaluation:
           $ref: '#/components/schemas/DatasetEvaluationElement'
         ck_evaluations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DatasetEvaluationTotalSubElement'
+    DatasetEvaluationTotalSubElement:
+      type: object
+      properties:
+        total:
+          $ref: '#/components/schemas/DatasetEvaluationElement'
+        sub:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/DatasetEvaluationElement'
@@ -451,6 +456,31 @@ components:
           type: integer
         fn:
           type: integer
+        pr_curve:
+          type: array
+          example:
+          - - 0
+            - 1
+            - 0.5
+          - - 0.1
+            - 0.9
+            - 0.3
+          - - 0.2
+            - 0.7
+            - 0.2
+          - - 1
+            - 0
+            - 0.3
+          items:
+            $ref: '#/components/schemas/DatasetEvaluationElementTuple3f'
+    DatasetEvaluationElementTuple3f:
+      type: array
+      example:
+      - 0.0
+      - 1.0
+      - 0.3
+      items:
+        type: number
     AssetsResult_result:
       type: object
       properties:
