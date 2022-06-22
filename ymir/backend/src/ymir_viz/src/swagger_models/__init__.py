@@ -14,6 +14,7 @@ from src.swagger_models.assets_meta_info_metadata_timestamp import AssetsMetaInf
 from src.swagger_models.assets_result import AssetsResult
 from src.swagger_models.assets_result_result import AssetsResultResult
 from src.swagger_models.dataset_evaluation import DatasetEvaluation
+from src.swagger_models.dataset_evaluation_ck_element import DatasetEvaluationCkElement
 from src.swagger_models.dataset_evaluation_element import DatasetEvaluationElement
 from src.swagger_models.dataset_evaluation_result import DatasetEvaluationResult
 from src.swagger_models.dataset_evaluation_result_result import DatasetEvaluationResultResult

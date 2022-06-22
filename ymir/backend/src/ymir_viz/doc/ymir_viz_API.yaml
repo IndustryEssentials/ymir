@@ -459,13 +459,18 @@ components:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/DatasetEvaluationElement"
-        topic_evaluations:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/DatasetEvaluationElement"
         ci_averaged_evaluation:
           $ref: "#/components/schemas/DatasetEvaluationElement"
         ck_evaluations:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/DatasetEvaluationCkElement"
+    DatasetEvaluationCkElement:
+      type: object
+      properties:
+        total:
+          $ref: "#/components/schemas/DatasetEvaluationElement"
+        sub:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/DatasetEvaluationElement"
