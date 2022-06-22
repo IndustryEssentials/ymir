@@ -55,8 +55,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `rw.write_model_stage` to save training result
     rw.write_model_stage(stage_name='stage_00',
                          files=['model-0000.params', 'model-symbols.json'],
-                         mAP=expected_mAP / 2,
-                         as_best=True)
+                         mAP=expected_mAP / 2)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
