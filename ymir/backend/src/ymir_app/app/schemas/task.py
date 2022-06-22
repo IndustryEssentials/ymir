@@ -39,6 +39,7 @@ class TaskParameter(BaseModel):
 
     # mining & dataset_infer
     model_id: Optional[int]
+    model_stage_id: Optional[int]
     mining_algorithm: Optional[str]
     top_k: Optional[int]
     generate_annotations: Optional[bool]

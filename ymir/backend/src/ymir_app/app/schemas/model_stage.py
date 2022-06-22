@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List, Optional
 
 from app.schemas.common import (
+    Common,
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
@@ -35,7 +36,17 @@ class Model(BaseModel):
 
     id: int
     hash: str
+    group_name: str
+    version_num: int
 
 
 class ModelStage(ModelStageInDBBase):
     model: Model
+
+
+class ModelStageOut(Common):
+    result: ModelStage
+
+
+class ModelStagesOut(Common):
+    result: List[ModelStage]
