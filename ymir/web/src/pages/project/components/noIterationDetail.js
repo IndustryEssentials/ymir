@@ -17,8 +17,8 @@ export const NoIterationDetail = ({ project }) => {
         </Col>
         <Col>
           <Space>
-            <Link to={`/home/project/add/${project.id}`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
-            <Link to={`/home/project/hidden/${project.id}`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
+            <Link to={`/home/project/${project.id}/add`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
+            <Link to={`/home/project/${project.id}/hidden`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
           </Space>
         </Col>
       </Row>

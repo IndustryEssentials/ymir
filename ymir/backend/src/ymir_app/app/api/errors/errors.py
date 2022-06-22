@@ -143,6 +143,11 @@ class ModelNotFound(NotFound):
     message = "Model Not Found"
 
 
+class ModelStageNotFound(NotFound):
+    code = error_codes.MODEL_STAGE_NOT_FOUND
+    message = "Model Stage Not Found"
+
+
 class DatasetEvaluationNotFound(NotFound):
     code = error_codes.DATASET_EVALUATION_NOT_FOUND
     message = "Dataset Evaluation Not Found"
@@ -363,3 +368,8 @@ class MissingOperations(APIError):
 class DatasetsNotInSameGroup(APIError):
     code = error_codes.DATASETS_NOT_IN_SAME_GROUP
     message = "Datasets Not in the Same Group"
+
+
+class InvalidModelStageName(APIError):
+    code = error_codes.INVALID_MODEL_STAGE_NAME
+    message = "Invalid Model Stage Name"

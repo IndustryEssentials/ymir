@@ -47,7 +47,7 @@ from .model import (
     ModelUpdate,
     StageChange,
 )
-from .model_stage import ModelStage, ModelStageCreate, ModelStageUpdate
+from .model_stage import ModelStage, ModelStageOut, ModelStagesOut, ModelStageCreate, ModelStageUpdate
 from .model_group import (
     ModelGroupOut,
     ModelGroupCreate,

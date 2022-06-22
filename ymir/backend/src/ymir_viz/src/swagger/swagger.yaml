@@ -265,6 +265,70 @@ paths:
         "400":
           description: DatasetEvaluation not exists
       x-openapi-router-controller: src.controllers.evaluation_controller
+  /users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_fast_evaluation:
+    get:
+      tags:
+      - evaluation
+      summary: evaluate dataset and get result
+      description: evaluate dataset and get result
+      operationId: dataset_fast_evaluation
+      parameters:
+      - name: user_id
+        in: path
+        description: user_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: repo_id
+        in: path
+        description: repo_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: branch_id
+        in: path
+        description: branch_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: conf_thr
+        in: query
+        description: conf_thr
+        required: true
+        style: form
+        explode: true
+        schema:
+          maximum: 1.0
+          minimum: 0.0
+          type: number
+          example: 0.00050
+      - name: iou_thr
+        in: query
+        description: iou_thr
+        required: true
+        style: form
+        explode: true
+        schema:
+          maximum: 1.0
+          minimum: 0.0
+          type: number
+          example: 0.5
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetEvaluationResult'
+        "400":
+          description: Dataset evaluation failed
+      x-openapi-router-controller: src.controllers.evaluation_controller
 components:
   schemas:
     AssetInfo:
@@ -370,6 +434,10 @@ components:
             $ref: '#/components/schemas/DatasetEvaluationElement'
         ci_averaged_evaluation:
           $ref: '#/components/schemas/DatasetEvaluationElement'
+        ck_evaluations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DatasetEvaluationElement'
     DatasetEvaluationElement:
       type: object
       properties:
