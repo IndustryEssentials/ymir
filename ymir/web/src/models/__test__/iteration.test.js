@@ -44,7 +44,7 @@ describe("models: iteration", () => {
       label_output_dataset_id: id,
       training_input_dataset_id: id,
       training_output_model_id: id,
-      testing_dataset_id: id,
+      validation_dataset_id: id,
     }))
     const datasets = products(3)
     const models = products(3)
