@@ -1,7 +1,7 @@
 """update project
 
 Revision ID: e2fe87f35cf4
-Revises: 0a65ca497350
+Revises: 596c563041eb
 Create Date: 2022-06-20 15:38:05.416763
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'e2fe87f35cf4'
-down_revision = '0a65ca497350'
+down_revision = '596c563041eb'
 branch_labels = None
 depends_on = None
 
