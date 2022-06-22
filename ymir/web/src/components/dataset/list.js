@@ -54,8 +54,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     const list = setGroupLabelsByProject(datasetList.items, project)
     setDatasets(list)
     setTotal(datasetList.total)
-    const ids = project?.testingSets?.map(dataset => dataset.id);
-    setTestingSetIds(ids)
+    setTestingSetIds(project?.testingSets || [])
   }, [datasetList, project])
 
   useEffect(() => {
