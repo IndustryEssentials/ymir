@@ -95,7 +95,7 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
     const testingDatasets = tasks.map(({ parameters: { dataset_id } }) => dataset_id)
     const crossDatasets = testingDatasets.filter(dataset => {
       const targetTasks = tasks.filter(({ parameters: { dataset_id }}) => dataset_id === dataset)
-      return selectedStages.map(([model, stage]) => model).every(model => targetTasks.map(({ parameters: { model_stage_id }})=> model_stage_id).includes(model))
+      return selectedStages.every(([model, stage]) => targetTasks.map(({ parameters: { model_stage_id }})=> model_stage_id).includes(stage))
     })
     return datasets.filter(({ id }) => crossDatasets.includes(id))
   }, [tasks])
