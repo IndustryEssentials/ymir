@@ -8,3 +8,4 @@ pytest-xdist==2.5.0
 types-PyYAML==6.0.1
 types-protobuf==3.18.2
 types-requests==2.25.2
+types-retry==0.9.7

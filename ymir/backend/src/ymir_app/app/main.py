@@ -32,7 +32,7 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if settings.SENTRY_DSN:
-    sentry_sdk.init(dsn=settings.SENTRY_DSN)
+    sentry_sdk.init(dsn=settings.SENTRY_DSN)  # type: ignore
     app.add_middleware(SentryAsgiMiddleware)
 
 if settings.BACKEND_CORS_ORIGINS:
@@ -72,7 +72,9 @@ redis_stream = RedisStream(settings.BACKEND_REDIS_URL)
 async def startup() -> None:
     if settings.REDIS_TESTING:
         return
-    redis = aioredis.from_url(settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True)
+    redis = aioredis.from_url(
+        settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True
+    )
     FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
     asyncio.create_task(redis_stream.consume(batch_update_task_status))
 

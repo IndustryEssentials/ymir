@@ -86,7 +86,7 @@ class TestInvokerTaskMining(unittest.TestCase):
             'batch_size': 16,
             'gpu_count': 0
         }
-        top_k, model_hash = 300, 'abc'
+        top_k, model_hash, model_stage = 300, 'abc', 'first_stage'
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
         mine_task_req.in_dataset_ids[:] = [self._guest_id1, self._guest_id2]
@@ -128,6 +128,7 @@ class TestInvokerTaskMining(unittest.TestCase):
             merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
             singleton_op='mining_image',
             model_hash=model_hash,
+            model_stage=model_stage,
             docker_image_config=json.dumps(mining_config),
         )
         print(MessageToDict(response))
@@ -143,7 +144,8 @@ class TestInvokerTaskMining(unittest.TestCase):
         mining_cmd = ("mir mining --root {0} --dst-rev {1}@{1} -w {2} --model-location {3} --media-location {3} "
                       "--model-hash {5} --src-revs {1}@{6} --asset-cache-dir {9} --task-config-file {7} --executor {8} "
                       "--executant-name {10} --topk {4}".format(self._mir_repo_root, self._task_id, working_dir_0,
-                                                                self._storage_root, top_k, model_hash,
+                                                                self._storage_root, top_k,
+                                                                f"{model_hash}@{model_stage}",
                                                                 self._sub_task_id_1, output_config, 'mining_image',
                                                                 asset_cache_dir, self._task_id))
         mock_run.assert_has_calls(calls=[
