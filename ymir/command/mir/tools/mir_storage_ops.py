@@ -518,13 +518,12 @@ def create_task(task_type: 'mirpb.TaskType.V',
                 task_id: str,
                 message: str,
                 unknown_types: Dict[str, int] = {},
-                model_hash: str = '',
-                model_mAP: float = 0,
                 return_code: int = 0,
                 return_msg: str = '',
                 serialized_task_parameters: str = '',
                 serialized_executor_config: str = '',
                 executor: str = '',
+                model_meta: mirpb.ModelMeta = None,
                 evaluation: mirpb.Evaluation = None,
                 src_revs: str = '',
                 dst_rev: str = '') -> mirpb.Task:
@@ -538,16 +537,15 @@ def create_task(task_type: 'mirpb.TaskType.V',
         'serialized_task_parameters': serialized_task_parameters,
         'serialized_executor_config': serialized_executor_config,
         'unknown_types': unknown_types,
-        'model': {
-            'model_hash': model_hash,
-            'mean_average_precision': model_mAP,
-        },
         'executor': executor,
         'src_revs': src_revs,
         'dst_rev': dst_rev,
     }
     task: mirpb.Task = mirpb.Task()
     json_format.ParseDict(task_dict, task)
+
+    if model_meta:
+        task.model.CopyFrom(model_meta)
 
     if evaluation:
         task.evaluation.CopyFrom(evaluation)
