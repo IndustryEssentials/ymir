@@ -133,8 +133,7 @@ function Verify({ verify }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
     // reinit annotations
     setAnnotations([])
-    const defaultStage = model.stages.find(stage => stage.is_best)
-    const result = await verify({ modelStage: [id, defaultStage?.id], urls: [url], image, config })
+    const result = await verify({ modelStage: [id, model.recommendStage], urls: [url], image, config })
     // console.log('result: ', result)
     if (result) {
       const all = result.annotations[0]?.detection || []

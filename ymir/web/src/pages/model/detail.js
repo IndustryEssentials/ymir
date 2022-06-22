@@ -68,8 +68,8 @@ function ModelDetail({ modelCache, getModel }) {
   }
 
   function getModelStage() {
-    const stage = model?.stages.find(st => st.is_best)
-    return stage ? [id, stage.id].toString() : ''
+    const stage = model.recommendStage
+    return stage ? [id, stage].toString() : ''
   }
 
   return (
