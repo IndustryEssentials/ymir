@@ -5,7 +5,7 @@ import requests
 from fastapi.logger import logger
 from pydantic import BaseModel
 
-from app.api.errors.errors import DatasetEvaluationNotFound, ModelNotFound, ModelNotReady
+from app.api.errors.errors import DatasetEvaluationNotFound, ModelNotFound, FailedToParseVizResponse
 from app.config import settings
 from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode
@@ -284,13 +284,15 @@ class VizClient:
         if resp.ok:
             return resp.json()["result"]
         elif resp.status_code == 400:
-            logger.error("[viz] failed to get model info: %s", resp.content)
+            logger.error("[viz] failed to parse viz response: %s", resp.content)
             error_code = resp.json()["code"]
             if error_code == VizErrorCode.MODEL_NOT_EXISTS:
+                logger.error("[viz] model not found")
                 raise ModelNotFound()
             elif error_code == VizErrorCode.DATASET_EVALUATION_NOT_EXISTS:
+                logger.error("[viz] dataset evaluation not found")
                 raise DatasetEvaluationNotFound()
-        raise ModelNotReady()
+        raise FailedToParseVizResponse()
 
     def close(self) -> None:
         self.session.close()

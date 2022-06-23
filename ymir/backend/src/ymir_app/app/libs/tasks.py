@@ -344,37 +344,40 @@ class TaskResult:
             logger.error("[update task] task result record not found, skip")
             return
 
-        model_info = self.model_info
-        logger.info(f"[viz_model] model_info: {model_info}")
-        if self.result_type is ResultType.model and model_info:
+        if self.result_type is ResultType.model:
             # special path for model
             # as long as we can get model_info, set model as ready and
             # save related task parameters and config accordingly
-            crud.task.update_parameters_and_config(
-                self.db,
-                task=task_in_db,
-                parameters=model_info.task_parameters,
-                config=json.dumps(model_info.executor_config),
-            )
-            current_model = crud.model.finish(
-                self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info)
-            )
-            if current_model:
-                stages_in = []
-                for stage_name, body in model_info.model_stages.items():
-                    stage_obj = schemas.ModelStageCreate(
-                        name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=current_model.id
-                    )
-                    stages_in.append(stage_obj)
-                crud.model_stage.batch_create(self.db, objs_in=stages_in)
-                crud.model.update_recommonded_stage_by_name(
-                    self.db, model_id=current_model.id, stage_name=model_info.best_stage_name
+            model_info = self.model_info
+            logger.info(f"[viz_model] model_info: {model_info}")
+
+            # todo refactor
+            if model_info:
+                crud.task.update_parameters_and_config(
+                    self.db,
+                    task=task_in_db,
+                    parameters=model_info.task_parameters,
+                    config=json.dumps(model_info.executor_config),
                 )
-            try:
-                self.save_model_stats(model_info)
-            except FailedToConnectClickHouse:
-                logger.exception("Failed to write model stats to clickhouse, continue anyway")
-            return
+                current_model = crud.model.finish(
+                    self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info)
+                )
+                if current_model:
+                    stages_in = []
+                    for stage_name, body in model_info.model_stages.items():
+                        stage_obj = schemas.ModelStageCreate(
+                            name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=current_model.id
+                        )
+                        stages_in.append(stage_obj)
+                    crud.model_stage.batch_create(self.db, objs_in=stages_in)
+                    crud.model.update_recommonded_stage_by_name(
+                        self.db, model_id=current_model.id, stage_name=model_info.best_stage_name
+                    )
+                try:
+                    self.save_model_stats(model_info)
+                except FailedToConnectClickHouse:
+                    logger.exception("Failed to write model stats to clickhouse, continue anyway")
+                return
 
         if task_result.state is TaskState.done and self.result_info:
             crud_func.finish(

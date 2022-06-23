@@ -373,3 +373,13 @@ class DatasetsNotInSameGroup(APIError):
 class InvalidModelStageName(APIError):
     code = error_codes.INVALID_MODEL_STAGE_NAME
     message = "Invalid Model Stage Name"
+
+
+class VizError(APIError):
+    code = error_codes.VIZ_ERROR
+    message = "General Viz Error"
+
+
+class FailedToParseVizResponse(VizError):
+    code = error_codes.FAILED_TO_PARSE_VIZ_RESP
+    message = "Failed to Parse Viz Response"
