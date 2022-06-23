@@ -7,6 +7,7 @@ const model = {
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },
   "model.column.map": { en: "mAP", cn: "精度均值(mAP)", },
+  "model.column.stage": { en: "Stage", cn: "阶段模型", },
   "model.column.create_time": { en: "Create Time", cn: "创建时间", },
   "model.column.action": { en: "Actions", cn: "操作", },
   "model.action.download": { en: "Download", cn: "下载", },
