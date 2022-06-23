@@ -276,7 +276,7 @@ export default {
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
     },
-    *compare({ payload }, { call, put }) {
+    *evaluate({ payload }, { call, put }) {
       const { code, result } = yield call(evaluate, payload)
       if (code === 0) {
         return result
