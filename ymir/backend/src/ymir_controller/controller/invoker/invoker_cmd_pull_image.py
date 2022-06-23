@@ -61,6 +61,13 @@ class ImageHandler(BaseMirControllerInvoker):
             if image_config:
                 response.docker_image_config[image_type] = image_config
 
+        # livecode
+        config_command = ['docker', 'run', '--rm', self._request.singleton_op, 'cat', common_task_config.IMAGE_LIVECODE_CONFIG_PATH]
+        config_response = utils.run_command(config_command)
+        livecode_config = self.convert_image_config(config_response.message)
+        if livecode_config:
+            response.live_code_config = livecode_config
+
         if len(response.docker_image_config) == 0:
             return utils.make_general_response(
                 CTLResponseCode.DOCKER_IMAGE_ERROR,
