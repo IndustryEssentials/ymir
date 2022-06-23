@@ -87,6 +87,13 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.refresh(dataset)
         return dataset
 
+    def update_visualization_id(self, db: Session, *, dataset: Dataset, visualization_id: int) -> Dataset:
+        dataset.visualization_id = visualization_id  # type: ignore
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+        return dataset
+
     def get_latest_version(self, db: Session, dataset_group_id: int) -> Optional[int]:
         query = db.query(self.model)
         latest_dataset_in_group = (

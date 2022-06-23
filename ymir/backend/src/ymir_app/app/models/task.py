@@ -28,6 +28,7 @@ class Task(Base):
     percent = Column(Float)
     duration = Column(Integer)
     error_code = Column(String(settings.DEFAULT_LIMIT))
+    visualization_id = Column(Integer, index=True, nullable=False)
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
