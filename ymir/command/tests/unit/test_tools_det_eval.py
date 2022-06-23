@@ -266,7 +266,21 @@ class TestToolsDetEval(unittest.TestCase):
                     }
                 }
             },
-            'head_task_id': 'b'
+            'head_task_id': 'b',
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'weather': 'sunny',
+                        'color': 'red',
+                    },
+                },
+                'a1': {
+                    'cks': {
+                        'weather': 'sunny',
+                        'color': 'blue',
+                    },
+                },
+            },
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)

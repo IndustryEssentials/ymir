@@ -7,7 +7,6 @@ import numpy as np
 from mir.tools import mir_storage_ops, revs_parser
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
-from pytest import param
 
 
 class MirCoco:
@@ -650,7 +649,7 @@ def det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluate
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
         evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
-        breakpoint()
+        # breakpoint()
         for ck_main, ck_main_assets_and_sub in mir_dt.ck_idx.items():
             
             asset_ids = ck_main_assets_and_sub.asset_annos.keys()
