@@ -2,27 +2,30 @@ import { Checkbox, Col, Form, Row, Select, Tooltip } from 'antd'
 import { connect } from 'dva'
 import { useCallback, useEffect, useState } from 'react'
 
+import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import ModelSelect from './modelSelect'
 import DatasetSelect from './datasetSelect'
 
+const sameConfig = (config, config2) => {
+  return JSON.stringify(config2) === JSON.stringify(config)
+}
 const sameConfigs = (config, configs) => {
-  return configs.some(item => {
-    const itemStr = JSON.stringify(item)
-    const configStr = JSON.stringify(config)
-    return itemStr === configStr
-  })
+  return configs.some(item => sameConfig(item, config))
 }
 
 const ConfigSelect = ({ configs = [], onChange = () => { } }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
-    const opts = configs.map((config, index) => ({
-      value: index,
-      label: <Tooltip color={'blue'} title={JSON.stringify(config)}>config{index + 1}</Tooltip>,
-      config
-    }))
+    const opts = configs.map(({ config, model }, index) => {
+      const title = [...model, JSON.stringify(config)].join('\n')
+      return {
+        value: index,
+        label: <Tooltip color={'blue'} title={title}>config{index + 1}</Tooltip>,
+        config
+      }
+    })
     setOptions(opts)
   }, [configs])
 
@@ -34,7 +37,9 @@ const ConfigSelect = ({ configs = [], onChange = () => { } }) => {
 }
 
 const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
+  const [form] = Form.useForm()
   const [selectedStages, setSelectedStages] = useState([])
+  const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
   const [selectedDatasets, setSelectedDatasets] = useState([])
   const [configs, setConfigs] = useState([])
@@ -42,7 +47,6 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   const [inferTasks, fetchInferTask] = useFetch('task/queryInferTasks', [])
   const [selectedTasks, setSelectedTasks] = useState([])
   const [tasks, setTasks] = useState([])
-  const [inferResult, setInferResult] = useState([])
 
   useEffect(() => {
     setTasks(inferTasks)
@@ -55,23 +59,45 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
     } else {
       setTasks([])
     }
+    setSelectedDatasets([])
+    form.setFieldsValue({ dataset: [], config: []})
   }, [selectedStages])
 
   useEffect(() => {
-    const selected = tasks
+    const testingDatasets = tasks.map(({ parameters: { dataset_id } }) => dataset_id)
+    const crossDatasets = testingDatasets.filter(dataset => {
+      const targetTasks = tasks.filter(({ parameters: { dataset_id } }) => dataset_id === dataset)
+      return selectedStages.every(([model, stage]) => targetTasks.map(({ parameters: { model_stage_id } }) => model_stage_id).includes(stage))
+    })
+    setDatasets(crossDatasets)
+  }, [tasks])
+
+  useEffect(() => {
+    const configs = tasks
       .filter(({ parameters: { dataset_id } }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true))
-      .reduce((prev, { config }) => {
-        return sameConfigs(config, prev) ? prev : [...prev, config]
+      .reduce((prev, { config, parameters: { model_id, model_stage_id } }) => {
+        const stageName = getStageName([model_id, model_stage_id])
+        return sameConfigs(config, prev.map(({ config }) => config)) ?
+          prev.map(item => {
+            sameConfig(item.config, config) && item.model.push(stageName)
+            return item
+          }) :
+          [...prev, { config, model: [stageName] }]
       }, [])
-    setConfigs(selected)
-  }, [selectedDatasets])
+    setConfigs(configs)
+  }, [tasks, selectedDatasets])
 
   useEffect(() => {
     const selected = tasks
       .filter(({ parameters: { dataset_id }, config }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true)
         && (selectedConfigs.length ? sameConfigs(config, selectedConfigs) : true))
-    setSelectedTasks(selected)
-  }, [selectedConfigs])
+    const unique = selected.reduce((prev, task) => {
+      return prev.some(({ parameters: { dataset_id }, config }) =>
+        dataset_id === task.dataset_id && sameConfig(config, task.parameters.config)) ?
+        prev : [...prev, task]
+    }, [])
+    setSelectedTasks(unique)
+  }, [tasks, selectedConfigs])
 
   useEffect(() => {
     onChange({
@@ -79,8 +105,19 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
     })
   }, [selectedTasks])
 
-  function modelChange(values) {
+  function getStageName([model, stage]) {
+    const m = models.find(md => md.id === model)
+    let s = {}
+    if (m) {
+      s = m.stages.find(sg => sg.id === stage)
+    }
+    console.log('s:', s)
+    return m && s ? `${m.name} ${m.versionName} ${s.name}` : ''
+  }
+
+  function modelChange(values, options) {
     setSelectedStages(values)
+    setModels(options.map(([{ model }]) => model))
   }
 
   function datasetChange(values) {
@@ -91,27 +128,22 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
     setSelectedConfigs(options.map(({ config }) => config))
   }
 
-  const filterDatasets = useCallback((datasets) => {
-    const testingDatasets = tasks.map(({ parameters: { dataset_id } }) => dataset_id)
-    const crossDatasets = testingDatasets.filter(dataset => {
-      const targetTasks = tasks.filter(({ parameters: { dataset_id }}) => dataset_id === dataset)
-      return selectedStages.every(([model, stage]) => targetTasks.map(({ parameters: { model_stage_id }})=> model_stage_id).includes(stage))
-    })
-    return datasets.filter(({ id }) => crossDatasets.includes(id))
-  }, [tasks])
+  const filterDatasets = useCallback((all) => {
+    return all.filter(({ id }) => datasets.includes(id))
+  }, [datasets])
 
   return (
-    <Form layout='vertical'>
-      <Form.Item label={'model'}>
+    <Form form={form} layout='vertical'>
+      <Form.Item name='stage' label={t('model.diagnose.label.model')}>
         <ModelSelect pid={pid} multiple onChange={modelChange} />
       </Form.Item>
-      {tasks.length ?
-        <Form.Item label={'testing dataset'}>
+      {datasets.length ?
+        <Form.Item name='dataset' label={t('model.diagnose.label.testing_dataset')}>
           <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} />
         </Form.Item>
         : null}
       {configs.length ?
-        <Form.Item label={'parameters config'}>
+        <Form.Item name='config' label={t('model.diagnose.label.config')}>
           <ConfigSelect configs={configs} onChange={configChange} />
         </Form.Item>
         : null}
