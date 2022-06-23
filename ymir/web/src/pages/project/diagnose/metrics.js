@@ -9,6 +9,7 @@ import ModelSelect from "@/components/form/modelSelect"
 import DatasetSelect from "@/components/form/datasetSelect"
 
 import { CompareIcon } from "@/components/common/icons"
+import InferResultSelect from "../../../components/form/inferResultSelect"
 
 const metricsTabs = [
   { label: 'mAP', value: 'map' },
@@ -138,6 +139,7 @@ function Matrics({ pid, project }) {
               <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {'restart'}</Button>
             </div>
             <Panel label={'Metrics'} style={{ marginTop: -10 }} toogleVisible={false}>
+              <InferResultSelect pid={pid} onChange={({ tasks }) => console.log('task in metircs: ', tasks)} />
               <Form
                 className={s.form}
                 form={form}

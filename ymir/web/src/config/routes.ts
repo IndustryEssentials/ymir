@@ -86,15 +86,6 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.add',
   },
   {
-    path: "/home/project/:id/dataset/:gid/compare/:ids",
-    name: "taskCompare",
-    component: "@/pages/task/compare/index",
-    title: 'dataset.compare.title',
-    pid: 25,
-    id: 31,
-    breadcrumbLabel: 'breadcrumbs.dataset.compare',
-  },
-  {
     path: "/home/project/:id/dataset/:did",
     name: "datasetDetail",
     component: "@/pages/dataset/detail",
