@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Iterable, List, Optional, Set, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Union
 from mir.tools.code import MirCode
 
 import numpy as np
@@ -7,6 +7,7 @@ import numpy as np
 from mir.tools import mir_storage_ops, revs_parser
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
+from pytest import param
 
 
 class MirCoco:
@@ -51,6 +52,7 @@ class MirCoco:
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
         self._ordered_class_ids = sorted(list(k.pred_idx.cis.keys()))
+        self._ck_idx: Dict[str, mirpb.AssetAnnoIndex] = {key: value for key, value in k.ck_idx.items()}
 
         self.img_cat_to_annotations = defaultdict(list)
         annos = self._get_annotations(asset_idxes=self.get_asset_idxes(),
@@ -75,6 +77,10 @@ class MirCoco:
     @property
     def mir_annotations(self) -> mirpb.MirAnnotations:
         return self._mir_annotations
+
+    @property
+    def ck_idx(self) -> dict:
+        return self._ck_idx
 
     def _get_annotations(self, asset_idxes: List[int], class_ids: List[int], conf_thr: float) -> List[dict]:
         """
@@ -158,7 +164,6 @@ class MirDetEval:
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
         self.params.imgIdxes = coco_gt.get_asset_idxes()
         self.params.catIds = coco_gt.get_class_ids()
-        breakpoint()
 
     def evaluate(self) -> None:
         '''
@@ -636,7 +641,7 @@ def det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluate
 
     for mir_dt in mir_dts:
         # TODO: wanted to pass asset_ids into MirDetEval, so i can evaluate different cks in a loop here
-        evaluator = MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params, asset_ids=None)
+        evaluator = MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         evaluator.accumulate()
 
@@ -645,5 +650,14 @@ def det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluate
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
         evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
+        breakpoint()
+        for ck_main, ck_main_assets_and_sub in mir_dt.ck_idx.items():
+            
+            asset_ids = ck_main_assets_and_sub.asset_annos.keys()
+            # evaluator = MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=param, asset_ids=asset_ids)
+            # TODO: evaluate and record here
+            for ck_sub, ck_sub_assets in ck_main_assets_and_sub.sub_indexes.items():
+                asset_ids = ck_sub_assets.key_ids.keys()
+                
 
     return evaluation

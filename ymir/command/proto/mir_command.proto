@@ -151,8 +151,8 @@ message MirKeywords {
     // key: class id, value: assert ids
     map<int32, StringList> index_predefined_keyids = 6;
 
-    KeywordToIndex pred_idx = 7;
-    KeywordToIndex gt_idx = 8;
+    KeywordToIndex pred_idx = 7;  // ci to assets, generated from preds
+    KeywordToIndex gt_idx = 8;  // ci to assets, generated from gt
 
     // key: ck main key, value: assets and assets with sub keys
     map<string, AssetAnnoIndex> ck_idx = 9;
