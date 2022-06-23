@@ -190,7 +190,7 @@ class CmdTrain(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
-                      asset_cache_dir: Optional[str],
+                      asset_cache_dir: str,
                       model_upload_location: str,
                       pretrained_model_hash_stage: str,
                       executor: str,
@@ -611,6 +611,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=False,
                                   dest='asset_cache_dir',
                                   type=str,
+                                  default='',
                                   help='asset cache directory')
     train_arg_parser.add_argument("--executor",
                                   required=True,
