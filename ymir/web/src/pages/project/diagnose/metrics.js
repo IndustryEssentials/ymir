@@ -22,6 +22,8 @@ const xAxisOptions = [
   { label: 'Class', value: 'class' },
 ]
 
+const kwTypes = [{ label: '标签', value: 'keyword' }, { label: '用户标签', value: 'ck' }]
+
 function Matrics({ pid, project }) {
   console.log('pid:', pid)
   const [form] = Form.useForm()
@@ -31,9 +33,19 @@ function Matrics({ pid, project }) {
   const [confidence, setConfidence] = useState(0.3)
   const [selectedMetric, setSelectedMetric] = useState(metricsTabs[0].value)
   const [prRate, setPrRate] = useState(0.5)
+  const [keywords, setKeywords] = useState([])
+  const [ck, setCK] = useState([])
+  const [kwType, setKwType] = useState(kwTypes[0].value)
+  const [kwOptions, setKwOptions] = useState([])
   const [xAxis, setXAsix] = useState(null)
   const [diagnosis, fetchDiagnosis] = useFetch('model/evaluate')
   const [diagnosing, setDiagnosing] = useState(false)
+
+  useEffect(() => {
+    const kws = isKw() ? keywords : ck
+    const options = kws.map(kw => ({ label: kw.name, value: kw.name }))
+    setKwOptions(options)
+  }, [kwType])
 
   useEffect(() => {
     setDiagnosing(!!diagnosis)
@@ -73,6 +85,10 @@ function Matrics({ pid, project }) {
     setXAsix(value)
   }
 
+  function isKw() {
+    return kwType === kwTypes[0].value
+  }
+
   function retry () {
     setDiagnosis(null)
   }
@@ -91,8 +107,11 @@ function Matrics({ pid, project }) {
       </Col>
     </Row>
     <Row>
+      <Col>
+        <Select value={kwType} options={kwTypes} onChange={setKwType}></Select>
+      </Col>
       <Col flex={1}>
-        tags
+        <Select options={kwOptions}></Select>
       </Col>
       <Col>
         <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions} onChange={xAxisChange} />
