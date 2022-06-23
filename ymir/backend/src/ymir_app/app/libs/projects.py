@@ -105,14 +105,14 @@ def setup_sample_project_in_background(
     )
 
     # import testing dataset
-    testing_dataset = setup_dataset_and_group(
+    validation_dataset = setup_dataset_and_group(
         db=db,
         controller_client=controller_client,
-        group_name=f"{project_name}_testing_dataset",
+        group_name=f"{project_name}_validation_dataset",
         project_id=project_id,
         user_id=user_id,
         task_type=TaskType.import_data,
-        input_url=settings.SAMPLE_PROJECT_TESTING_DATASET_URL,
+        input_url=settings.SAMPLE_PROJECT_VALIDATION_DATASET_URL,
     )
 
     # import mining dataset
@@ -142,7 +142,7 @@ def setup_sample_project_in_background(
         project_update=schemas.ProjectUpdate(
             training_dataset_group_id=training_dataset.dataset_group_id,
             initial_training_dataset_id=training_dataset.id,
-            testing_dataset_id=testing_dataset.id,
+            validation_dataset_id=validation_dataset.id,
             mining_dataset_id=mining_dataset.id,
             initial_model_id=model.id,
         ),

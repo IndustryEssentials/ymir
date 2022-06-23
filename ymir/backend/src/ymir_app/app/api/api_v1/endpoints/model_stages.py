@@ -11,7 +11,20 @@ router = APIRouter()
 
 
 @router.get(
-    "/{stage_id}",
+    "/batch",
+    response_model=schemas.ModelStagesOut,
+)
+def batch_get_models(
+    db: Session = Depends(deps.get_db),
+    model_stage_ids: str = Query(None, alias="ids"),
+) -> Any:
+    ids = [int(i) for i in model_stage_ids.split(",")]
+    stages = crud.model_stage.get_multi_by_ids(db, ids=ids)
+    return {"result": stages}
+
+
+@router.get(
+    "/{model_stage_id}",
     response_model=schemas.ModelStageOut,
 )
 def get_model_stage(
@@ -27,16 +40,3 @@ def get_model_stage(
     if not model_stage:
         raise ModelStageNotFound()
     return {"result": model_stage}
-
-
-@router.get(
-    "/batch",
-    response_model=schemas.ModelStagesOut,
-)
-def batch_get_models(
-    db: Session = Depends(deps.get_db),
-    model_stage_ids: str = Query(None, alias="ids"),
-) -> Any:
-    ids = [int(i) for i in model_stage_ids.split(",")]
-    stages = crud.model_stage.get_multi_by_ids(db, ids=ids)
-    return {"result": stages}

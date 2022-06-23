@@ -84,16 +84,13 @@ function DatasetDetail({ datasetCache, getDataset }) {
                 <Button
                   key={type}
                   type="primary"
-                  onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
+                  onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}
                 >
                   {t(`task.type.${type}`)}
                 </Button>
               ))}
               <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
-              </Button>
-              <Button type="primary" onClick={() => history.push(`/home/project/${pid}/dataset/${dataset.groupId}/compare/${id}`)}>
-                {t(`common.action.compare`)}
               </Button>
             </> :
               <Button type="primary" onClick={restore}>

@@ -421,11 +421,11 @@ class MirStorageOps():
             total_images_cnt=mir_storage_context.images_cnt,
             cks_count_total={k: v.cnt
                              for k, v in mir_storage_context.cks_cnt.items()},
-            cks_count={k: v.sub_cnt
+            cks_count={k: {k2: v2 for k2, v2 in v.sub_cnt.items()}
                        for k, v in mir_storage_context.cks_cnt.items()},
             tags_cnt_total={k: v.cnt
                             for k, v in mir_storage_context.tags_cnt.items()},
-            tags_cnt={k: v.sub_cnt
+            tags_cnt={k: {k2: v2 for k2, v2 in v.sub_cnt.items()}
                       for k, v in mir_storage_context.tags_cnt.items()},
             hist=dict(
                 anno_quality=cls._gen_viz_hist(mir_storage_context.pred_stats.quality_hist),
