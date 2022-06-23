@@ -263,7 +263,7 @@ message SingleDatasetEvaluation {
 message SingleIouEvaluation {
     map<int32, SingleTopicEvaluation> ci_evaluations = 1;  // key: class ids
     SingleTopicEvaluation ci_averaged_evaluation = 2;  // evaluations averaged by class ids
-    map<string, SingleTopicEvaluation> topic_evaluations = 3;  // key: topic names
+    map<string, SingleTopicTotalSubEvaluation> ck_evaluations = 3;
 }
 
 message SingleTopicEvaluation {
@@ -273,6 +273,11 @@ message SingleTopicEvaluation {
     int32 fp = 4;
     int32 fn = 5;
     repeated FloatPoint pr_curve = 6;
+}
+
+message SingleTopicTotalSubEvaluation {
+    SingleTopicEvaluation total = 1;
+    map<string, SingleTopicEvaluation> subs = 2;
 }
 
 message FloatPoint {
