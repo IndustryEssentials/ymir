@@ -5,8 +5,9 @@ import s from "./index.less"
 import t from "@/utils/t"
 import Panel from "@/components/form/panel"
 import { CompareIcon } from "@/components/common/icons"
+import InferResultSelect from "../../../components/form/inferResultSelect"
 
-function Matrics() {
+function Matrics({ pid }) {
   const [form] = Form.useForm()
 
   const onFinish = async () => {
@@ -28,6 +29,9 @@ function Matrics() {
             
           </Col>
           <Col span={6} className={s.formContainer}>
+            <div>
+              <InferResultSelect pid={pid} onChange={({ tasks }) => console.log('task in metircs: ', tasks)} />
+            </div>
             <div className={s.mask} hidden={true}>
               <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {'restart'}</Button>
             </div>

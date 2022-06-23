@@ -78,6 +78,9 @@ const model = {
   "model.diagnose.analysis.title.keyword_ratio": { cn: "标签占比", en: "Keywords Ratio", },
   "model.diagnose.analysis.bar.asset.tooltip": { cn: " 占比：{ratio} 数量：{amount} 张", en: " Ratio：{ratio} Amount：{amount}", },
   "model.diagnose.analysis.bar.anno.tooltip": { cn: " 占比：{ratio} 数量：{amount} 个", en: " Ratio：{ratio} Amount：{amount}", },
+  "model.diagnose.label.model": { cn: "模型", en: "Models", },
+  "model.diagnose.label.testing_dataset": { cn: "测试集", en: "Testing Datasets", },
+  "model.diagnose.label.config": { cn: "推理配置", en: "Infer Configs", },
 }
 
 export default model
