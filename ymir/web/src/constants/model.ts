@@ -1,4 +1,4 @@
-import { ModelGroup, ModelVersion } from "@/interface/model"
+import { ModelGroup, ModelVersion, Stage } from "@/interface/model"
 import { calDuration, format } from '@/utils/date'
 import { getIterationVersion } from "./project"
 import { BackendData } from "@/interface/common"
@@ -48,3 +48,18 @@ export function transferModel (data: BackendData): ModelVersion {
     recommendStage: data.recommended_stage || 0,
   }
 }
+
+export function getModelName(data: BackendData) {
+  return `${data.model?.group_name} ${getIterationVersion(data.model?.version_num)}`
+}
+
+export function transferStage(data: BackendData): Stage {
+  return {
+    id: data.id,
+    name: data.name,
+    map: data.map,
+    modelId: data.model?.id,
+    modelName: getModelName(data),
+  }
+}
+
