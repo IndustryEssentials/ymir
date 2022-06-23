@@ -124,12 +124,6 @@ const dataset = {
   'dataset.add.form.copy.required': { cn: '源数据集不能为空', en: 'Original dataset is required', },
   'dataset.add.form.copy.placeholder': { cn: '请选择待复制的数据集版本', en: 'Select a dataset version for copy', },
   'dataset.add.validate.url.invalid': { cn: '不是合法的网络地址', en: 'Invalid url', },
-  'dataset.compare.error.diff_group': { cn: '比对的版本必须在同一个数据集', en: 'Target versions must be in one dataset', },
-  'dataset.compare.error.diff_assets': { cn: '比对的数据集版本数据量需要保持一致', en: 'Assets\' count must be the same for every version', },
-  'dataset.compare.form.datasets': { cn: '比对数据集', en: 'Compare Datasets', },
-  'dataset.compare.form.gt': { cn: '真值(Ground Truth)', en: 'Ground Truth', },
-  'dataset.compare.form.confidence': { cn: '置信度', en: 'Confidence', },
-  'dataset.compare.restart': { cn: '重新比对', en: 'Compare Again', },
   'dataset.fusion.validate.inputs': { cn: '请输入至少一项预处理条件', en: 'Please input at less one condition for pretreating', },
 }
 
