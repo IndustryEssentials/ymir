@@ -160,3 +160,13 @@ export function verify({ modelStage, urls, image, config }) {
     docker_image_config: config
   })
 }
+
+export function setRecommendStage(model, stage) {
+  return request({
+    method: 'PATCH',
+    url: `/models/${model}`,
+    data: {
+      stage_id: stage,
+    }
+  })
+}

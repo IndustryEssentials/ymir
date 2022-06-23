@@ -7,6 +7,7 @@ import {
   importModel,
   updateModel,
   verify,
+  setRecommendStage,
 } from "../model"
 import { product, products, requestExample } from './func'
 
@@ -48,6 +49,12 @@ describe("service: models", () => {
     const name = 'newnameofmodel'
     const expected = { id, name }
     requestExample(updateModel, [id, name], expected)
+  })
+  it("setRecommendStage -> success", () => {
+    const model = 63437
+    const stage = 24234
+    const expected = { id: model, recommended_stage: stage }
+    requestExample(setRecommendStage, [model, stage], expected)
   })
   it("importModel -> success", () => {
     const params = {

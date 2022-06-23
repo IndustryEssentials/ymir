@@ -78,8 +78,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
-    const ids = project?.testingSets?.map(dataset => dataset.id) || []
-    setTestingSetIds(ids)
+    setTestingSetIds(project?.testingSets || [])
     form.setFieldsValue({ datasetId: visibleValue })
   }, [allDatasets, project])
 
