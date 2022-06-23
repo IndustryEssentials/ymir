@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import (
     Boolean,
@@ -50,6 +51,13 @@ class Model(Base):
     )
     recommended_stage = Column(Integer, nullable=True)
 
+    default_stage = relationship(
+        "ModelStage",
+        primaryjoin="foreign(ModelStage.model_id)==Model.id",
+        uselist=False,
+        viewonly=True,
+    )
+
     is_visible = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -67,3 +75,7 @@ class Model(Base):
     @property
     def name(self) -> str:
         return "_".join([self.group_name, str(self.version_num)])
+
+    @property
+    def default_stage_name(self) -> Optional[str]:
+        return self.default_stage.name if self.default_stage else None

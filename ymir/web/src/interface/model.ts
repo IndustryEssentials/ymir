@@ -4,7 +4,6 @@ interface Stage {
   id: number,
   name: string,
   map: number,
-  is_best?: boolean,
 }
 export interface ModelGroup {
   id: number,
@@ -16,4 +15,5 @@ export interface ModelVersion extends Result {
   map: number,
   url: string,
   stages?: Array<Stage>,
+  recommendStage: number,
 }

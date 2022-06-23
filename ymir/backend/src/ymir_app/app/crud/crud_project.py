@@ -34,6 +34,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             training_type=obj_in.training_type,
             training_keywords=training_keywords,
             description=obj_in.description,
+            enable_iteration=obj_in.enable_iteration
         )
         db.add(db_obj)
         db.commit()

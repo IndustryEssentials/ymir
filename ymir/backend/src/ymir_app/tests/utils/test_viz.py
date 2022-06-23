@@ -86,7 +86,7 @@ class TestModel:
                     "timestamp": 100000002,
                 },
             },
-            "best_model_stage": "epoch-3000",
+            "best_stage_name": "epoch-3000",
         }
         M = m.ModelMetaData.from_viz_res(res)
         assert M.hash == res["model_id"]
@@ -94,7 +94,7 @@ class TestModel:
         assert M.task_parameters == res["task_parameters"]
         assert M.executor_config == res["executor_config"]
         assert M.model_stages == res["model_stages"]
-        assert M.best_model_stage == res["best_model_stage"]
+        assert M.best_stage_name == res["best_stage_name"]
 
 
 class TestDataset:
@@ -113,20 +113,17 @@ class TestDataset:
                 "positive_asset_cnt": 1,
                 "negative_asset_cnt": 1,
                 "class_names_count": {"cat": 3},
-                "hist": {
-                    "anno_area_ratio": [[{"x": 1, "y": 2}]],
-                    "anno_quality": [[{"x": 1, "y": 2}]]
-                }
+                "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
             },
             "gt": {},
             "hist": {
                 "asset_area": [[{"x": 1, "y": 2}]],
                 "asset_bytes": [[{"x": 1, "y": 2}]],
                 "asset_hw_ratio": [[{"x": 1, "y": 2}]],
-                "asset_quality": [[{"x": 1, "y": 2}]]
+                "asset_quality": [[{"x": 1, "y": 2}]],
             },
             "total_asset_mbytes": 10,
-            "total_assets_cnt": 1
+            "total_assets_cnt": 1,
         }
         M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
         assert M.keyword_count == len(res["class_ids_count"])
@@ -235,7 +232,7 @@ class TestVizClient:
                     "timestamp": 100000002,
                 },
             },
-            "best_model_stage": "epoch-3000",
+            "best_stage_name": "epoch-3000",
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -271,20 +268,17 @@ class TestVizClient:
                 "positive_asset_cnt": 1,
                 "negative_asset_cnt": 1,
                 "class_names_count": {"cat": 3},
-                "hist": {
-                    "anno_area_ratio": [[{"x": 1, "y": 2}]],
-                    "anno_quality": [[{"x": 1, "y": 2}]]
-                }
+                "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
             },
             "gt": {},
             "hist": {
                 "asset_area": [[{"x": 1, "y": 2}]],
                 "asset_bytes": [[{"x": 1, "y": 2}]],
                 "asset_hw_ratio": [[{"x": 1, "y": 2}]],
-                "asset_quality": [[{"x": 1, "y": 2}]]
+                "asset_quality": [[{"x": 1, "y": 2}]],
             },
             "total_asset_mbytes": 10,
-            "total_assets_cnt": 1
+            "total_assets_cnt": 1,
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp

@@ -7,7 +7,8 @@ from app.schemas.common import Common
 
 class InferenceBase(BaseModel):
     docker_image: str
-    model_id: int
+    project_id: int
+    model_stage_id: int
     image_urls: List[str]
     docker_image_config: Dict = Field(description="inference docker image runtime configuration")
 
@@ -41,7 +42,7 @@ class Annotation(BaseModel):
 
 
 class InferenceResult(BaseModel):
-    model_id: int
+    model_stage_id: int
     annotations: List[Annotation]
 
 

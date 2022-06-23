@@ -56,8 +56,9 @@ export function transferProject(data: BackendData) {
     name: data.name,
     keywords: data.training_keywords,
     trainSet: data.training_dataset_group ? transferDatasetGroup(data.training_dataset_group) : undefined,
-    testSet: data.testing_dataset ? transferDataset(data.testing_dataset) : undefined,
+    testSet: data.validation_dataset ? transferDataset(data.validation_dataset) : undefined,
     miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
+    testingSets: data.testing_dataset_ids?.split(',').map(Number) || [],
     setCount: data.dataset_count,
     trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
@@ -75,6 +76,10 @@ export function transferProject(data: BackendData) {
     hiddenDatasets: data.referenced_dataset_ids || [],
     hiddenModels: data.referenced_model_ids || [],
     updateTime: format(data.update_datetime),
+    enableIteration: data.enable_iteration,
+    totalAssetCount: data.total_asset_count,
+    runningTaskCount: data.running_task_count,
+    totalTaskCount: data.total_task_count,
   }
   return project
 }
@@ -89,7 +94,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
     name: data.name,
     round: data.iteration_round || 0,
     currentStage: data.current_stage || 0,
-    testSet: data.testing_dataset_id || 0,
+    testSet: data.validation_dataset_id || 0,
     miningSet: data.mining_input_dataset_id,
     miningResult: data.mining_output_dataset_id,
     labelSet: data.label_output_dataset_id,

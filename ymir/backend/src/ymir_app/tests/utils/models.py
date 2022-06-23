@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 from random import randint
 
@@ -47,3 +48,12 @@ def create_model(
     )
     model = crud.model.create_with_version(db, obj_in=model_in)
     return model
+
+
+def create_model_stage(
+    db: Session, user_id: int, group_id: Optional[int] = None, project_id: Optional[int] = None
+) -> models.ModelStage:
+    model = create_model(db, user_id, group_id, project_id)
+    stage_in = schemas.ModelStageCreate(name=random_lower_string(), map=0.1, timestamp=time.time(), model_id=model.id)
+    stage = crud.model_stage.create(db, obj_in=stage_in)
+    return stage
