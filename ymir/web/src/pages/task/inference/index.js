@@ -29,7 +29,7 @@ import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
 const { Option } = Select
 
 const parseModelStage = (str = '') => {
-  return str.split('|').map(stage => string2Array(stage))
+  return str ? str.split('|').map(stage => string2Array(stage)) : []
 }
 
 const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
@@ -60,13 +60,8 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    did && func.getDataset(did)
     did && form.setFieldsValue({ datasets: [Number(did)] })
   }, [did])
-
-  useEffect(() => {
-    datasetCache[did] && setDataset(datasetCache[did])
-  }, [datasetCache])
 
   useEffect(() => {
     pid && func.getDatasets(pid)
@@ -173,7 +168,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     description: '',
-    stages: stage,
+    stages: stage.length ? stage : undefined,
     image: image ? parseInt(image) : undefined,
     algorithm: getCheckedValue(Algorithm()),
     gpu_count: 0,
