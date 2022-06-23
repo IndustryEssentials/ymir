@@ -66,7 +66,7 @@ class ImageHandler(BaseMirControllerInvoker):
         config_response = utils.run_command(config_command)
         livecode_config = self.convert_image_config(config_response.message)
         if livecode_config:
-            response.live_code_config = livecode_config
+            response.enable_livecode = True
 
         if len(response.docker_image_config) == 0:
             return utils.make_general_response(
