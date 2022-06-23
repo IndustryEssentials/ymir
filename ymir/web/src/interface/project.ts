@@ -9,7 +9,7 @@ export interface Project {
   trainSet?: DatasetGroup,
   testSet?: Dataset,
   miningSet?: Dataset,
-  testingSets?: Array<Dataset>,
+  testingSets?: Array<number>,
   setCount: number,
   trainSetVersion?: number,
   model?: number,

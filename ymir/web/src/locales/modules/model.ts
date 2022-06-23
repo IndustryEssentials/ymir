@@ -7,6 +7,7 @@ const model = {
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },
   "model.column.map": { en: "mAP", cn: "精度均值(mAP)", },
+  "model.column.stage": { en: "Stage", cn: "阶段模型", },
   "model.column.create_time": { en: "Create Time", cn: "创建时间", },
   "model.column.action": { en: "Actions", cn: "操作", },
   "model.action.download": { en: "Download", cn: "下载", },
@@ -77,6 +78,9 @@ const model = {
   "model.diagnose.analysis.title.keyword_ratio": { cn: "标签占比", en: "Keywords Ratio", },
   "model.diagnose.analysis.bar.asset.tooltip": { cn: " 占比：{ratio} 数量：{amount} 张", en: " Ratio：{ratio} Amount：{amount}", },
   "model.diagnose.analysis.bar.anno.tooltip": { cn: " 占比：{ratio} 数量：{amount} 个", en: " Ratio：{ratio} Amount：{amount}", },
+  "model.diagnose.label.model": { cn: "模型", en: "Models", },
+  "model.diagnose.label.testing_dataset": { cn: "测试集", en: "Testing Datasets", },
+  "model.diagnose.label.config": { cn: "推理配置", en: "Infer Configs", },
 }
 
 export default model

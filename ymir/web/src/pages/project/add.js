@@ -58,13 +58,13 @@ const Add = ({ keywords, datasets, projects, getProject, getKeywords, ...func })
 
   function initForm(project = {}) {
     const { name, keywords: kws, trainSetVersion,
-      description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize, enableIteration, testingSets: testingDatasets } = project
+      description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize, enableIteration, testingSets } = project
     if (name) {
       form.setFieldsValue({
         name, keywords: kws, description,
         trainSetVersion,
         enableIteration,
-        testingSets: testingDatasets?.map(dataset => dataset.id),
+        testingSets,
         testSet: testDataset?.id,
         miningSet: miningDataset?.id,
         strategy: miningStrategy || 0,

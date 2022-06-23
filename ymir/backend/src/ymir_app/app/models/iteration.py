@@ -22,7 +22,7 @@ class Iteration(Base):
     training_input_dataset_id = Column(Integer)
     training_output_model_id = Column(Integer)
     training_output_model_stage_id = Column(Integer)
-    testing_dataset_id = Column(Integer)
+    validation_dataset_id = Column(Integer)
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
@@ -43,7 +43,7 @@ class Iteration(Base):
             self.mining_output_dataset_id,
             self.label_output_dataset_id,
             self.training_input_dataset_id,
-            self.testing_dataset_id,
+            self.validation_dataset_id,
         ]
         return [dataset for dataset in datasets if dataset is not None]
 

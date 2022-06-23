@@ -58,7 +58,7 @@ export function transferProject(data: BackendData) {
     trainSet: data.training_dataset_group ? transferDatasetGroup(data.training_dataset_group) : undefined,
     testSet: data.validation_dataset ? transferDataset(data.validation_dataset) : undefined,
     miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
-    testingSets: data.testing_datasets?.map((dataset:BackendData) => transferDataset(dataset)) || [],
+    testingSets: data.testing_dataset_ids?.split(',').map(Number) || [],
     setCount: data.dataset_count,
     trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
