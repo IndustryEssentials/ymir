@@ -26,6 +26,7 @@ def get_model_info(user_id: str, repo_id: str, branch_id: str) -> ModelResult:
         branch_id=branch_id,
         task_id=branch_id,
     ).get_model_info()
+    logging.info(f"model_info: {model_info}")
 
     resp = utils.suss_resp()
     resp.update({
@@ -35,6 +36,8 @@ def get_model_info(user_id: str, repo_id: str, branch_id: str) -> ModelResult:
             model_mAP=model_info["mean_average_precision"],
             task_parameters=model_info["task_parameters"],
             executor_config=model_info["executor_config"],
+            best_stage_name=model_info['best_stage_name'],
+            model_stages=model_info['stages'],
         )
     })
     logging.info(f"get_model_info: {resp}")

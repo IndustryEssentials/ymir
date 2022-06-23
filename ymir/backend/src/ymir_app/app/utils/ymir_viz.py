@@ -70,10 +70,19 @@ class ModelMetaData:
     map: float
     task_parameters: str
     executor_config: str
+    model_stages: dict
+    best_stage_name: str
 
     @classmethod
     def from_viz_res(cls, res: Dict) -> "ModelMetaData":
-        return cls(res["model_id"], res["model_mAP"], res["task_parameters"], res["executor_config"])
+        return cls(
+            res["model_id"],
+            res["model_mAP"],
+            res["task_parameters"],
+            res["executor_config"],
+            res["model_stages"],
+            res["best_stage_name"],
+        )
 
 
 class VizDataset(BaseModel):
@@ -86,6 +95,11 @@ class VizDataset(BaseModel):
     class_ids_count: Dict[int, int]
     ignored_labels: Dict[str, int]
     negative_info: Dict[str, int]
+    gt: Dict
+    pred: Dict
+    hist: Dict
+    total_asset_mbytes: int
+    total_assets_cnt: int
 
 
 @dataclass
@@ -95,9 +109,27 @@ class DatasetMetaData:
     negative_info: Dict[str, int]
     asset_count: int
     keyword_count: int
+    total_asset_mbytes: int
+    total_assets_cnt: int
+    annos_cnt: int
+    ave_annos_cnt: float
+    positive_asset_cnt: int
+    negative_asset_cnt: int
+    asset_bytes: List[Dict]
+    asset_area: List[Dict]
+    asset_quality: List[Dict]
+    asset_hw_ratio: List[Dict]
+    anno_area_ratio: List[Dict]
+    anno_quality: List[Dict]
+    class_names_count: Dict[str, int]
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
+        # for compatible
+        res["total_images_cnt"] = res["pred"]["total_images_cnt"]
+        res["class_ids_count"] = res["pred"]["class_ids_count"]
+        res["ignored_labels"] = res["pred"]["ignored_labels"]
+        res["negative_info"] = res["pred"]["negative_info"]
         viz_dataset = VizDataset(**res)
         keywords = {
             user_labels.get_main_names(class_id)[0]: count for class_id, count in viz_dataset.class_ids_count.items()
@@ -108,6 +140,21 @@ class DatasetMetaData:
             negative_info=viz_dataset.negative_info,
             asset_count=viz_dataset.total_images_cnt,
             keyword_count=len(keywords),
+            total_asset_mbytes=viz_dataset.total_asset_mbytes,
+            total_assets_cnt=viz_dataset.total_assets_cnt,
+            annos_cnt=viz_dataset.pred["annos_cnt"],
+            ave_annos_cnt=(
+                viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt if viz_dataset.total_assets_cnt else 0
+            ),
+            positive_asset_cnt=viz_dataset.pred["positive_asset_cnt"],
+            negative_asset_cnt=viz_dataset.pred["negative_asset_cnt"],
+            asset_bytes=viz_dataset.hist["asset_bytes"][0],
+            asset_area=viz_dataset.hist["asset_area"][0],
+            asset_quality=viz_dataset.hist["asset_quality"][0],
+            asset_hw_ratio=viz_dataset.hist["asset_hw_ratio"][0],
+            anno_area_ratio=viz_dataset.pred["hist"]["anno_area_ratio"][0],
+            anno_quality=viz_dataset.pred["hist"]["anno_quality"][0],
+            class_names_count=viz_dataset.pred["class_names_count"],
         )
 
 
@@ -197,11 +244,29 @@ class VizClient:
         url = f"{self._url_prefix}/datasets"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
+        logger.info("[viz] get_dataset response: %s", res)
         return DatasetMetaData.from_viz_res(res, user_labels)
 
     def get_evaluations(self, user_labels: UserLabels) -> Dict:
         url = f"{self._url_prefix}/evaluations"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        res = self.parse_resp(resp)
+        evaluations = {
+            dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
+        }
+        convert_class_id_to_keyword(evaluations, user_labels)
+        return evaluations
+
+    def get_fast_evaluation(
+        self, user_labels: UserLabels, confidence_threshold: float, iou_threshold: float, require_average_iou: bool
+    ) -> Dict:
+        url = f"{self._url_prefix}/dataset_fast_evaluation"
+        params = {
+            "conf_thr": confidence_threshold,
+            "iou_thr": iou_threshold,
+            "require_average_iou": require_average_iou,
+        }
+        resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         evaluations = {
             dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()

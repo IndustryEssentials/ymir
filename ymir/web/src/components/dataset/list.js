@@ -40,6 +40,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const hideRef = useRef(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef(null)
+  const [testingSetIds, setTestingSetIds] = useState([])
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -53,6 +54,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     const list = setGroupLabelsByProject(datasetList.items, project)
     setDatasets(list)
     setTotal(datasetList.total)
+    setTestingSetIds(project?.testingSets || [])
   }, [datasetList, project])
 
   useEffect(() => {
@@ -206,7 +208,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       {
         key: "train",
         label: t("dataset.action.train"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => !isValidDataset(state) || isTestingDataset(id),
         onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
         icon: <TrainIcon />,
       },
@@ -230,13 +232,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
         icon: <TaggingIcon />,
-      },
-      {
-        key: "compare",
-        label: t("common.action.compare"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/project/${pid}/dataset/${groupId}/compare/${id}`),
-        icon: <CompareIcon />,
       },
       {
         key: "copy",
@@ -318,8 +313,9 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
-        item = setLabelByProject(project?.testSet?.id, 'isTestSet', item)
-        item = setLabelByProject(project?.miningSet?.id, 'isMiningSet', item)
+        const field = item.id === project?.testSet?.id ? 'isTestSet' : 
+          (item.id === project?.miningSet?.id ? 'isMiningSet': (isTestingDataset(item.id) ? 'isTestingSet' : ''))
+        field && (item = setLabelByProject(item.id, field, item))
         return { ...item }
       })
       versions[gid] = updatedList
@@ -344,6 +340,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       isTrainSet: 'project.tag.train',
       isTestSet: 'project.tag.test',
       isMiningSet: 'project.tag.mining',
+      isTestingSet: 'project.tag.testing',
     }
     item[label] = id && item.id === id
     item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
@@ -414,24 +411,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
   }
 
-  const multipleCompare = () => {
-    const ids = Object.values(selectedVersions).flat()
-    const vss = Object.values(versions).flat().filter(({ id }) => ids.includes(id))
-    const groups = [...new Set(vss.map(item => item.groupId))]
-    const diffGroup = groups.length > 1
-    if (diffGroup) {
-      // diff group
-      return message.error(t('dataset.compare.error.diff_group'))
-    }
-
-    const diffAssets = [...new Set(vss.map(item => item.assetCount))].length > 1
-    if (diffAssets) {
-      // diff assets count
-      return message.error(t('dataset.compare.error.diff_assets'))
-    }
-    history.push(`/home/project/${pid}/dataset/${groups[0]}/compare/${ids}`)
-  }
-
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
@@ -460,6 +439,10 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     return state === states.READY
   }
 
+  function isTestingDataset(id) {
+    return testingSetIds?.includes(id)
+  }
+
   const addBtn = (
     <Button type="primary" onClick={add}>
       <ImportIcon /> {t("dataset.import.label")}
@@ -470,9 +453,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     <>
       <Button type="primary" onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
-      </Button>
-      <Button type="primary" onClick={multipleCompare}>
-        <CompareIcon /> {t("common.action.multiple.compare")}
       </Button>
     </>
   ) : null

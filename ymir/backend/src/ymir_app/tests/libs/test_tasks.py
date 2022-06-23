@@ -19,7 +19,7 @@ class TestNormalizeParameters:
         params = {
             "keywords": "cat,dog,boy".split(","),
             "dataset_id": 1,
-            "model_id": 233,
+            "model_stage_id": 233,
             "name": random_lower_string(5),
             "else": None,
         }
@@ -55,6 +55,7 @@ class TestNormalizeParameters:
         assert res["class_ids"] == [0, 1, 2]
         assert "dataset_hash" in res
         assert "model_hash" in res
+        assert "model_stage_name" in res
 
 
 class TestWriteClickhouseMetrics:

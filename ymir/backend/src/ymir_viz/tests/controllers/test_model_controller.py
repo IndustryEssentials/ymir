@@ -12,6 +12,8 @@ class TestModelController:
             "mean_average_precision": 0.88,
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
+            'stages': {},
+            'best_stage_name': 'best',
         }
 
         mocker.patch.object(MirStorageOps, "load_single_model", return_value=mir_tasks_content)
@@ -23,4 +25,6 @@ class TestModelController:
             "model_mAP": 0.88,
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
+            'model_stages': {},
+            'best_stage_name': 'best',
         }

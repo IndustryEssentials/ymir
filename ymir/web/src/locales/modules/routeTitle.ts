@@ -10,7 +10,6 @@ const routeTitle = {
   "dataset.title": { cn: `${SysName}-数据集详情`, en: `${SysName} - Dataset Detail`, },
   "dataset.add.title": { cn: `${SysName}-导入数据集`, en: `${SysName} - Dataset Import`, },
   "dataset.copy.title": { cn: `${SysName}-数据集复制`, en: `${SysName} - Dataset Copy`, },
-  "dataset.compare.title": { cn: `${SysName}-数据集比对`, en: `${SysName} - Dataset Comparison`, },
   "assets.title": { cn: `${SysName}-数据列表`, en: `${SysName} - Asset List`, },
   "asset.title": { cn: `${SysName}-数据详情`, en: `${SysName} - Asset Detail`, },
   "models.title": { cn: `${SysName}-模型列表`, en: `${SysName} - Model List`, },

@@ -64,8 +64,6 @@ const common = {
   'common.action.copy': {cn: '复制', en: 'Copy', },
   'common.action.import': {cn: '导入', en: 'Import', },
   'common.action.hide': {cn: '隐藏', en: 'Hide', },
-  'common.action.compare': {cn: '比对', en: 'Compare', },
-  'common.action.multiple.compare': {cn: '批量比对', en: 'Batch Compare', },
   'common.action.check': {cn: '检查', en: 'Check', },
   'common.action.check.again': {cn: '重新检查', en: 'Recheck', },
   'common.action.multiple.hide': {cn: '批量隐藏', en: 'Batch Hide', },
@@ -78,6 +76,7 @@ const common = {
   'common.selected.required': {cn: '需要选中至少一项', en: 'Selected required', },
   'common.hidden.list': {cn: '隐藏列表', en: 'Hidden List', },
   'common.everage': {cn: '平均值', en: 'Everage', },
+  'common.recommend': {cn: '推荐', en: 'Recommend', },
 }
 
 export default common

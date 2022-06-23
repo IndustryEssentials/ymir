@@ -63,7 +63,7 @@ describe("constants: project", () => {
       "id": 1,
       "training_dataset_group_id": 1,
       "mining_dataset_id": null,
-      "testing_dataset_id": null,
+      "validation_dataset_id": null,
       "initial_model_id": null,
       "initial_training_dataset_id": 1,
       "current_iteration": null,
@@ -77,15 +77,20 @@ describe("constants: project", () => {
         "update_datetime": createTime,
         "id": 1,
       },
-      "testing_dataset": null,
+      "validation_dataset": null,
       "mining_dataset": null,
+      "testing_datasets": [],
       "dataset_count": 6,
       "model_count": 0,
       "training_keywords": [
         "cat",
         "person"
       ],
-      "current_iteration_id": null
+      "current_iteration_id": null,
+      "enable_iteration": true,
+      "total_asset_count": 0,
+      "running_task_count": 0,
+      "total_task_count": 0,
     }
 
     const expected = {
@@ -102,8 +107,10 @@ describe("constants: project", () => {
       trainSetVersion: 1,
       testSet: undefined,
       miningSet: undefined,
+      testingSets: [],
       setCount: 6,
       model: 0,
+      modelStage: 0,
       modelCount: 0,
       miningStrategy: 0,
       chunkSize: 0,
@@ -116,7 +123,11 @@ describe("constants: project", () => {
       description: 'project002 desc',
       type: 1,
       isExample: false,
-      updateTime: format(createTime)
+      updateTime: format(createTime),
+      enableIteration: true,
+      totalAssetCount: 0,
+      runningTaskCount: 0,
+      totalTaskCount: 0,
     }
     expect(transferProject(origin)).toEqual(expected)
 
@@ -132,7 +143,7 @@ describe("constants: project", () => {
       "label_output_dataset_id": null,
       "training_input_dataset_id": null,
       "training_output_model_id": null,
-      "testing_dataset_id": null,
+      "validation_dataset_id": null,
       "user_id": 2,
       "project_id": 8,
       "is_deleted": false,

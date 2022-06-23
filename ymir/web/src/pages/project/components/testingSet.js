@@ -1,9 +1,16 @@
+import React, { useEffect } from "react"
+import useFetch from "@/hooks/useFetch"
 import { Col, Popover, Row, Tag } from "antd"
 import KeywordRates from "@/components/dataset/keywordRates"
 import t from "@/utils/t"
 import s from "../detail.less"
 
 export const TestingSet = ({ project }) => {
+  const [datasets, fetchDatasets] = useFetch('dataset/batchDatasets', [])
+
+  useEffect(() => {
+    project?.testingSets?.length && fetchDatasets(project.testingSets)
+  }, [project.testingSets])
 
   function renderProjectTestingSetLabel() {
     const getDsName = (ds = {}) => ds.name ? (ds.name + ' ' + (ds.versionName || '')) : ''
@@ -18,7 +25,7 @@ export const TestingSet = ({ project }) => {
       })
     }
     const maps = [
-      { label: 'project.add.form.testing.set', datasetGroup: getDatasetGroup(project.testingSetGroup) }
+      { label: 'project.add.form.testing.set', datasetGroup: getDatasetGroup(datasets) }
     ]
 
     return maps.map(({ label, datasetGroup }) => {

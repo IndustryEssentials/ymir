@@ -48,6 +48,7 @@ class TestControllerRequest:
                 "dataset_hash": random_lower_string(),
                 "top_k": 1000,
                 "model_hash": random_lower_string(),
+                "model_stage_name": random_lower_string(),
                 "generate_annotations": True,
                 "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
@@ -148,13 +149,14 @@ class TestControllerClient:
         user_id = random.randint(1000, 9000)
         project_id = random.randint(1000, 9000)
         model_hash = random_lower_string()
+        model_stage = random_lower_string()
         asset_dir = random_lower_string()
         channel_str = random_lower_string()
         docker_image = random_lower_string()
         docker_config = random_lower_string()
         cc = m.ControllerClient(channel_str)
         cc.send = mock_send = mocker.Mock()
-        cc.call_inference(user_id, project_id, model_hash, asset_dir, docker_image, docker_config)
+        cc.call_inference(user_id, project_id, model_hash, model_stage, asset_dir, docker_image, docker_config)
         mock_send.assert_called()
         generated_req = mock_send.call_args[0][0].req
         assert generated_req.user_id == str(user_id)

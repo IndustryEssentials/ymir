@@ -11,6 +11,7 @@ def main(args: List[str]) -> int:
     # so there should be only ONE process / thread when test
     cmd = [f"PYTHONPATH=$PYTHONPATH:{module_root}", 'pytest', '-vv', '-x', '--durations=0']
     cmd.extend(args)
+    print(cmd)
 
     subprocess.check_call(' '.join(cmd), shell=True)
 
