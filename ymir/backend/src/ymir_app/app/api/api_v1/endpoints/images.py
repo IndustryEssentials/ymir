@@ -107,7 +107,7 @@ def import_docker_image(
         )
         crud.image_config.create(db, obj_in=image_config_in)
 
-    enable_livecode = bool(resp["livecode_config"])
+    enable_livecode = bool(resp["enable_livecode"])
     crud.docker_image.update_from_dict(
         db,
         docker_image_id=docker_image.id,
