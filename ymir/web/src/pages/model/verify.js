@@ -18,6 +18,7 @@ import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/i
 import ImgDef from '@/assets/img_def.png'
 import ImageSelect from "@/components/form/imageSelect"
 import { percent } from "@/utils/number"
+import useFetch from '@/hooks/useFetch'
 
 const { CheckableTag } = Tag
 
@@ -25,10 +26,9 @@ const { CheckableTag } = Tag
 const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
 
 
-function Verify({ getModel, verify }) {
+function Verify({ verify }) {
   const history = useHistory()
   const { mid: id } = useParams()
-  const [model, setModel] = useState({})
   const [url, setUrl] = useState('')
   const [confidence, setConfidence] = useState(20)
   const [annotations, setAnnotations] = useState([])
@@ -39,16 +39,14 @@ function Verify({ getModel, verify }) {
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
   const IMGSIZELIMIT = 10
+  const [model, getModel] = useFetch('model/getModel', {})
 
-  useEffect(async () => {
-    const result = await getModel(id)
-    if (result) {
-      setModel(result)
-    }
+  useEffect(() => {
+    getModel({ id })
   }, [])
 
   useEffect(() => {
-    setShowAnnos(annotations.length ? annotations.filter(anno => 
+    setShowAnnos(annotations.length ? annotations.filter(anno =>
       anno.score * 100 > confidence && selectedKeywords.indexOf(anno.keyword) > -1
     ) : [])
   }, [confidence, annotations, selectedKeywords])
@@ -135,7 +133,7 @@ function Verify({ getModel, verify }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
     // reinit annotations
     setAnnotations([])
-    const result = await verify(id, [url], image, config)
+    const result = await verify({ modelStage: [id, model.recommendStage], urls: [url], image, config })
     // console.log('result: ', result)
     if (result) {
       const all = result.annotations[0]?.detection || []
@@ -159,9 +157,9 @@ function Verify({ getModel, verify }) {
   }
 
   const onFinish = () => {
-      form.validateFields().then(() => {
-        verifyImg()
-      })
+    form.validateFields().then(() => {
+      verifyImg()
+    })
   }
 
   return (
@@ -178,14 +176,14 @@ function Verify({ getModel, verify }) {
               />
             ) : renderUploader}
             {url ? (<Form className={styles.confidence}><Form.Item label={t('model.verify.confidence')}>
-                <Row gutter={10}>
-                  <Col flex={1}>
-                    <Slider marks={{ 0: '0%', 100: '100%' }} style={{ width: 200 }}
-                      tipFormatter={(value) => `${value}%`} value={confidence} onChange={confidenceChange} />
-                  </Col>
-                  <Col><InputNumber value={confidence} style={{ width: 60, borderColor: 'rgba(0, 0, 0, 0.15)', margin: 5, height: 35 }} precision={0} min={0} max={100} onChange={confidenceChange} /></Col>
-                </Row>
-              </Form.Item></Form>
+              <Row gutter={10}>
+                <Col flex={1}>
+                  <Slider marks={{ 0: '0%', 100: '100%' }} style={{ width: 200 }}
+                    tipFormatter={(value) => `${value}%`} value={confidence} onChange={confidenceChange} />
+                </Col>
+                <Col><InputNumber value={confidence} style={{ width: 60, borderColor: 'rgba(0, 0, 0, 0.15)', margin: 5, height: 35 }} precision={0} min={0} max={100} onChange={confidenceChange} /></Col>
+              </Row>
+            </Form.Item></Form>
             ) : null}
           </Col>
           <Col span={6} className={`${styles.asset_info} scrollbar`}>
@@ -232,79 +230,78 @@ function Verify({ getModel, verify }) {
               </Form.Item>
 
               {seniorConfig.length ?
-              <Card
-                title={<><SearchEyeIcon /> {t("model.verify.model.param.title")}</>}
-                bordered={false}
-                style={{ marginRight: 20 }}
-                headStyle={{ padding: 0, minHeight: 28 }}
-                bodyStyle={{ padding: 0 }}
-                extra={<Button type='link'
-                  onClick={() => setHpVisible(!hpVisible)}
-                  style={{ paddingLeft: 0 }}
-                >{hpVisible ? t('model.verify.model.param.fold') : t('model.verify.model.param.unfold')}{hpVisible ? <UpOutlined /> : <DownOutlined />}
-                </Button>}
-              >
-                <Form.Item
-                  rules={[{ validator: validHyperparam }]}
+                <Card
+                  title={<><SearchEyeIcon /> {t("model.verify.model.param.title")}</>}
+                  bordered={false}
+                  style={{ marginRight: 20 }}
+                  headStyle={{ padding: 0, minHeight: 28 }}
+                  bodyStyle={{ padding: 0 }}
+                  extra={<Button type='link'
+                    onClick={() => setHpVisible(!hpVisible)}
+                    style={{ paddingLeft: 0 }}
+                  >{hpVisible ? t('model.verify.model.param.fold') : t('model.verify.model.param.unfold')}{hpVisible ? <UpOutlined /> : <DownOutlined />}
+                  </Button>}
                 >
-                  <Form.List name='hyperparam'>
-                    {(fields, { add, remove }) => (
-                      <>
-                        <div className={styles.paramContainer} hidden={!hpVisible}>
-                          <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={10}>
-                            <Col flex={'150px'}>{t('common.key')}</Col>
-                            <Col flex={1}>{t('common.value')}</Col>
-                          </Row>
-                          <div className={styles.paramField} >
-                              {fields.map(field => (
-                            <Row key={field.key} gutter={10}>
-                              <Col flex={'150px'}>
-                                <Form.Item
-                                  {...field}
-                                  // label="Key"
-                                  name={[field.name, 'key']}
-                                  fieldKey={[field.fieldKey, 'key']}
-                                  rules={[
-                                    // {required: true, message: 'Missing Key'},
-                                    { validator: validHyperparam }
-                                  ]}
-                                >
-                                  <Input disabled={field.name < seniorConfig.length} maxLength={50} />
-                                </Form.Item>
-                              </Col>
-                              <Col flex={1}>
-                                <Form.Item
-                                  {...field}
-                                  // label="Value"
-                                  name={[field.name, 'value']}
-                                  fieldKey={[field.fieldKey, 'value']}
-                                  rules={[
-                                    // {required: true, message: 'Missing Value'},
-                                  ]}
-                                >
-                                  {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                                    <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
-                                </Form.Item>
-                              </Col>
+                  <Form.Item
+                    rules={[{ validator: validHyperparam }]}
+                  >
+                    <Form.List name='hyperparam'>
+                      {(fields, { add, remove }) => (
+                        <>
+                          <div className={styles.paramContainer} hidden={!hpVisible}>
+                            <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={10}>
+                              <Col flex={'150px'}>{t('common.key')}</Col>
+                              <Col flex={1}>{t('common.value')}</Col>
                             </Row>
-                          ))}
+                            <div className={styles.paramField} >
+                              {fields.map(field => (
+                                <Row key={field.key} gutter={10}>
+                                  <Col flex={'150px'}>
+                                    <Form.Item
+                                      {...field}
+                                      // label="Key"
+                                      name={[field.name, 'key']}
+                                      fieldKey={[field.fieldKey, 'key']}
+                                      rules={[
+                                        // {required: true, message: 'Missing Key'},
+                                        { validator: validHyperparam }
+                                      ]}
+                                    >
+                                      <Input disabled={field.name < seniorConfig.length} maxLength={50} />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col flex={1}>
+                                    <Form.Item
+                                      {...field}
+                                      // label="Value"
+                                      name={[field.name, 'value']}
+                                      fieldKey={[field.fieldKey, 'value']}
+                                      rules={[
+                                        // {required: true, message: 'Missing Value'},
+                                      ]}
+                                    >
+                                      {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
+                                        <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
+                                    </Form.Item>
+                                  </Col>
+                                </Row>
+                              ))}
+                            </div>
                           </div>
-                        
-                        </div>
-                      </>
-                    )}
-                  </Form.List>
-                </Form.Item>
-              </Card> : null}
+                        </>
+                      )}
+                    </Form.List>
+                  </Form.Item>
+                </Card> : null}
             </Form>
             <div>
               {renderUploadBtn()}
-              <Button type="primary" 
-                disabled={!url} 
-                icon={<NoXlmxIcon className={styles.modelIcon}/>}
+              <Button type="primary"
+                disabled={!url}
+                icon={<NoXlmxIcon className={styles.modelIcon} />}
                 style={{ marginLeft: 20 }}
                 onClick={() => onFinish()}
-                >
+              >
                 {t("breadcrumbs.model.verify")}
               </Button>
             </div>
@@ -322,10 +319,10 @@ const actions = (dispatch) => ({
       payload: { id, force },
     })
   },
-  verify(id, urls, image, config) {
+  verify(payload) {
     return dispatch({
       type: 'model/verify',
-      payload: { id, urls, image, config },
+      payload,
     })
   },
 })

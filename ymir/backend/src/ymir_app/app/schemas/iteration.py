@@ -21,7 +21,8 @@ class IterationBase(BaseModel):
     label_output_dataset_id: Optional[int]
     training_input_dataset_id: Optional[int]
     training_output_model_id: Optional[int]
-    testing_dataset_id: Optional[int]
+    training_output_model_stage_id: Optional[int]
+    validation_dataset_id: Optional[int]
     user_id: int
     project_id: int
 
@@ -38,7 +39,8 @@ class IterationCreate(BaseModel):
     label_output_dataset_id: Optional[int]
     training_input_dataset_id: Optional[int]
     training_output_model_id: Optional[int]
-    testing_dataset_id: Optional[int]
+    training_output_model_stage_id: Optional[int]
+    validation_dataset_id: Optional[int]
 
 
 # Properties that can be changed
@@ -50,7 +52,8 @@ class IterationUpdate(BaseModel):
     label_output_dataset_id: Optional[int]
     training_input_dataset_id: Optional[int]
     training_output_model_id: Optional[int]
-    testing_dataset_id: Optional[int]
+    training_output_model_stage_id: Optional[int]
+    validation_dataset_id: Optional[int]
 
     class Config:
         use_enum_values = True

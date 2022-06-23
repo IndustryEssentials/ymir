@@ -36,14 +36,15 @@ class CmdMining(base.BaseCommand):
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
-                                       model_hash=self.args.model_hash,
+                                       model_hash_stage=self.args.model_hash_stage,
                                        model_location=self.args.model_location,
                                        media_location=self.args.media_location,
                                        config_file=self.args.config_file,
                                        topk=self.args.topk,
                                        add_annotations=self.args.add_annotations,
                                        executor=self.args.executor,
-                                       executant_name=self.args.executant_name)
+                                       executant_name=self.args.executant_name,
+                                       run_as_root=self.args.run_as_root)
 
     @staticmethod
     @command_run_in_out
@@ -52,12 +53,13 @@ class CmdMining(base.BaseCommand):
                       src_revs: str,
                       dst_rev: str,
                       mir_root: str,
-                      model_hash: str,
+                      model_hash_stage: str,
                       media_location: str,
                       model_location: str,
                       config_file: str,
                       executor: str,
                       executant_name: str,
+                      run_as_root: bool,
                       topk: int = None,
                       add_annotations: bool = False) -> int:
         """
@@ -68,7 +70,7 @@ class CmdMining(base.BaseCommand):
             src_revs: data branch name and base task id
             dst_rev: destination branch name and task id
             mir_root: mir repo path, in order to run in non-mir folder.
-            model_hash: used to target model, use prep_tid if non-set
+            model_hash_stage: model_hash@stage_name
             media_location, model_location: location of assets.
             config_file: path to the config file
             executor: executor name, currently, the docker image name
@@ -86,8 +88,8 @@ class CmdMining(base.BaseCommand):
         if not media_location or not model_location:
             logging.error('media or model location cannot be none!')
             return MirCode.RC_CMD_INVALID_ARGS
-        if not model_hash:
-            logging.error('model_hash is required.')
+        if not model_hash_stage:
+            logging.error('model_hash_stage is required.')
             return MirCode.RC_CMD_INVALID_ARGS
 
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
@@ -156,13 +158,14 @@ class CmdMining(base.BaseCommand):
                                          mir_root=mir_root,
                                          media_path=work_asset_path,
                                          model_location=model_location,
-                                         model_hash=model_hash,
+                                         model_hash_stage=model_hash_stage,
                                          index_file=work_index_file,
                                          config_file=config_file,
                                          task_id=dst_typ_rev_tid.tid,
                                          shm_size=_get_shm_size(config_file),
                                          executor=executor,
                                          executant_name=executant_name,
+                                         run_as_root=run_as_root,
                                          run_infer=add_annotations,
                                          run_mining=(topk is not None))
         except CalledProcessError:
@@ -172,8 +175,7 @@ class CmdMining(base.BaseCommand):
 
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
                                            task_id=dst_typ_rev_tid.tid,
-                                           message='mining',
-                                           model_hash=model_hash,
+                                           message=f"mining with model: {model_hash_stage}",
                                            src_revs=src_typ_rev_tid.rev_tid,
                                            dst_rev=dst_typ_rev_tid.rev_tid,
                                            return_code=return_code,
@@ -388,10 +390,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    required=False,
                                    help='if set, also add inference result to annotations')
     mining_arg_parser.add_argument('--model-hash',
-                                   dest='model_hash',
+                                   dest='model_hash_stage',
                                    type=str,
                                    required=True,
-                                   help='model hash to be used')
+                                   help='model hash@stage to be used')
     mining_arg_parser.add_argument('--src-revs',
                                    dest='src_revs',
                                    type=str,
@@ -417,4 +419,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='executant_name',
                                    type=str,
                                    help='docker container name for mining')
+    mining_arg_parser.add_argument("--run-as-root",
+                                   dest="run_as_root",
+                                   action='store_true',
+                                   help="run executor as root user")
     mining_arg_parser.set_defaults(func=CmdMining)

@@ -101,6 +101,7 @@ describe("constants: model", () => {
       taskName: task.name,
       task,
       stages: [],
+      recommendStage: 0,
     }
     expect(transferModel(model)).toEqual(expected)
   })

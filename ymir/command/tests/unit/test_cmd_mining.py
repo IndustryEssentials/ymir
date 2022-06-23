@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import tarfile
+import time
 import unittest
 from unittest import mock
 
@@ -81,10 +82,15 @@ class TestMiningCmd(unittest.TestCase):
         return 0
 
     def _mock_prepare_model(*args, **kwargs):
-        model_storage = mir_utils.ModelStorage(models=['0.params'],
-                                               executor_config={'class_names': ['person', 'cat', 'unknown-car']},
-                                               task_context={'task_id': '0'})
-        return model_storage
+        mss = mir_utils.ModelStageStorage(stage_name='default',
+                                          files=['0.params'],
+                                          mAP=0.5,
+                                          timestamp=int(time.time()))
+        ms = mir_utils.ModelStorage(executor_config={'class_names': ['person', 'cat', 'unknown-car']},
+                                               task_context={'task_id': '0'},
+                                               stages={mss.stage_name: mss},
+                                               best_stage_name=mss.stage_name)
+        return ms
 
     # protected: custom: env prepare
     def _prepare_dirs(self):
@@ -181,7 +187,7 @@ class TestMiningCmd(unittest.TestCase):
         args = type('', (), {})()
         args.src_revs = 'a@5928508c-1bc0-43dc-a094-0352079e39b5'
         args.dst_rev = 'a@mining-task-id'
-        args.model_hash = 'xyz'
+        args.model_hash_stage = 'xyz'
         args.work_dir = os.path.join(self._storage_root, "mining-task-id")
         args.asset_cache_dir = ''
         args.model_location = self._storage_root
@@ -192,6 +198,7 @@ class TestMiningCmd(unittest.TestCase):
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
         args.executant_name = 'executor-instance'
+        args.run_as_root = False
         mining_instance = CmdMining(args)
         mining_instance.run()
 
@@ -199,13 +206,14 @@ class TestMiningCmd(unittest.TestCase):
                                          mir_root=args.mir_root,
                                          media_path=os.path.join(args.work_dir, 'in', 'assets'),
                                          model_location=args.model_location,
-                                         model_hash=args.model_hash,
+                                         model_hash_stage=args.model_hash_stage,
                                          index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
                                          config_file=args.config_file,
                                          task_id='mining-task-id',
                                          shm_size='16G',
                                          executor=args.executor,
                                          executant_name=args.executant_name,
+                                         run_as_root=args.run_as_root,
                                          run_infer=args.add_annotations,
                                          run_mining=True)
 

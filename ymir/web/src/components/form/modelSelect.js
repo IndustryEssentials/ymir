@@ -3,6 +3,7 @@ import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import { percent } from '@/utils/number'
+import t from '@/utils/t'
 import useFetch from '../../hooks/useFetch'
 
 
@@ -12,8 +13,8 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   const [_, getModels] = useFetch('model/queryAllModels')
 
   useEffect(() => {
-    getModels(pid)
-  }, [])
+    pid && getModels(pid)
+  }, [pid])
 
   useEffect(() => {
     if (options.length) {
@@ -38,17 +39,15 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   }, [models])
 
   function generateOptions() {
-    console.log('models:', models)
     const opts = models.map(model => {
       const name = `${model.name} ${model.versionName}`
-      const map = model.map
       return {
-        label: <span>{name} (mAP: <strong title={map}>{percent(map)}</strong></span>,
+        label: name,
         model,
         value: model.id,
-        children: model.stages.map(stage => ({ 
-          label: `${name} ${stage.name}`, 
-          value: stage.id, 
+        children: model.stages.map(stage => ({
+          label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.id === model.recommendStage ? t('common.recommend') : ''}`,
+          value: stage.id,
         })),
       }
     })
@@ -56,12 +55,16 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   }
 
   function labelRender(labels, options) {
-    console.log('render: ', labels, options)
-    return labels.join('-')
+    return <span>{labels.map(label => label)}</span>
+  }
+
+  function filter(input, path) {
+    return path.some(({ label = '' }) => label.toLowerCase().indexOf(input.toLowerCase()) > -1)
   }
 
   return (
-    <Cascader value={value} {...resProps} onChange={onChange} options={options} displayRender={labelRender} allowClear></Cascader>
+    <Cascader value={value} {...resProps} onChange={onChange} options={options} 
+    displayRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
   )
 }
 

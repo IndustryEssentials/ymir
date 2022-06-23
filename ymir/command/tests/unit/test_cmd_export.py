@@ -1,17 +1,14 @@
 import os
 import shutil
-from typing import Any, Dict, List, Tuple
+from typing import List, Tuple
 import unittest
-from unittest import mock
 
 from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import hash_utils, mir_storage_ops
-from mir.tools.data_writer import AnnoFormat
 from mir.tools.code import MirCode
-from mir.tools.utils import mir_repo_commit_id
 from tests import utils as test_utils
 
 
@@ -22,6 +19,7 @@ class TestCmdExport(unittest.TestCase):
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._assets_location = os.path.join(self._test_root, 'assets_location')
         self._dest_root = os.path.join(self._test_root, 'export_dest')
+        self._gt_root = os.path.join(self._dest_root, 'gt_dir')
         self._mir_root = os.path.join(self._test_root, 'mir-repo')
 
     def setUp(self) -> None:
@@ -99,6 +97,8 @@ class TestCmdExport(unittest.TestCase):
                                 },
                                 'class_id': 3,
                                 'score': 1,
+                                'anno_quality': 0.95,
+                                'tags': {'fake tag name': 'fake tag data'},
                             }, {
                                 'index': 1,
                                 'box': {
@@ -109,6 +109,8 @@ class TestCmdExport(unittest.TestCase):
                                 },
                                 'class_id': 3,
                                 'score': 1,
+                                'anno_quality': 0.95,
+                                'tags': {'fake tag name': 'fake tag data'},
                             }, {
                                 'index': 2,
                                 'box': {
@@ -119,6 +121,8 @@ class TestCmdExport(unittest.TestCase):
                                 },
                                 'class_id': 2,
                                 'score': 1,
+                                'anno_quality': 0.95,
+                                'tags': {'fake tag name': 'fake tag data'},
                             }, {
                                 'index': 3,
                                 'box': {
@@ -129,7 +133,9 @@ class TestCmdExport(unittest.TestCase):
                                 },
                                 'class_id': 2,
                                 'score': 1,
-                            }]
+                                'anno_quality': 0.95,
+                                'tags': {'fake tag name': 'fake tag data'},
+                            }],
                         },
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
                             'annotations': [{
@@ -142,28 +148,30 @@ class TestCmdExport(unittest.TestCase):
                                 },
                                 'class_id': 3,
                                 'score': 1,
-                            }]
+                                'anno_quality': 0.95,
+                                'tags': {'fake tag name': 'fake tag data'},
+                            }],
                         },
                     }
+                }
+            },
+            'image_cks': {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'cks': {
+                        'weather': 'sunny',
+                    },
+                    'image_quality': 0.5
+                },
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'cks': {
+                        'weather': 'sunny',
+                    },
+                    'image_quality': 0.3
                 }
             }
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
-
-        # keywords
-        keywords_dict = {
-            'keywords': {
-                '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'predefined_keyids': [2, 3],
-                },
-                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'predefined_keyids': [3],
-                },
-            }
-        }
-        mir_keywords = mirpb.MirKeywords()
-        json_format.ParseDict(keywords_dict, mir_keywords)
 
         # tasks
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
@@ -181,27 +189,13 @@ class TestCmdExport(unittest.TestCase):
                                                       mir_datas=mir_datas,
                                                       task=task)
 
-    # private: mocked
-    def __mock_dr_init(*args, **kwargs) -> None:
-        pass
-
-    def __mock_raw_dw_init(*args, **kwargs) -> None:
-        pass
-
-    def __mock_lmdb_dw_init(*args, **kwargs) -> None:
-        pass
-
-    # private: test cases
-    # @mock.patch('mir.tools.data_reader.MirDataReader.__init__', side_effect='__mock_dr_init')
-    # @mock.patch('mir.tools.data_writer.RawDataWriter.__init__', side_effect='__mock_raw_dw_init')
-    # @mock.patch('mir.tools.data_writer.LmdbDataWriter.__init__', side_effect='__mock_lmdb_dw_init')
-    # def test_normal_00(self, mock_lmdb_dw_init, mock_raw_dw_init, mock_dr_init):
     def test_normal_00(self):
         # normal case: voc:raw
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
         fake_args.annotation_dir = self._dest_root
+        fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''
@@ -212,24 +206,13 @@ class TestCmdExport(unittest.TestCase):
         runner = exporting.CmdExport(fake_args)
         result = runner.run()
         self.assertEqual(MirCode.RC_OK, result)
-        # mock_export.assert_called_once_with(mir_root=self._mir_root,
-        #                                     assets_location=self._assets_location,
-        #                                     class_type_ids={2: 2},
-        #                                     asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4',
-        #                                                'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-        #                                     asset_dir=self._dest_root,
-        #                                     annotation_dir=self._dest_root,
-        #                                     need_ext=True,
-        #                                     need_id_sub_folder=False,
-        #                                     base_branch='a',
-        #                                     base_task_id='a',  # see: fake_args.src_revs = 'a@a'
-        #                                     format_type=AnnoFormat.ANNO_FORMAT_VOC)
 
         # normal case: voc:lmdb
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
         fake_args.annotation_dir = self._dest_root
+        fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''
@@ -240,21 +223,13 @@ class TestCmdExport(unittest.TestCase):
         runner = exporting.CmdExport(fake_args)
         result = runner.run()
         self.assertEqual(MirCode.RC_OK, result)
-        # mock_export_lmdb.assert_called_once_with(mir_root=self._mir_root,
-        #                                          assets_location=self._assets_location,
-        #                                          class_type_ids={2: 2},
-        #                                          asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4',
-        #                                                     'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-        #                                          lmdb_dir=self._dest_root,
-        #                                          base_branch='a',
-        #                                          base_task_id='a',  # see: fake_args.src_revs = 'a@a'
-        #                                          format_type=AnnoFormat.ANNO_FORMAT_VOC)
 
         # abnormal case: no asset_dir, annotation_dir, media_location
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = ''
         fake_args.annotation_dir = ''
+        fake_args.gt_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
         fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one

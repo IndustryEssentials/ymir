@@ -6,13 +6,11 @@ from typing import List, Dict, Tuple
 import xmltodict
 from celery import current_app as current_celery_app
 from celery import shared_task
-
 from fiftyone import Dataset, Sample, Polyline, Polylines
 from fiftyone.core.metadata import ImageMetadata
 
 from app.models.schemas import Task
 from conf.configs import conf
-from utils.constants import DataSetResultTypes
 
 
 def create_celery() -> current_celery_app:
@@ -53,38 +51,44 @@ def load_task_data(task: Task) -> None:
     base_path = Path(conf.base_path)
     sample_pool: Dict[str, Sample] = {}
     for d in task.datas:
-        data_dir = base_path / Path(d.data_dir)
-        tsv_file = data_dir / "img.tsv"
-        with tsv_file.open() as fd:
-            rd = csv.reader(fd, delimiter="\t", quotechar='"')
-
-            for row in rd:
-                img_path = Path(row[0])
-                annotation = _get_annotation(base_path, row[1])
-
-                if img_path.name in sample_pool:
-                    sample = sample_pool[img_path.name]
-                else:
-                    sample = Sample(filepath=base_path / img_path)
-                    for k, v in annotation.get("ck", {}).items():
-                        sample[k] = v
-                    sample_pool[img_path.name] = sample
-                    _set_metadata(annotation, sample)
-                # if object is empty, skip
-                if "object" not in annotation:
-                    continue
-
-                dataset_name = (
-                    "ground_truth"
-                    if d.data_type == DataSetResultTypes.GROUND_TRUTH
-                    else d.name
-                )
-                _add_detections(annotation, dataset_name, sample)
+        prd_data_dir = base_path / Path(d.data_dir) / "annotations"
+        gt_data_dir = base_path / Path(d.data_dir) / "groundtruth"
+        _get_samples(base_path, prd_data_dir, f"pd_{d.name}", sample_pool)
+        _get_samples(base_path, gt_data_dir, f"gt_{d.name}", sample_pool)
 
     # Create dataset
     dataset = Dataset(task.tid)
     dataset.add_samples(sample_pool.values())
     dataset.persistent = True
+
+
+def _get_samples(base_path: Path, labels_dir: Path, dataset_name, sample_pool,) -> None:
+    """
+    get annotation from voc xml file
+    :type base_path: Path
+    return: dict
+    """
+    tsv_file = labels_dir / "index.tsv"
+    with tsv_file.open() as fd:
+        rd = csv.reader(fd, delimiter="\t", quotechar='"')
+
+        for row in rd:
+            img_path = Path(row[0])
+            annotation = _get_annotation(base_path, row[1])
+
+            if img_path.name in sample_pool:
+                sample = sample_pool[img_path.name]
+            else:
+                sample = Sample(filepath=base_path / img_path)
+                for k, v in annotation.get("cks", {}).items():
+                    sample[k] = v
+                sample_pool[img_path.name] = sample
+                _set_metadata(annotation, sample)
+            # if object is empty, skip
+            if "object" not in annotation:
+                continue
+
+            _add_detections(annotation, dataset_name, sample)
 
 
 def _get_annotation(
@@ -161,7 +165,7 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
             confidence=obj.get("confidence"),
             closed=True
         )
-        for k, v in obj.get("tag", {}).items():
+        for k, v in obj.get("tags", {}).items():
             polyline[k] = v
         polylines.append(polyline)
     return polylines

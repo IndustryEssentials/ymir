@@ -93,7 +93,9 @@ class CmdShow(base.BaseCommand):
             print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
                   f"    model hash: {task.model.model_hash}\n"
                   f"    map: {task.model.mean_average_precision}\n"
-                  f"    executor: {task.executor}")
+                  f"    executor: {task.executor}\n"
+                  f"    stages: {list(task.model.stages.keys())}\n"
+                  f"    best stage name: {task.model.best_stage_name}")
         else:
             print(f"tasks.mir: {json_format.MessageToDict(mir_tasks, preserving_proto_field_name=True)}")
 
@@ -133,5 +135,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                             description='use this command to show current workspace informations',
                                             help='show current workspace informations')
     show_arg_parser.add_argument('--verbose', dest='verbose', action='store_true', help='show verbose info')
-    show_arg_parser.add_argument('--src-revs', dest='src_revs', type=str, help='rev@bid: source rev and base task id')
+    show_arg_parser.add_argument('--src-revs',
+                                 dest='src_revs',
+                                 type=str,
+                                 default='HEAD',
+                                 help='rev@bid: source rev and base task id')
     show_arg_parser.set_defaults(func=CmdShow)

@@ -5,7 +5,6 @@ import time
 import subprocess
 from subprocess import CalledProcessError
 from requests.exceptions import ConnectionError, HTTPError, Timeout
-import traceback
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from tensorboardX import SummaryWriter
@@ -22,54 +21,76 @@ from mir.tools.errors import MirContainerError, MirRuntimeError
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> Tuple[str, float]:
+                           task_context: dict) -> Tuple[str, float, mir_utils.ModelStorage]:
     """
     find and save models
     Returns:
         model hash, model mAP and ModelStorage
     """
     out_model_dir = os.path.join(out_root, "models")
-    model_paths, model_mAP = _find_models(out_model_dir)
-    if not model_paths:
-        # if have no models
-        return '', model_mAP
+    model_stages, best_stage_name = _find_model_stages(out_model_dir)
+    if not model_stages:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='can not find model stages in result.yaml')
+    best_mAP = model_stages[best_stage_name].mAP
 
     model_storage = mir_utils.ModelStorage(executor_config=executor_config,
                                            task_context=dict(**task_context,
-                                                             mAP=model_mAP,
+                                                             mAP=best_mAP,
                                                              type=mirpb.TaskType.TaskTypeTraining),
-                                           models=[os.path.basename(model_path) for model_path in model_paths])
+                                           stages=model_stages,
+                                           best_stage_name=best_stage_name)
     model_sha1 = mir_utils.pack_and_copy_models(model_storage=model_storage,
                                                 model_dir_path=out_model_dir,
                                                 model_location=model_upload_location)
 
-    return model_sha1, model_mAP
+    return model_sha1, best_mAP, model_storage
 
 
-def _find_models(model_root: str) -> Tuple[List[str], float]:
+def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageStorage], str]:
     """
-    find models in `model_root`, and returns model names and mAP
+    find models in `model_root`, and returns all model stages
 
     Args:
         model_root (str): model root
 
     Returns:
-        Tuple[List[str], float]: list of model names and map
+        Tuple[Dict[str, mir_utils.ModelStageStorage], str]: all model stages and best model stage name
     """
-    model_names = []
-    model_mAP = 0.0
+    # model_names = []
+    # model_mAP = 0.0
+    model_stages: Dict[str, mir_utils.ModelStageStorage] = {}
+    best_stage_name = ''
 
     result_yaml_path = os.path.join(model_root, "result.yaml")
     try:
         with open(result_yaml_path, "r") as f:
             yaml_obj = yaml.safe_load(f.read())
+        if 'model' in yaml_obj:
+            # old trainig result file: read models from `model` field
             model_names = yaml_obj["model"]
             model_mAP = float(yaml_obj["map"])
-    except FileNotFoundError:
-        logging.warning(traceback.format_exc())
-        return [], 0.0
 
-    return ([os.path.join(model_root, os.path.basename(name)) for name in model_names], model_mAP)
+            best_stage_name = 'default_best_stage'
+            model_stages[best_stage_name] = mir_utils.ModelStageStorage(stage_name=best_stage_name,
+                                                                        files=model_names,
+                                                                        mAP=model_mAP,
+                                                                        timestamp=int(time.time()))
+        elif 'model_stages' in yaml_obj:
+            # new training result file: read from model stages
+            for k, v in yaml_obj['model_stages'].items():
+                model_stages[k] = mir_utils.ModelStageStorage(stage_name=k,
+                                                              files=v['files'],
+                                                              mAP=float(v['mAP']),
+                                                              timestamp=v['timestamp'])
+
+            best_stage_name = yaml_obj['best_stage_name']
+    except FileNotFoundError:
+        error_message = f"can not find file: {result_yaml_path}, executor may have errors, see ymir-executor-out.log"
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=error_message)
+
+    return (model_stages, best_stage_name)
 
 
 # private: process
@@ -119,7 +140,7 @@ def _get_shm_size(executor_config: dict) -> str:
     return executor_config['shm_size']
 
 
-def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_dir: str) -> List[str]:
+def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_model_dir: str) -> List[str]:
     """
     prepare pretrained models
     * extract models to dst_model_dir
@@ -127,19 +148,21 @@ def _prepare_pretrained_models(model_location: str, model_hash: str, dst_model_d
 
     Args:
         model_location (str): model location
-        model_hash (str): model package hash
+        model_hash_stage (str): model package hash
         dst_model_dir (str): dir where you want to extract model files to
 
     Returns:
         List[str]: model names
     """
-    if not model_hash:
+    if not model_hash_stage:
         return []
+    model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
     model_storage = mir_utils.prepare_model(model_location=model_location,
                                             model_hash=model_hash,
+                                            stage_name=stage_name,
                                             dst_model_path=dst_model_dir)
 
-    return model_storage.models
+    return model_storage.stages[stage_name].files
 
 
 def _get_task_parameters(config: dict) -> str:
@@ -153,7 +176,7 @@ class CmdTrain(base.BaseCommand):
         return CmdTrain.run_with_args(work_dir=self.args.work_dir,
                                       asset_cache_dir=self.args.asset_cache_dir,
                                       model_upload_location=self.args.model_path,
-                                      pretrained_model_hash=self.args.model_hash,
+                                      pretrained_model_hash_stage=self.args.model_hash_stage,
                                       src_revs=self.args.src_revs,
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
@@ -161,6 +184,7 @@ class CmdTrain(base.BaseCommand):
                                       tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
                                       executant_name=self.args.executant_name,
+                                      run_as_root=self.args.run_as_root,
                                       config_file=self.args.config_file)
 
     @staticmethod
@@ -168,13 +192,14 @@ class CmdTrain(base.BaseCommand):
     def run_with_args(work_dir: str,
                       asset_cache_dir: Optional[str],
                       model_upload_location: str,
-                      pretrained_model_hash: str,
+                      pretrained_model_hash_stage: str,
                       executor: str,
                       executant_name: str,
                       src_revs: str,
                       dst_rev: str,
                       config_file: Optional[str],
                       tensorboard_dir: str,
+                      run_as_root: bool,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
         if not model_upload_location:
@@ -233,7 +258,7 @@ class CmdTrain(base.BaseCommand):
         asset_dir = os.path.join(work_dir_in, 'assets')
         if asset_cache_dir:
             if asset_cache_dir != asset_dir:
-                os.link(asset_cache_dir, asset_dir)
+                os.symlink(asset_cache_dir, asset_dir)
         else:
             os.makedirs(asset_dir, exist_ok=True)
         work_dir_annotations = os.path.join(work_dir_in, 'annotations')
@@ -246,7 +271,8 @@ class CmdTrain(base.BaseCommand):
         tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
         if tensorboard_dir:
             if tensorboard_dir != tensorboard_dir_local:
-                os.link(tensorboard_dir, tensorboard_dir_local)
+                os.system(f"chmod -R 777 {tensorboard_dir}")
+                os.symlink(tensorboard_dir, tensorboard_dir_local)
         else:
             os.makedirs(tensorboard_dir_local, exist_ok=True)
         tensorboard_dir = tensorboard_dir_local
@@ -256,9 +282,9 @@ class CmdTrain(base.BaseCommand):
 
         os.system(f"chmod -R 777 {work_dir_out}")
 
-        # if have model_hash, export model
+        # if have model_hash_stage, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
-                                                            model_hash=pretrained_model_hash,
+                                                            model_hash_stage=pretrained_model_hash_stage,
                                                             dst_model_dir=os.path.join(work_dir_in, 'models'))
 
         # get train_ids and val_ids
@@ -341,7 +367,7 @@ class CmdTrain(base.BaseCommand):
             # export train set
             train_lmdb_dir = os.path.join(asset_dir, 'train')
             if asset_cache_dir:
-                os.link(os.path.join(asset_cache_dir, 'tr', src_revs), train_lmdb_dir)
+                os.symlink(os.path.join(asset_cache_dir, 'tr', src_revs), train_lmdb_dir)
             else:
                 os.makedirs(train_lmdb_dir, exist_ok=True)
 
@@ -355,7 +381,7 @@ class CmdTrain(base.BaseCommand):
             # export validation set
             val_lmdb_dir = os.path.join(asset_dir, 'val')
             if asset_cache_dir:
-                os.link(os.path.join(asset_cache_dir, 'va', src_revs), val_lmdb_dir)
+                os.symlink(os.path.join(asset_cache_dir, 'va', src_revs), val_lmdb_dir)
             else:
                 os.makedirs(val_lmdb_dir, exist_ok=True)
 
@@ -412,6 +438,7 @@ class CmdTrain(base.BaseCommand):
                 executor_config=executor_config,
                 available_gpu_id=available_gpu_id,
                 openpai_config=openpai_config,
+                run_as_root=run_as_root,
             )
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
@@ -436,17 +463,16 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
-        model_sha1, model_mAP = _process_model_storage(out_root=work_dir_out,
-                                                       model_upload_location=model_upload_location,
-                                                       executor_config=executor_config,
-                                                       task_context=task_context)
+        model_sha1, _, model_storage = _process_model_storage(out_root=work_dir_out,
+                                                              model_upload_location=model_upload_location,
+                                                              executor_config=executor_config,
+                                                              task_context=task_context)
 
         # commit task
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',
-                                           model_mAP=model_mAP,
-                                           model_hash=model_sha1,
+                                           model_meta=model_storage.get_model_meta(model_hash=model_sha1),
                                            return_code=task_code,
                                            return_msg=return_msg,
                                            serialized_task_parameters=task_parameters,
@@ -474,6 +500,7 @@ def _execute_training(work_dir_in: str,
                       executor: str,
                       executant_name: str,
                       executor_config: Dict,
+                      run_as_root: bool,
                       available_gpu_id: str,
                       openpai_config: Dict = {}) -> None:
     if openpai_config.get("openpai_enable", False):
@@ -499,6 +526,7 @@ def _execute_training(work_dir_in: str,
             executant_name=executant_name,
             executor_config=executor_config,
             available_gpu_id=available_gpu_id,
+            run_as_root=run_as_root,
         )
 
 
@@ -530,6 +558,7 @@ def _execute_locally(
     executant_name: str,
     executor_config: Dict,
     available_gpu_id: str,
+    run_as_root: bool = False,
 ) -> None:
     # start train docker and wait
     path_binds = []
@@ -543,7 +572,8 @@ def _execute_locally(
     cmd.extend(path_binds)
     if available_gpu_id:
         cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-    cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
+    if not run_as_root:
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
     cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
     cmd.append(executor)
 
@@ -566,7 +596,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   help="media storage location for models")
     train_arg_parser.add_argument('--model-hash',
-                                  dest='model_hash',
+                                  dest='model_hash_stage',
                                   type=str,
                                   required=False,
                                   help='model hash to be used')
@@ -606,4 +636,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   required=False,
                                   help="tensorboard log directory")
+    train_arg_parser.add_argument("--run-as-root",
+                                  dest="run_as_root",
+                                  action='store_true',
+                                  help="run executor as root user")
     train_arg_parser.set_defaults(func=CmdTrain)

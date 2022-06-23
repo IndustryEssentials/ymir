@@ -39,11 +39,12 @@ class CmdInfer(base.BaseCommand):
                                       mir_root=self.args.mir_root,
                                       media_path=self.args.work_dir,
                                       model_location=self.args.model_location,
-                                      model_hash=self.args.model_hash,
+                                      model_hash_stage=self.args.model_hash_stage,
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
                                       executant_name=self.args.executant_name,
+                                      run_as_root=self.args.run_as_root,
                                       run_infer=True,
                                       run_mining=False)
 
@@ -52,11 +53,12 @@ class CmdInfer(base.BaseCommand):
                       mir_root: str,
                       media_path: str,
                       model_location: str,
-                      model_hash: str,
+                      model_hash_stage: str,
                       index_file: str,
                       config_file: str,
                       executor: str,
                       executant_name: str,
+                      run_as_root: bool,
                       task_id: str = f"default-infer-{time.time()}",
                       shm_size: str = None,
                       run_infer: bool = False,
@@ -70,7 +72,7 @@ class CmdInfer(base.BaseCommand):
             media_path (str): media path, all medias in `index_file` should all in this `media_path`
                 in cmd infer, set it to work_dir, in cmd mining, set it to media_cache or work_dir
             model_location (str): model location
-            model_hash (str): model package hash (or model package name)
+            model_hash_stage (str): model_hash@stage_name
             index_file (str): index file, each line means an image abs path
             config_file (str): configuration file passed to infer executor
             executor (str): docker image name used to infer
@@ -92,7 +94,7 @@ class CmdInfer(base.BaseCommand):
         if not model_location:
             logging.error('empty --model-location, abort')
             return MirCode.RC_CMD_INVALID_ARGS
-        if not model_hash:
+        if not model_hash_stage:
             logging.error('empty --model-hash, abort')
             return MirCode.RC_CMD_INVALID_ARGS
         if not index_file or not os.path.isfile(index_file):
@@ -128,14 +130,16 @@ class CmdInfer(base.BaseCommand):
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_storage = mir_utils.prepare_model(model_location=model_location,
-                                                model_hash=model_hash,
-                                                dst_model_path=work_model_path)
-        model_names = model_storage.models
+        model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
+        model_storage: mir_utils.ModelStorage = mir_utils.prepare_model(model_location=model_location,
+                                                                        model_hash=model_hash,
+                                                                        stage_name=stage_name,
+                                                                        dst_model_path=work_model_path)
+        model_names = model_storage.stages[stage_name].files
         class_names = model_storage.class_names
         if not class_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                                  error_message=f"empty class names in model: {model_hash}")
+                                  error_message=f"empty class names in model: {model_hash_stage}")
 
         with open(config_file, 'r') as f:
             config = yaml.safe_load(f)
@@ -163,13 +167,15 @@ class CmdInfer(base.BaseCommand):
                        out_path=work_out_path,
                        executor=executor,
                        executant_name=executant_name,
+                       run_as_root=run_as_root,
                        shm_size=shm_size,
                        task_type=task_id,
                        gpu_id=available_gpu_id)
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
-                                   max_boxes=_get_max_boxes(config_file), mir_root=mir_root)
+                                   max_boxes=_get_max_boxes(config_file),
+                                   mir_root=mir_root)
 
         return MirCode.RC_OK
 
@@ -296,7 +302,7 @@ def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> No
 
 def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, env_file_path: str,
                    out_path: str, executor: str, executant_name: str, shm_size: Optional[str], task_type: str,
-                   gpu_id: str) -> int:
+                   gpu_id: str, run_as_root: bool) -> int:
     """ runs infer or mining docker container """
     cmd = [mir_utils.get_docker_executable(gpu_ids=gpu_id), 'run', '--rm']
     # path bindings
@@ -307,7 +313,8 @@ def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, confi
     cmd.append(f"-v{env_file_path}:/in/env.yaml")
     cmd.append(f"-v{out_path}:/out")
     # permissions and shared memory
-    cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
+    if not run_as_root:
+        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
     if gpu_id:
         cmd.extend(['--gpus', f"\"device={gpu_id}\""])
     if shm_size:
@@ -342,10 +349,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   type=str,
                                   help='model storage location for models')
     infer_arg_parser.add_argument('--model-hash',
-                                  dest='model_hash',
+                                  dest='model_hash_stage',
                                   type=str,
                                   required=True,
-                                  help='model hash to be used')
+                                  help='model hash@stage to be used')
     infer_arg_parser.add_argument('--task-config-file',
                                   dest='config_file',
                                   type=str,
@@ -361,4 +368,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   dest='executant_name',
                                   type=str,
                                   help='docker container name for infer or mining')
+    infer_arg_parser.add_argument("--run-as-root",
+                                  dest="run_as_root",
+                                  action='store_true',
+                                  help="run executor as root user")
     infer_arg_parser.set_defaults(func=CmdInfer)

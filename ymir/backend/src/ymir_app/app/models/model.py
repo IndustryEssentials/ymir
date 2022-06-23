@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import (
     Boolean,
@@ -14,6 +15,7 @@ from sqlalchemy.orm import relationship
 from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
+from app.models.model_stage import ModelStage  # noqa
 
 
 class Model(Base):
@@ -40,6 +42,21 @@ class Model(Base):
         uselist=False,
         viewonly=True,
     )
+    related_stages = relationship(
+        "ModelStage",
+        primaryjoin="foreign(ModelStage.model_id)==Model.id",
+        backref="model",
+        uselist=True,
+        viewonly=True,
+    )
+    recommended_stage = Column(Integer, nullable=True)
+
+    default_stage = relationship(
+        "ModelStage",
+        primaryjoin="foreign(ModelStage.model_id)==Model.id",
+        uselist=False,
+        viewonly=True,
+    )
 
     is_visible = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
@@ -58,3 +75,7 @@ class Model(Base):
     @property
     def name(self) -> str:
         return "_".join([self.group_name, str(self.version_num)])
+
+    @property
+    def default_stage_name(self) -> Optional[str]:
+        return self.default_stage.name if self.default_stage else None

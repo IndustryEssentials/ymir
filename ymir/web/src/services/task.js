@@ -162,13 +162,14 @@ export function createLabelTask({
  * {string} name
  * {number} projectId
  * {number} datasetId
+ * {number} stage
  * {number} testset
  * {string} backbone
  * {object} config
  * {string} network
  * {number} trainType
  * {number} strategy
- * {number} model
+ * {array[number, number]} modelStage
  * {string} image
  * } 
  * @returns 
@@ -177,8 +178,10 @@ export function createTrainTask({
   iteration, stage,
   name, projectId, datasetId, keywords, testset,
   backbone, config, network, trainType, strategy,
-  model, image, imageId,
+  modelStage = [], image, imageId,
 }) {
+  const model = modelStage[0]
+  const stageId = modelStage[1]
   return createTask({
     name,
     project_id: projectId,
@@ -195,6 +198,7 @@ export function createTrainTask({
       network,
       train_type: trainType,
       model_id: model,
+      model_stage_id: stageId,
       docker_image: image,
       docker_image_id: imageId,
     }
@@ -203,9 +207,11 @@ export function createTrainTask({
 
 export function createMiningTask({
   iteration, stage,
-  projectId, datasetId, model, topk, algorithm,
+  projectId, datasetId, modelStage = [], topk, algorithm,
   config, strategy, inference, name, image, imageId,
 }) {
+  const model = modelStage[0]
+  const stageId = modelStage[1]
   return createTask({
     type: TASKTYPES.MINING,
     project_id: projectId,
@@ -216,6 +222,7 @@ export function createMiningTask({
     parameters: {
       strategy,
       model_id: model,
+      model_stage_id: stageId,
       dataset_id: datasetId,
       mining_algorithm: algorithm,
       top_k: topk,
@@ -231,9 +238,9 @@ export function createMiningTask({
  * @param {object} task {
  * {string} name
  * {number} projectId
- * {number} datasetId
+ * {array<number>} datasets
  * {object} config
- * {number} model
+ * {array<array<model, stage>>} stages
  * {string} image
  * {string} imageId
  * {string} description
@@ -243,23 +250,25 @@ export function createMiningTask({
 export function createInferenceTask({
   name,
   projectId,
-  datasetId,
-  model = [],
+  datasets,
+  stages = [],
   config,
   image,
   imageId,
   description,
 }) {
-  const params = model.map(md => ({
+  const maps = datasets.map(dataset => stages.map(([model, stage]) => ({dataset, model, stage }))).flat()
+  const params = maps.map(({model, stage, dataset}) => ({
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
     description,
     docker_image_config: config,
     parameters: {
-      model_id: md,
+      model_id: model,
+      model_stage_id: stage,
       generate_annotations: true,
-      dataset_id: datasetId,
+      dataset_id: dataset,
       docker_image: image,
       docker_image_id: imageId,
     }
