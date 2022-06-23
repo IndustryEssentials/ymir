@@ -84,7 +84,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
                 <Button
                   key={type}
                   type="primary"
-                  onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
+                  onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}
                 >
                   {t(`task.type.${type}`)}
                 </Button>
