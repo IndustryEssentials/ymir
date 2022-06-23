@@ -48,7 +48,7 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
         model,
         value: model.id,
         children: model.stages.map(stage => ({
-          label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.is_best ? t('common.recommend') : ''}`,
+          label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.id === model.recommendStage ? t('common.recommend') : ''}`,
           value: stage.id,
         })),
       }
