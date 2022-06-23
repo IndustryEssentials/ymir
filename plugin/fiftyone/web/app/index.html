@@ -113,23 +113,23 @@
     </div>
     <script type="text/javascript">
         function getUrlParam(name) {
-            const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)")
-            const r = window.location.search.substr(1).match(reg)
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)")
+            var r = window.location.search.substr(1).match(reg)
             if(r != null) return unescape(r[2]);
             return null;
         }
-        let http = {};
+        var http = {};
         http.quest = function (option, callback) {
-            const url = option.url;
-            const method = option.method;
-            let data = option.data;
-            const timeout = option.timeout || 0;
+            var url = option.url;
+            var method = option.method;
+            var data = option.data;
+            var timeout = option.timeout || 0;
 
-            let xhr = new XMLHttpRequest();
+            var xhr = new XMLHttpRequest();
             if('withCredentials' in xhr){
                 xhr.open(method, url, true);
             }else if(typeof XDomainRequest != 'undefined'){
-                let xhr = new XDomainRequest();
+                var xhr = new XDomainRequest();
                 xhr.open(method, url);
             }else{
                 xhr = null;
@@ -138,7 +138,7 @@
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4) {
                     if (xhr.status >= 200 && xhr.status < 400) {
-                        let result = xhr.responseText;
+                        var result = xhr.responseText;
                         try {result = JSON.parse(xhr.responseText);} catch (e) {}
                         callback && callback(null, result);
                     } else {
@@ -159,7 +159,7 @@
         };
 
         http.get = function (url, callback) {
-            let option = url.url ? url : { url: url };
+            var option = url.url ? url : { url: url };
             option.method = 'get';
             this.quest(option, callback);
         };
@@ -170,7 +170,7 @@
         };
 
         function queryStatus() {
-            const url = `/api/task/${tid}`
+            var url = `/api/task/${tid}`
             http.get(url, function (err, result) {
                 if (result?.code == 0 && result?.data?.status && parseInt(result.data.status) === 3) {
                     window.location.href = `/dataset/${tid}`;
@@ -182,7 +182,7 @@
             });
         }
 
-        const tid = getUrlParam('tid');
+        var tid = getUrlParam('tid');
         window.onload = function() {
             queryStatus();
         }
