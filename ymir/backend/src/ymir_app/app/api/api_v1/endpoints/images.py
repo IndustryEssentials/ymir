@@ -107,10 +107,11 @@ def import_docker_image(
         )
         crud.image_config.create(db, obj_in=image_config_in)
 
+    enable_livecode = bool(resp["livecode_config"])
     crud.docker_image.update_from_dict(
         db,
         docker_image_id=docker_image.id,
-        updates={"hash": hash_, "state": int(DockerImageState.done)},
+        updates={"hash": hash_, "state": int(DockerImageState.done), enable_livecode: enable_livecode},
     )
     logger.info(
         "[create image] docker image imported via controller: %s, added %d configs",
