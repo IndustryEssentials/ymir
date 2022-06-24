@@ -3,6 +3,7 @@ import re
 import subprocess
 import time
 from functools import wraps
+from pathlib import Path
 from typing import Callable, Dict, List
 
 from controller.config import label_task as label_task_config
@@ -97,3 +98,8 @@ def create_label_instance() -> LabelBase:
         raise ValueError("Error! Please setting your label tools")
 
     return label_instance
+
+
+def ensure_dirs_exist(paths: List[str]) -> None:
+    for path in paths:
+        Path(path).mkdir(parents=True, exist_ok=True)
