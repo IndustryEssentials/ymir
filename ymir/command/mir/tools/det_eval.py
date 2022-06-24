@@ -11,56 +11,46 @@ from mir.protos import mir_command_pb2 as mirpb
 
 class MirCoco:
     def __init__(self,
-                 mir_root: str,
-                 rev_tid: revs_parser.TypRevTid,
+                 mir_metadatas: mirpb.MirMetadatas,
+                 task_annotations: mirpb.SingleTaskAnnotations,
+                 mir_keywords: mirpb.MirKeywords,
                  conf_thr: float,
+                 dataset_id: str,
                  asset_ids: Iterable[str] = None) -> None:
         """
         creates MirCoco instance
 
         Args:
-            mir_root (str): root of mir repo
-            rev_tid (TypRevTid): branch and task_id for dataset
+            mir_metadatas (mirpb.MirMetadatas): metadatas
+            task_annotations (mirpb.SingleTaskAnnotations): annotations
+            mir_keywords (mirpb.MirKeywords): keywords
             conf_thr (float): lower bound of annotation confidence score
             asset_ids (Iterable[str]): asset ids you want to include in MirCoco instance, None means include all
         """
-        m: mirpb.MirMetadatas
-        a: mirpb.MirAnnotations
-        k: mirpb.MirKeywords
-        m, a, k, = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
-                                                                        mir_branch=rev_tid.rev,
-                                                                        mir_task_id=rev_tid.tid,
-                                                                        ms_list=[
-                                                                            mirpb.MirStorage.MIR_METADATAS,
-                                                                            mirpb.MirStorage.MIR_ANNOTATIONS,
-                                                                            mirpb.MirStorage.MIR_KEYWORDS,
-                                                                        ])
-        if len(m.attributes) == 0:
+        if len(mir_metadatas.attributes) == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='no assets in evaluated dataset')
-        if len(a.task_annotations[a.head_task_id].image_annotations) == 0:
+        if len(task_annotations.image_annotations) == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='no annotations in evaluated dataset')
 
-        self._mir_metadatas = m
-        self._mir_annotations = a
-
         # ordered list of asset / image ids
-        self._ordered_asset_ids = sorted(asset_ids or self._mir_metadatas.attributes.keys())
+        self._ordered_asset_ids = sorted(asset_ids or mir_metadatas.attributes.keys())
         # key: asset id, value: index in `self._ordered_asset_ids`
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
-        self._ordered_class_ids = sorted(list(k.pred_idx.cis.keys()))
-        self._ck_idx: Dict[str, mirpb.AssetAnnoIndex] = {key: value for key, value in k.ck_idx.items()}
+        self._ordered_class_ids = sorted(list(mir_keywords.pred_idx.cis.keys()))
+        self._ck_idx: Dict[str, mirpb.AssetAnnoIndex] = {key: value for key, value in mir_keywords.ck_idx.items()}
 
         self.img_cat_to_annotations: Dict[Tuple[int, int], List[dict]] = defaultdict(list)
-        annos = self._get_annotations(asset_idxes=self.get_asset_idxes(),
+        annos = self._get_annotations(single_task_annotations=task_annotations,
+                                      asset_idxes=self.get_asset_idxes(),
                                       class_ids=self.get_class_ids(),
                                       conf_thr=conf_thr)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
-        self.dataset_id = rev_tid.rev_tid
+        self.dataset_id = dataset_id
 
     def load_dts_from_gt(self, mir_root: str, rev_tids: List[revs_parser.TypRevTid],
                          conf_thr: float) -> List['MirCoco']:
@@ -70,14 +60,6 @@ class MirCoco:
         ]
 
     @property
-    def mir_metadatas(self) -> mirpb.MirMetadatas:
-        return self._mir_metadatas
-
-    @property
-    def mir_annotations(self) -> mirpb.MirAnnotations:
-        return self._mir_annotations
-
-    @property
     def ck_idx(self) -> Dict[str, mirpb.AssetAnnoIndex]:
         return self._ck_idx
 
@@ -85,13 +67,15 @@ class MirCoco:
     def asset_id_to_ordered_idxes(self) -> Dict[str, int]:
         return self._asset_id_to_ordered_idxes
 
-    def _get_annotations(self, asset_idxes: List[int], class_ids: List[int], conf_thr: float) -> List[dict]:
+    def _get_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations, asset_idxes: List[int],
+                         class_ids: List[int], conf_thr: float) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
         if asset_idxes and class_ids provided, only returns filtered annotations
 
         Args:
+            single_task_annotations (mirpb.SingleTaskAnnotations): annotations
             asset_idxes (List[int]): asset ids, if not provided, returns annotations for all images
             class_ids (List[int]): class ids, if not provided, returns annotations for all classe
             conf_thr (float): confidence threshold of bbox
@@ -110,7 +94,6 @@ class MirCoco:
         """
         result_annotations_list: List[dict] = []
 
-        single_task_annotations = self._mir_annotations.task_annotations[self._mir_annotations.head_task_id]
         if not asset_idxes:
             asset_idxes = self.get_asset_idxes()
 

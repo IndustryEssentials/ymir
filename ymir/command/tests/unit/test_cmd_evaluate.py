@@ -38,7 +38,6 @@ class TestCmdEvaluate(unittest.TestCase):
     def _prepare_mir_repo(self) -> None:
         test_utils.mir_repo_init(self._mir_root)
         self._prepare_mir_repo_branch_a()
-        self._prepare_mir_repo_branch_b()
 
     def _prepare_mir_repo_branch_a(self) -> None:
         metadatas_dict = {
@@ -147,6 +146,66 @@ class TestCmdEvaluate(unittest.TestCase):
                     },
                 },
             },
+            'ground_truth': {
+                'image_annotations': {
+                    'a0': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 50,
+                                'y': 50,
+                                'w': 50,
+                                'h': 50,
+                            },
+                            'class_id': 0,
+                            'score': 0.7,
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 150,
+                                'y': 50,
+                                'w': 75,
+                                'h': 75,
+                            },
+                            'class_id': 0,
+                            'score': 0.8,
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 150,
+                                'y': 150,
+                                'w': 75,
+                                'h': 75,
+                            },
+                            'class_id': 1,
+                            'score': 0.9,
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 100,
+                                'h': 100,
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                        }]
+                    },
+                    'a1': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 300,
+                                'y': 300,
+                                'w': 100,
+                                'h': 100,
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                        }]
+                    }
+                }
+            }
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
@@ -154,127 +213,6 @@ class TestCmdEvaluate(unittest.TestCase):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
-                                                      his_branch='master',
-                                                      mir_datas={
-                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
-                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-                                                      },
-                                                      task=task)
-
-    def _prepare_mir_repo_branch_b(self) -> None:
-        metadatas_dict = {
-            'attributes': {
-                'a0': {
-                    'assetType': 'AssetTypeImageJpeg',
-                    'tvtType': 'TvtTypeUnknown',
-                    'width': 500,
-                    'height': 500,
-                    'imageChannels': 3
-                },
-                'a1': {
-                    'assetType': 'AssetTypeImageJpeg',
-                    'tvtType': 'TvtTypeUnknown',
-                    'width': 500,
-                    'height': 500,
-                    'imageChannels': 3
-                },
-                'a2': {
-                    'assetType': 'AssetTypeImageJpeg',
-                    'tvtType': 'TvtTypeUnknown',
-                    'width': 500,
-                    'height': 500,
-                    'imageChannels': 3
-                }
-            }
-        }
-        mir_metadatas = mirpb.MirMetadatas()
-        json_format.ParseDict(metadatas_dict, mir_metadatas)
-
-        annotations_dict = {
-            'task_annotations': {
-                'b': {
-                    'image_annotations': {
-                        'a0': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 50,
-                                    'y': 50,
-                                    'w': 50,
-                                    'h': 50,
-                                },
-                                'class_id': 0,
-                                'score': 0.7,
-                            }, {
-                                'index': 1,
-                                'box': {
-                                    'x': 150,
-                                    'y': 50,
-                                    'w': 75,
-                                    'h': 75,
-                                },
-                                'class_id': 0,
-                                'score': 0.8,
-                            }, {
-                                'index': 2,
-                                'box': {
-                                    'x': 150,
-                                    'y': 150,
-                                    'w': 75,
-                                    'h': 75,
-                                },
-                                'class_id': 1,
-                                'score': 0.9,
-                            }, {
-                                'index': 3,
-                                'box': {
-                                    'x': 350,
-                                    'y': 50,
-                                    'w': 100,
-                                    'h': 100,
-                                },
-                                'class_id': 2,
-                                'score': 0.9,
-                            }]
-                        },
-                        'a1': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 300,
-                                    'y': 300,
-                                    'w': 100,
-                                    'h': 100,
-                                },
-                                'class_id': 2,
-                                'score': 0.9,
-                            }]
-                        },
-                    }
-                }
-            },
-            'head_task_id': 'b',
-            'image_cks': {
-                'a0': {
-                    'cks': {
-                        'weather': 'sunny',
-                        'color': 'red',
-                    },
-                },
-                'a1': {
-                    'cks': {
-                        'weather': 'sunny',
-                        'color': 'blue',
-                    },
-                },
-            },
-        }
-        mir_annotations = mirpb.MirAnnotations()
-        json_format.ParseDict(annotations_dict, mir_annotations)
-
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='b', message='import')
-        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
-                                                      mir_branch='b',
                                                       his_branch='master',
                                                       mir_datas={
                                                           mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
@@ -291,8 +229,7 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.work_dir = self._working_root
-        fake_args.src_revs = 'a;b'
-        fake_args.gt_rev = 'b'
+        fake_args.src_revs = 'a'
         fake_args.dst_rev = 'c@c'
         fake_args.conf_thr = 0.3
         fake_args.iou_thrs = '0.5:0.95:0.05'
@@ -308,4 +245,4 @@ class TestCmdEvaluate(unittest.TestCase):
                                                                                       mir_task_id='c',
                                                                                       ms=mirpb.MirStorage.MIR_TASKS)
         evaluation_result = mir_tasks.tasks[mir_tasks.head_task_id].evaluation
-        self.assertEqual({'a', 'b'}, set(evaluation_result.dataset_evaluations.keys()))
+        self.assertEqual({'a'}, set(evaluation_result.dataset_evaluations.keys()))
