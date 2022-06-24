@@ -1,5 +1,5 @@
 const visualization = {
-  "visualization.records.title": { en: "Historical Records", cn: "历史记录", },
+  "visualization.records.title": { en: "History Records", cn: "历史记录", },
   "visualization.query.name": {en: "Search", cn: "搜索", },
   "visualization.form.name.placeholder": {en: "Please input model or dataset name", cn: "请输入模型或数据集名称", },
   "visualization.column.model": { en: "Models", cn: "模型", },

@@ -1,7 +1,4 @@
 import {
-  checkStatus,
-} from "@/services/project"
-import {
   getVisualizations,
   delVisualization,
   createVisualization,
@@ -69,13 +66,6 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL' })
-    },
-    *checkStatus({ payload }, { call, put }) {
-      const pid = payload
-      const { code, result } = yield call(checkStatus, pid)
-      if (code === 0) {
-        return result
-      }
     },
   },
   reducers: {
