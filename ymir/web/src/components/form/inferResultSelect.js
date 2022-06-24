@@ -41,6 +41,7 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   const [selectedStages, setSelectedStages] = useState([])
   const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
+  const [testingDatasets, setTestingDatasets] = useState([])
   const [selectedDatasets, setSelectedDatasets] = useState([])
   const [configs, setConfigs] = useState([])
   const [selectedConfigs, setSelectedConfigs] = useState([])
@@ -60,7 +61,7 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
       setTasks([])
     }
     setSelectedDatasets([])
-    form.setFieldsValue({ dataset: [], config: []})
+    form.setFieldsValue({ dataset: [], config: [] })
   }, [selectedStages])
 
   useEffect(() => {
@@ -102,6 +103,8 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   useEffect(() => {
     onChange({
       tasks: selectedTasks,
+      models,
+      datasets: testingDatasets,
     })
   }, [selectedTasks])
 
@@ -111,7 +114,6 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
     if (m) {
       s = m.stages.find(sg => sg.id === stage)
     }
-    console.log('s:', s)
     return m && s ? `${m.name} ${m.versionName} ${s.name}` : ''
   }
 
@@ -120,8 +122,9 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
     setModels(options.map(([{ model }]) => model))
   }
 
-  function datasetChange(values) {
+  function datasetChange(values, options) {
     setSelectedDatasets(values)
+    setTestingDatasets(options.map(({ dataset }) => dataset))
   }
 
   function configChange(values, options) {
