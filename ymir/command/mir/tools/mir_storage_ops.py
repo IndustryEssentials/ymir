@@ -421,11 +421,11 @@ class MirStorageOps():
             total_images_cnt=mir_storage_context.images_cnt,
             cks_count_total={k: v.cnt
                              for k, v in mir_storage_context.cks_cnt.items()},
-            cks_count={k: v.sub_cnt
+            cks_count={k: {k2: v2 for k2, v2 in v.sub_cnt.items()}
                        for k, v in mir_storage_context.cks_cnt.items()},
             tags_cnt_total={k: v.cnt
                             for k, v in mir_storage_context.tags_cnt.items()},
-            tags_cnt={k: v.sub_cnt
+            tags_cnt={k: {k2: v2 for k2, v2 in v.sub_cnt.items()}
                       for k, v in mir_storage_context.tags_cnt.items()},
             hist=dict(
                 anno_quality=cls._gen_viz_hist(mir_storage_context.pred_stats.quality_hist),
@@ -518,13 +518,12 @@ def create_task(task_type: 'mirpb.TaskType.V',
                 task_id: str,
                 message: str,
                 unknown_types: Dict[str, int] = {},
-                model_hash: str = '',
-                model_mAP: float = 0,
                 return_code: int = 0,
                 return_msg: str = '',
                 serialized_task_parameters: str = '',
                 serialized_executor_config: str = '',
                 executor: str = '',
+                model_meta: mirpb.ModelMeta = None,
                 evaluation: mirpb.Evaluation = None,
                 src_revs: str = '',
                 dst_rev: str = '') -> mirpb.Task:
@@ -538,16 +537,15 @@ def create_task(task_type: 'mirpb.TaskType.V',
         'serialized_task_parameters': serialized_task_parameters,
         'serialized_executor_config': serialized_executor_config,
         'unknown_types': unknown_types,
-        'model': {
-            'model_hash': model_hash,
-            'mean_average_precision': model_mAP,
-        },
         'executor': executor,
         'src_revs': src_revs,
         'dst_rev': dst_rev,
     }
     task: mirpb.Task = mirpb.Task()
     json_format.ParseDict(task_dict, task)
+
+    if model_meta:
+        task.model.CopyFrom(model_meta)
 
     if evaluation:
         task.evaluation.CopyFrom(evaluation)

@@ -41,6 +41,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
+        if not os.path.isfile(asset_path):
+            raise FileNotFoundError(f"file not found: {asset_path}")
         logging.info(f"asset: {asset_path}, annotation: {annotation_path}")
 
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
@@ -49,17 +51,21 @@ def _run_training(env_config: env.EnvConfig) -> None:
     # suppose we have a long time training, and have saved the final model
     #! use `env_config.output.models_dir` to get model output dir
     with open(os.path.join(env_config.output.models_dir, 'model-0000.params'), 'w') as f:
-        f.write('fake params')
+        f.write('fake model-0000.params')
     with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
-        f.write('fake json')
-
-    #! use `rw.write_training_result` to save training result
-    rw.write_training_result(model_names=['model-0000.params', 'model-symbols.json'],
-                             mAP=expected_mAP,
-                             classAPs={class_name: expected_mAP
-                                       for class_name in class_names})
+        f.write('fake model-symbols.json')
+    #! use `rw.write_model_stage` to save training result
+    rw.write_model_stage(stage_name='stage_00',
+                         files=['model-0000.params', 'model-symbols.json'],
+                         mAP=expected_mAP / 2)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+
+    with open(os.path.join(env_config.output.models_dir, 'model-0010.params'), 'w') as f:
+        f.write('fake model-0010.params')
+    with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
+        f.write('fake model-symbols.json')
+    rw.write_model_stage(stage_name='stage_10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
 
     #! if task done, write 100% percent log
     logging.info('training done')

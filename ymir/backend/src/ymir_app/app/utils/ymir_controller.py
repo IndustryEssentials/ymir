@@ -104,6 +104,7 @@ class ControllerRequest:
         train_task_req.in_class_ids[:] = args["class_ids"]
         if "model_hash" in args:
             request.model_hash = args["model_hash"]
+            request.model_stage = args["model_stage_name"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeTraining
@@ -132,6 +133,7 @@ class ControllerRequest:
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
         request.model_hash = args["model_hash"]
+        request.model_stage = args["model_stage_name"]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
@@ -199,6 +201,7 @@ class ControllerRequest:
     def prepare_inference(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_INFERENCE
         request.model_hash = args["model_hash"]
+        request.model_stage = args["model_stage_name"]
         request.asset_dir = args["asset_dir"]
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
@@ -425,6 +428,7 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         model_hash: Optional[str],
+        model_stage_name: Optional[str],
         asset_dir: str,
         docker_image: Optional[str],
         docker_config: Optional[str],
@@ -437,6 +441,7 @@ class ControllerClient:
             project_id=project_id,
             args={
                 "model_hash": model_hash,
+                "model_stage_name": model_stage_name,
                 "asset_dir": asset_dir,
                 "docker_image": docker_image,
                 "docker_config": docker_config,

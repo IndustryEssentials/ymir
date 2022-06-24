@@ -28,6 +28,10 @@ import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
 
 const { Option } = Select
 
+const parseModelStage = (str = '') => {
+  return str ? str.split('|').map(stage => string2Array(stage)) : []
+}
+
 const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
 
 function Inference({ datasetCache, datasets, ...func }) {
@@ -36,8 +40,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const history = useHistory()
   const location = useLocation()
   const { did, image } = location.query
-  const mid = string2Array(location.query.mid) || []
-  const [dataset, setDataset] = useState({})
+  const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
   const [gpuStep, setGpuStep] = useState(1)
   const [form] = Form.useForm()
@@ -57,17 +60,8 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    did && func.getDataset(did)
-    did && form.setFieldsValue({ datasetId: Number(did) })
+    did && form.setFieldsValue({ datasets: [Number(did)] })
   }, [did])
-
-  useEffect(() => {
-    mid?.length && form.setFieldsValue({ model: mid })
-  }, [location.query.mid])
-
-  useEffect(() => {
-    datasetCache[did] && setDataset(datasetCache[did])
-  }, [datasetCache])
 
   useEffect(() => {
     pid && func.getDatasets(pid)
@@ -145,20 +139,18 @@ function Inference({ datasetCache, datasets, ...func }) {
     }
     const result = await func.createInferenceTask(params)
     if (result) {
-      if (result.filter(item => item).length !== values.model.length) {
+      const tasksCount = values.stages.length * values.datasets.length
+      const resultCount = result.filter(item => item).length
+      if (resultCount < tasksCount) {
         message.warn(t('task.inference.failure.some'))
       }
       await func.clearCache()
-      history.replace(`/home/project/${pid}/detail`)
+      history.replace(`/home/project/${pid}/dataset`)
     }
   }
 
   function onFinishFailed(errorInfo) {
     console.log("Failed:", errorInfo)
-  }
-
-  function setsChange(id) {
-    id && setDataset(datasets.find(ds => ds.id === id))
   }
 
   function modelChange(id, options = []) {
@@ -176,6 +168,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     description: '',
+    stages: stage.length ? stage : undefined,
     image: image ? parseInt(image) : undefined,
     algorithm: getCheckedValue(Algorithm()),
     gpu_count: 0,
@@ -204,12 +197,12 @@ function Inference({ datasetCache, datasets, ...func }) {
                 <Form.Item
                   label={t('task.inference.form.dataset.label')}
                   required
-                  name="datasetId"
+                  name="datasets"
                   rules={[
                     { required: true, message: t('task.inference.form.dataset.required') },
                   ]}
                 >
-                  <DatasetSelect pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} onChange={setsChange} showArrow />
+                  <DatasetSelect mode='multiple' pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -221,12 +214,12 @@ function Inference({ datasetCache, datasets, ...func }) {
                   label={t('task.mining.form.model.label')}>
                   <Form.Item
                     noStyle
-                    name="model"
+                    name="stages"
                     rules={[
                       { required: true, message: t('task.mining.form.model.required') },
                     ]}
                   >
-                    <ModelSelect mode='multiple' placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
+                    <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
                   </Form.Item>
                   <div style={{ marginTop: 10 }}><Button size='small' type="primary" onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
                 </Form.Item>

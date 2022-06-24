@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import time
 
 from mir.commands import base
@@ -23,6 +24,7 @@ class CmdExport(base.BaseCommand):
         return CmdExport.run_with_args(mir_root=self.args.mir_root,
                                        asset_dir=self.args.asset_dir,
                                        annotation_dir=self.args.annotation_dir,
+                                       gt_dir=self.args.gt_dir,
                                        media_location=self.args.media_location,
                                        src_revs=self.args.src_revs,
                                        dst_rev=dst_rev,
@@ -33,8 +35,9 @@ class CmdExport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, media_location: str, src_revs: str,
-                      anno_format: str, asset_format: str, in_cis: str, work_dir: str, dst_rev: str) -> int:
+    def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, gt_dir: str, media_location: str,
+                      src_revs: str, anno_format: str, asset_format: str, in_cis: str, work_dir: str,
+                      dst_rev: str) -> int:
         # check args
         if not anno_format:
             anno_format = 'none'
@@ -85,11 +88,14 @@ class CmdExport(base.BaseCommand):
                                            assets_location=media_location,
                                            assets_dir=asset_dir,
                                            annotations_dir=annotation_dir,
+                                           gt_dir=gt_dir,
                                            need_ext=True,
                                            need_id_sub_folder=False,
                                            overwrite=False,
                                            class_ids_mapping=class_type_ids,
-                                           format_type=anno_format_type)
+                                           format_type=anno_format_type,
+                                           index_file_path=os.path.join(annotation_dir, 'index.tsv'),
+                                           gt_index_file_path=os.path.join(gt_dir, 'index.tsv') if gt_dir else '')
         elif asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             dw = data_writer.LmdbDataWriter(mir_root=mir_root,
                                             assets_location=media_location,
@@ -134,6 +140,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       dest="annotation_dir",
                                       type=str,
                                       help="export directory for annotations")
+    exporting_arg_parser.add_argument("--gt-dir",
+                                      required=False,
+                                      dest="gt_dir",
+                                      type=str,
+                                      help="export directory for ground-truth")
     exporting_arg_parser.add_argument('--media-location',
                                       required=True,
                                       dest='media_location',

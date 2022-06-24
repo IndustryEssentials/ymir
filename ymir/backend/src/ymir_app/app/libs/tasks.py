@@ -97,10 +97,11 @@ def normalize_parameters(
             raise DatasetNotFound()
         normalized["validation_dataset_hash"] = validation_dataset.hash
 
-    if parameters.model_id:
-        model = crud.model.get(db, id=parameters.model_id)
-        if model:
-            normalized["model_hash"] = model.hash
+    if parameters.model_stage_id:
+        model_stage = crud.model_stage.get(db, id=parameters.model_stage_id)
+        if model_stage:
+            normalized["model_hash"] = model_stage.model.hash  # type: ignore
+            normalized["model_stage_name"] = model_stage.name
 
     if parameters.keywords:
         normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
@@ -343,24 +344,40 @@ class TaskResult:
             logger.error("[update task] task result record not found, skip")
             return
 
-        model_info = self.model_info
-        logger.info(f"[viz_model] model_info: {model_info}")
-        if self.result_type is ResultType.model and model_info:
+        if self.result_type is ResultType.model:
             # special path for model
             # as long as we can get model_info, set model as ready and
             # save related task parameters and config accordingly
-            crud.task.update_parameters_and_config(
-                self.db,
-                task=task_in_db,
-                parameters=model_info.task_parameters,
-                config=json.dumps(model_info.executor_config),
-            )
-            crud.model.finish(self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info))
-            try:
-                self.save_model_stats(model_info)
-            except FailedToConnectClickHouse:
-                logger.exception("Failed to write model stats to clickhouse, continue anyway")
-            return
+            model_info = self.model_info
+            logger.info(f"[viz_model] model_info: {model_info}")
+
+            # todo refactor
+            if model_info:
+                crud.task.update_parameters_and_config(
+                    self.db,
+                    task=task_in_db,
+                    parameters=model_info.task_parameters,
+                    config=json.dumps(model_info.executor_config),
+                )
+                current_model = crud.model.finish(
+                    self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info)
+                )
+                if current_model:
+                    stages_in = []
+                    for stage_name, body in model_info.model_stages.items():
+                        stage_obj = schemas.ModelStageCreate(
+                            name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=current_model.id
+                        )
+                        stages_in.append(stage_obj)
+                    crud.model_stage.batch_create(self.db, objs_in=stages_in)
+                    crud.model.update_recommonded_stage_by_name(
+                        self.db, model_id=current_model.id, stage_name=model_info.best_stage_name
+                    )
+                try:
+                    self.save_model_stats(model_info)
+                except FailedToConnectClickHouse:
+                    logger.exception("Failed to write model stats to clickhouse, continue anyway")
+                return
 
         if task_result.state is TaskState.done and self.result_info:
             crud_func.finish(

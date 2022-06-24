@@ -1,17 +1,18 @@
 import os
 import shutil
+import time
 from typing import List, Tuple
 import unittest
 from unittest import mock
 
 from google.protobuf import json_format
-from mir.tools.errors import MirRuntimeError
 import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings
+from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 from tests import utils as test_utils
 
 
@@ -226,7 +227,15 @@ class TestCmdTraining(unittest.TestCase):
         return MirCode.RC_OK
 
     def __mock_process_model_storage(*args, **kwargs):
-        return ("xyz", 0.9)
+        mss = mir_utils.ModelStageStorage(stage_name='default',
+                                          files=['default.weights'],
+                                          mAP=0.9,
+                                          timestamp=int(time.time()))
+        ms = mir_utils.ModelStorage(executor_config={'class_names': ['cat']},
+                                    task_context={'src_revs': 'a@a', 'dst_rev': 'a@test_training_cmd'},
+                                    stages={mss.stage_name: mss},
+                                    best_stage_name=mss.stage_name)
+        return ("xyz", 0.9, ms)
 
     # public: test cases
     @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
@@ -239,7 +248,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.model_path = self._models_location
         fake_args.media_location = self._assets_location
-        fake_args.model_hash = ''
+        fake_args.model_hash_stage = ''
         fake_args.work_dir = self._working_root
         fake_args.force = True
         fake_args.force_rebuild = False
@@ -266,7 +275,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.model_path = self._models_location
         fake_args.media_location = self._assets_location
-        fake_args.model_hash = ''
+        fake_args.model_hash_stage = ''
         fake_args.work_dir = self._working_root
         fake_args.force = True
         fake_args.force_rebuild = False
@@ -291,7 +300,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.model_path = self._models_location
         fake_args.media_location = self._assets_location
-        fake_args.model_hash = ''
+        fake_args.model_hash_stage = ''
         fake_args.work_dir = self._working_root
         fake_args.force = True
         fake_args.force_rebuild = False

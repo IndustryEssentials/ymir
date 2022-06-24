@@ -50,6 +50,7 @@ class CmdModelImport(base.BaseCommand):
         extract_model_dir_path = os.path.join(work_dir, 'model')
         model_storage = mir_utils.prepare_model(model_location=os.path.dirname(package_path),
                                                 model_hash=os.path.basename(package_path),
+                                                stage_name='',
                                                 dst_model_path=extract_model_dir_path)
 
         logging.info(f"importing model with storage: {model_storage}")
@@ -72,8 +73,7 @@ class CmdModelImport(base.BaseCommand):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportModel,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"import model {package_path} as {model_hash}",
-                                           model_hash=model_hash,
-                                           model_mAP=float(model_storage.task_context.get('mAP', 0)),
+                                           model_meta=model_storage.get_model_meta(model_hash=model_hash),
                                            return_code=MirCode.RC_OK,
                                            return_msg='',
                                            src_revs=src_revs,

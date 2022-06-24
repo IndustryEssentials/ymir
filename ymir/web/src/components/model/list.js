@@ -23,9 +23,10 @@ import { getTensorboardLink } from "@/services/common"
 
 import {
   ShieldIcon, VectorIcon, EditIcon,
-  EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,SearchIcon,
+  EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, SearchIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
+import EditStageCell from "./editStageCell"
 
 const { useForm } = Form
 
@@ -131,9 +132,9 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       render: (type) => <TypeTag type={type} />,
     },
     {
-      title: showTitle("model.column.map"),
-      dataIndex: "map",
-      render: map => <span title={map}>{percent(map)}</span>,
+      title: showTitle("model.column.stage"),
+      dataIndex: "recommendStage",
+      render: (_, record) => <EditStageCell record={record} saveHandle={updateModelVersion} />,
       sorter: (a, b) => a - b,
       align: 'center',
     },
@@ -172,6 +173,16 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     func.updateQuery({ ...query, limit, offset })
   }
 
+  function updateModelVersion(result) {
+    setModelVersions(mvs => {
+      return {
+        ...mvs,
+        [result.groupId]: mvs[result.groupId].map(version => {
+          return version.id === result.id ? result : version
+        })
+      }
+    })
+  }
 
   async function showVersions(id) {
     setVisibles((old) => ({ ...old, [id]: !old[id] }))
@@ -234,7 +245,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, taskState, taskType, task, isProtected } = record
+    const { id, name, url, state, taskState, taskType, task, isProtected, stages, recommendStage } = record
+
     const actions = [
       {
         key: "verify",
@@ -255,21 +267,21 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "mining",
         label: t("dataset.action.mining"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/project/${pid}/mining?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/mining?mid=${id},${recommendStage}`),
         icon: <VectorIcon />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/project/${pid}/train?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/train?mid=${id},${recommendStage}`),
         icon: <TrainIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/project/${pid}/inference?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/inference?mid=${id},${recommendStage}`),
         icon: <WajueIcon />,
       },
       {
@@ -291,7 +303,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "hide",
         label: t("common.action.hide"),
         onclick: () => hide(record),
-        hidden: ()=> hideHidden(record),
+        hidden: () => hideHidden(record),
         icon: <EyeOffIcon />,
       },
     ]
@@ -304,14 +316,18 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const multipleInfer = () => {
-    const ids = Object.values(selectedVersions)
-    history.push(`/home/project/${pid}/inference?mid=${ids}`)
+    const ids = Object.values(selectedVersions).flat()
+    const versionsObject = Object.values(versions).flat()
+    const selected = versionsObject.filter(md => ids.includes(md.id)).map(md => {
+      return [md.id, md.recommendStage].toString()
+    }).join('|')
+    history.push(`/home/project/${pid}/inference?mid=${selected}`)
   }
 
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
-    const vss = allVss.filter(({id}) => ids.includes(id))
+    const vss = allVss.filter(({ id }) => ids.includes(id))
     hideRef.current.hide(vss, project.hiddenModels)
   }
 
@@ -328,7 +344,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     setSelectedVersions({})
   }
 
-  
+
   function rowSelectChange(gid, rowKeys) {
     setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
   }

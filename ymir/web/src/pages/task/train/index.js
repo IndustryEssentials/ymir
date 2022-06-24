@@ -11,6 +11,7 @@ import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
 import t from "@/utils/t"
+import { string2Array } from '@/utils/string'
 import { TYPES } from '@/constants/image'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
@@ -36,12 +37,14 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const stage = string2Array(mid)
   const did = Number(location.query.did)
   const [project, setProject] = useState({})
   const [datasets, setDatasets] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
   const [testSet, setTestSet] = useState(null)
+  const [testingSetIds, setTestingSetIds] = useState([])
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [hpVisible, setHpVisible] = useState(false)
@@ -75,6 +78,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
+    setTestingSetIds(project?.testingSets || [])
     form.setFieldsValue({ datasetId: visibleValue })
   }, [allDatasets, project])
 
@@ -126,10 +130,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     setTestSet(value)
   }
 
-  function modelChange(value, model) {
-    setSelectedModel(model)
-  }
-
   function imageChange(_, image = {}) {
     const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
@@ -167,7 +167,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/${pid}/detail#model`)
+      history.replace(`/home/project/${pid}/model`)
     }
   }
 
@@ -181,7 +181,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     datasetId: did ? did : undefined,
     testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
-    model: mid ? parseInt(mid) : undefined,
+    modelStage: stage,
     trainType: getCheckedValue(TrainType()),
     network: getCheckedValue(FrameworkType()),
     backbone: getCheckedValue(Backbone()),
@@ -221,7 +221,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                     onChange={trainSetChange}
                     showArrow
                   >
-                    {datasets.filter(ds => ds.id !== testSet).map(item =>
+                    {datasets.filter(ds => ds.id !== testSet && !testingSetIds.includes(ds.id)).map(item =>
                       <Option value={item.id} key={item.id}>
                         {item.name} {item.versionName}(assets: {item.assetCount})
                       </Option>
@@ -286,7 +286,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               <Tip content={t('tip.task.train.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
-                  name="model"
+                  name="modelStage"
                 >
                   <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
                 </Form.Item>

@@ -1,17 +1,21 @@
-import { Col, Row, Select } from 'antd'
+import { Cascader, Col, Row, Select } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import { percent } from '@/utils/number'
+import t from '@/utils/t'
+import useFetch from '../../hooks/useFetch'
 
 
-const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, ...resProps }) => {
+const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps }) => {
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
+  const [_, getModels] = useFetch('model/queryAllModels')
 
   useEffect(() => {
-    fetchModels()
-  }, [])
+    console.log('pid:', pid)
+    pid && getModels(pid)
+  }, [pid])
 
   useEffect(() => {
     if (options.length) {
@@ -35,26 +39,34 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, getModels, .
     generateOptions()
   }, [models])
 
-  function fetchModels() {
-    getModels(pid)
-  }
-
   function generateOptions() {
     const opts = models.map(model => {
+      const name = `${model.name} ${model.versionName}`
+      const map = model.map
       return {
-        label: <Row gutter={10} wrap={false}>
-          <Col flex={1}>{model.name} {model.versionName}</Col>
-          <Col>mAP: <strong title={model.map}>{percent(model.map)}</strong></Col>
-        </Row>,
+        label: name,
         model,
         value: model.id,
+        children: model.stages.map(stage => ({
+          label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.id === model.recommendStage ? t('common.recommend') : ''}`,
+          value: stage.id,
+        })),
       }
     })
     setOptions(opts)
   }
 
+  function labelRender(labels, options) {
+    return <span>{labels.map(label => label)}</span>
+  }
+
+  function filter(input, path) {
+    return path.some(({ label = '' }) => label.toLowerCase().indexOf(input.toLowerCase()) > -1)
+  }
+
   return (
-    <Select value={value} {...resProps} onChange={onChange} options={options} allowClear></Select>
+    <Cascader value={value} {...resProps} onChange={onChange} options={options} 
+    displayRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
   )
 }
 
@@ -63,14 +75,5 @@ const props = (state) => {
     allModels: state.model.allModels,
   }
 }
-const actions = (dispatch) => {
-  return {
-    getModels(pid) {
-      return dispatch({
-        type: 'model/queryAllModels',
-        payload: pid,
-      })
-    }
-  }
-}
-export default connect(props, actions)(ModelSelect)
+
+export default connect(props, null)(ModelSelect)
