@@ -95,7 +95,7 @@ class CmdExport(base.BaseCommand):
                                            class_ids_mapping=class_type_ids,
                                            format_type=anno_format_type,
                                            index_file_path=os.path.join(annotation_dir, 'index.tsv'),
-                                           gt_index_file_path=os.path.join(gt_dir, 'index.tsv'))
+                                           gt_index_file_path=os.path.join(gt_dir, 'index.tsv') if gt_dir else '')
         elif asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             dw = data_writer.LmdbDataWriter(mir_root=mir_root,
                                             assets_location=media_location,
@@ -141,7 +141,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       type=str,
                                       help="export directory for annotations")
     exporting_arg_parser.add_argument("--gt-dir",
-                                      required=True,
+                                      required=False,
                                       dest="gt_dir",
                                       type=str,
                                       help="export directory for ground-truth")
