@@ -289,6 +289,110 @@ class TestCmdImport(unittest.TestCase):
         dict_context = MessageToDict(mir_context, preserving_proto_field_name=True, including_default_value_fields=True)
         if with_annotations:
             if with_person_ignored:
+                pred_gt_idx = {
+                    'cis': {
+                        1: {
+                            'key_ids': {
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                    'ids': [0, 1]
+                                },
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                    'ids': [0]
+                                }
+                            }
+                        }
+                    },
+                    'tags': {
+                        'pose': {
+                            'asset_annos': {
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                    'ids': [0]
+                                },
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                    'ids': [0, 1]
+                                }
+                            },
+                            'sub_indexes': {
+                                'Left': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                            'ids': [1]
+                                        }
+                                    }
+                                },
+                                'Unspecified': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                            'ids': [0]
+                                        }
+                                    }
+                                },
+                                'Frontal': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                            'ids': [0]
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        'difficult': {
+                            'asset_annos': {
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                    'ids': [0]
+                                },
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                    'ids': [0, 1]
+                                }
+                            },
+                            'sub_indexes': {
+                                '0': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                            'ids': [0]
+                                        },
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                            'ids': [0, 1]
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        'color': {
+                            'asset_annos': {
+                                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                    'ids': [0]
+                                },
+                                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                    'ids': [0, 1]
+                                }
+                            },
+                            'sub_indexes': {
+                                'blue': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                            'ids': [1]
+                                        }
+                                    }
+                                },
+                                'pink': {
+                                    'key_ids': {
+                                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                                            'ids': [0]
+                                        }
+                                    }
+                                },
+                                'white': {
+                                    'key_ids': {
+                                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                                            'ids': [0]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 dict_keywords_expect = {
                     'keywords': {
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
@@ -298,110 +402,8 @@ class TestCmdImport(unittest.TestCase):
                             'predefined_keyids': [1]
                         }
                     },
-                    'pred_idx': {
-                        'cis': {
-                            1: {
-                                'key_ids': {
-                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                        'ids': [0, 1]
-                                    },
-                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                                        'ids': [0]
-                                    }
-                                }
-                            }
-                        },
-                        'tags': {
-                            'pose': {
-                                'asset_annos': {
-                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                                        'ids': [0]
-                                    },
-                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                        'ids': [0, 1]
-                                    }
-                                },
-                                'sub_indexes': {
-                                    'Left': {
-                                        'key_ids': {
-                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                                'ids': [1]
-                                            }
-                                        }
-                                    },
-                                    'Unspecified': {
-                                        'key_ids': {
-                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                                                'ids': [0]
-                                            }
-                                        }
-                                    },
-                                    'Frontal': {
-                                        'key_ids': {
-                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                                'ids': [0]
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            'difficult': {
-                                'asset_annos': {
-                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                                        'ids': [0]
-                                    },
-                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                        'ids': [0, 1]
-                                    }
-                                },
-                                'sub_indexes': {
-                                    '0': {
-                                        'key_ids': {
-                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                                                'ids': [0]
-                                            },
-                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                                'ids': [0, 1]
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            'color': {
-                                'asset_annos': {
-                                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                                        'ids': [0]
-                                    },
-                                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                        'ids': [0, 1]
-                                    }
-                                },
-                                'sub_indexes': {
-                                    'blue': {
-                                        'key_ids': {
-                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                                'ids': [1]
-                                            }
-                                        }
-                                    },
-                                    'pink': {
-                                        'key_ids': {
-                                            'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                                                'ids': [0]
-                                            }
-                                        }
-                                    },
-                                    'white': {
-                                        'key_ids': {
-                                            '430df22960b0f369318705800139fcc8ec38a3e4': {
-                                                'ids': [0]
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
+                    'pred_idx': pred_gt_idx,
+                    'gt_idx': pred_gt_idx,
                     'ck_idx': {
                         'theme': {
                             'asset_annos': {
@@ -613,16 +615,7 @@ class TestCmdImport(unittest.TestCase):
                     },
                 }
             else:
-                dict_keywords_expect = {
-                    'keywords': {
-                        '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1, 2]
-                        },
-                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1]
-                        }
-                    },
-                    'pred_idx': {
+                pred_gt_idx = {
                         'cis': {
                             2: {
                                 'key_ids': {
@@ -746,7 +739,18 @@ class TestCmdImport(unittest.TestCase):
                                 }
                             }
                         }
+                    }
+                dict_keywords_expect = {
+                    'keywords': {
+                        '430df22960b0f369318705800139fcc8ec38a3e4': {
+                            'predefined_keyids': [1, 2]
+                        },
+                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                            'predefined_keyids': [1]
+                        }
                     },
+                    'pred_idx': pred_gt_idx,
+                    'gt_idx': pred_gt_idx,
                     'ck_idx': {
                         'camera': {
                             'asset_annos': {
