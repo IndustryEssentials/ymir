@@ -11,6 +11,7 @@ from app.models.model import Model
 from app.models.model_group import ModelGroup
 from app.models.model_stage import ModelStage
 from app.models.task import Task
+from app.models.task_visual_relationship import TaskVisualRelationship
 from app.models.visualization import Visualization
 from app.schemas.visualization import VisualizationCreate, VisualizationUpdate
 
@@ -47,16 +48,18 @@ class CRUDVisualization(CRUDBase[Visualization, VisualizationCreate, Visualizati
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 
         if name:
-            query_dataset = query.join(Task, Task.visualization_id == self.model.id) \
+            query_1 = query.join(TaskVisualRelationship, TaskVisualRelationship.visualization_id == self.model.id) \
+                .join(Task, Task.id == TaskVisualRelationship.task_id) \
                 .join(Dataset, Dataset.id == Task.dataset_id) \
                 .join(DatasetGroup, DatasetGroup.id == Dataset.dataset_group_id) \
                 .filter(DatasetGroup.name.like(f"%{name}%"))
-            query_model = query.join(Task, Task.visualization_id == self.model.id) \
+            query_2 = query.join(TaskVisualRelationship, TaskVisualRelationship.visualization_id == self.model.id) \
+                .join(Task, Task.id == TaskVisualRelationship.task_id) \
                 .join(ModelStage, ModelStage.id == Task.model_stage_id) \
                 .join(Model, Model.id == ModelStage.model_id) \
                 .join(ModelGroup, ModelGroup.id == Model.model_group_id) \
                 .filter(ModelGroup.name.like(f"%{name}%"))
-            query = query_dataset.union(query_model)
+            query = query_1.union(query_2)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:

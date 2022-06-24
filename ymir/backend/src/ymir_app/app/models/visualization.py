@@ -11,7 +11,8 @@ from sqlalchemy.orm import relationship
 
 from app.config import settings
 from app.db.base_class import Base
-from app.models.task import Task  # noqa
+from app.models.task import Task
+from app.models.task_visual_relationship import TaskVisualRelationship
 
 
 class Visualization(Base):
@@ -22,8 +23,9 @@ class Visualization(Base):
 
     tasks = relationship(
         "Task",
-        primaryjoin="foreign(Task.visualization_id)==Visualization.id",
-        backref="visualization",
+        secondary=TaskVisualRelationship.__table__,
+        primaryjoin=id == TaskVisualRelationship.__table__.c.visualization_id,
+        secondaryjoin=Task.__table__.c.id == TaskVisualRelationship.__table__.c.task_id,
         uselist=True,
         viewonly=True,
     )

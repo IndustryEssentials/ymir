@@ -10,5 +10,6 @@ from .crud_model_group import model_group
 from .crud_project import project
 from .crud_role import role
 from .crud_task import task
+from .crud_task_visual_relationship import task_visual_relationship
 from .crud_user import user
 from .crud_visualization import visualization

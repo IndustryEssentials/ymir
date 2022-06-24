@@ -62,10 +62,11 @@ def create_visualization(
     tasks = crud.task.get_multi_by_ids(db, ids=obj_in.task_ids)
     if not tasks:
         raise TaskNotFound()
+
     visualization = crud.visualization.create_visualization(db, user_id=current_user.id)
 
     for task in tasks:
-        crud.task.update_visualization_id(db, task=task, visualization_id=visualization.id)
+        crud.task_visual_relationship.create_relationship(db, task_id=task.id, visualization_id=visualization.id)
     return {"result": visualization}
 
 
