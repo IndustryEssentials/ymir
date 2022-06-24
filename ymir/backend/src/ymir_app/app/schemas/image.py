@@ -18,7 +18,7 @@ class DockerImageBase(BaseModel):
     hash: Optional[str]
     url: Optional[str]
     description: Optional[str]
-    enable_livecode: bool
+    enable_livecode: Optional[bool] = False
 
 
 class DockerImageCreate(DockerImageBase):
