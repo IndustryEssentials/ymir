@@ -190,7 +190,7 @@ class CmdTrain(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
-                      asset_cache_dir: Optional[str],
+                      asset_cache_dir: str,
                       model_upload_location: str,
                       pretrained_model_hash_stage: str,
                       executor: str,
@@ -433,6 +433,7 @@ class CmdTrain(base.BaseCommand):
             _execute_training(
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
+                asset_cache_dir=asset_cache_dir,
                 executor=executor,
                 executant_name=executant_name,
                 executor_config=executor_config,
@@ -497,6 +498,7 @@ class CmdTrain(base.BaseCommand):
 
 def _execute_training(work_dir_in: str,
                       work_dir_out: str,
+                      asset_cache_dir: str,
                       executor: str,
                       executant_name: str,
                       executor_config: Dict,
@@ -522,6 +524,7 @@ def _execute_training(work_dir_in: str,
         _execute_locally(
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
+            asset_cache_dir=asset_cache_dir,
             executor=executor,
             executant_name=executant_name,
             executor_config=executor_config,
@@ -559,11 +562,14 @@ def _execute_locally(
     executor_config: Dict,
     available_gpu_id: str,
     run_as_root: bool = False,
+    asset_cache_dir: str = '',
 ) -> None:
     # start train docker and wait
     path_binds = []
     path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
     path_binds.append(f"-v{work_dir_out}:/out")
+    if asset_cache_dir:
+        path_binds.append(f"-v{asset_cache_dir}:{asset_cache_dir}")
 
     cmd = [
         mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
@@ -605,6 +611,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=False,
                                   dest='asset_cache_dir',
                                   type=str,
+                                  default='',
                                   help='asset cache directory')
     train_arg_parser.add_argument("--executor",
                                   required=True,

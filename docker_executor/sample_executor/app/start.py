@@ -41,6 +41,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
+        if not os.path.isfile(asset_path):
+            raise FileNotFoundError(f"file not found: {asset_path}")
         logging.info(f"asset: {asset_path}, annotation: {annotation_path}")
 
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
