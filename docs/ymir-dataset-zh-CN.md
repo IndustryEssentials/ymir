@@ -50,9 +50,9 @@
 ...
 ```
 
-注意 `candidate-index.tsv` 中只有`图像的绝对路径`
+- 注意 `candidate-index.tsv` 中只有`图像的绝对路径`
 
-- 图像为常见的`jpg, png格式
+- 图像为常见的jpg, png格式
 
 - 默认标注为`txt`格式，其中`class_id, xmin, ymin, xmax, ymax`均为整数， 所有标注格式介绍见[ymir输入镜像的标注格式]()
 
