@@ -48,18 +48,20 @@ class CRUDVisualization(CRUDBase[Visualization, VisualizationCreate, Visualizati
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 
         if name:
-            query_1 = query.join(TaskVisualRelationship, TaskVisualRelationship.visualization_id == self.model.id) \
+            query_dataset = query.join(
+                TaskVisualRelationship, TaskVisualRelationship.visualization_id == self.model.id) \
                 .join(Task, Task.id == TaskVisualRelationship.task_id) \
                 .join(Dataset, Dataset.id == Task.dataset_id) \
                 .join(DatasetGroup, DatasetGroup.id == Dataset.dataset_group_id) \
                 .filter(DatasetGroup.name.like(f"%{name}%"))
-            query_2 = query.join(TaskVisualRelationship, TaskVisualRelationship.visualization_id == self.model.id) \
+            query_model = query.join(
+                TaskVisualRelationship, TaskVisualRelationship.visualization_id == self.model.id) \
                 .join(Task, Task.id == TaskVisualRelationship.task_id) \
                 .join(ModelStage, ModelStage.id == Task.model_stage_id) \
                 .join(Model, Model.id == ModelStage.model_id) \
                 .join(ModelGroup, ModelGroup.id == Model.model_group_id) \
                 .filter(ModelGroup.name.like(f"%{name}%"))
-            query = query_1.union(query_2)
+            query = query_dataset.union(query_model)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
