@@ -1,9 +1,10 @@
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
-from mir.tools.code import MirCode
 
 import numpy as np
 
+from mir.tools import mir_storage_ops, revs_parser
+from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
@@ -619,7 +620,41 @@ class Params:
         self.need_pr_curve = False
 
 
-def det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+def det_evaluate(mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float, iou_thrs: str,
+                 need_pr_curve: bool) -> mirpb.Evaluation:
+    mir_metadatas: mirpb.MirMetadatas
+    mir_annotations: mirpb.MirAnnotations
+    mir_keywords: mirpb.MirKeywords
+    mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_root=mir_root,
+        mir_branch=rev_tid.rev,
+        mir_task_id=rev_tid.tid,
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
+
+    mir_gt = MirCoco(mir_metadatas=mir_metadatas,
+                     mir_annotations=mir_annotations,
+                     mir_keywords=mir_keywords,
+                     conf_thr=conf_thr,
+                     dataset_id=rev_tid.rev_tid,
+                     as_gt=True)
+    mir_dt = MirCoco(mir_metadatas=mir_metadatas,
+                     mir_annotations=mir_annotations,
+                     mir_keywords=mir_keywords,
+                     conf_thr=conf_thr,
+                     dataset_id=rev_tid.rev_tid,
+                     as_gt=False)
+
+    evaluate_config = mirpb.EvaluateConfig()
+    evaluate_config.conf_thr = conf_thr
+    evaluate_config.iou_thrs_interval = iou_thrs
+    evaluate_config.need_pr_curve = need_pr_curve
+    evaluate_config.gt_dataset_id = mir_gt.dataset_id
+    evaluate_config.pred_dataset_ids.append(mir_dt.dataset_id)
+
+    return _det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
+
+
+def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
     for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
         if thr < 0 or thr > 1:
