@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Button, Form, Row, Col, Table} from "antd"
+import { Button, Form, Row, Col, Table, Popover } from "antd"
 import { connect } from "dva"
 import s from "./index.less"
 import style from "./analysis.less"
@@ -14,7 +14,8 @@ import AnalysisChart from "./components/analysisChart"
 
 function Analysis({pid, project, ...func}) {
   const [form] = Form.useForm()
-  const [source, fetchSource] = useFetch('dataset/analysis')
+  const [remoteSource, fetchSource] = useFetch('dataset/analysis')
+  const [source, setSource] = useState([])
   const [datasets, setDatasets] = useState([])
   const [tableSource, setTableSource] = useState([])
   const [chartsData, setChartsData] = useState([])
@@ -23,6 +24,10 @@ function Analysis({pid, project, ...func}) {
     setTableSource(source);
     setAnalysisData(source);
   }, [source])
+
+  useEffect(() => {
+    setSource(remoteSource);
+  }, [remoteSource])
   
   function setAnalysisData(datasets) {
     const chartsMap= [
@@ -30,6 +35,8 @@ function Analysis({pid, project, ...func}) {
         label: 'model.diagnose.analysis.title.asset_bytes',
         sourceField: 'assetBytes',
         totalField: 'assetCount',
+        xUnit: 'MB',
+        renderEachX: x => x.replace("MB",""),
       },
       {
         label: 'model.diagnose.analysis.title.asset_hw_ratio',
@@ -40,12 +47,14 @@ function Analysis({pid, project, ...func}) {
         label: 'model.diagnose.analysis.title.asset_area',
         sourceField: 'assetArea',
         totalField: 'assetCount',
-        xUnit: 'PX'
+        xUnit: 'PX',
+        renderEachX: x => `${x/10000}W`,
       },
       {
         label: 'model.diagnose.analysis.title.asset_quality',
         sourceField: 'assetQuality',
         totalField: 'assetCount',
+        isXUpperLimit: true,
       },
       {
         label: 'model.diagnose.analysis.title.anno_area_ratio',
@@ -53,7 +62,8 @@ function Analysis({pid, project, ...func}) {
         totalField: 'annosCnt',
         customOptions: {
           tooltipLable: 'model.diagnose.analysis.bar.anno.tooltip',
-        }
+        },
+        isXUpperLimit: true,
       },
       {
         label: 'model.diagnose.analysis.title.keyword_ratio',
@@ -71,6 +81,7 @@ function Analysis({pid, project, ...func}) {
         customOptions: {
           ...chart.customOptions,
           xData,
+          xUnit: chart.xUnit,
           yData
         },
       }
@@ -78,10 +89,17 @@ function Analysis({pid, project, ...func}) {
     setChartsData(chartsConfig);
   }
 
-  function getXData({sourceField, xUnit = ''}, datasets) {
+  function getXData({sourceField, isXUpperLimit = false, renderEachX = x => x}, datasets) {
     const dataset = datasets.find(item => item[sourceField] && item[sourceField].length > 0) || datasets[0]
-    const xData = dataset[sourceField] ? dataset[sourceField].map(item => item.x + xUnit) : [];
-    return xData;
+    const xData = dataset && dataset[sourceField] ? dataset[sourceField].map(item => renderEachX(item.x)) : [];
+    const transferXData = xData.map((x,index) => {
+      if (index === xData.length - 1) {
+        return isXUpperLimit ? x : `[${x},+)`
+      } else {
+        return `[${x},${xData[index + 1]})`
+      }
+    })
+    return transferXData;
   }
 
   function getYData({sourceField, totalField}, datasets) {
@@ -175,7 +193,7 @@ function Analysis({pid, project, ...func}) {
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
-      render: (num) => humanize(num),
+      render: (num) => renderPop(humanize(num), num),
     },
     {
       title: showTitle('model.diagnose.analysis.column.average_labels'),
@@ -183,7 +201,6 @@ function Analysis({pid, project, ...func}) {
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
-      render: (num) => humanize(num),
     },
     {
       title: showTitle('model.diagnose.analysis.column.overall'),
@@ -191,10 +208,25 @@ function Analysis({pid, project, ...func}) {
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
-      render: (text, record) => <span>{humanize(record.positiveAssetCnt)}/{humanize(record.assetCount)}</span>,
+      render: (text, record) => renderPop(`${humanize(record.positiveAssetCnt)}/${humanize(record.assetCount)}`, `${record.positiveAssetCnt}/${record.assetCount}`),
     },
   ]
   
+  function renderPop(label, content = {}) {
+    return <Popover content={content} >
+      <span>{label}</span>
+    </Popover>
+  }
+  
+  async function validDatasetCount(rule, value) {
+    const count = 5
+    if (value.length > count) {
+      return Promise.reject(t('model.diagnose.analysis.validator.dataset.count', {count}))
+    } else {
+      return Promise.resolve()
+    }
+  }
+
   const initialValues = {}
  
   return (
@@ -213,7 +245,7 @@ function Analysis({pid, project, ...func}) {
           />
           <Row gutter={[10, 20]}>
             {chartsData.map(chart => (
-              <Col span={12} key={chart.label}>
+              <Col span={24} key={chart.label}>
                 <div className={style.echartTitle}>{t(chart.label)}</div>
                 <AnalysisChart customOptions={chart.customOptions} height={300}/>
               </Col>
@@ -242,7 +274,8 @@ function Analysis({pid, project, ...func}) {
                 label={t('model.diagnose.analysis.column.name')}
                 name='datasets'
                 rules={[
-                  { required: true }
+                  { required: true},
+                  { validator: validDatasetCount}
                 ]}>
                 <DatasetSelect pid={pid} mode='multiple' filterOption={false} onChange={datasetsChange} />
               </Form.Item>

@@ -62,6 +62,7 @@ const model = {
   "model.action.diagnose.training.retry": { cn: '重新诊断', en: 'Retry', },
 
   "model.diagnose.analysis.column.name": { cn: "数据集", en: "Dataset", },
+  "model.diagnose.analysis.validator.dataset.count": { cn: "最多选择{count}个数据集", en: "Select {count} datasets at most", },
   "model.diagnose.analysis.column.version": { cn: "版本", en: "Version", },
   "model.diagnose.analysis.column.size": { cn: "数据集大小", en: "Dataset Size", },
   "model.diagnose.analysis.column.box_count": { cn: "标注框总数", en: "Annotations Count", },
