@@ -78,43 +78,53 @@ class TestToolsDetEval(unittest.TestCase):
                             'annotations': [{
                                 'index': 0,
                                 'box': {
-                                    'x': 50,
-                                    'y': 50,
-                                    'w': 50,
-                                    'h': 50,
+                                    'x': 45,
+                                    'y': 45,
+                                    'w': 52,
+                                    'h': 52,
                                 },
                                 'class_id': 0,
-                                'score': 1,
+                                'score': 0.7,
                             }, {
                                 'index': 1,
                                 'box': {
                                     'x': 150,
                                     'y': 50,
-                                    'w': 75,
-                                    'h': 75,
+                                    'w': 73,
+                                    'h': 73,
                                 },
                                 'class_id': 0,
-                                'score': 1,
+                                'score': 0.8,
                             }, {
                                 'index': 2,
                                 'box': {
-                                    'x': 150,
-                                    'y': 150,
-                                    'w': 75,
-                                    'h': 75,
+                                    'x': 350,
+                                    'y': 50,
+                                    'w': 76,
+                                    'h': 76,
                                 },
-                                'class_id': 1,
-                                'score': 1,
+                                'class_id': 0,
+                                'score': 0.9,
                             }, {
                                 'index': 3,
                                 'box': {
+                                    'x': 150,
+                                    'y': 160,
+                                    'w': 78,
+                                    'h': 78,
+                                },
+                                'class_id': 1,
+                                'score': 0.9,
+                            }, {
+                                'index': 4,
+                                'box': {
                                     'x': 350,
                                     'y': 50,
-                                    'w': 100,
-                                    'h': 100,
+                                    'w': 102,
+                                    'h': 103,
                                 },
                                 'class_id': 2,
-                                'score': 1,
+                                'score': 0.9,
                             }]
                         },
                         'a1': {
@@ -123,11 +133,11 @@ class TestToolsDetEval(unittest.TestCase):
                                 'box': {
                                     'x': 300,
                                     'y': 300,
-                                    'w': 100,
-                                    'h': 100,
+                                    'w': 103,
+                                    'h': 110,
                                 },
                                 'class_id': 2,
-                                'score': 1,
+                                'score': 0.9,
                             }]
                         },
                     }
@@ -154,53 +164,43 @@ class TestToolsDetEval(unittest.TestCase):
                         'annotations': [{
                             'index': 0,
                             'box': {
-                                'x': 45,
-                                'y': 45,
-                                'w': 52,
-                                'h': 52,
+                                'x': 50,
+                                'y': 50,
+                                'w': 50,
+                                'h': 50,
                             },
                             'class_id': 0,
-                            'score': 0.7,
+                            'score': 1,
                         }, {
                             'index': 1,
                             'box': {
                                 'x': 150,
                                 'y': 50,
-                                'w': 73,
-                                'h': 73,
+                                'w': 75,
+                                'h': 75,
                             },
                             'class_id': 0,
-                            'score': 0.8,
+                            'score': 1,
                         }, {
                             'index': 2,
                             'box': {
-                                'x': 350,
-                                'y': 50,
-                                'w': 76,
-                                'h': 76,
+                                'x': 150,
+                                'y': 150,
+                                'w': 75,
+                                'h': 75,
                             },
-                            'class_id': 0,
-                            'score': 0.9,
+                            'class_id': 1,
+                            'score': 1,
                         }, {
                             'index': 3,
                             'box': {
-                                'x': 150,
-                                'y': 160,
-                                'w': 78,
-                                'h': 78,
-                            },
-                            'class_id': 1,
-                            'score': 0.9,
-                        }, {
-                            'index': 4,
-                            'box': {
                                 'x': 350,
                                 'y': 50,
-                                'w': 102,
-                                'h': 103,
+                                'w': 100,
+                                'h': 100,
                             },
                             'class_id': 2,
-                            'score': 0.9,
+                            'score': 1,
                         }]
                     },
                     'a1': {
@@ -209,11 +209,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'box': {
                                 'x': 300,
                                 'y': 300,
-                                'w': 103,
-                                'h': 110,
+                                'w': 100,
+                                'h': 100,
                             },
                             'class_id': 2,
-                            'score': 0.9,
+                            'score': 1,
                         }]
                     },
                 }
@@ -251,7 +251,7 @@ class TestToolsDetEval(unittest.TestCase):
                                     mir_keywords=mir_keywords,
                                     conf_thr=0,
                                     dataset_id='a@a',
-                                    as_gt=False)
+                                    as_gt=True)
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
@@ -292,7 +292,6 @@ class TestToolsDetEval(unittest.TestCase):
         mir_evaluator.evaluate()
         mir_evaluator.accumulate()
         mir_evaluator.summarize()
-        breakpoint()
         self.assertTrue(np.isclose(expected_stats, mir_evaluator.stats).all())
 
         mir_evaluation_result = mir_evaluator.get_evaluation_result()
