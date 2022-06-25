@@ -170,3 +170,12 @@ export function setRecommendStage(model, stage) {
     }
   })
 }
+
+/**
+ * batch fetch model stages
+ * @param {array} ids 
+ * @returns 
+ */
+export function batchModelStages(ids) {
+  return request.get('model_stages/batch', { params: { ids: ids.toString() } })
+}
