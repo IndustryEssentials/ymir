@@ -1,6 +1,7 @@
 import image from "../image"
 import { put, call, select } from "redux-saga/effects"
 import { errorCode } from './func'
+import { transferImage } from "../../constants/image"
 
 function equalObject(obj1, obj2) {
   expect(JSON.stringify(obj1)).toBe(JSON.stringify(obj2))
@@ -50,6 +51,7 @@ describe("models: image", () => {
     }
     const images = products(9).map(image => ({ id: image, configs: [{ config: { anchor: '12,3,4'}, type: 1 }]}))
     const result = { items: images, total: images.length }
+    const expected = { items: images.map(img => transferImage(img)), total: images.length}
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -59,7 +61,7 @@ describe("models: image", () => {
     })
     const end = generator.next()
 
-    expect(end.value).toEqual({ items: images.map((image, index) => ({ ...image, functions: index === images.length ? [] : [1]})), total: images.length })
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getShareImages -> success", () => {
@@ -69,7 +71,7 @@ describe("models: image", () => {
       payload: {},
     }
     const images = products(9).map(image => ({ id: image, configs: [{ config: { anchor: '12,3,4'}, type: 1 }]}))
-    const expected = { items: images, total: images.length }
+    const expected = { items: images.map(image => transferImage(image)), total: images.length }
 
     const generator = saga(creator, { put, call })
     generator.next()
@@ -99,7 +101,7 @@ describe("models: image", () => {
     })
     const end = generator.next()
 
-    expect(end.value).toEqual({ ...expected, functions: [] })
+    expect(end.value).toEqual(transferImage(expected))
     expect(end.done).toBe(true)
   })
   it("effects: delImage", () => {
@@ -142,11 +144,12 @@ describe("models: image", () => {
   })
   it("effects: updateImage", () => {
     const saga = image.effects.updateImage
+    const payload = {id: 10011, name: 'new_image_name'}
     const creator = {
       type: "updateImage",
-      payload: {id: 10011, name: 'new_image_name'},
+      payload,
     }
-    const expected = {id: 10011, name: 'new_image_name'}
+    const expected = transferImage(payload)
 
     const generator = saga(creator, { put, call })
     generator.next()

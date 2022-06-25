@@ -1,4 +1,5 @@
-import { TYPES, STATES, imageIsPending, getImageTypeLabel, getImageStateLabel } from '../image'
+import { format } from '@/utils/date'
+import { TYPES, STATES, imageIsPending, getImageTypeLabel, getImageStateLabel, transferImage } from '../image'
 
 describe("constants: image", () => {
   it("image type have right mapping and object is freeze", () => {
@@ -7,7 +8,7 @@ describe("constants: image", () => {
     expect(TYPES.UNKOWN).toBe(0)
     expect(TYPES.INFERENCE).toBe(9)
 
-    function tryExtendAttr () { TYPES.newAttr = 'test' }
+    function tryExtendAttr() { TYPES.newAttr = 'test' }
     expect(tryExtendAttr).toThrowError('object is not extensible')
   })
   it("image states have right mapping and object is freeze", () => {
@@ -15,7 +16,7 @@ describe("constants: image", () => {
     expect(STATES.DONE).toBe(3)
     expect(STATES.ERROR).toBe(4)
 
-    function tryExtendAttr () { STATES.newAttr = 'test' }
+    function tryExtendAttr() { STATES.newAttr = 'test' }
     expect(tryExtendAttr).toThrowError('object is not extensible')
   })
   it('imageIsPending: image state is pending', () => {
@@ -35,7 +36,7 @@ describe("constants: image", () => {
 
     expect(trainLabel).toEqual(['image.type.train'])
     expect(miningLabel).toEqual(['image.type.mining'])
-    expect(inferenceLabel).toEqual(['image.type.train','image.type.inference'])
+    expect(inferenceLabel).toEqual(['image.type.train', 'image.type.inference'])
     expect(emptyLabel).toEqual([])
     expect(unmatchLabel).toEqual([undefined])
 
@@ -52,5 +53,47 @@ describe("constants: image", () => {
     expect(errorLabel).toBe('image.state.error')
     expect(emptyLabel).toBe('')
     expect(unmatchLabel).toBe(undefined)
+  })
+  it('transferImage: transfer image from backend data', () => {
+    const config = (id, type) => ({
+      image_id: id,
+      config: {
+        expected_map: 0.983,
+        idle_seconds: 60,
+        trigger_crash: 0,
+        type: 1
+      },
+      type
+    })
+    const createTime = "2022-03-10T03:39:09"
+    const functions = [1, 2, 9]
+    const configs = functions.map(conf => config(1, conf))
+    const backendData = {
+      name: "sample_image",
+      state: 3,
+      hash: "f3da055bacc7",
+      url: "sample-tmi:stage-test-01",
+      description: "test",
+      is_deleted: false,
+      create_datetime: createTime,
+      id: 1,
+      is_shared: false,
+      related: [],
+      configs,
+    }
+    const image = transferImage(backendData)
+    const expected = {
+      configs: configs.map(conf => ({ ...conf, liveCode: undefined })),
+      createTime: format(createTime),
+      description: "test",
+      functions,
+      id: 1,
+      isShared: false,
+      name: "sample_image",
+      related: [],
+      state: 3,
+      url: "sample-tmi:stage-test-01",
+    }
+    expect(image).toEqual(expected)
   })
 })
