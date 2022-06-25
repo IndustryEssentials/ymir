@@ -44,7 +44,6 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
     rev_tid = revs_parser.parse_single_arg_rev(branch_id, need_tid=False)
     mir_root = os.path.join(viz_settings.BACKEND_SANDBOX_ROOT, user_id, repo_id)
 
-    breakpoint()
     evaluation = det_eval.det_evaluate(mir_root=mir_root,
                                        rev_tid=rev_tid,
                                        conf_thr=conf_thr,
