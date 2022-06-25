@@ -573,8 +573,8 @@ def _execute_locally(
 
     tensorboard_path = os.path.join(work_dir_in, 'tensorboard')
     if os.path.islink(tensorboard_path):
-        actual_assets_dir = os.readlink(tensorboard_path)
-        path_binds.append(f"-v{tensorboard_path}:{tensorboard_path}")
+        actual_tensorboard_dir = os.readlink(tensorboard_path)
+        path_binds.append(f"-v{actual_tensorboard_dir}:{actual_tensorboard_dir}")
 
     cmd = [
         mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
