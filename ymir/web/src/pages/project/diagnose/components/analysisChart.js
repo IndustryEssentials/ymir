@@ -8,6 +8,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps}) => {
   const [series, setSeries] = useState([])
   const {
     xData,
+    xUnit,
     yData,
     seriesType = 'bar', 
     barWidth = 8, 
@@ -23,7 +24,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps}) => {
 
   const defaultGrid = {
     left: '3%',
-    right: '4%',
+    right: 50,
     bottom: '3%',
     containLabel: true
   }
@@ -81,7 +82,11 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps}) => {
         axisTick: {
           show: false
         },
-        data: xData
+        name: xUnit ? `(${xUnit})` : '',
+        data: xData,
+        axisLabel: {
+          rotate: xData.length > 10 ? 45 : 0,
+        }
       }
     ]
     setOption({

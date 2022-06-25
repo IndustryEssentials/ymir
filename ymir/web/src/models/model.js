@@ -11,9 +11,10 @@ import {
   updateModel,
   verify,
   setRecommendStage,
+  batchModelStages,
 } from "@/services/model"
 import { getStats } from "../services/common"
-import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
+import { transferModelGroup, transferModel, getModelStateFromTask, states, transferStage, } from '@/constants/model'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
@@ -182,6 +183,13 @@ export default {
       const { code, result } = yield call(verify, payload)
       if (code === 0) {
         return result
+      }
+    },
+    *batchModelStages({ payload }, { call, put }) {
+      const { code, result } = yield call(batchModelStages, payload)
+      if (code === 0) {
+        const stages = result.map(stage => transferStage(stage))
+        return stages || []
       }
     },
     *updateModelsStates({ payload }, { put, select }) {
