@@ -649,7 +649,6 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
-        evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
 
         # evaluate for asset_ids for each ck main and ck sub
         for ck_main, ck_main_assets_and_sub in mir_dt.ck_idx.items():
@@ -672,8 +671,8 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
                 evaluator.evaluate()
                 evaluator.accumulate()
                 ste = evaluator.get_evaluation_result().iou_averaged_evaluation.ci_averaged_evaluation
-                single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].subs[ck_sub].CopyFrom(ste)
-
+                single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].sub[ck_sub].CopyFrom(ste)
+        evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
     return evaluation
 
 
