@@ -571,7 +571,7 @@ def _execute_locally(
         actual_assets_dir = os.readlink(assets_path)
         path_binds.append(f"-v{actual_assets_dir}:{actual_assets_dir}")
 
-    tensorboard_path = os.path.join(work_dir_in, 'tensorboard')
+    tensorboard_path = os.path.join(work_dir_out, 'tensorboard')
     if os.path.islink(tensorboard_path):
         actual_tensorboard_dir = os.readlink(tensorboard_path)
         path_binds.append(f"-v{actual_tensorboard_dir}:{actual_tensorboard_dir}")
