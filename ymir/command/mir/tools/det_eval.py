@@ -620,47 +620,13 @@ class Params:
         self.need_pr_curve = False
 
 
-def det_evaluate(mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float, iou_thrs: str,
-                 need_pr_curve: bool) -> mirpb.Evaluation:
-    mir_metadatas: mirpb.MirMetadatas
-    mir_annotations: mirpb.MirAnnotations
-    mir_keywords: mirpb.MirKeywords
-    mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
-        mir_root=mir_root,
-        mir_branch=rev_tid.rev,
-        mir_task_id=rev_tid.tid,
-        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-
-    mir_gt = MirCoco(mir_metadatas=mir_metadatas,
-                     mir_annotations=mir_annotations,
-                     mir_keywords=mir_keywords,
-                     conf_thr=conf_thr,
-                     dataset_id=rev_tid.rev_tid,
-                     as_gt=True)
-    mir_dt = MirCoco(mir_metadatas=mir_metadatas,
-                     mir_annotations=mir_annotations,
-                     mir_keywords=mir_keywords,
-                     conf_thr=conf_thr,
-                     dataset_id=rev_tid.rev_tid,
-                     as_gt=False)
-
-    evaluate_config = mirpb.EvaluateConfig()
-    evaluate_config.conf_thr = conf_thr
-    evaluate_config.iou_thrs_interval = iou_thrs
-    evaluate_config.need_pr_curve = need_pr_curve
-    evaluate_config.gt_dataset_id = mir_gt.dataset_id
-    evaluate_config.pred_dataset_ids.append(mir_dt.dataset_id)
-
-    return _det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
-
-
 def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
-    iou_thr_from, iou_thr_to, iou_thr_step = [float(v) for v in config.iou_thrs_interval.split(':')]
+    iou_thr_from, iou_thr_to, iou_thr_step = _get_iou_thrs(config.iou_thrs_interval)
     for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
         if thr < 0 or thr > 1:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='invalid conf_thr, iou_thr_from, iou_thr_to or iou_thr_step')
-    if iou_thr_from >= iou_thr_to:
+    if iou_thr_from > iou_thr_to:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='invalid iou_thr_from or iou_thr_to')
     params = Params()
@@ -668,7 +634,7 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     params.iouThrs = np.linspace(start=iou_thr_from,
                                  stop=iou_thr_to,
                                  num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
-                                 endpoint=False)
+                                 endpoint=False) if iou_thr_to != iou_thr_from else np.array([iou_thr_from])
     params.need_pr_curve = config.need_pr_curve
 
     evaluation = mirpb.Evaluation()
@@ -709,3 +675,55 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
                 single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].subs[ck_sub].CopyFrom(ste)
 
     return evaluation
+
+
+def _get_iou_thrs(iou_thrs_str: str) -> Tuple[float, float, float]:
+    """
+    Args:
+        iou_thrs_str (str): `from:to:step` or `from`, example: `"0.5:0.95:0.05"` or `"0.5"`
+    Returns:
+        iou_thr_from, iou_thr_to, iou_thr_step
+    Raises:
+        ValueError: if format wrong
+    """
+    iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
+    if len(iou_thrs) == 3:
+        return (iou_thrs[0], iou_thrs[1], iou_thrs[2])
+    elif len(iou_thrs) == 1:
+        return (iou_thrs[0], iou_thrs[0], 0)
+
+    raise ValueError(f"invalid iou thrs str: {iou_thrs_str}")
+
+
+def det_evaluate(mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float, iou_thrs: str,
+                 need_pr_curve: bool) -> mirpb.Evaluation:
+    mir_metadatas: mirpb.MirMetadatas
+    mir_annotations: mirpb.MirAnnotations
+    mir_keywords: mirpb.MirKeywords
+    mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_root=mir_root,
+        mir_branch=rev_tid.rev,
+        mir_task_id=rev_tid.tid,
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
+
+    mir_gt = MirCoco(mir_metadatas=mir_metadatas,
+                     mir_annotations=mir_annotations,
+                     mir_keywords=mir_keywords,
+                     conf_thr=conf_thr,
+                     dataset_id=rev_tid.rev_tid,
+                     as_gt=True)
+    mir_dt = MirCoco(mir_metadatas=mir_metadatas,
+                     mir_annotations=mir_annotations,
+                     mir_keywords=mir_keywords,
+                     conf_thr=conf_thr,
+                     dataset_id=rev_tid.rev_tid,
+                     as_gt=False)
+
+    evaluate_config = mirpb.EvaluateConfig()
+    evaluate_config.conf_thr = conf_thr
+    evaluate_config.iou_thrs_interval = iou_thrs
+    evaluate_config.need_pr_curve = need_pr_curve
+    evaluate_config.gt_dataset_id = mir_gt.dataset_id
+    evaluate_config.pred_dataset_ids.append(mir_dt.dataset_id)
+
+    return _det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
