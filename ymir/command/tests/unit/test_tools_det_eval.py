@@ -246,12 +246,12 @@ class TestToolsDetEval(unittest.TestCase):
             mir_branch='a',
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
         mir_coco = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                    task_annotations=task_annotations,
+                                    mir_annotations=mir_annotations,
                                     mir_keywords=mir_keywords,
                                     conf_thr=0,
-                                    dataset_id='a@a')
+                                    dataset_id='a@a',
+                                    as_gt=False)
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
@@ -274,19 +274,19 @@ class TestToolsDetEval(unittest.TestCase):
             mir_branch='a',
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
-        gt_task_annotations = mir_annotations.ground_truth
 
         mir_gt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  task_annotations=gt_task_annotations,
+                                  mir_annotations=mir_annotations,
                                   mir_keywords=mir_keywords,
                                   conf_thr=0,
-                                  dataset_id='a')
+                                  dataset_id='a',
+                                  as_gt=True)
         mir_dt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  task_annotations=pred_task_annotations,
+                                  mir_annotations=mir_annotations,
                                   mir_keywords=mir_keywords,
                                   conf_thr=0,
-                                  dataset_id='a')
+                                  dataset_id='a',
+                                  as_gt=False)
 
         mir_evaluator = det_eval.MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
         mir_evaluator.evaluate()

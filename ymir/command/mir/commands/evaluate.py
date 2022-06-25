@@ -22,8 +22,8 @@ class CmdEvaluate(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(work_dir: str, src_revs: str, dst_rev: str, mir_root: str, conf_thr: float,
-                      iou_thrs: str, need_pr_curve: bool) -> int:
+    def run_with_args(work_dir: str, src_revs: str, dst_rev: str, mir_root: str, conf_thr: float, iou_thrs: str,
+                      need_pr_curve: bool) -> int:
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
@@ -41,19 +41,19 @@ class CmdEvaluate(base.BaseCommand):
             mir_branch=src_rev_tid.rev,
             mir_task_id=src_rev_tid.tid,
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
-        gt_task_annotations = mir_annotations.ground_truth
 
         mir_gt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  task_annotations=gt_task_annotations,
+                                  mir_annotations=mir_annotations,
                                   mir_keywords=mir_keywords,
                                   conf_thr=conf_thr,
-                                  dataset_id=src_revs)
+                                  dataset_id=src_revs,
+                                  as_gt=True)
         mir_dt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  task_annotations=pred_task_annotations,
+                                  mir_annotations=mir_annotations,
                                   mir_keywords=mir_keywords,
                                   conf_thr=conf_thr,
-                                  dataset_id=src_revs)
+                                  dataset_id=src_revs,
+                                  as_gt=False)
 
         # eval
         evaluate_config = mirpb.EvaluateConfig()

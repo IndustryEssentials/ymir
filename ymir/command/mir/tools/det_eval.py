@@ -12,21 +12,28 @@ from mir.protos import mir_command_pb2 as mirpb
 class MirCoco:
     def __init__(self,
                  mir_metadatas: mirpb.MirMetadatas,
-                 task_annotations: mirpb.SingleTaskAnnotations,
+                 mir_annotations: mirpb.MirAnnotations,
                  mir_keywords: mirpb.MirKeywords,
                  conf_thr: float,
                  dataset_id: str,
+                 as_gt: bool,
                  asset_ids: Iterable[str] = None) -> None:
         """
         creates MirCoco instance
 
         Args:
             mir_metadatas (mirpb.MirMetadatas): metadatas
-            task_annotations (mirpb.SingleTaskAnnotations): annotations
+            mir_annotations (mirpb.MirAnnotations): annotations
             mir_keywords (mirpb.MirKeywords): keywords
             conf_thr (float): lower bound of annotation confidence score
+            dataset_id (str): dataset id
+            as_gt (bool): if false, use preds in mir_annotations and mir_keywords, if true, use gt
             asset_ids (Iterable[str]): asset ids you want to include in MirCoco instance, None means include all
         """
+        task_annotations = mir_annotations.ground_truth if as_gt else mir_annotations.task_annotations[
+            mir_annotations.head_task_id]
+        keyword_to_idx = mir_keywords.gt_idx if as_gt else mir_keywords.pred_idx
+
         if len(mir_metadatas.attributes) == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='no assets in evaluated dataset')
@@ -39,7 +46,7 @@ class MirCoco:
         # key: asset id, value: index in `self._ordered_asset_ids`
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
-        self._ordered_class_ids = sorted(list(mir_keywords.pred_idx.cis.keys()))
+        self._ordered_class_ids = sorted(list(keyword_to_idx.cis.keys()))
         self._ck_idx: Dict[str, mirpb.AssetAnnoIndex] = {key: value for key, value in mir_keywords.ck_idx.items()}
 
         self.img_cat_to_annotations: Dict[Tuple[int, int], List[dict]] = defaultdict(list)
@@ -51,13 +58,6 @@ class MirCoco:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
         self.dataset_id = dataset_id
-
-    def load_dts_from_gt(self, mir_root: str, rev_tids: List[revs_parser.TypRevTid],
-                         conf_thr: float) -> List['MirCoco']:
-        return [
-            MirCoco(mir_root=mir_root, rev_tid=rev_tid, conf_thr=conf_thr, asset_ids=self.get_asset_ids())
-            for rev_tid in rev_tids
-        ]
 
     @property
     def ck_idx(self) -> Dict[str, mirpb.AssetAnnoIndex]:
