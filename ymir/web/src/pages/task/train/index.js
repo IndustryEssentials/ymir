@@ -16,6 +16,7 @@ import { TYPES } from '@/constants/image'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
+import Panel from "@/components/form/panel"
 import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
 import ImageSelect from "@/components/form/imageSelect"
@@ -50,6 +51,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [hpVisible, setHpVisible] = useState(false)
   const [gpu_count, setGPU] = useState(0)
   const [projectDirty, setProjectDirty] = useState(false)
+  const [live, setLiveCode] = useState(false)
 
   const renderRadio = (types) => {
     return (
@@ -133,7 +135,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   function imageChange(_, image = {}) {
     const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
-    setConfig(configObj.config)
+    setLiveCode(!configObj.liveCode)
+    setConfig(removeLiveCodeConfig(configObj.config))
   }
 
   function setConfig(config = {}) {
@@ -141,9 +144,25 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     setSeniorConfig(params)
   }
 
+  function removeLiveCodeConfig(config) {
+    return Object.keys(config).reduce((prev, key) => [
+      'git_url',
+      'git_branch',
+      'code_config',
+    ].includes(key) ? prev : {
+      ...prev,
+      [key]: config[key],
+    }, {})
+  }
+
   const onFinish = async (values) => {
-    const config = {}
-    form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
+
+    const config = {
+      ...(values.live || {}),
+      ...form.getFieldValue('hyperparam').reduce(
+        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        {})
+    }
 
     const gpuCount = form.getFieldValue('gpu_count')
     // if (gpuCount) {
@@ -262,25 +281,25 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
                 {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
               </Form.Item> :
-              <Form.Item
-                label={t('task.label.form.target.label')}
-                name="keywords"
-                rules={[
-                  { required: true, message: t('task.label.form.target.placeholder') }
-                ]}
-              >
-                <Select mode="multiple" showArrow
-                  placeholder={t('task.label.form.member.labeltarget')}
-                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-                  {keywords.map(keyword => (
-                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                      <Row>
-                        <Col flex={1}>{keyword.name}</Col>
-                      </Row>
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item> }
+                <Form.Item
+                  label={t('task.label.form.target.label')}
+                  name="keywords"
+                  rules={[
+                    { required: true, message: t('task.label.form.target.placeholder') }
+                  ]}
+                >
+                  <Select mode="multiple" showArrow
+                    placeholder={t('task.label.form.member.labeltarget')}
+                    filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+                    {keywords.map(keyword => (
+                      <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                        <Row>
+                          <Col flex={1}>{keyword.name}</Col>
+                        </Row>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>}
             </Tip>
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.train.model')}>
@@ -340,6 +359,23 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
+
+            {live ?
+              <Panel label={t('task.train.live.title')} toogleVisible={false}>
+                <Tip hidden={true}>
+                  <Form.Item name={['live', 'git_url']} label={t('task.train.live.url')}>
+                    <Input placeholder={t('task.train.live.url.placeholder')} /></Form.Item>
+                </Tip>
+                <Tip hidden={true}>
+                  <Form.Item name={['live', 'git_branch']} label={t('task.train.live.id')}>
+                    <Input placeholder={t('task.train.live.id.placeholder')} /></Form.Item>
+                </Tip>
+                <Tip hidden={true}>
+                  <Form.Item name={['live', 'code_config']} label={t('task.train.live.config')}>
+                    <Input placeholder={t('task.train.live.config.placeholder')} /></Form.Item>
+                </Tip>
+              </Panel>
+              : null}
 
             {seniorConfig.length ? <Tip content={t('tip.task.filter.hyperparams')}>
               <Form.Item
