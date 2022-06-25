@@ -4,7 +4,6 @@ from mir.tools.code import MirCode
 
 import numpy as np
 
-from mir.tools import mir_storage_ops, revs_parser
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
