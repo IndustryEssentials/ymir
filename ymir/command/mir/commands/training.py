@@ -433,7 +433,6 @@ class CmdTrain(base.BaseCommand):
             _execute_training(
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
-                asset_cache_dir=asset_cache_dir,
                 executor=executor,
                 executant_name=executant_name,
                 executor_config=executor_config,
@@ -498,7 +497,6 @@ class CmdTrain(base.BaseCommand):
 
 def _execute_training(work_dir_in: str,
                       work_dir_out: str,
-                      asset_cache_dir: str,
                       executor: str,
                       executant_name: str,
                       executor_config: Dict,
@@ -524,7 +522,6 @@ def _execute_training(work_dir_in: str,
         _execute_locally(
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
-            asset_cache_dir=asset_cache_dir,
             executor=executor,
             executant_name=executant_name,
             executor_config=executor_config,
@@ -562,14 +559,22 @@ def _execute_locally(
     executor_config: Dict,
     available_gpu_id: str,
     run_as_root: bool = False,
-    asset_cache_dir: str = '',
 ) -> None:
     # start train docker and wait
     path_binds = []
     path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
     path_binds.append(f"-v{work_dir_out}:/out")
-    if asset_cache_dir:
-        path_binds.append(f"-v{asset_cache_dir}:{asset_cache_dir}")
+
+    # assets and tensorboard dir may be sym-links, check and mount on demands.
+    assets_path = os.path.join(work_dir_in, 'assets')
+    if os.path.islink(assets_path):
+        actual_assets_dir = os.readlink(assets_path)
+        path_binds.append(f"-v{actual_assets_dir}:{actual_assets_dir}")
+
+    tensorboard_path = os.path.join(work_dir_in, 'tensorboard')
+    if os.path.islink(tensorboard_path):
+        actual_assets_dir = os.readlink(tensorboard_path)
+        path_binds.append(f"-v{tensorboard_path}:{tensorboard_path}")
 
     cmd = [
         mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
