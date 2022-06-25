@@ -1,9 +1,11 @@
 import { Result } from "@/interface/common"
 
-interface Stage {
+export interface Stage {
   id: number,
   name: string,
   map: number,
+  modelId?: number,
+  modelName?: string,
 }
 export interface ModelGroup {
   id: number,
