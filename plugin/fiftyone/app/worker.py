@@ -51,8 +51,9 @@ def load_task_data(task: Task) -> None:
     for d in task.datas:
         prd_data_dir = base_path / Path(d.data_dir) / "annotations"
         gt_data_dir = base_path / Path(d.data_dir) / "groundtruth"
-        _get_samples(base_path, prd_data_dir, f"pd_{d.name}", sample_pool)
-        _get_samples(base_path, gt_data_dir, f"gt_{d.name}", sample_pool)
+        data_name = d.name.replace(".", "\uff0E")
+        _get_samples(base_path, prd_data_dir, f"pd_{data_name}", sample_pool)
+        _get_samples(base_path, gt_data_dir, f"gt_{data_name}", sample_pool)
 
     # Create dataset
     dataset = Dataset(task.tid)
