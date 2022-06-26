@@ -269,12 +269,10 @@ class CmdTrain(base.BaseCommand):
 
         # Build tensorbaord folder, fixed location at work_dir_out/tensorboard
         tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
-        tensorboard_dir_to_bind = ""
         if tensorboard_dir:
             if tensorboard_dir != tensorboard_dir_local:
                 os.system(f"chmod -R 777 {tensorboard_dir}")
                 os.symlink(tensorboard_dir, tensorboard_dir_local)
-                tensorboard_dir_to_bind = tensorboard_dir
         else:
             os.makedirs(tensorboard_dir_local, exist_ok=True)
         tensorboard_dir = tensorboard_dir_local
@@ -435,8 +433,6 @@ class CmdTrain(base.BaseCommand):
             _execute_training(
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
-                asset_cache_dir=asset_cache_dir,
-                tensorboard_dir_to_bind=tensorboard_dir_to_bind,
                 executor=executor,
                 executant_name=executant_name,
                 executor_config=executor_config,
@@ -501,8 +497,6 @@ class CmdTrain(base.BaseCommand):
 
 def _execute_training(work_dir_in: str,
                       work_dir_out: str,
-                      asset_cache_dir: str,
-                      tensorboard_dir_to_bind: str,
                       executor: str,
                       executant_name: str,
                       executor_config: Dict,
@@ -528,8 +522,6 @@ def _execute_training(work_dir_in: str,
         _execute_locally(
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
-            asset_cache_dir=asset_cache_dir,
-            tensorboard_dir_to_bind=tensorboard_dir_to_bind,
             executor=executor,
             executant_name=executant_name,
             executor_config=executor_config,
@@ -567,22 +559,22 @@ def _execute_locally(
     executor_config: Dict,
     available_gpu_id: str,
     run_as_root: bool = False,
-    asset_cache_dir: str = '',
-    tensorboard_dir_to_bind: str = ''
 ) -> None:
-    """
-    asset_cache_dir: the absolute directory in host, will bind to docker to address the image link problem.
-    tensorboard_dir_to_bind: the absolute directory in host, will bind to docker to address the image link problem.
-    """
     # start train docker and wait
     path_binds = []
     path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
     path_binds.append(f"-v{work_dir_out}:/out")
-    if asset_cache_dir:
-        path_binds.append(f"-v{asset_cache_dir}:{asset_cache_dir}")
 
-    if tensorboard_dir_to_bind:
-        path_binds.append(f"-v{tensorboard_dir_to_bind}:{tensorboard_dir_to_bind}")
+    # assets and tensorboard dir may be sym-links, check and mount on demands.
+    assets_path = os.path.join(work_dir_in, 'assets')
+    if os.path.islink(assets_path):
+        actual_assets_dir = os.readlink(assets_path)
+        path_binds.append(f"-v{actual_assets_dir}:{actual_assets_dir}")
+
+    tensorboard_path = os.path.join(work_dir_out, 'tensorboard')
+    if os.path.islink(tensorboard_path):
+        actual_tensorboard_dir = os.readlink(tensorboard_path)
+        path_binds.append(f"-v{actual_tensorboard_dir}:{actual_tensorboard_dir}")
 
     cmd = [
         mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',

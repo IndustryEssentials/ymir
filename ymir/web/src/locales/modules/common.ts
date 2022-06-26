@@ -55,6 +55,7 @@ const common = {
   'common.step.next': {cn: '下一步', en: 'Next', },
   'common.skip': {cn: '跳过', en: 'Skip', },
   'common.confirm': {cn: '确定', en: 'OK', },
+  'common.cancel': {cn: '取消', en: 'Cancel', },
   'common.done': {cn: '已完成', en: 'Done', },
   'common.action.train': {cn: '训练', en: 'Train', },
   'common.action.mine': {cn: '挖掘', en: 'Mine', },

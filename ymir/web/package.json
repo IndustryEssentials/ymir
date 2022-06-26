@@ -66,6 +66,7 @@
     "echarts": "^5.2.2",
     "react": "17.x",
     "react-dom": "17.x",
+    "react-json-view": "^1.21.3",
     "socket.io-client": "^4.4.1",
     "umi": "^3.5.20"
   },
