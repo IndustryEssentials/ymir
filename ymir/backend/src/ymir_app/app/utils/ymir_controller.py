@@ -311,6 +311,21 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_REPO_CLEAR
         return request
 
+    def prepare_visualization(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        visualization_task_req = mirsvrpb.TaskReqVisualization()
+        visualization_task_req.fiftyone_tid = args["fiftyone_tid"]
+        visualization_task_req.in_dataset_ids[:] = args["in_dataset_ids"]
+        visualization_task_req.in_dataset_pks[:] = args["in_dataset_pks"]
+        visualization_task_req.in_dataset_names[:] = args["in_dataset_names"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mirsvrpb.TaskTypeVisualization
+        req_create_task.visualization.CopyFrom(visualization_task_req)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
+        return request
+
 
 class ControllerClient:
     def __init__(self, channel: str = settings.GRPC_CHANNEL) -> None:
@@ -508,5 +523,19 @@ class ControllerClient:
             type=ExtraRequestType.fix_repo,
             user_id=user_id,
             project_id=project_id,
+        )
+        return self.send(req)
+
+    def create_visualization(self, user_id: int, project_id: int, fiftyone_tid: str, datasets: List[Dict]) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.visualization,
+            user_id=user_id,
+            project_id=project_id,
+            args={
+                "fiftyone_tid": fiftyone_tid,
+                "in_dataset_ids": [dataset["hash"] for dataset in datasets],
+                "in_dataset_pks": [dataset["id"] for dataset in datasets],
+                "in_dataset_names": [dataset["name"] for dataset in datasets],
+            },
         )
         return self.send(req)
