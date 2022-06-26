@@ -50,6 +50,8 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
                                        iou_thrs=str(iou_thr),
                                        need_pr_curve=need_pr_curve)
 
+    logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
+
     return _get_dataset_evaluation_result(evaluation)
 
 
