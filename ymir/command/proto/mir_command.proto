@@ -283,6 +283,7 @@ message SingleTopicTotalSubEvaluation {
 message FloatPoint {
     float x = 1;
     float y = 2;
+    float z = 3;
 }
 
 /// ========== context.mir ==========

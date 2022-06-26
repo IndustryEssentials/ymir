@@ -139,7 +139,6 @@ class MirCoco:
 
 class MirDetEval:
     def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params' = None, asset_ids: Iterable[str] = None):
-        # TODO: asset_ids
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
         self.params = params or Params()  # parameters
@@ -547,8 +546,9 @@ class MirDetEval:
         # pr curve
         if self.params.need_pr_curve and iou_thr_index is not None and class_id_index is not None:
             precisions = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
+            scores = self.eval['scores'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
-                pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index])
+                pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index], z=scores[recall_thr_index])
                 topic_evaluation.pr_curve.append(pr_point)
 
         return topic_evaluation

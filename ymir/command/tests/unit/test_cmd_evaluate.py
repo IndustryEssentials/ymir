@@ -82,7 +82,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'h': 50,
                                 },
                                 'class_id': 0,
-                                'score': 1,
+                                'score': 0.7,
                             }, {
                                 'index': 1,
                                 'box': {
@@ -92,7 +92,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'h': 75,
                                 },
                                 'class_id': 0,
-                                'score': 1,
+                                'score': 0.8,
                             }, {
                                 'index': 2,
                                 'box': {
@@ -102,7 +102,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'h': 75,
                                 },
                                 'class_id': 1,
-                                'score': 1,
+                                'score': 0.9,
                             }, {
                                 'index': 3,
                                 'box': {
@@ -112,7 +112,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'h': 100,
                                 },
                                 'class_id': 2,
-                                'score': 1,
+                                'score': 0.9,
                             }]
                         },
                         'a1': {
@@ -125,9 +125,9 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'h': 100,
                                 },
                                 'class_id': 2,
-                                'score': 1,
+                                'score': 0.9,
                             }]
-                        },
+                        }
                     },
                 },
             },
@@ -158,7 +158,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 50,
                             },
                             'class_id': 0,
-                            'score': 0.7,
+                            'score': 1,
                         }, {
                             'index': 1,
                             'box': {
@@ -168,7 +168,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 75,
                             },
                             'class_id': 0,
-                            'score': 0.8,
+                            'score': 1,
                         }, {
                             'index': 2,
                             'box': {
@@ -178,7 +178,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 75,
                             },
                             'class_id': 1,
-                            'score': 0.9,
+                            'score': 1,
                         }, {
                             'index': 3,
                             'box': {
@@ -188,7 +188,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 100,
                             },
                             'class_id': 2,
-                            'score': 0.9,
+                            'score': 1,
                         }]
                     },
                     'a1': {
@@ -201,10 +201,10 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 100,
                             },
                             'class_id': 2,
-                            'score': 0.9,
+                            'score': 1,
                         }]
-                    }
-                }
+                    },
+                },
             }
         }
         mir_annotations = mirpb.MirAnnotations()
@@ -255,7 +255,7 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args.dst_rev = 'd@d'
         fake_args.conf_thr = 0.3
         fake_args.iou_thrs = '0.5'
-        fake_args.need_pr_curve = False
+        fake_args.need_pr_curve = True
         evaluate_instance = evaluate.CmdEvaluate(fake_args)
         return_code = evaluate_instance.run()
 
