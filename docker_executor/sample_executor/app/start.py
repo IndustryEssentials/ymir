@@ -5,6 +5,9 @@ import time
 from typing import List
 
 from ymir_exc import dataset_reader as dr, env, monitor, result_writer as rw
+# view https://github.com/protocolbuffers/protobuf/issues/10051 for detail
+os.environ.setdefault('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION', 'python')
+from tensorboardX import SummaryWriter
 
 
 def start() -> int:
@@ -41,6 +44,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
+        if not os.path.isfile(asset_path):
+            raise FileNotFoundError(f"file not found: {asset_path}")
         logging.info(f"asset: {asset_path}, annotation: {annotation_path}")
 
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
@@ -59,11 +64,14 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
+    write_tensorboard_log(env_config.output.tensorboard_dir)
+
     with open(os.path.join(env_config.output.models_dir, 'model-0010.params'), 'w') as f:
         f.write('fake model-0010.params')
     with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
-    rw.write_model_stage(stage_name='stage_10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
+    rw.write_model_stage(stage_name='stage_10', files=[
+                         'model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
 
     #! if task done, write 100% percent log
     logging.info('training done')
@@ -98,7 +106,8 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #! write mining result
     #   here we give a fake score to each assets
     total_length = len(asset_paths)
-    mining_result = [(asset_path, index / total_length) for index, asset_path in enumerate(asset_paths)]
+    mining_result = [(asset_path, index / total_length)
+                     for index, asset_path in enumerate(asset_paths)]
     rw.write_mining_result(mining_result=mining_result)
 
     #! if task done, write 100% percent log
@@ -133,8 +142,10 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
     #! write infer result
-    fake_annotation = rw.Annotation(class_name=class_names[0], score=0.9, box=rw.Box(x=50, y=50, w=150, h=150))
-    infer_result = {asset_path: [fake_annotation] for asset_path in asset_paths}
+    fake_annotation = rw.Annotation(
+        class_name=class_names[0], score=0.9, box=rw.Box(x=50, y=50, w=150, h=150))
+    infer_result = {asset_path: [fake_annotation]
+                    for asset_path in asset_paths}
     rw.write_infer_result(infer_result=infer_result)
 
     #! if task done, write 100% percent log
@@ -147,6 +158,16 @@ def _dummy_work(idle_seconds: float, trigger_crash: bool = False, gpu_memory_siz
         time.sleep(idle_seconds)
     if trigger_crash:
         raise RuntimeError('app crashed')
+
+
+def write_tensorboard_log(tensorboard_dir: str) -> None:
+    tb_log = SummaryWriter(tensorboard_dir)
+
+    total_epoch = 30
+    for e in range(total_epoch):
+        tb_log.add_scalar("fake_loss", 10/(1+e), e)
+        time.sleep(1)
+        monitor.write_monitor_logger(percent=e/total_epoch)
 
 
 if __name__ == '__main__':

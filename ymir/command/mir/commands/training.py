@@ -190,7 +190,7 @@ class CmdTrain(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str,
-                      asset_cache_dir: Optional[str],
+                      asset_cache_dir: str,
                       model_upload_location: str,
                       pretrained_model_hash_stage: str,
                       executor: str,
@@ -565,6 +565,17 @@ def _execute_locally(
     path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
     path_binds.append(f"-v{work_dir_out}:/out")
 
+    # assets and tensorboard dir may be sym-links, check and mount on demands.
+    assets_path = os.path.join(work_dir_in, 'assets')
+    if os.path.islink(assets_path):
+        actual_assets_dir = os.readlink(assets_path)
+        path_binds.append(f"-v{actual_assets_dir}:{actual_assets_dir}")
+
+    tensorboard_path = os.path.join(work_dir_out, 'tensorboard')
+    if os.path.islink(tensorboard_path):
+        actual_tensorboard_dir = os.readlink(tensorboard_path)
+        path_binds.append(f"-v{actual_tensorboard_dir}:{actual_tensorboard_dir}")
+
     cmd = [
         mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
         f"--shm-size={_get_shm_size(executor_config=executor_config)}"
@@ -605,6 +616,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=False,
                                   dest='asset_cache_dir',
                                   type=str,
+                                  default='',
                                   help='asset cache directory')
     train_arg_parser.add_argument("--executor",
                                   required=True,

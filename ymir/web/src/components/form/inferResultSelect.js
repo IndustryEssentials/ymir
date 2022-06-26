@@ -36,8 +36,7 @@ const ConfigSelect = ({ configs = [], onChange = () => { } }) => {
   return <Checkbox.Group options={options} onChange={change}></Checkbox.Group>
 }
 
-const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
-  const [form] = Form.useForm()
+const InferResultSelect = ({ pid, form, value, onChange = () => { }, ...resProps }) => {
   const [selectedStages, setSelectedStages] = useState([])
   const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
@@ -136,17 +135,17 @@ const InferResultSelect = ({ pid, value, onChange = () => { } }) => {
   }, [datasets])
 
   return (
-    <Form form={form} layout='vertical'>
-      <Form.Item name='stage' label={t('model.diagnose.label.model')}>
+    <Form form={form} layout='vertical' {...resProps}>
+      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }]}>
         <ModelSelect pid={pid} multiple onChange={modelChange} />
       </Form.Item>
       {datasets.length ?
-        <Form.Item name='dataset' label={t('model.diagnose.label.testing_dataset')}>
+        <Form.Item name='dataset' label={t('model.diagnose.label.testing_dataset')} rules={[{ required: true }]}>
           <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} />
         </Form.Item>
         : null}
       {configs.length ?
-        <Form.Item name='config' label={t('model.diagnose.label.config')}>
+        <Form.Item name='config' label={t('model.diagnose.label.config')} rules={[{ required: true }]}>
           <ConfigSelect configs={configs} onChange={configChange} />
         </Form.Item>
         : null}
