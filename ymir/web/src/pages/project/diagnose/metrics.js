@@ -87,6 +87,7 @@ function Matrics({ pid, project }) {
   }, [selectedMetric, prRate, xAxis])
 
   const onFinish = async (values) => {
+    console.log('values:', values)
     const inferDataset = inferTasks.map(({ result }) => result)
     const params = {
       ...values,
@@ -207,7 +208,6 @@ function Matrics({ pid, project }) {
             <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {'restart'}</Button>
           </div>
           <Panel label={'Metrics'} style={{ marginTop: -10 }} toogleVisible={false}>
-            <InferResultSelect pid={pid} onChange={inferResultChange} />
             <Form
               className={s.form}
               form={form}
@@ -218,6 +218,7 @@ function Matrics({ pid, project }) {
               labelAlign='left'
               colon={false}
             >
+              <InferResultSelect form={form} pid={pid} onChange={inferResultChange} />
               <Form.Item label={t('model.diagnose.form.confidence')} name='confidence'>
                 <InputNumber step={0.0005} min={0.0005} max={0.9995} />
               </Form.Item>
@@ -233,14 +234,15 @@ function Matrics({ pid, project }) {
               </Form.Item>
             </Form>
           </Panel>
+          { diagnosing && selectedModels.length ? 
           <Panel label={'Set Default Stage'} toogleVisible={false}>
             {selectedModels.map(model =>
               <Form.Item label={`${model.name} ${model.versionName}`}>
-                <Select>
+                <Select defaultValue={model.recommendStage}>
                   {model.stages.map(stage => <Select.Option value={stage.id}>{stage.name}</Select.Option>)}
                 </Select>
               </Form.Item>)}
-          </Panel>
+          </Panel> : null }
         </Col>
       </Row>
     </div >

@@ -135,7 +135,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { }, ...resProps
   }, [datasets])
 
   return (
-    <Form form={form} layout='vertical' {...resProps}>
+    <>
       <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }]}>
         <ModelSelect pid={pid} multiple onChange={modelChange} />
       </Form.Item>
@@ -149,7 +149,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { }, ...resProps
           <ConfigSelect configs={configs} onChange={configChange} />
         </Form.Item>
         : null}
-    </Form>
+    </>
   )
 }
 

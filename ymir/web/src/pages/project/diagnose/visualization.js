@@ -20,12 +20,12 @@ const initQuery = {
   limit: 10,
 }
 
-function Visualization({pid, project}) {
+function Visualization({ pid, project }) {
   const [createForm] = Form.useForm()
   const [queryForm] = Form.useForm()
   const [settingsVisible, setSettingsVisible] = useState(true)
-  const [createResult, createVisualization] = useFetch('visualization/createVisualization') 
-  const [{items, total}, fetchSource] = useFetch('visualization/getVisualizations', {items: [], total: 0}) 
+  const [createResult, createVisualization] = useFetch('visualization/createVisualization')
+  const [{ items, total }, fetchSource] = useFetch('visualization/getVisualizations', { items: [], total: 0 })
   const [modelStages, fetchModelStages] = useFetch('model/batchModelStages', [])
   const [datasets, fetchDatasets] = useFetch('dataset/batchDatasets', [])
   const [tableSource, setTableSource] = useState([])
@@ -33,7 +33,7 @@ function Visualization({pid, project}) {
   const delRef = useRef(null)
   const [taskIds, setTaskIds] = useState([])
   const inferRef = useRef(null)
-  
+
   useEffect(() => {
     getData()
   }, [query, createResult])
@@ -78,12 +78,12 @@ function Visualization({pid, project}) {
     setTableSource(source)
   }
 
-  function fetchBatchData(items){
+  function fetchBatchData(items) {
     const stageIds = [...new Set(items.map(item => item.tasks.map(task => task?.parameters?.model_stage_id)).flat())]
     const datasetIds = [...new Set(items.map(item => item.tasks.map(task => task?.parameters?.dataset_id)).flat())]
     stageIds?.length && fetchModelStages(stageIds)
     datasetIds?.length && fetchDatasets(datasetIds)
-  } 
+  }
 
   function InferResultChange(tasks) {
     setTaskIds(tasks.map(task => task.id))
@@ -113,7 +113,7 @@ function Visualization({pid, project}) {
   }
 
   function renderName(names) {
-    return renderPop(names.toString(), (<div>{names.map(name => <>{name}<br/></>)}</div>), 300)
+    return renderPop(names.toString(), (<div>{names.map(name => <>{name}<br /></>)}</div>), 300)
   }
 
   const columns = [
@@ -122,7 +122,7 @@ function Visualization({pid, project}) {
       dataIndex: "modelStages",
       ellipsis: true,
       render: (modelStages) => {
-        const modelNames =  getModelNames(modelStages)
+        const modelNames = getModelNames(modelStages)
         return renderName(modelNames)
       },
     },
@@ -131,7 +131,7 @@ function Visualization({pid, project}) {
       dataIndex: "datasets",
       ellipsis: true,
       render: (datasets) => {
-        const datasetNames =  getDatasetNames(datasets)
+        const datasetNames = getDatasetNames(datasets)
         return renderName(datasetNames)
       },
     },
@@ -139,7 +139,7 @@ function Visualization({pid, project}) {
       title: showTitle('model.diagnose.label.config'),
       dataIndex: "tasks",
       render: (tasks) => {
-        return tasks.map(({config}, index) => {
+        return tasks.map(({ config }, index) => {
           const rlabel = `config${index + 1} `
           return <span key={rlabel}>{config ? renderPop(rlabel, (<ReactJson src={config} name={false} />)) : rlabel}</span>
         })
@@ -229,91 +229,95 @@ function Visualization({pid, project}) {
       }, 1000)
     }
   }
-  
+
   const reset = () => {
     createForm.resetFields();
   }
 
   return (
     <div className={s.wrapper}>
-       <div className={s.container}>
-          <Form
-            name='createForm'
-            className={s.form}
-            form={createForm}
-            colon={false}
-          >
-            <Tip hidden={true}>
-              <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} layout='horizontal' labelAlign='left' {...formLayout} onFinish={onFinish} onFinishFailed={onFinishFailed}/>
-            </Tip>
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20} style={{display: 'flex'}}>
-                  <Form.Item name='submitBtn'>
-                    <Button type="primary" size="large" htmlType="submit">
-                      {t('common.confirm')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn'>
-                    <Button size="large" onClick={() => reset()}>
-                      {t('common.cancel')}
-                    </Button>
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-            </Tip>
-          </Form>
-          <Panel label={t('visualization.records.title')} visible={settingsVisible} setVisible={() => setSettingsVisible(!settingsVisible)}>
-            <div className={s.tableContainer}>
-              <div className={`search ${s.search}`}>
-                <Form
-                  name='queryForm'
-                  form={queryForm}
-                  labelCol={{ flex: '120px' }}
-                  onValuesChange={search}
-                  colon={false}
-                >
-                  <Row>
-                    <Col className={s.queryColumn} span={12}>
-                      <Form.Item name="name" label={t("visualization.query.name")}>
-                        <Input placeholder={t("visualization.form.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Form>
-              </div>
-              <Row>
-                <Col flex={1}>
-                </Col>
-                <Col>
-                  <Button
-                    type='text'
-                    icon={<SyncOutlined style={{ color: 'rgba(0, 0, 0, 0.45)' }} />}
-                    title={'Refresh'}
-                    onClick={() => getData()}
-                  ></Button>
-                </Col>
-              </Row>
-              <Table 
-                align='center'
-                dataSource={tableSource}
-                onChange={pageChange}
-                rowKey={(record) => record.id}
-                rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-                pagination={{
-                  showQuickJumper: true,
-                  showSizeChanger: true,
-                  total: total,
-                  defaultPageSize: query.limit,
-                  showTotal: (total) => t("keyword.pager.total.label", { total }),
-                  defaultCurrent: 1,
-                }}
-                columns={columns}
-              />
+      <div className={s.container}>
+        <Form
+          name='createForm'
+          className={s.form}
+          form={createForm}
+          colon={false}
+          layout='horizontal'
+          labelAlign='left'
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+        >
+          <Tip hidden={true}>
+            <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} />
+          </Tip>
+          <Tip hidden={true}>
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20} style={{ display: 'flex' }}>
+                <Form.Item name='submitBtn'>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('common.confirm')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn'>
+                  <Button size="large" onClick={() => reset()}>
+                    {t('common.cancel')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
+          </Tip>
+        </Form>
+        <Panel label={t('visualization.records.title')} visible={settingsVisible} setVisible={() => setSettingsVisible(!settingsVisible)}>
+          <div className={s.tableContainer}>
+            <div className={`search ${s.search}`}>
+              <Form
+                name='queryForm'
+                form={queryForm}
+                labelCol={{ flex: '120px' }}
+                onValuesChange={search}
+                colon={false}
+              >
+                <Row>
+                  <Col className={s.queryColumn} span={12}>
+                    <Form.Item name="name" label={t("visualization.query.name")}>
+                      <Input placeholder={t("visualization.form.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
             </div>
-          </Panel>
-          <Del ref={delRef} ok={delOk} />
-        </div>
+            <Row>
+              <Col flex={1}>
+              </Col>
+              <Col>
+                <Button
+                  type='text'
+                  icon={<SyncOutlined style={{ color: 'rgba(0, 0, 0, 0.45)' }} />}
+                  title={'Refresh'}
+                  onClick={() => getData()}
+                ></Button>
+              </Col>
+            </Row>
+            <Table
+              align='center'
+              dataSource={tableSource}
+              onChange={pageChange}
+              rowKey={(record) => record.id}
+              rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
+              pagination={{
+                showQuickJumper: true,
+                showSizeChanger: true,
+                total: total,
+                defaultPageSize: query.limit,
+                showTotal: (total) => t("keyword.pager.total.label", { total }),
+                defaultCurrent: 1,
+              }}
+              columns={columns}
+            />
+          </div>
+        </Panel>
+        <Del ref={delRef} ok={delOk} />
+      </div>
     </div >
   )
 }
