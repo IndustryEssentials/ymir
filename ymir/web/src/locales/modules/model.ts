@@ -87,6 +87,7 @@ const model = {
   "model.diagnose.label.model": { cn: "模型", en: "Models", },
   "model.diagnose.label.testing_dataset": { cn: "测试集", en: "Testing Datasets", },
   "model.diagnose.label.config": { cn: "推理配置", en: "Infer Configs", },
+  "model.diagnose.stage.label": { cn: "设置模型Stage", en: "Set Recommended Stage", },
 }
 
 export default model

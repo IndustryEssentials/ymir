@@ -54,13 +54,11 @@ const ci = kws => kws.reduce((prev, kw) => ({
   ...prev,
   [kw]: metadata,
 }), {})
-const ck = cks => cks.reduce((prev, ck) => ({
+const ck = cks => cks.reduce((prev, { value, sub }) => ({
   ...prev,
-  [ck]: {
+  [value]: {
     total: metadata,
-    sub: {
-      [Random.title(1)]: metadata,
-    }
+    sub: sub.reduce((prev, kw) => ({ ...prev, [kw]: metadata }), {})
   }
 }), {})
 const dsData = () => ({
@@ -68,7 +66,7 @@ const dsData = () => ({
   iou_evaluations: {
     [Random.float(0, 1)]: {
       ci_evaluations: ci(['person', 'cat']),
-      ck_evaluations: ck(['hello', 'world']),
+      ck_evaluations: ck([{ value: 'day', sub: ['rainy', 'sunny'] }, { value: 'color', sub: ['black', 'white'] }]),
     },
   },
 })

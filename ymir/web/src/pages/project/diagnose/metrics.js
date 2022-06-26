@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, } from "antd"
 import s from "./index.less"
 
@@ -13,6 +13,7 @@ import RView from "./components/rView"
 import View from './components/view'
 
 import { CompareIcon } from "@/components/common/icons"
+import DefaultStages from "./components/defaultStages"
 
 const metricsTabs = [
   { label: 'mAP', value: 'map', component: MapView, },
@@ -22,14 +23,13 @@ const metricsTabs = [
 ]
 
 const xAxisOptions = [
-  { label: 'Dataset', value: 'dataset' },
-  { label: 'Class', value: 'class' },
+  { label: 'Dataset', value: 0 },
+  { label: 'Class', value: 1 },
 ]
 
 const kwTypes = [{ label: '标签', value: 0 }, { label: '用户标签', value: 1 }]
 
 function Matrics({ pid, project }) {
-  console.log('pid:', pid)
   const [form] = Form.useForm()
   const [inferTasks, setInferTasks] = useState([])
   const [selectedModels, setSelectedModels] = useState([])
@@ -48,6 +48,11 @@ function Matrics({ pid, project }) {
   const [remoteData, fetchDiagnosis] = useFetch('dataset/evaluate')
   const [diagnosis, setDiagnosis] = useState(null)
   const [diagnosing, setDiagnosing] = useState(false)
+  const [filter, setFilter] = useState({
+    kwType: 0,
+    keywords: [],
+    xType: 'dataset',
+  })
 
   useEffect(() => {
     setDiagnosis(remoteData)
@@ -56,7 +61,6 @@ function Matrics({ pid, project }) {
   useEffect(() => {
     if (diagnosing) {
       const kws = [...new Set(selectedModels.map(({ keywords }) => keywords).flat())]
-      console.log('kws:', kws)
       setKeywords(kws)
     }
   }, [selectedModels, diagnosing])
@@ -75,12 +79,16 @@ function Matrics({ pid, project }) {
   }, [kwType, keywords, ck])
 
   useEffect(() => {
-    setSelectedKeywords([])
+    setSelectedKeywords(kwType ? '' : [])
   }, [kwType])
 
   useEffect(() => {
     setDiagnosing(!!diagnosis)
   }, [diagnosis])
+
+  useEffect(() => {
+    filterChange()
+  }, [keywords])
 
   useEffect(() => {
 
@@ -127,6 +135,16 @@ function Matrics({ pid, project }) {
     setSelectedKeywords(values)
   }
 
+  const filterChange = useCallback(() => {
+    
+    setFilter({
+      xType: xAxis,
+      keywords: selectedKeywords.length ? selectedKeywords : (kwType ? null : keywords),
+      kwType,
+    })
+  console.log('xAxis, selectedKeywords, kwType, keywords:', xAxis, selectedKeywords, kwType, keywords)
+  }, [xAxis, selectedKeywords, kwType, keywords])
+
   function isKw() {
     return kwType === kwTypes[0].value
   }
@@ -139,16 +157,12 @@ function Matrics({ pid, project }) {
   function renderView() {
     const panel = metricsTabs.find(({ value }) => selectedMetric === value)
     const Viewer = View(panel.component)
-    const kw = selectedKeywords.length ? selectedKeywords : kws
-    console.log('keywords : selectedKeywords:', keywords, selectedKeywords)
     return <Viewer
       tasks={inferTasks}
       models={selectedModels}
       datasets={selectedDatasets}
       data={diagnosis}
-      xType={xAxis}
-      kwType={kwType}
-      keywords={kw}
+      filter={filter}
     />
   }
 
@@ -179,6 +193,7 @@ function Matrics({ pid, project }) {
       <Col>
         <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions} onChange={xAxisChange} />
       </Col>
+      <Col><Button type="primary" onClick={filterChange}>OK</Button></Col>
     </Row>
   </div>
 
@@ -203,9 +218,11 @@ function Matrics({ pid, project }) {
           {renderFilterPanel()}
           {renderViewPanel()}
         </Col>
-        <Col span={6} className={s.formContainer}>
+        <Col span={6}>
+          <div className={s.formContainer}>
+          
           <div className={s.mask} hidden={!diagnosing}>
-            <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {'restart'}</Button>
+            <Button style={{ marginBottom: 10 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {t('model.diagnose.analysis.btn.retry')}</Button>
           </div>
           <Panel label={'Metrics'} style={{ marginTop: -10 }} toogleVisible={false}>
             <Form
@@ -228,21 +245,14 @@ function Matrics({ pid, project }) {
               <Form.Item name='submitBtn'>
                 <div style={{ textAlign: 'center' }}>
                   <Button type="primary" size="large" htmlType="submit">
-                    <CompareIcon /> {'诊断'}
+                    <CompareIcon /> {t('model.diagnose.analysis.btn.start_diagnose')}
                   </Button>
                 </div>
               </Form.Item>
             </Form>
           </Panel>
-          { diagnosing && selectedModels.length ? 
-          <Panel label={'Set Default Stage'} toogleVisible={false}>
-            {selectedModels.map(model =>
-              <Form.Item label={`${model.name} ${model.versionName}`}>
-                <Select defaultValue={model.recommendStage}>
-                  {model.stages.map(stage => <Select.Option value={stage.id}>{stage.name}</Select.Option>)}
-                </Select>
-              </Form.Item>)}
-          </Panel> : null }
+          </div>
+          <DefaultStages diagnosing={diagnosing} models={selectedModels} />
         </Col>
       </Row>
     </div >
