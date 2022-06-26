@@ -22,9 +22,7 @@ def create_celery() -> current_celery_app:
     celery_app.conf.broker_url = (
         f"redis://{conf.redis_host}:{conf.redis_port}/{conf.redis_db}"
     )
-    celery_app.conf.result_backend = (
-        conf.mongo_uri + "/" + conf.fiftyone_database_name
-    )
+    celery_app.conf.result_backend = f"{conf.mongo_uri}/{conf.fiftyone_database_name}"
 
     celery_app.conf.task_serializer = "pickle"
     celery_app.conf.result_serializer = "pickle"
@@ -73,13 +71,13 @@ def _get_samples(base_path: Path, labels_dir: Path, dataset_name, sample_pool,) 
         rd = csv.reader(fd, delimiter="\t", quotechar='"')
 
         for row in rd:
-            img_path = Path(row[0])
-            annotation = _get_annotation(base_path, row[1])
+            img_path = labels_dir.parent / "images" / Path(row[0])
+            annotation = _get_annotation(labels_dir, row[1])
 
             if img_path.name in sample_pool:
                 sample = sample_pool[img_path.name]
             else:
-                sample = Sample(filepath=base_path / img_path)
+                sample = Sample(filepath=img_path)
                 for k, v in annotation.get("cks", {}).items():
                     sample[k] = v
                 sample_pool[img_path.name] = sample
