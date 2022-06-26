@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
 import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag, message } from "antd"
-import {
-  PlusOutlined,
-  MinusCircleOutlined,
-  UpSquareOutlined,
-  DownSquareOutlined,
-} from '@ant-design/icons'
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
@@ -16,7 +10,6 @@ import { TYPES } from '@/constants/image'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
-import Panel from "@/components/form/panel"
 import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
 import ImageSelect from "@/components/form/imageSelect"
@@ -25,6 +18,9 @@ import commonStyles from "../common.less"
 import ModelSelect from "@/components/form/modelSelect"
 import KeywordRates from "@/components/dataset/keywordRates"
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
+import LiveCodeForm from "../components/liveCodeForm"
+import { removeLiveCodeConfig } from "../components/liveCodeConfig"
+import DockerConfigForm from "../components/dockerConfigForm"
 
 const { Option } = Select
 
@@ -48,7 +44,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [testingSetIds, setTestingSetIds] = useState([])
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
-  const [hpVisible, setHpVisible] = useState(false)
   const [gpu_count, setGPU] = useState(0)
   const [projectDirty, setProjectDirty] = useState(false)
   const [live, setLiveCode] = useState(false)
@@ -101,17 +96,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  async function validHyperparam(rule, value) {
-
-    const params = form.getFieldValue('hyperparam').map(({ key }) => key)
-      .filter(item => item && item.trim() && item === value)
-    if (params.length > 1) {
-      return Promise.reject(t('task.validator.same.param'))
-    } else {
-      return Promise.resolve()
-    }
-  }
-
   async function fetchSysInfo() {
     const result = await func.getSysInfo()
     if (result) {
@@ -135,7 +119,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   function imageChange(_, image = {}) {
     const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
-    setLiveCode(!configObj.liveCode)
+    setLiveCode(image.liveCode || false)
     setConfig(removeLiveCodeConfig(configObj.config))
   }
 
@@ -144,24 +128,13 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     setSeniorConfig(params)
   }
 
-  function removeLiveCodeConfig(config) {
-    return Object.keys(config).reduce((prev, key) => [
-      'git_url',
-      'git_branch',
-      'code_config',
-    ].includes(key) ? prev : {
-      ...prev,
-      [key]: config[key],
-    }, {})
-  }
-
   const onFinish = async (values) => {
 
     const config = {
-      ...(values.live || {}),
-      ...form.getFieldValue('hyperparam').reduce(
+      ...values.hyperparam?.reduce(
         (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
-        {})
+        {}),
+      ...(values.live || {}),
     }
 
     const gpuCount = form.getFieldValue('gpu_count')
@@ -360,91 +333,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               </Form.Item>
             </Tip>
 
-            {live ?
-              <Panel label={t('task.train.live.title')} toogleVisible={false}>
-                <Tip hidden={true}>
-                  <Form.Item name={['live', 'git_url']} label={t('task.train.live.url')}>
-                    <Input placeholder={t('task.train.live.url.placeholder')} /></Form.Item>
-                </Tip>
-                <Tip hidden={true}>
-                  <Form.Item name={['live', 'git_branch']} label={t('task.train.live.id')}>
-                    <Input placeholder={t('task.train.live.id.placeholder')} /></Form.Item>
-                </Tip>
-                <Tip hidden={true}>
-                  <Form.Item name={['live', 'code_config']} label={t('task.train.live.config')}>
-                    <Input placeholder={t('task.train.live.config.placeholder')} /></Form.Item>
-                </Tip>
-              </Panel>
-              : null}
-
-            {seniorConfig.length ? <Tip content={t('tip.task.filter.hyperparams')}>
-              <Form.Item
-                label={t('task.train.form.hyperparam.label')}
-                rules={[{ validator: validHyperparam }]}
-              >
-                <div>
-                  <Button type='link'
-                    onClick={() => setHpVisible(!hpVisible)}
-                    icon={hpVisible ? <UpSquareOutlined /> : <DownSquareOutlined />}
-                    style={{ paddingLeft: 0 }}
-                  >{hpVisible ? t('task.train.fold') : t('task.train.unfold')}
-                  </Button>
-                </div>
-
-                <Form.List name='hyperparam'>
-                  {(fields, { add, remove }) => (
-                    <>
-                      <div className={styles.paramContainer} hidden={!hpVisible}>
-                        <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                          <Col flex={'240px'}>{t('common.key')}</Col>
-                          <Col flex={1}>{t('common.value')}</Col>
-                          <Col span={2}>{t('common.action')}</Col>
-                        </Row>
-                        {fields.map(field => (
-                          <Row key={field.key} gutter={20}>
-                            <Col flex={'240px'}>
-                              <Form.Item
-                                {...field}
-                                // label="Key"
-                                name={[field.name, 'key']}
-                                fieldKey={[field.fieldKey, 'key']}
-                                rules={[
-                                  // {required: true, message: 'Missing Key'},
-                                  { validator: validHyperparam }
-                                ]}
-                              >
-                                <Input disabled={field.name < seniorConfig.length} allowClear maxLength={50} />
-                              </Form.Item>
-                            </Col>
-                            <Col flex={1}>
-                              <Form.Item
-                                {...field}
-                                // label="Value"
-                                name={[field.name, 'value']}
-                                fieldKey={[field.fieldKey, 'value']}
-                                rules={[
-                                  // {required: true, message: 'Missing Value'},
-                                ]}
-                              >
-                                {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                                  <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
-                              </Form.Item>
-                            </Col>
-                            <Col span={2}>
-                              <Space>
-                                {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                                {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
-                              </Space>
-                            </Col>
-                          </Row>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </Form.List>
-
-              </Form.Item>
-            </Tip> : null}
+            <LiveCodeForm live={live} />
+            <DockerConfigForm seniorConfig={seniorConfig} form={form} />
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>

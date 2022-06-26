@@ -83,10 +83,11 @@ describe("constants: image", () => {
     }
     const image = transferImage(backendData)
     const expected = {
-      configs: configs.map(conf => ({ ...conf, liveCode: undefined })),
+      configs,
       createTime: format(createTime),
       description: "test",
-      functions,
+      functions, 
+      liveCode: undefined,
       id: 1,
       isShared: false,
       name: "sample_image",

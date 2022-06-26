@@ -13,7 +13,6 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   const [_, getModels] = useFetch('model/queryAllModels')
 
   useEffect(() => {
-    console.log('pid:', pid)
     pid && getModels(pid)
   }, [pid])
 
