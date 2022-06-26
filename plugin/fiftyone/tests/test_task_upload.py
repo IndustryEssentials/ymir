@@ -22,7 +22,8 @@ def test_get_samples():
     _get_samples(base_path, base_path / Path(annotation_dir), f"gt_{data_name}", sample_pool)
 
     assert sample_pool["241294009_432213948218468_252149922899382953_n.jpg"][data_name].polylines[0].label == "人"
-    assert sample_pool["241294009_432213948218468_252149922899382953_n.jpg"][f"gt_{data_name}"].polylines[0].label == "人"
+    assert sample_pool["241294009_432213948218468_252149922899382953_n.jpg"][f"gt_{data_name}"].polylines[0].label \
+           == "人"
 
 
 def test_get_annotation():
