@@ -29,7 +29,7 @@ class TestEvaluationController:
                     'iou_evaluations': {
                         '0.50': {
                             'ci_evaluations': {
-                                2: {
+                                '2': {
                                     'ap': 1.0,
                                     'ar': 1.0,
                                     'tp': 2,
@@ -37,7 +37,7 @@ class TestEvaluationController:
                                     'fn': 0,
                                     'pr_curve': []
                                 },
-                                0: {
+                                '0': {
                                     'ap': 1.0,
                                     'ar': 1.0,
                                     'tp': 2,
@@ -45,7 +45,7 @@ class TestEvaluationController:
                                     'fn': 0,
                                     'pr_curve': []
                                 },
-                                1: {
+                                '1': {
                                     'ap': 1.0,
                                     'ar': 1.0,
                                     'tp': 1,
@@ -67,7 +67,7 @@ class TestEvaluationController:
                     },
                     'iou_averaged_evaluation': {
                         'ci_evaluations': {
-                            2: {
+                            '2': {
                                 'ap': 1.0,
                                 'ar': 1.0,
                                 'tp': 2,
@@ -75,7 +75,7 @@ class TestEvaluationController:
                                 'fn': 0,
                                 'pr_curve': []
                             },
-                            0: {
+                            '0': {
                                 'ap': 1.0,
                                 'ar': 1.0,
                                 'tp': 2,
@@ -83,7 +83,7 @@ class TestEvaluationController:
                                 'fn': 0,
                                 'pr_curve': []
                             },
-                            1: {
+                            '1': {
                                 'ap': 1.0,
                                 'ar': 1.0,
                                 'tp': 1,
