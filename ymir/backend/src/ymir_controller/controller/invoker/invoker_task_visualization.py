@@ -11,7 +11,7 @@ from controller.utils import utils
 from proto import backend_pb2
 from id_definition.error_codes import CTLResponseCode
 from common_utils.labels import UserLabels
-from controller.config.fiftyone_task import FIFTYONE_URL, FIFTYONE_TIMEOUT
+from controller.config.fiftyone_task import FIFTYONE_URL, FIFTYONE_TIMEOUT, FIFTYONE_CONCURRENT_LIMIT
 
 
 class TaskVisualizationInvoker(TaskBaseInvoker):
@@ -41,7 +41,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         format_str = utils.annotation_format_str(backend_pb2.LabelFormat.PASCAL_VOC)
 
         f_export = partial(cls.export_single_dataset, repo_root, subtask_workdir, media_location, format_str)
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(FIFTYONE_CONCURRENT_LIMIT) as executor:
             res = executor.map(f_export, visualization.in_dataset_ids)
         dataset_export_dirs = list(res)
 
