@@ -60,5 +60,6 @@ def _get_dataset_evaluation_result(evaluation: mirpb.Evaluation) -> DatasetEvalu
     resp["result"] = json_format.MessageToDict(evaluation,
                                                including_default_value_fields=True,
                                                preserving_proto_field_name=True,
-                                               use_integers_for_enums=True)
+                                               use_integers_for_enums=True)['dataset_evaluations']
+    # breakpoint()
     return DatasetEvaluationResult(**resp)

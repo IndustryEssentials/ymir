@@ -98,7 +98,15 @@ class TestEvaluationController:
                             'tp': 5,
                             'fp': 0,
                             'fn': 0,
-                            'pr_curve': []
+                            'pr_curve': [{
+                                'x': 0,
+                                'y': 1,
+                                'z': 0.5
+                            }, {
+                                'x': 1,
+                                'y': 0,
+                                'z': 0.2
+                            }]
                         },
                         'ck_evaluations': {
                             'weather': {
@@ -162,4 +170,4 @@ class TestEvaluationController:
             "?conf_thr=0.3&iou_thr=0.5&need_pr_curve=false")
 
         assert resp.status_code == 200
-        assert resp.json()['result'] == evaluation_json
+        assert resp.json()['result'] == evaluation_json['dataset_evaluations']

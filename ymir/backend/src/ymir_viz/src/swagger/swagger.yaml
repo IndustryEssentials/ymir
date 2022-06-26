@@ -467,28 +467,30 @@ components:
         pr_curve:
           type: array
           example:
-          - - 0
-            - 1
-            - 0.5
-          - - 0.1
-            - 0.9
-            - 0.3
-          - - 0.2
-            - 0.7
-            - 0.2
-          - - 1
-            - 0
-            - 0.3
+          - x: 0
+            "y": 1
+            z: 0.5
+          - x: 0.1
+            "y": 0.9
+            z: 0.3
+          - x: 1
+            "y": 0
+            z: 0.3
           items:
-            $ref: '#/components/schemas/DatasetEvaluationElementTuple3f'
-    DatasetEvaluationElementTuple3f:
-      type: array
+            $ref: '#/components/schemas/DatasetEvaluationElementPoint3d'
+    DatasetEvaluationElementPoint3d:
+      type: object
+      properties:
+        x:
+          type: number
+        "y":
+          type: number
+        z:
+          type: number
       example:
-      - 0.0
-      - 1.0
-      - 0.3
-      items:
-        type: number
+        x: 0.0
+        "y": 1.0
+        z: 0.3
     AssetsResult_result:
       type: object
       properties:
