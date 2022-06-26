@@ -266,6 +266,12 @@ paths:
             maximum: 1.0
             minimum: 0.0
             example: 0.5
+        - name: need_pr_curve
+          in: query
+          description: need pr curve or not
+          required: true
+          schema:
+            type: boolean
       responses:
         "200":
           description: successful operation

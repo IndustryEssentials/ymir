@@ -319,6 +319,14 @@ paths:
           minimum: 0.0
           type: number
           example: 0.5
+      - name: need_pr_curve
+        in: query
+        description: need pr curve or not
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
       responses:
         "200":
           description: successful operation
