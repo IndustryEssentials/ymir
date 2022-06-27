@@ -148,7 +148,6 @@ def list_datasets(
         source=source,
         state=state,
         visible=visible,
-        allow_empty=False,
         offset=offset,
         limit=limit,
         order_by=order_by.name,
@@ -175,7 +174,6 @@ def get_public_datasets(
     datasets, total = crud.dataset.get_multi_datasets(
         db,
         user_id=settings.PUBLIC_DATASET_OWNER,
-        allow_empty=False,
     )
     return {"result": {"total": total, "items": datasets}}
 
