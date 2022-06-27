@@ -288,7 +288,7 @@ class TestToolsDetEval(unittest.TestCase):
                                   dataset_id='a',
                                   as_gt=False)
 
-        mir_evaluator = det_eval.MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
+        mir_evaluator = det_eval.CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
         mir_evaluator.evaluate()
         mir_evaluator.accumulate()
         mir_evaluator.summarize()

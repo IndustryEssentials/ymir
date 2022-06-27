@@ -137,7 +137,7 @@ class MirCoco:
         return self._ordered_class_ids
 
 
-class MirDetEval:
+class CocoDetEval:
     def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params' = None, asset_ids: Iterable[str] = None):
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
@@ -641,7 +641,7 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     evaluation.config.CopyFrom(config)
 
     for mir_dt in mir_dts:
-        evaluator = MirDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+        evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         evaluator.accumulate()
 
@@ -653,10 +653,10 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
         # evaluate for asset_ids for each ck main and ck sub
         for ck_main, ck_main_assets_and_sub in mir_dt.ck_idx.items():
             # ck main
-            evaluator = MirDetEval(coco_gt=mir_gt,
-                                   coco_dt=mir_dt,
-                                   params=params,
-                                   asset_ids=ck_main_assets_and_sub.asset_annos.keys())
+            evaluator = CocoDetEval(coco_gt=mir_gt,
+                                    coco_dt=mir_dt,
+                                    params=params,
+                                    asset_ids=ck_main_assets_and_sub.asset_annos.keys())
             evaluator.evaluate()
             evaluator.accumulate()
             ste = evaluator.get_evaluation_result().iou_averaged_evaluation.ci_averaged_evaluation
@@ -664,10 +664,10 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
 
             # ck sub
             for ck_sub, ck_sub_assets in ck_main_assets_and_sub.sub_indexes.items():
-                evaluator = MirDetEval(coco_gt=mir_gt,
-                                       coco_dt=mir_dt,
-                                       params=params,
-                                       asset_ids=ck_sub_assets.key_ids.keys())
+                evaluator = CocoDetEval(coco_gt=mir_gt,
+                                        coco_dt=mir_dt,
+                                        params=params,
+                                        asset_ids=ck_sub_assets.key_ids.keys())
                 evaluator.evaluate()
                 evaluator.accumulate()
                 ste = evaluator.get_evaluation_result().iou_averaged_evaluation.ci_averaged_evaluation
