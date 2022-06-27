@@ -466,16 +466,16 @@ class MirDetEval:
 
         # ci evaluations: category / class ids
         for class_id_index, class_id in enumerate(self.params.catIds):
-            topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, class_id_index)
-            iou_evaluation.ci_evaluations[class_id].CopyFrom(topic_evaluation)
+            ee = self._get_evaluation_element(iou_thr_index, class_id_index)
+            iou_evaluation.ci_evaluations[class_id].CopyFrom(ee)
         # class average
-        topic_evaluation = self._get_topic_evaluation_result(iou_thr_index, None)
-        iou_evaluation.ci_averaged_evaluation.CopyFrom(topic_evaluation)
+        ee = self._get_evaluation_element(iou_thr_index, None)
+        iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
 
         return iou_evaluation
 
-    def _get_topic_evaluation_result(self, iou_thr_index: Optional[int],
-                                     class_id_index: Optional[int]) -> mirpb.SingleTopicEvaluation:
+    def _get_evaluation_element(self, iou_thr_index: Optional[int],
+                                class_id_index: Optional[int]) -> mirpb.SingleEvaluationElement:
         def _get_tp_tn_or_fn(iou_thr_index: Optional[int], class_id_index: Optional[int], area_ranges_index: int,
                              max_dets_index: int, array: np.ndarray) -> int:
             """
@@ -492,7 +492,7 @@ class MirDetEval:
                 array = np.sum(array[:, :, area_ranges_index, max_dets_index], axis=1)
             return int(array[0])
 
-        topic_evaluation = mirpb.SingleTopicEvaluation()
+        ee = mirpb.SingleEvaluationElement()
 
         # from _summarize
         area_ranges_index = 0  # area range: 'all'
@@ -508,7 +508,7 @@ class MirDetEval:
         else:
             precisions = precisions[:, :, :, area_ranges_index, max_dets_index]
         precisions[precisions <= -1] = 0
-        topic_evaluation.ap = np.mean(precisions) if len(precisions) > 0 else -1
+        ee.ap = np.mean(precisions) if len(precisions) > 0 else -1
 
         # average recall
         # recall dims: iouThrs * catIds * areaRanges * maxDets
@@ -520,28 +520,28 @@ class MirDetEval:
         else:
             recalls = recalls[:, :, area_ranges_index, max_dets_index]
         recalls[recalls <= -1] = 0
-        topic_evaluation.ar = np.mean(recalls) if len(recalls) > 0 else -1
+        ee.ar = np.mean(recalls) if len(recalls) > 0 else -1
 
         # true positive
-        topic_evaluation.tp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
-                                               class_id_index=class_id_index,
-                                               area_ranges_index=area_ranges_index,
-                                               max_dets_index=max_dets_index,
-                                               array=self.eval['all_tps'])
+        ee.tp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
+                                 class_id_index=class_id_index,
+                                 area_ranges_index=area_ranges_index,
+                                 max_dets_index=max_dets_index,
+                                 array=self.eval['all_tps'])
 
         # false positive
-        topic_evaluation.fp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
-                                               class_id_index=class_id_index,
-                                               area_ranges_index=area_ranges_index,
-                                               max_dets_index=max_dets_index,
-                                               array=self.eval['all_fps'])
+        ee.fp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
+                                 class_id_index=class_id_index,
+                                 area_ranges_index=area_ranges_index,
+                                 max_dets_index=max_dets_index,
+                                 array=self.eval['all_fps'])
 
         # false negative
-        topic_evaluation.fn = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
-                                               class_id_index=class_id_index,
-                                               area_ranges_index=area_ranges_index,
-                                               max_dets_index=max_dets_index,
-                                               array=self.eval['all_fns'])
+        ee.fn = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
+                                 class_id_index=class_id_index,
+                                 area_ranges_index=area_ranges_index,
+                                 max_dets_index=max_dets_index,
+                                 array=self.eval['all_fns'])
 
         # pr curve
         if self.params.need_pr_curve and iou_thr_index is not None and class_id_index is not None:
@@ -549,9 +549,9 @@ class MirDetEval:
             scores = self.eval['scores'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index], z=scores[recall_thr_index])
-                topic_evaluation.pr_curve.append(pr_point)
+                ee.pr_curve.append(pr_point)
 
-        return topic_evaluation
+        return ee
 
     def summarize(self) -> None:
         '''
