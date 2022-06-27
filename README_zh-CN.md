@@ -915,6 +915,10 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 尚未在Windows服务器完备测试，暂时无法提供服务支持。
 
+*  如何导入外部模型
+
+参考[此文档](docs/import-extra-models.md)
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-9-brightgreen)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->

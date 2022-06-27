@@ -137,6 +137,13 @@ const task = {
     cn: "选中的模型中的训练目标{keywords}不在当前用户的标签列表中，推理对这些目标无效",
     en: "Inference partial invalidity by {keywords} for selected model out of KEYWORD LIST of current user.",
   },
+  "task.train.live.title": { en: "Live Code Configure", cn: "远程代码配置", },
+  "task.train.live.url": { en: "GitHub Repo. URL", cn: "GitHub仓库地址", },
+  "task.train.live.id": { en: "Branch", cn: "分支", },
+  "task.train.live.config": { en: "Config Filename", cn: "配置文件名称", },
+  "task.train.live.url.placeholder": { en: "Plese input your GitHub repo. URL", cn: "请输入GitHub仓库地址", },
+  "task.train.live.id.placeholder": { en: "Please input your branch name", cn: "请输入分支名称", },
+  "task.train.live.config.placeholder": { en: "Please input your config filename", cn: "请输入配置文件名称", },
 }
 
 export default task

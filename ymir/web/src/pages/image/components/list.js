@@ -62,7 +62,7 @@ const ImageList = ({ role, filter, getImages }) => {
   }
 
   const moreList = (record) => {
-    const { id, name, state, functions, url, related, is_shared } = record
+    const { id, name, state, functions, url, related, isShared } = record
 
     const menus = [
       {
@@ -76,7 +76,7 @@ const ImageList = ({ role, filter, getImages }) => {
         key: "share",
         label: t("image.action.share"),
         onclick: () => share(id, name),
-        hidden: () => !isDone(state) || is_shared,
+        hidden: () => !isDone(state) || isShared,
         icon: <ShareIcon />,
       },
       {
