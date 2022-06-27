@@ -544,9 +544,30 @@ class CocoDetEval:
                                  array=self.eval['all_fns'])
 
         # pr curve
-        if self.params.need_pr_curve and iou_thr_index is not None and class_id_index is not None:
-            precisions = self.eval['precision'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
-            scores = self.eval['scores'][iou_thr_index, :, class_id_index, area_ranges_index, max_dets_index]
+        if self.params.need_pr_curve:
+            # self.eval['precision'] dims: iouThrs * recThrs * catIds * areaRanges * maxDets
+            # precisions dims: iouThrs * recThrs * catIds
+            precisions = self.eval['precision'][:, :, :, area_ranges_index, max_dets_index]
+            scores = self.eval['scores'][:, :, :, area_ranges_index, max_dets_index]
+
+            # from dims: iouThrs * recThrs * catIds
+            # to dims: recThrs * catIds
+            if iou_thr_index is not None:
+                precisions = precisions[iou_thr_index, :, :]
+                scores = scores[iou_thr_index, :, :]
+            else:
+                precisions = np.average(precisions, axis=0)
+                scores = np.average(scores, axis=0)
+
+            # from dims: recThrs * catIds
+            # to dims: recThrs
+            if class_id_index is not None:
+                precisions = precisions[:, class_id_index]
+                scores = scores[:, class_id_index]
+            else:
+                precisions = np.average(precisions, axis=1)
+                scores = np.average(scores, axis=1)
+
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index], z=scores[recall_thr_index])
                 ee.pr_curve.append(pr_point)
