@@ -59,7 +59,7 @@ server {
     }
 
     location /fiftyone/ {
-        proxy_pass ${FIFTYONE_HOST_URL};
+        return 307 ${FIFTYONE_HOST_URL}$request_uri;
     }
 
     location /socket/ {
