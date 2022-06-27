@@ -266,6 +266,12 @@ paths:
             maximum: 1.0
             minimum: 0.0
             example: 0.5
+        - name: need_pr_curve
+          in: query
+          description: need pr curve or not
+          required: true
+          schema:
+            type: boolean
       responses:
         "200":
           description: successful operation
@@ -490,10 +496,15 @@ components:
         pr_curve:
           type: array
           items:
-            $ref: "#/components/schemas/DatasetEvaluationElementTuple3f"
-          example: [[0, 1, 0.5], [0.1, 0.9, 0.3], [0.2, 0.7, 0.2], [1, 0, 0.3]]
-    DatasetEvaluationElementTuple3f:
-      type: array
-      items:
-        type: number
-      example: [0.0, 1.0, 0.3]  # precision, recall, confidence
+            $ref: "#/components/schemas/DatasetEvaluationElementPoint3d"
+          example: [{'x': 0, 'y': 1, 'z': 0.5}, {'x': 0.1, 'y': 0.9, 'z': 0.3}, {'x': 1, 'y': 0, 'z': 0.3}]
+    DatasetEvaluationElementPoint3d:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        z:
+          type: number
+      example: {'x': 0.0, 'y': 1.0, 'z': 0.3}  # x: recall, y: precision, z: confidence

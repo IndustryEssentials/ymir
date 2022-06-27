@@ -531,9 +531,13 @@ class MirKeywords(google.protobuf.message.Message):
         """key: class id, value: assert ids"""
         pass
     @property
-    def pred_idx(self) -> global___KeywordToIndex: ...
+    def pred_idx(self) -> global___KeywordToIndex:
+        """ci to assets, generated from preds"""
+        pass
     @property
-    def gt_idx(self) -> global___KeywordToIndex: ...
+    def gt_idx(self) -> global___KeywordToIndex:
+        """ci to assets, generated from gt"""
+        pass
     @property
     def ck_idx(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___AssetAnnoIndex]:
         """key: ck main key, value: assets and assets with sub keys"""
@@ -1002,56 +1006,54 @@ class SingleIouEvaluation(google.protobuf.message.Message):
         VALUE_FIELD_NUMBER: builtins.int
         key: builtins.int = ...
         @property
-        def value(self) -> global___SingleTopicEvaluation: ...
+        def value(self) -> global___SingleEvaluationElement: ...
         def __init__(self,
             *,
             key : builtins.int = ...,
-            value : typing.Optional[global___SingleTopicEvaluation] = ...,
+            value : typing.Optional[global___SingleEvaluationElement] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class TopicEvaluationsEntry(google.protobuf.message.Message):
+    class CkEvaluationsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
         key: typing.Text = ...
         @property
-        def value(self) -> global___SingleTopicEvaluation: ...
+        def value(self) -> global___SingleCkTotalSubEvaluation: ...
         def __init__(self,
             *,
             key : typing.Text = ...,
-            value : typing.Optional[global___SingleTopicEvaluation] = ...,
+            value : typing.Optional[global___SingleCkTotalSubEvaluation] = ...,
             ) -> None: ...
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     CI_EVALUATIONS_FIELD_NUMBER: builtins.int
     CI_AVERAGED_EVALUATION_FIELD_NUMBER: builtins.int
-    TOPIC_EVALUATIONS_FIELD_NUMBER: builtins.int
+    CK_EVALUATIONS_FIELD_NUMBER: builtins.int
     @property
-    def ci_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleTopicEvaluation]:
+    def ci_evaluations(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___SingleEvaluationElement]:
         """key: class ids"""
         pass
     @property
-    def ci_averaged_evaluation(self) -> global___SingleTopicEvaluation:
+    def ci_averaged_evaluation(self) -> global___SingleEvaluationElement:
         """evaluations averaged by class ids"""
         pass
     @property
-    def topic_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTopicEvaluation]:
-        """key: topic names"""
-        pass
+    def ck_evaluations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleCkTotalSubEvaluation]: ...
     def __init__(self,
         *,
-        ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleTopicEvaluation]] = ...,
-        ci_averaged_evaluation : typing.Optional[global___SingleTopicEvaluation] = ...,
-        topic_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleTopicEvaluation]] = ...,
+        ci_evaluations : typing.Optional[typing.Mapping[builtins.int, global___SingleEvaluationElement]] = ...,
+        ci_averaged_evaluation : typing.Optional[global___SingleEvaluationElement] = ...,
+        ck_evaluations : typing.Optional[typing.Mapping[typing.Text, global___SingleCkTotalSubEvaluation]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation","ci_evaluations",b"ci_evaluations","topic_evaluations",b"topic_evaluations"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ci_averaged_evaluation",b"ci_averaged_evaluation","ci_evaluations",b"ci_evaluations","ck_evaluations",b"ck_evaluations"]) -> None: ...
 global___SingleIouEvaluation = SingleIouEvaluation
 
-class SingleTopicEvaluation(google.protobuf.message.Message):
+class SingleEvaluationElement(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     AP_FIELD_NUMBER: builtins.int
     AR_FIELD_NUMBER: builtins.int
@@ -1076,20 +1078,55 @@ class SingleTopicEvaluation(google.protobuf.message.Message):
         pr_curve : typing.Optional[typing.Iterable[global___FloatPoint]] = ...,
         ) -> None: ...
     def ClearField(self, field_name: typing_extensions.Literal["ap",b"ap","ar",b"ar","fn",b"fn","fp",b"fp","pr_curve",b"pr_curve","tp",b"tp"]) -> None: ...
-global___SingleTopicEvaluation = SingleTopicEvaluation
+global___SingleEvaluationElement = SingleEvaluationElement
+
+class SingleCkTotalSubEvaluation(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+    class SubEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleEvaluationElement: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleEvaluationElement] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    TOTAL_FIELD_NUMBER: builtins.int
+    SUB_FIELD_NUMBER: builtins.int
+    @property
+    def total(self) -> global___SingleEvaluationElement: ...
+    @property
+    def sub(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleEvaluationElement]: ...
+    def __init__(self,
+        *,
+        total : typing.Optional[global___SingleEvaluationElement] = ...,
+        sub : typing.Optional[typing.Mapping[typing.Text, global___SingleEvaluationElement]] = ...,
+        ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["total",b"total"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["sub",b"sub","total",b"total"]) -> None: ...
+global___SingleCkTotalSubEvaluation = SingleCkTotalSubEvaluation
 
 class FloatPoint(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     X_FIELD_NUMBER: builtins.int
     Y_FIELD_NUMBER: builtins.int
+    Z_FIELD_NUMBER: builtins.int
     x: builtins.float = ...
     y: builtins.float = ...
+    z: builtins.float = ...
     def __init__(self,
         *,
         x : builtins.float = ...,
         y : builtins.float = ...,
+        z : builtins.float = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["x",b"x","y",b"y"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["x",b"x","y",b"y","z",b"z"]) -> None: ...
 global___FloatPoint = FloatPoint
 
 class MirContext(google.protobuf.message.Message):

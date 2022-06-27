@@ -15,7 +15,6 @@ class CmdEvaluate(base.BaseCommand):
         return CmdEvaluate.run_with_args(work_dir=self.args.work_dir,
                                          src_revs=self.args.src_revs,
                                          dst_rev=self.args.dst_rev,
-                                         gt_rev=self.args.gt_rev,
                                          mir_root=self.args.mir_root,
                                          conf_thr=self.args.conf_thr,
                                          iou_thrs=self.args.iou_thrs,
@@ -23,10 +22,9 @@ class CmdEvaluate(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(work_dir: str, src_revs: str, dst_rev: str, gt_rev: str, mir_root: str, conf_thr: float,
-                      iou_thrs: str, need_pr_curve: bool) -> int:
-        src_rev_tids = revs_parser.parse_arg_revs(src_revs)
-        gt_rev_tid = revs_parser.parse_single_arg_rev(gt_rev, need_tid=False)
+    def run_with_args(work_dir: str, src_revs: str, dst_rev: str, mir_root: str, conf_thr: float, iou_thrs: str,
+                      need_pr_curve: bool) -> int:
+        src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
         return_code = checker.check(mir_root,
@@ -34,18 +32,12 @@ class CmdEvaluate(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        # read pred and gt
-        mir_gt = det_eval.MirCoco(mir_root=mir_root, rev_tid=gt_rev_tid, conf_thr=conf_thr)
-        mir_dts = mir_gt.load_dts_from_gt(mir_root=mir_root, rev_tids=src_rev_tids, conf_thr=conf_thr)
-
-        # eval
-        evaluate_config = mirpb.EvaluateConfig()
-        evaluate_config.conf_thr = conf_thr
-        evaluate_config.iou_thrs_interval = iou_thrs
-        evaluate_config.need_pr_curve = need_pr_curve
-        evaluate_config.gt_dataset_id = mir_gt.dataset_id
-        evaluate_config.pred_dataset_ids.extend([mir_dt.dataset_id for mir_dt in mir_dts])
-        evaluation = det_eval.det_evaluate(mir_dts=mir_dts, mir_gt=mir_gt, config=evaluate_config)
+        # evaluate
+        evaluation = det_eval.det_evaluate(mir_root=mir_root,
+                                           rev_tid=src_rev_tid,
+                                           conf_thr=conf_thr,
+                                           iou_thrs=iou_thrs,
+                                           need_pr_curve=need_pr_curve)
 
         _show_evaluation(evaluation=evaluation)
 
@@ -58,7 +50,7 @@ class CmdEvaluate(base.BaseCommand):
                                            dst_rev=dst_rev)
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
-                                                      his_branch=src_rev_tids[0].rev,
+                                                      his_branch=src_rev_tid.rev,
                                                       mir_datas={},
                                                       task=task)
 
@@ -77,8 +69,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                                 description='use this command to evaluate model with ground truth',
                                                 help='evaluate model with ground truth')
     evaluate_arg_parser.add_argument('-w', dest='work_dir', type=str, help='work place for training')
-    evaluate_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, required=True, help="prediction rev@tid")
-    evaluate_arg_parser.add_argument("--gt-rev", dest="gt_rev", type=str, required=True, help="ground truth rev@tid")
+    evaluate_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, required=True, help="rev@tid")
     evaluate_arg_parser.add_argument("--dst-rev",
                                      dest="dst_rev",
                                      type=str,

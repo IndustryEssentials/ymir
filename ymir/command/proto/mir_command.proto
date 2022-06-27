@@ -151,8 +151,8 @@ message MirKeywords {
     // key: class id, value: assert ids
     map<int32, StringList> index_predefined_keyids = 6;
 
-    KeywordToIndex pred_idx = 7;
-    KeywordToIndex gt_idx = 8;
+    KeywordToIndex pred_idx = 7;  // ci to assets, generated from preds
+    KeywordToIndex gt_idx = 8;  // ci to assets, generated from gt
 
     // key: ck main key, value: assets and assets with sub keys
     map<string, AssetAnnoIndex> ck_idx = 9;
@@ -261,12 +261,12 @@ message SingleDatasetEvaluation {
 }
 
 message SingleIouEvaluation {
-    map<int32, SingleTopicEvaluation> ci_evaluations = 1;  // key: class ids
-    SingleTopicEvaluation ci_averaged_evaluation = 2;  // evaluations averaged by class ids
-    map<string, SingleTopicEvaluation> topic_evaluations = 3;  // key: topic names
+    map<int32, SingleEvaluationElement> ci_evaluations = 1;  // key: class ids
+    SingleEvaluationElement ci_averaged_evaluation = 2;  // evaluations averaged by class ids
+    map<string, SingleCkTotalSubEvaluation> ck_evaluations = 3;
 }
 
-message SingleTopicEvaluation {
+message SingleEvaluationElement {
     float ap = 1;
     float ar = 2;
     int32 tp = 3;
@@ -275,9 +275,15 @@ message SingleTopicEvaluation {
     repeated FloatPoint pr_curve = 6;
 }
 
+message SingleCkTotalSubEvaluation {
+    SingleEvaluationElement total = 1;
+    map<string, SingleEvaluationElement> sub = 2;
+}
+
 message FloatPoint {
     float x = 1;
     float y = 2;
+    float z = 3;
 }
 
 /// ========== context.mir ==========
