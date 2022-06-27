@@ -7,7 +7,7 @@ import useFetch from "@/hooks/useFetch"
 import Panel from "@/components/form/panel"
 import InferResultSelect from "../../../components/form/inferResultSelect"
 import MapView from "./components/mapView"
-import CurvView from "./components/curvView"
+import CurveView from "./components/curveView"
 import PView from "./components/pView"
 import RView from "./components/rView"
 import View from './components/view'
@@ -17,7 +17,7 @@ import DefaultStages from "./components/defaultStages"
 
 const metricsTabs = [
   { label: 'mAP', value: 'map', component: MapView, },
-  { label: 'PR curve', value: 'curv', component: CurvView, },
+  { label: 'PR curve', value: 'curv', component: CurveView, },
   { label: 'R@P', value: 'rp', component: RView, },
   { label: 'P@R', value: 'pr', component: PView, },
 ]
@@ -79,6 +79,7 @@ function Matrics({ pid, project }) {
   }, [kwType, keywords, ck])
 
   useEffect(() => {
+    console.log('kwType:', kwType)
     setSelectedKeywords(kwType ? '' : [])
   }, [kwType])
 
@@ -118,12 +119,11 @@ function Matrics({ pid, project }) {
     setSelectedModels(models)
   }
 
-  function metricsChange({ target: { checked } }) {
-    setSelectedMetric(checked)
+  function metricsChange({ target: { value } }) {
+    setSelectedMetric(value)
   }
 
   function prRateChange({ target: { value } }) {
-    console.log('pr rate chagne value:', value)
     setPrRate(value)
   }
 
@@ -142,7 +142,6 @@ function Matrics({ pid, project }) {
       keywords: selectedKeywords.length ? selectedKeywords : (kwType ? null : keywords),
       kwType,
     })
-  console.log('xAxis, selectedKeywords, kwType, keywords:', xAxis, selectedKeywords, kwType, keywords)
   }, [xAxis, selectedKeywords, kwType, keywords])
 
   function isKw() {

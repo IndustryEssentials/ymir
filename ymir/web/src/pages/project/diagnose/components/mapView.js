@@ -147,7 +147,7 @@ const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywo
   }
 
   function getModelCell(rid) {
-    const task = tasks.find(({ result }) => rid)
+    const task = tasks.find(({ result }) => result === rid)
     const model = models.find(model => model.id === task.model)
     const stage = model.stages.find(sg => sg.id === task.stage)
     return <span title={JSON.stringify(task.config)}>{`${model.name} ${model.versionName} ${stage.name}`}</span>

@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react"
 import { Col, Row, Table } from "antd"
 import { percent } from '@/utils/number'
+import PrCurve from "./prCurve"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
-
-const average = (nums = []) => nums.reduce((prev, num) => prev + num, 0) / nums.length
 
 const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
 
@@ -60,13 +59,14 @@ const CurveView = ({ tasks, datasets, models, data, filter: { xType, kwType, key
   }, [xType, dd, kd, dData, kData])
 
   function generateDData(data) {
+
     const field = getKwField(kwType)
-    const ddata = Object.keys(data).reduce((prev, id) => {
-      const { iou_evaluations } = data[id]
+    const ddata = Object.keys(data).reduce((prev, rid) => {
+      const { iou_evaluations } = data[rid]
       const fiou = Object.values(iou_evaluations)[0]
       return {
         ...prev,
-        [id]: fiou[field],
+        [rid]: fiou[field],
       }
     }, {})
     setDData(ddata)
@@ -81,7 +81,6 @@ const CurveView = ({ tasks, datasets, models, data, filter: { xType, kwType, key
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         if (kwType) {
-          console.log('fiou[key]:', fiou[key])
           Object.keys(fiou[key].sub).forEach(subKey => {
             kdata[key][subKey] = kdata[key][subKey] || { _average: fiou[key].total }
             kdata[key][subKey][id] = fiou[key].sub[subKey]
@@ -96,7 +95,6 @@ const CurveView = ({ tasks, datasets, models, data, filter: { xType, kwType, key
   }
 
   function generateList(isDs) {
-    console.log('kd:', dd, kd, isDs)
     const titles = isDs ? dd : kd
     const list = titles.map(({ value, label }) => ({
       id: value, label,
@@ -108,50 +106,52 @@ const CurveView = ({ tasks, datasets, models, data, filter: { xType, kwType, key
 
   function generateDsRows(tid) {
     const tts = tasks.filter(({ testing }) => testing === tid)
-    return tts.map(({ result: rid }) => {
-      const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
-      console.log('ddata:', ddata)
-      const kwAps = kd.reduce((prev, { value: kw }) => {
+
+    return kd.map(({ value }) => {
+      const kwRows = tts.map(({ result: rid }) => {
+        const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
+        const _model = getModelCell(rid)
+        const line = ddata[value].pr_curve
         return {
-          ...prev,
-          [kw]: ddata[kw].pr_curve,
+          id: rid,
+          name: _model,
+          line,
         }
-      }, {})
-      const _model = getModelCell(rid)
+      })
       return {
-        id: rid,
-        _model,
-        ...kwAps,
+        id: value,
+        title: value,
+        lines: kwRows,
       }
     })
   }
 
   const generateKwRows = (kw) => {
     const kdata = kwType ? kData[keywords][kw] : kData[kw]
-    const mids = [...new Set(tasks.map(({ model }) => model))]
 
-    return mids.map(mid => {
-      const tks = tasks.filter(({ model }) => model === mid)
-      const _model = getModelCell(tks[0].result)
-      const drow = tks.reduce((prev, { testing, result }) => {
+    return dd.map(({ value: tid, label }) => {
+      const tks = tasks.filter(({ testing }) => testing === tid)
+      const lines = tks.map(({ testing, result }) => {
+        const _model = getModelCell(result)
         return {
-          ...prev,
-          [testing]: kdata[result].pr_curve
+          id: testing,
+          name: _model,
+          line: kdata[result].pr_curve
         }
-      }, {})
+      })
       return {
-        id: mid,
-        _model,
-        ...drow,
+        id: tid,
+        title: label,
+        lines,
       }
     })
   }
 
   function getModelCell(rid) {
-    const task = tasks.find(({ result }) => rid)
+    const task = tasks.find(({ result }) => result === rid)
     const model = models.find(model => model.id === task.model)
     const stage = model.stages.find(sg => sg.id === task.stage)
-    return <span title={JSON.stringify(task.config)}>{`${model.name} ${model.versionName} ${stage.name}`}</span>
+    return `${model.name} ${model.versionName} ${stage.name}`
   }
 
   function generateColumns() {
@@ -182,19 +182,12 @@ const CurveView = ({ tasks, datasets, models, data, filter: { xType, kwType, key
   return list.map(({ id, label, rows }) => <div key={id}>
     <h3>{label}</h3>
     <Row gutter={20}>
-      {columns.map(column => <Col>
-        <h4>{column.label}</h4>
-      {console.log('rows: ', rows)}
+      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1}>
+        <h4>{columns[index].label}</h4>
+        <PrCurve title={title} lines={lines} />
       </Col>
       )}
     </Row>
-    {/* <Table
-      dataSource={rows}
-      rowKey={record => record.id}
-      rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-      columns={columns}
-      pagination={false}
-    /> */}
   </div>)
 }
 
