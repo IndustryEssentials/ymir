@@ -52,10 +52,6 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
 
     logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
 
-    return _get_dataset_evaluation_result(evaluation)
-
-
-def _get_dataset_evaluation_result(evaluation: mirpb.Evaluation) -> DatasetEvaluationResult:
     resp = utils.suss_resp()
     resp["result"] = json_format.MessageToDict(evaluation,
                                                including_default_value_fields=True,
