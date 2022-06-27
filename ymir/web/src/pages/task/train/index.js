@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
 import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag, message } from "antd"
-import {
-  PlusOutlined,
-  MinusCircleOutlined,
-  UpSquareOutlined,
-  DownSquareOutlined,
-} from '@ant-design/icons'
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
@@ -24,6 +18,9 @@ import commonStyles from "../common.less"
 import ModelSelect from "@/components/form/modelSelect"
 import KeywordRates from "@/components/dataset/keywordRates"
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
+import LiveCodeForm from "../components/liveCodeForm"
+import { removeLiveCodeConfig } from "../components/liveCodeConfig"
+import DockerConfigForm from "../components/dockerConfigForm"
 
 const { Option } = Select
 
@@ -47,9 +44,9 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [testingSetIds, setTestingSetIds] = useState([])
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
-  const [hpVisible, setHpVisible] = useState(false)
   const [gpu_count, setGPU] = useState(0)
   const [projectDirty, setProjectDirty] = useState(false)
+  const [live, setLiveCode] = useState(false)
 
   const renderRadio = (types) => {
     return (
@@ -99,17 +96,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  async function validHyperparam(rule, value) {
-
-    const params = form.getFieldValue('hyperparam').map(({ key }) => key)
-      .filter(item => item && item.trim() && item === value)
-    if (params.length > 1) {
-      return Promise.reject(t('task.validator.same.param'))
-    } else {
-      return Promise.resolve()
-    }
-  }
-
   async function fetchSysInfo() {
     const result = await func.getSysInfo()
     if (result) {
@@ -133,7 +119,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   function imageChange(_, image = {}) {
     const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
-    setConfig(configObj.config)
+    setLiveCode(image.liveCode || false)
+    setConfig(removeLiveCodeConfig(configObj.config))
   }
 
   function setConfig(config = {}) {
@@ -142,8 +129,13 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }
 
   const onFinish = async (values) => {
-    const config = {}
-    form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
+
+    const config = {
+      ...values.hyperparam?.reduce(
+        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        {}),
+      ...(values.live || {}),
+    }
 
     const gpuCount = form.getFieldValue('gpu_count')
     // if (gpuCount) {
@@ -262,25 +254,25 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
                 {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
               </Form.Item> :
-              <Form.Item
-                label={t('task.label.form.target.label')}
-                name="keywords"
-                rules={[
-                  { required: true, message: t('task.label.form.target.placeholder') }
-                ]}
-              >
-                <Select mode="multiple" showArrow
-                  placeholder={t('task.label.form.member.labeltarget')}
-                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-                  {keywords.map(keyword => (
-                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                      <Row>
-                        <Col flex={1}>{keyword.name}</Col>
-                      </Row>
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item> }
+                <Form.Item
+                  label={t('task.label.form.target.label')}
+                  name="keywords"
+                  rules={[
+                    { required: true, message: t('task.label.form.target.placeholder') }
+                  ]}
+                >
+                  <Select mode="multiple" showArrow
+                    placeholder={t('task.label.form.member.labeltarget')}
+                    filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+                    {keywords.map(keyword => (
+                      <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                        <Row>
+                          <Col flex={1}>{keyword.name}</Col>
+                        </Row>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>}
             </Tip>
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.train.model')}>
@@ -341,74 +333,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               </Form.Item>
             </Tip>
 
-            {seniorConfig.length ? <Tip content={t('tip.task.filter.hyperparams')}>
-              <Form.Item
-                label={t('task.train.form.hyperparam.label')}
-                rules={[{ validator: validHyperparam }]}
-              >
-                <div>
-                  <Button type='link'
-                    onClick={() => setHpVisible(!hpVisible)}
-                    icon={hpVisible ? <UpSquareOutlined /> : <DownSquareOutlined />}
-                    style={{ paddingLeft: 0 }}
-                  >{hpVisible ? t('task.train.fold') : t('task.train.unfold')}
-                  </Button>
-                </div>
-
-                <Form.List name='hyperparam'>
-                  {(fields, { add, remove }) => (
-                    <>
-                      <div className={styles.paramContainer} hidden={!hpVisible}>
-                        <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                          <Col flex={'240px'}>{t('common.key')}</Col>
-                          <Col flex={1}>{t('common.value')}</Col>
-                          <Col span={2}>{t('common.action')}</Col>
-                        </Row>
-                        {fields.map(field => (
-                          <Row key={field.key} gutter={20}>
-                            <Col flex={'240px'}>
-                              <Form.Item
-                                {...field}
-                                // label="Key"
-                                name={[field.name, 'key']}
-                                fieldKey={[field.fieldKey, 'key']}
-                                rules={[
-                                  // {required: true, message: 'Missing Key'},
-                                  { validator: validHyperparam }
-                                ]}
-                              >
-                                <Input disabled={field.name < seniorConfig.length} allowClear maxLength={50} />
-                              </Form.Item>
-                            </Col>
-                            <Col flex={1}>
-                              <Form.Item
-                                {...field}
-                                // label="Value"
-                                name={[field.name, 'value']}
-                                fieldKey={[field.fieldKey, 'value']}
-                                rules={[
-                                  // {required: true, message: 'Missing Value'},
-                                ]}
-                              >
-                                {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                                  <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
-                              </Form.Item>
-                            </Col>
-                            <Col span={2}>
-                              <Space>
-                                {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                                {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
-                              </Space>
-                            </Col>
-                          </Row>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </Form.List>
-
-              </Form.Item>
-            </Tip> : null}
+            <LiveCodeForm live={live} />
+            <DockerConfigForm seniorConfig={seniorConfig} form={form} />
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>

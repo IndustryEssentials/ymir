@@ -29,6 +29,7 @@ class DockerImage(Base):
         primaryjoin="foreign(DockerImageConfig.image_id)==DockerImage.id",
         uselist=True,
     )
+    enable_livecode = Column(Boolean, default=False, nullable=False)
     is_shared = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
