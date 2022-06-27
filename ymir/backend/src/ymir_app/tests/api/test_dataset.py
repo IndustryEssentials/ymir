@@ -56,7 +56,7 @@ class TestListDatasets:
         )
         datasets = r.json()["result"]["items"]
         total = r.json()["result"]["total"]
-        assert len(datasets) == total != 0
+        assert len(datasets) == total
 
 
 class TestBatchGetDatasets:

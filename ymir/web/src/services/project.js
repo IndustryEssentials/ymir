@@ -82,7 +82,7 @@ export function addExampleProject() {
  * {number} testSet
  * {number} [modelStage]
  * {boolean} enableIteration
- * {array<number>} testingSets
+ * {array<number>} [testingSets]
  * }
  * @returns 
  */
@@ -97,7 +97,7 @@ export function updateProject(id, {
   testSet,
   modelStage = [],
   enableIteration,
-  testingSets = [],
+  testingSets,
 }) {
   const [model, stage] = modelStage
   return request({
@@ -115,7 +115,7 @@ export function updateProject(id, {
       initial_model_stage_id: stage,
       initial_training_dataset_id: trainSetVersion,
       enable_iteration: enableIteration,
-      testing_dataset_ids: testingSets?.toString(),
+      testing_dataset_ids: testingSets ? testingSets?.toString() : undefined,
     },
   })
 }

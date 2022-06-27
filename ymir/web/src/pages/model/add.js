@@ -59,7 +59,7 @@ const Add = ({ importModel }) => {
     const result = await importModel(params)
     if (result) {
       message.success(t('model.add.success'))
-      history.push(`/home/project/${pid}/detail#model`)
+      history.push(`/home/project/${pid}/model`)
     }
   }
 

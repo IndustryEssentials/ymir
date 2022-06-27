@@ -255,14 +255,14 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
               </Form.Item> :
                 <Form.Item
-                  label={t('task.label.form.target.label')}
+                  label={t('task.train.form.keywords.label')}
                   name="keywords"
                   rules={[
-                    { required: true, message: t('task.label.form.target.placeholder') }
+                    { required: true, message: t('project.add.form.keyword.required') }
                   ]}
                 >
                   <Select mode="multiple" showArrow
-                    placeholder={t('task.label.form.member.labeltarget')}
+                    placeholder={t('project.add.form.keyword.required')}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                     {keywords.map(keyword => (
                       <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
