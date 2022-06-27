@@ -130,7 +130,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
       <Breadcrumbs />
       <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 6, offset: 2 }} wrapperCol={{ span: 12 }} labelAlign='left' onFinish={submit} scrollToFirstError>
+          <Form form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 12 }} labelAlign='left' onFinish={submit} scrollToFirstError>
             <Panel hasHeader={false}>
               <Form.Item
                 label={t('project.add.form.name')}
