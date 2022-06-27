@@ -111,7 +111,7 @@ function ImageDetail({ role, getImage }) {
           <Item label={t('image.detail.label.name')}>{image.name}</Item>
           <Item label={t('image.detail.label.type')}>{getImageTypeLabel(image.functions).map(label => t(label)).join(',')}</Item>
           <Item label={t('image.detail.label.url')}>{image.url}</Item>
-          <Item label={t('image.detail.label.share')}>{image.is_shared ? t('common.yes') : t('common.no')}</Item>
+          <Item label={t('image.detail.label.share')}>{image.isShared ? t('common.yes') : t('common.no')}</Item>
           <Item label={t('image.detail.label.related')} span={2}>
             <Row><Col flex={1}><ImagesLink images={image.related} /></Col>
               {isAdmin() && isDone() ? <Col><Button type="primary" onClick={() => relateImage()}>{t('image.detail.relate')}</Button></Col> : null}
