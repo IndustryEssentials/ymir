@@ -38,7 +38,7 @@ class MirCoco:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='no assets in evaluated dataset')
         if len(task_annotations.image_annotations) == 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_ANNOTATIONS,
                                   error_message='no annotations in evaluated dataset')
 
         # ordered list of asset / image ids
