@@ -11,4 +11,6 @@ IMAGE_CONFIG_PATH = {
     backend_pb2.TaskType.TaskTypeInfer: "/img-man/infer-template.yaml",
 }
 
+IMAGE_LIVECODE_CONFIG_PATH = "/img-man/code-access.yaml"
+
 MONITOR_URL = os.environ.get("MONITOR_URL", "http://127.0.0.1:9098")
