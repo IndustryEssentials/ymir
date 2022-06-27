@@ -11,7 +11,7 @@ from controller.utils import utils
 from proto import backend_pb2
 from id_definition.error_codes import CTLResponseCode
 from common_utils.labels import UserLabels
-from controller.config.fiftyone_task import FIFTYONE_URL, FIFTYONE_TIMEOUT, FIFTYONE_CONCURRENT_LIMIT
+from controller.config.fiftyone_task import FIFTYONE_HOST_URL, FIFTYONE_TIMEOUT, FIFTYONE_CONCURRENT_LIMIT
 
 
 class TaskVisualizationInvoker(TaskBaseInvoker):
@@ -48,12 +48,12 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         # create fiftyone task
         payload = cls.prepare_fiftyone_payload(
             visualization.fiftyone_tid,
-            visualization.in_dataset_pks,
             visualization.in_dataset_names,
             dataset_export_dirs
         )
+        url = f"{FIFTYONE_HOST_URL}/api/task/"
         try:
-            resp = requests.post(FIFTYONE_URL, json=payload, timeout=FIFTYONE_TIMEOUT)
+            resp = requests.post(url, json=payload, timeout=FIFTYONE_TIMEOUT)
         except (ConnectionError, HTTPError, Timeout):
             return utils.make_general_response(
                 CTLResponseCode.INVOKER_VISUALIZATION_TASK_NETWORK_ERROR, "Failed to connect fiftyone service"
