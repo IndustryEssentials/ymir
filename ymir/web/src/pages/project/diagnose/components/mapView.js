@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Table } from "antd"
 import { percent } from '@/utils/number'
 
@@ -32,7 +32,6 @@ const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywo
   }, [datasets])
 
   useEffect(() => {
-    console.log('data && keywords:', data, keywords, kwType)
     if (data && keywords) {
       const kws = kwType ?
         Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
@@ -56,7 +55,6 @@ const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywo
     } else {
       setList([])
     }
-    console.log('xType, dd, kd, dData, kData:', xType, dd, kd, dData, kData)
   }, [xType, dd, kd, dData, kData])
 
   function generateDData(data) {
@@ -91,7 +89,6 @@ const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywo
         }
       })
     })
-    console.log('kdata:', kdata)
     setKData(kdata)
   }
 
@@ -102,7 +99,6 @@ const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywo
       id: value, label,
       rows: isDs ? generateDsRows(value) : generateKwRows(value),
     }))
-    console.log('list:', list)
     setList(list)
   }
 
@@ -110,7 +106,6 @@ const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywo
     const tts = tasks.filter(({ testing }) => testing === tid)
     return tts.map(({ result: rid }) => {
       const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
-      console.log('ddata:', ddata)
       const kwAps = kd.reduce((prev, { value: kw }) => {
         return {
           ...prev,
@@ -130,7 +125,6 @@ const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywo
 
   const generateKwRows = (kw) => {
     const kdata = kwType ? kData[keywords][kw] : kData[kw]
-    console.log('kdata:', kdata)
     const mids = [...new Set(tasks.map(({ model }) => model))]
 
     return mids.map(mid => {
