@@ -72,8 +72,9 @@ def _get_samples(base_path: Path, labels_dir: Path, dataset_name, sample_pool,) 
         rd = csv.reader(fd, delimiter="\t", quotechar='"')
 
         for row in rd:
-            img_path = labels_dir.parent / "images" / Path(row[0])
-            annotation = _get_annotation(labels_dir, row[1])
+            image_index, annotation_index = row[0], row[1]
+            img_path = labels_dir.parent / "images" / Path(image_index)
+            annotation = _get_annotation(labels_dir, annotation_index)
 
             if img_path.name in sample_pool:
                 sample = sample_pool[img_path.name]
