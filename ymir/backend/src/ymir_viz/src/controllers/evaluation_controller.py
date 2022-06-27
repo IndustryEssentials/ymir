@@ -2,7 +2,6 @@ import logging
 import os
 
 from google.protobuf import json_format
-from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval, revs_parser
 
 from src.config import viz_settings
