@@ -948,6 +948,10 @@ After successful training, the system will output the ID of the model. The user 
 
 It has not been fully tested on Windows server, so we cannot provide service support for the time being.
 
+**How to import models I've already trained?**
+
+See [this document](docs/import-extra-models.md)
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-9-brightgreen)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
