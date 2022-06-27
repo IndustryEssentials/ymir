@@ -28,6 +28,7 @@ enum TaskType {
     TaskTypeImportModel = 13;
     TaskTypeCopyModel = 14;
     TaskTypeDatasetInfer = 15;
+    TaskTypeVisualization = 17;
 
     reserved 12, 16;
 };
@@ -163,6 +164,7 @@ message ReqCreateTask {
     TaskReqLabeling labeling = 108;
     TaskReqFusion fusion = 109;
     TaskReqModelImporting model_importing = 110;
+    TaskReqVisualization visualization = 111;
 }
 
 message TaskReqFilter {
@@ -240,6 +242,12 @@ message TaskReqFusion {
 
 message TaskReqModelImporting {
     string model_package_path = 1;
+}
+
+message TaskReqVisualization {
+    string vis_tool_id = 1;
+    repeated string in_dataset_ids = 2;
+    repeated string in_dataset_names = 3;
 }
 
 message RespCMDInference {
