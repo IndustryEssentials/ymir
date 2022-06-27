@@ -1,7 +1,7 @@
 import enum
 import json
-import time
 from typing import Any
+import uuid
 
 from fastapi import APIRouter, Depends, Path, Query, BackgroundTasks
 from fastapi.logger import logger
@@ -84,7 +84,7 @@ def create_sample_project(
     """
     Create sample project
     """
-    project_name = f"sample_project_{current_user.username}_{time.time()}"
+    project_name = f"sample_project_{uuid.uuid4().hex[:8]}"
     project_in = schemas.ProjectCreate(
         name=project_name,
         training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
