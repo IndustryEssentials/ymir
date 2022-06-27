@@ -5,6 +5,7 @@ import { useLocation, useParams, connect, useHistory } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Detail from './components/detail'
 import Datasets from '@/components/dataset/list'
+import NoIterationDetail from "./components/noIterationDetail"
 
 import s from "./detail.less"
 
@@ -48,7 +49,7 @@ function ProjectDetail(func) {
     <div className={s.projectDetail}>
       <Breadcrumbs />
       <div className={s.header}>
-        <Detail project={project} iterations={iterations} fresh={fresh} />
+      {project.enableIteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
       </div>
       <Card className='noShadow'
         style={{ margin: '10px -20px 0', background: 'transparent' }}

@@ -73,13 +73,16 @@ class CmdImport(base.BaseCommand):
             return ret
 
         sha1_gt_index_abs = ""
-        if gt_index_file and gt_index_file != index_file:  # a seperate gt_index_file is provided.
-            sha1_gt_index_abs = os.path.join(
-                gen_abs, f"{os.path.basename(gt_index_file)}-{dst_typ_rev_tid.rev}-{random.randint(0, 100)}.sha1")
-            ret = _generate_sha_and_copy(gt_index_file, sha1_gt_index_abs, gen_abs)
-            if ret != MirCode.RC_OK:
-                logging.error(f"generate gt_index hash error: {ret}")
-                return ret
+        if gt_index_file:
+            if gt_index_file != index_file:  # a seperate gt_index_file is provided.
+                sha1_gt_index_abs = os.path.join(
+                    gen_abs, f"{os.path.basename(gt_index_file)}-{dst_typ_rev_tid.rev}-{random.randint(0, 100)}.sha1")
+                ret = _generate_sha_and_copy(gt_index_file, sha1_gt_index_abs, gen_abs)
+                if ret != MirCode.RC_OK:
+                    logging.error(f"generate gt_index hash error: {ret}")
+                    return ret
+            else:
+                sha1_gt_index_abs = sha1_index_abs
 
         # Step 3 import metadat and annotations:
         mir_metadatas = mirpb.MirMetadatas()

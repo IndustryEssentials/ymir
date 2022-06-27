@@ -5,7 +5,7 @@ import s from "../detail.less"
 import { EditIcon,  EyeOffIcon } from "@/components/common/icons"
 import { TestingSet } from "./testingSet"
 
-export const NoIterationDetail = ({ project }) => {
+const NoIterationDetail = ({ project }) => {
   return (<>
       <Row>
         <Col flex={1}>
@@ -26,3 +26,5 @@ export const NoIterationDetail = ({ project }) => {
     </>
   )
 }
+
+export default NoIterationDetail

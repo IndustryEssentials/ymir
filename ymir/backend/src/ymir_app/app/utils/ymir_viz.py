@@ -144,7 +144,8 @@ class DatasetMetaData:
             total_assets_cnt=viz_dataset.total_assets_cnt,
             annos_cnt=viz_dataset.pred["annos_cnt"],
             ave_annos_cnt=(
-                viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt if viz_dataset.total_assets_cnt else 0
+                round(viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt, 2)
+                if viz_dataset.total_assets_cnt else 0
             ),
             positive_asset_cnt=viz_dataset.pred["positive_asset_cnt"],
             negative_asset_cnt=viz_dataset.pred["negative_asset_cnt"],
