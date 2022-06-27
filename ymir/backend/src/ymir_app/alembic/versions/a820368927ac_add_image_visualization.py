@@ -1,7 +1,7 @@
 """add image visualization
 
 Revision ID: a820368927ac
-Revises: 501414124392
+Revises: 0478ce5b8f3f
 Create Date: 2022-06-21 10:53:08.218745
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'a820368927ac'
-down_revision = '501414124392'
+down_revision = '0478ce5b8f3f'
 branch_labels = None
 depends_on = None
 
