@@ -315,7 +315,6 @@ class ControllerRequest:
         visualization_task_req = mirsvrpb.TaskReqVisualization()
         visualization_task_req.fiftyone_tid = args["fiftyone_tid"]
         visualization_task_req.in_dataset_ids[:] = args["in_dataset_ids"]
-        visualization_task_req.in_dataset_pks[:] = args["in_dataset_pks"]
         visualization_task_req.in_dataset_names[:] = args["in_dataset_names"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
@@ -534,7 +533,6 @@ class ControllerClient:
             args={
                 "fiftyone_tid": fiftyone_tid,
                 "in_dataset_ids": [dataset["hash"] for dataset in datasets],
-                "in_dataset_pks": [dataset["id"] for dataset in datasets],
                 "in_dataset_names": [dataset["name"] for dataset in datasets],
             },
         )

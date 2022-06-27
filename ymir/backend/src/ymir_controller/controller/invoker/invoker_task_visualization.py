@@ -48,8 +48,9 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         # create fiftyone task
         payload = cls.prepare_fiftyone_payload(
             visualization.fiftyone_tid,
+            visualization.in_dataset_ids,
             visualization.in_dataset_names,
-            dataset_export_dirs
+            dataset_export_dirs,
         )
         url = f"{FIFTYONE_HOST_URL}/api/task/"
         try:
@@ -85,13 +86,13 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
 
     @staticmethod
     def prepare_fiftyone_payload(
-        tid: str, dataset_pks: List[int], dataset_names: List[str], dataset_export_dirs: List[str]
+        tid: str, dataset_ids: List[int], dataset_names: List[str], dataset_export_dirs: List[str]
     ) -> Dict:
         payload = {
             "tid": tid,
             "datas": [
-                {"id": id_, "name": name, "data_dir": data_dir}
-                for id_, name, data_dir in zip(dataset_pks, dataset_names, dataset_export_dirs)
+                {"hash": hash_, "name": name, "data_dir": data_dir}
+                for hash_, name, data_dir in zip(dataset_ids, dataset_names, dataset_export_dirs)
             ],
         }
         return payload
