@@ -1,4 +1,6 @@
-import t from '@/utils/t'
+import { BackendData } from "@/interface/common"
+import { Image, InferConfig } from '@/interface/image'
+import { format } from "@/utils/date"
 
 export const TYPES = Object.freeze({
   UNKOWN: 0,
@@ -13,7 +15,7 @@ export const STATES = Object.freeze({
   ERROR: 4,
 })
 
-export function imageIsPending (state: number) {
+export function imageIsPending(state: number) {
   return state === STATES.PENDING
 }
 
@@ -43,4 +45,20 @@ export const getImageStateLabel = (state: number | undefined) => {
     [STATES.ERROR]: 'image.state.error',
   }
   return labels[state]
+}
+
+export function transferImage(data: BackendData): Image {
+  return {
+    id: data.id,
+    name: data.name,
+    state: data.state,
+    functions: (data.configs || []).map((config: InferConfig) => config.type),
+    configs: data.configs || [],
+    url: data.url,
+    liveCode: data.enable_livecode,
+    isShared: data.is_shared,
+    related: data.related,
+    description: data.description,
+    createTime: format(data.create_datetime),
+  }
 }
