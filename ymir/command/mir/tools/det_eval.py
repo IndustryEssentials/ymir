@@ -621,20 +621,12 @@ class Params:
 
 
 def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
-    iou_thr_from, iou_thr_to, iou_thr_step = _get_iou_thrs(config.iou_thrs_interval)
-    for thr in [config.conf_thr, iou_thr_from, iou_thr_to, iou_thr_step]:
-        if thr < 0 or thr > 1:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='invalid conf_thr, iou_thr_from, iou_thr_to or iou_thr_step')
-    if iou_thr_from > iou_thr_to:
+    if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='invalid iou_thr_from or iou_thr_to')
+                              error_message='invalid conf_thr')
     params = Params()
     params.confThr = config.conf_thr
-    params.iouThrs = np.linspace(start=iou_thr_from,
-                                 stop=iou_thr_to,
-                                 num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
-                                 endpoint=False) if iou_thr_to != iou_thr_from else np.array([iou_thr_from])
+    params.iouThrs = _get_ious_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
 
     evaluation = mirpb.Evaluation()
@@ -676,22 +668,28 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     return evaluation
 
 
-def _get_iou_thrs(iou_thrs_str: str) -> Tuple[float, float, float]:
-    """
-    Args:
-        iou_thrs_str (str): `from:to:step` or `from`, example: `"0.5:0.95:0.05"` or `"0.5"`
-    Returns:
-        iou_thr_from, iou_thr_to, iou_thr_step
-    Raises:
-        ValueError: if format wrong
-    """
+def _get_ious_array(iou_thrs_str: str) -> np.ndarray:
     iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
     if len(iou_thrs) == 3:
-        return (iou_thrs[0], iou_thrs[1], iou_thrs[2])
+        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs
     elif len(iou_thrs) == 1:
-        return (iou_thrs[0], iou_thrs[0], 0)
+        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs[0], iou_thrs[0], 0
+    else:
+        raise ValueError(f"invalid iou thrs str: {iou_thrs_str}")
+    for thr in [iou_thr_from, iou_thr_to, iou_thr_step]:
+        if thr < 0 or thr > 1:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='invalid iou_thr_from, iou_thr_to or iou_thr_step')
+    if iou_thr_from > iou_thr_to:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='invalid iou_thr_from or iou_thr_to')
 
-    raise ValueError(f"invalid iou thrs str: {iou_thrs_str}")
+    if iou_thr_to == iou_thr_from:
+        return np.array([iou_thr_from])
+    return np.linspace(start=iou_thr_from,
+                       stop=iou_thr_to,
+                       num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
+                       endpoint=False)
 
 
 def det_evaluate(mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float, iou_thrs: str,
