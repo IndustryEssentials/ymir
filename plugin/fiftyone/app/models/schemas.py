@@ -10,7 +10,6 @@ from utils.errors import FiftyOneResponseCode
 
 
 class DataSet(BaseModel):
-    data_id: str = Field(..., alias="id")
     name: str = Field(...)
     data_dir: str = Field(...)
 
@@ -26,7 +25,6 @@ class DataSet(BaseModel):
         allow_population_by_field_name = True
         schema_extra = {
             "example": {
-                "id": "32423xfcd33xxx",
                 "name": "ymir_data233",
                 "data_dir": "ymir-workplace/voc",
             }

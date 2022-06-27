@@ -4,10 +4,10 @@ describe("utils: number", () => {
   it("function: humanize. humanize number.", () => {
     const numbers = [
       { value: 324, expected: '324' },
-      { value: 3324, expected: '3K' },
-      { value: 395324, expected: '395K' },
-      { value: 12395324, expected: '12M' },
-      { value: 2425435324, expected: '2B' },
+      { value: 3324, expected: '3k' },
+      { value: 395324, expected: '395k' },
+      { value: 12395324, expected: '12m' },
+      { value: 2425435324, expected: '2b' },
     ]
     numbers.forEach(num => expect(humanize(num.value)).toBe(num.expected))
     expect(humanize()).toBe(0)

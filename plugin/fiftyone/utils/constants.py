@@ -3,12 +3,12 @@ from enum import unique, IntEnum, Enum
 
 @unique
 class CeleryTaskStatus(Enum):
-    PENDING = "pending"
-    STARTED = "started"
-    RETRY = "retry"
-    PROCESSING = "processing"
-    SUCCESS = "success"
-    FAILURE = "failure"
+    PENDING = "PENDING"
+    STARTED = "STARTED"
+    RETRY = "RETRY"
+    PROCESSING = "PROCESSING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
 
 
 @unique
