@@ -55,9 +55,6 @@ class CmdModelImport(base.BaseCommand):
 
         logging.info(f"importing model with storage: {model_storage}")
 
-        # check
-        _check_model(model_storage=model_storage, mir_root=mir_root)
-
         # update model_storage and pack
         model_storage.task_context['src-revs'] = src_revs
         model_storage.task_context['dst_rev'] = dst_rev
@@ -89,16 +86,6 @@ class CmdModelImport(base.BaseCommand):
                                                       task=task)
 
         return MirCode.RC_OK
-
-
-def _check_model(model_storage: mir_utils.ModelStorage, mir_root: str) -> int:
-    # check producer
-    producer = model_storage.task_context.get(mir_settings.PRODUCER_KEY, None)
-    if producer != mir_settings.PRODUCER_NAME:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                              error_message=f"can not import model, invalid producer: {producer}")
-
-    return MirCode.RC_OK
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
