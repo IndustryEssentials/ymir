@@ -134,7 +134,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     {
       title: showTitle("model.column.stage"),
       dataIndex: "recommendStage",
-      render: (_, record) => <EditStageCell record={record} saveHandle={updateModelVersion} />,
+      render: (_, record) => isValidModel(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
       sorter: (a, b) => a - b,
       align: 'center',
     },
