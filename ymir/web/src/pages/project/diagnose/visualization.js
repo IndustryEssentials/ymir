@@ -79,8 +79,8 @@ function Visualization({pid, project}) {
   }
 
   function fetchBatchData(items){
-    const stageIds = [...new Set(items.map(item => item.tasks.map(task => task?.parameters?.model_stage_id)).flat())]
-    const datasetIds = [...new Set(items.map(item => item.tasks.map(task => task?.parameters?.dataset_id)).flat())]
+    const stageIds = [...new Set(items.map(item => item.tasks.map(task => task?.parameters?.model_stage_id)).flat())].filter(id => id)
+    const datasetIds = [...new Set(items.map(item => item.tasks.map(task => task?.parameters?.dataset_id)).flat())].filter(id => id)
     stageIds?.length && fetchModelStages(stageIds)
     datasetIds?.length && fetchDatasets(datasetIds)
   } 
