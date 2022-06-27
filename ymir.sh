@@ -154,7 +154,7 @@ else
     printf '\nin prod mode, starting service.\n'
 fi
 
-docker-compose -f docekr-compose.fiftyone.yml up -d
+docker-compose -f docker-compose.fiftyone.yml up -d
 
 docker-compose up -d
 }
