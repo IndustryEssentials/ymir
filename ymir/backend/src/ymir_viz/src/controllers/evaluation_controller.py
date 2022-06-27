@@ -3,6 +3,8 @@ import os
 
 from google.protobuf import json_format
 from mir.tools import det_eval, revs_parser
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 from src.config import viz_settings
 from src.libs import utils
@@ -43,17 +45,32 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
     rev_tid = revs_parser.parse_single_arg_rev(branch_id, need_tid=False)
     mir_root = os.path.join(viz_settings.BACKEND_SANDBOX_ROOT, user_id, repo_id)
 
-    evaluation = det_eval.det_evaluate(mir_root=mir_root,
-                                       rev_tid=rev_tid,
-                                       conf_thr=conf_thr,
-                                       iou_thrs=str(iou_thr),
-                                       need_pr_curve=need_pr_curve)
+    code: int
+    message: str
+    result: dict
 
-    logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
+    try:
+        evaluation = det_eval.det_evaluate(mir_root=mir_root,
+                                           rev_tid=rev_tid,
+                                           conf_thr=conf_thr,
+                                           iou_thrs=str(iou_thr),
+                                           need_pr_curve=need_pr_curve)
+        logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
 
-    resp = utils.suss_resp()
-    resp["result"] = json_format.MessageToDict(evaluation,
-                                               including_default_value_fields=True,
-                                               preserving_proto_field_name=True,
-                                               use_integers_for_enums=True)['dataset_evaluations']
+        code = 0
+        message = 'operation successful'
+        result = json_format.MessageToDict(evaluation,
+                                           including_default_value_fields=True,
+                                           preserving_proto_field_name=True,
+                                           use_integers_for_enums=True)['dataset_evaluations']
+    except MirRuntimeError as e:
+        code = e.error_code
+        message = e.error_message
+        result = {}
+    except Exception as e:
+        code = MirCode.RC_CMD_ERROR_UNKNOWN
+        message = str(e)
+        result = {}
+
+    resp = utils.suss_resp(code=code, message=message, result=result)
     return DatasetEvaluationResult(**resp)
