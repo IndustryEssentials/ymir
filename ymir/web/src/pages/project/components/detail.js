@@ -57,9 +57,8 @@ function ProjectDetail({ project = {}, iterations = {}, fresh = () => { } }) {
       </Col>
       <Col>
         <Space>
-          <Link to={`/home/project/${id}/add`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
+          <Link to={`/home/project/${id}/iterations/settings`}><EditIcon /><span>{t('project.iteration.settings.title')}</span></Link>
           <Link to={`/home/project/${id}/iterations`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
-          <Link to={`/home/project/${id}/hidden`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
         </Space>
       </Col>
     </Row>

@@ -9,13 +9,12 @@ const Panel = ({ hasHeader = true, toogleVisible = true, visible, setVisible = (
     setVis(visible)
   }, [visible])
 
-  useEffect(() => {
-    setVisible(vis)
-  }, [vis])
-
   return (
     <div className='panel'>
-      {hasHeader ? <Row className='header' onClick={() => setVis(!vis)}>
+      {hasHeader ? <Row className='header' onClick={() => {
+        setVis(!vis)
+        setVisible(!vis)
+      }}>
         <Col flex={1} className='title'>{label}</Col>
         {toogleVisible ?
           <Col className='foldBtn'>{vis ? <span><ArrowDownIcon /></span> : <span><ArrowRightIcon /></span>}</Col>

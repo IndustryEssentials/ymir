@@ -30,6 +30,8 @@ services:
       - OPENPAI_TOKEN=${OPENPAI_TOKEN}
       - OPENPAI_STORAGE=${OPENPAI_STORAGE}
       - OPENPAI_USER=${OPENPAI_USER}
+      # fiftyone
+      - FIFTYONE_HOST_URL=${FIFTYONE_HOST_URL}
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"

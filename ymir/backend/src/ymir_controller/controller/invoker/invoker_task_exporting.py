@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_task_base import TaskBaseInvoker
@@ -56,15 +56,20 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       asset_dir: str,
                       annotation_dir: str,
                       media_location: str,
-                      work_dir: str,
-                      keywords: List[str] = None) -> backend_pb2.GeneralResp:
+                      work_dir: Optional[str] = None,
+                      keywords: List[str] = None,
+                      gt_dir: Optional[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = [
             utils.mir_executable(), 'export', '--root', repo_root, '--media-location', media_location, '--asset-dir',
             asset_dir, '--annotation-dir', annotation_dir, '--src-revs', f"{dataset_id}@{dataset_id}", '--format',
-            annotation_format, '-w', work_dir
+            annotation_format
         ]
         if keywords:
             exporting_cmd.append('--cis')
             exporting_cmd.append(';'.join(keywords))
+        if work_dir:
+            exporting_cmd += ["-w", work_dir]
+        if gt_dir:
+            exporting_cmd += ["--gt-dir", gt_dir]
 
         return utils.run_command(exporting_cmd)

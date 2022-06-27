@@ -178,7 +178,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                     user_labels: UserLabels, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         subtask_weights = cls.subtask_weights()
         previous_subtask_id = None
-        # revsersed, to makesure the last subtask idx is 0.
+        # revsersed, to make sure the last subtask idx is 0.
         for subtask_idx in reversed(range(len(subtask_weights))):
             logging.info(f"processing subtask {subtask_idx}")
 
