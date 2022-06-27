@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import VisualizationNotFound, TaskNotFound
+from app.utils.ymir_controller import ControllerClient
 
 
 router = APIRouter()
@@ -54,6 +55,7 @@ def create_visualization(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
     obj_in: schemas.VisualizationCreate,
 ) -> Any:
     """
@@ -67,6 +69,13 @@ def create_visualization(
 
     for task in tasks:
         crud.task_visual_relationship.create_relationship(db, task_id=task.id, visualization_id=visualization.id)
+
+    project_id = tasks[0].project_id
+    datasets = [
+        {"name": task.result_dataset.name, "hash": task.result_dataset.hash}  # type: ignore
+        for task in tasks
+    ]
+    controller_client.create_visualization(current_user.id, project_id, visualization.tid, datasets)
     return {"result": visualization}
 
 
