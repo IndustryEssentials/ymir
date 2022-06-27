@@ -23,6 +23,8 @@ services:
       FIFTYONE_DATABASE_URI: "mongodb://51plugin_mongo:27017"
       FIFTYONE_REDIS_HOST: "51plugin_redis"
       FIFTYONE_BASE_PATH: ${BACKEND_SANDBOX_ROOT}
+    volumes:
+      - ${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}
     restart: always
     networks:
       - 51pluginnetwork

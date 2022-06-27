@@ -239,6 +239,15 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.project.edit',
   },
   {
+    path: "/home/project/:id/iterations/settings",
+    name: "projectEdit",
+    component: "@/pages/project/iterationSettings",
+    title: "project.iteration.add.title",
+    pid: 25,
+    id: 35,
+    breadcrumbLabel: 'project.iteration.settings.title',
+  },
+  {
     path: "/home/project/add",
     name: "projectAdd",
     component: "@/pages/project/add",

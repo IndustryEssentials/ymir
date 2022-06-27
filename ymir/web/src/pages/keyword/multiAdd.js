@@ -28,8 +28,7 @@ const MultiAdd = forwardRef(({ addKeywords, ok = () => { } }, ref) => {
           form.resetFields()
           ok()
         } else {
-          message.error(t('keyword.name.repeat'))
-          setRepeats(result.failed || [])
+          message.error(`${t('keyword.name.repeat')}: ${(result.failed || []).join(',')}`)
         }
       } else {
         message.error(t('keyword.add.failure'))

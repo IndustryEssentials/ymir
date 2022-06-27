@@ -39,6 +39,9 @@ class Model(BaseModel):
     group_name: str
     version_num: int
 
+    class Config:
+        orm_mode = True
+
 
 class ModelStage(ModelStageInDBBase):
     model: Model

@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
 from app.db.base_class import Base
+from app.config import settings
 
 
 class User(Base):
@@ -15,6 +16,9 @@ class User(Base):
     hashed_password = Column(String(200), nullable=False)
     state = Column(Integer, index=True, default=1)
     role = Column(Integer, index=True, default=1)
+    organization = Column(String(settings.STRING_LEN_LIMIT))
+    scene = Column(String(settings.LONG_STRING_LEN_LIMIT))
+
     is_deleted = Column(Boolean(), default=False)
     last_login_datetime = Column(DateTime, nullable=True)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)

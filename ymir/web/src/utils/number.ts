@@ -6,7 +6,7 @@ export function humanize(num: number | string) {
   if (isNaN(Number(num))) {
     return num
   }
-  const units = ['', 'K', 'M', 'B']
+  const units = ['', 'k', 'm', 'b']
   num = typeof num == 'string' ? parseFloat(num) : num
   num = num.toLocaleString()
   const ell = num.match(/,/ig)
