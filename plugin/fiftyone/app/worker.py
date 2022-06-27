@@ -81,7 +81,7 @@ def _get_samples(base_path: Path, labels_dir: Path, dataset_name, sample_pool,) 
             else:
                 sample = Sample(filepath=img_path)
                 if annotation.get("cks"):
-                    for k, v in annotation.get("cks", {}).items():
+                    for k, v in annotation.get("cks").items():
                         sample[k] = v
                 sample_pool[img_path.name] = sample
                 _set_metadata(annotation, sample)
