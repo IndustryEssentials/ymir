@@ -3,6 +3,7 @@ import { Menu, Layout } from "antd"
 import { useHistory, useLocation, withRouter } from "umi"
 import t from '@/utils/t'
 import { BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon, NavDatasetIcon, UserIcon, UserSettingsIcon } from '@/components/common/icons'
+import { EditIcon, EyeOffIcon } from "./icons"
 
 const { Sider } = Layout
 
@@ -31,12 +32,14 @@ function LeftMenu() {
         getItem(t('projects.title'), `/home/project`, <BarchartIcon />,),
         ...(showLeftMenu ? [
           getItem(t('project.summary'), `/home/project/${id}/detail`, <BarchartIcon />,),
+          getItem(t('project.settings.title'), `/home/project/${id}/add`, <EditIcon />,),
           getItem(t('dataset.list'), `/home/project/${id}/dataset`, <NavDatasetIcon />,),
           getItem(t('model.management'), 'model', <MymodelIcon />, [
             getItem(t('model.list'), `/home/project/${id}/model`),
             getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`),
             getItem(t('model.diagnose'), `/home/project/${id}/diagnose`),
           ]),
+          getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, <EyeOffIcon />,),
         ] : [])
       ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
