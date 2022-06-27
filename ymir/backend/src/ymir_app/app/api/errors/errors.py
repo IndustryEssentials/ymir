@@ -300,6 +300,11 @@ class ProjectNotFound(NotFound):
     message = "Project Not Found"
 
 
+class VisualizationNotFound(NotFound):
+    code = error_codes.VISUALIZATION_NOT_FOUND
+    message = "Visualization Not Found"
+
+
 class DuplicateProjectError(DuplicateError):
     code = error_codes.PROJECT_DUPLICATED_NAME
     message = "Duplicated Project Name"
