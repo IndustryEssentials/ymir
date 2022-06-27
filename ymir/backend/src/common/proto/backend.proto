@@ -141,6 +141,7 @@ message GeneralResp {
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
     RespCMDInference detection = 1001;
+    bool enable_livecode = 1002;
 
     reserved 5, 1000;
 }

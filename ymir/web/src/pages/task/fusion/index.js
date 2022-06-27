@@ -129,7 +129,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
       }
       message.info(t('task.fusion.create.success.msg'))
       func.clearCache()
-      history.replace(`/home/project/${dataset.projectId}/detail`)
+      history.replace(`/home/project/${dataset.projectId}/dataset`)
     }
   }
 

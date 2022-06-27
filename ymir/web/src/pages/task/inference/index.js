@@ -25,6 +25,9 @@ import ImageSelect from "@/components/form/imageSelect"
 import DatasetSelect from "@/components/form/datasetSelect"
 import useAddKeywords from "@/hooks/useAddKeywords"
 import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
+import LiveCodeForm from "../components/liveCodeForm"
+import { removeLiveCodeConfig } from "../components/liveCodeConfig"
+import DockerConfigForm from "../components/dockerConfigForm"
 
 const { Option } = Select
 
@@ -45,11 +48,11 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [gpuStep, setGpuStep] = useState(1)
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
-  const [hpVisible, setHpVisible] = useState(false)
   const [gpu_count, setGPU] = useState(0)
   const [selectedGpu, setSelectedGpu] = useState(0)
   const [keywordRepeatTip, setKRTip] = useState('')
   const [{ newer }, checkKeywords] = useAddKeywords(true)
+  const [live, setLiveCode] = useState(false)
 
   useEffect(() => {
     fetchSysInfo()
@@ -85,17 +88,6 @@ function Inference({ datasetCache, datasets, ...func }) {
     }
   }, [newer])
 
-  function validHyperparam(rule, value) {
-
-    const params = form.getFieldValue('hyperparam').map(({ key }) => key)
-      .filter(item => item && item.trim() && item === value)
-    if (params.length > 1) {
-      return Promise.reject(t('task.validator.same.param'))
-    } else {
-      return Promise.resolve()
-    }
-  }
-
   function checkModelKeywords() {
     const keywords = (selectedModels.map(model => model?.keywords) || []).flat().filter(item => item)
     checkKeywords(keywords)
@@ -111,7 +103,8 @@ function Inference({ datasetCache, datasets, ...func }) {
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
     const configObj = configs.find(conf => conf.type === TYPES.INFERENCE) || {}
-    setConfig(configObj.config)
+    setLiveCode(image.liveCode || false)
+    setConfig(removeLiveCodeConfig(configObj.config))
   }
 
   function setConfig(config) {
@@ -120,8 +113,12 @@ function Inference({ datasetCache, datasets, ...func }) {
   }
 
   const onFinish = async (values) => {
-    const config = {}
-    form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
+    const config = {
+      ...values.hyperparam?.reduce(
+        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        {}),
+      ...(values.live || {}),
+    }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
 
@@ -249,73 +246,8 @@ function Inference({ datasetCache, datasets, ...func }) {
               </Form.Item>
             </Tip>
 
-            {seniorConfig.length ? <Tip content={t('tip.task.filter.ihyperparams')}>
-              <Form.Item
-                label={t('task.train.form.hyperparam.label')}
-                rules={[{ validator: validHyperparam }]}
-              >
-                <div>
-                  <Button type='link'
-                    onClick={() => setHpVisible(!hpVisible)}
-                    icon={hpVisible ? <UpSquareOutlined /> : <DownSquareOutlined />}
-                    style={{ paddingLeft: 0 }}
-                  >{hpVisible ? t('task.train.fold') : t('task.train.unfold')}
-                  </Button>
-                </div>
-
-                <Form.List name='hyperparam'>
-                  {(fields, { add, remove }) => (
-                    <div className={styles.paramContainer} hidden={!hpVisible}>
-                      <Row style={{ backgroundColor: '#fafafa', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                        <Col flex={'240px'}>{t('common.key')}</Col>
-                        <Col flex={1}>{t('common.value')}</Col>
-                        <Col span={2}>{t('common.action')}</Col>
-                      </Row>
-                      {fields.map(field => (
-                        <Row key={field.key} gutter={20}>
-                          <Col flex={'240px'}>
-                            <Form.Item
-                              {...field}
-                              // label="Key"
-                              name={[field.name, 'key']}
-                              fieldKey={[field.fieldKey, 'key']}
-                              rules={[
-                                // {required: true, message: 'Missing Key'},
-                                { validator: validHyperparam }
-                              ]}
-                            >
-                              <Input disabled={field.key < seniorConfig.length} allowClear maxLength={50} />
-                            </Form.Item>
-                          </Col>
-                          <Col flex={1}>
-                            <Form.Item
-                              {...field}
-                              // label="Value"
-                              name={[field.name, 'value']}
-                              fieldKey={[field.fieldKey, 'value']}
-                              rules={[
-                                // {required: true, message: 'Missing Value'},
-                              ]}
-                            >
-                              {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                                <InputNumber style={{ minWidth: '100%' }} maxLength={20} /> : <Input allowClear maxLength={100} />}
-                            </Form.Item>
-                          </Col>
-                          <Col span={2}>
-                            <Space>
-                              {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                              {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
-                            </Space>
-                          </Col>
-                        </Row>
-                      ))}
-
-                    </div>
-                  )}
-                </Form.List>
-
-              </Form.Item>
-            </Tip> : null}
+            <LiveCodeForm live={live} />
+            <DockerConfigForm form={form} seniorConfig={seniorConfig} />
 
             <Tip hidden={true}>
               <Form.Item label={t('task.inference.form.desc')} name='description'

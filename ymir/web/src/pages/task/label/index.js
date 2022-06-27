@@ -50,7 +50,7 @@ function Label({ datasets, keywords, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/${pid}/detail`)
+      history.replace(`/home/project/${pid}/dataset`)
     }
   }
 
