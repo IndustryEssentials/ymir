@@ -245,11 +245,9 @@ message TaskReqModelImporting {
 }
 
 message TaskReqVisualization {
-    string fiftyone_tid = 1;
+    string vis_tool_id = 1;
     repeated string in_dataset_ids = 2;
-    /// primary keys
-    repeated int32 in_dataset_pks = 3;
-    repeated string in_dataset_names = 4;
+    repeated string in_dataset_names = 3;
 }
 
 message RespCMDInference {
