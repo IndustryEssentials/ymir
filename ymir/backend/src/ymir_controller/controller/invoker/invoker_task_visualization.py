@@ -47,7 +47,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
 
         # create fiftyone task
         payload = cls.prepare_fiftyone_payload(
-            visualization.fiftyone_tid,
+            visualization.vis_tool_id,
             visualization.in_dataset_ids,
             visualization.in_dataset_names,
             dataset_export_dirs,

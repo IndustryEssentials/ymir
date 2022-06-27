@@ -313,7 +313,7 @@ class ControllerRequest:
 
     def prepare_visualization(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         visualization_task_req = mirsvrpb.TaskReqVisualization()
-        visualization_task_req.fiftyone_tid = args["fiftyone_tid"]
+        visualization_task_req.vis_tool_id = args["vis_tool_id"]
         visualization_task_req.in_dataset_ids[:] = args["in_dataset_ids"]
         visualization_task_req.in_dataset_names[:] = args["in_dataset_names"]
 
@@ -525,13 +525,13 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def create_visualization(self, user_id: int, project_id: int, fiftyone_tid: str, datasets: List[Dict]) -> Dict:
+    def create_visualization(self, user_id: int, project_id: int, vis_tool_id: str, datasets: List[Dict]) -> Dict:
         req = ControllerRequest(
             type=TaskType.visualization,
             user_id=user_id,
             project_id=project_id,
             args={
-                "fiftyone_tid": fiftyone_tid,
+                "vis_tool_id": vis_tool_id,
                 "in_dataset_ids": [dataset["hash"] for dataset in datasets],
                 "in_dataset_names": [dataset["name"] for dataset in datasets],
             },
