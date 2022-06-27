@@ -24,7 +24,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
         visible: bool = True,
-        allow_empty: bool = True,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
         offset: Optional[int] = 0,
@@ -59,8 +58,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.project_id == project_id)
         if group_id is not None:
             query = query.filter(self.model.dataset_group_id == group_id)
-        if not allow_empty:
-            query = query.filter(and_(self.model.asset_count.isnot(None), self.model.asset_count > 0))
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
@@ -82,6 +79,13 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         if not dataset:
             return dataset
         dataset.result_state = int(new_state)
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+        return dataset
+
+    def update_visualization_id(self, db: Session, *, dataset: Dataset, visualization_id: int) -> Dataset:
+        dataset.visualization_id = visualization_id  # type: ignore
         db.add(dataset)
         db.commit()
         db.refresh(dataset)
