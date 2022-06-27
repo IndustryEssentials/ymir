@@ -5,7 +5,7 @@ import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import s from "./detail.less"
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon } from "@/components/common/icons"
-import { NoIterationDetail } from "./components/noIterationDetail"
+import NoIterationDetail from "./components/noIterationDetail"
 import Detail from './components/detail'
 
 function ProjectDetail(func) {
@@ -48,7 +48,7 @@ function ProjectDetail(func) {
     <div>
       <Breadcrumbs />
       <div className={s.header}>
-        {project.enableIteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
+        <NoIterationDetail project={project} />
       </div>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
