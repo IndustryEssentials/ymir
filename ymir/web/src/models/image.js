@@ -8,13 +8,7 @@ import {
   relateImage,
   getShareImages,
 } from "@/services/image"
-
-function transferImage(image = {}) {
-  return {
-    ...image,
-    functions: (image.configs || []).map(config => config.type),
-  }
-}
+import { transferImage } from '@/constants/image'
 
 export default {
   namespace: "image",
