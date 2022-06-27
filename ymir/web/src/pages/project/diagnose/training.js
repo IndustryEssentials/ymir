@@ -56,7 +56,7 @@ function Training({ pid, project }) {
   }
 
   function modelChange(id, options = []) {
-    setSelectedModels(options.map(({ model }) => model) || [])
+    setSelectedModels(options.map(([{ model }]) => model) || [])
   }
 
   function retry() {
@@ -91,7 +91,7 @@ function Training({ pid, project }) {
               colon={false}
             >
               <Form.Item label={t('model.diagnose.form.model')} rules={[{ require: true }]}>
-                <ModelSelect mode='multiple' placeholder={t('task.train.form.model.placeholder')} pid={pid} onChange={modelChange} />
+                <ModelSelect multiple placeholder={t('task.train.form.model.placeholder')} pid={pid} onChange={modelChange} />
               </Form.Item>
               <Form.Item name='submitBtn'>
                 <div style={{ textAlign: 'center' }}>

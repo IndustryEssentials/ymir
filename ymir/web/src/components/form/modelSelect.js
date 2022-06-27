@@ -19,7 +19,7 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   useEffect(() => {
     if (options.length) {
       if (value) {
-        onChange(value, resProps.mode ? options.filter(opt => value.includes(opt.value)) : options.find(opt => opt.value === value))
+        onChange(value, resProps.multiple ? options.filter(opt => value.includes(opt.value)) : options.find(opt => opt.value === value))
       }
     }
   }, [options])
