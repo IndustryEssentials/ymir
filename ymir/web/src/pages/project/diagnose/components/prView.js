@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Table } from "antd"
-import { percent } from '@/utils/number'
+import { percent, toFixed } from '@/utils/number'
 import t from '@/utils/t'
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
@@ -10,10 +10,10 @@ const average = (nums = []) => nums.reduce((prev, num) => prev + num, 0) / nums.
 const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
 
 const getLabels = type => ({
-    colMain: `model.diagnose.metrics.${type}.label`,
-    colAverage: `model.diagnose.metrics.${type}.average.label`,
-    colTarget: `model.diagnose.metrics.${type}.target.label`,
-  })
+  colMain: `model.diagnose.metrics.${type}.label`,
+  colAverage: `model.diagnose.metrics.${type}.average.label`,
+  colTarget: `model.diagnose.metrics.${type}.target.label`,
+})
 
 
 function generateRange(min, max, step = 0.05) {
@@ -33,7 +33,7 @@ function rangePoints(range, points = [], field = 'x') {
   })
 }
 
-const PView = ({ tasks, datasets, models, data, prType, prRate, filter: { xType, kwType, keywords } }) => {
+const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
   const [kd, setKD] = useState([])
@@ -52,8 +52,8 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, filter: { xType,
   }, [prRate])
 
   useEffect(() => {
-    setPointField(prType ?['y', 'x'] :  ['x', 'y'])
-    setLabels(prType ? 'recall' : 'precision')
+    setPointField(prType ? ['y', 'x'] : ['x', 'y'])
+    setLabels(getLabels(prType ? 'recall' : 'precision'))
   }, [prType])
 
   useEffect(() => {
@@ -149,8 +149,8 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, filter: { xType,
         const _model = getModelCell(rid)
         const line = ddata[value].pr_curve
         const points = rangePoints(range, line, pointField[0])
-        const recallAverage = average(points.map(point => point[pointField[1]]))
-        const confidenceAverage = average(points.map(({ z }) => z))
+        const recallAverage = toFixed(average(points.map(point => point[pointField[1]])), 4)
+        const confidenceAverage = toFixed(average(points.map(({ z }) => z)))
         return points.map((point, index) => ({
           id: `${rid}${range[index]}`,
           value: range[index],
@@ -176,8 +176,8 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, filter: { xType,
         const _model = getModelCell(result)
         const line = kdata[result].pr_curve
         const points = rangePoints(range, line, pointField[0])
-        const recallAverage = average(points.map(point => point[pointField[1]]))
-        const confidenceAverage = average(points.map(({ z }) => z))
+        const recallAverage = toFixed(average(points.map(point => point[pointField[1]])), 4)
+        const confidenceAverage = toFixed(average(points.map(({ z }) => z)))
         return points.map((point, index) => ({
           id: `${result}${range[index]}`,
           value: range[index],
@@ -202,13 +202,14 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, filter: { xType,
   }
 
   function generateColumns() {
+    console.log('labels:', labels)
     const dynamicColumns = xasix.map(({ value, label }) => ([
       {
-        title: t(labels.colTarget, label),
+        title: t(labels.colTarget, { label }),
         dataIndex: value,
         render: (_, record) => percent(record.target),
       }, {
-        title: label + ' Confidence',
+        title: t('model.diagnose.metrics.confidence.label', { label }),
         dataIndex: value,
         render: (_, { conf }) => conf,
       },
@@ -233,7 +234,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, filter: { xType,
         render: percentRender,
       },
       {
-        title: 'Confidence Average',
+        title: t('model.diagnose.metrics.confidence.average.label'),
         dataIndex: 'ca',
       },
     ]

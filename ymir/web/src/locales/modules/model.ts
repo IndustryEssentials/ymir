@@ -94,6 +94,16 @@ const model = {
   "model.diagnose.metrics.recall.label": {cn: '召回率', en: 'Recall', },
   "model.diagnose.metrics.recall.average.label": {cn: '平均召回率', en: 'Recall Average', },
   "model.diagnose.metrics.recall.target.label": {cn: '{label}精确率', en: '{label} Precision', },
+  "model.diagnose.metrics.confidence.label": {cn: '{label}置信度', en: '{label} Confidence', },
+  "model.diagnose.metrics.confidence.average.label": {cn: '平均置信度', en: 'Confidence Average', },
+  "model.diagnose.medtric.tabs.map": {cn: 'AP', en: 'AP', },
+  "model.diagnose.medtric.tabs.curve": {cn: 'PR曲线', en: 'PR Curve', },
+  "model.diagnose.medtric.tabs.rp": {cn: '指定召回率', en: 'Recall', },
+  "model.diagnose.medtric.tabs.pr": {cn: '指定精确率', en: 'Precision', },
+  'model.diagnose.metrics.ck.placeholder': {en: "Please select a custom Keyword", cn: "请选择一类自定义标签", },
+  'model.diagnose.metrics.keyword.placeholder': {en: "Please select keywords", cn: "请选择标签", },
+  'model.diagnose.metrics.view.label': {en: "View", cn: "视图", },
+  'model.diagnose.metrics.dimension.label': {en: "Dimension", cn: "维度", },
 }
 
 export default model

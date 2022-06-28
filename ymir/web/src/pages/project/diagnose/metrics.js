@@ -8,8 +8,7 @@ import Panel from "@/components/form/panel"
 import InferResultSelect from "../../../components/form/inferResultSelect"
 import MapView from "./components/mapView"
 import CurveView from "./components/curveView"
-import PView from "./components/pView"
-import RView from "./components/rView"
+import PView from "./components/prView"
 import View from './components/view'
 
 import { CompareIcon } from "@/components/common/icons"
@@ -17,7 +16,7 @@ import DefaultStages from "./components/defaultStages"
 
 const metricsTabs = [
   { label: 'mAP', value: 'map', component: MapView, },
-  { label: 'PR curve', value: 'curv', component: CurveView, },
+  { label: 'PR curve', value: 'curve', component: CurveView, },
   { label: 'R@P', value: 'rp', component: PView, },
   { label: 'P@R', value: 'pr', component: PView, },
 ]
@@ -27,7 +26,7 @@ const xAxisOptions = [
   { label: 'Class', value: 1 },
 ]
 
-const kwTypes = [{ label: '标签', value: 0 }, { label: '用户标签', value: 1 }]
+const kwTypes = [{ label: 'keyword.add.name.label', value: 0 }, { label: 'keyword.ck.label', value: 1 }]
 
 function Matrics({ pid, project }) {
   const [form] = Form.useForm()
@@ -48,10 +47,9 @@ function Matrics({ pid, project }) {
   const [remoteData, fetchDiagnosis] = useFetch('dataset/evaluate')
   const [diagnosis, setDiagnosis] = useState(null)
   const [diagnosing, setDiagnosing] = useState(false)
-  const [filter, setFilter] = useState({
+  const [kwFilter, setKwFilter] = useState({
     kwType: 0,
     keywords: [],
-    xType: 'dataset',
   })
 
   useEffect(() => {
@@ -79,8 +77,7 @@ function Matrics({ pid, project }) {
   }, [kwType, keywords, ck])
 
   useEffect(() => {
-    console.log('kwType:', kwType)
-    setSelectedKeywords(kwType ? '' : [])
+    setSelectedKeywords(kwType ? undefined : [])
   }, [kwType])
 
   useEffect(() => {
@@ -88,12 +85,11 @@ function Matrics({ pid, project }) {
   }, [diagnosis])
 
   useEffect(() => {
-    filterChange()
-  }, [keywords])
-
-  useEffect(() => {
-
-  }, [selectedMetric, prRate, xAxis])
+    setKwFilter({
+      keywords: selectedKeywords?.length ? selectedKeywords : (kwType ? null : keywords),
+      kwType,
+    })
+  }, [selectedKeywords, keywords])
 
   const onFinish = async (values) => {
     const inferDataset = inferTasks.map(({ result }) => result)
@@ -135,19 +131,6 @@ function Matrics({ pid, project }) {
     setSelectedKeywords(values)
   }
 
-  const filterChange = useCallback(() => {
-
-    setFilter({
-      xType: xAxis,
-      keywords: selectedKeywords.length ? selectedKeywords : (kwType ? null : keywords),
-      kwType,
-    })
-  }, [xAxis, selectedKeywords, kwType, keywords])
-
-  function isKw() {
-    return kwType === kwTypes[0].value
-  }
-
   function retry() {
     setDiagnosis(null)
     setDiagnosing(false)
@@ -163,39 +146,47 @@ function Matrics({ pid, project }) {
       data={diagnosis}
       prType={selectedMetric === 'pr' ? 0 : 1}
       prRate={prRate}
-      filter={filter}
+      xType={xAxis}
+      kw={kwFilter}
     />
   }
 
   const renderFilterPanel = () => <div className={s.filterPanel} size={20}>
     <Row gutter={20}>
-      <Col flex={1}>
-        <Radio.Group defaultValue={metricsTabs[0].value} options={metricsTabs} onChange={metricsChange} />
+      <Col>
+        <Form.Item label={t('model.diagnose.metrics.view.label')}>
+          <Radio.Group
+            defaultValue={metricsTabs[0].value}
+            options={metricsTabs.map(item => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`) }))}
+            onChange={metricsChange}
+          />
+        </Form.Item>
       </Col>
       <Col hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)} flex={'15%'}>
-        <Slider style={{ width: 300 }} min={0} max={1}
+        <Slider style={{ width: 200 }} min={0} max={1}
           value={prRate}
           range={true}
           onChange={prRateChange}
-          tooltipVisible marks={{ 0: '0', 0.5: '0.5', 1: '1' }}
+          tooltipVisible
           step={0.05} />
       </Col>
     </Row>
     <Row gutter={20}>
       <Col>
-        <Select value={kwType} options={kwTypes} onChange={setKwType}></Select>
+        <Select value={kwType} options={kwTypes.map(({ label, value }) => ({ value, label: t(label) }))} onChange={setKwType}></Select>
       </Col>
       <Col flex={1}>
         <Select style={{ width: '100%' }} mode={kwType ? 'single' : "multiple"}
           value={selectedKeywords}
           options={kws.map(kw => ({ label: kw, value: kw }))}
-          placeholder={' Please select keywords'}
+          placeholder={t(kwType ? 'model.diagnose.metrics.ck.placeholder' : 'model.diagnose.metrics.keyword.placeholder')}
           showArrow onChange={kwChange}></Select>
       </Col>
       <Col>
-        <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions} onChange={xAxisChange} />
+        <Form.Item label={t('model.diagnose.metrics.dimension.label')}>
+          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions} onChange={xAxisChange} />
+        </Form.Item>
       </Col>
-      <Col><Button type="primary" onClick={filterChange}>OK</Button></Col>
     </Row>
   </div>
 
@@ -216,7 +207,7 @@ function Matrics({ pid, project }) {
   return (
     <div className={s.wrapper}>
       <Row className={s.view} gutter={20}>
-        <Col className={s.filterPanel} span={18}>
+        <Col className={s.viewPanel} span={18}>
           {renderFilterPanel()}
           {renderViewPanel()}
         </Col>

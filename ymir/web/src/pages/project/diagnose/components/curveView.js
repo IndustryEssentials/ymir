@@ -7,7 +7,7 @@ const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
 const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
 
-const CurveView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywords } }) => {
+const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
   const [kd, setKD] = useState([])

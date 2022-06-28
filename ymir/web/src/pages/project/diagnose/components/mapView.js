@@ -8,7 +8,7 @@ const average = (nums = []) => nums.reduce((prev, num) => prev + num, 0) / nums.
 
 const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
 
-const MapView = ({ tasks, datasets, models, data, filter: { xType, kwType, keywords } }) => {
+const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
   const [kd, setKD] = useState([])
