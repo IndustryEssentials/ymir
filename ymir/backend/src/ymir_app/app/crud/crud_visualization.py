@@ -23,8 +23,8 @@ class CRUDVisualization(CRUDBase[Visualization, VisualizationCreate, Visualizati
         *,
         user_id: int,
         project_id: Optional[int],
-        confidence: float,
-        iou: float,
+        confidence: Optional[float],
+        iou: Optional[float],
     ) -> Visualization:
         db_obj = Visualization(
             user_id=user_id,

@@ -15,6 +15,8 @@ class VisualizationBase(BaseModel):
     user_id: int
     tid: str
     project_id: Optional[int]
+    confidence: Optional[float]
+    iou: Optional[float]
 
     class Config:
         use_enum_values = True
