@@ -139,7 +139,12 @@ class ControllerRequest:
 
     def prepare_import_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         importing_request = mirsvrpb.TaskReqImporting()
+
         importing_request.asset_dir = args["asset_dir"]
+        # adhoc specify gt_dir for importing dataset
+        if args.get("gt_dir"):
+            importing_request.gt_dir = args["gt_dir"]
+
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy != ImportStrategy.no_annotations:
             importing_request.annotation_dir = args["annotation_dir"]
