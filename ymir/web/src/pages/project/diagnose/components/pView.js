@@ -10,17 +10,18 @@ const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
 
 function generateRange(min, max, step = 0.05) {
   let result = []
-  let current = min
-  while(current <= max) {
-    result.push(current)
-    current += step
+  let current = min * 100
+  while (current <= max * 100) {
+    result.push(current / 100)
+    current += step * 100
   }
+  console.log('range result:', result, min, max)
   return result
 }
 
-function rangePoints(range, points, field = 'x') {
+function rangePoints(range, points = [], field = 'x') {
   return range.map(value => {
-    return points.reduce((prev, curr) => 
+    return points.reduce((prev, curr) =>
       Math.abs(prev[field] - value) <= Math.abs(curr[field] - value) ? prev : curr, 1)
   })
 }
@@ -79,7 +80,7 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
     } else {
       setList([])
     }
-  }, [xType, dd, kd, dData, kData])
+  }, [xType, dd, kd, dData, kData, range])
 
   function generateDData(data) {
     const field = getKwField(kwType)
@@ -121,51 +122,58 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
       id: value, label,
       rows: isDs ? generateDsRows(value) : generateKwRows(value),
     }))
+    console.log('list:', list)
     setList(list)
   }
 
   function generateDsRows(tid) {
     const tts = tasks.filter(({ testing }) => testing === tid)
-    return tts.map(({ result: rid }) => {
-      const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
-      const kwAps = kd.reduce((prev, { value: kw }) => {
-        return {
-          ...prev,
-          [kw]: ddata[kw].ap,
-        }
-      }, {})
-      const _average = kwType ? dData[rid][keywords].total.ap : average(Object.values(kwAps))
-      const _model = getModelCell(rid)
-      return {
-        id: rid,
-        _model,
-        _average,
-        ...kwAps,
-      }
-    })
+
+    return kd.map(({ value }) => {
+      return tts.map(({ model, result: rid }) => {
+        const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
+        const _model = getModelCell(rid)
+        const line = ddata[value].pr_curve
+        const points = rangePoints(range, line)
+        const recallAverage = average(points.map(({ y }) => y))
+        const confidenceAverage = average(points.map(({ z }) => z))
+        return points.map(({ x, y, z }, index) => ({
+          id: `${rid}${range[index]}`,
+          value: range[index],
+          span: model,
+          title: value,
+          name: _model,
+          x, y, z,
+          a: recallAverage,
+          ca: confidenceAverage,
+        })).flat()
+      }).flat()
+    }).flat()
   }
 
-  const generateKwRows = (kw) => {
+  function generateKwRows(kw) {
     const kdata = kwType ? kData[keywords][kw] : kData[kw]
-    const mids = [...new Set(tasks.map(({ model }) => model))]
 
-    return mids.map(mid => {
-      const tks = tasks.filter(({ model }) => model === mid)
-      const _model = getModelCell(tks[0].result)
-      const drow = tks.reduce((prev, { testing, result }) => {
-        return {
-          ...prev,
-          [testing]: kdata[result].ap
-        }
-      }, {})
-      const _average = kwType ? kdata._average.ap : average(Object.values(drow))
-      return {
-        id: mid,
-        _model,
-        _average,
-        ...drow,
-      }
-    })
+    return dd.map(({ value: tid, label }) => {
+      const tks = tasks.filter(({ testing }) => testing === tid)
+      return tks.map(({ model, result }) => {
+        const _model = getModelCell(result)
+        const line = kdata[result].pr_curve
+        const points = rangePoints(range, line)
+        const recallAverage = average(points.map(({ y }) => y))
+        const confidenceAverage = average(points.map(({ z }) => z))
+        return points.map(({ x, y, z }, index) => ({
+          id: `${result}${range[index]}`,
+          value: range[index],
+          span: model,
+          title: label,
+          name: _model,
+          x, y, z,
+          a: recallAverage,
+          ca: confidenceAverage,
+        })).flat()
+      }).flat()
+    }).flat()
   }
 
   function getModelCell(rid) {
@@ -176,29 +184,44 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
   }
 
   function generateColumns() {
-    const dynamicColumns = xasix.map(({ value, label }) => ({
-      title: label,
-      dataIndex: value,
-      render: mapRender,
-    }))
+    const dynamicColumns = xasix.map(({ value, label }) => ([
+      {
+        title: label + ' Recall',
+        dataIndex: value,
+        render: (_, { y }) => percent(y),
+      }, {
+        title: label + ' Confidence',
+        dataIndex: value,
+        render: (_, { z }) => z,
+      },
+    ])).flat()
     return [
       {
         title: 'Model',
-        dataIndex: '_model',
+        dataIndex: 'name',
+        onCell: (_, index) => ({
+          rowSpan: index % range.length ? 0 : range.length,
+        }),
       },
       {
-        title: 'Average AP',
-        dataIndex: '_average',
-        render: mapRender,
+        title: 'Precision',
+        dataIndex: 'value',
+        render: percentRender,
       },
       ...dynamicColumns,
+      {
+        title: 'Recall Average',
+        dataIndex: 'a',
+        render: percentRender,
+      },
+      {
+        title: 'Confidence Average',
+        dataIndex: 'ca',
+      },
     ]
   }
 
-  const mapRender = value => {
-    const ap = value?.ap || value
-    return !Number.isNaN(ap) ? percent(ap) : '-'
-  }
+  const percentRender = value => !Number.isNaN(value) ? percent(value) : '-'
 
   return list.map(({ id, label, rows }) => <div key={id}>
     <h3>{label}</h3>
