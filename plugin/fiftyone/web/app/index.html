@@ -173,7 +173,7 @@
             var url = `/api/task/${tid}`
             http.get(url, function (err, result) {
                 if (result?.code == 0 && result?.data?.status && parseInt(result.data.status) === 3) {
-                    window.location.href = `/dataset/${tid}`;
+                    window.location.href = `/datasets/${tid}`;
                 } else {
                     setTimeout(() => {
                         queryStatus();

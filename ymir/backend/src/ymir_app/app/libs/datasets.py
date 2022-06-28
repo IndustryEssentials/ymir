@@ -64,6 +64,7 @@ def _import_dataset(
         parameters = {
             "annotation_dir": paths.annotation_dir,
             "asset_dir": paths.asset_dir,
+            "gt_dir": paths.gt_dir,
             "strategy": dataset_import.strategy,
         }
 
@@ -96,6 +97,13 @@ class ImportDatasetPaths:
     @property
     def asset_dir(self) -> str:
         return str(self.data_dir / "images")
+
+    @property
+    def gt_dir(self) -> Optional[str]:
+        gt_dir = self.data_dir / "gt"
+        if not gt_dir.is_dir():
+            return None
+        return str(gt_dir)
 
     @property
     def data_dir(self) -> pathlib.Path:

@@ -281,6 +281,42 @@ paths:
                 $ref: "#/components/schemas/DatasetEvaluationResult"
         "400":
           description: Dataset evaluation failed
+  /users/{user_id}/repositories/{repo_id}/dataset_duplication:
+    get:
+      tags:
+        - dataset
+      summary: check datasets duplication
+      description: check datasets duplication
+      operationId: check_datasets_duplication
+      parameters:
+        - name: user_id
+          in: path
+          description: user_id
+          required: true
+          schema:
+            type: string
+        - name: repo_id
+          in: path
+          description: repo_id
+          required: true
+          schema:
+            type: string
+        - name: candidate_dataset_ids
+          in: query
+          description: candidate datasets to check duplication with. each dataset_id is separated by comma (,)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetDuplicationResult'
+        '400':
+          description: Datasets not exist
+
 components:
   schemas:
     AssetInfo:
@@ -508,3 +544,10 @@ components:
         z:
           type: number
       example: {'x': 0.0, 'y': 1.0, 'z': 0.3}  # x: recall, y: precision, z: confidence
+    DatasetDuplicationResult:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+        - type: object
+          properties:
+            result:
+              type: boolean
