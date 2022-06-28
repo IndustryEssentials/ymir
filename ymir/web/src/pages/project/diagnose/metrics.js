@@ -18,7 +18,7 @@ import DefaultStages from "./components/defaultStages"
 const metricsTabs = [
   { label: 'mAP', value: 'map', component: MapView, },
   { label: 'PR curve', value: 'curv', component: CurveView, },
-  { label: 'R@P', value: 'rp', component: RView, },
+  { label: 'R@P', value: 'rp', component: PView, },
   { label: 'P@R', value: 'pr', component: PView, },
 ]
 
@@ -96,7 +96,6 @@ function Matrics({ pid, project }) {
   }, [selectedMetric, prRate, xAxis])
 
   const onFinish = async (values) => {
-    console.log('values:', values)
     const inferDataset = inferTasks.map(({ result }) => result)
     const params = {
       ...values,
@@ -137,7 +136,7 @@ function Matrics({ pid, project }) {
   }
 
   const filterChange = useCallback(() => {
-    
+
     setFilter({
       xType: xAxis,
       keywords: selectedKeywords.length ? selectedKeywords : (kwType ? null : keywords),
@@ -162,6 +161,7 @@ function Matrics({ pid, project }) {
       models={selectedModels}
       datasets={selectedDatasets}
       data={diagnosis}
+      prType={selectedMetric === 'pr' ? 0 : 1}
       prRate={prRate}
       filter={filter}
     />
@@ -222,37 +222,37 @@ function Matrics({ pid, project }) {
         </Col>
         <Col span={6}>
           <div className={s.formContainer}>
-          
-          <div className={s.mask} hidden={!diagnosing}>
-            <Button style={{ marginBottom: 10 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {t('model.diagnose.analysis.btn.retry')}</Button>
-          </div>
-          <Panel label={'Metrics'} style={{ marginTop: -10 }} toogleVisible={false}>
-            <Form
-              className={s.form}
-              form={form}
-              layout='vertical'
-              initialValues={initialValues}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              labelAlign='left'
-              colon={false}
-            >
-              <InferResultSelect form={form} pid={pid} onChange={inferResultChange} />
-              <Form.Item label={t('model.diagnose.form.confidence')} name='confidence'>
-                <InputNumber step={0.0005} min={0.0005} max={0.9995} />
-              </Form.Item>
-              <Form.Item label={renderIouTitle} name='iou'>
-                <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />
-              </Form.Item>
-              <Form.Item name='submitBtn'>
-                <div style={{ textAlign: 'center' }}>
-                  <Button type="primary" size="large" htmlType="submit">
-                    <CompareIcon /> {t('model.diagnose.analysis.btn.start_diagnose')}
-                  </Button>
-                </div>
-              </Form.Item>
-            </Form>
-          </Panel>
+
+            <div className={s.mask} hidden={!diagnosing}>
+              <Button style={{ marginBottom: 10 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {t('model.diagnose.analysis.btn.retry')}</Button>
+            </div>
+            <Panel label={'Metrics'} style={{ marginTop: -10 }} toogleVisible={false}>
+              <Form
+                className={s.form}
+                form={form}
+                layout='vertical'
+                initialValues={initialValues}
+                onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
+                labelAlign='left'
+                colon={false}
+              >
+                <InferResultSelect form={form} pid={pid} onChange={inferResultChange} />
+                <Form.Item label={t('model.diagnose.form.confidence')} name='confidence'>
+                  <InputNumber step={0.0005} min={0.0005} max={0.9995} />
+                </Form.Item>
+                <Form.Item label={renderIouTitle} name='iou'>
+                  <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />
+                </Form.Item>
+                <Form.Item name='submitBtn'>
+                  <div style={{ textAlign: 'center' }}>
+                    <Button type="primary" size="large" htmlType="submit">
+                      <CompareIcon /> {t('model.diagnose.analysis.btn.start_diagnose')}
+                    </Button>
+                  </div>
+                </Form.Item>
+              </Form>
+            </Panel>
           </div>
           <DefaultStages diagnosing={diagnosing} models={selectedModels} />
         </Col>

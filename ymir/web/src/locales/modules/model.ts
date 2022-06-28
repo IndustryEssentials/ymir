@@ -88,6 +88,12 @@ const model = {
   "model.diagnose.label.testing_dataset": { cn: "测试集", en: "Testing Datasets", },
   "model.diagnose.label.config": { cn: "推理配置", en: "Infer Configs", },
   "model.diagnose.stage.label": { cn: "设置模型Stage", en: "Set Recommended Stage", },
+  "model.diagnose.metrics.precision.label": {cn: '精确率', en: 'Precision', },
+  "model.diagnose.metrics.precision.average.label": {cn: '平均精确率', en: 'Precision Average', },
+  "model.diagnose.metrics.precision.target.label": {cn: '{label}召回率', en: '{label} Recall', },
+  "model.diagnose.metrics.recall.label": {cn: '召回率', en: 'Recall', },
+  "model.diagnose.metrics.recall.average.label": {cn: '平均召回率', en: 'Recall Average', },
+  "model.diagnose.metrics.recall.target.label": {cn: '{label}精确率', en: '{label} Precision', },
 }
 
 export default model

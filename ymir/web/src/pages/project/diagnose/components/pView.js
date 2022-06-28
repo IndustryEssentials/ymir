@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react"
 import { Table } from "antd"
 import { percent } from '@/utils/number'
+import t from '@/utils/t'
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
 const average = (nums = []) => nums.reduce((prev, num) => prev + num, 0) / nums.length
 
 const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
+
+const getLabels = type => ({
+    colMain: `model.diagnose.metrics.${type}.label`,
+    colAverage: `model.diagnose.metrics.${type}.average.label`,
+    colTarget: `model.diagnose.metrics.${type}.target.label`,
+  })
+
 
 function generateRange(min, max, step = 0.05) {
   let result = []
@@ -15,7 +23,6 @@ function generateRange(min, max, step = 0.05) {
     result.push(current / 100)
     current += step * 100
   }
-  console.log('range result:', result, min, max)
   return result
 }
 
@@ -26,7 +33,7 @@ function rangePoints(range, points = [], field = 'x') {
   })
 }
 
-const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType, keywords } }) => {
+const PView = ({ tasks, datasets, models, data, prType, prRate, filter: { xType, kwType, keywords } }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
   const [kd, setKD] = useState([])
@@ -35,12 +42,19 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
   const [kData, setKData] = useState(null)
   const [columns, setColumns] = useState([])
   const [range, setRange] = useState([])
+  const [pointField, setPointField] = useState(['x', 'y'])
+  const [labels, setLabels] = useState({})
 
   useEffect(() => {
     const min = prRate[0]
     const max = prRate[1]
     setRange(generateRange(min, max))
   }, [prRate])
+
+  useEffect(() => {
+    setPointField(prType ?['y', 'x'] :  ['x', 'y'])
+    setLabels(prType ? 'recall' : 'precision')
+  }, [prType])
 
   useEffect(() => {
     if (data && keywords) {
@@ -134,16 +148,18 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
         const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
         const _model = getModelCell(rid)
         const line = ddata[value].pr_curve
-        const points = rangePoints(range, line)
-        const recallAverage = average(points.map(({ y }) => y))
+        const points = rangePoints(range, line, pointField[0])
+        const recallAverage = average(points.map(point => point[pointField[1]]))
         const confidenceAverage = average(points.map(({ z }) => z))
-        return points.map(({ x, y, z }, index) => ({
+        return points.map((point, index) => ({
           id: `${rid}${range[index]}`,
           value: range[index],
           span: model,
           title: value,
           name: _model,
-          x, y, z,
+          target: point[pointField[1]],
+          point,
+          conf: point.z,
           a: recallAverage,
           ca: confidenceAverage,
         })).flat()
@@ -159,16 +175,18 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
       return tks.map(({ model, result }) => {
         const _model = getModelCell(result)
         const line = kdata[result].pr_curve
-        const points = rangePoints(range, line)
-        const recallAverage = average(points.map(({ y }) => y))
+        const points = rangePoints(range, line, pointField[0])
+        const recallAverage = average(points.map(point => point[pointField[1]]))
         const confidenceAverage = average(points.map(({ z }) => z))
-        return points.map(({ x, y, z }, index) => ({
+        return points.map((point, index) => ({
           id: `${result}${range[index]}`,
           value: range[index],
           span: model,
           title: label,
           name: _model,
-          x, y, z,
+          target: point[pointField[1]],
+          point,
+          conf: point.z,
           a: recallAverage,
           ca: confidenceAverage,
         })).flat()
@@ -186,13 +204,13 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
   function generateColumns() {
     const dynamicColumns = xasix.map(({ value, label }) => ([
       {
-        title: label + ' Recall',
+        title: t(labels.colTarget, label),
         dataIndex: value,
-        render: (_, { y }) => percent(y),
+        render: (_, record) => percent(record.target),
       }, {
         title: label + ' Confidence',
         dataIndex: value,
-        render: (_, { z }) => z,
+        render: (_, { conf }) => conf,
       },
     ])).flat()
     return [
@@ -204,13 +222,13 @@ const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType,
         }),
       },
       {
-        title: 'Precision',
+        title: t(labels.colMain),
         dataIndex: 'value',
         render: percentRender,
       },
       ...dynamicColumns,
       {
-        title: 'Recall Average',
+        title: t(labels.colAverage),
         dataIndex: 'a',
         render: percentRender,
       },
