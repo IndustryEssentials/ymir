@@ -101,10 +101,10 @@ class CmdCopy(base.BaseCommand):
         pred_annotations, pred_unknown_types = CmdCopy._change_single_task_annotations(
             data_mir_root=data_mir_root,
             dst_mir_root=mir_root,
-            single_task_annotations=mir_annotations.ground_truth,
-            ignore_unknown_types=mir_annotations.prediction,
+            single_task_annotations=mir_annotations.prediction,
+            ignore_unknown_types=ignore_unknown_types,
             drop_annotations=drop_annotations)
-        mir_annotations.ground_truth.CopyFrom(pred_annotations)
+        mir_annotations.prediction.CopyFrom(pred_annotations)
         unknown_types.update(pred_unknown_types)
 
         # tasks.mir: get necessary head task infos, remove others and change head task id
