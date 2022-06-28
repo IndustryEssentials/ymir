@@ -1,35 +1,215 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Table } from "antd"
+import { percent } from '@/utils/number'
 
-const PView = ({ tasks, datasets, models, data, filters = {} }) => {
-  const [table, setTable] = useState([])
+const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
+
+const average = (nums = []) => nums.reduce((prev, num) => prev + num, 0) / nums.length
+
+const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
+
+function generateRange(min, max, step = 0.05) {
+  let result = []
+  let current = min
+  while(current <= max) {
+    result.push(current)
+    current += step
+  }
+  return result
+}
+
+function rangePoints(range, points, field = 'x') {
+  return range.map(value => {
+    return points.reduce((prev, curr) => 
+      Math.abs(prev[field] - value) <= Math.abs(curr[field] - value) ? prev : curr, 1)
+  })
+}
+
+const PView = ({ tasks, datasets, models, data, prRate, filter: { xType, kwType, keywords } }) => {
+  const [list, setList] = useState([])
+  const [dd, setDD] = useState([])
+  const [kd, setKD] = useState([])
+  const [xasix, setXAsix] = useState([])
+  const [dData, setDData] = useState(null)
+  const [kData, setKData] = useState(null)
   const [columns, setColumns] = useState([])
-  function generateTableSource(iou = 0) {
-    const getInfo = (dataset) => ({
-      id: dataset.id,
-      name: `${dataset.name} ${dataset.versionName}`,
-      model: dataset.task?.parameters?.model_id,
-    })
-    return source ? [getInfo(gt), ...datasets.map((dataset, index) => {
-      const datasetSource = source[dataset.id] || {}
-      const iouMetrics = datasetSource.iou_evaluations || {}
-      const metrics = iouMetrics[iou] || {}
+  const [range, setRange] = useState([])
+
+  useEffect(() => {
+    const min = prRate[0]
+    const max = prRate[1]
+    setRange(generateRange(min, max))
+  }, [prRate])
+
+  useEffect(() => {
+    if (data && keywords) {
+      generateDData(data)
+      generateKData(data)
+    } else {
+      setDData(null)
+      setKData(null)
+    }
+  }, [kwType, data, keywords])
+
+  useEffect(() => {
+    setDD(datasets.map(opt))
+  }, [datasets])
+
+  useEffect(() => {
+    if (data && keywords) {
+      const kws = kwType ?
+        Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
+          .map(k => ({ value: k, label: k, parent: keywords })) :
+        keywords.map(k => ({ value: k, label: k }))
+      setKD(kws)
+    }
+  }, [keywords, data, kwType])
+
+  useEffect(() => {
+    const cls = generateColumns()
+    console.log('cls:', cls)
+    setColumns(cls)
+  }, [xasix])
+
+  useEffect(() => {
+    // list
+    if (dData && kData) {
+      generateList(!xType)
+      setXAsix(xType ? dd : kd)
+    } else {
+      setList([])
+    }
+  }, [xType, dd, kd, dData, kData])
+
+  function generateDData(data) {
+    const field = getKwField(kwType)
+    const ddata = Object.keys(data).reduce((prev, id) => {
+      const { iou_evaluations } = data[id]
+      const fiou = Object.values(iou_evaluations)[0]
       return {
-        ...getInfo(dataset),
-        map: datasetSource.iou_averaged_evaluation,
-        metrics,
-        dataset,
+        ...prev,
+        [id]: fiou[field],
       }
-    })] : []
+    }, {})
+    setDData(ddata)
   }
 
-  return <Table
-    dataSource={table}
-    rowKey={(record) => record.id}
-    rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-    columns={columns}
-    pagination={false}
-  />
+  function generateKData(data) {
+    const field = getKwField(kwType)
+    const kdata = {}
+    Object.keys(data).forEach(id => {
+      const { iou_evaluations } = data[id]
+      const fiou = Object.values(iou_evaluations)[0][field]
+      Object.keys(fiou).forEach(key => {
+        kdata[key] = kdata[key] || {}
+        if (kwType) {
+          Object.keys(fiou[key].sub).forEach(subKey => {
+            kdata[key][subKey] = kdata[key][subKey] || { _average: fiou[key].total }
+            kdata[key][subKey][id] = fiou[key].sub[subKey]
+          })
+        } else {
+          kdata[key][id] = fiou[key]
+        }
+      })
+    })
+    setKData(kdata)
+  }
+
+  function generateList(isDs) {
+    const titles = isDs ? dd : kd
+    const list = titles.map(({ value, label }) => ({
+      id: value, label,
+      rows: isDs ? generateDsRows(value) : generateKwRows(value),
+    }))
+    setList(list)
+  }
+
+  function generateDsRows(tid) {
+    const tts = tasks.filter(({ testing }) => testing === tid)
+    return tts.map(({ result: rid }) => {
+      const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
+      const kwAps = kd.reduce((prev, { value: kw }) => {
+        return {
+          ...prev,
+          [kw]: ddata[kw].ap,
+        }
+      }, {})
+      const _average = kwType ? dData[rid][keywords].total.ap : average(Object.values(kwAps))
+      const _model = getModelCell(rid)
+      return {
+        id: rid,
+        _model,
+        _average,
+        ...kwAps,
+      }
+    })
+  }
+
+  const generateKwRows = (kw) => {
+    const kdata = kwType ? kData[keywords][kw] : kData[kw]
+    const mids = [...new Set(tasks.map(({ model }) => model))]
+
+    return mids.map(mid => {
+      const tks = tasks.filter(({ model }) => model === mid)
+      const _model = getModelCell(tks[0].result)
+      const drow = tks.reduce((prev, { testing, result }) => {
+        return {
+          ...prev,
+          [testing]: kdata[result].ap
+        }
+      }, {})
+      const _average = kwType ? kdata._average.ap : average(Object.values(drow))
+      return {
+        id: mid,
+        _model,
+        _average,
+        ...drow,
+      }
+    })
+  }
+
+  function getModelCell(rid) {
+    const task = tasks.find(({ result }) => result === rid)
+    const model = models.find(model => model.id === task.model)
+    const stage = model.stages.find(sg => sg.id === task.stage)
+    return <span title={JSON.stringify(task.config)}>{`${model.name} ${model.versionName} ${stage.name}`}</span>
+  }
+
+  function generateColumns() {
+    const dynamicColumns = xasix.map(({ value, label }) => ({
+      title: label,
+      dataIndex: value,
+      render: mapRender,
+    }))
+    return [
+      {
+        title: 'Model',
+        dataIndex: '_model',
+      },
+      {
+        title: 'Average AP',
+        dataIndex: '_average',
+        render: mapRender,
+      },
+      ...dynamicColumns,
+    ]
+  }
+
+  const mapRender = value => {
+    const ap = value?.ap || value
+    return !Number.isNaN(ap) ? percent(ap) : '-'
+  }
+
+  return list.map(({ id, label, rows }) => <div key={id}>
+    <h3>{label}</h3>
+    <Table
+      dataSource={rows}
+      rowKey={record => record.id}
+      rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
+      columns={columns}
+      pagination={false}
+    />
+  </div>)
 }
 
 export default PView

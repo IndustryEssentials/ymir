@@ -36,11 +36,11 @@ const groups = mockjs.mock({
   total: 34,
 })
 
-const xyz = [
-  '@float(0, 1, 0, 4)',
-  '@float(0, 1, 0, 4)',
-  '@float(0, 1, 0, 4)',
-]
+const xyz = {
+  x: '@float(0, 1, 0, 4)',
+  y: '@float(0, 1, 0, 4)',
+  z: '@float(0, 1, 0, 4)',
+}
 const metadata = {
   "ap": '@float(0, 1, 0, 4)',
   "ar": '@float(0, 1, 0, 4)',

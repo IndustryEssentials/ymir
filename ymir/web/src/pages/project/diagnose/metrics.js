@@ -38,7 +38,7 @@ function Matrics({ pid, project }) {
   const [everageIou, setEverageIou] = useState(false)
   const [confidence, setConfidence] = useState(0.3)
   const [selectedMetric, setSelectedMetric] = useState(metricsTabs[0].value)
-  const [prRate, setPrRate] = useState(0.5)
+  const [prRate, setPrRate] = useState([0.8, 0.95])
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [ck, setCK] = useState([])
@@ -123,7 +123,8 @@ function Matrics({ pid, project }) {
     setSelectedMetric(value)
   }
 
-  function prRateChange({ target: { value } }) {
+  function prRateChange(value) {
+    console.log('value:', value)
     setPrRate(value)
   }
 
@@ -161,6 +162,7 @@ function Matrics({ pid, project }) {
       models={selectedModels}
       datasets={selectedDatasets}
       data={diagnosis}
+      prRate={prRate}
       filter={filter}
     />
   }
@@ -173,9 +175,10 @@ function Matrics({ pid, project }) {
       <Col hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)} flex={'15%'}>
         <Slider style={{ width: 300 }} min={0} max={1}
           value={prRate}
+          range={true}
           onChange={prRateChange}
           tooltipVisible marks={{ 0: '0', 0.5: '0.5', 1: '1' }}
-          step={0.1} />
+          step={0.05} />
       </Col>
     </Row>
     <Row gutter={20}>
