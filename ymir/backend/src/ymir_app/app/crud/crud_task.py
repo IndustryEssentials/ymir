@@ -136,13 +136,6 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db.refresh(task)
         return task
 
-    def update_visualization_id(self, db: Session, *, task: Task, visualization_id: int) -> Task:
-        task.visualization_id = visualization_id  # type: ignore
-        db.add(task)
-        db.commit()
-        db.refresh(task)
-        return task
-
     def update_state_and_percent(
         self,
         db: Session,

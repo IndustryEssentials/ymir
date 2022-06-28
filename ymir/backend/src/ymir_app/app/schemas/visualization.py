@@ -31,6 +31,8 @@ class VisualizationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixi
 class VisualizationCreate(BaseModel):
     task_ids: List[int]
     project_id: Optional[int]
+    confidence: Optional[float] = 0.0005
+    iou: Optional[float] = 0.5
 
     class Config:
         use_enum_values = True

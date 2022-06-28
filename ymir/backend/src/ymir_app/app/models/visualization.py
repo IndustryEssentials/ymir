@@ -4,6 +4,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     Integer,
     String,
 )
@@ -21,6 +22,8 @@ class Visualization(Base):
     user_id = Column(Integer, index=True, nullable=False)
     tid = Column(String(settings.STRING_LEN_LIMIT), unique=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=True)
+    confidence = Column(Float, nullable=False, default=0.0005)
+    iou = Column(Float, nullable=False, default=0.5)
 
     tasks = relationship(
         "Task",
