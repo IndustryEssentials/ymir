@@ -172,22 +172,20 @@ class AssetsModel:
 
     @utils.time_it
     def get_all_asset_ids(self) -> List[str]:
-        # pb_reader got a special key 'all_asset_ids' which is convenient
-        # so we do not support get assets of given class_id for now
+        # take the shortcut if dataset has been cached
         if self.check_cache_existence():
             logging.info("get_all_asset_ids from cache")
             return self.get_all_asset_ids_from_cache()
 
-        assets_content = pb_reader.MirStorageLoader(
+        # otherwise, ONLY read metadata.mir to save time
+        dataset_metadata = pb_reader.MirStorageLoader(
             sandbox_root=viz_settings.BACKEND_SANDBOX_ROOT,
             user_id=self.user_id,
             repo_id=self.repo_id,
             branch_id=self.branch_id,
             task_id=self.branch_id,
-        ).get_assets_content()
-        # asynchronous generate cache content,and we can add some policy to trigger it later
-        self.trigger_cache_generator(assets_content)
-        return assets_content["all_asset_ids"]
+        ).get_dataset_metadata()
+        return list(dataset_metadata["attributes"].keys())
 
     @utils.time_it
     def get_asset_id_info(self, asset_id: str) -> Optional[Dict]:
