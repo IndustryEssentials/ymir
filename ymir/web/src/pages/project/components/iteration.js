@@ -58,7 +58,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
   }
 
   function getModelStage(model) {
-    return stage ? [id, model.recommendStage].toString() : ''
+    return model ? [model.id, model.recommendStage].toString() : ''
   }
 
   function rerenderStages() {
