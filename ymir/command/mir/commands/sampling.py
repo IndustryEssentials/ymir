@@ -41,7 +41,7 @@ class CmdSampling(base.BaseCommand):
             mir_root=mir_root,
             mir_branch=src_typ_rev_tid.rev,
             mir_task_id=src_typ_rev_tid.tid,
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_TASKS],
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
             as_dict=False,
         )
         assets_count = len(mir_metadatas.attributes)
