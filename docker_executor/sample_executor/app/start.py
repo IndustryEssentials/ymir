@@ -1,13 +1,16 @@
 import logging
 import os
+import random
 import sys
 import time
 from typing import List
 
-from ymir_exc import dataset_reader as dr, env, monitor, result_writer as rw
 # view https://github.com/protocolbuffers/protobuf/issues/10051 for detail
 os.environ.setdefault('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION', 'python')
 from tensorboardX import SummaryWriter
+from ymir_exc import dataset_reader as dr
+from ymir_exc import env, monitor
+from ymir_exc import result_writer as rw
 
 
 def start() -> int:
@@ -142,9 +145,20 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
     #! write infer result
-    fake_annotation = rw.Annotation(
-        class_name=class_names[0], score=0.9, box=rw.Box(x=50, y=50, w=150, h=150))
-    infer_result = {asset_path: [fake_annotation]
+    fake_anns = []
+    for class_name in class_names:
+        x = random.randint(0, 100)
+        y = random.randint(0, 100)
+        w = random.randint(50, 100)
+        h = random.randint(50, 100)
+        ann = rw.Annotation(
+            class_name=class_name,
+            score=random.random(),
+            box=rw.Box(x=x, y=y, w=w, h=h))
+
+        fake_anns.append(ann)
+
+    infer_result = {asset_path: fake_anns
                     for asset_path in asset_paths}
     rw.write_infer_result(infer_result=infer_result)
 
