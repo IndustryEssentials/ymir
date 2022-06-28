@@ -1,6 +1,11 @@
-from typing import Optional, Dict
+from functools import wraps
+from typing import Any, Callable, Dict, Optional
+
+from mir.tools.errors import MirRuntimeError
 
 from id_definition.error_codes import VizErrorCode
+from src.libs import utils
+from src.swagger_models import DatasetEvaluationResult
 
 
 class VizException(Exception):
@@ -43,3 +48,30 @@ class ModelNotExists(VizException):
 class DatasetEvaluationNotExists(VizException):
     code = VizErrorCode.DATASET_EVALUATION_NOT_EXISTS
     message = "dataset evaluation not found"
+
+
+def catch_viz_exceptions(f: Callable) -> Any:
+    @wraps(f)
+    def wrapper(*args: tuple, **kwargs: dict) -> Any:
+        code: int
+        message: str
+        result: dict
+
+        try:
+            return f(*args, **kwargs)
+        except VizException as e:
+            code = e.code
+            message = e.message
+            result = {}
+        except MirRuntimeError as e:
+            code = e.error_code
+            message = e.error_message
+            result = {}
+        except Exception as e:
+            code = VizErrorCode.GENERAL_ERROR
+            message = str(e)
+            result = {}
+
+        resp = utils.suss_resp(code=code, message=message, result=result)
+        return DatasetEvaluationResult(**resp)
+    return wrapper

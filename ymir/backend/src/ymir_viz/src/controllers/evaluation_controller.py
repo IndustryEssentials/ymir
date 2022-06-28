@@ -7,7 +7,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 from src.config import viz_settings
-from src.libs import utils
+from src.libs import utils, exceptions
 from src.swagger_models import DatasetEvaluationResult
 from src.viz_models import pb_reader
 
@@ -40,6 +40,7 @@ def get_dataset_evaluations(user_id: str, repo_id: str, branch_id: str) -> Datas
     return DatasetEvaluationResult(**resp)
 
 
+@exceptions.catch_viz_exceptions
 def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr: float, iou_thr: float,
                             need_pr_curve: bool) -> DatasetEvaluationResult:
     rev_tid = revs_parser.parse_single_arg_rev(branch_id, need_tid=False)
