@@ -87,8 +87,7 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
             best_stage_name = yaml_obj['best_stage_name']
     except FileNotFoundError:
         error_message = f"can not find file: {result_yaml_path}, executor may have errors, see ymir-executor-out.log"
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                              error_message=error_message)
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE, error_message=error_message)
 
     return (model_stages, best_stage_name)
 
@@ -263,6 +262,8 @@ class CmdTrain(base.BaseCommand):
             os.makedirs(asset_dir, exist_ok=True)
         work_dir_annotations = os.path.join(work_dir_in, 'annotations')
         os.makedirs(work_dir_annotations, exist_ok=True)
+        work_dir_gt = os.path.join(work_dir_in, 'groundtruth')
+        os.makedirs(work_dir_gt, exist_ok=True)
 
         work_dir_out = os.path.join(work_dir, "out")
         os.makedirs(work_dir_out, exist_ok=True)
@@ -338,30 +339,40 @@ class CmdTrain(base.BaseCommand):
         dw_train: data_writer.BaseDataWriter
         dw_val: data_writer.BaseDataWriter
         if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
-            dw_train = data_writer.RawDataWriter(mir_root=mir_root,
-                                                 assets_location=media_location,
-                                                 assets_dir=asset_dir,
-                                                 annotations_dir=work_dir_annotations,
-                                                 need_ext=True,
-                                                 need_id_sub_folder=True,
-                                                 overwrite=False,
-                                                 class_ids_mapping=type_id_idx_mapping,
-                                                 format_type=export_format,
-                                                 index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
-                                                 index_assets_prefix='/in/assets',
-                                                 index_annotations_prefix='/in/annotations')
-            dw_val = data_writer.RawDataWriter(mir_root=mir_root,
-                                               assets_location=media_location,
-                                               assets_dir=asset_dir,
-                                               annotations_dir=work_dir_annotations,
-                                               need_ext=True,
-                                               need_id_sub_folder=True,
-                                               overwrite=False,
-                                               class_ids_mapping=type_id_idx_mapping,
-                                               format_type=export_format,
-                                               index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
-                                               index_assets_prefix='/in/assets',
-                                               index_annotations_prefix='/in/annotations')
+            dw_train = data_writer.RawDataWriter(
+                mir_root=mir_root,
+                assets_location=media_location,
+                assets_dir=asset_dir,
+                annotations_dir=work_dir_annotations,
+                gt_dir=work_dir_gt,
+                need_ext=True,
+                need_id_sub_folder=True,
+                overwrite=False,
+                class_ids_mapping=type_id_idx_mapping,
+                format_type=export_format,
+                index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
+                gt_index_file_path=os.path.join(work_dir_in, 'train-index-gt.tsv'),
+                index_assets_prefix='/in/assets',
+                index_annotations_prefix='/in/annotations',
+                index_gt_prefix='/in/groundtruth',
+            )
+            dw_val = data_writer.RawDataWriter(
+                mir_root=mir_root,
+                assets_location=media_location,
+                assets_dir=asset_dir,
+                annotations_dir=work_dir_annotations,
+                gt_dir=work_dir_gt,
+                need_ext=True,
+                need_id_sub_folder=True,
+                overwrite=False,
+                class_ids_mapping=type_id_idx_mapping,
+                format_type=export_format,
+                index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
+                gt_index_file_path=os.path.join(work_dir_in, 'val-index-gt.tsv'),
+                index_assets_prefix='/in/assets',
+                index_annotations_prefix='/in/annotations',
+                index_gt_prefix='/in/groundtruth',
+            )
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             asset_dir = os.path.join(work_dir_in, 'lmdb')
             # export train set
