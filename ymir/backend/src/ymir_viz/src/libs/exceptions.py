@@ -53,25 +53,14 @@ class DatasetEvaluationNotExists(VizException):
 def catch_viz_exceptions(f: Callable) -> Any:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: dict) -> Any:
-        code: int
-        message: str
-        result: dict
-
         try:
             return f(*args, **kwargs)
         except VizException as e:
-            code = e.code
-            message = e.message
-            result = {}
+            return DatasetEvaluationResult(**utils.suss_resp(code=e.code, message=e.message, result={}))
         except MirRuntimeError as e:
-            code = e.error_code
-            message = e.error_message
-            result = {}
+            return DatasetEvaluationResult(**utils.suss_resp(code=e.error_code, message=e.error_message, result={}))
         except Exception as e:
-            code = VizErrorCode.GENERAL_ERROR
-            message = str(e)
-            result = {}
+            return DatasetEvaluationResult(
+                **utils.suss_resp(code=VizErrorCode.GENERAL_ERROR, message=str(e), result={}))
 
-        resp = utils.suss_resp(code=code, message=message, result=result)
-        return DatasetEvaluationResult(**resp)
     return wrapper
