@@ -18,9 +18,14 @@ def trigger_mir_import(
     repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str, import_work_dir: str
 ) -> None:
     # trigger mir import
-    TaskImportingInvoker.importing_cmd(
-        repo_root, task_id, index_file, des_annotation_path, media_location, import_work_dir, name_strategy_ignore=False
-    )
+    TaskImportingInvoker.importing_cmd(repo_root=repo_root,
+                                       task_id=task_id,
+                                       index_file=index_file,
+                                       annotation_dir=des_annotation_path,
+                                       gt_dir=des_annotation_path,
+                                       media_location=media_location,
+                                       work_dir=import_work_dir,
+                                       name_strategy_ignore=False)
 
 
 def remove_json_file(des_annotation_path: str) -> None:

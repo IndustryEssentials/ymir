@@ -24,6 +24,7 @@ stop() {
 docker-compose down
 docker-compose -f docker-compose.label_studio.yml down
 docker-compose -f docker-compose.labelfree.yml down
+docker-compose -f docker-compose.fiftyone.yml down
 }
 
 pre_start() {
@@ -154,7 +155,7 @@ else
     printf '\nin prod mode, starting service.\n'
 fi
 
-docker-compose -f docekr-compose.fiftyone.yml up -d
+docker-compose -f docker-compose.fiftyone.yml up -d
 
 docker-compose up -d
 }
