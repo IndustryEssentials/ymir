@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 from fastapi.logger import logger
@@ -145,7 +145,8 @@ class DatasetMetaData:
             annos_cnt=viz_dataset.pred["annos_cnt"],
             ave_annos_cnt=(
                 round(viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt, 2)
-                if viz_dataset.total_assets_cnt else 0
+                if viz_dataset.total_assets_cnt
+                else 0
             ),
             positive_asset_cnt=viz_dataset.pred["positive_asset_cnt"],
             negative_asset_cnt=viz_dataset.pred["negative_asset_cnt"],
@@ -196,7 +197,7 @@ class VizClient:
         *,
         user_id: int,
         project_id: int,
-        branch_id: str,
+        branch_id: Optional[str] = None,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
@@ -275,7 +276,13 @@ class VizClient:
         convert_class_id_to_keyword(evaluations, user_labels)
         return evaluations
 
-    def parse_resp(self, resp: requests.Response) -> Dict:
+    def check_duplication(self, dataset_hashes: List[str]) -> bool:
+        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/dataset_duplication"  # noqa: E501
+        params = {"candidate_dataset_ids": ",".join(dataset_hashes)}
+        resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
+        return self.parse_resp(resp)
+
+    def parse_resp(self, resp: requests.Response) -> Any:
         """
         response falls in three categories:
         1. valid result
