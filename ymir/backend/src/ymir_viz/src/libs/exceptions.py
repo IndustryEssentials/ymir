@@ -50,6 +50,11 @@ class DatasetEvaluationNotExists(VizException):
     message = "dataset evaluation not found"
 
 
+class TooManyDatasetsToCheck(VizException):
+    code = VizErrorCode.TOO_MANY_DATASETS_TO_CHECK
+    message = "too may datasets to check duplication"
+
+
 def catch_viz_exceptions(f: Callable) -> Any:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: dict) -> Any:

@@ -1,9 +1,10 @@
 import logging
 
 from src.config import viz_settings
-from src.libs import utils
+from src.libs import utils, exceptions
 from src.swagger_models.dataset_result import DatasetResult
-from src.viz_models import pb_reader
+from src.swagger_models.dataset_duplication_result import DatasetDuplicationResult
+from src.viz_models import asset, pb_reader
 
 
 def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResult:
@@ -44,3 +45,26 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResul
     logging.info(f"get_dataset_info: {resp}")
 
     return DatasetResult(**resp)
+
+
+def check_datasets_duplication(
+    user_id: str,
+    repo_id: str,
+    candidate_dataset_ids: str
+) -> DatasetDuplicationResult:
+    dataset_ids = [dataset_id.strip() for dataset_id in candidate_dataset_ids.split(",")]
+    try:
+        main_dataset_id, other_dataset_id = dataset_ids
+    except ValueError:
+        logging.exception("invalid candidate_dataset_ids. only two dataset_ids for now")
+        raise exceptions.TooManyDatasetsToCheck()
+
+    # fixme: find efficient way to check duplication
+    main_asset_ids = asset.AssetsModel(user_id, repo_id, main_dataset_id).get_all_asset_ids()
+    other_asset_ids = asset.AssetsModel(user_id, repo_id, other_dataset_id).get_all_asset_ids()
+
+    # two datasets have **no** duplication if they are disjoint
+    result = not set(main_asset_ids).isdisjoint(other_asset_ids)
+
+    resp = utils.suss_resp(result=result)
+    return DatasetDuplicationResult(**resp)
