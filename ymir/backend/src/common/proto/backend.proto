@@ -199,6 +199,7 @@ message TaskReqImporting {
     // single pascal xml per asset, same base_filename as in asset-folder
     string annotation_dir = 2;
     bool name_strategy_ignore = 3;
+    string gt_dir = 4;
 }
 
 message TaskReqExporting {
