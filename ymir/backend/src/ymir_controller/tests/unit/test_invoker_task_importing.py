@@ -82,6 +82,7 @@ class TestInvokerTaskImporting(unittest.TestCase):
         importing_request = backend_pb2.TaskReqImporting()
         importing_request.asset_dir = self._storage_root
         importing_request.annotation_dir = self._storage_root
+        importing_request.gt_dir = self._storage_root
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = backend_pb2.TaskTypeImportData
         req_create_task.no_task_monitor = True
