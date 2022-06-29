@@ -63,8 +63,6 @@ def check_datasets_duplication(
     main_asset_ids = asset.AssetsModel(user_id, repo_id, main_dataset_id).get_all_asset_ids()
     other_asset_ids = asset.AssetsModel(user_id, repo_id, other_dataset_id).get_all_asset_ids()
 
-    # two datasets have **no** duplication if they are disjoint
-    result = not set(main_asset_ids).isdisjoint(other_asset_ids)
-
-    resp = utils.suss_resp(result=result)
+    duplication_count = len(set(main_asset_ids).intersection(other_asset_ids))
+    resp = utils.suss_resp(result=duplication_count)
     return DatasetDuplicationResult(**resp)

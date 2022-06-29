@@ -15,7 +15,7 @@ class DatasetDuplicationResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, code: int=None, request_id: str=None, message: str=None, result: bool=None):  # noqa: E501
+    def __init__(self, code: int=None, request_id: str=None, message: str=None, result: int=None):  # noqa: E501
         """DatasetDuplicationResult - a model defined in Swagger
 
         :param code: The code of this DatasetDuplicationResult.  # noqa: E501
@@ -25,13 +25,13 @@ class DatasetDuplicationResult(Model):
         :param message: The message of this DatasetDuplicationResult.  # noqa: E501
         :type message: str
         :param result: The result of this DatasetDuplicationResult.  # noqa: E501
-        :type result: bool
+        :type result: int
         """
         self.swagger_types = {
             'code': int,
             'request_id': str,
             'message': str,
-            'result': bool
+            'result': int
         }
 
         self.attribute_map = {
@@ -120,22 +120,22 @@ class DatasetDuplicationResult(Model):
         self._message = message
 
     @property
-    def result(self) -> bool:
+    def result(self) -> int:
         """Gets the result of this DatasetDuplicationResult.
 
 
         :return: The result of this DatasetDuplicationResult.
-        :rtype: bool
+        :rtype: int
         """
         return self._result
 
     @result.setter
-    def result(self, result: bool):
+    def result(self, result: int):
         """Sets the result of this DatasetDuplicationResult.
 
 
         :param result: The result of this DatasetDuplicationResult.
-        :type result: bool
+        :type result: int
         """
 
         self._result = result
