@@ -60,5 +60,4 @@ def catch_exceptions(f: Callable) -> Any:
             return f(*args, **kwargs)
         except MirRuntimeError as e:
             raise VizException(code=e.error_code, message=e.error_message)
-
     return wrapper
