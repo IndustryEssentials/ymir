@@ -255,8 +255,10 @@ function Visualization({ pid, project }) {
           layout='horizontal'
           labelAlign={'left'}
           colon={false}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
         >
-          <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} onFinish={onFinish} onFinishFailed={onFinishFailed} />
+          <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} />
 
           <Form.Item label={t('model.diagnose.form.confidence')} name='confidence' initialValue={0.5}>
             <InputNumber step={0.0005} min={0.0005} max={0.9995} />
