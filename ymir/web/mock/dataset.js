@@ -78,30 +78,30 @@ const evaluation = mockjs.mock(datasets.reduce((prev, id) => ({
 }), {}))
 
 export default baseApi([
-  // {
-  //   url: 'dataset_groups/',
-  //   data: {
-  //     result: groups,
-  //   }
-  // },
-  // {
-  //   url: 'dataset_groups/40001',
-  //   data: {
-  //     result: list,
-  //   }
-  // },
-  // {
-  //   url: 'datasets/',
-  //   data: {
-  //     result: list,
-  //   }
-  // },
-  // {
-  //   url: 'datasets/10008',
-  //   data: {
-  //     result: mockjs.mock(item),
-  //   }
-  // },
+  {
+    url: 'dataset_groups/',
+    data: {
+      result: groups,
+    }
+  },
+  {
+    url: 'dataset_groups/40001',
+    data: {
+      result: list,
+    }
+  },
+  {
+    url: 'datasets/',
+    data: {
+      result: list,
+    }
+  },
+  {
+    url: 'datasets/10008',
+    data: {
+      result: mockjs.mock(item),
+    }
+  },
   {
     method: 'post',
     url: 'datasets/evaluation',
