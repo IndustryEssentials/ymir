@@ -69,8 +69,15 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @staticmethod
-    def evaluate_and_export_single_dataset(repo_root: str, work_dir: str, media_location: str, fmt: str,
-                                           iou_thr: float, conf_thr: float, dataset_id: str, ) -> str:
+    def evaluate_and_export_single_dataset(
+        repo_root: str,
+        work_dir: str,
+        media_location: str,
+        fmt: str,
+        iou_thr: float,
+        conf_thr: float,
+        dataset_id: str,
+    ) -> str:
         # evaluate and add fpfn
         evaluated_dataset_id = utils.gen_task_id(user_id=0, project_id=0)
         TaskVisualizationInvoker.evaluate_cmd(repo_root=repo_root,
@@ -98,8 +105,15 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         return dataset_export_dir
 
     @staticmethod
-    def evaluate_cmd(repo_root: str, src_dataset_id: str, dst_dataset_id: str, iou_thr: float, conf_thr: float) -> None:
-        pass
+    def evaluate_cmd(repo_root: str, src_dataset_id: str, dst_dataset_id: str, iou_thr: float,
+                     conf_thr: float) -> backend_pb2.GeneralResp:
+        evaluate_cmd = [
+            utils.mir_executable(), 'evaluate', '--root', repo_root, '--src-revs', f"{src_dataset_id}@{src_dataset_id}",
+            '--dst-rev', f"{dst_dataset_id}@{dst_dataset_id}", '--conf-thr', f"{conf_thr}", '--iou-thrs', f"{iou_thr}",
+            '--calc-confusion-matrix'
+        ]
+
+        return utils.run_command(evaluate_cmd)
 
     @staticmethod
     def prepare_fiftyone_payload(tid: str, dataset_ids: List[int], dataset_names: List[str],
