@@ -144,6 +144,9 @@ const task = {
   "task.train.live.url.placeholder": { en: "Plese input your GitHub repo. URL", cn: "请输入GitHub仓库地址", },
   "task.train.live.id.placeholder": { en: "Please input your branch name", cn: "请输入分支名称", },
   "task.train.live.config.placeholder": { en: "Please input your config filename", cn: "请输入配置文件名称", },
+  "task.train.form.platform.label": { en: "Train Platform", cn: "训练平台", },
+  "task.train.device.local": { en: "Local", cn: "本地训练", },
+  "task.train.device.openpai": { en: "OpenPAI", cn: "OpenPAI训练", },
 }
 
 export default task
