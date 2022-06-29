@@ -4,8 +4,6 @@ from typing import Any, Callable, Dict, Optional
 from mir.tools.errors import MirRuntimeError
 
 from id_definition.error_codes import VizErrorCode
-from src.libs import utils
-from src.swagger_models import DatasetEvaluationResult
 
 
 class VizException(Exception):
