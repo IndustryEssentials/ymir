@@ -5,7 +5,7 @@ const image = {
   "image.type.unkown": { en: "Pending", cn: "加载中", },
   "image.type.mining": { en: "Mining", cn: "挖掘", },
   "image.type.train": { en: "Training", cn: "训练", },
-  "image.type.inference": { en: "Training", cn: "推理", },
+  "image.type.inference": { en: "Inference", cn: "推理", },
   "image.state.pending": { en: "Pending", cn: "加载中", },
   "image.state.done": { en: "Done", cn: "完成", },
   "image.state.error": { en: "Error", cn: "失败", },
