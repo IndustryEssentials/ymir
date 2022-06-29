@@ -16,8 +16,8 @@ import request from "@/utils/request"
  * }
  * @returns 
  */
-export function getVisualizations({ name, offset = 0, limit = 10, is_desc = true, order_by}) {
-  return request.get("visualizations/", { params: { name, offset, limit, is_desc, order_by } })
+export function getVisualizations({ projectId, name, offset = 0, limit = 10, is_desc = true, order_by}) {
+  return request.get("visualizations/", { params: { projectId, name, offset, limit, is_desc, order_by } })
 }
 
 /**
@@ -41,9 +41,15 @@ export function delVisualization(id) {
  * @returns
  */
 export function createVisualization({
+  projectId,
+  iou,
+  confidence,
   taskIds,
 }) {
   return request.post("/visualizations/", {
+    project_id: projectId,
+    iou_thr: iou,
+    conf_thr: confidence,
     task_ids: taskIds
   })
 }
