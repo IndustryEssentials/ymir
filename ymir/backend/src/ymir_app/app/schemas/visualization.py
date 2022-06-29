@@ -15,8 +15,8 @@ class VisualizationBase(BaseModel):
     user_id: int
     tid: str
     project_id: Optional[int]
-    confidence: Optional[float]
-    iou: Optional[float]
+    conf_thr: Optional[float]
+    iou_thr: Optional[float]
 
     class Config:
         use_enum_values = True
@@ -33,8 +33,8 @@ class VisualizationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixi
 class VisualizationCreate(BaseModel):
     task_ids: List[int]
     project_id: Optional[int]
-    confidence: Optional[float] = 0.0005
-    iou: Optional[float] = 0.5
+    conf_thr: Optional[float] = 0.0005
+    iou_thr: Optional[float] = 0.5
 
     class Config:
         use_enum_values = True
