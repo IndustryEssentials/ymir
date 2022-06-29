@@ -67,17 +67,6 @@ def sub_task_id(task_id: str, offset: int) -> str:
     return task_id[0] + str(offset) + task_id[2:]
 
 
-def gen_task_id(user_id: int, project_id: int) -> str:
-    '''
-    generates a new ymir task id, from app.ymir_controller.gen_task_id
-    '''
-    # TODO: MOVE IT TO COMMON
-    user_hash = f"{user_id:0>4}"
-    repo_hash = f"{project_id:0>6}"
-    hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
-    return str(task_id_proto.TaskId("t", "0", "00", user_hash, repo_hash, hex_task_id))
-
-
 def annotation_format_str(format: backend_pb2.LabelFormat) -> str:
     format_enum_dict = {
         backend_pb2.LabelFormat.NO_ANNOTATION: 'none',
