@@ -21,12 +21,17 @@ import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
+import useFetch from '@/hooks/useFetch'
 
 const { Option } = Select
 
-const TrainType = () => [{ id: "detection", label: t('task.train.form.traintypes.detect'), checked: true }]
-const FrameworkType = () => [{ id: "YOLO v4", label: "YOLO v4", checked: true }]
-const Backbone = () => [{ id: "darknet", label: "Darknet", checked: true }]
+const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
+const FrameworkType = [{ value: "YOLO v4", label: "YOLO v4", checked: true }]
+const Backbone = [{ value: "darknet", label: "Darknet", checked: true }]
+const TrainDevices = [
+  { value: false, label: 'task.train.device.local', checked: true, },
+  { value: true, label: 'task.train.device.openpai', },
+]
 
 function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const pageParams = useParams()
@@ -47,23 +52,24 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [gpu_count, setGPU] = useState(0)
   const [projectDirty, setProjectDirty] = useState(false)
   const [live, setLiveCode] = useState(false)
+  const [openpai, setOpenpai] = useState(false)
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
 
-  const renderRadio = (types) => {
-    return (
-      <Radio.Group>
-        {types.map((type) => (
-          <Radio value={type.id} key={type.id} defaultChecked={type.checked}>
-            {type.label}
-          </Radio>
-        ))}
-      </Radio.Group>
-    )
-  }
+  const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
 
   useEffect(() => {
-    fetchSysInfo()
+    getSysInfo()
     fetchProject()
   }, [])
+
+  useEffect(() => {
+    setGPU(sys.gpu_count)
+    setOpenpai(!!sys.openpai)
+  }, [sys])
+
+  useEffect(() => {
+    form.setFieldsValue({ openpai: openpai })
+  }, [openpai])
 
   useEffect(() => {
     func.getKeywords({ limit: 100000 })
@@ -95,13 +101,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
-
-  async function fetchSysInfo() {
-    const result = await func.getSysInfo()
-    if (result) {
-      setGPU(result.gpu_count)
-    }
-  }
 
   async function fetchProject() {
     const project = await func.getProject(pid)
@@ -167,16 +166,17 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     console.log("Failed:", errorInfo)
   }
 
-  const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
+  const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {
     name: 'task_train_' + randomNumber(),
     datasetId: did ? did : undefined,
     testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
     modelStage: stage,
-    trainType: getCheckedValue(TrainType()),
-    network: getCheckedValue(FrameworkType()),
-    backbone: getCheckedValue(Backbone()),
+    trainType: getCheckedValue(TrainType),
+    network: getCheckedValue(FrameworkType),
+    backbone: getCheckedValue(Backbone),
+    openpai: getCheckedValue(TrainDevices),
     gpu_count: 1,
   }
   return (
@@ -274,6 +274,11 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                   </Select>
                 </Form.Item>}
             </Tip>
+            {openpai ? <Tip hidden={true}>
+              <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
+                {renderRadio(TrainDevices)}
+              </Form.Item>
+            </Tip> : null }
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.train.model')}>
                 <Form.Item
@@ -298,7 +303,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 label={t('task.train.form.traintype.label')}
                 name="trainType"
               >
-                {renderRadio(TrainType())}
+                {renderRadio(TrainType)}
               </Form.Item>
             </Tip>
 
@@ -307,7 +312,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 label={t('task.train.form.network.label')}
                 name="network"
               >
-                {renderRadio(FrameworkType())}
+                {renderRadio(FrameworkType)}
               </Form.Item>
             </Tip>
 
@@ -316,7 +321,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 label={t('task.train.form.backbone.label')}
                 name="backbone"
               >
-                {renderRadio(Backbone())}
+                {renderRadio(Backbone)}
               </Form.Item>
             </Tip>
 
@@ -388,11 +393,6 @@ const dis = (dispatch) => {
     },
     clearCache() {
       return dispatch({ type: "model/clearCache", })
-    },
-    getSysInfo() {
-      return dispatch({
-        type: "common/getSysInfo",
-      })
     },
     createTrainTask(payload) {
       return dispatch({
