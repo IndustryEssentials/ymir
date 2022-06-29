@@ -7,6 +7,7 @@ from mir.tools import mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
+from pytest import param
 
 
 class MirCoco:
@@ -639,6 +640,7 @@ class Params:
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.confThr = 0.3  # confidence threshold
         self.need_pr_curve = False
+        self.calc_confusion_matrix = False
 
 
 def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
@@ -649,6 +651,10 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     params.confThr = config.conf_thr
     params.iouThrs = _get_ious_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
+    params.calc_confusion_matrix = config.calc_confusion_matrix
+    if params.calc_confusion_matrix and params.iouThrs.size != 1:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_CAN_NOT_CALC_CONFUSION_MATRIX,
+                              error_message='single iou thr is needed if calc_confusion_matrix')
 
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
@@ -714,7 +720,7 @@ def _get_ious_array(iou_thrs_str: str) -> np.ndarray:
 
 
 def det_evaluate(mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float, iou_thrs: str,
-                 need_pr_curve: bool) -> mirpb.Evaluation:
+                 need_pr_curve: bool, calc_confusion_matrix: bool) -> mirpb.Evaluation:
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
     mir_keywords: mirpb.MirKeywords
@@ -741,6 +747,7 @@ def det_evaluate(mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float,
     evaluate_config.conf_thr = conf_thr
     evaluate_config.iou_thrs_interval = iou_thrs
     evaluate_config.need_pr_curve = need_pr_curve
+    evaluate_config.calc_confusion_matrix = calc_confusion_matrix
     evaluate_config.gt_dataset_id = mir_gt.dataset_id
     evaluate_config.pred_dataset_ids.append(mir_dt.dataset_id)
 
