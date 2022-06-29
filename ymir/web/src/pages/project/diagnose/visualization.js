@@ -243,9 +243,11 @@ function Visualization({pid, project}) {
             form={createForm}
             colon={false}
           >
-            <Tip hidden={true}>
               <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} layout='horizontal' labelAlign='left' {...formLayout} onFinish={onFinish} onFinishFailed={onFinishFailed}/>
-            </Tip>
+            
+            <Form.Item label={'confidence'}>
+
+            </Form.Item>
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20} style={{display: 'flex'}}>
