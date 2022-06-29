@@ -130,8 +130,8 @@ def evaluate_dataset(
     dataset_hash: str,
 ) -> Dict:
     if require_average_iou:
-        # special placeholder for average iou
-        iou_threshold = -1
+        # fixme temporary walkaround
+        iou_threshold = 0.5
     return viz.get_fast_evaluation(dataset_hash, confidence_threshold, iou_threshold, need_pr_curve)
 
 
