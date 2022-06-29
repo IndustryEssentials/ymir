@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import useFetch from '@/hooks/useFetch'
 import ReactJson from 'react-json-view'
-import { Button, Form, Input, Row, Col, Space, Table, Popover } from 'antd'
+import { Button, Form, Input, Row, Col, Space, Table, Popover, InputNumber, Slider } from 'antd'
 import { SyncOutlined } from "@ant-design/icons"
 import { SearchIcon, EyeOnIcon, DeleteIcon } from "@/components/common/icons"
 
@@ -241,13 +241,20 @@ function Visualization({pid, project}) {
             name='createForm'
             className={s.form}
             form={createForm}
+            labelCol={{ span: 4, offset: 2 }}
+            wrapperCol={{ span: 10 }}
+            layout='horizontal'
+            labelAlign={'left'}
             colon={false}
           >
-              <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} layout='horizontal' labelAlign='left' {...formLayout} onFinish={onFinish} onFinishFailed={onFinishFailed}/>
+              <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} onFinish={onFinish} onFinishFailed={onFinishFailed}/>
             
-            <Form.Item label={'confidence'}>
-
-            </Form.Item>
+              <Form.Item label={t('model.diagnose.form.confidence')} name='conf_thr'>
+                  <InputNumber step={0.0005} min={0.0005} max={0.9995} />
+                </Form.Item>
+                <Form.Item label={'IOU'} name='iou_thr'>
+                  <Slider min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} />
+                </Form.Item>
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20} style={{display: 'flex'}}>
