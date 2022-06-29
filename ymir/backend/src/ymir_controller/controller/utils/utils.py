@@ -66,7 +66,6 @@ def sub_task_id(task_id: str, offset: int) -> str:
         raise RuntimeError("Invalid sub_task offset: {}".format(offset))
     return task_id[0] + str(offset) + task_id[2:]
 
-
 def annotation_format_str(format: backend_pb2.LabelFormat) -> str:
     format_enum_dict = {
         backend_pb2.LabelFormat.NO_ANNOTATION: 'none',
