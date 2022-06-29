@@ -74,6 +74,8 @@ services:
     restart: always
     networks:
       - 51pluginnetwork
+    volumes:
+      - ${YMIR_PATH}/51plugin/mongo_data:/data/db
 
 networks:
   51pluginnetwork:

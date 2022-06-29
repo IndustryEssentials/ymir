@@ -557,3 +557,26 @@ def batch_evaluate_datasets(
         datasets,
     )
     return {"result": evaluations}
+
+
+@router.post(
+    "/check_duplication",
+    response_model=schemas.dataset.DatasetCheckDuplicationOut,
+)
+def check_duplication(
+    *,
+    db: Session = Depends(deps.get_db),
+    check_duplication: schemas.dataset.DatasetCheckDuplicationCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+) -> Any:
+    """
+    check duplication in two datasets
+    """
+    datasets = crud.dataset.get_multi_by_ids(db, ids=check_duplication.dataset_ids)
+    if len(check_duplication.dataset_ids) != len(datasets):
+        raise DatasetNotFound()
+
+    viz_client.initialize(user_id=current_user.id, project_id=check_duplication.project_id)
+    is_duplicate = viz_client.check_duplication([dataset.hash for dataset in datasets])
+    return {"result": is_duplicate}
