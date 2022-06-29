@@ -65,6 +65,13 @@ class CmdFilter(base.BaseCommand):
             matched_asset_ids_set.add(asset_id)
         return matched_asset_ids_set
 
+    @staticmethod
+    def __gen_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
+                               dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
+        joint_ids = asset_ids & src_task_annotations.image_annotations.keys()
+        for asset_id in joint_ids:
+            dst_task_annotations.image_annotations[asset_id].CopyFrom(src_task_annotations.image_annotations[asset_id])
+
     # public: run cmd
     @staticmethod
     @command_run_in_out
@@ -133,7 +140,6 @@ class CmdFilter(base.BaseCommand):
 
         matched_mir_metadatas = mirpb.MirMetadatas()
         matched_mir_annotations = mirpb.MirAnnotations()
-        matched_mir_keywords = mirpb.MirKeywords()
 
         # generate matched metadatas, annotations and keywords
         for asset_id in asset_ids_set:
@@ -141,16 +147,16 @@ class CmdFilter(base.BaseCommand):
             asset_attr = mir_metadatas.attributes[asset_id]
             matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
 
-        joint_ids = asset_ids_set & mir_keywords.keywords.keys()
-        for asset_id in joint_ids:
-            # generate `matched_mir_keywords`
-            matched_mir_keywords.keywords[asset_id].CopyFrom(mir_keywords.keywords[asset_id])
-
         # generate `matched_mir_annotations`
-        joint_ids = asset_ids_set & base_task_annotations.image_annotations.keys()
-        for asset_id in joint_ids:
-            matched_mir_annotations.task_annotations[task_id].image_annotations[asset_id].CopyFrom(
-                base_task_annotations.image_annotations[asset_id])
+        CmdFilter.__gen_task_annotations(src_task_annotations=base_task_annotations,
+                                         dst_task_annotations=matched_mir_annotations.task_annotations[task_id],
+                                         asset_ids=asset_ids_set)
+        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+                                         dst_task_annotations=matched_mir_annotations.ground_truth,
+                                         asset_ids=asset_ids_set)
+        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.prediction,
+                                         dst_task_annotations=matched_mir_annotations.prediction,
+                                         asset_ids=asset_ids_set)
 
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
