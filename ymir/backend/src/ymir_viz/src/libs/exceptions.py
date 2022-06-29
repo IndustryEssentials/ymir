@@ -53,7 +53,7 @@ class TooManyDatasetsToCheck(VizException):
     message = "too may datasets to check duplication"
 
 
-def catch_exceptions(f: Callable) -> Any:
+def catch_viz_exceptions(f: Callable) -> Any:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: dict) -> Any:
         try:
