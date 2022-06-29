@@ -325,7 +325,8 @@ class CocoDetEval:
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
         for dind, d in enumerate(dt):
             if dtIg[dind]:
-                d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, g['pb_index_id'])
+                gt_pb_index_id = d['cm'][tind, maxDet][1]
+                d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, gt_pb_index_id)
         # store results for given image and category
         return {
             'image_id': imgIdx,
