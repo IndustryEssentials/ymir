@@ -271,3 +271,16 @@ class TaskPagination(BaseModel):
 
 class TaskPaginationOut(Common):
     result: TaskPagination
+
+
+class PaiTaskStatus(BaseModel):
+    position: int
+    total_pending_task: int
+
+
+class PaiTask(Task):
+    pai_status: Optional[PaiTaskStatus]
+
+
+class PaiTaskOut(Common):
+    result: PaiTask

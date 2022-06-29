@@ -328,3 +328,25 @@ async def save_task_update_to_redis_stream(*, task_events: schemas.TaskMonitorEv
         await redis_stream.publish(event.json())
         logger.info("save task update to redis stream: %s", event.json())
     return Response(status_code=204)
+
+
+@router.get(
+    "/pai/{task_id}",
+    response_model=schemas.task.PaiTaskOut,
+    response_model_exclude_none=True,
+    responses={404: {"description": "Task Not Found"}},
+)
+def get_openpai_task(
+    db: Session = Depends(deps.get_db),
+    task_id: int = Path(..., example=12),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    """
+    Get verbose information of OpenPAI task
+    """
+    task = crud.task.get_by_user_and_id(db, user_id=current_user.id, id=task_id)
+    if not task:
+        raise TaskNotFound()
+    # mixin openpai status
+    return {"result": task}
