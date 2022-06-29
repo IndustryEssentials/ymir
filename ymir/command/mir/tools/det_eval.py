@@ -458,7 +458,7 @@ class CocoDetEval:
             'all_fns': all_fns,
         }
 
-    def get_evaluation_result(self) -> mirpb.SingleDatasetEvaluation:
+    def get_evaluation_result(self, area_ranges_index: int, max_dets_index: int) -> mirpb.SingleDatasetEvaluation:
         if not self.eval:
             raise ValueError('Please run accumulate() first')
 
@@ -467,29 +467,35 @@ class CocoDetEval:
 
         # iou evaluations
         for iou_thr_index, iou_thr in enumerate(self.params.iouThrs):
-            iou_evaluation = self._get_iou_evaluation_result(iou_thr_index=iou_thr_index)
+            iou_evaluation = self._get_iou_evaluation_result(area_ranges_index=area_ranges_index,
+                                                             max_dets_index=max_dets_index,
+                                                             iou_thr_index=iou_thr_index)
             evaluation_result.iou_evaluations[f"{iou_thr:.2f}"].CopyFrom(iou_evaluation)
 
         # average evaluation
-        evaluation_result.iou_averaged_evaluation.CopyFrom(self._get_iou_evaluation_result())
+        evaluation_result.iou_averaged_evaluation.CopyFrom(
+            self._get_iou_evaluation_result(area_ranges_index=area_ranges_index, max_dets_index=max_dets_index))
 
         return evaluation_result
 
-    def _get_iou_evaluation_result(self, iou_thr_index: int = None) -> mirpb.SingleIouEvaluation:
+    def _get_iou_evaluation_result(self,
+                                   area_ranges_index: int,
+                                   max_dets_index: int,
+                                   iou_thr_index: int = None) -> mirpb.SingleIouEvaluation:
         iou_evaluation = mirpb.SingleIouEvaluation()
 
         # ci evaluations: category / class ids
         for class_id_index, class_id in enumerate(self.params.catIds):
-            ee = self._get_evaluation_element(iou_thr_index, class_id_index)
+            ee = self._get_evaluation_element(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)
             iou_evaluation.ci_evaluations[class_id].CopyFrom(ee)
         # class average
-        ee = self._get_evaluation_element(iou_thr_index, None)
+        ee = self._get_evaluation_element(iou_thr_index, None, area_ranges_index, max_dets_index)
         iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
 
         return iou_evaluation
 
-    def _get_evaluation_element(self, iou_thr_index: Optional[int],
-                                class_id_index: Optional[int]) -> mirpb.SingleEvaluationElement:
+    def _get_evaluation_element(self, iou_thr_index: Optional[int], class_id_index: Optional[int],
+                                area_ranges_index: int, max_dets_index: int) -> mirpb.SingleEvaluationElement:
         def _get_tp_tn_or_fn(iou_thr_index: Optional[int], class_id_index: Optional[int], area_ranges_index: int,
                              max_dets_index: int, array: np.ndarray) -> int:
             """
@@ -507,10 +513,6 @@ class CocoDetEval:
             return int(array[0])
 
         ee = mirpb.SingleEvaluationElement()
-
-        # from _summarize
-        area_ranges_index = 0  # area range: 'all'
-        max_dets_index = len(self.params.maxDets) - 1  # last max det number
 
         # average precision
         # precision dims: iouThrs * recThrs * catIds * areaRanges * maxDets
@@ -672,12 +674,16 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
+    area_ranges_index = 0  # area range: 'all'
+    max_dets_index = len(params.maxDets) - 1  # last max det number
+
     for mir_dt in mir_dts:
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         evaluator.accumulate()
 
-        single_dataset_evaluation = evaluator.get_evaluation_result()
+        single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
+                                                                    max_dets_index=max_dets_index)
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
@@ -691,7 +697,9 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
                                     asset_ids=ck_main_assets_and_sub.asset_annos.keys())
             evaluator.evaluate()
             evaluator.accumulate()
-            ste = evaluator.get_evaluation_result().iou_averaged_evaluation.ci_averaged_evaluation
+            ste = evaluator.get_evaluation_result(
+                area_ranges_index=area_ranges_index,
+                max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
             single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].total.CopyFrom(ste)
 
             # ck sub
@@ -702,7 +710,9 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
                                         asset_ids=ck_sub_assets.key_ids.keys())
                 evaluator.evaluate()
                 evaluator.accumulate()
-                ste = evaluator.get_evaluation_result().iou_averaged_evaluation.ci_averaged_evaluation
+                ste = evaluator.get_evaluation_result(
+                    area_ranges_index=area_ranges_index,
+                    max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
                 single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].sub[ck_sub].CopyFrom(ste)
         evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
     return evaluation
