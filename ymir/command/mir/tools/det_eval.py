@@ -7,7 +7,6 @@ from mir.tools import mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
-from pytest import param
 
 
 class MirCoco:
