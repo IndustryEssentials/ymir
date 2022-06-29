@@ -20,13 +20,21 @@ class TestEvaluateDataset:
         confidence_threshold = 0.233
         iou = 0.5
         require_average_iou = True
-        ctrl = mocker.Mock()
+        need_pr_curve = True
         viz = mocker.Mock()
         viz.get_fast_evaluation.return_value = {}
         user_labels = mocker.Mock()
         datasets = [mocker.Mock()]
         m.evaluate_datasets(
-            ctrl, viz, user_id, project_id, user_labels, confidence_threshold, iou, require_average_iou, datasets
+            viz,
+            user_id,
+            project_id,
+            user_labels,
+            confidence_threshold,
+            iou,
+            require_average_iou,
+            need_pr_curve,
+            datasets,
         )
 
         viz.get_fast_evaluation.assert_called()

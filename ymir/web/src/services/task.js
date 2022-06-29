@@ -183,7 +183,7 @@ export function createLabelTask({
  * @returns 
  */
 export function createTrainTask({
-  iteration, stage,
+  iteration, stage, openpai,
   name, projectId, datasetId, keywords, testset,
   backbone, config, network, trainType, strategy,
   modelStage = [], image, imageId,
@@ -195,6 +195,7 @@ export function createTrainTask({
     project_id: projectId,
     iteration_id: iteration,
     iteration_stage: stage,
+    openpai_enable: openpai,
     type: TASKTYPES.TRAINING,
     docker_image_config: config,
     parameters: {

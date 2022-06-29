@@ -56,6 +56,7 @@ def batch_get_datasets(
 def get_datasets_analysis(
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
+    project_id: int = Query(None),
     dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -65,16 +66,16 @@ def get_datasets_analysis(
     if not datasets:
         raise DatasetNotFound()
 
+    viz_client.initialize(
+        user_id=current_user.id,
+        project_id=project_id,
+        user_labels=user_labels,
+    )
     results = []
     for dataset in datasets:
         if dataset.result_state != int(ResultState.ready):
             raise DatasetNotFound()
-        viz_client.initialize(
-            user_id=current_user.id,
-            project_id=dataset.project_id,
-            branch_id=dataset.hash,
-        )
-        res = viz_client.get_dataset(user_labels=user_labels)
+        res = viz_client.get_dataset(dataset.hash)
         res.group_name = dataset.group_name  # type: ignore
         res.version_num = dataset.version_num  # type: ignore
         results.append(res)
@@ -342,12 +343,12 @@ def get_assets_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
+        user_labels=user_labels,
     )
     assets = viz_client.get_assets(
         keyword_id=keyword_id,
         limit=limit,
         offset=offset,
-        user_labels=user_labels,
     )
     result = {
         "items": assets.items,
@@ -380,12 +381,12 @@ def get_random_asset_id_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
+        user_labels=user_labels,
     )
     assets = viz_client.get_assets(
         keyword_id=None,
         offset=offset,
         limit=1,
-        user_labels=user_labels,
     )
     if len(assets.items) == 0:
         raise AssetNotFound()
@@ -423,11 +424,9 @@ def get_asset_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
-    )
-    asset = viz_client.get_asset(
-        asset_id=asset_hash,
         user_labels=user_labels,
     )
+    asset = viz_client.get_asset(asset_id=asset_hash)
     if not asset:
         raise AssetNotFound()
     return {"result": asset}
@@ -534,7 +533,6 @@ def batch_evaluate_datasets(
     db: Session = Depends(deps.get_db),
     evaluation_in: schemas.dataset.DatasetEvaluationCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -546,7 +544,6 @@ def batch_evaluate_datasets(
         raise DatasetNotFound()
 
     evaluations = evaluate_datasets(
-        controller_client,
         viz_client,
         current_user.id,
         evaluation_in.project_id,
@@ -554,6 +551,7 @@ def batch_evaluate_datasets(
         evaluation_in.confidence_threshold,
         evaluation_in.iou_threshold,
         evaluation_in.require_average_iou,
+        evaluation_in.need_pr_curve,
         datasets,
     )
     return {"result": evaluations}
