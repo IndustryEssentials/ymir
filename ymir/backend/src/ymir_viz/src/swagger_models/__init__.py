@@ -13,6 +13,7 @@ from src.swagger_models.assets_meta_info_metadata import AssetsMetaInfoMetadata
 from src.swagger_models.assets_meta_info_metadata_timestamp import AssetsMetaInfoMetadataTimestamp
 from src.swagger_models.assets_result import AssetsResult
 from src.swagger_models.assets_result_result import AssetsResultResult
+from src.swagger_models.dataset_duplication_result import DatasetDuplicationResult
 from src.swagger_models.dataset_evaluation import DatasetEvaluation
 from src.swagger_models.dataset_evaluation_element import DatasetEvaluationElement
 from src.swagger_models.dataset_evaluation_element_point3d import DatasetEvaluationElementPoint3d
