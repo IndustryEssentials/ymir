@@ -1,6 +1,6 @@
 import logging
 import threading
-from typing import Dict, Union
+from typing import Dict, List, Optional
 
 import yaml
 
@@ -166,8 +166,29 @@ class AssetsModel:
 
         return result
 
+    def get_all_asset_ids_from_cache(self) -> List[str]:
+        class_id = viz_settings.VIZ_ALL_INDEX_CLASSIDS
+        return redis_cache.lrange(f"{self.key_asset_index}:{class_id}", 0, -1)
+
     @utils.time_it
-    def get_asset_id_info(self, asset_id: str) -> Union[Dict, None]:
+    def get_all_asset_ids(self) -> List[str]:
+        # take the shortcut if dataset has been cached
+        if self.check_cache_existence():
+            logging.info("get_all_asset_ids from cache")
+            return self.get_all_asset_ids_from_cache()
+
+        # otherwise, ONLY read metadata.mir to save time
+        dataset_metadata = pb_reader.MirStorageLoader(
+            sandbox_root=viz_settings.BACKEND_SANDBOX_ROOT,
+            user_id=self.user_id,
+            repo_id=self.repo_id,
+            branch_id=self.branch_id,
+            task_id=self.branch_id,
+        ).get_dataset_metadata()
+        return list(dataset_metadata["attributes"].keys())
+
+    @utils.time_it
+    def get_asset_id_info(self, asset_id: str) -> Optional[Dict]:
         """
         example return data:
         {
