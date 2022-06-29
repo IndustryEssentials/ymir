@@ -290,13 +290,16 @@ class CocoDetEval:
         dtIg = np.zeros((T, D))  # dt ignore
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
+                for gind, g in enumerate(gt):
+                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
+                    if gtIg[gind]:
+                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
                 for dind, d in enumerate(dt):
                     d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
                     # information about best match so far (m=-1 -> unmatched)
                     iou = min([t, 1 - 1e-10])
                     m = -1  # best matched gind for current dind, -1 for unmatch
                     for gind, g in enumerate(gt):
-                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
                         # if this gt already matched, and not a crowd, continue
                         if gtm[tind, gind] > 0 and not iscrowd[gind]:
                             continue
@@ -315,11 +318,14 @@ class CocoDetEval:
                     dtIg[tind, dind] = gtIg[m]
                     dtm[tind, dind] = gt[m]['id']
                     gtm[tind, m] = d['id']
-                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, g['pb_index_id'])
                     g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
+                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, g['pb_index_id'])
         # set unmatched detections outside of area range to ignore
         a = np.array([d['area'] < aRng[0] or d['area'] > aRng[1] for d in dt]).reshape((1, len(dt)))
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
+        for dind, d in enumerate(dt):
+            if dtIg[dind]:
+                d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, g['pb_index_id'])
         # store results for given image and category
         return {
             'image_id': imgIdx,
