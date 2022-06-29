@@ -20,6 +20,7 @@ class Visualization(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, index=True, nullable=False)
     tid = Column(String(settings.STRING_LEN_LIMIT), unique=True, nullable=False)
+    project_id = Column(Integer, index=True, nullable=True)
 
     tasks = relationship(
         "Task",
