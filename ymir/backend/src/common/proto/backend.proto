@@ -249,6 +249,8 @@ message TaskReqVisualization {
     string vis_tool_id = 1;
     repeated string in_dataset_ids = 2;
     repeated string in_dataset_names = 3;
+    float iou_thr = 4;
+    float conf_thr = 5;
 }
 
 message RespCMDInference {

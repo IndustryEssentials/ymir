@@ -42,7 +42,7 @@ const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
   return <Checkbox.Group value={value} options={options} onChange={change}></Checkbox.Group>
 }
 
-const InferResultSelect = ({ pid, form, value, onChange = () => { }, ...resProps }) => {
+const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   const [selectedStages, setSelectedStages] = useState([])
   const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
@@ -53,10 +53,6 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { }, ...resProps
   const [inferTasks, fetchInferTask] = useFetch('task/queryInferTasks', [])
   const [selectedTasks, setSelectedTasks] = useState([])
   const [tasks, setTasks] = useState([])
-
-  // useEffect(() => {
-  //   form.setFieldsValue({ stage: [[14, 9], [13, 7]]})
-  // }, [])
 
   useEffect(() => {
     setTasks(inferTasks)
