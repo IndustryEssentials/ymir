@@ -126,11 +126,11 @@ describe("service: dataset", () => {
   })
   it("evaluate -> normal return", () => {
     const datasets = [2342353, 2345]
-    const gt = 234234
-    const params = { projectId: 25343, datasets, gt, confidence: 0.6 }
+    const iou = 0.65
+    const params = { projectId: 25343, datasets, iou, everageIou: false, confidence: 0.6 }
     const expected = datasets.reduce((prev, ds) => ({
       ...prev,
-      [ds]: { prev_dataset_id: gt }
+      [ds]: { [iou]: iou }
     }), {})
     requestExample(evaluate, params, expected, 'post', 111902)
   })
