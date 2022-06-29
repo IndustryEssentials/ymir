@@ -166,6 +166,7 @@ class EvaluationScore(BaseModel):
     fn: int
     fp: int
     tp: int
+    pr_curve: List[Dict]
 
 
 class VizDatasetEvaluation(BaseModel):
@@ -191,6 +192,7 @@ class VizClient:
         self._project_id = None  # type: Optional[str]
         self._branch_id = None  # type: Optional[str]
         self._url_prefix = None  # type: Optional[str]
+        self._user_labels = None  # type: Optional[UserLabels]
 
     def initialize(
         self,
@@ -198,11 +200,17 @@ class VizClient:
         user_id: int,
         project_id: int,
         branch_id: Optional[str] = None,
+        user_labels: Optional[UserLabels] = None,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
-        self._branch_id = branch_id
-        self._url_prefix = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches/{self._branch_id}"  # noqa: E501
+        self._url_prefix = (
+            f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"  # noqa: E501
+        )
+        if branch_id:
+            self._branch_id = branch_id
+        if user_labels:
+            self._user_labels = user_labels
 
     def get_assets(
         self,
@@ -210,9 +218,8 @@ class VizClient:
         keyword_id: Optional[int] = None,
         offset: int = 0,
         limit: int = 20,
-        user_labels: UserLabels,
     ) -> Assets:
-        url = f"{self._url_prefix}/assets"
+        url = f"{self._url_prefix}/{self._branch_id}/assets"
         payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
@@ -220,60 +227,59 @@ class VizClient:
             resp.raise_for_status()
         res = resp.json()["result"]
         logger.info("[viz] get_assets response: %s", res)
-        return Assets.from_viz_res(res, user_labels)
+        return Assets.from_viz_res(res, self._user_labels)
 
-    def get_asset(
-        self,
-        *,
-        asset_id: str,
-        user_labels: UserLabels,
-    ) -> Optional[Dict]:
-        url = f"{self._url_prefix}/assets/{asset_id}"
+    def get_asset(self, *, asset_id: str) -> Optional[Dict]:
+        url = f"{self._url_prefix}/{self._branch_id}/assets/{asset_id}"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
             logger.error("[viz] failed to get asset info: %s", resp.content)
             return None
         res = resp.json()["result"]
-        return asdict(Asset.from_viz_res(asset_id, res, user_labels))
+        return asdict(Asset.from_viz_res(asset_id, res, self._user_labels))
 
     def get_model(self) -> ModelMetaData:
-        url = f"{self._url_prefix}/models"
+        url = f"{self._url_prefix}/{self._branch_id}/models"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         return ModelMetaData.from_viz_res(res)
 
-    def get_dataset(self, user_labels: UserLabels) -> DatasetMetaData:
-        url = f"{self._url_prefix}/datasets"
+    def get_dataset(
+        self, dataset_hash: Optional[str] = None, user_labels: Optional[UserLabels] = None
+    ) -> DatasetMetaData:
+        dataset_hash = dataset_hash or self._branch_id
+        user_labels = user_labels or self._user_labels
+        url = f"{self._url_prefix}/{dataset_hash}/datasets"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         logger.info("[viz] get_dataset response: %s", res)
         return DatasetMetaData.from_viz_res(res, user_labels)
 
-    def get_evaluations(self, user_labels: UserLabels) -> Dict:
-        url = f"{self._url_prefix}/evaluations"
+    def get_evaluations(self) -> Dict:
+        url = f"{self._url_prefix}/{self._branch_id}/evaluations"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         evaluations = {
             dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
         }
-        convert_class_id_to_keyword(evaluations, user_labels)
+        convert_class_id_to_keyword(evaluations, self._user_labels)
         return evaluations
 
     def get_fast_evaluation(
-        self, user_labels: UserLabels, confidence_threshold: float, iou_threshold: float, require_average_iou: bool
+        self, dataset_hash: str, confidence_threshold: float, iou_threshold: float, need_pr_curve: bool
     ) -> Dict:
-        url = f"{self._url_prefix}/dataset_fast_evaluation"
+        url = f"{self._url_prefix}/{dataset_hash}/dataset_fast_evaluation"
         params = {
             "conf_thr": confidence_threshold,
             "iou_thr": iou_threshold,
-            "require_average_iou": require_average_iou,
+            "need_pr_curve": need_pr_curve,
         }
         resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         evaluations = {
             dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
         }
-        convert_class_id_to_keyword(evaluations, user_labels)
+        convert_class_id_to_keyword(evaluations, self._user_labels)
         return evaluations
 
     def check_duplication(self, dataset_hashes: List[str]) -> bool:
