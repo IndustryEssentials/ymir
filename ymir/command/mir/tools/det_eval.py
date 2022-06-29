@@ -304,7 +304,6 @@ class CocoDetEval:
                     iou = min([t, 1 - 1e-10])
                     m = -1  # best matched gind for current dind, -1 for unmatch
                     for gind, g in enumerate(gt):
-                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
                         # if this gt already matched, and not a crowd, continue
                         if gtm[tind, gind] > 0 and not iscrowd[gind]:
                             continue
