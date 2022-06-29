@@ -20,6 +20,13 @@ const initQuery = {
   limit: 10,
 }
 
+const sameConfig = (config, config2) => {
+  return JSON.stringify(config2) === JSON.stringify(config)
+}
+const sameConfigs = (config, configs) => {
+  return configs.some(item => sameConfig(item, config))
+}
+
 function Visualization({ pid, project }) {
   const [createForm] = Form.useForm()
   const [queryForm] = Form.useForm()
@@ -58,6 +65,7 @@ function Visualization({ pid, project }) {
   async function getData() {
     let params = {
       ...query,
+      projectId: pid,
     }
     if (query.name) {
       params.name = query.name.toLowerCase()
@@ -89,8 +97,10 @@ function Visualization({ pid, project }) {
     setTaskIds(tasks.map(task => task.id))
   }
 
-  const onFinish = async () => {
+  const onFinish = async (values) => {
     const params = {
+      ...values,
+      projectId: pid,
       taskIds,
     }
     createVisualization(params)
@@ -119,27 +129,26 @@ function Visualization({ pid, project }) {
   const columns = [
     {
       title: showTitle('visualization.column.model'),
-      dataIndex: "modelStages",
+      dataIndex: "modelStageIds",
       ellipsis: true,
-      render: (modelStages) => {
-        const modelNames = getModelNames(modelStages)
-        return renderName(modelNames)
+      render: (ids, { modelStages }) => {
+        return modelStages ? renderName(getModelNames(modelStages)) : ids.join(',')
       },
     },
     {
       title: showTitle('visualization.column.dataset'),
-      dataIndex: "datasets",
+      dataIndex: "datasetIds",
       ellipsis: true,
-      render: (datasets) => {
-        const datasetNames = getDatasetNames(datasets)
-        return renderName(datasetNames)
+      render: (ids, { datasets }) => {
+        return datasets ? renderName(getDatasetNames(datasets)) : ids.join(',')
       },
     },
     {
       title: showTitle('model.diagnose.label.config'),
       dataIndex: "tasks",
       render: (tasks) => {
-        return tasks.map(({ config }, index) => {
+        const configs = tasks.map(({ config }) => config).reduce((prev, curr) => sameConfigs(curr, prev) ? prev : [...prev, curr], [])
+        return configs.map((config, index) => {
           const rlabel = `config${index + 1} `
           return <span key={rlabel}>{config ? renderPop(rlabel, (<ReactJson src={config} name={false} />)) : rlabel}</span>
         })
@@ -249,10 +258,10 @@ function Visualization({ pid, project }) {
         >
           <InferResultSelect pid={pid} form={createForm} onChange={({ tasks }) => InferResultChange(tasks)} onFinish={onFinish} onFinishFailed={onFinishFailed} />
 
-          <Form.Item label={t('model.diagnose.form.confidence')} name='conf_thr'>
+          <Form.Item label={t('model.diagnose.form.confidence')} name='confidence' initialValue={0.5}>
             <InputNumber step={0.0005} min={0.0005} max={0.9995} />
           </Form.Item>
-          <Form.Item label={'IOU'} name='iou_thr'>
+          <Form.Item label={'IOU'} name='iou' initialValue={0.5}>
             <Slider min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} />
           </Form.Item>
           <Tip hidden={true}>
