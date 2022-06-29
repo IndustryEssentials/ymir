@@ -41,7 +41,6 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   function generateOptions() {
     const opts = models.map(model => {
       const name = `${model.name} ${model.versionName}`
-      const map = model.map
       return {
         label: name,
         model,

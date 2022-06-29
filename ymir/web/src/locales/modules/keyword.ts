@@ -34,6 +34,7 @@ cow:bull,cattle`,
 多个别名用英文逗号分隔。例：
 cat:kitty
 cow:bull,cattle`, },
+  'keyword.ck.label': {en: "Custom Keywords", cn: "自定义标签", },
 }
 
 export default keyword
