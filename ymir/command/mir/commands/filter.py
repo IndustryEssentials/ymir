@@ -140,18 +140,12 @@ class CmdFilter(base.BaseCommand):
 
         matched_mir_metadatas = mirpb.MirMetadatas()
         matched_mir_annotations = mirpb.MirAnnotations()
-        matched_mir_keywords = mirpb.MirKeywords()
 
         # generate matched metadatas, annotations and keywords
         for asset_id in asset_ids_set:
             # generate `matched_mir_metadatas`
             asset_attr = mir_metadatas.attributes[asset_id]
             matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
-
-        joint_ids = asset_ids_set & mir_keywords.keywords.keys()
-        for asset_id in joint_ids:
-            # generate `matched_mir_keywords`
-            matched_mir_keywords.keywords[asset_id].CopyFrom(mir_keywords.keywords[asset_id])
 
         # generate `matched_mir_annotations`
         CmdFilter.__gen_task_annotations(src_task_annotations=base_task_annotations,
