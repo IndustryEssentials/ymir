@@ -248,7 +248,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         for asset_id in anno_asset_ids:
             matched_task_annotation.image_annotations[asset_id].CopyFrom(src_annotation.image_annotations[asset_id])
 
-        pred_asset_ids = set(prediction.image_annotations.keys()) & asset_ids_set
+        pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
 
