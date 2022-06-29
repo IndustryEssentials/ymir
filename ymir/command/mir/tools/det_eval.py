@@ -120,6 +120,8 @@ class MirCoco:
                     'score': annotation.score,
                     'iscrowd': 0,
                     'ignore': 0,
+                    'cm': {},  # key: (iou_thr_idx, maxDet), value: (ConfusionMatrixType, linked pb_index_id)
+                    'pb_index_id': annotation.index,
                 }
                 result_annotations_list.append(annotation_dict)
 
@@ -276,6 +278,7 @@ class CocoDetEval:
         iscrowd = [int(o['iscrowd']) for o in gt]
         # load computed ious
         ious = self.ious[imgIdx, catId][:, gtind] if len(self.ious[imgIdx, catId]) > 0 else self.ious[imgIdx, catId]
+        # TODO: check: shouldn't here be self.ious[imgIdx, catId][dtind, gtind]?
 
         p = self.params
         T = len(p.iouThrs)
@@ -288,10 +291,12 @@ class CocoDetEval:
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
                 for dind, d in enumerate(dt):
+                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
                     # information about best match so far (m=-1 -> unmatched)
                     iou = min([t, 1 - 1e-10])
                     m = -1  # best matched gind for current dind, -1 for unmatch
                     for gind, g in enumerate(gt):
+                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
                         # if this gt already matched, and not a crowd, continue
                         if gtm[tind, gind] > 0 and not iscrowd[gind]:
                             continue
@@ -310,6 +315,8 @@ class CocoDetEval:
                     dtIg[tind, dind] = gtIg[m]
                     dtm[tind, dind] = gt[m]['id']
                     gtm[tind, m] = d['id']
+                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, g['pb_index_id'])
+                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
         # set unmatched detections outside of area range to ignore
         a = np.array([d['area'] < aRng[0] or d['area'] > aRng[1] for d in dt]).reshape((1, len(dt)))
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
@@ -634,8 +641,9 @@ class Params:
         # np.arange causes trouble.  the data point on arange is slightly larger than the true value
         self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)  # iou threshold
         self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)  # recall threshold
-        self.maxDets = [1, 10, 100]
-        self.areaRng: List[list] = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
+        self.maxDets = [100]  # only one maxDet, origin: [1, 10, 100]
+        # [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
+        self.areaRng: List[list] = [[0**2, 1e5**2]]  # use all.
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.confThr = 0.3  # confidence threshold
         self.need_pr_curve = False
