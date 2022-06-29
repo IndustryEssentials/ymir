@@ -142,3 +142,34 @@ class MirStorageLoader:
             raise exceptions.DatasetEvaluationNotExists(f"evaluation {self.branch_id} not found")
 
         return evaluation
+
+    def get_dataset_metadata(self) -> Dict:
+        """
+        return value example:
+        {
+          "attributes": {
+            "6a05b1281021633d6bcd0abc2d15c2ed4b770956": {
+              "dataset_name": "t0000002000003f332211656405477",
+              "timestamp": {
+                "start": "1656405478",
+                "duration": 0
+              },
+              "asset_type": 1,
+              "width": 500,
+              "height": 271,
+              "image_channels": 3,
+              "byte_size": 43011,
+              "tvt_type": 0
+            }
+          }
+        }
+        """
+        try:
+            metadata = mir_storage_ops.MirStorageOps.load_dataset_metadata(
+                mir_root=self.mir_root,
+                mir_branch=self.branch_id,
+            )
+        except errors.MirError:
+            logging.exception("dataset %s not found", self.branch_id)
+            raise exceptions.BranchNotExists(f"dataset {self.branch_id} not found")
+        return metadata

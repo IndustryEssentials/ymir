@@ -202,6 +202,9 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
                      task: mirpb.Task) -> int:
     # step 1: build topk results:
     #   read old
+    mir_metadatas: mirpb.MirMetadatas
+    mir_annotations: mirpb.MirAnnotations
+
     [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=src_typ_rev_tid.rev,
@@ -245,11 +248,11 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         for asset_id in anno_asset_ids:
             matched_task_annotation.image_annotations[asset_id].CopyFrom(src_annotation.image_annotations[asset_id])
 
-        pred_asset_ids = set(prediction.image_annotations.keys()) & asset_ids_set
+        pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
 
-    gt_asset_ids = set(ground_truth.image_annotations.keys()) & asset_ids_set
+    gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
     for asset_id in gt_asset_ids:
         ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
 
