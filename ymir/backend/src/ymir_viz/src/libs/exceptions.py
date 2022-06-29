@@ -48,7 +48,12 @@ class DatasetEvaluationNotExists(VizException):
     message = "dataset evaluation not found"
 
 
-def catch_mir_exceptions(f: Callable) -> Any:
+class TooManyDatasetsToCheck(VizException):
+    code = VizErrorCode.TOO_MANY_DATASETS_TO_CHECK
+    message = "too may datasets to check duplication"
+
+
+def catch_exceptions(f: Callable) -> Any:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: dict) -> Any:
         try:

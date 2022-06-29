@@ -1,12 +1,12 @@
 import logging
 import time
 from functools import wraps
-from typing import Dict, Callable
+from typing import Any, Dict, Callable
 
 from flask import request
 
 
-def suss_resp(code: int = 0, message: str = "operation successful", result: Dict = {}) -> Dict:
+def suss_resp(code: int = 0, message: str = "operation successful", result: Any = {}) -> Dict:
     resp = dict(
         code=code,
         message=message,
