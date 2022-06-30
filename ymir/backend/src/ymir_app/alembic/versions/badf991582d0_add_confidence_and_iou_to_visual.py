@@ -1,7 +1,7 @@
 """add_confidence_and_iou_to_visualization
 
 Revision ID: badf991582d0
-Revises: 501414124392
+Revises: 600ad2e2c179
 Create Date: 2022-06-28 11:15:30.195372
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "badf991582d0"
-down_revision = "a820368927ac"
+down_revision = "600ad2e2c179"
 branch_labels = None
 depends_on = None
 
