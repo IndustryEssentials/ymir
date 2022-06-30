@@ -11,7 +11,7 @@ const useFetch = (effect, initResult = null) => {
 
   const getResult = async (payload) => {
     const result = await fetch(payload)
-    if (result) {
+    if (typeof result !== 'undefined') {
       setResult(result)
     }
     return result

@@ -148,6 +148,15 @@ const task = {
   "task.train.device.local": { en: "Local", cn: "本地训练", },
   "task.train.device.openpai": { en: "OpenPAI", cn: "OpenPAI训练", },
   "task.infer.diagnose.tip": { en: "Are Models not yet test?", cn: "尚未对模型进行测试？", },
+  "task.train.action.duplicated": { en: "Check Duplication", cn: "检测重复性", },
+  "task.train.duplicated.option.train": { en: "duplicated as trainset data", cn: "重复数据仅用于训练集", },
+  "task.train.duplicated.option.validation": { en: "duplicated as validation data", cn: "重复数据仅用于测试集", },
+  "task.train.duplicated.tip": { en: "{duplicated} assets duplicated, please select strategy: ", cn: "检测到训练集和验证集有{duplicated}张重复数据，请选择策略：", },
+  "task.train.action.duplicated.no": { en: "None of duplicated assets", cn: "无重复数据", },
+  "task.train.action.duplicated.all": {
+    en: "Duplicated completely, please select another training dataset or validation dataset.",
+    cn: "数据完全重复，请重新选择训练集或验证集",
+  },
 }
 
 export default task
