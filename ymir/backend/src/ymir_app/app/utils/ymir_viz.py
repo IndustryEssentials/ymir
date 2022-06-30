@@ -283,7 +283,7 @@ class VizClient:
         convert_class_id_to_keyword(evaluations, self._user_labels)
         return evaluations
 
-    def check_duplication(self, dataset_hashes: List[str]) -> bool:
+    def check_duplication(self, dataset_hashes: List[str]) -> int:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/dataset_duplication"  # noqa: E501
         params = {"candidate_dataset_ids": ",".join(dataset_hashes)}
         resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)

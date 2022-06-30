@@ -144,6 +144,7 @@ function Analysis({pid, project, ...func}) {
 
   const onFinish = async (values) => {
     const params = {
+      pid,
       datasets: values.datasets
     }
     fetchSource(params)

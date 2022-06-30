@@ -284,8 +284,8 @@ export default {
       }
     },
     *analysis({ payload }, { call, put }) {
-      const { datasets } = payload
-      const { code, result } = yield call(analysis, datasets)
+      const { pid, datasets } = payload
+      const { code, result } = yield call(analysis, pid, datasets)
       if (code === 0) {
         return result.datasets.map(item => transferDatasetAnalysis(item))
       }
