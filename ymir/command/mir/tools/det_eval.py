@@ -328,7 +328,7 @@ class CocoDetEval:
         a = np.array([d['area'] < aRng[0] or d['area'] > aRng[1] for d in dt]).reshape((1, len(dt)))
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
         for dind, d in enumerate(dt):
-            if dtIg[dind]:
+            if dtIg[tind, dind]:
                 gt_pb_index_id = d['cm'][tind, maxDet][1]
                 d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, gt_pb_index_id)
         # store results for given image and category
@@ -645,7 +645,7 @@ class CocoDetEval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
 
-    def write_confusion_matrix(self, iou_thr_index: int, max_dets_index: int) -> None:
+    def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
         gt_annotation = self._coco_gt._task_annotations
         dt_annotation = self._coco_dt._task_annotations
         for imgIdx in self.params.imgIdxes:
@@ -655,7 +655,8 @@ class CocoDetEval:
                     gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
                     pb_idx_to_anno = {anno.index: anno for anno in gt_img_annotation.annotations}
                     for g in gt:
-                        cm_tuple = g['cm'][iou_thr_index, max_dets_index]
+                        print(f"groundtruth: {g}")
+                        cm_tuple = g['cm'][iou_thr_index, maxDets]
                         anno = pb_idx_to_anno[g['pb_index_id']]
                         anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
@@ -664,7 +665,7 @@ class CocoDetEval:
                     dt_img_annotation = dt_annotation.image_annotations[dt[0]['asset_id']]
                     pb_idx_to_anno = {anno.index: anno for anno in dt_img_annotation.annotations}
                     for d in dt:
-                        cm_tuple = d['cm'][iou_thr_index, max_dets_index]
+                        cm_tuple = d['cm'][iou_thr_index, maxDets]
                         anno = pb_idx_to_anno[d['pb_index_id']]
                         anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
@@ -709,7 +710,7 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
         evaluator.evaluate()
         if params.calc_confusion_matrix:
             iou_thr_index = 0  # single iou thr only.
-            evaluator.write_confusion_matrix(iou_thr_index=iou_thr_index, max_dets_index=max_dets_index)
+            evaluator.write_confusion_matrix(iou_thr_index=iou_thr_index, maxDets=params.maxDets[max_dets_index])
         evaluator.accumulate()
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
