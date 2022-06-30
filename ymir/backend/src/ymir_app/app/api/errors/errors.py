@@ -153,6 +153,11 @@ class DatasetEvaluationNotFound(NotFound):
     message = "Dataset Evaluation Not Found"
 
 
+class DatasetEvaluationMissingAnnotation(NotFound):
+    code = error_codes.DATASET_EVALUATION_NO_ANNOTATIONS
+    message = "Could Not Evaluate Dataset Without Annotations"
+
+
 class ModelNotReady(APIError):
     code = error_codes.MODEL_NOT_READY
     message = "Model Not Ready"
