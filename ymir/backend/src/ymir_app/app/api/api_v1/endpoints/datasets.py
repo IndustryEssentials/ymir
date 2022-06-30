@@ -576,5 +576,5 @@ def check_duplication(
         raise DatasetNotFound()
 
     viz_client.initialize(user_id=current_user.id, project_id=check_duplication.project_id)
-    is_duplicate = viz_client.check_duplication([dataset.hash for dataset in datasets])
-    return {"result": is_duplicate}
+    duplicated_asset_count = viz_client.check_duplication([dataset.hash for dataset in datasets])
+    return {"result": duplicated_asset_count}
