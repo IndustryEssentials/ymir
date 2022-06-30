@@ -653,11 +653,11 @@ class CocoDetEval:
                 gt = self._gts[imgIdx, catId]
                 if len(gt):
                     gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
-                    pb_idx_to_local_idx = {anno.index: idx for idx, anno in enumerate(gt_img_annotation.annotations)}
+                    pb_idx_to_anno = {anno.index: anno for anno in gt_img_annotation.annotations}
                     for g in gt:
-                        local_index = pb_idx_to_local_idx[g['pb_index_id']]
+                        anno = pb_idx_to_anno[g['pb_index_id']]
                         cm = g['cm'][iou_thr_index, max_dets_index]
-                        gt_img_annotation[local_index].cm, gt_img_annotation[local_index].det_link_id = cm
+                        anno.cm, anno.det_link_id = cm[0], cm[1]
 
                 dt = self._dts[imgIdx, catId]
                 if len(dt):
