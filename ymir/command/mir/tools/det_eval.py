@@ -53,7 +53,8 @@ class MirCoco:
         annos = self._get_annotations(single_task_annotations=task_annotations,
                                       asset_idxes=self.get_asset_idxes(),
                                       class_ids=self.get_class_ids(),
-                                      conf_thr=conf_thr)
+                                      conf_thr=conf_thr,
+                                      as_gt=as_gt)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
@@ -69,7 +70,7 @@ class MirCoco:
         return self._asset_id_to_ordered_idxes
 
     def _get_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations, asset_idxes: List[int],
-                         class_ids: List[int], conf_thr: float) -> List[dict]:
+                         class_ids: List[int], conf_thr: float, as_gt: bool) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
@@ -108,7 +109,7 @@ class MirCoco:
             for annotation in single_image_annotations.annotations:
                 if class_ids and annotation.class_id not in class_ids:
                     continue
-                if annotation.score < conf_thr:
+                if not as_gt and annotation.score < conf_thr:
                     continue
 
                 annotation_dict = {
@@ -282,7 +283,6 @@ class CocoDetEval:
         iscrowd = [int(o['iscrowd']) for o in gt]
         # load computed ious
         ious = self.ious[imgIdx, catId][:, gtind] if len(self.ious[imgIdx, catId]) > 0 else self.ious[imgIdx, catId]
-        # TODO: check: shouldn't here be self.ious[imgIdx, catId][dtind, gtind]?
 
         p = self.params
         T = len(p.iouThrs)
@@ -639,6 +639,7 @@ class CocoDetEval:
     def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
         gt_annotation = self._coco_gt._task_annotations
         dt_annotation = self._coco_dt._task_annotations
+        cm_key = (iou_thr_index, maxDets)
         for imgIdx in self.params.imgIdxes:
             for catId in self.params.catIds:
                 gt = self._gts[imgIdx, catId]
@@ -646,7 +647,9 @@ class CocoDetEval:
                     gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
                     pb_idx_to_anno = {anno.index: anno for anno in gt_img_annotation.annotations}
                     for g in gt:
-                        cm_tuple = g['cm'][iou_thr_index, maxDets]
+                        if not g.get('cm', {}).get(cm_key, None):
+                            continue
+                        cm_tuple = g['cm'][cm_key]
                         anno = pb_idx_to_anno[g['pb_index_id']]
                         anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
@@ -655,7 +658,9 @@ class CocoDetEval:
                     dt_img_annotation = dt_annotation.image_annotations[dt[0]['asset_id']]
                     pb_idx_to_anno = {anno.index: anno for anno in dt_img_annotation.annotations}
                     for d in dt:
-                        cm_tuple = d['cm'][iou_thr_index, maxDets]
+                        if not d.get('cm', {}).get(cm_key, None):
+                            continue
+                        cm_tuple = d['cm'][cm_key]
                         anno = pb_idx_to_anno[d['pb_index_id']]
                         anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 

@@ -39,8 +39,9 @@ class TaskExportingInvoker(TaskBaseInvoker):
         asset_dir = exporting_request.asset_dir
         annotation_dir = exporting_request.annotation_dir
         media_location = assets_config['assetskvlocation']
+        dst_dataset_id_with_tid = f"{exporting_request.dataset_id}@{exporting_request.dataset_id}"
         exporting_response = cls.exporting_cmd(repo_root=repo_root,
-                                               dataset_id=exporting_request.dataset_id,
+                                               dataset_id_with_tid=dst_dataset_id_with_tid,
                                                annotation_format=utils.annotation_format_str(exporting_request.format),
                                                asset_dir=asset_dir,
                                                annotation_dir=annotation_dir,
@@ -51,7 +52,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
 
     @staticmethod
     def exporting_cmd(repo_root: str,
-                      dataset_id: str,
+                      dataset_id_with_tid: str,
                       annotation_format: str,
                       asset_dir: str,
                       annotation_dir: str,
@@ -61,7 +62,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       gt_dir: Optional[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = [
             utils.mir_executable(), 'export', '--root', repo_root, '--media-location', media_location, '--asset-dir',
-            asset_dir, '--annotation-dir', annotation_dir, '--src-revs', f"{dataset_id}@{dataset_id}", '--format',
+            asset_dir, '--annotation-dir', annotation_dir, '--src-revs', dataset_id_with_tid, '--format',
             annotation_format
         ]
         if keywords:
