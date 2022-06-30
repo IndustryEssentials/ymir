@@ -81,6 +81,8 @@ def test_build_polylines():
             "pose": "Unspecified",
             "truncated": "0",
             "difficult": "0",
+            "box_quality": -1.000,
+            "cm": "FN",
             "bndbox": {
                 "xmin": "100",
                 "ymin": "96",
