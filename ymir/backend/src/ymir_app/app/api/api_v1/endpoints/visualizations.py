@@ -67,8 +67,8 @@ def create_visualization(
     if not tasks:
         raise TaskNotFound()
 
-    visualization = crud.visualization.create_visualization(db, user_id=current_user.id, conf_thr=obj_in.conf_thr,
-                                                            iou_thr=obj_in.iou_thr, project_id=obj_in.project_id)
+    visualization = crud.visualization.create_visualization(db, user_id=current_user.id, project_id=obj_in.project_id,
+                                                            conf_thr=obj_in.conf_thr, iou_thr=obj_in.iou_thr, )
 
     for task in tasks:
         crud.task_visual_relationship.create_relationship(db, task_id=task.id, visualization_id=visualization.id)

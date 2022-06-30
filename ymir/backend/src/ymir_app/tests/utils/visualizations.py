@@ -14,7 +14,7 @@ def create_visualization_record(
     project_id: Optional[int] = None,
 ):
     user_id = user_id or randint(1, 20)
-    record = crud.visualization.create_visualization(db, user_id=user_id, conf_thr=0.0005, iou_thr=0.5,
-                                                     project_id=project_id)
+    record = crud.visualization.create_visualization(db, user_id=user_id, project_id=project_id, conf_thr=0.0005,
+                                                     iou_thr=0.5)
     crud.task_visual_relationship.create_relationship(db, task_id=task.id, visualization_id=record.id)
     return record
