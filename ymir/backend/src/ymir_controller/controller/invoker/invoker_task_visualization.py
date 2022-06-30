@@ -79,10 +79,10 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         dataset_id: str,
     ) -> str:
         # evaluate and add fpfn
-        evaluated_dataset_id = f'{dataset_id}@{task_id}'
+        evaluated_dataset_id_with_tid = f'{dataset_id}@{task_id}'
         TaskVisualizationInvoker.evaluate_cmd(repo_root=repo_root,
                                               src_dataset_id=dataset_id,
-                                              dst_dataset_id=evaluated_dataset_id,
+                                              dataset_id_with_tid=evaluated_dataset_id_with_tid,
                                               iou_thr=iou_thr,
                                               conf_thr=conf_thr)
 
@@ -97,7 +97,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         utils.ensure_dirs_exist(list(dirs.values()))
         TaskExportingInvoker.exporting_cmd(
             repo_root=repo_root,
-            dataset_id=evaluated_dataset_id,
+            dataset_id_with_tid=evaluated_dataset_id_with_tid,
             annotation_format=fmt,
             media_location=media_location,
             **dirs,  # type: ignore
@@ -105,11 +105,11 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         return dataset_export_dir
 
     @staticmethod
-    def evaluate_cmd(repo_root: str, src_dataset_id: str, dst_dataset_id: str, iou_thr: float,
+    def evaluate_cmd(repo_root: str, src_dataset_id: str, dataset_id_with_tid: str, iou_thr: float,
                      conf_thr: float) -> backend_pb2.GeneralResp:
         evaluate_cmd = [
             utils.mir_executable(), 'evaluate', '--root', repo_root, '--src-revs', f"{src_dataset_id}@{src_dataset_id}",
-            '--dst-rev', f"{dst_dataset_id}@{dst_dataset_id}", '--conf-thr', f"{conf_thr}", '--iou-thrs', f"{iou_thr}",
+            '--dst-rev', dataset_id_with_tid, '--conf-thr', f"{conf_thr}", '--iou-thrs', f"{iou_thr}",
             '--calc-confusion-matrix'
         ]
 
