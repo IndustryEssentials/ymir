@@ -771,7 +771,7 @@ def det_evaluate(
     iou_thrs: str,
     need_pr_curve: bool = False,
     calc_confusion_matrix: bool = False,
-) -> mirpb.Evaluation:
+) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
     mir_keywords: mirpb.MirKeywords
