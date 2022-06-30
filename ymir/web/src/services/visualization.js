@@ -17,7 +17,7 @@ import request from "@/utils/request"
  * @returns 
  */
 export function getVisualizations({ projectId, name, offset = 0, limit = 10, is_desc = true, order_by}) {
-  return request.get("visualizations/", { params: { projectId, name, offset, limit, is_desc, order_by } })
+  return request.get("visualizations/", { params: { project_id: projectId, name, offset, limit, is_desc, order_by } })
 }
 
 /**
