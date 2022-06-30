@@ -282,7 +282,6 @@ class CocoDetEval:
         iscrowd = [int(o['iscrowd']) for o in gt]
         # load computed ious
         ious = self.ious[imgIdx, catId][:, gtind] if len(self.ious[imgIdx, catId]) > 0 else self.ious[imgIdx, catId]
-        # TODO: check: shouldn't here be self.ious[imgIdx, catId][dtind, gtind]?
 
         p = self.params
         T = len(p.iouThrs)
@@ -649,7 +648,7 @@ class CocoDetEval:
                     for g in gt:
                         if not g.get('cm', {}).get(cm_key, None):
                             continue
-                        cm_tuple = g['cm'][iou_thr_index, maxDets]
+                        cm_tuple = g['cm'][cm_key]
                         anno = pb_idx_to_anno[g['pb_index_id']]
                         anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
@@ -658,9 +657,9 @@ class CocoDetEval:
                     dt_img_annotation = dt_annotation.image_annotations[dt[0]['asset_id']]
                     pb_idx_to_anno = {anno.index: anno for anno in dt_img_annotation.annotations}
                     for d in dt:
-                        if not g.get('cm', {}).get(cm_key, None):
+                        if not d.get('cm', {}).get(cm_key, None):
                             continue
-                        cm_tuple = d['cm'][iou_thr_index, maxDets]
+                        cm_tuple = d['cm'][cm_key]
                         anno = pb_idx_to_anno[d['pb_index_id']]
                         anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
