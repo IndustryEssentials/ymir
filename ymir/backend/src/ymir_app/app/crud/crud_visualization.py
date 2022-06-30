@@ -23,12 +23,15 @@ class CRUDVisualization(CRUDBase[Visualization, VisualizationCreate, Visualizati
         *,
         user_id: int,
         project_id: Optional[int],
+        conf_thr: Optional[float],
+        iou_thr: Optional[float],
     ) -> Visualization:
-
         db_obj = Visualization(
             user_id=user_id,
             tid=uuid.uuid4().hex,
-            project_id=project_id
+            project_id=project_id,
+            conf_thr=conf_thr,  # type: ignore
+            iou_thr=iou_thr,  # type: ignore
         )
         db.add(db_obj)
         db.commit()

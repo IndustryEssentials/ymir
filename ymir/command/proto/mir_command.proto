@@ -134,6 +134,20 @@ message Annotation {
     double score = 4;
     float anno_quality = 5;
     map<string, string> tags = 6;
+    ConfusionMatrixType cm = 7;
+    int32 det_link_id = 8;
+};
+
+enum ConfusionMatrixType {
+    NotSet = 0;
+    TP = 1;
+    FP = 2;
+    FN = 3;
+    TN = 4;
+    Unknown = 5;
+    // Matched True Positive, only for gt.
+    MTP = 11;
+    IGNORED = 12;
 };
 
 message Rect {

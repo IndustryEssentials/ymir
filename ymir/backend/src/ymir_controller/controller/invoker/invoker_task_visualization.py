@@ -43,8 +43,8 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         iou_thr = visualization.iou_thr
         conf_thr = visualization.conf_thr
 
-        f_export = partial(cls.evaluate_and_export_single_dataset, repo_root, subtask_workdir, media_location,
-                           format_str, iou_thr, conf_thr)
+        f_export = partial(cls.evaluate_and_export_single_dataset, repo_root, subtask_id, subtask_workdir,
+                           media_location, format_str, iou_thr, conf_thr)
         with ThreadPoolExecutor(FIFTYONE_CONCURRENT_LIMIT) as executor:
             res = executor.map(f_export, visualization.in_dataset_ids)
         dataset_export_dirs = list(res)
@@ -70,6 +70,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
     @staticmethod
     def evaluate_and_export_single_dataset(
         repo_root: str,
+        task_id: str,
         work_dir: str,
         media_location: str,
         fmt: str,
@@ -78,7 +79,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         dataset_id: str,
     ) -> str:
         # evaluate and add fpfn
-        evaluated_dataset_id = utils.gen_task_id(user_id=0, project_id=0)
+        evaluated_dataset_id = f'{dataset_id}@{task_id}'
         TaskVisualizationInvoker.evaluate_cmd(repo_root=repo_root,
                                               src_dataset_id=dataset_id,
                                               dst_dataset_id=evaluated_dataset_id,
