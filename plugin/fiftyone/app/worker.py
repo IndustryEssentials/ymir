@@ -80,6 +80,8 @@ def _get_samples(base_path: Path, labels_dir: Path, dataset_name, sample_pool,) 
                 sample = sample_pool[img_path.name]
             else:
                 sample = Sample(filepath=img_path)
+                sample["image_quality"] = annotation["image_quality"]
+                sample["segmented"] = annotation["segmented"]
                 if annotation.get("cks"):
                     for k, v in annotation.get("cks").items():  # type: ignore
                         sample[k] = v
@@ -166,6 +168,11 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
             confidence=obj.get("confidence"),
             closed=True
         )
+        polyline["cm"] = obj["cm"]
+        polyline["box_quality"] = obj["box_quality"]
+        polyline["difficult"] = obj["difficult"]
+        polyline["truncated"] = obj["truncated"]
+        polyline["pose"] = obj["pose"]
         if obj.get("tags"):
             for k, v in obj.get("tags").items():
                 polyline[k] = v
