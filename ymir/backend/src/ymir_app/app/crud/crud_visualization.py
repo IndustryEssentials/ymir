@@ -22,11 +22,13 @@ class CRUDVisualization(CRUDBase[Visualization, VisualizationCreate, Visualizati
         db: Session,
         *,
         user_id: int,
+        project_id: Optional[int],
     ) -> Visualization:
 
         db_obj = Visualization(
             user_id=user_id,
-            tid=uuid.uuid4().hex
+            tid=uuid.uuid4().hex,
+            project_id=project_id
         )
         db.add(db_obj)
         db.commit()
@@ -39,6 +41,7 @@ class CRUDVisualization(CRUDBase[Visualization, VisualizationCreate, Visualizati
         *,
         user_id: int,
         name: Optional[str] = None,
+        project_id: Optional[int] = None,
         offset: Optional[int] = 0,
         limit: Optional[int] = None,
         order_by: str = "create_datetime",
@@ -47,6 +50,8 @@ class CRUDVisualization(CRUDBase[Visualization, VisualizationCreate, Visualizati
         query = db.query(self.model)
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 
+        if project_id:
+            query = query.filter(self.model.project_id == project_id)
         if name:
             query_dataset = query.join(
                 TaskVisualRelationship, TaskVisualRelationship.visualization_id == self.model.id) \
