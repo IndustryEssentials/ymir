@@ -267,11 +267,11 @@ class TestCmdEvaluate(unittest.TestCase):
                                 },
                                 'score': 0.7,
                                 'cm': 'TP',
-                                'det_link_id': 1,
                                 'index': 0,
                                 'class_id': 0,
                                 'anno_quality': 0.0,
-                                'tags': {}
+                                'tags': {},
+                                'det_link_id': 0
                             }, {
                                 'index': 1,
                                 'box': {
@@ -323,23 +323,6 @@ class TestCmdEvaluate(unittest.TestCase):
             'head_task_id': 'd',
             'ground_truth': {
                 'image_annotations': {
-                    'a1': {
-                        'annotations': [{
-                            'box': {
-                                'x': 300,
-                                'y': 300,
-                                'w': 100,
-                                'h': 100
-                            },
-                            'class_id': 2,
-                            'score': 1.0,
-                            'cm': 'MTP',
-                            'index': 0,
-                            'anno_quality': 0.0,
-                            'tags': {},
-                            'det_link_id': 0
-                        }]
-                    },
                     'a0': {
                         'annotations': [{
                             'box': {
@@ -349,12 +332,12 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 50
                             },
                             'score': 1.0,
-                            'cm': 'FN',
-                            'det_link_id': -1,
+                            'cm': 'MTP',
                             'index': 0,
                             'class_id': 0,
                             'anno_quality': 0.0,
-                            'tags': {}
+                            'tags': {},
+                            'det_link_id': 0
                         }, {
                             'index': 1,
                             'box': {
@@ -365,10 +348,10 @@ class TestCmdEvaluate(unittest.TestCase):
                             },
                             'score': 1.0,
                             'cm': 'MTP',
+                            'det_link_id': 1,
                             'class_id': 0,
                             'anno_quality': 0.0,
-                            'tags': {},
-                            'det_link_id': 0
+                            'tags': {}
                         }, {
                             'index': 2,
                             'box': {
@@ -398,12 +381,7 @@ class TestCmdEvaluate(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {}
                         }]
-                    }
-                },
-                'task_id': ''
-            },
-            'prediction': {
-                'image_annotations': {
+                    },
                     'a1': {
                         'annotations': [{
                             'box': {
@@ -413,14 +391,19 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 100
                             },
                             'class_id': 2,
-                            'score': 0.9,
-                            'cm': 'TP',
+                            'score': 1.0,
+                            'cm': 'MTP',
                             'index': 0,
                             'anno_quality': 0.0,
                             'tags': {},
                             'det_link_id': 0
                         }]
-                    },
+                    }
+                },
+                'task_id': ''
+            },
+            'prediction': {
+                'image_annotations': {
                     'a0': {
                         'annotations': [{
                             'box': {
@@ -431,11 +414,11 @@ class TestCmdEvaluate(unittest.TestCase):
                             },
                             'score': 0.7,
                             'cm': 'TP',
-                            'det_link_id': 1,
                             'index': 0,
                             'class_id': 0,
                             'anno_quality': 0.0,
-                            'tags': {}
+                            'tags': {},
+                            'det_link_id': 0
                         }, {
                             'index': 1,
                             'box': {
@@ -478,6 +461,23 @@ class TestCmdEvaluate(unittest.TestCase):
                             'det_link_id': 3,
                             'anno_quality': 0.0,
                             'tags': {}
+                        }]
+                    },
+                    'a1': {
+                        'annotations': [{
+                            'box': {
+                                'x': 300,
+                                'y': 300,
+                                'w': 100,
+                                'h': 100
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                            'cm': 'TP',
+                            'index': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'det_link_id': 0
                         }]
                     }
                 },
