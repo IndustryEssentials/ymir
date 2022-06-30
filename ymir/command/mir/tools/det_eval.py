@@ -53,7 +53,8 @@ class MirCoco:
         annos = self._get_annotations(single_task_annotations=task_annotations,
                                       asset_idxes=self.get_asset_idxes(),
                                       class_ids=self.get_class_ids(),
-                                      conf_thr=conf_thr)
+                                      conf_thr=conf_thr,
+                                      as_gt=as_gt)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
@@ -69,7 +70,7 @@ class MirCoco:
         return self._asset_id_to_ordered_idxes
 
     def _get_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations, asset_idxes: List[int],
-                         class_ids: List[int], conf_thr: float) -> List[dict]:
+                         class_ids: List[int], conf_thr: float, as_gt: bool) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
@@ -108,7 +109,7 @@ class MirCoco:
             for annotation in single_image_annotations.annotations:
                 if class_ids and annotation.class_id not in class_ids:
                     continue
-                if annotation.score < conf_thr:
+                if not as_gt and annotation.score < conf_thr:
                     continue
 
                 annotation_dict = {
