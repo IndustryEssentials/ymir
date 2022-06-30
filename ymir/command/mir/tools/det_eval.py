@@ -163,6 +163,9 @@ class CocoDetEval:
             self._gts = defaultdict(list, coco_gt.img_cat_to_annotations)
             self._dts = defaultdict(list, coco_dt.img_cat_to_annotations)
 
+        self._coco_gt = coco_gt
+        self._coco_dt = coco_dt
+
     @classmethod
     def filter_img_cat_to_annotations(cls, img_cat_to_annotations: Dict[Tuple[int, int], List[dict]],
                                       img_idxes: List[int]) -> Dict[Tuple[int, int], List[dict]]:
@@ -642,6 +645,9 @@ class CocoDetEval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
 
+    def write_confusion_matrix(self) -> None:
+        pass
+
 
 class Params:
     def __init__(self) -> None:
@@ -681,6 +687,8 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     for mir_dt in mir_dts:
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
+        if params.calc_confusion_matrix:
+            evaluator.write_confusion_matrix()
         evaluator.accumulate()
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
