@@ -224,6 +224,272 @@ class TestCmdEvaluate(unittest.TestCase):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
 
+    # private: check result
+    def _check_fpfn(self, branch: str, task_id: str) -> None:
+        mir_metadatas: mirpb.MirMetadatas
+        mir_annotations: mirpb.MirAnnotations
+        mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=self._mir_root,
+            mir_branch=branch,
+            mir_task_id=task_id,
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        )
+        self.assertEqual({'a0', 'a1', 'a2'}, set(mir_metadatas.attributes.keys()))
+
+        expected_annotations_dict = {
+            'task_annotations': {
+                'd': {
+                    'image_annotations': {
+                        'a1': {
+                            'annotations': [{
+                                'box': {
+                                    'x': 300,
+                                    'y': 300,
+                                    'w': 100,
+                                    'h': 100
+                                },
+                                'class_id': 2,
+                                'score': 0.9,
+                                'cm': 'TP',
+                                'index': 0,
+                                'anno_quality': 0.0,
+                                'tags': {},
+                                'det_link_id': 0
+                            }]
+                        },
+                        'a0': {
+                            'annotations': [{
+                                'box': {
+                                    'x': 50,
+                                    'y': 50,
+                                    'w': 50,
+                                    'h': 50
+                                },
+                                'score': 0.7,
+                                'cm': 'TP',
+                                'det_link_id': 1,
+                                'index': 0,
+                                'class_id': 0,
+                                'anno_quality': 0.0,
+                                'tags': {}
+                            }, {
+                                'index': 1,
+                                'box': {
+                                    'x': 150,
+                                    'y': 50,
+                                    'w': 75,
+                                    'h': 75
+                                },
+                                'score': 0.8,
+                                'cm': 'TP',
+                                'det_link_id': 1,
+                                'class_id': 0,
+                                'anno_quality': 0.0,
+                                'tags': {}
+                            }, {
+                                'index': 2,
+                                'box': {
+                                    'x': 150,
+                                    'y': 150,
+                                    'w': 75,
+                                    'h': 75
+                                },
+                                'class_id': 1,
+                                'score': 0.9,
+                                'cm': 'TP',
+                                'det_link_id': 2,
+                                'anno_quality': 0.0,
+                                'tags': {}
+                            }, {
+                                'index': 3,
+                                'box': {
+                                    'x': 350,
+                                    'y': 50,
+                                    'w': 100,
+                                    'h': 100
+                                },
+                                'class_id': 2,
+                                'score': 0.9,
+                                'cm': 'TP',
+                                'det_link_id': 3,
+                                'anno_quality': 0.0,
+                                'tags': {}
+                            }]
+                        }
+                    },
+                    'task_id': ''
+                }
+            },
+            'head_task_id': 'd',
+            'ground_truth': {
+                'image_annotations': {
+                    'a1': {
+                        'annotations': [{
+                            'box': {
+                                'x': 300,
+                                'y': 300,
+                                'w': 100,
+                                'h': 100
+                            },
+                            'class_id': 2,
+                            'score': 1.0,
+                            'cm': 'MTP',
+                            'index': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'det_link_id': 0
+                        }]
+                    },
+                    'a0': {
+                        'annotations': [{
+                            'box': {
+                                'x': 50,
+                                'y': 50,
+                                'w': 50,
+                                'h': 50
+                            },
+                            'score': 1.0,
+                            'cm': 'FN',
+                            'det_link_id': -1,
+                            'index': 0,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {}
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 150,
+                                'y': 50,
+                                'w': 75,
+                                'h': 75
+                            },
+                            'score': 1.0,
+                            'cm': 'MTP',
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'det_link_id': 0
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 150,
+                                'y': 150,
+                                'w': 75,
+                                'h': 75
+                            },
+                            'class_id': 1,
+                            'score': 1.0,
+                            'cm': 'MTP',
+                            'det_link_id': 2,
+                            'anno_quality': 0.0,
+                            'tags': {}
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 100,
+                                'h': 100
+                            },
+                            'class_id': 2,
+                            'score': 1.0,
+                            'cm': 'MTP',
+                            'det_link_id': 3,
+                            'anno_quality': 0.0,
+                            'tags': {}
+                        }]
+                    }
+                },
+                'task_id': ''
+            },
+            'prediction': {
+                'image_annotations': {
+                    'a1': {
+                        'annotations': [{
+                            'box': {
+                                'x': 300,
+                                'y': 300,
+                                'w': 100,
+                                'h': 100
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                            'cm': 'TP',
+                            'index': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'det_link_id': 0
+                        }]
+                    },
+                    'a0': {
+                        'annotations': [{
+                            'box': {
+                                'x': 50,
+                                'y': 50,
+                                'w': 50,
+                                'h': 50
+                            },
+                            'score': 0.7,
+                            'cm': 'TP',
+                            'det_link_id': 1,
+                            'index': 0,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {}
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 150,
+                                'y': 50,
+                                'w': 75,
+                                'h': 75
+                            },
+                            'score': 0.8,
+                            'cm': 'TP',
+                            'det_link_id': 1,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {}
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 150,
+                                'y': 150,
+                                'w': 75,
+                                'h': 75
+                            },
+                            'class_id': 1,
+                            'score': 0.9,
+                            'cm': 'TP',
+                            'det_link_id': 2,
+                            'anno_quality': 0.0,
+                            'tags': {}
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 100,
+                                'h': 100
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                            'cm': 'TP',
+                            'det_link_id': 3,
+                            'anno_quality': 0.0,
+                            'tags': {}
+                        }]
+                    }
+                },
+                'task_id': ''
+            },
+            'image_cks': {}
+        }
+        annotations_dict = json_format.MessageToDict(mir_annotations,
+                                                     including_default_value_fields=True,
+                                                     preserving_proto_field_name=True)
+        self.assertEqual(expected_annotations_dict, annotations_dict)
+
     # public: test cases
     def test_00(self) -> None:
         fake_args = type('', (), {})()
@@ -270,3 +536,4 @@ class TestCmdEvaluate(unittest.TestCase):
                                                                                       ms=mirpb.MirStorage.MIR_TASKS)
         evaluation_result = mir_tasks.tasks[mir_tasks.head_task_id].evaluation
         self.assertEqual({'a'}, set(evaluation_result.dataset_evaluations.keys()))
+        self._check_fpfn(branch='d', task_id='d')
