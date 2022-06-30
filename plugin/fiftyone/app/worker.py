@@ -168,7 +168,7 @@ def _build_polylines(voc_objects: list, width: int, height: int) -> List[Polylin
             confidence=obj.get("confidence"),
             closed=True
         )
-        polyline["cm"] = obj["cm"]
+        polyline.tags.append(obj["cm"])
         polyline["box_quality"] = obj["box_quality"]
         polyline["difficult"] = obj["difficult"]
         polyline["truncated"] = obj["truncated"]
