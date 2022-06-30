@@ -32,7 +32,7 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
     format_str = utils.annotation_format_str(backend_pb2.LabelFormat.LABEL_STUDIO_JSON)
 
     TaskExportingInvoker.exporting_cmd(repo_root=repo_root,
-                                       dataset_id=dataset_id,
+                                       dataset_id_with_tid=f"{dataset_id}@{dataset_id}",
                                        annotation_format=format_str,
                                        asset_dir=input_asset_dir,
                                        annotation_dir=input_asset_dir,
