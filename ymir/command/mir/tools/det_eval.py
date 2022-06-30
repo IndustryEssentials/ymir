@@ -58,6 +58,7 @@ class MirCoco:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
         self.dataset_id = dataset_id
+        self._task_annotations = task_annotations
 
     @property
     def ck_idx(self) -> Dict[str, mirpb.AssetAnnoIndex]:
@@ -120,6 +121,8 @@ class MirCoco:
                     'score': annotation.score,
                     'iscrowd': 0,
                     'ignore': 0,
+                    'cm': {},  # key: (iou_thr_idx, maxDet), value: (ConfusionMatrixType, linked pb_index_id)
+                    'pb_index_id': annotation.index,
                 }
                 result_annotations_list.append(annotation_dict)
 
@@ -159,6 +162,9 @@ class CocoDetEval:
             self.params.imgIdxes = coco_gt.get_asset_idxes()
             self._gts = defaultdict(list, coco_gt.img_cat_to_annotations)
             self._dts = defaultdict(list, coco_dt.img_cat_to_annotations)
+
+        self._coco_gt = coco_gt
+        self._coco_dt = coco_dt
 
     @classmethod
     def filter_img_cat_to_annotations(cls, img_cat_to_annotations: Dict[Tuple[int, int], List[dict]],
@@ -276,6 +282,7 @@ class CocoDetEval:
         iscrowd = [int(o['iscrowd']) for o in gt]
         # load computed ious
         ious = self.ious[imgIdx, catId][:, gtind] if len(self.ious[imgIdx, catId]) > 0 else self.ious[imgIdx, catId]
+        # TODO: check: shouldn't here be self.ious[imgIdx, catId][dtind, gtind]?
 
         p = self.params
         T = len(p.iouThrs)
@@ -287,7 +294,12 @@ class CocoDetEval:
         dtIg = np.zeros((T, D))  # dt ignore
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
+                for gind, g in enumerate(gt):
+                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
+                    if gtIg[gind]:
+                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
                 for dind, d in enumerate(dt):
+                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
                     # information about best match so far (m=-1 -> unmatched)
                     iou = min([t, 1 - 1e-10])
                     m = -1  # best matched gind for current dind, -1 for unmatch
@@ -310,9 +322,15 @@ class CocoDetEval:
                     dtIg[tind, dind] = gtIg[m]
                     dtm[tind, dind] = gt[m]['id']
                     gtm[tind, m] = d['id']
+                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
+                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, g['pb_index_id'])
         # set unmatched detections outside of area range to ignore
         a = np.array([d['area'] < aRng[0] or d['area'] > aRng[1] for d in dt]).reshape((1, len(dt)))
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
+        for dind, d in enumerate(dt):
+            if dtIg[tind, dind]:
+                gt_pb_index_id = d['cm'][tind, maxDet][1]
+                d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, gt_pb_index_id)
         # store results for given image and category
         return {
             'image_id': imgIdx,
@@ -444,7 +462,7 @@ class CocoDetEval:
             'all_fns': all_fns,
         }
 
-    def get_evaluation_result(self) -> mirpb.SingleDatasetEvaluation:
+    def get_evaluation_result(self, area_ranges_index: int, max_dets_index: int) -> mirpb.SingleDatasetEvaluation:
         if not self.eval:
             raise ValueError('Please run accumulate() first')
 
@@ -453,29 +471,35 @@ class CocoDetEval:
 
         # iou evaluations
         for iou_thr_index, iou_thr in enumerate(self.params.iouThrs):
-            iou_evaluation = self._get_iou_evaluation_result(iou_thr_index=iou_thr_index)
+            iou_evaluation = self._get_iou_evaluation_result(area_ranges_index=area_ranges_index,
+                                                             max_dets_index=max_dets_index,
+                                                             iou_thr_index=iou_thr_index)
             evaluation_result.iou_evaluations[f"{iou_thr:.2f}"].CopyFrom(iou_evaluation)
 
         # average evaluation
-        evaluation_result.iou_averaged_evaluation.CopyFrom(self._get_iou_evaluation_result())
+        evaluation_result.iou_averaged_evaluation.CopyFrom(
+            self._get_iou_evaluation_result(area_ranges_index=area_ranges_index, max_dets_index=max_dets_index))
 
         return evaluation_result
 
-    def _get_iou_evaluation_result(self, iou_thr_index: int = None) -> mirpb.SingleIouEvaluation:
+    def _get_iou_evaluation_result(self,
+                                   area_ranges_index: int,
+                                   max_dets_index: int,
+                                   iou_thr_index: int = None) -> mirpb.SingleIouEvaluation:
         iou_evaluation = mirpb.SingleIouEvaluation()
 
         # ci evaluations: category / class ids
         for class_id_index, class_id in enumerate(self.params.catIds):
-            ee = self._get_evaluation_element(iou_thr_index, class_id_index)
+            ee = self._get_evaluation_element(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)
             iou_evaluation.ci_evaluations[class_id].CopyFrom(ee)
         # class average
-        ee = self._get_evaluation_element(iou_thr_index, None)
+        ee = self._get_evaluation_element(iou_thr_index, None, area_ranges_index, max_dets_index)
         iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
 
         return iou_evaluation
 
-    def _get_evaluation_element(self, iou_thr_index: Optional[int],
-                                class_id_index: Optional[int]) -> mirpb.SingleEvaluationElement:
+    def _get_evaluation_element(self, iou_thr_index: Optional[int], class_id_index: Optional[int],
+                                area_ranges_index: int, max_dets_index: int) -> mirpb.SingleEvaluationElement:
         def _get_tp_tn_or_fn(iou_thr_index: Optional[int], class_id_index: Optional[int], area_ranges_index: int,
                              max_dets_index: int, array: np.ndarray) -> int:
             """
@@ -493,10 +517,6 @@ class CocoDetEval:
             return int(array[0])
 
         ee = mirpb.SingleEvaluationElement()
-
-        # from _summarize
-        area_ranges_index = 0  # area range: 'all'
-        max_dets_index = len(self.params.maxDets) - 1  # last max det number
 
         # average precision
         # precision dims: iouThrs * recThrs * catIds * areaRanges * maxDets
@@ -606,24 +626,38 @@ class CocoDetEval:
             return mean_s
 
         def _summarizeDets() -> np.ndarray:
-            stats = np.zeros((12, ))
+            stats = np.zeros((3, ))
             stats[0] = _summarize(1)
-            stats[1] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[2])
-            stats[2] = _summarize(1, iouThr=.75, maxDets=self.params.maxDets[2])
-            stats[3] = _summarize(1, areaRng='small', maxDets=self.params.maxDets[2])
-            stats[4] = _summarize(1, areaRng='medium', maxDets=self.params.maxDets[2])
-            stats[5] = _summarize(1, areaRng='large', maxDets=self.params.maxDets[2])
-            stats[6] = _summarize(0, maxDets=self.params.maxDets[0])
-            stats[7] = _summarize(0, maxDets=self.params.maxDets[1])
-            stats[8] = _summarize(0, maxDets=self.params.maxDets[2])
-            stats[9] = _summarize(0, areaRng='small', maxDets=self.params.maxDets[2])
-            stats[10] = _summarize(0, areaRng='medium', maxDets=self.params.maxDets[2])
-            stats[11] = _summarize(0, areaRng='large', maxDets=self.params.maxDets[2])
+            stats[1] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[-1])
+            stats[2] = _summarize(1, iouThr=.75, maxDets=self.params.maxDets[-1])
             return stats
 
         if not self.eval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
+
+    def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
+        gt_annotation = self._coco_gt._task_annotations
+        dt_annotation = self._coco_dt._task_annotations
+        for imgIdx in self.params.imgIdxes:
+            for catId in self.params.catIds:
+                gt = self._gts[imgIdx, catId]
+                if len(gt):
+                    gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
+                    pb_idx_to_anno = {anno.index: anno for anno in gt_img_annotation.annotations}
+                    for g in gt:
+                        cm_tuple = g['cm'][iou_thr_index, maxDets]
+                        anno = pb_idx_to_anno[g['pb_index_id']]
+                        anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
+
+                dt = self._dts[imgIdx, catId]
+                if len(dt):
+                    dt_img_annotation = dt_annotation.image_annotations[dt[0]['asset_id']]
+                    pb_idx_to_anno = {anno.index: anno for anno in dt_img_annotation.annotations}
+                    for d in dt:
+                        cm_tuple = d['cm'][iou_thr_index, maxDets]
+                        anno = pb_idx_to_anno[d['pb_index_id']]
+                        anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
 
 class Params:
@@ -634,8 +668,9 @@ class Params:
         # np.arange causes trouble.  the data point on arange is slightly larger than the true value
         self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)  # iou threshold
         self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)  # recall threshold
-        self.maxDets = [1, 10, 100]
-        self.areaRng: List[list] = [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
+        self.maxDets = [100]  # only one maxDet, origin: [1, 10, 100]
+        # [[0**2, 1e5**2], [0**2, 32**2], [32**2, 96**2], [96**2, 1e5**2]]  # area range
+        self.areaRng: List[list] = [[0**2, 1e5**2]]  # use all.
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.confThr = 0.3  # confidence threshold
         self.need_pr_curve = False
@@ -657,12 +692,19 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
+    area_ranges_index = 0  # area range: 'all'
+    max_dets_index = len(params.maxDets) - 1  # last max det number
+
     for mir_dt in mir_dts:
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
+        if params.calc_confusion_matrix:
+            iou_thr_index = 0  # single iou thr only.
+            evaluator.write_confusion_matrix(iou_thr_index=iou_thr_index, maxDets=params.maxDets[max_dets_index])
         evaluator.accumulate()
 
-        single_dataset_evaluation = evaluator.get_evaluation_result()
+        single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
+                                                                    max_dets_index=max_dets_index)
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
@@ -676,7 +718,9 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
                                     asset_ids=ck_main_assets_and_sub.asset_annos.keys())
             evaluator.evaluate()
             evaluator.accumulate()
-            ste = evaluator.get_evaluation_result().iou_averaged_evaluation.ci_averaged_evaluation
+            ste = evaluator.get_evaluation_result(
+                area_ranges_index=area_ranges_index,
+                max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
             single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].total.CopyFrom(ste)
 
             # ck sub
@@ -687,7 +731,9 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
                                         asset_ids=ck_sub_assets.key_ids.keys())
                 evaluator.evaluate()
                 evaluator.accumulate()
-                ste = evaluator.get_evaluation_result().iou_averaged_evaluation.ci_averaged_evaluation
+                ste = evaluator.get_evaluation_result(
+                    area_ranges_index=area_ranges_index,
+                    max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
                 single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].sub[ck_sub].CopyFrom(ste)
         evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
     return evaluation
@@ -724,7 +770,7 @@ def det_evaluate(
     iou_thrs: str,
     need_pr_curve: bool = False,
     calc_confusion_matrix: bool = False,
-) -> mirpb.Evaluation:
+) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
     mir_keywords: mirpb.MirKeywords
@@ -755,4 +801,4 @@ def det_evaluate(
     evaluate_config.gt_dataset_id = mir_gt.dataset_id
     evaluate_config.pred_dataset_ids.append(mir_dt.dataset_id)
 
-    return _det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
+    return (_det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config), mir_annotations)
