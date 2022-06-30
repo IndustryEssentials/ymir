@@ -134,10 +134,10 @@ const project = {
   'project.new.example.label': { en: 'Create Example Project', cn: '创建示例项目', },
   'project.keywords.invalid': { en: 'Invalid training keywords', cn: '训练目标不合法', },
   'project.workspace.status.dirty': {
-    en: 'Project is {dirtyLabel}, can not train, please check again.',
-    cn: '项目当前状态为{dirtyLabel}，无法创建训练任务，请重新检查状态',
+    en: 'Project is {dirtyLabel}, training is disabled, please check again. if it is persistence, contact to administrator.',
+    cn: '项目当前状态为{dirtyLabel}，无法创建训练任务，请重新检查状态。若状态持续异常，请联系管理员。',
   },
-  'project.workspace.status.clean': { en: 'Project is {cleanLabel}.', cn: '项目当前状态为{cleanLabel}', },
+  'project.workspace.status.clean': { en: 'Project is {cleanLabel}, Training is enabled.', cn: '项目当前状态为{cleanLabel}, 可以正常创建训练任务', },
 }
 
 export default project
