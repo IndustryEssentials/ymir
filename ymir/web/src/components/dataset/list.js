@@ -10,6 +10,7 @@ import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES } from '@/constants/task'
 import { states } from '@/constants/dataset'
 
+import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
 import Terminate from "@/components/task/terminate"
@@ -492,12 +493,17 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   return (
     <div className={styles.dataset}>
-      <div className='actions'>
+      <Row className='actions'>
+        <Col flex={1}>
         <Space>
           {addBtn}
           {renderMultipleActions}
         </Space>
-      </div>
+        </Col>
+        <Col>
+          <CheckProjectDirty pid={pid} />
+        </Col>
+      </Row>
       <div className={`list ${styles.list}`}>
         <div className={`search ${styles.search}`}>
           <Form

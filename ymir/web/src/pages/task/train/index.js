@@ -184,7 +184,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.training')}>
         <div className={commonStyles.formContainer}>
-          <CheckProjectDirty style={{ marginBottom: 20 }} pid={pid} initialCheck={true} callback={(dirty) => setProjectDirty(dirty)} />
+          <CheckProjectDirty style={{ marginBottom: 20, width: '100%' }} pid={pid} initialCheck={true} callback={(dirty) => setProjectDirty(dirty)} />
           <Form
             name='trainForm'
             className={styles.form}
