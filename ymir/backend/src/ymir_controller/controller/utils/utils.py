@@ -1,9 +1,9 @@
+from functools import wraps
 import logging
+from pathlib import Path
 import re
 import subprocess
 import time
-from functools import wraps
-from pathlib import Path
 from typing import Callable, Dict, List
 
 from controller.config import label_task as label_task_config

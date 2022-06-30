@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -14,6 +14,9 @@ from app.schemas.task import Task
 class VisualizationBase(BaseModel):
     user_id: int
     tid: str
+    project_id: Optional[int]
+    conf_thr: Optional[float]
+    iou_thr: Optional[float]
 
     class Config:
         use_enum_values = True
@@ -29,6 +32,9 @@ class VisualizationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixi
 
 class VisualizationCreate(BaseModel):
     task_ids: List[int]
+    project_id: Optional[int]
+    conf_thr: Optional[float] = 0.0005
+    iou_thr: Optional[float] = 0.5
 
     class Config:
         use_enum_values = True

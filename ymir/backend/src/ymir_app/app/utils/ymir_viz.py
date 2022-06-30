@@ -172,6 +172,7 @@ class EvaluationScore(BaseModel):
 class VizDatasetEvaluation(BaseModel):
     ci_evaluations: Dict[int, EvaluationScore]  # class_id -> scores
     ci_averaged_evaluation: EvaluationScore
+    ck_evaluations: Dict[str, EvaluationScore]
 
 
 class VizDatasetEvaluationResult(BaseModel):

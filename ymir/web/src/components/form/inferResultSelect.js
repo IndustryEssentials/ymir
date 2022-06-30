@@ -1,4 +1,4 @@
-import { Checkbox, Col, Form, Row, Select, Tooltip } from 'antd'
+import { Button, Checkbox, Col, Form, Row, Select, Tooltip } from 'antd'
 import { connect } from 'dva'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -6,6 +6,7 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import ModelSelect from './modelSelect'
 import DatasetSelect from './datasetSelect'
+import { useHistory } from 'umi'
 
 const sameConfig = (config, config2) => {
   return JSON.stringify(config2) === JSON.stringify(config)
@@ -43,6 +44,7 @@ const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
 }
 
 const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
+  const history = useHistory()
   const [selectedStages, setSelectedStages] = useState([])
   const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
@@ -66,13 +68,15 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
       setTasks([])
     }
     setSelectedDatasets([])
-    form.setFieldsValue({ dataset: [], config: [] })
+    form.setFieldsValue({ dataset: undefined, config: undefined })
   }, [selectedStages])
 
   useEffect(() => {
     if (datasets.length === 1) {
       form.setFieldsValue({ dataset: datasets})
     }
+    setConfigs([])
+    form.setFieldsValue({ config: undefined })
   }, [datasets])
 
   useEffect(() => {
@@ -145,12 +149,18 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }
 
   function configChange(values, options = []) {
-    setSelectedConfigs(options.map(({ config }) => config))
+    setSelectedConfigs(options.map((opt) => opt ? opt.config : null))
   }
 
   const filterDatasets = useCallback((all) => {
     return all.filter(({ id }) => datasets.includes(id))
   }, [datasets])
+
+  const goInfer = useCallback(() => {
+    const mids = selectedStages.map(String).join('|')
+    const query = selectedStages.length ? `?mid=${mids}` : ''
+    history.push(`/home/project/${pid}/inference${query}`)
+  }, [selectedStages])
 
   return (
     <>
@@ -163,6 +173,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
       <Form.Item name='config' hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }]}>
         <ConfigSelect configs={configs} onChange={configChange} />
       </Form.Item>
+      <p>{t('task.infer.diagnose.tip')} <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button></p>
     </>
   )
 }

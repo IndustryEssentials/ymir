@@ -263,7 +263,7 @@ class TestToolsDetEval(unittest.TestCase):
 
         # original result from pycocotools
         expected_stats = np.array(
-            [0.61177118, 0.88888889, 0.41749175, -1.0, 0.46716172, 0.9009901, 0.46666667, 0.7, 0.7, -1.0, 0.6, 0.9])
+            [0.61177118, 0.88888889, 0.41749175])
 
         # ymir's eval
         mir_metadatas: mirpb.MirMetadatas
@@ -294,5 +294,5 @@ class TestToolsDetEval(unittest.TestCase):
         mir_evaluator.summarize()
         self.assertTrue(np.isclose(expected_stats, mir_evaluator.stats).all())
 
-        mir_evaluation_result = mir_evaluator.get_evaluation_result()
+        mir_evaluation_result = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
         self.assertTrue(len(mir_evaluation_result.iou_evaluations) > 0)
