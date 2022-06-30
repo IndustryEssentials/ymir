@@ -180,6 +180,36 @@ IF_ARK = LabelFormat.V(2)
 global___LabelFormat = LabelFormat
 
 
+class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
+    pass
+class _ConfusionMatrixType:
+    V = typing.NewType('V', builtins.int)
+class _ConfusionMatrixTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ConfusionMatrixType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    NotSet = ConfusionMatrixType.V(0)
+    TP = ConfusionMatrixType.V(1)
+    FP = ConfusionMatrixType.V(2)
+    FN = ConfusionMatrixType.V(3)
+    TN = ConfusionMatrixType.V(4)
+    Unknown = ConfusionMatrixType.V(5)
+    MTP = ConfusionMatrixType.V(11)
+    """Matched True Positive, only for gt."""
+
+    IGNORED = ConfusionMatrixType.V(12)
+
+NotSet = ConfusionMatrixType.V(0)
+TP = ConfusionMatrixType.V(1)
+FP = ConfusionMatrixType.V(2)
+FN = ConfusionMatrixType.V(3)
+TN = ConfusionMatrixType.V(4)
+Unknown = ConfusionMatrixType.V(5)
+MTP = ConfusionMatrixType.V(11)
+"""Matched True Positive, only for gt."""
+
+IGNORED = ConfusionMatrixType.V(12)
+global___ConfusionMatrixType = ConfusionMatrixType
+
+
 class MirMetadatas(google.protobuf.message.Message):
     """/ ========== metadatas.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -424,6 +454,8 @@ class Annotation(google.protobuf.message.Message):
     SCORE_FIELD_NUMBER: builtins.int
     ANNO_QUALITY_FIELD_NUMBER: builtins.int
     TAGS_FIELD_NUMBER: builtins.int
+    CM_FIELD_NUMBER: builtins.int
+    DET_LINK_ID_FIELD_NUMBER: builtins.int
     index: builtins.int = ...
     """Index of this annotation in current single image, may be different from the index in repeated field."""
 
@@ -434,6 +466,8 @@ class Annotation(google.protobuf.message.Message):
     anno_quality: builtins.float = ...
     @property
     def tags(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]: ...
+    cm: global___ConfusionMatrixType.V = ...
+    det_link_id: builtins.int = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -442,9 +476,11 @@ class Annotation(google.protobuf.message.Message):
         score : builtins.float = ...,
         anno_quality : builtins.float = ...,
         tags : typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
+        cm : global___ConfusionMatrixType.V = ...,
+        det_link_id : builtins.int = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","index",b"index","score",b"score","tags",b"tags"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","cm",b"cm","det_link_id",b"det_link_id","index",b"index","score",b"score","tags",b"tags"]) -> None: ...
 global___Annotation = Annotation
 
 class Rect(google.protobuf.message.Message):
