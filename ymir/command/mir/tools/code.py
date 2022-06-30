@@ -16,4 +16,5 @@ class MirCode(IntEnum):
     RC_CMD_NO_RESULT = 160011  # no result for training, mining and infer
     RC_CMD_OPENPAI_ERROR = 160012
     RC_CMD_NO_ANNOTATIONS = 160013
+    RC_CMD_CAN_NOT_CALC_CONFUSION_MATRIX = 160014
     RC_CMD_ERROR_UNKNOWN = 169999

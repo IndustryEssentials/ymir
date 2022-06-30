@@ -241,7 +241,7 @@ class MirStorageOps():
 
     # public: save and load
     @classmethod
-    def save_and_commit(cls, mir_root: str, mir_branch: str, his_branch: Optional[str], mir_datas: dict,
+    def save_and_commit(cls, mir_root: str, mir_branch: str, his_branch: Optional[str], mir_datas: Dict,
                         task: mirpb.Task) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
@@ -362,7 +362,7 @@ class MirStorageOps():
                                          including_default_value_fields=True)
 
     @classmethod
-    def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
+    def load_single_model(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
         mir_storage_data: mirpb.MirTasks = cls.load_single_storage(mir_root=mir_root,
                                                                    mir_branch=mir_branch,
                                                                    ms=mirpb.MirStorage.MIR_TASKS,
@@ -378,7 +378,7 @@ class MirStorageOps():
         return single_model_dict
 
     @classmethod
-    def load_single_dataset(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
+    def load_single_dataset(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
         """
         exampled return data:
         {
@@ -476,7 +476,7 @@ class MirStorageOps():
         return result
 
     @classmethod
-    def load_assets_content(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
+    def load_assets_content(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
         """
         exampled return data:
         {
@@ -516,12 +516,12 @@ class MirStorageOps():
         return dict(
             all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),  # ordered list.
             asset_ids_detail=asset_ids_detail,
-            class_ids_index={k: v["asset_ids"]
-                             for k, v in mir_storage_keywords["index_predefined_keyids"].items()},
+            class_ids_index={k: list(v["key_ids"].keys())
+                             for k, v in mir_storage_keywords["pred_idx"]['cis'].items()},
         )
 
     @classmethod
-    def load_dataset_evaluations(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> dict:
+    def load_dataset_evaluations(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
         mir_storage_data: mirpb.MirTasks = cls.load_single_storage(mir_root=mir_root,
                                                                    mir_branch=mir_branch,
                                                                    ms=mirpb.MirStorage.MIR_TASKS,
@@ -535,7 +535,16 @@ class MirStorageOps():
         return dataset_evaluations["dataset_evaluations"]
 
     @classmethod
-    def _gen_viz_hist(cls, hist_dict: Any) -> List[dict]:
+    def load_dataset_metadata(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
+        mir_storage_data = cls.load_single_storage(mir_root=mir_root,
+                                                   mir_branch=mir_branch,
+                                                   ms=mirpb.MirStorage.MIR_METADATAS,
+                                                   mir_task_id=mir_task_id,
+                                                   as_dict=True)
+        return mir_storage_data
+
+    @classmethod
+    def _gen_viz_hist(cls, hist_dict: Any) -> List[Dict]:
         return sorted([{'x': k, 'y': v} for k, v in hist_dict.items()], key=lambda e: e['x']),  # type: ignore
 
 

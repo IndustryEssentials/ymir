@@ -4,8 +4,6 @@ from typing import Any, Callable, Dict, Optional
 from mir.tools.errors import MirRuntimeError
 
 from id_definition.error_codes import VizErrorCode
-from src.libs import utils
-from src.swagger_models import DatasetEvaluationResult
 
 
 class VizException(Exception):
@@ -50,17 +48,16 @@ class DatasetEvaluationNotExists(VizException):
     message = "dataset evaluation not found"
 
 
+class TooManyDatasetsToCheck(VizException):
+    code = VizErrorCode.TOO_MANY_DATASETS_TO_CHECK
+    message = "too may datasets to check duplication"
+
+
 def catch_viz_exceptions(f: Callable) -> Any:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: dict) -> Any:
         try:
             return f(*args, **kwargs)
-        except VizException as e:
-            return DatasetEvaluationResult(**utils.suss_resp(code=e.code, message=e.message, result={}))
         except MirRuntimeError as e:
-            return DatasetEvaluationResult(**utils.suss_resp(code=e.error_code, message=e.error_message, result={}))
-        except Exception as e:
-            return DatasetEvaluationResult(
-                **utils.suss_resp(code=VizErrorCode.GENERAL_ERROR, message=str(e), result={}))
-
+            raise VizException(code=e.error_code, message=e.error_message)
     return wrapper

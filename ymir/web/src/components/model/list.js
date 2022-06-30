@@ -13,6 +13,7 @@ import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 
+import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
@@ -447,12 +448,17 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
 
   return (
     <div className={styles.model}>
-      <div className='actions'>
-        <Space>
-          {addBtn}
-          {renderMultipleActions}
-        </Space>
-      </div>
+      <Row className='actions'>
+        <Col flex={1}>
+          <Space>
+            {addBtn}
+            {renderMultipleActions}
+          </Space>
+        </Col>
+        <Col>
+          <CheckProjectDirty pid={pid} />
+        </Col>
+      </Row>
       <div className={`list ${styles.list}`}>
         <div className={`search ${styles.search}`}>
           <Form

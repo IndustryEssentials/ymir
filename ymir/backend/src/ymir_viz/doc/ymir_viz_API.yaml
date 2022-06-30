@@ -550,4 +550,4 @@ components:
         - type: object
           properties:
             result:
-              type: boolean
+              type: integer

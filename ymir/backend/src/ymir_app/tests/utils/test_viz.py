@@ -164,8 +164,9 @@ class TestVizClient:
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
+            user_labels=mock_user_labels,
         )
-        ret = viz.get_assets(user_labels=mock_user_labels)
+        ret = viz.get_assets()
         assert isinstance(ret, m.Assets)
         assert ret.total
         assert ret.items
@@ -203,8 +204,9 @@ class TestVizClient:
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
+            user_labels=mock_user_labels,
         )
-        ret = viz.get_asset(asset_id=asset_id, user_labels=mock_user_labels)
+        ret = viz.get_asset(asset_id=asset_id)
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id
 
@@ -287,8 +289,8 @@ class TestVizClient:
         user_id = random.randint(100, 200)
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
-        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
-        ret = viz.get_dataset(mock_user_labels)
+        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id, user_labels=mock_user_labels)
+        ret = viz.get_dataset()
         assert isinstance(ret, m.DatasetMetaData)
         assert ret.keyword_count == len(res["class_ids_count"])
         assert ret.ignored_keywords == res["ignored_labels"]
