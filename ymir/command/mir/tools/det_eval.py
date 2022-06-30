@@ -655,18 +655,18 @@ class CocoDetEval:
                     gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
                     pb_idx_to_anno = {anno.index: anno for anno in gt_img_annotation.annotations}
                     for g in gt:
+                        cm_tuple = g['cm'][iou_thr_index, max_dets_index]
                         anno = pb_idx_to_anno[g['pb_index_id']]
-                        cm = g['cm'][iou_thr_index, max_dets_index]
-                        anno.cm, anno.det_link_id = cm[0], cm[1]
+                        anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
                 dt = self._dts[imgIdx, catId]
                 if len(dt):
                     dt_img_annotation = dt_annotation.image_annotations[dt[0]['asset_id']]
-                    pb_idx_to_local_idx = {anno.index: idx for idx, anno in enumerate(dt_img_annotation.annotations)}
+                    pb_idx_to_anno = {anno.index: anno for anno in dt_img_annotation.annotations}
                     for d in dt:
-                        local_index = pb_idx_to_local_idx[g['pb_index_id']]
                         cm_tuple = d['cm'][iou_thr_index, max_dets_index]
-                        dt_img_annotation[local_index].cm, dt_img_annotation[local_index].det_link_id = cm_tuple
+                        anno = pb_idx_to_anno[d['pb_index_id']]
+                        anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
 
 
 class Params:
