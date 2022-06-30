@@ -5,7 +5,7 @@ import s from "./index.less"
 import t from "@/utils/t"
 import useFetch from "@/hooks/useFetch"
 import Panel from "@/components/form/panel"
-import InferResultSelect from "../../../components/form/inferResultSelect"
+import InferResultSelect from "@/components/form/inferResultSelect"
 import MapView from "./components/mapView"
 import CurveView from "./components/curveView"
 import PView from "./components/prView"
@@ -151,26 +151,21 @@ function Matrics({ pid, project }) {
     />
   }
 
-  const renderFilterPanel = () => <div className={s.filterPanel} size={20}>
-    <Row gutter={20}>
-      <Col>
-        <Form.Item label={t('model.diagnose.metrics.view.label')}>
-          <Radio.Group
-            defaultValue={metricsTabs[0].value}
-            options={metricsTabs.map(item => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`) }))}
-            onChange={metricsChange}
-          />
-        </Form.Item>
-      </Col>
-      <Col hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)} flex={'15%'}>
-        <Slider style={{ width: 200 }} min={0} max={1}
-          value={prRate}
-          range={true}
-          onChange={prRateChange}
-          tooltipVisible
-          step={0.05} />
-      </Col>
-    </Row>
+  const renderFilterPanel = () => <div className={s.filterPanel}>
+    <Space size={20} style={{ marginBottom: 10 }}>
+      <span>{t('model.diagnose.metrics.view.label')}</span>
+      <Radio.Group
+        defaultValue={metricsTabs[0].value}
+        options={metricsTabs.map(item => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`) }))}
+        onChange={metricsChange}
+      />
+      <Slider hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)} style={{ width: 200 }} min={0} max={1}
+        value={prRate}
+        range={true}
+        onChange={prRateChange}
+        tooltipVisible
+        step={0.05} />
+    </Space>
     <Row gutter={20}>
       <Col>
         <Select value={kwType} options={kwTypes.map(({ label, value }) => ({ value, label: t(label) }))} onChange={setKwType}></Select>
@@ -183,9 +178,10 @@ function Matrics({ pid, project }) {
           showArrow onChange={kwChange}></Select>
       </Col>
       <Col>
-        <Form.Item label={t('model.diagnose.metrics.dimension.label')}>
+        <Space size={20}>
+          <span>{t('model.diagnose.metrics.dimension.label')}</span>
           <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions} onChange={xAxisChange} />
-        </Form.Item>
+        </Space>
       </Col>
     </Row>
   </div>
