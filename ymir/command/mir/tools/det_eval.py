@@ -646,7 +646,6 @@ class CocoDetEval:
                     gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
                     pb_idx_to_anno = {anno.index: anno for anno in gt_img_annotation.annotations}
                     for g in gt:
-                        print(f"groundtruth: {g}")
                         cm_tuple = g['cm'][iou_thr_index, maxDets]
                         anno = pb_idx_to_anno[g['pb_index_id']]
                         anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
