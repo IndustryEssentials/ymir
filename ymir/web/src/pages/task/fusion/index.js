@@ -195,6 +195,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
                     mode='multiple'
                     pid={pid}
                     filter={[...excludeDatasets, did]}
+                    allowEmpty={true}
                     onChange={onIncludeDatasetChange}
                     showArrow
                   />

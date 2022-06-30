@@ -22,6 +22,7 @@ import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
 import useFetch from '@/hooks/useFetch'
+import DatasetSelect from "../../../components/form/datasetSelect"
 
 const { Option } = Select
 
@@ -207,20 +208,18 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                     { required: true, message: t('task.train.form.trainset.required') },
                   ]}
                 >
-                  <Select
-                    placeholder={t('task.train.form.training.datasets.placeholder')}
-                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                  <DatasetSelect
+                    pid={pid}
+                    filters={datasets => datasets.filter(ds => ds.id !== testSet && !testingSetIds.includes(ds.id))}
                     onChange={trainSetChange}
-                    showArrow
-                  >
-                    {datasets.filter(ds => ds.id !== testSet && !testingSetIds.includes(ds.id)).map(item =>
-                      <Option value={item.id} key={item.id}>
-                        {item.name} {item.versionName}(assets: {item.assetCount})
-                      </Option>
-                    )}
-                  </Select>
+                  />
                 </Form.Item>
               </Tip>
+              {trainSet ? <Tip hidden={true}>
+                <Form.Item label={t('dataset.train.form.samples')}>
+                  <KeywordRates dataset={trainSet}></KeywordRates>
+                </Form.Item>
+              </Tip> : null}
               <Tip content={t('tip.task.filter.testsets')}>
                 <Form.Item
                   label={t('task.train.form.testsets.label')}
@@ -229,27 +228,16 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                     { required: true, message: t('task.train.form.testset.required') },
                   ]}
                 >
-                  <Select
-                    disabled={test}
+                  <DatasetSelect
+                    pid={pid}
+                    filters={datasets => datasets.filter(ds => ds.id !== trainSet)}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
-                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={validationSetChange}
-                    showArrow
-                  >
-                    {datasets.filter(ds => ds.id !== trainSet).map(item =>
-                      <Option value={item.id} key={item.id}>
-                        {item.name} {item.versionName}({item.assetCount})
-                      </Option>
-                    )}
-                  </Select>
+                    extra={<Button type="primary">checked</Button>}
+                  />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
-            <Tip hidden={true}>
-              <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates dataset={trainSet}></KeywordRates>
-              </Form.Item>
-            </Tip>
             <Tip content={t('tip.task.filter.keywords')}>
               {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
                 {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
@@ -278,7 +266,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
                 {renderRadio(TrainDevices)}
               </Form.Item>
-            </Tip> : null }
+            </Tip> : null}
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Tip content={t('tip.task.train.model')}>
                 <Form.Item

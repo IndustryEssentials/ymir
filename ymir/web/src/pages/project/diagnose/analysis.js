@@ -277,7 +277,7 @@ function Analysis({pid, project, ...func}) {
                   { required: true},
                   { validator: validDatasetCount}
                 ]}>
-                <DatasetSelect pid={pid} mode='multiple' filterOption={false} onChange={datasetsChange} />
+                <DatasetSelect pid={pid} mode='multiple' onChange={datasetsChange} />
               </Form.Item>
               <Form.Item name='submitBtn'>
                 <div style={{ textAlign: 'center' }}>
