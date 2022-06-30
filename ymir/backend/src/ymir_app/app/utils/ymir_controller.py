@@ -321,6 +321,8 @@ class ControllerRequest:
         visualization_task_req.vis_tool_id = args["vis_tool_id"]
         visualization_task_req.in_dataset_ids[:] = args["in_dataset_ids"]
         visualization_task_req.in_dataset_names[:] = args["in_dataset_names"]
+        visualization_task_req.iou_thr = args['iou_thr']
+        visualization_task_req.conf_thr = args['conf_thr']
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeVisualization
