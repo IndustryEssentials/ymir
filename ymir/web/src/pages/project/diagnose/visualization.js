@@ -7,7 +7,6 @@ import { SearchIcon, EyeOnIcon, DeleteIcon } from "@/components/common/icons"
 
 import t from "@/utils/t"
 import s from './visualization.less'
-import { formLayout } from "@/config/antd"
 import Panel from "@/components/form/panel"
 import Tip from "@/components/form/tip"
 import Actions from "@/components/table/actions"
