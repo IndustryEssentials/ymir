@@ -6,6 +6,7 @@ import { getStats } from "../services/common"
 import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
+import { checkDuplication } from "../services/dataset"
 
 let loading = false
 
@@ -287,6 +288,13 @@ export default {
       const { code, result } = yield call(analysis, datasets)
       if (code === 0) {
         return result.datasets.map(item => transferDatasetAnalysis(item))
+      }
+    },
+    *checkDuplication({ payload }, { call, put }) {
+      const { pid, trainSet, validationSet } = payload
+      const { code, result } = yield call(checkDuplication, pid, trainSet, validationSet)
+      if (code === 0) {
+        return result
       }
     },
   },

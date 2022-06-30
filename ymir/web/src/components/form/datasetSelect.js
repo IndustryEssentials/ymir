@@ -56,7 +56,7 @@ const DatasetSelect = ({ pid, filter = [], allowEmpty, filterGroup = [], filters
       >
       </Select>
 
-  return extra ? <Row gutter={20}><Col flex={1}>{select}</Col><Col>{extra}</Col></Row> : select
+  return extra ? <Row gutter={20} wrap={false}><Col flex={1}>{select}</Col><Col>{extra}</Col></Row> : select
 }
 
 const props = (state) => {

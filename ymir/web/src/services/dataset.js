@@ -140,8 +140,8 @@ export function evaluate({ projectId, datasets, iou, everageIou, confidence }) {
  * @param {array} datasets  analysis datasets
  * @returns 
  */
- export function analysis(projectId, datasets) {
-  return request.get(`/datasets/analysis`, { params: { project_id: projectId, ids: datasets.toString() }})
+export function analysis(projectId, datasets) {
+  return request.get(`/datasets/analysis`, { params: { project_id: projectId, ids: datasets.toString() } })
 }
 
 /**
@@ -194,4 +194,18 @@ export function updateDataset(id, name) {
 
 export function getInternalDataset() {
   return request.get('/datasets/public')
+}
+
+/**
+ * check train set and validation set duplication
+ * @param {number} projectId 
+ * @param {number} trainSet 
+ * @param {number} validationSet 
+ * @returns 
+ */
+export function checkDuplication(projectId, trainSet, validationSet) {
+  return request.post('/datasets/check_duplication', {
+    project_id: projectId,
+    dataset_ids: [trainSet, validationSet],
+  })
 }
