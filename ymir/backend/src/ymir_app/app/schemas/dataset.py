@@ -207,4 +207,4 @@ class DatasetCheckDuplicationCreate(BaseModel):
 
 
 class DatasetCheckDuplicationOut(Common):
-    result: bool
+    result: int
