@@ -230,7 +230,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 >
                   <DatasetSelect
                     pid={pid}
-                    filters={datasets => datasets.filter(ds => ds.id !== trainSet)}
+                    filters={datasets => datasets.filter(ds => { console.log('train set in test select', trainSet); return ds.id !== trainSet})}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
                     onChange={validationSetChange}
                     extra={<Button type="primary">checked</Button>}

@@ -24,7 +24,7 @@ const DatasetSelect = ({ pid, filter = [], allowEmpty, filterGroup = [], filters
 
   useEffect(() => {
     let dss = filters ? filters(datasets) : datasets
-    dss = allowEmpty ? datasets : filterEmptyAsset(datasets)
+    dss = allowEmpty ? dss : filterEmptyAsset(dss)
     const opts = dss.filter(ds => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId)).map(item => {
       return {
         label: <>{item.name} {item.versionName}(assets: {item.assetCount})</>,
@@ -40,7 +40,6 @@ const DatasetSelect = ({ pid, filter = [], allowEmpty, filterGroup = [], filters
   }
 
   function filterEmptyAsset(datasets) {
-    console.log('datasets:', datasets)
     return datasets.filter(ds => ds.assetCount)
   }
   
