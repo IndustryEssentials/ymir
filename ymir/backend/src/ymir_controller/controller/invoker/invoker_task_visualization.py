@@ -40,7 +40,11 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         media_location = assets_config["assetskvlocation"]
         format_str = utils.annotation_format_str(backend_pb2.LabelFormat.PASCAL_VOC)
 
-        f_export = partial(cls.export_single_dataset, repo_root, subtask_workdir, media_location, format_str)
+        iou_thr = visualization.iou_thr
+        conf_thr = visualization.conf_thr
+
+        f_export = partial(cls.evaluate_and_export_single_dataset, repo_root, subtask_workdir, media_location,
+                           format_str, iou_thr, conf_thr)
         with ThreadPoolExecutor(FIFTYONE_CONCURRENT_LIMIT) as executor:
             res = executor.map(f_export, visualization.in_dataset_ids)
         dataset_export_dirs = list(res)
@@ -56,17 +60,32 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         try:
             resp = requests.post(url, json=payload, timeout=FIFTYONE_TIMEOUT)
         except (ConnectionError, HTTPError, Timeout):
-            return utils.make_general_response(
-                CTLResponseCode.INVOKER_VISUALIZATION_TASK_NETWORK_ERROR, "Failed to connect fiftyone service"
-            )
+            return utils.make_general_response(CTLResponseCode.INVOKER_VISUALIZATION_TASK_NETWORK_ERROR,
+                                               "Failed to connect fiftyone service")
         if not resp.ok:
-            return utils.make_general_response(
-                CTLResponseCode.INVOKER_VISUALIZATION_TASK_FIFTYONE_ERROR, "Failed to create fiftyone task"
-            )
+            return utils.make_general_response(CTLResponseCode.INVOKER_VISUALIZATION_TASK_FIFTYONE_ERROR,
+                                               "Failed to create fiftyone task")
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @staticmethod
-    def export_single_dataset(repo_root: str, work_dir: str, media_location: str, fmt: str, dataset_id: str) -> str:
+    def evaluate_and_export_single_dataset(
+        repo_root: str,
+        work_dir: str,
+        media_location: str,
+        fmt: str,
+        iou_thr: float,
+        conf_thr: float,
+        dataset_id: str,
+    ) -> str:
+        # evaluate and add fpfn
+        evaluated_dataset_id = utils.gen_task_id(user_id=0, project_id=0)
+        TaskVisualizationInvoker.evaluate_cmd(repo_root=repo_root,
+                                              src_dataset_id=dataset_id,
+                                              dst_dataset_id=evaluated_dataset_id,
+                                              iou_thr=iou_thr,
+                                              conf_thr=conf_thr)
+
+        # export
         # the following dir names are specified in ymir-doc
         dataset_export_dir = f"{work_dir}/{dataset_id}"
         dirs = {
@@ -77,7 +96,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         utils.ensure_dirs_exist(list(dirs.values()))
         TaskExportingInvoker.exporting_cmd(
             repo_root=repo_root,
-            dataset_id=dataset_id,
+            dataset_id=evaluated_dataset_id,
             annotation_format=fmt,
             media_location=media_location,
             **dirs,  # type: ignore
@@ -85,14 +104,26 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         return dataset_export_dir
 
     @staticmethod
-    def prepare_fiftyone_payload(
-        tid: str, dataset_ids: List[int], dataset_names: List[str], dataset_export_dirs: List[str]
-    ) -> Dict:
+    def evaluate_cmd(repo_root: str, src_dataset_id: str, dst_dataset_id: str, iou_thr: float,
+                     conf_thr: float) -> backend_pb2.GeneralResp:
+        evaluate_cmd = [
+            utils.mir_executable(), 'evaluate', '--root', repo_root, '--src-revs', f"{src_dataset_id}@{src_dataset_id}",
+            '--dst-rev', f"{dst_dataset_id}@{dst_dataset_id}", '--conf-thr', f"{conf_thr}", '--iou-thrs', f"{iou_thr}",
+            '--calc-confusion-matrix'
+        ]
+
+        return utils.run_command(evaluate_cmd)
+
+    @staticmethod
+    def prepare_fiftyone_payload(tid: str, dataset_ids: List[int], dataset_names: List[str],
+                                 dataset_export_dirs: List[str]) -> Dict:
         payload = {
-            "tid": tid,
-            "datas": [
-                {"hash": hash_, "name": name, "data_dir": data_dir}
-                for hash_, name, data_dir in zip(dataset_ids, dataset_names, dataset_export_dirs)
-            ],
+            "tid":
+            tid,
+            "datas": [{
+                "hash": hash_,
+                "name": name,
+                "data_dir": data_dir
+            } for hash_, name, data_dir in zip(dataset_ids, dataset_names, dataset_export_dirs)],
         }
         return payload

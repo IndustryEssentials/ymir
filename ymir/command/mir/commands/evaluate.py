@@ -18,12 +18,13 @@ class CmdEvaluate(base.BaseCommand):
                                          mir_root=self.args.mir_root,
                                          conf_thr=self.args.conf_thr,
                                          iou_thrs=self.args.iou_thrs,
-                                         need_pr_curve=self.args.need_pr_curve)
+                                         need_pr_curve=self.args.need_pr_curve,
+                                         calc_confusion_matrix=self.args.calc_confusion_matrix)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str, src_revs: str, dst_rev: str, mir_root: str, conf_thr: float, iou_thrs: str,
-                      need_pr_curve: bool) -> int:
+                      need_pr_curve: bool, calc_confusion_matrix: bool) -> int:
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
@@ -37,7 +38,8 @@ class CmdEvaluate(base.BaseCommand):
                                            rev_tid=src_rev_tid,
                                            conf_thr=conf_thr,
                                            iou_thrs=iou_thrs,
-                                           need_pr_curve=need_pr_curve)
+                                           need_pr_curve=need_pr_curve,
+                                           calc_confusion_matrix=calc_confusion_matrix)
 
         _show_evaluation(evaluation=evaluation)
 
@@ -91,4 +93,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      dest='need_pr_curve',
                                      action='store_true',
                                      help='also generates pr curve in evaluation result')
+    evaluate_arg_parser.add_argument('--calc-confusion-matrix',
+                                     dest='calc_confusion_matrix',
+                                     action='store_true',
+                                     help='also calculate confusion matrix and generate tags to annotations')
     evaluate_arg_parser.set_defaults(func=CmdEvaluate)
