@@ -67,18 +67,22 @@ def create_visualization(
     if not tasks:
         raise TaskNotFound()
 
-    visualization = crud.visualization.create_visualization(db, user_id=current_user.id, project_id=obj_in.project_id,
-                                                            conf_thr=obj_in.conf_thr, iou_thr=obj_in.iou_thr, )
+    visualization = crud.visualization.create_visualization(
+        db,
+        user_id=current_user.id,
+        project_id=obj_in.project_id,
+        conf_thr=obj_in.conf_thr,
+        iou_thr=obj_in.iou_thr,
+    )
 
     for task in tasks:
         crud.task_visual_relationship.create_relationship(db, task_id=task.id, visualization_id=visualization.id)
 
     project_id = tasks[0].project_id
-    datasets = [
-        {"name": task.result_dataset.name, "hash": task.result_dataset.hash}  # type: ignore
-        for task in tasks
-    ]
-    controller_client.create_visualization(current_user.id, project_id, visualization.tid, datasets)
+    datasets = [{"name": task.result_dataset.name, "hash": task.result_dataset.hash} for task in tasks]  # type: ignore
+    controller_client.create_visualization(
+        current_user.id, project_id, visualization.tid, obj_in.iou_thr, obj_in.conf_thr, datasets
+    )
     return {"result": visualization}
 
 
