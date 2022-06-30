@@ -644,8 +644,7 @@ class Params:
 
 def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='invalid conf_thr')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
     params = Params()
     params.confThr = config.conf_thr
     params.iouThrs = _get_ious_array(config.iou_thrs_interval)
@@ -718,8 +717,14 @@ def _get_ious_array(iou_thrs_str: str) -> np.ndarray:
                        endpoint=False)
 
 
-def det_evaluate(mir_root: str, rev_tid: revs_parser.TypRevTid, conf_thr: float, iou_thrs: str,
-                 need_pr_curve: bool, calc_confusion_matrix: bool) -> mirpb.Evaluation:
+def det_evaluate(
+    mir_root: str,
+    rev_tid: revs_parser.TypRevTid,
+    conf_thr: float,
+    iou_thrs: str,
+    need_pr_curve: bool = False,
+    calc_confusion_matrix: bool = False,
+) -> mirpb.Evaluation:
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
     mir_keywords: mirpb.MirKeywords
