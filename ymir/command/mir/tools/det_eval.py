@@ -58,7 +58,7 @@ class MirCoco:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
         self.dataset_id = dataset_id
-        self._mir_annotations = mir_annotations
+        self._task_annotations = task_annotations
 
     @property
     def ck_idx(self) -> Dict[str, mirpb.AssetAnnoIndex]:
@@ -645,8 +645,28 @@ class CocoDetEval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
 
-    def write_confusion_matrix(self) -> None:
-        pass
+    def write_confusion_matrix(self, iou_thr_index: int, max_dets_index: int) -> None:
+        gt_annotation = self._coco_gt._task_annotations
+        dt_annotation = self._coco_dt._task_annotations
+        for imgIdx in self.params.imgIdxes:
+            for catId in self.params.catIds:
+                gt = self._gts[imgIdx, catId]
+                if len(gt):
+                    gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
+                    pb_idx_to_local_idx = {anno.index: idx for idx, anno in enumerate(gt_img_annotation.annotations)}
+                    for g in gt:
+                        local_index = pb_idx_to_local_idx[g['pb_index_id']]
+                        cm = g['cm'][iou_thr_index, max_dets_index]
+                        gt_img_annotation[local_index].cm, gt_img_annotation[local_index].det_link_id = cm
+
+                dt = self._dts[imgIdx, catId]
+                if len(dt):
+                    dt_img_annotation = dt_annotation.image_annotations[dt[0]['asset_id']]
+                    pb_idx_to_local_idx = {anno.index: idx for idx, anno in enumerate(dt_img_annotation.annotations)}
+                    for d in dt:
+                        local_index = pb_idx_to_local_idx[g['pb_index_id']]
+                        cm_tuple = d['cm'][iou_thr_index, max_dets_index]
+                        dt_img_annotation[local_index].cm, dt_img_annotation[local_index].det_link_id = cm_tuple
 
 
 class Params:
@@ -688,7 +708,8 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         if params.calc_confusion_matrix:
-            evaluator.write_confusion_matrix()
+            iou_thr_index = 0  # single iou thr only.
+            evaluator.write_confusion_matrix(iou_thr_index=iou_thr_index, max_dets_index=max_dets_index)
         evaluator.accumulate()
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
