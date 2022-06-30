@@ -58,6 +58,7 @@ class MirCoco:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
         self.dataset_id = dataset_id
+        self._mir_annotations = mir_annotations
 
     @property
     def ck_idx(self) -> Dict[str, mirpb.AssetAnnoIndex]:
@@ -780,4 +781,4 @@ def det_evaluate(
     evaluate_config.gt_dataset_id = mir_gt.dataset_id
     evaluate_config.pred_dataset_ids.append(mir_dt.dataset_id)
 
-    return _det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
+    return (_det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config), mir_annotations)
