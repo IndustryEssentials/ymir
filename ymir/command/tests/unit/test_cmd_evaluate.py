@@ -234,6 +234,7 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args.conf_thr = 0.3
         fake_args.iou_thrs = '0.5:0.95:0.05'
         fake_args.need_pr_curve = False
+        fake_args.calc_confusion_matrix = False
         evaluate_instance = evaluate.CmdEvaluate(fake_args)
         return_code = evaluate_instance.run()
 
@@ -256,6 +257,7 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args.conf_thr = 0.3
         fake_args.iou_thrs = '0.5'
         fake_args.need_pr_curve = True
+        fake_args.calc_confusion_matrix = True
         evaluate_instance = evaluate.CmdEvaluate(fake_args)
         return_code = evaluate_instance.run()
 

@@ -1,9 +1,10 @@
+from functools import wraps
 import logging
+from pathlib import Path
 import re
+import secrets
 import subprocess
 import time
-from functools import wraps
-from pathlib import Path
 from typing import Callable, Dict, List
 
 from controller.config import label_task as label_task_config
@@ -65,6 +66,17 @@ def sub_task_id(task_id: str, offset: int) -> str:
     if offset < 0 or offset > 9:
         raise RuntimeError("Invalid sub_task offset: {}".format(offset))
     return task_id[0] + str(offset) + task_id[2:]
+
+
+def gen_task_id(user_id: int, project_id: int) -> str:
+    '''
+    generates a new ymir task id, from app.ymir_controller.gen_task_id
+    '''
+    # TODO: MOVE IT TO COMMON
+    user_hash = f"{user_id:0>4}"
+    repo_hash = f"{project_id:0>6}"
+    hex_task_id = f"{secrets.token_hex(3)}{int(time.time())}"
+    return str(task_id_proto.TaskId("t", "0", "00", user_hash, repo_hash, hex_task_id))
 
 
 def annotation_format_str(format: backend_pb2.LabelFormat) -> str:
