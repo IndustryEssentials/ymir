@@ -141,7 +141,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 67
                             },
                             'class_id': 1,
-                            'score': 2.0,
+                            'score': -1.0,
                             'tags': {
                                 'difficult': '0',
                                 'color': 'pink',
@@ -175,7 +175,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 36
                             },
                             'class_id': 1,
-                            'score': 2.0,
+                            'score': -1.0,
                             'tags': {
                                 'difficult': '0',
                                 'color': 'blue',
@@ -198,7 +198,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 67
                             },
                             'class_id': 1,
-                            'score': 2.0,
+                            'score': -1.0,
                             'anno_quality': 0.75,
                             'tags': {
                                 'difficult': '0',
@@ -232,7 +232,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 36
                             },
                             'class_id': 1,
-                            'score': 2.0,
+                            'score': -1.0,
                             'anno_quality': 0.75,
                             'tags': {
                                 'difficult': '0',
@@ -248,7 +248,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 50
                             },
                             'class_id': 2,
-                            'score': 2.0,
+                            'score': -1.0,
                             'anno_quality': 0.23,
                             'tags': {
                                 'difficult': '1',
@@ -263,7 +263,7 @@ class TestCmdImport(unittest.TestCase):
                                 'h': 50
                             },
                             'class_id': 2,
-                            'score': 2.0,
+                            'score': -1.0,
                             'anno_quality': 0.35,
                             'tags': {
                                 'difficult': '1',
