@@ -64,7 +64,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
   useEffect(() => {
     setGPU(sys.gpu_count)
-    setOpenpai(!!sys.openpai)
+    setOpenpai(!!sys.openpai_enabled)
   }, [sys])
 
   useEffect(() => {
