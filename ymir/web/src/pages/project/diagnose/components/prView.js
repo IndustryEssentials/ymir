@@ -5,7 +5,7 @@ import t from '@/utils/t'
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
-const average = (nums = []) => nums.reduce((prev, num) => prev + num, 0) / nums.length
+const average = (nums = []) => nums.reduce((prev, num) => Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
 const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
 
@@ -28,7 +28,7 @@ function generateRange(min, max, step = 0.05) {
 
 function rangePoints(range, points = [], field = 'x') {
   return range.map(value => {
-    return points.reduce((prev, curr) =>
+    return points?.reduce((prev, curr) =>
       Math.abs(prev[field] - value) <= Math.abs(curr[field] - value) ? prev : curr, 1)
   })
 }
@@ -82,7 +82,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
   useEffect(() => {
     const cls = generateColumns()
-    console.log('cls:', cls)
     setColumns(cls)
   }, [xasix])
 
@@ -147,7 +146,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       return tts.map(({ model, result: rid }) => {
         const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
         const _model = getModelCell(rid)
-        const line = ddata[value].pr_curve
+        const line = ddata[value]?.pr_curve
         const points = rangePoints(range, line, pointField[0])
         const recallAverage = toFixed(average(points.map(point => point[pointField[1]])), 4)
         const confidenceAverage = toFixed(average(points.map(({ z }) => z)))
@@ -174,7 +173,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       const tks = tasks.filter(({ testing }) => testing === tid)
       return tks.map(({ model, result }) => {
         const _model = getModelCell(result)
-        const line = kdata[result].pr_curve
+        const line = kdata[result]?.pr_curve
         const points = rangePoints(range, line, pointField[0])
         const recallAverage = toFixed(average(points.map(point => point[pointField[1]])), 4)
         const confidenceAverage = toFixed(average(points.map(({ z }) => z)))
@@ -207,7 +206,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       {
         title: t(labels.colTarget, { label }),
         dataIndex: value,
-        render: (_, record) => percent(record.target),
+        render: (_, record) => percentRender(record.target),
       }, {
         title: t('model.diagnose.metrics.confidence.label', { label }),
         dataIndex: value,
@@ -240,7 +239,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
     ]
   }
 
-  const percentRender = value => !Number.isNaN(value) ? percent(value) : '-'
+  const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
 
   return list.map(({ id, label, rows }) => <div key={id}>
     <h3>{label}</h3>
@@ -250,6 +249,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
       columns={columns}
       pagination={false}
+      scroll={{ x: '100%' }}
     />
   </div>)
 }
