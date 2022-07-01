@@ -22,6 +22,7 @@ import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
 import useFetch from '@/hooks/useFetch'
+import TrainFormat from "../components/trainFormat"
 import DatasetSelect from "../../../components/form/datasetSelect"
 
 const { Option } = Select
@@ -163,11 +164,12 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
         {}),
       ...(values.live || {}),
     }
+    values.trainFormat && (config['export_format'] = values.trainFormat)
 
     const gpuCount = form.getFieldValue('gpu_count')
-    // if (gpuCount) {
+
     config['gpu_count'] = gpuCount || 0
-    // }
+
     const img = (form.getFieldValue('image') || '').split(',')
     const imageId = Number(img[0])
     const image = img[1]
@@ -313,6 +315,9 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                   </Select>
                 </Form.Item>}
             </Tip>
+            <Tip hidden={true}><Form.Item label={t('task.train.export.format')} name='trainFormat'>
+              <TrainFormat />
+            </Form.Item></Tip>
             {openpai ? <Tip hidden={true}>
               <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
                 {renderRadio(TrainDevices)}

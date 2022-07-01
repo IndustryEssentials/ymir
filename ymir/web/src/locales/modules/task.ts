@@ -147,6 +147,7 @@ const task = {
   "task.train.form.platform.label": { en: "Train Platform", cn: "训练平台", },
   "task.train.device.local": { en: "Local", cn: "本地训练", },
   "task.train.device.openpai": { en: "OpenPAI", cn: "OpenPAI训练", },
+  "task.train.export.format": { en: "Format For Training", cn: "训练数据格式", },
   "task.infer.diagnose.tip": { en: "Are Models not yet test?", cn: "尚未对模型进行测试？", },
   "task.train.action.duplicated": { en: "Check Duplication", cn: "检测重复性", },
   "task.train.duplicated.option.train": { en: "duplicated as trainset data", cn: "重复数据仅用于训练集", },
