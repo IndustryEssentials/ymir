@@ -28,8 +28,6 @@ import DatasetSelect from "../../../components/form/datasetSelect"
 const { Option } = Select
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
-const FrameworkType = [{ value: "YOLO v4", label: "YOLO v4", checked: true }]
-const Backbone = [{ value: "darknet", label: "Darknet", checked: true }]
 const TrainDevices = [
   { value: false, label: 'task.train.device.local', checked: true, },
   { value: true, label: 'task.train.device.openpai', },
@@ -70,7 +68,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
 
   useEffect(() => {
-    // getSysInfo()
+    getSysInfo()
     fetchProject()
   }, [])
 
@@ -227,8 +225,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     image: image ? parseInt(image) : undefined,
     modelStage: stage,
     trainType: getCheckedValue(TrainType),
-    network: getCheckedValue(FrameworkType),
-    backbone: getCheckedValue(Backbone),
     openpai: getCheckedValue(TrainDevices),
     gpu_count: 1,
   }
@@ -348,24 +344,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 name="trainType"
               >
                 {renderRadio(TrainType)}
-              </Form.Item>
-            </Tip>
-
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.train.form.network.label')}
-                name="network"
-              >
-                {renderRadio(FrameworkType)}
-              </Form.Item>
-            </Tip>
-
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.train.form.backbone.label')}
-                name="backbone"
-              >
-                {renderRadio(Backbone)}
               </Form.Item>
             </Tip>
 
