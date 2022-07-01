@@ -106,8 +106,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
         training_data_type_2.dataset_type = backend_pb2.TvtType.TvtTypeValidation
 
         train_task_req = backend_pb2.TaskReqTraining()
-        train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_dataset_types.append(training_data_type_2)
+        train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_class_ids[:] = [0, 1]
 
         req_create_task = backend_pb2.ReqCreateTask()
