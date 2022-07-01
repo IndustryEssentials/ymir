@@ -43,7 +43,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
 
   useEffect(() => {
     const cls = generateColumns()
-    console.log('cls:', cls)
     setColumns(cls)
   }, [xasix])
 
@@ -79,7 +78,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         if (kwType) {
-          console.log('fiou[key]:', fiou[key])
           Object.keys(fiou[key].sub).forEach(subKey => {
             kdata[key][subKey] = kdata[key][subKey] || { _average: fiou[key].total }
             kdata[key][subKey][id] = fiou[key].sub[subKey]
@@ -93,7 +91,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }
 
   function generateList(isDs) {
-    console.log('kd:', dd, kd, isDs)
     const titles = isDs ? dd : kd
     const list = titles.map(({ value, label }) => ({
       id: value, label,
@@ -105,7 +102,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   function generateDsRows(tid) {
     const tts = tasks.filter(({ testing }) => testing === tid)
     return tts.map(({ result: rid }) => {
-      console.log('dData:', dData, rid, keywords)
       const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
       const kwAps = kd.reduce((prev, { value: kw }) => {
         return {
@@ -131,12 +127,12 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
     return mids.map(mid => {
       const tks = tasks.filter(({ model }) => model === mid)
       const _model = getModelCell(tks[0].result)
-      const drow = tks.reduce((prev, { testing, result }) => {
+      const drow = kdata ? tks.reduce((prev, { testing, result }) => {
         return {
           ...prev,
-          [testing]: kdata[result]?.ap
+          [testing]: kdata[result]?.ap,
         }
-      }, {})
+      }, {}) : {}
       const _average = kwType ? kdata._average.ap : average(Object.values(drow))
       return {
         id: mid,

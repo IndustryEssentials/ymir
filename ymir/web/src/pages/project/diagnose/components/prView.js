@@ -135,7 +135,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       id: value, label,
       rows: isDs ? generateDsRows(value) : generateKwRows(value),
     }))
-    console.log('list:', list)
     setList(list)
   }
 
@@ -173,7 +172,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       const tks = tasks.filter(({ testing }) => testing === tid)
       return tks.map(({ model, result }) => {
         const _model = getModelCell(result)
-        const line = kdata[result]?.pr_curve
+        const line = kdata ? kdata[result]?.pr_curve : []
         const points = rangePoints(range, line, pointField[0])
         const recallAverage = toFixed(average(points.map(point => point[pointField[1]])), 4)
         const confidenceAverage = toFixed(average(points.map(({ z }) => z)))
@@ -201,7 +200,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   }
 
   function generateColumns() {
-    console.log('labels:', labels)
     const dynamicColumns = xasix.map(({ value, label }) => ([
       {
         title: t(labels.colTarget, { label }),
