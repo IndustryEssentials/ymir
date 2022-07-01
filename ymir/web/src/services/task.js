@@ -195,9 +195,8 @@ export function createTrainTask({
     project_id: projectId,
     iteration_id: iteration,
     iteration_stage: stage,
-    openpai_enable: openpai,
     type: TASKTYPES.TRAINING,
-    docker_image_config: config,
+    docker_image_config: { ...config, openpai_enable: openpai, },
     parameters: {
       strategy,
       dataset_id: datasetId,
