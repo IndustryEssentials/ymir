@@ -50,6 +50,7 @@ enum MirStorage {
 enum MergeStrategy {
     STOP = 0;
     HOST = 1;
+    GUEST = 2;
 }
 
 enum RequestType {

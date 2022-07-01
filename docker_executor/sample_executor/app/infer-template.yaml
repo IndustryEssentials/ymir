@@ -9,3 +9,4 @@ class_names: []
 
 # just for test, remove this key in your own docker image
 idle_seconds: 3  # idle seconds for each task
+seed: 15
