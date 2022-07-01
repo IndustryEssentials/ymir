@@ -114,7 +114,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if task_parameters:
             task_context["task_parameters"] = task_parameters
 
-        if bool(strtobool(executor_config.get("openpai_enable", "False"))):
+        if strtobool(str(executor_config.get("openpai_enable", "False"))):
             logging.info(f"Openpai_config: {openpai_config}")
 
             task_context["openpai_enable"] = True
