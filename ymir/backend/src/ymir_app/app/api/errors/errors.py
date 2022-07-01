@@ -103,6 +103,11 @@ class FailedToEvaluate(ControllerError):
     message = "Failed to RUN EVALUATE CMD via Controller"
 
 
+class PrematureDatasetsEvaluation(APIError):
+    code = error_codes.PREMATURE_DATASETS_EVALUATION
+    message = "Not All The Datasets Are Ready to Evaluate"
+
+
 class RequiredFieldMissing(APIError):
     code = error_codes.REQUIRED_FIELD_MISSING
     message = "Required Field Missing"
