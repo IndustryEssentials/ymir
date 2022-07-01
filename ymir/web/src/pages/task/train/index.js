@@ -118,12 +118,14 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }, [trainSet, testSet])
 
   useEffect(() => {
-    const allValidation = duplicated === validationDataset?.assetCount
-    const allTrain = duplicated === trainDataset?.assetCount
-
-    setStrategy(allValidation && !allTrain ? 2 : 1)
-    setAllDulplicated(allValidation && allTrain)
-  }, [duplicated])
+    if (duplicationChecked) {
+      const allValidation = duplicated === validationDataset?.assetCount
+      const allTrain = duplicated === trainDataset?.assetCount
+      
+      setStrategy(allValidation && !allTrain ? 2 : 1)
+      setAllDulplicated(allValidation && allTrain)
+    }
+  }, [duplicationChecked, duplicated])
 
   async function fetchProject() {
     const project = await func.getProject(pid)
@@ -209,7 +211,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
       <span>{t('task.train.duplicated.tip', { duplicated })}</span>
       <Radio.Group
         value={strategy}
-        onChange={setStrategy}
+        onChange={({target: { value }}) => setStrategy(value)}
         options={duplicatedOptions.map(opt => ({ ...opt, disabled: disabled === opt.value, label: t(opt.label) }))}
       />
     </div>) : t('task.train.action.duplicated.no')
