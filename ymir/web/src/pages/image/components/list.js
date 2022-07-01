@@ -169,7 +169,7 @@ const ImageList = ({ role, filter, getImages }) => {
       <Col flex={1}><Space>
         <span>{item.name}</span>
         {imageState(item.state)}
-        {liveCodeState(item.liveCode)}
+        {isDone(item.state) ? liveCodeState(item.liveCode) : null}
         </Space></Col>
       <Col>{more(item)}</Col>
     </Row>
