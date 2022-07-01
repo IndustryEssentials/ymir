@@ -322,8 +322,8 @@ class CocoDetEval:
                     dtIg[tind, dind] = gtIg[m]
                     dtm[tind, dind] = gt[m]['id']
                     gtm[tind, m] = d['id']
-                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
-                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, g['pb_index_id'])
+                    gt[m]['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
+                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, gt[m]['pb_index_id'])
         # set unmatched detections outside of area range to ignore
         a = np.array([d['area'] < aRng[0] or d['area'] > aRng[1] for d in dt]).reshape((1, len(dt)))
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))

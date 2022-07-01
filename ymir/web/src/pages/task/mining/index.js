@@ -19,6 +19,7 @@ import ImageSelect from "@/components/form/imageSelect"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
+import DatasetSelect from "../../../components/form/datasetSelect"
 
 const { Option } = Select
 
@@ -35,7 +36,7 @@ const renderRadio = (types) => {
   )
 }
 
-function Mining({ datasetCache, datasets, ...func }) {
+function Mining({ datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -70,10 +71,6 @@ function Mining({ datasetCache, datasets, ...func }) {
       setDataset(cache)
     }
   }, [datasetCache])
-
-  useEffect(() => {
-    pid && func.getDatasets(pid)
-  }, [pid])
 
   async function fetchSysInfo() {
     const result = await func.getSysInfo()
@@ -137,8 +134,8 @@ function Mining({ datasetCache, datasets, ...func }) {
     console.log("Failed:", errorInfo)
   }
 
-  function setsChange(id) {
-    id && setDataset(datasets.find(ds => ds.id === id))
+  function setsChange(id, option) {
+    id && setDataset(id ? option.dataset : {})
   }
 
   function modelChange(id, options) {
@@ -182,17 +179,11 @@ function Mining({ datasetCache, datasets, ...func }) {
                     { required: true, message: t('task.mining.form.dataset.required') },
                   ]}
                 >
-                  <Select
+                  <DatasetSelect
+                    pid={pid}
                     placeholder={t('task.mining.form.dataset.placeholder')}
-                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={setsChange}
-                    showArrow
-                  >
-                    {datasets.map(item =>
-                      <Option value={item.id} key={item.id}>
-                        {item.name} {item.versionName}(assets: {item.assetCount})
-                      </Option>)}
-                  </Select>
+                  />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -306,7 +297,6 @@ function Mining({ datasetCache, datasets, ...func }) {
 
 const props = (state) => {
   return {
-    datasets: state.dataset.allDatasets,
     datasetCache: state.dataset.dataset,
   }
 }
