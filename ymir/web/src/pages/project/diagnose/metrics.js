@@ -191,7 +191,7 @@ function Matrics({ pid, project }) {
 
   const renderIouTitle = <Space>
     <span>{t('model.diagnose.form.iou')}</span>
-    <Checkbox checked={everageIou} onChange={({ target: { checked } }) => setEverageIou(checked)}>Everage IOU</Checkbox>
+    <Checkbox checked={everageIou} onChange={({ target: { checked } }) => setEverageIou(checked)}>Average IOU</Checkbox>
   </Space>
 
   // todo form initial values
