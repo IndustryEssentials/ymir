@@ -14,7 +14,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   const [xasix, setXAsix] = useState([])
   const [dData, setDData] = useState(null)
   const [kData, setKData] = useState(null)
-  const [columns, setColumns] = useState([])
 
   useEffect(() => {
     if (data && keywords) {
@@ -40,12 +39,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
       setKD(kws)
     }
   }, [keywords, data, kwType])
-
-  useEffect(() => {
-    const cls = generateColumns()
-    console.log('cls:', cls)
-    setColumns(cls)
-  }, [xasix])
 
   useEffect(() => {
     // list
@@ -111,7 +104,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
       const kwRows = tts.map(({ result: rid }) => {
         const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
         const _model = getModelCell(rid)
-        const line = ddata[value].pr_curve
+        const line = ddata[value]?.pr_curve
         return {
           id: rid,
           name: _model,
@@ -136,7 +129,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
         return {
           id: testing,
           name: _model,
-          line: kdata[result].pr_curve
+          line: kdata[result]?.pr_curve
         }
       })
       return {
@@ -154,36 +147,11 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     return `${model.name} ${model.versionName} ${stage.name}`
   }
 
-  function generateColumns() {
-    const dynamicColumns = xasix.map(({ value, label }) => ({
-      title: label,
-      dataIndex: value,
-      render: mapRender,
-    }))
-    return [
-      {
-        title: 'Model',
-        dataIndex: '_model',
-      },
-      {
-        title: 'Average AP',
-        dataIndex: '_average',
-        render: mapRender,
-      },
-      ...dynamicColumns,
-    ]
-  }
-
-  const mapRender = value => {
-    const ap = value?.ap || value
-    return !Number.isNaN(ap) ? percent(ap) : '-'
-  }
-
   return list.map(({ id, label, rows }) => <div key={id}>
     <h3>{label}</h3>
     <Row gutter={20}>
-      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1}>
-        <h4>{columns[index].label}</h4>
+      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 200 }}>
+        <h4>{xasix[index].label}</h4>
         <PrCurve title={title} lines={lines} />
       </Col>
       )}

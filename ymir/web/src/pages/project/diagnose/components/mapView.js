@@ -4,7 +4,7 @@ import { percent } from '@/utils/number'
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
-const average = (nums = []) => nums.reduce((prev, num) => prev + num, 0) / nums.length
+const average = (nums = []) => nums.reduce((prev, num) => Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
 const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
 
@@ -105,11 +105,12 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   function generateDsRows(tid) {
     const tts = tasks.filter(({ testing }) => testing === tid)
     return tts.map(({ result: rid }) => {
+      console.log('dData:', dData, rid, keywords)
       const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
       const kwAps = kd.reduce((prev, { value: kw }) => {
         return {
           ...prev,
-          [kw]: ddata[kw].ap,
+          [kw]: ddata[kw]?.ap,
         }
       }, {})
       const _average = kwType ? dData[rid][keywords].total.ap : average(Object.values(kwAps))
@@ -133,7 +134,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       const drow = tks.reduce((prev, { testing, result }) => {
         return {
           ...prev,
-          [testing]: kdata[result].ap
+          [testing]: kdata[result]?.ap
         }
       }, {})
       const _average = kwType ? kdata._average.ap : average(Object.values(drow))
@@ -175,7 +176,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
 
   const mapRender = value => {
     const ap = value?.ap || value
-    return !Number.isNaN(ap) ? percent(ap) : '-'
+    return typeof value === 'number' && !Number.isNaN(ap) ? percent(ap) : '-'
   }
 
   return list.map(({ id, label, rows }) => <div key={id}>
@@ -186,6 +187,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
       columns={columns}
       pagination={false}
+      scroll={{ x: '100%' }}
     />
   </div>)
 }
