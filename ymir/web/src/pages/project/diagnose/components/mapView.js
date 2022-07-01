@@ -162,7 +162,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
         dataIndex: '_model',
       },
       {
-        title: 'Average AP',
+        title: 'Average mAP',
         dataIndex: '_average',
         render: mapRender,
       },
