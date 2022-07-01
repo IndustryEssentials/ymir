@@ -48,7 +48,7 @@ const PrCurve = ({ title='', lines }) => {
   }, [xasix, series])
 
   function getP(line, field = 'x') {
-    return line.map(point => point[field])
+    return line ? line.map(point => point[field]) : null
   }
 
   function transferLines(lines = []) {

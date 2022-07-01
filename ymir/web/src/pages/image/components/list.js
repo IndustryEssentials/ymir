@@ -153,7 +153,11 @@ const ImageList = ({ role, filter, getImages }) => {
       [STATES.DONE]: <SuccessIcon style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
       [STATES.ERROR]: <FailIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} />,
     }
-    return states[state]
+    return <span className={s.stateIcon}>{states[state]}</span>
+  }
+
+  const liveCodeState = (live) => {
+    return <span className={live ? s.remote : s.local}>{t(live ? 'image.livecode.label.remote' : 'image.livecode.label.local')}</span>
   }
 
   const addBtn = (
@@ -162,7 +166,11 @@ const ImageList = ({ role, filter, getImages }) => {
 
   const renderItem = (item) => {
     const title = <Row wrap={false}>
-      <Col flex={1}>{item.name}<span className={s.stateIcon}>{imageState(item.state)}</span></Col>
+      <Col flex={1}><Space>
+        <span>{item.name}</span>
+        {imageState(item.state)}
+        {liveCodeState(item.liveCode)}
+        </Space></Col>
       <Col>{more(item)}</Col>
     </Row>
     const type = isTrain(item.functions) ? 'train' : 'mining'
