@@ -1,9 +1,9 @@
-import { Select } from 'antd'
+import { Col, Row, Select } from 'antd'
 import { connect } from 'umi'
 import { useEffect, useState } from 'react'
 import t from '@/utils/t'
 
-const DatasetSelect = ({ pid, filter = [], filterGroup = [], filters, value, datasets = [], onChange = () => { }, getDatasets, ...resProps }) => {
+const DatasetSelect = ({ pid, filter = [], allowEmpty, filterGroup = [], filters, value, datasets = [], onChange = () => { }, extra, getDatasets, ...resProps }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -23,7 +23,8 @@ const DatasetSelect = ({ pid, filter = [], filterGroup = [], filters, value, dat
   }, [options])
 
   useEffect(() => {
-    const dss = filters ? filters(datasets) : datasets
+    let dss = filters ? filters(datasets) : datasets
+    dss = allowEmpty ? dss : filterEmptyAsset(dss)
     const opts = dss.filter(ds => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId)).map(item => {
       return {
         label: <>{item.name} {item.versionName}(assets: {item.assetCount})</>,
@@ -38,18 +39,24 @@ const DatasetSelect = ({ pid, filter = [], filterGroup = [], filters, value, dat
     getDatasets(pid, true)
   }
 
-  return (
-    <Select
-      value={value}
-      placeholder={t('task.train.form.training.datasets.placeholder')}
-      onChange={onChange}
-      showArrow
-      allowClear
-      options={options}
-      {...resProps}
-    >
-    </Select>
-  )
+  function filterEmptyAsset(datasets) {
+    return datasets.filter(ds => ds.assetCount)
+  }
+  
+  const select = <Select
+        value={value}
+        placeholder={t('task.train.form.training.datasets.placeholder')}
+        onChange={onChange}
+        showArrow
+        allowClear
+        showSearch
+        options={options}
+        filterOption={(input, option) => option.dataset.name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        {...resProps}
+      >
+      </Select>
+
+  return extra ? <Row gutter={20} wrap={false}><Col flex={1}>{select}</Col><Col>{extra}</Col></Row> : select
 }
 
 const props = (state) => {
