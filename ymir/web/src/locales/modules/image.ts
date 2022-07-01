@@ -62,6 +62,8 @@ const image = {
   'image.detail.relate': { en: "Relate", cn: "去关联", },
   'image.select.opt.related': { en: "Related Images", cn: "关联镜像（推荐）", },
   'image.select.opt.normal': { en: "List", cn: "列表", },
+  'image.livecode.label.remote': { en: "Remote", cn: "远端", },
+  'image.livecode.label.local': { en: "Local", cn: "本地", },
 }
 
 export default image
