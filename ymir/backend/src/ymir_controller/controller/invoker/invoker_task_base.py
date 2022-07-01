@@ -98,22 +98,13 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if class_names:
             executor_config["class_names"] = class_names
 
-        # when gpu_count > 0, use gpu model
-        gpu_count = executor_config["gpu_count"]
-        if gpu_count > 0:
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
-            if not gpu_ids:
-                return False
-
-            task_context["available_gpu_id"] = gpu_ids
-            executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
-        else:
-            task_context["available_gpu_id"] = ''
-            executor_config["gpu_id"] = ""
-
         if task_parameters:
             task_context["task_parameters"] = task_parameters
 
+        gpu_count = executor_config.get("gpu_count", 0)
+        executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
+
+        # Openpai enabled
         if strtobool(str(executor_config.get("openpai_enable", "False"))):
             logging.info(f"Openpai_config: {openpai_config}")
 
@@ -132,6 +123,14 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             task_context["openpai_token"] = openpai_token
             task_context["openpai_storage"] = openpai_storage
             task_context["openpai_user"] = openpai_user
+
+            task_context["available_gpu_id"] = executor_config["gpu_id"]
+        else:
+            # lock local gpus.
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
+            if gpu_ids is None:
+                return False
+            task_context["available_gpu_id"] = gpu_ids
 
         with open(output_config_file, "w") as f:
             yaml.safe_dump(dict(

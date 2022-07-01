@@ -2,16 +2,18 @@ import argparse
 import json
 import logging
 import os
-import subprocess
 import time
-from typing import Any, List, Tuple, Optional
+from typing import Any, List
 
 import yaml
 
 from mir.commands import base
-from mir.tools import checker, class_ids, settings as mir_settings, utils as mir_utils
+from mir.tools import checker, class_ids
+from mir.tools import settings as mir_settings
+from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.executant import run_docker_executant
 
 
 class CmdInfer(base.BaseCommand):
@@ -23,7 +25,7 @@ class CmdInfer(base.BaseCommand):
         b. prepare_assets: copy assets in orig index.tsv into work_dir/in/candidate, and make candidate index.tsv
         c. prepare_model: copy model to work_dir/in/models and unpack
         d. prepare_config_file: generate work_dir/in/config.yaml
-        e. run_docker_cmd: bind paths and run docker cmd
+        e. _execute_locally/_execute_in_openpai: bind paths and run docker cmd
 
     About path bindings:
         a. work_dir/in/assets or cache -> /in/assets
@@ -60,7 +62,6 @@ class CmdInfer(base.BaseCommand):
                       executant_name: str,
                       run_as_root: bool,
                       task_id: str = f"default-infer-{time.time()}",
-                      shm_size: str = None,
                       run_infer: bool = False,
                       run_mining: bool = False) -> int:
         """run infer command
@@ -123,10 +124,24 @@ class CmdInfer(base.BaseCommand):
         if not executant_name:
             executant_name = task_id
 
-        _, work_model_path, work_out_path = _prepare_env(work_dir)
-        work_index_file = os.path.join(work_dir, 'in', 'candidate-index.tsv')
-        work_config_file = os.path.join(work_dir, 'in', 'config.yaml')
-        work_env_config_file = os.path.join(work_dir, 'in', 'env.yaml')
+        work_dir_in = os.path.join(work_dir, "in")
+        os.makedirs(work_dir_in, exist_ok=True)
+        work_assets_path = os.path.join(work_dir_in, 'assets')
+        work_model_path = os.path.join(work_dir_in, 'models')
+        if media_path:
+            if media_path != work_assets_path:
+                os.symlink(media_path, work_assets_path)
+        else:
+            os.makedirs(work_assets_path, exist_ok=True)
+        os.makedirs(work_model_path, exist_ok=True)
+
+        work_index_file = os.path.join(work_dir_in, 'candidate-index.tsv')
+        work_config_file = os.path.join(work_dir_in, 'config.yaml')
+        work_env_config_file = os.path.join(work_dir_in, 'env.yaml')
+
+        work_out_path = os.path.join(work_dir, 'out')
+        os.makedirs(work_out_path, exist_ok=True)
+        os.system(f"chmod -R 777 {work_out_path}")
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
@@ -157,20 +172,26 @@ class CmdInfer(base.BaseCommand):
                                                         run_infer=run_infer,
                                                         env_config_file_path=work_env_config_file)
 
-        available_gpu_id: str = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get('available_gpu_id', '')
-
-        run_docker_cmd(asset_path=media_path,
-                       index_file_path=work_index_file,
-                       model_path=work_model_path,
-                       config_file_path=work_config_file,
-                       env_file_path=work_env_config_file,
-                       out_path=work_out_path,
-                       executor=executor,
-                       executant_name=executant_name,
-                       run_as_root=run_as_root,
-                       shm_size=shm_size,
-                       task_type=task_id,
-                       gpu_id=available_gpu_id)
+        executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
+        task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
+        available_gpu_id: str = task_config.get('available_gpu_id', '')
+        openpai_config = dict(
+            openpai_enable=task_config.get("openpai_enable", False),
+            openpai_host=task_config.get("openpai_host", ""),
+            openpai_token=task_config.get("openpai_token", ""),
+            openpai_storage=task_config.get("openpai_storage", ""),
+            openpai_user=task_config.get("openpai_user", ""),
+        )
+        run_docker_executant(
+            work_dir_in=work_dir_in,
+            work_dir_out=work_out_path,
+            executor=executor,
+            executant_name=executant_name,
+            executor_config=executor_config,
+            gpu_id=available_gpu_id,
+            run_as_root=run_as_root,
+            openpai_config=openpai_config,
+        )
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
@@ -178,31 +199,6 @@ class CmdInfer(base.BaseCommand):
                                    mir_root=mir_root)
 
         return MirCode.RC_OK
-
-
-def _prepare_env(work_dir: str) -> Tuple[str, str, str]:
-    """
-    make the following dir structures:
-    * work_dir
-            * in
-                    * assets
-                    * models
-            * out
-
-    if work_dir already exists, do nothing
-
-    Args:
-        work_dir (str): work dir root
-    """
-    os.makedirs(os.path.join(work_dir, 'in'), exist_ok=True)
-    work_assets_path = os.path.join(work_dir, 'in', 'assets')
-    work_model_path = os.path.join(work_dir, 'in', 'models')
-    work_out_path = os.path.join(work_dir, 'out')
-    os.makedirs(work_assets_path, exist_ok=True)
-    os.makedirs(work_model_path, exist_ok=True)
-    os.makedirs(work_out_path, exist_ok=True)
-
-    return work_assets_path, work_model_path, work_out_path
 
 
 def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> None:
@@ -298,37 +294,6 @@ def prepare_config_file(config: dict, dst_config_file: str, **kwargs: Any) -> No
 
     with open(dst_config_file, 'w') as f:
         yaml.dump(executor_config, f)
-
-
-def run_docker_cmd(asset_path: str, index_file_path: str, model_path: str, config_file_path: str, env_file_path: str,
-                   out_path: str, executor: str, executant_name: str, shm_size: Optional[str], task_type: str,
-                   gpu_id: str, run_as_root: bool) -> int:
-    """ runs infer or mining docker container """
-    cmd = [mir_utils.get_docker_executable(gpu_ids=gpu_id), 'run', '--rm']
-    # path bindings
-    cmd.append(f"-v{asset_path}:/in/assets:ro")
-    cmd.append(f"-v{model_path}:/in/models:ro")
-    cmd.append(f"-v{index_file_path}:/in/candidate-index.tsv")
-    cmd.append(f"-v{config_file_path}:/in/config.yaml")
-    cmd.append(f"-v{env_file_path}:/in/env.yaml")
-    cmd.append(f"-v{out_path}:/out")
-    # permissions and shared memory
-    if not run_as_root:
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
-    if gpu_id:
-        cmd.extend(['--gpus', f"\"device={gpu_id}\""])
-    if shm_size:
-        cmd.append(f"--shm-size={shm_size}")
-    cmd.extend(['--name', executant_name])
-    cmd.append(executor)
-
-    out_log_path = os.path.join(out_path, mir_settings.EXECUTOR_OUTLOG_NAME)
-    logging.info(f"starting {task_type} docker container with cmd: {' '.join(cmd)}")
-    with open(out_log_path, 'a') as f:
-        # run and wait, if non-zero value returned, raise
-        subprocess.run(cmd, check=True, stdout=f, stderr=f, text=True)
-
-    return MirCode.RC_OK
 
 
 # public: cli bind

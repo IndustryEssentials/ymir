@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import List, Dict, Set
+from typing import List, Dict, Optional, Set
 
 import sentry_sdk
 from pynvml import (
@@ -69,11 +69,14 @@ class GPUInfo:
 
         return list(ava_gpus)
 
+    # Return None if failed to fulfill demanded gpu.
     @classmethod
-    def find_gpu_ids_by_config(cls, gpu_count: int, lock_gpu: bool = False) -> str:
+    def find_gpu_ids_by_config(cls, gpu_count: int, lock_gpu: bool = False) -> Optional[str]:
+        if gpu_count <= 0:
+            return ""
         free_gpus = cls.get_available_gpus()
         if len(free_gpus) < gpu_count:
-            return ""
+            return None
         gpus = free_gpus[0:gpu_count]
         if lock_gpu:
             cls.add_locked_gpus(gpus)
