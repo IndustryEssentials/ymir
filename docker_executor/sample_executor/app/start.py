@@ -125,6 +125,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     class_names = executor_config['class_names']
     idle_seconds: float = executor_config.get('idle_seconds', 60)
     trigger_crash: bool = executor_config.get('trigger_crash', False)
+    seed: int = executor_config.get('seed', 15)
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
 
@@ -146,6 +147,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
 
     #! write infer result
     fake_anns = []
+    random.seed(seed)
     for class_name in class_names:
         x = random.randint(0, 100)
         y = random.randint(0, 100)
