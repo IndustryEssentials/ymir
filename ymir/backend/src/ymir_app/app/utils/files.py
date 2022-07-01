@@ -160,6 +160,7 @@ def verify_import_path(src_path: Union[str, Path]) -> None:
     src_path = Path(src_path)
     annotation_path = src_path / "annotations"
     if not (src_path.is_dir() and annotation_path.is_dir()):
+        logger.error(f'import path {src_path} or {annotation_path} is not directory')
         raise InvalidFileStructure()
     if not is_relative_to(annotation_path, settings.SHARED_DATA_DIR):
         logger.error("import path (%s) not within shared_dir (%s)" % (annotation_path, settings.SHARED_DATA_DIR))
