@@ -46,9 +46,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
+        # order merged datasets by training - validation
+        ordered_dataset_types = sorted(train_request.in_dataset_types, key=lambda v: v.dataset_type)
         in_dataset_ids = [
             revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
-            for dataset_type in train_request.in_dataset_types
+            for dataset_type in ordered_dataset_types
         ]
 
         merge_response = invoker_call.make_invoker_cmd_call(
@@ -58,7 +60,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=subtask_id,
-            his_task_id=train_request.in_dataset_types[0].dataset_id,
+            his_task_id=ordered_dataset_types[0].dataset_id,
             dst_dataset_id=request.task_id,
             in_dataset_ids=in_dataset_ids,
             merge_strategy=request.merge_strategy,
