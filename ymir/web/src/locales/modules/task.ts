@@ -151,7 +151,7 @@ const task = {
   "task.infer.diagnose.tip": { en: "Are Models not yet test?", cn: "尚未对模型进行测试？", },
   "task.train.action.duplicated": { en: "Check Duplication", cn: "检测重复性", },
   "task.train.duplicated.option.train": { en: "duplicated as trainset data", cn: "重复数据仅用于训练集", },
-  "task.train.duplicated.option.validation": { en: "duplicated as validation data", cn: "重复数据仅用于测试集", },
+  "task.train.duplicated.option.validation": { en: "duplicated as validation data", cn: "重复数据仅用于验证集", },
   "task.train.duplicated.tip": { en: "{duplicated} assets duplicated, please select strategy: ", cn: "检测到训练集和验证集有{duplicated}张重复数据，请选择策略：", },
   "task.train.action.duplicated.no": { en: "None of duplicated assets", cn: "无重复数据", },
   "task.train.action.duplicated.all": {
