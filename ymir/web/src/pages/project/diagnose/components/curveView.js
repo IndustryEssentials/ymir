@@ -30,7 +30,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   }, [datasets])
 
   useEffect(() => {
-    console.log('data && keywords:', data, keywords, kwType)
     if (data && keywords) {
       const kws = kwType ?
         Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
@@ -48,7 +47,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     } else {
       setList([])
     }
-    console.log('xType, dd, kd, dData, kData:', xType, dd, kd, dData, kData)
   }, [xType, dd, kd, dData, kData])
 
   function generateDData(data) {
@@ -83,7 +81,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
         }
       })
     })
-    console.log('kdata:', kdata)
     setKData(kdata)
   }
 
@@ -93,7 +90,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
       id: value, label,
       rows: isDs ? generateDsRows(value) : generateKwRows(value),
     }))
-    console.log('list:', list)
     setList(list)
   }
 
@@ -129,7 +125,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
         return {
           id: testing,
           name: _model,
-          line: kdata[result]?.pr_curve
+          line: kdata ? kdata[result]?.pr_curve : [],
         }
       })
       return {
@@ -151,7 +147,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     <h3>{label}</h3>
     <Row gutter={20}>
       {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 200 }}>
-        <h4>{xasix[index].label}</h4>
         <PrCurve title={title} lines={lines} />
       </Col>
       )}

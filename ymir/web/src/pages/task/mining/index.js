@@ -135,7 +135,7 @@ function Mining({ datasetCache, ...func }) {
   }
 
   function setsChange(id, option) {
-    id && setDataset(id ? option.dataset : {})
+    setDataset(option?.dataset || {})
   }
 
   function modelChange(id, options) {

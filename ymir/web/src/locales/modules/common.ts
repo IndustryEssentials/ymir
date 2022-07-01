@@ -76,7 +76,7 @@ const common = {
   'common.state.hidden': {cn: '隐藏', en: 'Hidden', },
   'common.selected.required': {cn: '需要选中至少一项', en: 'Selected required', },
   'common.hidden.list': {cn: '隐藏列表', en: 'Hidden List', },
-  'common.everage': {cn: '平均值', en: 'Everage', },
+  'common.average': {cn: '平均值', en: 'Average', },
   'common.recommend': {cn: '推荐', en: 'Recommend', },
 }
 
