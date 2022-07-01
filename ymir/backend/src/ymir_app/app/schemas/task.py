@@ -43,7 +43,7 @@ class TaskParameter(BaseModel):
     network: Optional[str]
     backbone: Optional[str]
     hyperparameter: Optional[str]
-    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.as_training
+    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
 
     # mining & dataset_infer
     model_id: Optional[int]
