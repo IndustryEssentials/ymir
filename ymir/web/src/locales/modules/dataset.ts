@@ -14,7 +14,7 @@ const dataset = {
   "dataset.column.create_time": { cn: "创建时间", en: "Create Time", },
   "dataset.column.hidden_time": { cn: "隐藏时间", en: "Hidden Time", },
   "dataset.column.model": { cn: "模型名称", en: "Model Name", },
-  "dataset.column.map": { cn: "AP(平均IoU)", en: "AP(Average of IoU)", },
+  "dataset.column.map": { cn: "mAP(平均IoU)", en: "mAP(Average of IoU)", },
   "dataset.column.action": { cn: "操作", en: "Actions", },
   "dataset.column.keyword.label": { cn: "{keywords} 共{total}个", en: "{keywords} total {total}.", },
   "dataset.action.fusion": { cn: "预处理", en: "Pretreat", },

@@ -19,7 +19,9 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   useEffect(() => {
     if (options.length) {
       if (value) {
-        onChange(value, resProps.multiple ? options.filter(opt => value.includes(opt.value)) : options.find(opt => opt.value === value))
+        const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
+        onChange(value, resProps.multiple ?
+          opts : options.filter(opt => opt.model.id === value[0]))
       }
     }
   }, [options])
@@ -63,8 +65,8 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   }
 
   return (
-    <Cascader value={value} {...resProps} onChange={onChange} options={options} 
-    displayRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
+    <Cascader value={value} {...resProps} onChange={onChange} options={options}
+      displayRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
   )
 }
 
