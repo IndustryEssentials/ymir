@@ -12,6 +12,7 @@ from google.protobuf import json_format  # type: ignore
 from app.config import settings
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
+from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
 from proto import backend_pb2 as mirsvrpb
@@ -37,6 +38,13 @@ MERGE_STRATEGY_MAPPING = {
     MergeStrategy.stop_upon_conflict: mirsvrpb.STOP,
     MergeStrategy.prefer_newest: mirsvrpb.HOST,
     MergeStrategy.prefer_oldest: mirsvrpb.HOST,
+}
+
+
+TRAINING_DATASET_STRATEGY_MAPPING = {
+    TrainingDatasetsStrategy.stop: mirsvrpb.STOP,
+    TrainingDatasetsStrategy.as_training: mirsvrpb.HOST,
+    TrainingDatasetsStrategy.as_validation: mirsvrpb.GUEST,
 }
 
 
@@ -114,7 +122,7 @@ class ControllerRequest:
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
         # stop if training_dataset and validation_dataset share any assets
-        request.merge_strategy = mirsvrpb.STOP
+        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 

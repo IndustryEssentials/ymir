@@ -1,3 +1,4 @@
+import enum
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
@@ -22,6 +23,12 @@ class TaskBase(BaseModel):
         use_enum_values = True
 
 
+class TrainingDatasetsStrategy(enum.IntEnum):
+    stop = 0
+    as_training = 1  # use duplicated assets as training assets
+    as_validation = 2  # use duplicated assets as validation assets
+
+
 class TaskParameter(BaseModel):
     dataset_id: int
     keywords: Optional[List[str]]
@@ -36,6 +43,7 @@ class TaskParameter(BaseModel):
     network: Optional[str]
     backbone: Optional[str]
     hyperparameter: Optional[str]
+    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.as_training
 
     # mining & dataset_infer
     model_id: Optional[int]
