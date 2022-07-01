@@ -64,11 +64,20 @@ class TaskParameter(BaseModel):
         return [keyword.strip() for keyword in v]
 
 
+class LongsideResizeParameter(BaseModel):
+    dest_size: int
+
+
+class TaskPreprocess(BaseModel):
+    longside_resize: LongsideResizeParameter
+
+
 class TaskCreate(TaskBase):
     iteration_id: Optional[int]
     iteration_stage: Optional[IterationStage]
     parameters: TaskParameter = Field(description="task specific parameters")
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
+    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     @validator("docker_image_config")
     def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
