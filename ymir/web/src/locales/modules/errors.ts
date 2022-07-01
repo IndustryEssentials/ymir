@@ -15,7 +15,7 @@ const errors = {
     en: 'Can not hide protected resource, such as result of current iteration, training, validation, and mining dataset related to project, or in-progress dataset/model',
   },
   'error110201': { cn: '找不到该用户，请重试', en: 'USER_NOT_FOUND: User Not Found, retry or contact admin.', },
-  'error110202': { cn: '名称已重复，请选择新的名称注册', en: 'USER_DUPLICATED_NAME: Duplicated Username, try another name', },
+  'error110202': { cn: '邮箱已注册，请选择新的邮箱注册', en: 'USER_DUPLICATED_NAME: Duplicated Email, try another one', },
   'error110203': { cn: '用户未授权访问', en: 'USER_NOT_ACCESSIBLE: User is Unaccessable', },
   'error110204': { cn: '用户未登录，请登录', en: 'USER_NOT_LOGGED_IN: User is not logged in, please log in', },
   'error110205': { cn: '该操作需要管理员权限，用户不是管理员', en: 'USER_NOT_ADMIN: User is not admin but action need admin privelige', },
