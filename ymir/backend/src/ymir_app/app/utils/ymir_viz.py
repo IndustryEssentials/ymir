@@ -174,10 +174,15 @@ class EvaluationScore(BaseModel):
     pr_curve: List[Dict]
 
 
+class CKEvaluation(BaseModel):
+    total: EvaluationScore
+    sub: Dict[str, EvaluationScore]
+
+
 class VizDatasetEvaluation(BaseModel):
     ci_evaluations: Dict[int, EvaluationScore]  # class_id -> scores
     ci_averaged_evaluation: EvaluationScore
-    ck_evaluations: Dict[str, EvaluationScore]
+    ck_evaluations: Dict[str, CKEvaluation]
 
 
 class VizDatasetEvaluationResult(BaseModel):
