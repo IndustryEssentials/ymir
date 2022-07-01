@@ -131,15 +131,11 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
   function trainSetChange(value, option) {
     setTrainSet(value)
-    if (value) {
-      setTrainDataset(option.dataset)
-    }
+    setTrainDataset(option?.dataset)
   }
   function validationSetChange(value, option) {
     setTestSet(value)
-    if (value) {
-      setValidationDataset(option.dataset)
-    }
+    setValidationDataset(option?.dataset)
   }
 
   function imageChange(_, image = {}) {
