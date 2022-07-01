@@ -1,4 +1,3 @@
-from enum import IntEnum, auto
 from typing import Iterator, Tuple
 
 from ymir_exc import env
