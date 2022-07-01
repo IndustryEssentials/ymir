@@ -4,7 +4,7 @@
 
 gpu_id: '0'
 task_id: 'default-training-task'
-pretrained_model_paths: []
+pretrained_model_params: []
 class_names: []
 
 # just for test, remove this key in your own docker image

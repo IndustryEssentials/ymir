@@ -79,7 +79,8 @@ class_names: # ymir默认配置
 - cup
 - spoon
 gpu_id: '0' # ymir默认配置
-pretrained_model_paths: [] # ymir默认配置
+pretrained_model_params: [] # ymir训练时可选默认配置
+model_params_path: [] # ymir推理/挖掘时默认配置
 task_id: t0000001000002ebb7f11653630774 # ymir默认配置
 img_size: 640 # 用户自定义配置
 model: yolov5n # 用户自定义配置

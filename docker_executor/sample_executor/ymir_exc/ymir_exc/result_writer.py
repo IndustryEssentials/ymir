@@ -45,8 +45,6 @@ def write_model_stage(stage_name: str,
         pass  # will create new if not exists, so dont care this exception
 
     model_stages = training_result.get('model_stages', {})
-    if stage_name in model_stages:
-        raise ValueError(f"stage_name: {stage_name} already exists")
 
     model_stages[stage_name] = {
         'stage_name': stage_name,

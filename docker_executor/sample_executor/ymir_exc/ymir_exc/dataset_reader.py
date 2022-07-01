@@ -1,26 +1,18 @@
-from enum import IntEnum, auto
 from typing import Iterator, Tuple
 
 from ymir_exc import env
 
 
-class DatasetType(IntEnum):
-    UNKNOWN = auto()
-    TRAINING = auto()
-    VALIDATION = auto()
-    CANDIDATE = auto()
-
-
-def _index_file_for_dataset_type(env_config: env.EnvConfig, dataset_type: DatasetType) -> str:
+def _index_file_for_dataset_type(env_config: env.EnvConfig, dataset_type: env.DatasetType) -> str:
     mapping = {
-        DatasetType.TRAINING: env_config.input.training_index_file,
-        DatasetType.VALIDATION: env_config.input.val_index_file,
-        DatasetType.CANDIDATE: env_config.input.candidate_index_file,
+        env.DatasetType.TRAINING: env_config.input.training_index_file,
+        env.DatasetType.VALIDATION: env_config.input.val_index_file,
+        env.DatasetType.CANDIDATE: env_config.input.candidate_index_file,
     }
     return mapping[dataset_type]
 
 
-def item_paths(dataset_type: DatasetType) -> Iterator[Tuple[str, str]]:
+def item_paths(dataset_type: env.DatasetType) -> Iterator[Tuple[str, str]]:
     file_path = _index_file_for_dataset_type(env.get_current_env(), dataset_type)
     if not file_path:
         raise ValueError(f"index file not set for dataset: {dataset_type}")
@@ -37,5 +29,5 @@ def item_paths(dataset_type: DatasetType) -> Iterator[Tuple[str, str]]:
                 raise ValueError(f"irregular index file: {file_path}")
 
 
-def items_count(dataset_type: DatasetType) -> int:
+def items_count(dataset_type: env.DatasetType) -> int:
     return len(list(item_paths(dataset_type=dataset_type)))
