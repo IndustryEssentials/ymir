@@ -10,7 +10,8 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, context, data_reader, data_writer, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, context, data_preprocessor, data_reader, data_writer
+from mir.tools import mir_storage_ops, revs_parser
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
@@ -286,6 +287,8 @@ class CmdTrain(base.BaseCommand):
 
         dw_train: data_writer.BaseDataWriter
         dw_val: data_writer.BaseDataWriter
+        dpp = data_preprocessor.DataPreprocessor(
+            args=config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PREPROCESS_KEY, {}))
         if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
             dw_train = data_writer.RawDataWriter(
                 mir_root=mir_root,
@@ -328,7 +331,7 @@ class CmdTrain(base.BaseCommand):
             # export train set
             train_lmdb_dir = os.path.join(asset_dir, 'train')
             if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs, dpp.id)
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, train_lmdb_dir)
@@ -345,7 +348,7 @@ class CmdTrain(base.BaseCommand):
             # export validation set
             val_lmdb_dir = os.path.join(asset_dir, 'val')
             if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs, dpp.id)
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, val_lmdb_dir)
@@ -366,12 +369,12 @@ class CmdTrain(base.BaseCommand):
                                        typ_rev_tid=src_typ_rev_tid,
                                        asset_ids=train_ids,
                                        class_ids=type_ids_set) as dr:
-            dw_train.write_all(dr)
+            dw_train.write_all(dr, dpp)
         with data_reader.MirDataReader(mir_root=mir_root,
                                        typ_rev_tid=src_typ_rev_tid,
                                        asset_ids=val_ids,
                                        class_ids=type_ids_set) as dr:
-            dw_val.write_all(dr)
+            dw_val.write_all(dr, dpp)
 
         logging.info("starting train docker container")
 
