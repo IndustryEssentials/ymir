@@ -126,7 +126,7 @@ def run_docker_executant(work_dir_in: str,
                          run_as_root: bool,
                          task_config: Dict = {}) -> int:
     if task_config.get("openpai_enable", False):
-        logging.info("Run executor task on OpenPai.")
+        logging.info(f"Run executor task {executant_name} on OpenPai.")
         try:
             return _execute_in_openpai(
                 work_dir_in=work_dir_in,
@@ -141,7 +141,7 @@ def run_docker_executant(work_dir_in: str,
         except (ConnectionError, HTTPError, Timeout):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_OPENPAI_ERROR, error_message='OpenPai Error')
     else:
-        logging.info("Run training task on locally.")
+        logging.info(f"Run executor task {executant_name} locally.")
         return _execute_locally(
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
