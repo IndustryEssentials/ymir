@@ -8,10 +8,9 @@ import uuid
 import xml.etree.ElementTree as ElementTree
 
 import lmdb
-from PIL import Image, UnidentifiedImageError
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, data_reader
+from mir.tools import class_ids, data_preprocessor, data_reader
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -274,7 +273,11 @@ class BaseDataWriter:
         """
         raise NotImplementedError('not implemented')
 
-    def write_all(self, dr: data_reader.MirDataReader) -> None:
+    def write_all(
+        self,
+        dr: data_reader.MirDataReader,
+        dpp: data_preprocessor.DataPreprocessor = data_preprocessor.DataPreprocessor()
+    ) -> None:
         """
         write all datas from data reader
         """
@@ -353,22 +356,22 @@ class RawDataWriter(BaseDataWriter):
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
-        asset_file_name = asset_id
+        asset_file_name = f"{asset_id}-{self._preprocessor.id}" if self._preprocessor.id else asset_id
+        asset_data, asset_format = self._preprocessor.prep_img(asset_src_path)
         if self._need_ext:
-            try:
-                asset_image = Image.open(asset_src_path)
-                asset_file_name = f"{asset_file_name}.{asset_image.format.lower()}"  # type: ignore
-            except UnidentifiedImageError:
-                asset_file_name = f"{asset_file_name}.unknown"
+            asset_file_name = f"{asset_file_name}.{asset_format.lower()}"
 
         asset_dest_dir = os.path.join(self._assets_dir, sub_folder_name)
         os.makedirs(asset_dest_dir, exist_ok=True)
         asset_dest_path = os.path.join(asset_dest_dir, asset_file_name)
         if self._overwrite or not os.path.isfile(asset_dest_path):
-            shutil.copyfile(asset_src_path, asset_dest_path)
+            with open(asset_dest_path, 'wb') as f:
+                f.write(asset_data)
 
         anno_file_name = ''
         if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
+            self._preprocessor.prep_pbs(attrs=attrs, image_annotations=image_annotations, gt_annotations=gt_annotations)
+
             anno_file_name = f"{asset_id}{_format_file_ext(self._format_type)}"
             format_func = _format_file_output_func(anno_format=self._format_type)
             # write annotations
@@ -384,8 +387,8 @@ class RawDataWriter(BaseDataWriter):
                 anno_dest_dir = os.path.join(self._annotations_dir, sub_folder_name)
                 os.makedirs(anno_dest_dir, exist_ok=True)
                 anno_dest_path = os.path.join(anno_dest_dir, anno_file_name)
-                with open(anno_dest_path, 'w') as f:
-                    f.write(anno_str)
+                with open(anno_dest_path, 'w') as af:
+                    af.write(anno_str)
 
             # write groundtruth
             if self._gt_dir:
@@ -400,8 +403,8 @@ class RawDataWriter(BaseDataWriter):
                 gt_dest_dir = os.path.join(self._gt_dir, sub_folder_name)
                 os.makedirs(gt_dest_dir, exist_ok=True)
                 gt_dest_path = os.path.join(gt_dest_dir, anno_file_name)
-                with open(gt_dest_path, 'w') as f:
-                    f.write(gt_str)
+                with open(gt_dest_path, 'w') as af:
+                    af.write(gt_str)
 
         # write index file
         asset_path_in_index_file = os.path.join(self._index_assets_prefix, sub_folder_name, asset_file_name)
@@ -428,7 +431,13 @@ class RawDataWriter(BaseDataWriter):
             self._gt_index_file.close()
             self._gt_index_file = None
 
-    def write_all(self, dr: data_reader.MirDataReader) -> None:
+    def write_all(
+        self,
+        dr: data_reader.MirDataReader,
+        dpp: data_preprocessor.DataPreprocessor = data_preprocessor.DataPreprocessor()
+    ) -> None:
+        self._preprocessor = dpp
+
         for v in dr.read():
             self._write(*v)
         self._close()
@@ -481,14 +490,14 @@ class LmdbDataWriter(BaseDataWriter):
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
-        # read asset
         asset_src_path = os.path.join(self._assets_location, asset_id)
-        with open(asset_src_path, 'rb') as f:
-            asset_data = f.read()
+        asset_data, *_ = self._preprocessor.prep_img(asset_src_path)
 
         # write asset and annotations
         anno_key_name = ''
         if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
+            self._preprocessor.prep_pbs(attrs=attrs, image_annotations=image_annotations, gt_annotations=gt_annotations)
+
             format_func = _format_file_output_func(anno_format=self._format_type)
             anno_data: bytes = format_func(asset_id=asset_id,
                                            attrs=attrs,
@@ -532,7 +541,13 @@ class LmdbDataWriter(BaseDataWriter):
         if self._index_file_path:
             shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
 
-    def write_all(self, dr: data_reader.MirDataReader) -> None:
+    def write_all(
+        self,
+        dr: data_reader.MirDataReader,
+        dpp: data_preprocessor.DataPreprocessor = data_preprocessor.DataPreprocessor()
+    ) -> None:
+        self._preprocessor = dpp
+
         # if already exists, no need to write, only copy index file to destination
         if self.exists():
             if self._index_file_path:
