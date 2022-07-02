@@ -6,7 +6,6 @@ from subprocess import CalledProcessError
 from typing import Dict, Optional, Set
 
 from google.protobuf import json_format
-import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
@@ -162,7 +161,6 @@ class CmdMining(base.BaseCommand):
                                          index_file=work_index_file,
                                          config_file=config_file,
                                          task_id=dst_typ_rev_tid.tid,
-                                         shm_size=_get_shm_size(config_file),
                                          executor=executor,
                                          executant_name=executant_name,
                                          run_as_root=run_as_root,
@@ -357,14 +355,6 @@ def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_ti
     with data_reader.MirDataReader(mir_root=mir_root, typ_rev_tid=src_rev_tid, asset_ids=img_list,
                                    class_ids=set()) as dr:
         dw.write_all(dr)
-
-
-def _get_shm_size(mining_config_file_path: str) -> str:
-    with open(mining_config_file_path, 'r') as f:
-        mining_config = yaml.safe_load(f.read())
-    if 'shm_size' not in mining_config:
-        return '16G'
-    return mining_config['shm_size']
 
 
 # public: arg parser
