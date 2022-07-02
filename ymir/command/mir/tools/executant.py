@@ -18,8 +18,13 @@ def _execute_in_openpai(
     executor_config: Dict,
     gpu_id: str,
     run_as_root: bool,
-    openpai_config: Dict,
+    task_config: Dict,
 ) -> int:
+    # openpai_host = task_config.get("openpai_host", ""),
+    # openpai_token = task_config.get("openpai_token", ""),
+    # openpai_storage = task_config.get("openpai_storage", ""),
+    # openpai_user = task_config.get("openpai_user", ""),
+
     return _execute_locally(
         work_dir_in=work_dir_in,
         work_dir_out=work_dir_out,
@@ -86,8 +91,8 @@ def run_docker_executant(work_dir_in: str,
                          executor_config: Dict,
                          gpu_id: str,
                          run_as_root: bool,
-                         openpai_config: Dict = {}) -> None:
-    if openpai_config.get("openpai_enable", False):
+                         task_config: Dict = {}) -> None:
+    if task_config.get("openpai_enable", False):
         logging.info("Run executor task on OpenPai.")
         try:
             _execute_in_openpai(
@@ -98,7 +103,7 @@ def run_docker_executant(work_dir_in: str,
                 executor_config=executor_config,
                 gpu_id=gpu_id,
                 run_as_root=run_as_root,
-                openpai_config=openpai_config,
+                task_config=task_config,
             )
         except (ConnectionError, HTTPError, Timeout):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_OPENPAI_ERROR, error_message='OpenPai Error')

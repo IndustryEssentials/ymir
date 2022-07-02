@@ -20,11 +20,11 @@ class TestCmdInfer(unittest.TestCase):
         super().__init__(methodName=methodName)
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._mir_repo_root = os.path.join(self._test_root, 'mir-demo-repo')
-        self._models_location = os.path.join(self._test_root, 'models')
-        self._src_assets_root = os.path.join(self._test_root, 'assets')  # source assets, index and infer config file
         self._working_root = os.path.join(self._test_root, 'work')  # work directory for cmd infer
-        self._config_file = os.path.join(self._test_root, 'config.yaml')
-        self._assets_index_file = os.path.join(self._src_assets_root, 'index.tsv')
+        self._models_location = os.path.join(self._working_root, 'models')
+        self._src_assets_root = os.path.join(self._working_root, 'assets')  # source assets, index and infer config file
+        self._config_file = os.path.join(self._working_root, 'config.yaml')
+        self._assets_index_file = os.path.join(self._working_root, 'index.tsv')
 
     def setUp(self) -> None:
         self._prepare_dir()
@@ -61,7 +61,7 @@ class TestCmdInfer(unittest.TestCase):
         shutil.copyfile(src=os.path.join(test_assets_root, '2007_000032.jpg'),
                         dst=os.path.join(self._working_root, '2007_000032.jpg'))
         with open(self._assets_index_file, 'w') as f:
-            f.write(f'{self._working_root}/2007_000032.jpg\n')
+            f.write(f'{self._src_assets_root}/2007_000032.jpg\n')
 
     def _prepare_model(self):
         # model params
@@ -160,14 +160,11 @@ class TestCmdInfer(unittest.TestCase):
         self.assertEqual(MirCode.RC_OK, cmd_result)
 
         expected_cmd = ['docker', 'run', '--rm']
-        expected_cmd.append(f"-v{fake_args.work_dir}:/in/assets:ro")
-        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'models')}:/in/models:ro")
-        expected_cmd.append(
-            f"-v{os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv')}:/in/candidate-index.tsv")
-        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'config.yaml')}:/in/config.yaml")
-        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'env.yaml')}:/in/env.yaml")
+        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in')}:/in:ro")
         expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'out')}:/out")
+        expected_cmd.append(f"-v{self._src_assets_root}:{self._src_assets_root}")
         expected_cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
+        expected_cmd.append("--shm-size=16G")
         expected_cmd.extend(['--name', fake_args.executant_name])
         expected_cmd.append(fake_args.executor)
         mock_run.assert_called_once_with(expected_cmd, check=True, stdout=mock.ANY, stderr=mock.ANY, text=True)

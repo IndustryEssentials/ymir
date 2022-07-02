@@ -219,6 +219,7 @@ class TestCmdTraining(unittest.TestCase):
             yaml.dump(config, f)
 
     def __deprepare_dirs(self):
+        return
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
 
@@ -238,7 +239,7 @@ class TestCmdTraining(unittest.TestCase):
         return ("xyz", 0.9, ms)
 
     # public: test cases
-    @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
+    @mock.patch("mir.tools.executant.run_docker_executant", side_effect=__mock_run_train_cmd)
     @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
     def test_normal_00(self, *mock_run):
         """ normal case """
@@ -265,7 +266,7 @@ class TestCmdTraining(unittest.TestCase):
         # check result
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
 
-    @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
+    @mock.patch("mir.tools.executant.run_docker_executant", side_effect=__mock_run_train_cmd)
     @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
     def test_normal_01(self, *mock_run):
         """ normal case """

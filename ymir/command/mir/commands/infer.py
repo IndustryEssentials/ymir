@@ -39,7 +39,7 @@ class CmdInfer(base.BaseCommand):
 
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
                                       mir_root=self.args.mir_root,
-                                      media_path=self.args.work_dir,
+                                      media_path=os.path.join(self.args.work_dir, 'assets'),
                                       model_location=self.args.model_location,
                                       model_hash_stage=self.args.model_hash_stage,
                                       index_file=self.args.index_file,
@@ -172,25 +172,16 @@ class CmdInfer(base.BaseCommand):
                                                         run_infer=run_infer,
                                                         env_config_file_path=work_env_config_file)
 
-        executor_config = config[mir_settings.EXECUTOR_CONFIG_KEY]
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
-        available_gpu_id: str = task_config.get('available_gpu_id', '')
-        openpai_config = dict(
-            openpai_enable=task_config.get("openpai_enable", False),
-            openpai_host=task_config.get("openpai_host", ""),
-            openpai_token=task_config.get("openpai_token", ""),
-            openpai_storage=task_config.get("openpai_storage", ""),
-            openpai_user=task_config.get("openpai_user", ""),
-        )
         run_docker_executant(
             work_dir_in=work_dir_in,
             work_dir_out=work_out_path,
             executor=executor,
             executant_name=executant_name,
-            executor_config=executor_config,
-            gpu_id=available_gpu_id,
+            executor_config=config[mir_settings.EXECUTOR_CONFIG_KEY],
+            gpu_id=task_config.get('available_gpu_id', ""),
             run_as_root=run_as_root,
-            openpai_config=openpai_config,
+            task_config=task_config,
         )
 
         if run_infer:
