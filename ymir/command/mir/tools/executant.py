@@ -104,7 +104,6 @@ def prepare_executant_env(work_dir_in: str,
     os.makedirs(work_dir_in_model, exist_ok=True)
 
     os.makedirs(work_dir_out, exist_ok=True)
-    os.system(f"chmod -R 777 {work_dir_out}")
     out_model_dir = os.path.join(work_dir_out, 'models')
     os.makedirs(out_model_dir, exist_ok=True)
     # Build tensorbaord folder, fixed location at work_dir_out/tensorboard
@@ -115,6 +114,7 @@ def prepare_executant_env(work_dir_in: str,
             os.symlink(tensorboard_dir, tensorboard_dir_local)
     else:
         os.makedirs(tensorboard_dir_local, exist_ok=True)
+    os.system(f"chmod -R 777 {work_dir_out}")
 
 
 def run_docker_executant(work_dir_in: str,
