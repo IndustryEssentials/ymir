@@ -84,6 +84,39 @@ def _execute_locally(
     return MirCode.RC_OK
 
 
+def prepare_executant_env(work_dir_in: str,
+                          work_dir_out: str,
+                          asset_cache_dir: str = None,
+                          tensorboard_dir: str = None) -> None:
+    os.makedirs(work_dir_in, exist_ok=True)
+    # assets folder, fixed location at work_dir_in/assets.
+    asset_dir = os.path.join(work_dir_in, 'assets')
+    if asset_cache_dir:
+        if asset_cache_dir != asset_dir:
+            os.symlink(asset_cache_dir, asset_dir)
+    else:
+        os.makedirs(asset_dir, exist_ok=True)
+    work_dir_annotations = os.path.join(work_dir_in, 'annotations')
+    os.makedirs(work_dir_annotations, exist_ok=True)
+    work_dir_gt = os.path.join(work_dir_in, 'groundtruth')
+    os.makedirs(work_dir_gt, exist_ok=True)
+    work_dir_in_model = os.path.join(work_dir_in, 'models')
+    os.makedirs(work_dir_in_model, exist_ok=True)
+
+    os.makedirs(work_dir_out, exist_ok=True)
+    os.system(f"chmod -R 777 {work_dir_out}")
+    out_model_dir = os.path.join(work_dir_out, 'models')
+    os.makedirs(out_model_dir, exist_ok=True)
+    # Build tensorbaord folder, fixed location at work_dir_out/tensorboard
+    tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
+    if tensorboard_dir:
+        if tensorboard_dir != tensorboard_dir_local:
+            os.system(f"chmod -R 777 {tensorboard_dir}")
+            os.symlink(tensorboard_dir, tensorboard_dir_local)
+    else:
+        os.makedirs(tensorboard_dir_local, exist_ok=True)
+
+
 def run_docker_executant(work_dir_in: str,
                          work_dir_out: str,
                          executor: str,

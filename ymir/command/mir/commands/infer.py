@@ -13,7 +13,7 @@ from mir.tools import settings as mir_settings
 from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.executant import run_docker_executant
+from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 class CmdInfer(base.BaseCommand):
@@ -125,23 +125,15 @@ class CmdInfer(base.BaseCommand):
             executant_name = task_id
 
         work_dir_in = os.path.join(work_dir, "in")
-        os.makedirs(work_dir_in, exist_ok=True)
-        work_assets_path = os.path.join(work_dir_in, 'assets')
-        work_model_path = os.path.join(work_dir_in, 'models')
-        if media_path:
-            if media_path != work_assets_path:
-                os.symlink(media_path, work_assets_path)
-        else:
-            os.makedirs(work_assets_path, exist_ok=True)
-        os.makedirs(work_model_path, exist_ok=True)
+        work_dir_out = os.path.join(work_dir, "out")
+        prepare_executant_env(work_dir_in=work_dir_in,
+                              work_dir_out=work_dir_out,
+                              asset_cache_dir=media_path)
 
+        work_dir_in_model = os.path.join(work_dir_in, 'models')
         work_index_file = os.path.join(work_dir_in, 'candidate-index.tsv')
         work_config_file = os.path.join(work_dir_in, 'config.yaml')
         work_env_config_file = os.path.join(work_dir_in, 'env.yaml')
-
-        work_out_path = os.path.join(work_dir, 'out')
-        os.makedirs(work_out_path, exist_ok=True)
-        os.system(f"chmod -R 777 {work_out_path}")
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
@@ -149,7 +141,7 @@ class CmdInfer(base.BaseCommand):
         model_storage: mir_utils.ModelStorage = mir_utils.prepare_model(model_location=model_location,
                                                                         model_hash=model_hash,
                                                                         stage_name=stage_name,
-                                                                        dst_model_path=work_model_path)
+                                                                        dst_model_path=work_dir_in_model)
         model_names = model_storage.stages[stage_name].files
         class_names = model_storage.class_names
         if not class_names:
@@ -175,7 +167,7 @@ class CmdInfer(base.BaseCommand):
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
         run_docker_executant(
             work_dir_in=work_dir_in,
-            work_dir_out=work_out_path,
+            work_dir_out=work_dir_out,
             executor=executor,
             executant_name=executant_name,
             executor_config=config[mir_settings.EXECUTOR_CONFIG_KEY],
@@ -185,7 +177,7 @@ class CmdInfer(base.BaseCommand):
         )
 
         if run_infer:
-            _process_infer_results(infer_result_file=os.path.join(work_out_path, 'infer-result.json'),
+            _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
                                    max_boxes=_get_max_boxes(config_file),
                                    mir_root=mir_root)
 

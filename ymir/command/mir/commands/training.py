@@ -15,7 +15,7 @@ from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
-from mir.tools.executant import run_docker_executant
+from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
@@ -220,37 +220,16 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(work_dir, exist_ok=True)
 
         work_dir_in = os.path.join(work_dir, "in")
-        os.makedirs(work_dir_in, exist_ok=True)
-
-        # assets folder, fixed location at work_dir_in/assets.
-        asset_dir = os.path.join(work_dir_in, 'assets')
-        if asset_cache_dir:
-            if asset_cache_dir != asset_dir:
-                os.symlink(asset_cache_dir, asset_dir)
-        else:
-            os.makedirs(asset_dir, exist_ok=True)
-        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
-        os.makedirs(work_dir_annotations, exist_ok=True)
-        work_dir_gt = os.path.join(work_dir_in, 'groundtruth')
-        os.makedirs(work_dir_gt, exist_ok=True)
-
         work_dir_out = os.path.join(work_dir, "out")
-        os.makedirs(work_dir_out, exist_ok=True)
+        prepare_executant_env(work_dir_in=work_dir_in,
+                              work_dir_out=work_dir_out,
+                              asset_cache_dir=asset_cache_dir,
+                              tensorboard_dir=tensorboard_dir)
 
-        # Build tensorbaord folder, fixed location at work_dir_out/tensorboard
-        tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
-        if tensorboard_dir:
-            if tensorboard_dir != tensorboard_dir_local:
-                os.system(f"chmod -R 777 {tensorboard_dir}")
-                os.symlink(tensorboard_dir, tensorboard_dir_local)
-        else:
-            os.makedirs(tensorboard_dir_local, exist_ok=True)
-        tensorboard_dir = tensorboard_dir_local
-
-        out_model_dir = os.path.join(work_dir_out, 'models')
-        os.makedirs(out_model_dir, exist_ok=True)
-
-        os.system(f"chmod -R 777 {work_dir_out}")
+        asset_dir = os.path.join(work_dir_in, 'assets')
+        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
+        work_dir_gt = os.path.join(work_dir_in, 'groundtruth')
+        tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
 
         # if have model_hash_stage, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
