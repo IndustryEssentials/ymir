@@ -381,7 +381,7 @@ class CmdTrain(base.BaseCommand):
         task_code = MirCode.RC_OK
         return_msg = ""
         try:
-            _run_docker_executant(
+            run_docker_executant(
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
                 executor=executor,
@@ -444,26 +444,6 @@ class CmdTrain(base.BaseCommand):
         logging.info("training done")
 
         return MirCode.RC_OK
-
-
-def _run_docker_executant(work_dir_in: str,
-                          work_dir_out: str,
-                          executor: str,
-                          executant_name: str,
-                          executor_config: Dict,
-                          gpu_id: str,
-                          run_as_root: bool,
-                          task_config: Dict = {}) -> int:
-    return run_docker_executant(
-        work_dir_in=work_dir_in,
-        work_dir_out=work_dir_out,
-        executor=executor,
-        executant_name=executant_name,
-        executor_config=executor_config,
-        gpu_id=gpu_id,
-        run_as_root=run_as_root,
-        task_config=task_config,
-    )
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
