@@ -67,6 +67,10 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [did])
 
   useEffect(() => {
+
+  }, [stage])
+
+  useEffect(() => {
     pid && func.getDatasets(pid)
   }, [pid])
 
@@ -151,7 +155,8 @@ function Inference({ datasetCache, datasets, ...func }) {
   }
 
   function modelChange(id, options = []) {
-    setSelectedModels(options.map(({ model }) => model) || [])
+    const models = options.map(([{ model }]) => model) || []
+    setSelectedModels(models)
   }
 
   async function selectModelFromIteration() {

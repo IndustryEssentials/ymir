@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import useFetch from '@/hooks/useFetch'
 import ReactJson from 'react-json-view'
-import { Button, Form, Input, Row, Col, Space, Table, Popover, InputNumber, Slider } from 'antd'
+import { Button, Form, Input, Row, Col, Space, Table, Popover, InputNumber, Slider, message } from 'antd'
 import { SyncOutlined } from "@ant-design/icons"
 import { SearchIcon, EyeOnIcon, DeleteIcon } from "@/components/common/icons"
 
@@ -97,6 +97,9 @@ function Visualization({ pid, project }) {
   }
 
   const onFinish = async (values) => {
+    if (!taskIds.length) {
+      return message.error('model.diagnose.v.tasks.require')
+    }
     const params = {
       ...values,
       projectId: pid,

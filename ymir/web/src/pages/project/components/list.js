@@ -54,7 +54,7 @@ const ProjectList = ({ list, query, ...func }) => {
         label: t("project.action.edit"),
         onclick: (e) => {
           e.stopPropagation()
-          history.push(`/home/project/add/${id}`)
+          history.push(`/home/project/${id}/add`)
         },
         icon: <EditIcon />,
       },

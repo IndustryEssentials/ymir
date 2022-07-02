@@ -24,7 +24,8 @@ const DockerConfigForm = ({ form, seniorConfig }) => {
   return seniorConfig.length ? 
     <Panel label={t('task.train.form.hyperparam.label')} visible={visible} setVisible={setVisible}>
       <Form.Item
-        wrapperCol={{ span: 18 }}
+        labelCol={{ span: 6 }}
+        wrapperCol={{ offset: 6, span: 12 }}
         rules={[{ validator: validHyperparam }]}
       >
         <Form.List name='hyperparam'>
