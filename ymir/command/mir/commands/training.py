@@ -2,9 +2,7 @@ import argparse
 import logging
 import os
 import time
-import subprocess
 from subprocess import CalledProcessError
-from requests.exceptions import ConnectionError, HTTPError, Timeout
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from tensorboardX import SummaryWriter
@@ -17,6 +15,7 @@ from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
+from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
@@ -92,30 +91,6 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
     return (model_stages, best_stage_name)
 
 
-# private: process
-def _run_train_cmd(cmd: List[str], out_log_path: str) -> int:
-    """
-    invoke training command
-
-    Args:
-        cmd (str): command
-        out_log_path (str): path of log file
-
-    Returns:
-        int: MirCode.RC_OK if success
-
-    Raises:
-        Exception: if out_log_path can not open for append, or cmd returned non-zero code
-    """
-    logging.info(f"training with cmd: {cmd}")
-    logging.info(f"out log path: {out_log_path}")
-    with open(out_log_path, 'a') as f:
-        # run and wait, if non-zero value returned, raise
-        subprocess.run(cmd, check=True, stdout=f, stderr=f, text=True)
-
-    return MirCode.RC_OK
-
-
 # private: pre process
 def _generate_config(executor_config: Any, out_config_path: str, task_id: str,
                      pretrained_model_params: List[str]) -> dict:
@@ -131,12 +106,6 @@ def _generate_config(executor_config: Any, out_config_path: str, task_id: str,
         yaml.dump(executor_config, f)
 
     return executor_config
-
-
-def _get_shm_size(executor_config: dict) -> str:
-    if 'shm_size' not in executor_config:
-        return '16G'
-    return executor_config['shm_size']
 
 
 def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_model_dir: str) -> List[str]:
@@ -251,37 +220,16 @@ class CmdTrain(base.BaseCommand):
         os.makedirs(work_dir, exist_ok=True)
 
         work_dir_in = os.path.join(work_dir, "in")
-        os.makedirs(work_dir_in, exist_ok=True)
-
-        # assets folder, fixed location at work_dir_in/assets.
-        asset_dir = os.path.join(work_dir_in, 'assets')
-        if asset_cache_dir:
-            if asset_cache_dir != asset_dir:
-                os.symlink(asset_cache_dir, asset_dir)
-        else:
-            os.makedirs(asset_dir, exist_ok=True)
-        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
-        os.makedirs(work_dir_annotations, exist_ok=True)
-        work_dir_gt = os.path.join(work_dir_in, 'groundtruth')
-        os.makedirs(work_dir_gt, exist_ok=True)
-
         work_dir_out = os.path.join(work_dir, "out")
-        os.makedirs(work_dir_out, exist_ok=True)
+        prepare_executant_env(work_dir_in=work_dir_in,
+                              work_dir_out=work_dir_out,
+                              asset_cache_dir=asset_cache_dir,
+                              tensorboard_dir=tensorboard_dir)
 
-        # Build tensorbaord folder, fixed location at work_dir_out/tensorboard
-        tensorboard_dir_local = os.path.join(work_dir_out, 'tensorboard')
-        if tensorboard_dir:
-            if tensorboard_dir != tensorboard_dir_local:
-                os.system(f"chmod -R 777 {tensorboard_dir}")
-                os.symlink(tensorboard_dir, tensorboard_dir_local)
-        else:
-            os.makedirs(tensorboard_dir_local, exist_ok=True)
-        tensorboard_dir = tensorboard_dir_local
-
-        out_model_dir = os.path.join(work_dir_out, 'models')
-        os.makedirs(out_model_dir, exist_ok=True)
-
-        os.system(f"chmod -R 777 {work_dir_out}")
+        asset_dir = os.path.join(work_dir_in, 'assets')
+        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
+        work_dir_gt = os.path.join(work_dir_in, 'groundtruth')
+        tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
 
         # if have model_hash_stage, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
@@ -430,26 +378,18 @@ class CmdTrain(base.BaseCommand):
                                                     env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
-        available_gpu_id = task_config.get('available_gpu_id', '')
-        openpai_config = dict(
-            openpai_enable=task_config.get("openpai_enable", False),
-            openpai_host=task_config.get("openpai_host", ""),
-            openpai_token=task_config.get("openpai_token", ""),
-            openpai_storage=task_config.get("openpai_storage", ""),
-            openpai_user=task_config.get("openpai_user", ""),
-        )
         task_code = MirCode.RC_OK
-        return_msg = ''
+        return_msg = ""
         try:
-            _execute_training(
+            run_docker_executant(
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
                 executor=executor,
                 executant_name=executant_name,
                 executor_config=executor_config,
-                available_gpu_id=available_gpu_id,
-                openpai_config=openpai_config,
+                gpu_id=task_config.get('available_gpu_id', ""),
                 run_as_root=run_as_root,
+                task_config=task_config,
             )
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
@@ -504,102 +444,6 @@ class CmdTrain(base.BaseCommand):
         logging.info("training done")
 
         return MirCode.RC_OK
-
-
-def _execute_training(work_dir_in: str,
-                      work_dir_out: str,
-                      executor: str,
-                      executant_name: str,
-                      executor_config: Dict,
-                      run_as_root: bool,
-                      available_gpu_id: str,
-                      openpai_config: Dict = {}) -> None:
-    if openpai_config.get("openpai_enable", False):
-        logging.info("Run training task on OpenPai.")
-        try:
-            _execute_in_openpai(
-                work_dir_in=work_dir_in,
-                work_dir_out=work_dir_out,
-                executor=executor,
-                executant_name=executant_name,
-                executor_config=executor_config,
-                available_gpu_id=available_gpu_id,
-                openpai_config=openpai_config,
-            )
-        except (ConnectionError, HTTPError, Timeout):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_OPENPAI_ERROR, error_message='OpenPai Error')
-    else:
-        logging.info("Run training task on locally.")
-        _execute_locally(
-            work_dir_in=work_dir_in,
-            work_dir_out=work_dir_out,
-            executor=executor,
-            executant_name=executant_name,
-            executor_config=executor_config,
-            available_gpu_id=available_gpu_id,
-            run_as_root=run_as_root,
-        )
-
-
-def _execute_in_openpai(
-    work_dir_in: str,
-    work_dir_out: str,
-    executor: str,
-    executant_name: str,
-    executor_config: Dict,
-    available_gpu_id: str,
-    openpai_config: Dict,
-    res_cpu: int = 15,
-    res_memory_in_mb: int = 30965,
-) -> None:
-    return _execute_locally(
-        work_dir_in=work_dir_in,
-        work_dir_out=work_dir_out,
-        executor=executor,
-        executant_name=executant_name,
-        executor_config=executor_config,
-        available_gpu_id=available_gpu_id,
-    )
-
-
-def _execute_locally(
-    work_dir_in: str,
-    work_dir_out: str,
-    executor: str,
-    executant_name: str,
-    executor_config: Dict,
-    available_gpu_id: str,
-    run_as_root: bool = False,
-) -> None:
-    # start train docker and wait
-    path_binds = []
-    path_binds.append(f"-v{work_dir_in}:/in")  # annotations, models, train-index.tsv, val-index.tsv, config.yaml
-    path_binds.append(f"-v{work_dir_out}:/out")
-
-    # assets and tensorboard dir may be sym-links, check and mount on demands.
-    assets_path = os.path.join(work_dir_in, 'assets')
-    if os.path.islink(assets_path):
-        actual_assets_dir = os.readlink(assets_path)
-        path_binds.append(f"-v{actual_assets_dir}:{actual_assets_dir}")
-
-    tensorboard_path = os.path.join(work_dir_out, 'tensorboard')
-    if os.path.islink(tensorboard_path):
-        actual_tensorboard_dir = os.readlink(tensorboard_path)
-        path_binds.append(f"-v{actual_tensorboard_dir}:{actual_tensorboard_dir}")
-
-    cmd = [
-        mir_utils.get_docker_executable(gpu_ids=available_gpu_id), 'run', '--rm',
-        f"--shm-size={_get_shm_size(executor_config=executor_config)}"
-    ]
-    cmd.extend(path_binds)
-    if available_gpu_id:
-        cmd.extend(['--gpus', f"\"device={available_gpu_id}\""])
-    if not run_as_root:
-        cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])  # run as current user
-    cmd.extend(['--name', f"{executant_name}"])  # executor name used to stop executor
-    cmd.append(executor)
-
-    _run_train_cmd(cmd, out_log_path=os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME))
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:

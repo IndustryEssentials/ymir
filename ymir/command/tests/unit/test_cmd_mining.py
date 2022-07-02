@@ -87,9 +87,9 @@ class TestMiningCmd(unittest.TestCase):
                                           mAP=0.5,
                                           timestamp=int(time.time()))
         ms = mir_utils.ModelStorage(executor_config={'class_names': ['person', 'cat', 'unknown-car']},
-                                               task_context={'task_id': '0'},
-                                               stages={mss.stage_name: mss},
-                                               best_stage_name=mss.stage_name)
+                                    task_context={'task_id': '0'},
+                                    stages={mss.stage_name: mss},
+                                    best_stage_name=mss.stage_name)
         return ms
 
     # protected: custom: env prepare
@@ -119,7 +119,6 @@ class TestMiningCmd(unittest.TestCase):
     def _prepare_mir_repo_branch_mining(self):
         mir_annotations = mirpb.MirAnnotations()
         mir_metadatas = mirpb.MirMetadatas()
-        mir_tasks = mirpb.MirTasks()
 
         mock_image_file = os.path.join(self._storage_root, 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9')
         shutil.copyfile("tests/assets/2007_000032.jpg", mock_image_file)
@@ -210,7 +209,6 @@ class TestMiningCmd(unittest.TestCase):
                                          index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
                                          config_file=args.config_file,
                                          task_id='mining-task-id',
-                                         shm_size='16G',
                                          executor=args.executor,
                                          executant_name=args.executant_name,
                                          run_as_root=args.run_as_root,
