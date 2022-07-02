@@ -91,11 +91,11 @@ def run_docker_executant(work_dir_in: str,
                          executor_config: Dict,
                          gpu_id: str,
                          run_as_root: bool,
-                         task_config: Dict = {}) -> None:
+                         task_config: Dict = {}) -> int:
     if task_config.get("openpai_enable", False):
         logging.info("Run executor task on OpenPai.")
         try:
-            _execute_in_openpai(
+            return _execute_in_openpai(
                 work_dir_in=work_dir_in,
                 work_dir_out=work_dir_out,
                 executor=executor,
@@ -109,7 +109,7 @@ def run_docker_executant(work_dir_in: str,
             raise MirRuntimeError(error_code=MirCode.RC_CMD_OPENPAI_ERROR, error_message='OpenPai Error')
     else:
         logging.info("Run training task on locally.")
-        _execute_locally(
+        return _execute_locally(
             work_dir_in=work_dir_in,
             work_dir_out=work_dir_out,
             executor=executor,
