@@ -323,10 +323,15 @@ class CmdTrain(base.BaseCommand):
             )
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             asset_dir = os.path.join(work_dir_in, 'lmdb')
+            os.makedirs(asset_dir, exist_ok=True)
+
             # export train set
             train_lmdb_dir = os.path.join(asset_dir, 'train')
             if asset_cache_dir:
-                os.symlink(os.path.join(asset_cache_dir, 'tr', src_revs), train_lmdb_dir)
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
+                os.makedirs(orig_lmdb_dir, exist_ok=True)
+
+                os.symlink(orig_lmdb_dir, train_lmdb_dir)
             else:
                 os.makedirs(train_lmdb_dir, exist_ok=True)
 
@@ -340,7 +345,10 @@ class CmdTrain(base.BaseCommand):
             # export validation set
             val_lmdb_dir = os.path.join(asset_dir, 'val')
             if asset_cache_dir:
-                os.symlink(os.path.join(asset_cache_dir, 'va', src_revs), val_lmdb_dir)
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
+                os.makedirs(orig_lmdb_dir, exist_ok=True)
+
+                os.symlink(orig_lmdb_dir, val_lmdb_dir)
             else:
                 os.makedirs(val_lmdb_dir, exist_ok=True)
 

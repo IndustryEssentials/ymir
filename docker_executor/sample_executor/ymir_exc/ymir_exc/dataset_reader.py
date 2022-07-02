@@ -21,12 +21,13 @@ def item_paths(dataset_type: env.DatasetType) -> Iterator[Tuple[str, str]]:
         for line in f:
             # note: last char of line is \n
             components = line.strip().split('\t')
-            if len(components) == 2:
+            if len(components) >= 2:
                 yield (components[0], components[1])
             elif len(components) == 1:
                 yield (components[0], '')
             else:
-                raise ValueError(f"irregular index file: {file_path}")
+                # ignore empty lines
+                continue
 
 
 def items_count(dataset_type: env.DatasetType) -> int:
