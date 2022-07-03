@@ -7,7 +7,9 @@ const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
 const average = (nums = []) => nums.reduce((prev, num) => Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
-const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
+const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
+  Object.values(iou_evaluations)[0]['ci_evaluations'] :
+  iou_averaged_evaluation['ck_evaluations']
 
 const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
@@ -59,24 +61,20 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }, [xType, dd, kd, dData, kData])
 
   function generateDData(data) {
-    const field = getKwField(kwType)
-    const ddata = Object.keys(data).reduce((prev, id) => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0]
+    const ddata = Object.keys(data).reduce((prev, rid) => {
+      const fiou = getKwField(data[rid], kwType)
       return {
         ...prev,
-        [id]: fiou[field],
+        [rid]: fiou,
       }
     }, {})
     setDData(ddata)
   }
 
   function generateKData(data) {
-    const field = getKwField(kwType)
     const kdata = {}
     Object.keys(data).forEach(id => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0][field]
+      const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         if (kwType) {
