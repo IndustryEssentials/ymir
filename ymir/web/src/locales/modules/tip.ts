@@ -115,7 +115,10 @@ const tip = {
     cn: '一般情况下无标注且数据量大，通过数据挖掘在该数据集下找到更贴合目标业务场景的数据。',
     en: 'Generally unlabeled and with a large amount of data, data mining is used to find data that better fits the target business scenario under that data set.',
   },
-
+  "tip.train.export.format": {
+    cn: '导出给训练镜像使用的数据格式，图像格式包含raw/lmdb, 标注格式有none/ark/voc/ls_json。请根据镜像选择相应的数据格式。',
+    en: 'Export format for training docker image. assets format: raw/lmdb, annotations format none/ark/voc/ls_json. Please choose one matched your training docker image.',
+  },
 }
 
 export default tip

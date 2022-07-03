@@ -121,7 +121,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     if (duplicationChecked) {
       const allValidation = duplicated === validationDataset?.assetCount
       const allTrain = duplicated === trainDataset?.assetCount
-      
+
       setStrategy(allValidation && !allTrain ? 2 : 1)
       setAllDulplicated(allValidation && allTrain)
     }
@@ -211,17 +211,22 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
       <span>{t('task.train.duplicated.tip', { duplicated })}</span>
       <Radio.Group
         value={strategy}
-        onChange={({target: { value }}) => setStrategy(value)}
+        onChange={({ target: { value } }) => setStrategy(value)}
         options={duplicatedOptions.map(opt => ({ ...opt, disabled: disabled === opt.value, label: t(opt.label) }))}
       />
     </div>) : t('task.train.action.duplicated.no')
   }
 
+  const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
   const trainsetFilters = datasets => datasets.filter(ds => {
-    const matchKeywords = ds.keywords.some(kw => selectedKeywords.includes(kw))
     const notTestSet = ds.id !== testSet
     const notTestingSet = !testingSetIds.includes(ds.id)
-    return matchKeywords && notTestSet && notTestingSet
+    return matchKeywords(ds) && notTestSet && notTestingSet
+  })
+
+  const validationSetFilters = datasets => datasets.filter(ds => {
+    const notTrainSet = ds.id !== trainSet
+    return matchKeywords(ds) && notTrainSet
   })
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
@@ -286,7 +291,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 >
                   <DatasetSelect
                     pid={pid}
-                    filters={datasets => datasets.filter(ds => ds.id !== trainSet)}
+                    filters={validationSetFilters}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
                     onChange={validationSetChange}
                     extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
@@ -319,9 +324,11 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                   </Select>
                 </Form.Item>}
             </Tip>
-            <Tip hidden={true}><Form.Item label={t('task.train.export.format')} name='trainFormat'>
-              <TrainFormat />
-            </Form.Item></Tip>
+            <Tip content={t('tip.train.export.format')}>
+              <Form.Item label={t('task.train.export.format')} name='trainFormat' initialValue={'none:raw'}>
+                <TrainFormat />
+              </Form.Item>
+            </Tip>
             {openpai ? <Tip hidden={true}>
               <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
                 {renderRadio(TrainDevices)}
