@@ -73,7 +73,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
 
   useEffect(() => {
     if (datasets.length === 1) {
-      form.setFieldsValue({ dataset: datasets})
+      form.setFieldsValue({ dataset: datasets })
     }
     setConfigs([])
     form.setFieldsValue({ config: undefined })
@@ -81,7 +81,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
 
   useEffect(() => {
     if (configs.length === 1) {
-      form.setFieldsValue({ config: [0]})
+      form.setFieldsValue({ config: [0] })
     }
   }, [configs])
 
@@ -162,9 +162,14 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
     history.push(`/home/project/${pid}/inference${query}`)
   }, [selectedStages])
 
+  const renderInferBtn = <div style={{ lineHeight: '32px' }}>
+    {t('task.infer.diagnose.tip')}
+    <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button>
+  </div>
+
   return (
     <>
-      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
+      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }, { type: 'array', max: 5 }]} extra={renderInferBtn}>
         <ModelSelect pid={pid} multiple onChange={modelChange} />
       </Form.Item>
       <Form.Item name='dataset' hidden={!datasets.length} label={t('model.diagnose.label.testing_dataset')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
@@ -173,7 +178,6 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
       <Form.Item name='config' hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <ConfigSelect configs={configs} onChange={configChange} />
       </Form.Item>
-      <p>{t('task.infer.diagnose.tip')} <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button></p>
     </>
   )
 }
