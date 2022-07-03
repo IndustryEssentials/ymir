@@ -183,7 +183,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
       columns={columns}
       pagination={false}
-      scroll={{ x: '100%' }}
+      scroll={{ x: '100%', y: '600' }}
     />
   </div>)
 }

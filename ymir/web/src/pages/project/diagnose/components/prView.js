@@ -247,7 +247,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
       columns={columns}
       pagination={false}
-      scroll={{ x: '100%' }}
+      scroll={{ x: '100%', y: 600 }}
     />
   </div>)
 }
