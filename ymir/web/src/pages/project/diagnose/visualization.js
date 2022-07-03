@@ -126,7 +126,7 @@ function Visualization({ pid, project }) {
   }
 
   function renderName(names) {
-    return renderPop(names.toString(), (<div>{names.map(name => <>{name}<br /></>)}</div>), 300)
+    return renderPop(names.toString(), (<div>{names.map(name => <div key={name}>{name}<br /></div>)}</div>), 300)
   }
 
   const columns = [
