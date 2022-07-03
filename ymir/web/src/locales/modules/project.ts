@@ -138,6 +138,7 @@ const project = {
     cn: '项目当前状态为{dirtyLabel}，无法创建训练任务，请重新检查状态。若状态持续异常，请联系管理员。',
   },
   'project.workspace.status.clean': { en: 'Project is {cleanLabel}, Training is enabled.', cn: '项目当前状态为{cleanLabel}, 可以正常创建训练任务', },
+  'project.testing.dataset.label': { en: 'Project Testing Dataset', cn: '项目测试集', },
 }
 
 export default project
