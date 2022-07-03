@@ -53,11 +53,13 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   const [configs, setConfigs] = useState([])
   const [selectedConfigs, setSelectedConfigs] = useState([])
   const [inferTasks, fetchInferTask] = useFetch('task/queryInferTasks', [])
+  const [fetched, setFetched] = useState(false)
   const [selectedTasks, setSelectedTasks] = useState([])
   const [tasks, setTasks] = useState([])
 
   useEffect(() => {
     setTasks(inferTasks)
+    setFetched(true)
   }, [inferTasks])
 
   useEffect(() => {
@@ -66,6 +68,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
       fetchInferTask({ stages })
     } else {
       setTasks([])
+      setFetched(false)
     }
     setSelectedDatasets([])
     form.setFieldsValue({ dataset: undefined, config: undefined })
@@ -162,7 +165,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
     history.push(`/home/project/${pid}/inference${query}`)
   }, [selectedStages])
 
-  const renderInferBtn = <div style={{ lineHeight: '32px' }}>
+  const renderInferBtn = <div className={fetched && !datasets.length ? 'error' : ''} style={{ lineHeight: '32px' }}>
     {t('task.infer.diagnose.tip')}
     <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button>
   </div>
