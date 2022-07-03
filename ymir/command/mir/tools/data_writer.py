@@ -259,6 +259,10 @@ class BaseDataWriter:
         self._format_type = format_type
         self._preprocessor = data_preprocessor.DataPreprocessor(args=prep_args)
 
+    @classmethod
+    def id_from_args(cls, args: dict) -> str:
+        return data_preprocessor.DataPreprocessor.id_from_args(args)
+
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         """
@@ -278,11 +282,7 @@ class BaseDataWriter:
         """
         raise NotImplementedError('not implemented')
 
-    def write_all(
-        self,
-        dr: data_reader.MirDataReader,
-        dpp: data_preprocessor.DataPreprocessor = data_preprocessor.DataPreprocessor()
-    ) -> None:
+    def write_all(self, dr: data_reader.MirDataReader) -> None:
         """
         write all datas from data reader
         """
@@ -545,10 +545,7 @@ class LmdbDataWriter(BaseDataWriter):
         if self._index_file_path:
             shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
 
-    def write_all(
-        self,
-        dr: data_reader.MirDataReader
-    ) -> None:
+    def write_all(self, dr: data_reader.MirDataReader) -> None:
         # if already exists, no need to write, only copy index file to destination
         if self.exists():
             if self._index_file_path:

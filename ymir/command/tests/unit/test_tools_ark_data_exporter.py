@@ -178,21 +178,7 @@ class TestArkDataExporter(unittest.TestCase):
                                                       task=task)
 
     # private: check result
-    def __check_result(self, asset_ids: List[str], format_type: str, export_path: str, index_file_path: str,
-                       dpp_id: str):
-        # check files
-        for asset_id in asset_ids:
-            if dpp_id:
-                asset_path = os.path.join(export_path, f"{asset_id}-{dpp_id}.jpeg")
-            else:
-                asset_path = os.path.join(export_path, f"{asset_id}.jpeg")
-            self.assertTrue(os.path.isfile(asset_path))
-            if format_type == data_writer.AnnoFormat.ANNO_FORMAT_ARK:
-                annotation_path = os.path.join(export_path, asset_id + '.txt')
-            elif format_type == data_writer.AnnoFormat.ANNO_FORMAT_VOC:
-                annotation_path = os.path.join(export_path, asset_id + '.xml')
-            self.assertTrue(os.path.isfile(annotation_path))
-
+    def __check_result(self, asset_ids: List[str], export_path: str, index_file_path: str):
         #   index file exists
         self.assertTrue(os.path.isfile(index_file_path))
         #   index file have enough lines
@@ -215,7 +201,7 @@ class TestArkDataExporter(unittest.TestCase):
             for col_idx in range(2):
                 self.assertEqual(expected_first_two_cols[line_idx][col_idx], int(line_components[col_idx].strip()))
 
-    def __check_lmdb_result(self, asset_ids: List[str], format_type: str, export_path: str, index_file_path: str):
+    def __check_lmdb_result(self, asset_ids: List[str], export_path: str, index_file_path: str):
         expected_asset_and_anno_and_gt_keys = {(f"asset_{asset_id}", f"anno_{asset_id}", f"gt_{asset_id}")
                                                for asset_id in asset_ids}
         asset_and_anno_and_gt_keys = set()
@@ -302,13 +288,10 @@ class TestArkDataExporter(unittest.TestCase):
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
             export_path=train_path,
-            index_file_path=index_file_path,
-            dpp_id='')
+            index_file_path=index_file_path)
         self.__check_lmdb_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
             export_path=train_path,
             index_file_path=lmdb_index_file_path)
 
@@ -359,12 +342,9 @@ class TestArkDataExporter(unittest.TestCase):
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
             export_path=train_path,
-            index_file_path=index_file_path,
-            dpp_id=dpp.id)
+            index_file_path=index_file_path)
         self.__check_lmdb_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
             export_path=train_path,
             index_file_path=lmdb_index_file_path)

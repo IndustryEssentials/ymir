@@ -10,7 +10,7 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, context, data_preprocessor, data_reader, data_writer
+from mir.tools import checker, class_ids, context, data_reader, data_writer
 from mir.tools import mir_storage_ops, revs_parser
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
@@ -287,8 +287,7 @@ class CmdTrain(base.BaseCommand):
 
         dw_train: data_writer.BaseDataWriter
         dw_val: data_writer.BaseDataWriter
-        dpp = data_preprocessor.DataPreprocessor(
-            args=config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PREPROCESS_KEY, {}))
+        prep_args = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PREPROCESS_KEY, {})
         if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
             dw_train = data_writer.RawDataWriter(
                 mir_root=mir_root,
@@ -306,6 +305,7 @@ class CmdTrain(base.BaseCommand):
                 index_assets_prefix='/in/assets',
                 index_annotations_prefix='/in/annotations',
                 index_gt_prefix='/in/groundtruth',
+                prep_args=prep_args,
             )
             dw_val = data_writer.RawDataWriter(
                 mir_root=mir_root,
@@ -323,6 +323,7 @@ class CmdTrain(base.BaseCommand):
                 index_assets_prefix='/in/assets',
                 index_annotations_prefix='/in/annotations',
                 index_gt_prefix='/in/groundtruth',
+                prep_args=prep_args,
             )
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             asset_dir = os.path.join(work_dir_in, 'lmdb')
@@ -331,36 +332,44 @@ class CmdTrain(base.BaseCommand):
             # export train set
             train_lmdb_dir = os.path.join(asset_dir, 'train')
             if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs, dpp.id)
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs,
+                                             data_writer.BaseDataWriter.id_from_args(prep_args))
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, train_lmdb_dir)
             else:
                 os.makedirs(train_lmdb_dir, exist_ok=True)
 
-            dw_train = data_writer.LmdbDataWriter(mir_root=mir_root,
-                                                  assets_location=media_location,
-                                                  lmdb_dir=train_lmdb_dir,
-                                                  class_ids_mapping=type_id_idx_mapping,
-                                                  format_type=export_format,
-                                                  index_file_path=os.path.join(work_dir_in, 'train-index.tsv'))
+            dw_train = data_writer.LmdbDataWriter(
+                mir_root=mir_root,
+                assets_location=media_location,
+                lmdb_dir=train_lmdb_dir,
+                class_ids_mapping=type_id_idx_mapping,
+                format_type=export_format,
+                index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
+                prep_args=prep_args,
+            )
 
             # export validation set
             val_lmdb_dir = os.path.join(asset_dir, 'val')
             if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs, dpp.id)
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs,
+                                             data_writer.BaseDataWriter.id_from_args(prep_args))
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, val_lmdb_dir)
             else:
                 os.makedirs(val_lmdb_dir, exist_ok=True)
 
-            dw_val = data_writer.LmdbDataWriter(mir_root=mir_root,
-                                                assets_location=media_location,
-                                                lmdb_dir=val_lmdb_dir,
-                                                class_ids_mapping=type_id_idx_mapping,
-                                                format_type=export_format,
-                                                index_file_path=os.path.join(work_dir_in, 'val-index.tsv'))
+            dw_val = data_writer.LmdbDataWriter(
+                mir_root=mir_root,
+                assets_location=media_location,
+                lmdb_dir=val_lmdb_dir,
+                class_ids_mapping=type_id_idx_mapping,
+                format_type=export_format,
+                index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
+                prep_args=prep_args,
+            )
         else:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"training unsupported asset format: {asset_format}")
@@ -369,12 +378,12 @@ class CmdTrain(base.BaseCommand):
                                        typ_rev_tid=src_typ_rev_tid,
                                        asset_ids=train_ids,
                                        class_ids=type_ids_set) as dr:
-            dw_train.write_all(dr, dpp)
+            dw_train.write_all(dr)
         with data_reader.MirDataReader(mir_root=mir_root,
                                        typ_rev_tid=src_typ_rev_tid,
                                        asset_ids=val_ids,
                                        class_ids=type_ids_set) as dr:
-            dw_val.write_all(dr, dpp)
+            dw_val.write_all(dr)
 
         logging.info("starting train docker container")
 

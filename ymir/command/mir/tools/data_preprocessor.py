@@ -59,6 +59,11 @@ class DataPreprocessor:
         return f"lr{self._lr_dest_size}" if self._lr_dest_size > 0 else ''
 
     @classmethod
+    def id_from_args(cls, args: dict) -> str:
+        lr_dest_size = args.get('longside_resize', {}).get('dest_size', 0)
+        return f"lr{lr_dest_size}" if lr_dest_size > 0 else ''
+
+    @classmethod
     def _read(cls, img_path: str) -> Image:
         return Image.open(img_path)
 
