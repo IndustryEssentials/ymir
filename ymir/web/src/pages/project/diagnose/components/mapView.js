@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
-import { Table } from "antd"
+import { Col, Row, Table } from "antd"
 import { percent } from '@/utils/number'
+import { ArrowDownIcon, ArrowRightIcon, } from "@/components/common/icons"
+import Panel from "../../../../components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
@@ -16,6 +18,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   const [dData, setDData] = useState(null)
   const [kData, setKData] = useState(null)
   const [columns, setColumns] = useState([])
+  const [hiddens, setHiddens] = useState({})
 
   useEffect(() => {
     if (data && keywords) {
@@ -176,15 +179,16 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }
 
   return list.map(({ id, label, rows }) => <div key={id}>
-    <h3>{label}</h3>
-    <Table
-      dataSource={rows}
-      rowKey={record => record.id}
-      rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-      columns={columns}
-      pagination={false}
-      scroll={{ x: '100%', y: '600' }}
-    />
+    <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
+      <Table
+        dataSource={rows}
+        rowKey={record => record.id}
+        rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
+        columns={columns}
+        pagination={false}
+        scroll={{ x: '100%', y: '600' }}
+      />
+    </Panel>
   </div>)
 }
 
