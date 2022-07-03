@@ -282,7 +282,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
   function showTitle(str) {
@@ -314,8 +314,8 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
-        const field = item.id === project?.testSet?.id ? 'isTestSet' : 
-          (item.id === project?.miningSet?.id ? 'isMiningSet': (isTestingDataset(item.id) ? 'isTestingSet' : ''))
+        const field = item.id === project?.testSet?.id ? 'isTestSet' :
+          (item.id === project?.miningSet?.id ? 'isMiningSet' : (isTestingDataset(item.id) ? 'isTestingSet' : ''))
         field && (item = setLabelByProject(item.id, field, item))
         return { ...item }
       })
@@ -488,17 +488,18 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         </div>
       </div>)}
     </div>
-    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
+      current={query.current} defaultCurrent={query.current} defaultPageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
     <div className={styles.dataset}>
       <Row className='actions'>
         <Col flex={1}>
-        <Space>
-          {addBtn}
-          {renderMultipleActions}
-        </Space>
+          <Space>
+            {addBtn}
+            {renderMultipleActions}
+          </Space>
         </Col>
         <Col>
           <CheckProjectDirty pid={pid} />

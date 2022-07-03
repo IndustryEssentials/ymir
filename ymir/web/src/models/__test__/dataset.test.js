@@ -92,7 +92,7 @@ describe("models: dataset", () => {
     const state = {
       datasets: {},
     }
-    const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
+    const initQuery = { name: "", type: "", current: 1, time: 0, offset: 0, limit: 20 }
 
     const expected = {
       query: { ...initQuery },

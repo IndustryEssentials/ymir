@@ -12,6 +12,7 @@ import { deepClone } from '@/utils/object'
 
 const initQuery = {
   name: "",
+  current: 1,
   offset: 0,
   limit: 20,
 }

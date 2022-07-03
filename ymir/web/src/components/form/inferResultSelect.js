@@ -45,7 +45,6 @@ const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
 
 const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   const history = useHistory()
-  const [selectedStages, setSelectedStages] = useState([])
   const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
   const [testingDatasets, setTestingDatasets] = useState([])
@@ -53,19 +52,23 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   const [configs, setConfigs] = useState([])
   const [selectedConfigs, setSelectedConfigs] = useState([])
   const [inferTasks, fetchInferTask] = useFetch('task/queryInferTasks', [])
+  const [fetched, setFetched] = useState(false)
   const [selectedTasks, setSelectedTasks] = useState([])
   const [tasks, setTasks] = useState([])
+  const selectedStages = Form.useWatch('stage', form)
 
   useEffect(() => {
     setTasks(inferTasks)
+    setFetched(true)
   }, [inferTasks])
 
   useEffect(() => {
-    const stages = selectedStages.map(([model, stage]) => stage)
+    const stages = selectedStages?.map(([model, stage]) => stage) || []
     if (stages.length) {
       fetchInferTask({ stages })
     } else {
       setTasks([])
+      setFetched(false)
     }
     setSelectedDatasets([])
     form.setFieldsValue({ dataset: undefined, config: undefined })
@@ -137,7 +140,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }
 
   function modelChange(values, options = []) {
-    setSelectedStages(values)
+    // setSelectedStages(values)
     setModels(options.map(([opt]) => opt?.model))
   }
 
@@ -160,18 +163,22 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
     history.push(`/home/project/${pid}/inference${query}`)
   }, [selectedStages])
 
+  const renderInferBtn = <div className={fetched && !datasets.length ? 'error' : ''} style={{ lineHeight: '32px' }}>
+    {t('task.infer.diagnose.tip')}
+    <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button>
+  </div>
+
   return (
     <>
-      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }]}>
+      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }, { type: 'array', max: 5 }]} extra={renderInferBtn}>
         <ModelSelect pid={pid} multiple onChange={modelChange} />
       </Form.Item>
-      <Form.Item name='dataset' hidden={!datasets.length} label={t('model.diagnose.label.testing_dataset')} rules={[{ required: true }]}>
+      <Form.Item name='dataset' hidden={!datasets.length} label={t('model.diagnose.label.testing_dataset')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} />
       </Form.Item>
-      <Form.Item name='config' hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }]}>
+      <Form.Item name='config' hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <ConfigSelect configs={configs} onChange={configChange} />
       </Form.Item>
-      <p>{t('task.infer.diagnose.tip')} <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button></p>
     </>
   )
 }
