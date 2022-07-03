@@ -217,11 +217,16 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     </div>) : t('task.train.action.duplicated.no')
   }
 
+  const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw)) 
   const trainsetFilters = datasets => datasets.filter(ds => {
-    const matchKeywords = ds.keywords.some(kw => selectedKeywords.includes(kw))
     const notTestSet = ds.id !== testSet
     const notTestingSet = !testingSetIds.includes(ds.id)
-    return matchKeywords && notTestSet && notTestingSet
+    return matchKeywords(ds) && notTestSet && notTestingSet
+  })
+
+  const validationSetFilters = datasets => datasets.filter(ds => {
+    const notTrainSet = ds.id !== trainSet
+    return matchKeywords(ds) && notTrainSet
   })
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
@@ -286,7 +291,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 >
                   <DatasetSelect
                     pid={pid}
-                    filters={datasets => datasets.filter(ds => ds.id !== trainSet)}
+                    filters={validationSetFilters}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
                     onChange={validationSetChange}
                     extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
