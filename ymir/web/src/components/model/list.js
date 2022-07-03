@@ -177,7 +177,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
   function updateModelVersion(result) {
@@ -449,7 +449,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         </div>
       </div>) : <Empty />}
     </div>
-    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
+      current={query.current} defaultCurrent={query.current} defaultPageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
