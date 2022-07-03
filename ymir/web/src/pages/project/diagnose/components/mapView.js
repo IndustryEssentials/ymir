@@ -5,7 +5,7 @@ import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
-const average = (nums = []) => nums.reduce((prev, num) => Number.isNaN(num) ? prev + num : prev, 0) / nums.length
+const average = (nums = []) => nums.reduce((prev, num) => !Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
 const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
   Object.values(iou_evaluations)[0]['ci_evaluations'] :
@@ -38,7 +38,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   useEffect(() => {
     if (data && keywords) {
       const kws = kwType ?
-        Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
+        Object.keys(Object.values(data)[0].iou_averaged_evaluation.ck_evaluations[keywords].sub)
           .map(k => ({ value: k, label: k, parent: keywords })) :
         keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
