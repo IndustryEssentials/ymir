@@ -32,7 +32,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   useEffect(() => {
     if (data && keywords) {
       const kws = kwType ?
-        Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
+        Object.keys(Object.values(data)[0].iou_averaged_evaluation.ck_evaluations[keywords].sub)
           .map(k => ({ value: k, label: k, parent: keywords })) :
         keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
