@@ -15,6 +15,7 @@ import t from "@/utils/t"
 import { string2Array } from "@/utils/string"
 import { TYPES } from '@/constants/image'
 import { useHistory, useParams, useLocation } from "umi"
+import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyStateDataset from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
@@ -53,10 +54,15 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [keywordRepeatTip, setKRTip] = useState('')
   const [{ newer }, checkKeywords] = useAddKeywords(true)
   const [live, setLiveCode] = useState(false)
+  const [project, getProject] = useFetch('project/getProject', {})
 
   useEffect(() => {
     fetchSysInfo()
   }, [])
+
+  useEffect(() => {
+    pid && getProject({ id: pid, force: true })
+  }, [pid])
 
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
@@ -167,6 +173,17 @@ function Inference({ datasetCache, datasets, ...func }) {
     }
   }
 
+  const testSetFilters = useCallback(datasets => {
+    const testings = datasets.filter(ds => project.testingSets?.includes(ds.id)).map(ds => ({ ...ds, isProjectTesting: true }))
+    const others = datasets.filter(ds => !project.testingSets?.includes(ds.id))
+    return [...testings, ...others]
+  }, [project.testingSets])
+
+  const renderLabel = item => <Row>
+    <Col flex={1}>{item.name} {item.versionName}(assets: {item.assetCount})</Col>
+    <Col>{item.isProjectTesting ? t('project.testing.dataset.label') : null}</Col>
+  </Row>
+
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     description: '',
@@ -204,7 +221,7 @@ function Inference({ datasetCache, datasets, ...func }) {
                     { required: true, message: t('task.inference.form.dataset.required') },
                   ]}
                 >
-                  <DatasetSelect mode='multiple' pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} />
+                  <DatasetSelect mode='multiple' pid={pid} filters={testSetFilters} renderLabel={renderLabel} placeholder={t('task.inference.form.dataset.placeholder')} />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
