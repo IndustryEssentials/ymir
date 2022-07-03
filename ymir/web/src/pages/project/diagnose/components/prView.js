@@ -6,7 +6,7 @@ import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
-const average = (nums = []) => nums.reduce((prev, num) => Number.isNaN(num) ? prev + num : prev, 0) / nums.length
+const average = (nums = []) => nums.reduce((prev, num) => !Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
 const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
   Object.values(iou_evaluations)[0]['ci_evaluations'] :
@@ -77,7 +77,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   useEffect(() => {
     if (data && keywords) {
       const kws = kwType ?
-        Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
+        Object.keys(Object.values(data)[0].iou_averaged_evaluation.ck_evaluations[keywords].sub)
           .map(k => ({ value: k, label: k, parent: keywords })) :
         keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
@@ -147,8 +147,8 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
         const _model = getModelCell(rid)
         const line = ddata[value]?.pr_curve
         const points = rangePoints(range, line, pointField[0])
-        const recallAverage = toFixed(average(points.map(point => point[pointField[1]])), 4)
-        const confidenceAverage = toFixed(average(points.map(({ z }) => z)))
+        const _average = average(points.map(point => point[pointField[1]]))
+        const confidenceAverage = toFixed(average(points.map(({ z }) => z)), 4)
         return points.map((point, index) => ({
           id: `${rid}${range[index]}`,
           value: range[index],
@@ -158,7 +158,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
           target: point[pointField[1]],
           point,
           conf: point.z,
-          a: recallAverage,
+          a: _average,
           ca: confidenceAverage,
         })).flat()
       }).flat()
@@ -174,8 +174,8 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
         const _model = getModelCell(result)
         const line = kdata ? kdata[result]?.pr_curve : []
         const points = rangePoints(range, line, pointField[0])
-        const recallAverage = toFixed(average(points.map(point => point[pointField[1]])), 4)
-        const confidenceAverage = toFixed(average(points.map(({ z }) => z)))
+        const _average = average(points.map(point => point[pointField[1]]))
+        const confidenceAverage = toFixed(average(points.map(({ z }) => z)), 4)
         return points.map((point, index) => ({
           id: `${result}${range[index]}`,
           value: range[index],
@@ -185,7 +185,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
           target: point[pointField[1]],
           point,
           conf: point.z,
-          a: recallAverage,
+          a: _average,
           ca: confidenceAverage,
         })).flat()
       }).flat()
