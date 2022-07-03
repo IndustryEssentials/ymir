@@ -133,10 +133,16 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       render: (type) => <TypeTag type={type} />,
     },
     {
+      title: showTitle("model.column.map"),
+      dataIndex: "map",
+      render: map => percent(map),
+      sorter: (a, b) => a.map - b.map,
+      align: 'center',
+    },
+    {
       title: showTitle("model.column.stage"),
       dataIndex: "recommendStage",
       render: (_, record) => isValidModel(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
-      sorter: (a, b) => a - b,
       align: 'center',
     },
     {
