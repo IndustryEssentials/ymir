@@ -88,6 +88,18 @@ class TaskCreate(TaskBase):
         else:
             return v
 
+    @root_validator
+    def tuck_preprocess_into_parameters(cls, values: Any) -> Any:
+        """
+        For frontend, preprocess is a separate task configuration,
+        however, the underlying reads preprocess stuff from task_parameter,
+        so we just tuck preprocess into task_parameter
+        """
+        preprocess = values.get("preprocess")
+        if preprocess:
+            values["parameters"]["preprocess"] = preprocess
+        return values
+
     class Config:
         use_enum_values = True
 
