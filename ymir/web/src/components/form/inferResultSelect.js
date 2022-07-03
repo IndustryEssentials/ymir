@@ -158,8 +158,8 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }, [datasets])
 
   const goInfer = useCallback(() => {
-    const mids = selectedStages.map(String).join('|')
-    const query = selectedStages.length ? `?mid=${mids}` : ''
+    const mids = selectedStages?.map(String)?.join('|')
+    const query = selectedStages?.length ? `?mid=${mids}` : ''
     history.push(`/home/project/${pid}/inference${query}`)
   }, [selectedStages])
 
