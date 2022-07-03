@@ -90,7 +90,7 @@ function Training({ pid, project }) {
               labelAlign='left'
               colon={false}
             >
-              <Form.Item label={t('model.diagnose.form.model')} rules={[{ require: true }]}>
+              <Form.Item label={t('model.diagnose.form.model')} name='model' rules={[{ required: true }]}>
                 <ModelSelect multiple placeholder={t('task.train.form.model.placeholder')} pid={pid} onChange={modelChange} />
               </Form.Item>
               <Form.Item name='submitBtn'>
