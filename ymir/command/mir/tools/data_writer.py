@@ -244,8 +244,12 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: mirpb.MetadataAtt
 
 
 class BaseDataWriter:
-    def __init__(self, mir_root: str, assets_location: str, class_ids_mapping: Dict[int, int],
-                 format_type: AnnoFormat) -> None:
+    def __init__(self,
+                 mir_root: str,
+                 assets_location: str,
+                 class_ids_mapping: Dict[int, int],
+                 format_type: AnnoFormat,
+                 prep_args: dict = {}) -> None:
         if not assets_location:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty assets_location')
 
@@ -253,6 +257,7 @@ class BaseDataWriter:
         self._assets_location = assets_location
         self._class_ids_mapping = class_ids_mapping
         self._format_type = format_type
+        self._preprocessor = data_preprocessor.DataPreprocessor(args=prep_args)
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
@@ -295,6 +300,7 @@ class RawDataWriter(BaseDataWriter):
                  overwrite: bool,
                  class_ids_mapping: Dict[int, int],
                  format_type: AnnoFormat,
+                 prep_args: dict = {},
                  index_file_path: str = '',
                  gt_dir: str = '',
                  gt_index_file_path: str = '',
@@ -310,6 +316,7 @@ class RawDataWriter(BaseDataWriter):
             need_ext (bool): if true, all export assets will have it's type as ext, jpg, png, etc.
             need_id_sub_folder (bool): if True, use last 2 chars of asset id as a sub folder name
             format_type (AnnoFormat): format type, NONE means exports no annotations
+            prep_args (dict): preprocess arguments
             overwrite (bool): if true, export assets even if they are exist in destination position
             class_ids_mapping (Dict[int, int]): key: ymir class id, value: class id in exported annotation files
             index_file_path (str): path to index file, if None, generates no index file
@@ -321,7 +328,8 @@ class RawDataWriter(BaseDataWriter):
         super().__init__(mir_root=mir_root,
                          assets_location=assets_location,
                          class_ids_mapping=class_ids_mapping,
-                         format_type=format_type)
+                         format_type=format_type,
+                         prep_args=prep_args)
 
         # prepare out dirs
         os.makedirs(assets_dir, exist_ok=True)
@@ -431,13 +439,7 @@ class RawDataWriter(BaseDataWriter):
             self._gt_index_file.close()
             self._gt_index_file = None
 
-    def write_all(
-        self,
-        dr: data_reader.MirDataReader,
-        dpp: data_preprocessor.DataPreprocessor = data_preprocessor.DataPreprocessor()
-    ) -> None:
-        self._preprocessor = dpp
-
+    def write_all(self, dr: data_reader.MirDataReader) -> None:
         for v in dr.read():
             self._write(*v)
         self._close()
@@ -451,12 +453,14 @@ class LmdbDataWriter(BaseDataWriter):
         lmdb_dir: str,
         class_ids_mapping: Dict[int, int],
         format_type: AnnoFormat,
+        prep_args: dict = {},
         index_file_path: str = '',
     ) -> None:
         super().__init__(mir_root=mir_root,
                          assets_location=assets_location,
                          class_ids_mapping=class_ids_mapping,
-                         format_type=format_type)
+                         format_type=format_type,
+                         prep_args=prep_args)
 
         if not lmdb_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty assets_dir or lmdb_dir')
@@ -543,11 +547,8 @@ class LmdbDataWriter(BaseDataWriter):
 
     def write_all(
         self,
-        dr: data_reader.MirDataReader,
-        dpp: data_preprocessor.DataPreprocessor = data_preprocessor.DataPreprocessor()
+        dr: data_reader.MirDataReader
     ) -> None:
-        self._preprocessor = dpp
-
         # if already exists, no need to write, only copy index file to destination
         if self.exists():
             if self._index_file_path:

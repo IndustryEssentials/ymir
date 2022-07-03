@@ -178,7 +178,8 @@ class TestArkDataExporter(unittest.TestCase):
                                                       task=task)
 
     # private: check result
-    def __check_result(self, asset_ids: List[str], format_type: str, export_path: str, index_file_path: str, dpp_id: str):
+    def __check_result(self, asset_ids: List[str], format_type: str, export_path: str, index_file_path: str,
+                       dpp_id: str):
         # check files
         for asset_id in asset_ids:
             if dpp_id:
@@ -312,8 +313,8 @@ class TestArkDataExporter(unittest.TestCase):
             index_file_path=lmdb_index_file_path)
 
     def test_data_rw_01(self):
-        dpp = data_preprocessor.DataPreprocessor(args={'longside_resize': {'dest_size': 250}})
-        self.assertEqual(250, dpp._lr_dest_size)
+        # dpp = data_preprocessor.DataPreprocessor(args={'longside_resize': {'dest_size': 250}})
+        # self.assertEqual(250, dpp._lr_dest_size)
 
         train_path = os.path.join(self._dest_root, 'train')
 
@@ -331,7 +332,10 @@ class TestArkDataExporter(unittest.TestCase):
                                                    52: 1
                                                },
                                                format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                                               index_file_path=index_file_path)
+                                               index_file_path=index_file_path,
+                                               prep_args={'longside_resize': {
+                                                   'dest_size': 250
+                                               }})
         lmdb_index_file_path = os.path.join(train_path, 'index-lmdb.tsv')
         lmdb_writer = data_writer.LmdbDataWriter(mir_root=self._mir_root,
                                                  assets_location=self._assets_location,
@@ -341,14 +345,17 @@ class TestArkDataExporter(unittest.TestCase):
                                                      52: 1
                                                  },
                                                  format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                                                 index_file_path=lmdb_index_file_path)
+                                                 index_file_path=lmdb_index_file_path,
+                                                 prep_args={'longside_resize': {
+                                                     'dest_size': 250
+                                                 }})
 
         with data_reader.MirDataReader(mir_root=self._mir_root,
                                        typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
                                        asset_ids=set(),
                                        class_ids=set()) as reader:
-            raw_writer.write_all(reader, dpp=dpp)
-            lmdb_writer.write_all(reader, dpp=dpp)
+            raw_writer.write_all(reader)
+            lmdb_writer.write_all(reader)
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
