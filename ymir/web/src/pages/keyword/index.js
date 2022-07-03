@@ -24,6 +24,7 @@ const { useForm } = Form
 
 const initQuery = {
   name: "",
+  current: 1,
   offset: 0,
   limit: 20,
 }
@@ -94,7 +95,7 @@ function Keyword({ getKeywords }) {
   const pageChange = ({ current, pageSize }) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    setQuery((old) => ({ ...old, current, limit, offset }))
   }
 
   function showTitle(str) {
@@ -233,7 +234,8 @@ function Keyword({ getKeywords }) {
                 // total: 500,
                 defaultPageSize: query.limit,
                 showTotal: (total) => t("keyword.pager.total.label", { total }),
-                defaultCurrent: 1,
+                defaultCurrent: query.current,
+                current: query.current,
               }}
               columns={columns}
             ></Table>
