@@ -45,7 +45,6 @@ const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
 
 const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   const history = useHistory()
-  const [selectedStages, setSelectedStages] = useState([])
   const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
   const [testingDatasets, setTestingDatasets] = useState([])
@@ -56,6 +55,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   const [fetched, setFetched] = useState(false)
   const [selectedTasks, setSelectedTasks] = useState([])
   const [tasks, setTasks] = useState([])
+  const selectedStages = Form.useWatch('stage', form)
 
   useEffect(() => {
     setTasks(inferTasks)
@@ -63,7 +63,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }, [inferTasks])
 
   useEffect(() => {
-    const stages = selectedStages.map(([model, stage]) => stage)
+    const stages = selectedStages?.map(([model, stage]) => stage) || []
     if (stages.length) {
       fetchInferTask({ stages })
     } else {
@@ -142,7 +142,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }
 
   function modelChange(values, options = []) {
-    setSelectedStages(values)
+    // setSelectedStages(values)
     setModels(options.map(([opt]) => opt?.model))
   }
 
