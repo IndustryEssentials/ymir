@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Table } from "antd"
 import { percent, toFixed } from '@/utils/number'
 import t from '@/utils/t'
+import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
@@ -44,6 +45,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   const [range, setRange] = useState([])
   const [pointField, setPointField] = useState(['x', 'y'])
   const [labels, setLabels] = useState({})
+  const [hiddens, setHiddens] = useState({})
 
   useEffect(() => {
     const min = prRate[0]
@@ -240,15 +242,16 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
 
   return list.map(({ id, label, rows }) => <div key={id}>
-    <h3>{label}</h3>
-    <Table
-      dataSource={rows}
-      rowKey={record => record.id}
-      rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-      columns={columns}
-      pagination={false}
-      scroll={{ x: '100%', y: 600 }}
-    />
+    <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
+      <Table
+        dataSource={rows}
+        rowKey={record => record.id}
+        rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
+        columns={columns}
+        pagination={false}
+        scroll={{ x: '100%' }}
+      />
+    </Panel>
   </div>)
 }
 

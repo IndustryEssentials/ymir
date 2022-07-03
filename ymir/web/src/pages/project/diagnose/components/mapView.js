@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react"
 import { Col, Row, Table } from "antd"
 import { percent } from '@/utils/number'
-import { ArrowDownIcon, ArrowRightIcon, } from "@/components/common/icons"
-import Panel from "../../../../components/form/panel"
+import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
@@ -186,7 +185,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
         rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
         columns={columns}
         pagination={false}
-        scroll={{ x: '100%', y: '600' }}
+        scroll={{ x: '100%' }}
       />
     </Panel>
   </div>)
