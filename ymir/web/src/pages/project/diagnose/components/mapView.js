@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react"
-import { Table } from "antd"
+import { Col, Row, Table } from "antd"
 import { percent } from '@/utils/number'
+import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
 const average = (nums = []) => nums.reduce((prev, num) => Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
-const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
+const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
+  Object.values(iou_evaluations)[0]['ci_evaluations'] :
+  iou_averaged_evaluation['ck_evaluations']
 
 const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
@@ -16,6 +19,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   const [dData, setDData] = useState(null)
   const [kData, setKData] = useState(null)
   const [columns, setColumns] = useState([])
+  const [hiddens, setHiddens] = useState({})
 
   useEffect(() => {
     if (data && keywords) {
@@ -57,24 +61,20 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }, [xType, dd, kd, dData, kData])
 
   function generateDData(data) {
-    const field = getKwField(kwType)
-    const ddata = Object.keys(data).reduce((prev, id) => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0]
+    const ddata = Object.keys(data).reduce((prev, rid) => {
+      const fiou = getKwField(data[rid], kwType)
       return {
         ...prev,
-        [id]: fiou[field],
+        [rid]: fiou,
       }
     }, {})
     setDData(ddata)
   }
 
   function generateKData(data) {
-    const field = getKwField(kwType)
     const kdata = {}
     Object.keys(data).forEach(id => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0][field]
+      const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         if (kwType) {
@@ -176,15 +176,16 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }
 
   return list.map(({ id, label, rows }) => <div key={id}>
-    <h3>{label}</h3>
-    <Table
-      dataSource={rows}
-      rowKey={record => record.id}
-      rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-      columns={columns}
-      pagination={false}
-      scroll={{ x: '100%' }}
-    />
+    <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
+      <Table
+        dataSource={rows}
+        rowKey={record => record.id}
+        rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
+        columns={columns}
+        pagination={false}
+        scroll={{ x: '100%' }}
+      />
+    </Panel>
   </div>)
 }
 
