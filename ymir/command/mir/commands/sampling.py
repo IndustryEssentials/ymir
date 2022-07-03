@@ -85,6 +85,8 @@ class CmdSampling(base.BaseCommand):
                 mir_annotations.task_annotations[mir_annotations.head_task_id])
             sampled_mir_annotations.prediction.CopyFrom(mir_annotations.prediction)
             sampled_mir_annotations.ground_truth.CopyFrom(mir_annotations.ground_truth)
+            for asset_id in mir_annotations.image_cks.keys():
+                sampled_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
         # commit
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
