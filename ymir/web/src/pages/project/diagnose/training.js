@@ -69,8 +69,8 @@ function Training({ pid, project }) {
     <div className={s.wrapper}>
       <Row gutter={20}>
         <Col span={18} style={{ border: '1px solid #ccc', minHeight: 500, height: 'calc(100vh - 300px)', padding: 0 }}>
-          { tensorboardUrl ? <iframe ref={iframe} src={tensorboardUrl} style={{ width: '100%', height: '100%', border: 'none' }}></iframe>
-          : '' }
+          {tensorboardUrl ? <iframe ref={iframe} src={tensorboardUrl} style={{ width: '100%', height: '100%', border: 'none' }}></iframe>
+            : ''}
         </Col>
         <Col span={6} className={s.formContainer}>
           <div className={s.mask} hidden={!hasResult}>
@@ -90,7 +90,7 @@ function Training({ pid, project }) {
               labelAlign='left'
               colon={false}
             >
-              <Form.Item label={t('model.diagnose.form.model')} rules={[{ require: true }]}>
+              <Form.Item label={t('model.diagnose.form.model')} name='model' rules={[{ required: true }, { type: 'array', max: 1 }]}>
                 <ModelSelect multiple placeholder={t('task.train.form.model.placeholder')} pid={pid} onChange={modelChange} />
               </Form.Item>
               <Form.Item name='submitBtn'>
