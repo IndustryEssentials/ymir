@@ -29,7 +29,6 @@ class CmdShow(base.BaseCommand):
 
         # show infos
         cls._show_cis(mir_root, src_typ_rev_tid, verbose)
-        cls._show_cks(mir_root, src_typ_rev_tid, verbose)
         cls._show_general(mir_root, src_typ_rev_tid, verbose)
 
         return MirCode.RC_OK
@@ -67,6 +66,7 @@ class CmdShow(base.BaseCommand):
         hid = mir_annotations.head_task_id
         print(f"annotations.mir: hid: {hid}," f" {len(mir_annotations.task_annotations[hid].image_annotations)} assets")
         print(f"    ground truth: {len(mir_annotations.ground_truth.image_annotations)} assets")
+        print(f"    images count with ck: {len(mir_annotations.image_cks)}")
 
     @classmethod
     def _show_general_context(cls, mir_context: mirpb.MirContext) -> None:
@@ -124,10 +124,6 @@ class CmdShow(base.BaseCommand):
                 print(f"  {main_name}: {cnt}")
             else:
                 print(f"  {ci} (unknown ci): {cnt}")
-
-    @classmethod
-    def _show_cks(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
-        print('')  # currently no customized keywords
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
