@@ -164,13 +164,13 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
 
   return (
     <>
-      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }]}>
+      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <ModelSelect pid={pid} multiple onChange={modelChange} />
       </Form.Item>
-      <Form.Item name='dataset' hidden={!datasets.length} label={t('model.diagnose.label.testing_dataset')} rules={[{ required: true }]}>
+      <Form.Item name='dataset' hidden={!datasets.length} label={t('model.diagnose.label.testing_dataset')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} />
       </Form.Item>
-      <Form.Item name='config' hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }]}>
+      <Form.Item name='config' hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <ConfigSelect configs={configs} onChange={configChange} />
       </Form.Item>
       <p>{t('task.infer.diagnose.tip')} <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button></p>
