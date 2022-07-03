@@ -83,9 +83,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }, [datasets])
 
   useEffect(() => {
-    if (configs.length === 1) {
-      form.setFieldsValue({ config: [0] })
-    }
+    form.setFieldsValue({ config: configs.length === 1 ? [0] : undefined })
   }, [configs])
 
   useEffect(() => {
@@ -113,15 +111,15 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }, [tasks, selectedDatasets])
 
   useEffect(() => {
-    const selected = tasks
-      .filter(({ parameters: { dataset_id }, config }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true)
-        && (selectedConfigs.length ? sameConfigs(config, selectedConfigs) : true))
-    const unique = selected.reduce((prev, task) => {
-      return prev.some(({ parameters: { dataset_id }, config }) =>
-        dataset_id === task.dataset_id && sameConfig(config, task.parameters.config)) ?
-        prev : [...prev, task]
-    }, [])
-    setSelectedTasks(unique)
+    const selected = []
+    selectedDatasets.forEach(did => {
+      const dtask = tasks.filter(({ parameters: { dataset_id }, config }) => dataset_id === did)
+      selectedConfigs.forEach(sconfig => {
+        const ctask = dtask.find(({ config }) => sameConfig(config, sconfig))
+        ctask && selected.push(ctask)
+      })
+    })
+    setSelectedTasks(selected)
   }, [tasks, selectedConfigs])
 
   useEffect(() => {
