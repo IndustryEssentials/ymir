@@ -2,12 +2,15 @@ import { useEffect, useState } from "react"
 import { Table } from "antd"
 import { percent, toFixed } from '@/utils/number'
 import t from '@/utils/t'
+import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
 const average = (nums = []) => nums.reduce((prev, num) => !Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
-const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
+const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
+  Object.values(iou_evaluations)[0]['ci_evaluations'] :
+  iou_averaged_evaluation['ck_evaluations']
 
 const getLabels = type => ({
   colMain: `model.diagnose.metrics.${type}.label`,
@@ -44,6 +47,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   const [range, setRange] = useState([])
   const [pointField, setPointField] = useState(['x', 'y'])
   const [labels, setLabels] = useState({})
+  const [hiddens, setHiddens] = useState({})
 
   useEffect(() => {
     const min = prRate[0]
@@ -96,24 +100,20 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   }, [xType, dd, kd, dData, kData, range])
 
   function generateDData(data) {
-    const field = getKwField(kwType)
-    const ddata = Object.keys(data).reduce((prev, id) => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0]
+    const ddata = Object.keys(data).reduce((prev, rid) => {
+      const fiou = getKwField(data[rid], kwType)
       return {
         ...prev,
-        [id]: fiou[field],
+        [rid]: fiou,
       }
     }, {})
     setDData(ddata)
   }
 
   function generateKData(data) {
-    const field = getKwField(kwType)
     const kdata = {}
     Object.keys(data).forEach(id => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0][field]
+      const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         if (kwType) {
@@ -240,15 +240,16 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
 
   return list.map(({ id, label, rows }) => <div key={id}>
-    <h3>{label}</h3>
-    <Table
-      dataSource={rows}
-      rowKey={record => record.id}
-      rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-      columns={columns}
-      pagination={false}
-      scroll={{ x: '100%' }}
-    />
+    <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
+      <Table
+        dataSource={rows}
+        rowKey={record => record.id}
+        rowClassName={(record, index) => Math.floor(index / range.length) % 2 === 0 ? '' : 'oddRow'}
+        columns={columns}
+        pagination={false}
+        scroll={{ x: '100%' }}
+      />
+    </Panel>
   </div>)
 }
 

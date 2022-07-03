@@ -133,10 +133,16 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       render: (type) => <TypeTag type={type} />,
     },
     {
+      title: showTitle("model.column.map"),
+      dataIndex: "map",
+      render: map => percent(map),
+      sorter: (a, b) => a.map - b.map,
+      align: 'center',
+    },
+    {
       title: showTitle("model.column.stage"),
       dataIndex: "recommendStage",
       render: (_, record) => isValidModel(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
-      sorter: (a, b) => a - b,
       align: 'center',
     },
     {
@@ -171,7 +177,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
   function updateModelVersion(result) {
@@ -443,7 +449,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         </div>
       </div>) : <Empty />}
     </div>
-    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
+      current={query.current} defaultCurrent={query.current} defaultPageSize={query.limit} onChange={listChange} />
   </>)
 
   return (

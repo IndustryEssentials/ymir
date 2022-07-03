@@ -38,7 +38,7 @@ const ProjectList = ({ list, query, ...func }) => {
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
   async function getData() {
@@ -209,7 +209,8 @@ const ProjectList = ({ list, query, ...func }) => {
           />
         </ConfigProvider>
         <Pagination className= 'pager' onChange={pageChange}
-          defaultCurrent={1} defaultPageSize={query.limit} total={total}
+          current={query.current}
+          defaultCurrent={query.current} defaultPageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
           showQuickJumper showSizeChanger />
         <Del ref={delRef} ok={delOk} />
