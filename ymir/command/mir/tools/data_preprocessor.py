@@ -50,12 +50,17 @@ class DataPreprocessor:
         init a dpp
         args: {'longside_resize': {'dest_size': xxx}}
         """
+        self._args = args
         self._lr_dest_size = args.get('longside_resize', {}).get('dest_size', 0)
 
     @classmethod
     def id_from_args(cls, args: dict) -> str:
         lr_dest_size = args.get('longside_resize', {}).get('dest_size', 0)
         return f"lr{lr_dest_size}" if lr_dest_size > 0 else ''
+
+    @property
+    def need_prep(self) -> bool:
+        return bool(self._args)
 
     @classmethod
     def _read(cls, img_path: str) -> Image:
@@ -71,11 +76,15 @@ class DataPreprocessor:
         """
         preprocess, and returns encoded bytes and format str of this image
         """
-        img = self._read(img_path=img_path)
-        orig_img_format = img.format
-        if self._lr_dest_size > 0:
-            img = _prep_img_longside_resize(img=img, dest_size=self._lr_dest_size)
-        return self._to_bytes(img=img, format=orig_img_format)
+        if self.need_prep:
+            img = self._read(img_path=img_path)
+            orig_img_format = img.format
+            if self._lr_dest_size > 0:
+                img = _prep_img_longside_resize(img=img, dest_size=self._lr_dest_size)
+            return self._to_bytes(img=img, format=orig_img_format)
+        else:
+            with open(img_path, 'rb') as f:
+                return f.read()
 
     def prep_pbs(self, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                  gt_annotations: mirpb.SingleImageAnnotations) -> None:
