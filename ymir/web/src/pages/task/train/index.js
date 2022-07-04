@@ -24,6 +24,7 @@ import DockerConfigForm from "../components/dockerConfigForm"
 import useFetch from '@/hooks/useFetch'
 import TrainFormat from "../components/trainFormat"
 import DatasetSelect from "../../../components/form/datasetSelect"
+import PreProcessForm from "../components/preProcessForm"
 
 const { Option } = Select
 
@@ -374,7 +375,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
-
+            <PreProcessForm />
             <LiveCodeForm live={live} />
             <DockerConfigForm seniorConfig={seniorConfig} form={form} />
             <Tip hidden={true}>
