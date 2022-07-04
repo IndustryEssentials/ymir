@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import useFetch from '@/hooks/useFetch'
 import ReactJson from 'react-json-view'
-import { Button, Form, Input, Row, Col, Space, Table, Popover, InputNumber, Slider } from 'antd'
+import { Button, Form, Input, Row, Col, Space, Table, Popover, InputNumber, Slider, message } from 'antd'
 import { SyncOutlined } from "@ant-design/icons"
 import { SearchIcon, EyeOnIcon, DeleteIcon } from "@/components/common/icons"
 
@@ -15,6 +15,7 @@ import Del from './components/del'
 
 const initQuery = {
   name: "",
+  current: 1,
   offset: 0,
   limit: 10,
 }
@@ -97,6 +98,9 @@ function Visualization({ pid, project }) {
   }
 
   const onFinish = async (values) => {
+    if (!taskIds.length) {
+      return message.error('model.diagnose.v.tasks.require')
+    }
     const params = {
       ...values,
       projectId: pid,
@@ -122,7 +126,7 @@ function Visualization({ pid, project }) {
   }
 
   function renderName(names) {
-    return renderPop(names.toString(), (<div>{names.map(name => <>{name}<br /></>)}</div>), 300)
+    return renderPop(names.toString(), (<div>{names.map(name => <div key={name}>{name}<br /></div>)}</div>), 300)
   }
 
   const columns = [
@@ -210,6 +214,7 @@ function Visualization({ pid, project }) {
     const offset = (current - 1) * pageSize
     setQuery(old => ({
       ...old,
+      current,
       limit,
       offset,
       order_by: sorters.column ? sortColumn : 'id',
@@ -325,7 +330,8 @@ function Visualization({ pid, project }) {
                 total: total,
                 defaultPageSize: query.limit,
                 showTotal: (total) => t("keyword.pager.total.label", { total }),
-                defaultCurrent: 1,
+                defaultCurrent: query.current,
+                current: query.current,
               }}
               columns={columns}
             />

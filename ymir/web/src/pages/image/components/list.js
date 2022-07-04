@@ -19,6 +19,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 const initQuery = {
   name: undefined,
   type: undefined,
+  current: 1,
   offset: 0,
   limit: 20,
 }
@@ -45,7 +46,7 @@ const ImageList = ({ role, filter, getImages }) => {
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    setQuery((old) => ({ ...old, current, limit, offset }))
   }
 
   async function getData() {
@@ -169,7 +170,7 @@ const ImageList = ({ role, filter, getImages }) => {
       <Col flex={1}><Space>
         <span>{item.name}</span>
         {imageState(item.state)}
-        {liveCodeState(item.liveCode)}
+        {isDone(item.state) ? liveCodeState(item.liveCode) : null}
         </Space></Col>
       <Col>{more(item)}</Col>
     </Row>
@@ -201,7 +202,8 @@ const ImageList = ({ role, filter, getImages }) => {
         renderItem={renderItem}
       />
       <Pagination className='pager' onChange={pageChange}
-        defaultCurrent={1} defaultPageSize={query.limit} total={total}
+        current={query.current}
+        defaultCurrent={query.current} defaultPageSize={query.limit} total={total}
         showTotal={() => t('image.list.total', { total })}
         showQuickJumper showSizeChanger />
       <ShareModal ref={shareModalRef} ok={shareOk} />

@@ -3,7 +3,7 @@ import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
 import s from './panel.less'
 import { useEffect, useState } from "react"
 
-const Panel = ({ hasHeader = true, toogleVisible = true, visible, setVisible = () => { }, label = '', children }) => {
+const Panel = ({ hasHeader = true, toogleVisible = true, visible, setVisible = () => { }, label = '', bg = true, children }) => {
   const [vis, setVis] = useState(false)
   useEffect(() => {
     setVis(visible)
@@ -11,7 +11,7 @@ const Panel = ({ hasHeader = true, toogleVisible = true, visible, setVisible = (
 
   return (
     <div className='panel'>
-      {hasHeader ? <Row className='header' onClick={() => {
+      {hasHeader ? <Row className={`header ${bg ? 'bg' : 'nobg'}`} onClick={() => {
         setVis(!vis)
         setVisible(!vis)
       }}>

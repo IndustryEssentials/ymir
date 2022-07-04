@@ -24,6 +24,7 @@ import DockerConfigForm from "../components/dockerConfigForm"
 import useFetch from '@/hooks/useFetch'
 import TrainFormat from "../components/trainFormat"
 import DatasetSelect from "../../../components/form/datasetSelect"
+import PreProcessForm from "../components/preProcessForm"
 
 const { Option } = Select
 
@@ -47,7 +48,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const stage = string2Array(mid)
   const did = Number(location.query.did)
   const [project, setProject] = useState({})
-  const [datasets, setDatasets] = useState([])
+  const [selectedKeywords, setSelectedKeywords] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
   const [testSet, setTestSet] = useState(null)
@@ -61,7 +62,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [live, setLiveCode] = useState(false)
   const [openpai, setOpenpai] = useState(false)
   const [duplicationChecked, setDuplicationChecked] = useState(false)
-  const [strategy, setStrategy] = useState(duplicatedOptions[0].value)
+  const [strategy, setStrategy] = useState(0)
+  const [allDuplicated, setAllDulplicated] = useState(false)
   const [duplicated, checkDuplication] = useFetch('dataset/checkDuplication', 0)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
 
@@ -87,7 +89,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
   useEffect(() => {
     const dss = allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))
-    setDatasets(dss)
     const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
@@ -114,18 +115,23 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
   useEffect(() => {
     setDuplicationChecked(false)
+    setAllDulplicated(false)
   }, [trainSet, testSet])
 
   useEffect(() => {
-    const allValidation = duplicated === validationDataset?.assetCount
-    const allTrain = duplicated === trainDataset?.assetCount
+    if (duplicationChecked) {
+      const allValidation = duplicated === validationDataset?.assetCount
+      const allTrain = duplicated === trainDataset?.assetCount
 
-    setStrategy(allValidation && !allTrain ? 2 : 1)
-  }, [duplicated])
+      setStrategy(allValidation && !allTrain ? 2 : 1)
+      setAllDulplicated(allValidation && allTrain)
+    }
+  }, [duplicationChecked, duplicated])
 
   async function fetchProject() {
     const project = await func.getProject(pid)
     project && setProject(project)
+    setSelectedKeywords(project.keywords)
     form.setFieldsValue({ keywords: project.keywords })
   }
 
@@ -202,16 +208,27 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     const allValidation = duplicated === validationDataset?.assetCount
     const allTrain = duplicated === trainDataset?.assetCount
     const disabled = allValidation ? 1 : (allTrain ? 2 : null)
-    const allDuplicated = allTrain && allValidation
     return duplicated ? (allDuplicated ? t('task.train.action.duplicated.all') : <div>
       <span>{t('task.train.duplicated.tip', { duplicated })}</span>
       <Radio.Group
         value={strategy}
-        onChange={setStrategy}
+        onChange={({ target: { value } }) => setStrategy(value)}
         options={duplicatedOptions.map(opt => ({ ...opt, disabled: disabled === opt.value, label: t(opt.label) }))}
       />
     </div>) : t('task.train.action.duplicated.no')
   }
+
+  const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
+  const trainsetFilters = datasets => datasets.filter(ds => {
+    const notTestSet = ds.id !== testSet
+    const notTestingSet = !testingSetIds.includes(ds.id)
+    return matchKeywords(ds) && notTestSet && notTestingSet
+  })
+
+  const validationSetFilters = datasets => datasets.filter(ds => {
+    const notTrainSet = ds.id !== trainSet
+    return matchKeywords(ds) && notTrainSet
+  })
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {
@@ -254,7 +271,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 >
                   <DatasetSelect
                     pid={pid}
-                    filters={datasets => datasets.filter(ds => ds.id !== testSet && !testingSetIds.includes(ds.id))}
+                    filters={trainsetFilters}
                     onChange={trainSetChange}
                   />
                 </Form.Item>
@@ -275,10 +292,10 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 >
                   <DatasetSelect
                     pid={pid}
-                    filters={datasets => datasets.filter(ds => ds.id !== trainSet)}
+                    filters={validationSetFilters}
                     placeholder={t('task.train.form.test.datasets.placeholder')}
                     onChange={validationSetChange}
-                    extra={<Button type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
+                    extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
                   />
                 </Form.Item>
               </Tip>
@@ -296,6 +313,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 >
                   <Select mode="multiple" showArrow
                     placeholder={t('project.add.form.keyword.required')}
+                    onChange={setSelectedKeywords}
                     filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                     {keywords.map(keyword => (
                       <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
@@ -307,9 +325,11 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                   </Select>
                 </Form.Item>}
             </Tip>
-            <Tip hidden={true}><Form.Item label={t('task.train.export.format')} name='trainFormat'>
-              <TrainFormat />
-            </Form.Item></Tip>
+            <Tip content={t('tip.train.export.format')}>
+              <Form.Item label={t('task.train.export.format')} name='trainFormat' initialValue={'none:raw'}>
+                <TrainFormat />
+              </Form.Item>
+            </Tip>
             {openpai ? <Tip hidden={true}>
               <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
                 {renderRadio(TrainDevices)}
@@ -355,14 +375,14 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
               </Form.Item>
             </Tip>
-
+            <PreProcessForm />
             <LiveCodeForm live={live} />
             <DockerConfigForm seniorConfig={seniorConfig} form={form} />
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
                   <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" disabled={projectDirty} htmlType="submit">
+                    <Button type="primary" size="large" disabled={projectDirty || allDuplicated} htmlType="submit">
                       {t('common.action.train')}
                     </Button>
                   </Form.Item>

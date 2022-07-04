@@ -28,7 +28,7 @@ const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magen
 
 function Verify({ verify }) {
   const history = useHistory()
-  const { mid: id } = useParams()
+  const { mid: id, id: pid } = useParams()
   const [url, setUrl] = useState('')
   const [confidence, setConfidence] = useState(20)
   const [annotations, setAnnotations] = useState([])
@@ -133,7 +133,7 @@ function Verify({ verify }) {
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
     // reinit annotations
     setAnnotations([])
-    const result = await verify({ modelStage: [id, model.recommendStage], urls: [url], image, config })
+    const result = await verify({ projectId: pid, modelStage: [id, model.recommendStage], urls: [url], image, config })
     // console.log('result: ', result)
     if (result) {
       const all = result.annotations[0]?.detection || []

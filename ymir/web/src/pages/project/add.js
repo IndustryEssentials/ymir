@@ -186,9 +186,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
                 ]} />
               </Form.Item>
               {isEdit ? <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
-                <Form.Item label={t('project.add.form.testing.set')} name="testingSets" rules={[
-                  { required: true, message: t('project.add.form.testingset.required') },
-                ]} tooltip={t('project.add.form.testingset.tip')}>
+                <Form.Item label={t('project.add.form.testing.set')} name="testingSets" tooltip={t('project.add.form.testingset.tip')}>
                   <DatasetSelect
                     pid={id}
                     mode='multiple'

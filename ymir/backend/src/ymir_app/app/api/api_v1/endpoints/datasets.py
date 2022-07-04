@@ -18,6 +18,7 @@ from app.api.errors.errors import (
     FailedtoCreateTask,
     FailedToHideProtectedResources,
     DatasetGroupNotFound,
+    PrematureDatasetsEvaluation,
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
@@ -574,6 +575,9 @@ def check_duplication(
     datasets = crud.dataset.get_multi_by_ids(db, ids=check_duplication.dataset_ids)
     if len(check_duplication.dataset_ids) != len(datasets):
         raise DatasetNotFound()
+
+    if not all(dataset.result_state == ResultState.ready for dataset in datasets):
+        raise PrematureDatasetsEvaluation()
 
     viz_client.initialize(user_id=current_user.id, project_id=check_duplication.project_id)
     duplicated_asset_count = viz_client.check_duplication([dataset.hash for dataset in datasets])

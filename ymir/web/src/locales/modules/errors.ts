@@ -15,7 +15,7 @@ const errors = {
     en: 'Can not hide protected resource, such as result of current iteration, training, validation, and mining dataset related to project, or in-progress dataset/model',
   },
   'error110201': { cn: '找不到该用户，请重试', en: 'USER_NOT_FOUND: User Not Found, retry or contact admin.', },
-  'error110202': { cn: '名称已重复，请选择新的名称注册', en: 'USER_DUPLICATED_NAME: Duplicated Username, try another name', },
+  'error110202': { cn: '邮箱已注册，请选择新的邮箱注册', en: 'USER_DUPLICATED_NAME: Duplicated Email, try another one', },
   'error110203': { cn: '用户未授权访问', en: 'USER_NOT_ACCESSIBLE: User is Unaccessable', },
   'error110204': { cn: '用户未登录，请登录', en: 'USER_NOT_LOGGED_IN: User is not logged in, please log in', },
   'error110205': { cn: '该操作需要管理员权限，用户不是管理员', en: 'USER_NOT_ADMIN: User is not admin but action need admin privelige', },
@@ -61,6 +61,8 @@ const errors = {
   'error110406': { cn: '不在同一个数据集的版本不能进行比对', en: 'Versions must be in the same datasets', },
   'error111902': { cn: '调用CMD进行数据集比对失败', en: 'Evaluate error from CMD', },
   'error111903': { cn: '完成数据集比对，但找不到相应的结果', en: 'Evaluate done, but can not find result', },
+  'error111905': { cn: '推理结果缺乏真值或预测标注，诊断失败', en: 'Evaluation failed for no ground truth or prediction', },
+  'error111906': { cn: '模型推理尚未完成，诊断失败', en: 'Evaluate failed for inference unfinished', },
   'error130604': {
     cn: '内部网络错误, 请检查应用程序系统配置',
     en: 'HTTP_ERROR: internal network error, please check system configuration.',

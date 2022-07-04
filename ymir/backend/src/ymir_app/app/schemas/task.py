@@ -43,7 +43,7 @@ class TaskParameter(BaseModel):
     network: Optional[str]
     backbone: Optional[str]
     hyperparameter: Optional[str]
-    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.as_training
+    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
 
     # mining & dataset_infer
     model_id: Optional[int]
@@ -64,11 +64,20 @@ class TaskParameter(BaseModel):
         return [keyword.strip() for keyword in v]
 
 
+class LongsideResizeParameter(BaseModel):
+    dest_size: int
+
+
+class TaskPreprocess(BaseModel):
+    longside_resize: LongsideResizeParameter
+
+
 class TaskCreate(TaskBase):
     iteration_id: Optional[int]
     iteration_stage: Optional[IterationStage]
     parameters: TaskParameter = Field(description="task specific parameters")
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
+    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     @validator("docker_image_config")
     def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
@@ -78,6 +87,18 @@ class TaskCreate(TaskBase):
             return json.dumps(v)
         else:
             return v
+
+    @root_validator
+    def tuck_preprocess_into_parameters(cls, values: Any) -> Any:
+        """
+        For frontend, preprocess is a separate task configuration,
+        however, the underlying reads preprocess stuff from task_parameter,
+        so we just tuck preprocess into task_parameter
+        """
+        preprocess = values.get("preprocess")
+        if preprocess:
+            values["parameters"]["preprocess"] = preprocess
+        return values
 
     class Config:
         use_enum_values = True

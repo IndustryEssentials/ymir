@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react"
-import { Table } from "antd"
+import { Col, Row, Table } from "antd"
 import { percent } from '@/utils/number'
+import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
-const average = (nums = []) => nums.reduce((prev, num) => Number.isNaN(num) ? prev + num : prev, 0) / nums.length
+const average = (nums = []) => nums.reduce((prev, num) => !Number.isNaN(num) ? prev + num : prev, 0) / nums.length
 
-const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
+const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
+  Object.values(iou_evaluations)[0]['ci_evaluations'] :
+  iou_averaged_evaluation['ck_evaluations']
 
 const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
@@ -16,6 +19,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   const [dData, setDData] = useState(null)
   const [kData, setKData] = useState(null)
   const [columns, setColumns] = useState([])
+  const [hiddens, setHiddens] = useState({})
 
   useEffect(() => {
     if (data && keywords) {
@@ -34,7 +38,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   useEffect(() => {
     if (data && keywords) {
       const kws = kwType ?
-        Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
+        Object.keys(Object.values(data)[0].iou_averaged_evaluation.ck_evaluations[keywords].sub)
           .map(k => ({ value: k, label: k, parent: keywords })) :
         keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
@@ -43,7 +47,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
 
   useEffect(() => {
     const cls = generateColumns()
-    console.log('cls:', cls)
     setColumns(cls)
   }, [xasix])
 
@@ -58,28 +61,23 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }, [xType, dd, kd, dData, kData])
 
   function generateDData(data) {
-    const field = getKwField(kwType)
-    const ddata = Object.keys(data).reduce((prev, id) => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0]
+    const ddata = Object.keys(data).reduce((prev, rid) => {
+      const fiou = getKwField(data[rid], kwType)
       return {
         ...prev,
-        [id]: fiou[field],
+        [rid]: fiou,
       }
     }, {})
     setDData(ddata)
   }
 
   function generateKData(data) {
-    const field = getKwField(kwType)
     const kdata = {}
     Object.keys(data).forEach(id => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0][field]
+      const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         if (kwType) {
-          console.log('fiou[key]:', fiou[key])
           Object.keys(fiou[key].sub).forEach(subKey => {
             kdata[key][subKey] = kdata[key][subKey] || { _average: fiou[key].total }
             kdata[key][subKey][id] = fiou[key].sub[subKey]
@@ -93,7 +91,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }
 
   function generateList(isDs) {
-    console.log('kd:', dd, kd, isDs)
     const titles = isDs ? dd : kd
     const list = titles.map(({ value, label }) => ({
       id: value, label,
@@ -105,7 +102,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   function generateDsRows(tid) {
     const tts = tasks.filter(({ testing }) => testing === tid)
     return tts.map(({ result: rid }) => {
-      console.log('dData:', dData, rid, keywords)
       const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
       const kwAps = kd.reduce((prev, { value: kw }) => {
         return {
@@ -131,12 +127,12 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
     return mids.map(mid => {
       const tks = tasks.filter(({ model }) => model === mid)
       const _model = getModelCell(tks[0].result)
-      const drow = tks.reduce((prev, { testing, result }) => {
+      const drow = kdata ? tks.reduce((prev, { testing, result }) => {
         return {
           ...prev,
-          [testing]: kdata[result]?.ap
+          [testing]: kdata[result]?.ap,
         }
-      }, {})
+      }, {}) : {}
       const _average = kwType ? kdata._average.ap : average(Object.values(drow))
       return {
         id: mid,
@@ -166,7 +162,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
         dataIndex: '_model',
       },
       {
-        title: 'Average AP',
+        title: 'Average mAP',
         dataIndex: '_average',
         render: mapRender,
       },
@@ -180,15 +176,16 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }
 
   return list.map(({ id, label, rows }) => <div key={id}>
-    <h3>{label}</h3>
-    <Table
-      dataSource={rows}
-      rowKey={record => record.id}
-      rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-      columns={columns}
-      pagination={false}
-      scroll={{ x: '100%' }}
-    />
+    <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
+      <Table
+        dataSource={rows}
+        rowKey={record => record.id}
+        rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
+        columns={columns}
+        pagination={false}
+        scroll={{ x: '100%' }}
+      />
+    </Panel>
   </div>)
 }
 

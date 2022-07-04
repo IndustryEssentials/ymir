@@ -65,7 +65,7 @@ function Matrics({ pid, project }) {
 
   useEffect(() => {
     // calculate ck
-    const cks = remoteData ? Object.values(remoteData).map(({ iou_evaluations }) => Object.keys(Object.values(iou_evaluations)[0].ck_evaluations)).flat() : []
+    const cks = remoteData ? Object.values(remoteData).map(({ iou_averaged_evaluation }) => Object.keys(iou_averaged_evaluation.ck_evaluations)).flat() : []
     console.log('cks:', cks)
 
     setCK([...new Set(cks)])
@@ -159,12 +159,13 @@ function Matrics({ pid, project }) {
         options={metricsTabs.map(item => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`) }))}
         onChange={metricsChange}
       />
-      <Slider hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)} style={{ width: 200 }} min={0} max={1}
-        value={prRate}
-        range={true}
-        onChange={prRateChange}
-        tooltipVisible
-        step={0.05} />
+      <div hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)}>
+        <Slider style={{ width: 200 }} min={0} max={1}
+          value={prRate}
+          range={true}
+          onChange={prRateChange}
+          step={0.05} />
+      </div>
     </Space>
     <Row gutter={20}>
       <Col>
@@ -190,9 +191,7 @@ function Matrics({ pid, project }) {
 
   const renderIouTitle = <Space>
     <span>{t('model.diagnose.form.iou')}</span>
-    <Form.Item noStyle>
-      <Checkbox value={everageIou} onChange={({ target: { checked } }) => setEverageIou(checked)}>Everage IOU</Checkbox>
-    </Form.Item>
+    <Checkbox checked={everageIou} onChange={({ target: { checked } }) => setEverageIou(checked)}>Average IOU</Checkbox>
   </Space>
 
   // todo form initial values

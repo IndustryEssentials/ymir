@@ -100,6 +100,10 @@ class TestInvokerTaskMining(unittest.TestCase):
         assets_config = {
             'modelskvlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
+            'openpai_host': '',
+            'openpai_token': '',
+            'openpai_storage': '',
+            'openpai_user': '',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
@@ -140,7 +144,7 @@ class TestInvokerTaskMining(unittest.TestCase):
         expected_config = {'executor_config': mining_config, 'task_context': {'available_gpu_id': ''}}
         self.assertDictEqual(expected_config, config)
 
-        asset_cache_dir = os.path.join(self._user_root, 'mining_assset_cache')
+        asset_cache_dir = os.path.join(self._user_root, 'mining_asset_cache')
         mining_cmd = ("mir mining --root {0} --dst-rev {1}@{1} -w {2} --model-location {3} --media-location {3} "
                       "--model-hash {5} --src-revs {1}@{6} --asset-cache-dir {9} --task-config-file {7} --executor {8} "
                       "--executant-name {10} --topk {4}".format(self._mir_repo_root, self._task_id, working_dir_0,

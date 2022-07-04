@@ -5,7 +5,9 @@ import PrCurve from "./prCurve"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
 
-const getKwField = type => !type ? 'ci_evaluations' : 'ck_evaluations'
+const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
+  Object.values(iou_evaluations)[0]['ci_evaluations'] :
+  iou_averaged_evaluation['ck_evaluations']
 
 const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
@@ -30,10 +32,9 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   }, [datasets])
 
   useEffect(() => {
-    console.log('data && keywords:', data, keywords, kwType)
     if (data && keywords) {
       const kws = kwType ?
-        Object.keys(Object.values(Object.values(data)[0].iou_evaluations)[0].ck_evaluations[keywords].sub)
+        Object.keys(Object.values(data)[0].iou_averaged_evaluation.ck_evaluations[keywords].sub)
           .map(k => ({ value: k, label: k, parent: keywords })) :
         keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
@@ -48,29 +49,23 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     } else {
       setList([])
     }
-    console.log('xType, dd, kd, dData, kData:', xType, dd, kd, dData, kData)
   }, [xType, dd, kd, dData, kData])
 
   function generateDData(data) {
-
-    const field = getKwField(kwType)
     const ddata = Object.keys(data).reduce((prev, rid) => {
-      const { iou_evaluations } = data[rid]
-      const fiou = Object.values(iou_evaluations)[0]
+      const fiou = getKwField(data[rid], kwType)
       return {
         ...prev,
-        [rid]: fiou[field],
+        [rid]: fiou,
       }
     }, {})
     setDData(ddata)
   }
 
   function generateKData(data) {
-    const field = getKwField(kwType)
     const kdata = {}
     Object.keys(data).forEach(id => {
-      const { iou_evaluations } = data[id]
-      const fiou = Object.values(iou_evaluations)[0][field]
+      const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         if (kwType) {
@@ -83,7 +78,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
         }
       })
     })
-    console.log('kdata:', kdata)
     setKData(kdata)
   }
 
@@ -93,7 +87,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
       id: value, label,
       rows: isDs ? generateDsRows(value) : generateKwRows(value),
     }))
-    console.log('list:', list)
     setList(list)
   }
 
@@ -129,7 +122,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
         return {
           id: testing,
           name: _model,
-          line: kdata[result]?.pr_curve
+          line: kdata ? kdata[result]?.pr_curve : [],
         }
       })
       return {
@@ -151,7 +144,6 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     <h3>{label}</h3>
     <Row gutter={20}>
       {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 200 }}>
-        <h4>{xasix[index].label}</h4>
         <PrCurve title={title} lines={lines} />
       </Col>
       )}

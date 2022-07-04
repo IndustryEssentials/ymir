@@ -25,12 +25,19 @@ class TaskMiningInvoker(TaskBaseInvoker):
 
         # store executor config in task_0 work_dir
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
+        assets_config = self._assets_config
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
         gpu_lock_ret = self.gen_executor_config_lock_gpus(
             req_executor_config=request.docker_image_config,
             task_parameters=request.task_parameters,
             class_names=[],
             output_config_file=output_config_file,
+            openpai_config=dict(
+                openpai_host=assets_config["openpai_host"],
+                openpai_token=assets_config["openpai_token"],
+                openpai_storage=assets_config["openpai_storage"],
+                openpai_user=assets_config["openpai_user"],
+            ),
         )
         if not gpu_lock_ret:
             return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
@@ -73,7 +80,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         mining_image = request.singleton_op
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_asset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
                                          config_file=config_file,
                                          task_id=subtask_id,

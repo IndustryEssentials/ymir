@@ -9,19 +9,19 @@ const LiveCodeForm = ({ live }) => {
       <Form.Item name={['live', 'git_url']} label={t('task.train.live.url')} rules={[
         { required: true }
       ]}>
-        <Input placeholder={t('task.train.live.url.placeholder')} /></Form.Item>
+        <Input placeholder={t('task.train.live.url.placeholder')} allowClear /></Form.Item>
     </Tip>
     <Tip hidden={true}>
       <Form.Item name={['live', 'git_branch']} label={t('task.train.live.id')} rules={[
         { required: true }
       ]}>
-        <Input placeholder={t('task.train.live.id.placeholder')} /></Form.Item>
+        <Input placeholder={t('task.train.live.id.placeholder')} allowClear /></Form.Item>
     </Tip>
     <Tip hidden={true}>
       <Form.Item name={['live', 'code_config']} label={t('task.train.live.config')} rules={[
         { required: true }
       ]}>
-        <Input placeholder={t('task.train.live.config.placeholder')} /></Form.Item>
+        <Input placeholder={t('task.train.live.config.placeholder')} allowClear /></Form.Item>
     </Tip>
   </Panel> : null
 }

@@ -24,6 +24,7 @@ class TestCmdTraining(unittest.TestCase):
         self._assets_location = os.path.join(self._test_root, "assets")
         self._models_location = os.path.join(self._test_root, "models")
         self._working_root = os.path.join(self._test_root, "work")
+        self._assets_cache = os.path.join(self._test_root, 'cache')
         self._mir_root = os.path.join(self._test_root, "mir-root")
         self._config_file = os.path.join(self._test_root, 'config.yaml')
         self._config_file_lmdb = os.path.join(self._test_root, 'config-lmdb.yaml')
@@ -222,9 +223,9 @@ class TestCmdTraining(unittest.TestCase):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
 
-    # private: mocks
-    def __mock_run_train_cmd(*args, **kwargs):
-        return MirCode.RC_OK
+    # protected: mocked functions
+    def _mock_run_docker_cmd(*args, **kwargs):
+        pass
 
     def __mock_process_model_storage(*args, **kwargs):
         mss = mir_utils.ModelStageStorage(stage_name='default',
@@ -238,7 +239,7 @@ class TestCmdTraining(unittest.TestCase):
         return ("xyz", 0.9, ms)
 
     # public: test cases
-    @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
+    @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
     @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
     def test_normal_00(self, *mock_run):
         """ normal case """
@@ -265,7 +266,7 @@ class TestCmdTraining(unittest.TestCase):
         # check result
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
 
-    @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
+    @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
     @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
     def test_normal_01(self, *mock_run):
         """ normal case """
@@ -284,13 +285,15 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file_lmdb
         fake_args.run_as_root = False
-        fake_args.asset_cache_dir = ''
+        fake_args.asset_cache_dir = self._assets_cache
 
         cmd = training.CmdTrain(fake_args)
         cmd_run_result = cmd.run()
 
         # check result
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
+        self.assertTrue(os.path.isfile(os.path.join(self._assets_cache, 'tr', 'a@a', 'data.mdb')))
+        self.assertTrue(os.path.isfile(os.path.join(self._assets_cache, 'va', 'a@a', 'data.mdb')))
 
     def test_abnormal_00(self):
         """ no training set """
