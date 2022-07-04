@@ -254,6 +254,10 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     for asset_id in gt_asset_ids:
         ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
 
+    image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
+    for asset_id in image_ck_asset_ids:
+        matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+
     #   mir_keywords: auto generated from mir_annotations, so do nothing
 
     # step 3: store results and commit.

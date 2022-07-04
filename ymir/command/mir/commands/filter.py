@@ -158,6 +158,10 @@ class CmdFilter(base.BaseCommand):
                                          dst_task_annotations=matched_mir_annotations.prediction,
                                          asset_ids=asset_ids_set)
 
+        image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
+        for asset_id in image_ck_asset_ids:
+            matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
         PhaseLoggerCenter.update_phase(phase='filter.change')
