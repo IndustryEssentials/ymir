@@ -186,7 +186,7 @@ export function createTrainTask({
   iteration, stage, openpai,
   name, projectId, datasetId, keywords, testset,
   backbone, config, network, trainType, strategy,
-  modelStage = [], image, imageId,
+  modelStage = [], image, imageId, preprocess,
 }) {
   const model = modelStage[0]
   const stageId = modelStage[1]
@@ -197,6 +197,7 @@ export function createTrainTask({
     iteration_stage: stage,
     type: TASKTYPES.TRAINING,
     docker_image_config: { ...config, openpai_enable: openpai, },
+    preprocess,
     parameters: {
       strategy,
       dataset_id: datasetId,

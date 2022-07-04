@@ -158,6 +158,9 @@ const task = {
     en: "Duplicated completely, please select another training dataset or validation dataset.",
     cn: "数据完全重复，请重新选择训练集或验证集",
   },
+  "task.train.preprocess.title": { en: "Preprocess", cn: "前处理", },
+  "task.train.preprocess.resize": { en: "Maximum Side Length Resize", cn: "最长边长缩放", },
+  "task.train.preprocess.resize.placeholder": { en: "Length for resize", cn: "缩放边长", },
 }
 
 export default task

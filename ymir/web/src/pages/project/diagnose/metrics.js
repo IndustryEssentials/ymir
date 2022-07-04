@@ -65,7 +65,7 @@ function Matrics({ pid, project }) {
 
   useEffect(() => {
     // calculate ck
-    const cks = remoteData ? Object.values(remoteData).map(({ iou_evaluations }) => Object.keys(Object.values(iou_evaluations)[0].ck_evaluations)).flat() : []
+    const cks = remoteData ? Object.values(remoteData).map(({ iou_averaged_evaluation }) => Object.keys(iou_averaged_evaluation.ck_evaluations)).flat() : []
     console.log('cks:', cks)
 
     setCK([...new Set(cks)])
