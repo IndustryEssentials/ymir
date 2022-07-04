@@ -31,13 +31,13 @@ def _prep_pbs_longside_resize(attrs: mirpb.MetadataAttributes, image_annotations
         attrs.height = dest_size
 
     for annotation in image_annotations.annotations:
-        __resize_annotation(annotation, ratio)
+        _resize_annotation(annotation, ratio)
 
     for annotation in gt_annotations.annotations:
-        __resize_annotation(annotation, ratio)
+        _resize_annotation(annotation, ratio)
 
 
-def __resize_annotation(annotation: mirpb.Annotation, ratio: float) -> None:
+def _resize_annotation(annotation: mirpb.Annotation, ratio: float) -> None:
     annotation.box.x = int(annotation.box.x * ratio)
     annotation.box.y = int(annotation.box.y * ratio)
     annotation.box.w = int(annotation.box.w * ratio)
