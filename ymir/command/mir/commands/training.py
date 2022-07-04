@@ -332,8 +332,9 @@ class CmdTrain(base.BaseCommand):
             # export train set
             train_lmdb_dir = os.path.join(asset_dir, 'train')
             if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs,
-                                             data_writer.BaseDataWriter.id_from_args(prep_args))
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
+                orig_lmdb_dir = data_writer.BaseDataWriter.cached_dir_name_from_args(dir_name=orig_lmdb_dir,
+                                                                                     args=prep_args)
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, train_lmdb_dir)
@@ -353,8 +354,9 @@ class CmdTrain(base.BaseCommand):
             # export validation set
             val_lmdb_dir = os.path.join(asset_dir, 'val')
             if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs,
-                                             data_writer.BaseDataWriter.id_from_args(prep_args))
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
+                orig_lmdb_dir = data_writer.BaseDataWriter.cached_dir_name_from_args(dir_name=orig_lmdb_dir,
+                                                                                     args=prep_args)
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, val_lmdb_dir)

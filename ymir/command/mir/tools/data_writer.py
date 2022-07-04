@@ -257,11 +257,23 @@ class BaseDataWriter:
         self._assets_location = assets_location
         self._class_ids_mapping = class_ids_mapping
         self._format_type = format_type
+        self._prep_args = prep_args
         self._preprocessor = data_preprocessor.DataPreprocessor(args=prep_args)
 
     @classmethod
-    def id_from_args(cls, args: dict) -> str:
-        return data_preprocessor.DataPreprocessor.id_from_args(args)
+    def cached_file_name_from_args(cls, file_name: str, args: dict) -> str:
+        prep_id = data_preprocessor.DataPreprocessor.id_from_args(args)
+        if prep_id:
+            main_name, ext = os.path.splitext(file_name)
+            return f"{main_name}-{prep_id}{ext}"
+        return file_name
+
+    @classmethod
+    def cached_dir_name_from_args(cls, dir_name: str, args: dict) -> str:
+        prep_id = data_preprocessor.DataPreprocessor.id_from_args(args)
+        if prep_id:
+            return os.path.join(dir_name, prep_id)
+        return dir_name
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
@@ -364,7 +376,7 @@ class RawDataWriter(BaseDataWriter):
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
-        asset_file_name = f"{asset_id}-{self._preprocessor.id}" if self._preprocessor.id else asset_id
+        asset_file_name = BaseDataWriter.cached_file_name_from_args(file_name=asset_id, args=self._prep_args)
         asset_data, asset_format = self._preprocessor.prep_img(asset_src_path)
         if self._need_ext:
             asset_file_name = f"{asset_file_name}.{asset_format.lower()}"
