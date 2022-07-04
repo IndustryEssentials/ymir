@@ -15,6 +15,13 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 
+_ASSET_TYPE_ENUM_TO_STR_MAPPING = {
+    mirpb.AssetTypeImageJpeg: 'jpeg',
+    mirpb.AssetTypeImagePng: 'png',
+    mirpb.AssetTypeImageBmp: 'bmp',
+}
+
+
 class AssetFormat(str, Enum):
     ASSET_FORMAT_UNKNOWN = 'unknown'
     ASSET_FORMAT_RAW = 'raw'
@@ -377,7 +384,7 @@ class RawDataWriter(BaseDataWriter):
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
         asset_file_name = BaseDataWriter.cached_file_name_from_args(file_name=asset_id, args=self._prep_args)
-        asset_data, asset_format = self._preprocessor.prep_img(asset_src_path)
+        asset_format = _ASSET_TYPE_ENUM_TO_STR_MAPPING.get(attrs.asset_type, 'unknown')
         if self._need_ext:
             asset_file_name = f"{asset_file_name}.{asset_format.lower()}"
 
@@ -385,6 +392,7 @@ class RawDataWriter(BaseDataWriter):
         os.makedirs(asset_dest_dir, exist_ok=True)
         asset_dest_path = os.path.join(asset_dest_dir, asset_file_name)
         if self._overwrite or not os.path.isfile(asset_dest_path):
+            asset_data = self._preprocessor.prep_img(asset_src_path)
             with open(asset_dest_path, 'wb') as f:
                 f.write(asset_data)
 
@@ -507,7 +515,7 @@ class LmdbDataWriter(BaseDataWriter):
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         asset_src_path = os.path.join(self._assets_location, asset_id)
-        asset_data, *_ = self._preprocessor.prep_img(asset_src_path)
+        asset_data = self._preprocessor.prep_img(asset_src_path)
 
         # write asset and annotations
         anno_key_name = ''

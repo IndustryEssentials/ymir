@@ -1,5 +1,4 @@
 import io
-from typing import Tuple
 
 from PIL import Image
 
@@ -68,7 +67,7 @@ class DataPreprocessor:
         img.save(img_bytes, format=format)
         return img_bytes.getvalue()
 
-    def prep_img(self, img_path: str) -> Tuple[bytes, str]:
+    def prep_img(self, img_path: str) -> bytes:
         """
         preprocess, and returns encoded bytes and format str of this image
         """
@@ -76,7 +75,7 @@ class DataPreprocessor:
         orig_img_format = img.format
         if self._lr_dest_size > 0:
             img = _prep_img_longside_resize(img=img, dest_size=self._lr_dest_size)
-        return self._to_bytes(img=img, format=orig_img_format), orig_img_format
+        return self._to_bytes(img=img, format=orig_img_format)
 
     def prep_pbs(self, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                  gt_annotations: mirpb.SingleImageAnnotations) -> None:
