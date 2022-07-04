@@ -50,17 +50,15 @@ class DataPreprocessor:
         init a dpp
         args: {'longside_resize': {'dest_size': xxx}}
         """
-        self._args = args
         self._lr_dest_size = args.get('longside_resize', {}).get('dest_size', 0)
 
-    @classmethod
-    def id_from_args(cls, args: dict) -> str:
-        lr_dest_size = args.get('longside_resize', {}).get('dest_size', 0)
-        return f"lr{lr_dest_size}" if lr_dest_size > 0 else ''
+    @property
+    def id(self) -> str:
+        return f"lr{self._lr_dest_size}" if self._lr_dest_size > 0 else ''
 
     @property
     def need_prep(self) -> bool:
-        return bool(self._args)
+        return self._lr_dest_size > 0
 
     @classmethod
     def _read(cls, img_path: str) -> Image:

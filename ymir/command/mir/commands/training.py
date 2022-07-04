@@ -331,16 +331,6 @@ class CmdTrain(base.BaseCommand):
 
             # export train set
             train_lmdb_dir = os.path.join(asset_dir, 'train')
-            if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
-                orig_lmdb_dir = data_writer.BaseDataWriter.cached_dir_name_from_args(dir_name=orig_lmdb_dir,
-                                                                                     args=prep_args)
-                os.makedirs(orig_lmdb_dir, exist_ok=True)
-
-                os.symlink(orig_lmdb_dir, train_lmdb_dir)
-            else:
-                os.makedirs(train_lmdb_dir, exist_ok=True)
-
             dw_train = data_writer.LmdbDataWriter(
                 mir_root=mir_root,
                 assets_location=media_location,
@@ -350,19 +340,17 @@ class CmdTrain(base.BaseCommand):
                 index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
                 prep_args=prep_args,
             )
+            if asset_cache_dir:
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
+                orig_lmdb_dir = dw_train.cached_dir_name(orig_lmdb_dir)
+                os.makedirs(orig_lmdb_dir, exist_ok=True)
+
+                os.symlink(orig_lmdb_dir, train_lmdb_dir)
+            else:
+                os.makedirs(train_lmdb_dir, exist_ok=True)
 
             # export validation set
             val_lmdb_dir = os.path.join(asset_dir, 'val')
-            if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
-                orig_lmdb_dir = data_writer.BaseDataWriter.cached_dir_name_from_args(dir_name=orig_lmdb_dir,
-                                                                                     args=prep_args)
-                os.makedirs(orig_lmdb_dir, exist_ok=True)
-
-                os.symlink(orig_lmdb_dir, val_lmdb_dir)
-            else:
-                os.makedirs(val_lmdb_dir, exist_ok=True)
-
             dw_val = data_writer.LmdbDataWriter(
                 mir_root=mir_root,
                 assets_location=media_location,
@@ -372,6 +360,14 @@ class CmdTrain(base.BaseCommand):
                 index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
                 prep_args=prep_args,
             )
+            if asset_cache_dir:
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
+                orig_lmdb_dir = dw_val.cached_dir_name(orig_lmdb_dir)
+                os.makedirs(orig_lmdb_dir, exist_ok=True)
+
+                os.symlink(orig_lmdb_dir, val_lmdb_dir)
+            else:
+                os.makedirs(val_lmdb_dir, exist_ok=True)
         else:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"training unsupported asset format: {asset_format}")

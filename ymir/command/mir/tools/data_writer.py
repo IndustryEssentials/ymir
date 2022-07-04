@@ -14,7 +14,6 @@ from mir.tools import class_ids, data_preprocessor, data_reader
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
-
 _ASSET_TYPE_ENUM_TO_STR_MAPPING = {
     mirpb.AssetTypeImageJpeg: 'jpeg',
     mirpb.AssetTypeImagePng: 'png',
@@ -264,20 +263,17 @@ class BaseDataWriter:
         self._assets_location = assets_location
         self._class_ids_mapping = class_ids_mapping
         self._format_type = format_type
-        self._prep_args = prep_args
         self._preprocessor = data_preprocessor.DataPreprocessor(args=prep_args)
 
-    @classmethod
-    def cached_file_name_from_args(cls, file_name: str, args: dict) -> str:
-        prep_id = data_preprocessor.DataPreprocessor.id_from_args(args)
+    def cached_file_name(self, file_name: str) -> str:
+        prep_id = self._preprocessor.id
         if prep_id:
             main_name, ext = os.path.splitext(file_name)
             return f"{main_name}-{prep_id}{ext}"
         return file_name
 
-    @classmethod
-    def cached_dir_name_from_args(cls, dir_name: str, args: dict) -> str:
-        prep_id = data_preprocessor.DataPreprocessor.id_from_args(args)
+    def cached_dir_name(self, dir_name: str) -> str:
+        prep_id = self._preprocessor.id
         if prep_id:
             return os.path.join(dir_name, prep_id)
         return dir_name
@@ -383,7 +379,7 @@ class RawDataWriter(BaseDataWriter):
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
-        asset_file_name = BaseDataWriter.cached_file_name_from_args(file_name=asset_id, args=self._prep_args)
+        asset_file_name = self.cached_file_name(asset_id)
         asset_format = _ASSET_TYPE_ENUM_TO_STR_MAPPING.get(attrs.asset_type, 'unknown')
         if self._need_ext:
             asset_file_name = f"{asset_file_name}.{asset_format.lower()}"
@@ -485,11 +481,6 @@ class LmdbDataWriter(BaseDataWriter):
         if not lmdb_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty assets_dir or lmdb_dir')
 
-        # prepare out dirs
-        os.makedirs(lmdb_dir, exist_ok=True)
-        if index_file_path:
-            os.makedirs(os.path.dirname(index_file_path), exist_ok=True)
-
         self._lmdb_dir = lmdb_dir
         self._index_file_path = index_file_path
         self._finish_file_path = os.path.join(self._lmdb_dir, '.finish')
@@ -566,6 +557,11 @@ class LmdbDataWriter(BaseDataWriter):
             shutil.copyfile(src=os.path.join(self._lmdb_dir, 'index.mdb'), dst=self._index_file_path)
 
     def write_all(self, dr: data_reader.MirDataReader) -> None:
+        # prepare out dirs
+        os.makedirs(self._lmdb_dir, exist_ok=True)
+        if self._index_file_path:
+            os.makedirs(os.path.dirname(self._index_file_path), exist_ok=True)
+
         # if already exists, no need to write, only copy index file to destination
         if self.exists():
             if self._index_file_path:
