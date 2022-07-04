@@ -55,6 +55,8 @@ class CmdEvaluate(base.BaseCommand):
             new_mir_annotation.task_annotations[task_id].CopyFrom(pred_annotations)
             new_mir_annotation.prediction.CopyFrom(pred_annotations)
             new_mir_annotation.ground_truth.CopyFrom(mir_annotations.ground_truth)
+            for asset_id in mir_annotations.image_cks.keys():
+                new_mir_annotation.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,

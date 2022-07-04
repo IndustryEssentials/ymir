@@ -104,6 +104,13 @@ class TestCmdFilter(unittest.TestCase):
                 }
             },
             'head_task_id': 't0',
+            'image_cks': {
+                'a0000000000000000000000000000000000000000000000000': {'cks': {'c0': 'c1'}},
+                'a0000000000000000000000000000000000000000000000001': {'cks': {'c0': 'c1'}},
+                'a0000000000000000000000000000000000000000000000002': {'cks': {'c0': 'c1'}},
+                'a0000000000000000000000000000000000000000000000003': {'cks': {'c0': 'c1'}},
+                'a0000000000000000000000000000000000000000000000004': {'cks': {'c0': 'c1'}},
+            }
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
@@ -193,6 +200,7 @@ class TestCmdFilter(unittest.TestCase):
         self.assertEqual(expected_asset_ids, set(mir_keywords.keywords.keys()))
         self.assertEqual(1, len(mir_annotations.task_annotations))
         self.assertEqual(expected_asset_ids, set(mir_annotations.task_annotations['t1'].image_annotations.keys()))
+        self.assertEqual(expected_asset_ids, set(mir_annotations.image_cks.keys()))
         self.assertEqual(1, len(mir_tasks.tasks))
         self.assertEqual('t1', mir_tasks.head_task_id)
         self.assertEqual('t1', mir_annotations.head_task_id)

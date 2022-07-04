@@ -29,6 +29,14 @@ class TrainingDatasetsStrategy(enum.IntEnum):
     as_validation = 2  # use duplicated assets as validation assets
 
 
+class LongsideResizeParameter(BaseModel):
+    dest_size: int
+
+
+class TaskPreprocess(BaseModel):
+    longside_resize: LongsideResizeParameter
+
+
 class TaskParameter(BaseModel):
     dataset_id: int
     keywords: Optional[List[str]]
@@ -44,6 +52,7 @@ class TaskParameter(BaseModel):
     backbone: Optional[str]
     hyperparameter: Optional[str]
     strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
+    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     # mining & dataset_infer
     model_id: Optional[int]
@@ -64,14 +73,6 @@ class TaskParameter(BaseModel):
         return [keyword.strip() for keyword in v]
 
 
-class LongsideResizeParameter(BaseModel):
-    dest_size: int
-
-
-class TaskPreprocess(BaseModel):
-    longside_resize: LongsideResizeParameter
-
-
 class TaskCreate(TaskBase):
     iteration_id: Optional[int]
     iteration_stage: Optional[IterationStage]
@@ -88,7 +89,7 @@ class TaskCreate(TaskBase):
         else:
             return v
 
-    @root_validator
+    @root_validator(pre=True)
     def tuck_preprocess_into_parameters(cls, values: Any) -> Any:
         """
         For frontend, preprocess is a separate task configuration,
