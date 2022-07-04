@@ -221,7 +221,7 @@ function Analysis({pid, project, ...func}) {
   
   async function validDatasetCount(rule, value) {
     const count = 5
-    if (value.length > count) {
+    if (value?.length > count) {
       return Promise.reject(t('model.diagnose.analysis.validator.dataset.count', {count}))
     } else {
       return Promise.resolve()

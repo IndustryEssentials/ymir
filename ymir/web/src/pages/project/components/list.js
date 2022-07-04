@@ -210,8 +210,7 @@ const ProjectList = ({ list, query, ...func }) => {
           />
         </ConfigProvider>
         <Pagination className= 'pager' onChange={pageChange}
-          current={query.current}
-          defaultCurrent={query.current} defaultPageSize={query.limit} total={total}
+          current={query.current} pageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
           showQuickJumper showSizeChanger />
         <Del ref={delRef} ok={delOk} />

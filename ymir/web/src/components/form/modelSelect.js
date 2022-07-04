@@ -19,9 +19,12 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   useEffect(() => {
     if (options.length) {
       if (value) {
-        const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
-        onChange(value, resProps.multiple ?
-          opts : options.filter(opt => opt.model.id === value[0]))
+        if (resProps.multiple) {
+          const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
+          onChange(value, opts)
+        } else {
+          onChange(value, [options.find(opt => opt.model.id === value[0]), value[1]])
+        }
       }
     }
   }, [options])
