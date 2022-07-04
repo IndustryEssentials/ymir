@@ -35,6 +35,9 @@ function rangePoints(range, points = [], field = 'x') {
       Math.abs(prev[field] - value) <= Math.abs(curr[field] - value) ? prev : curr, 1)
   })
 }
+function findClosestPoint(target, points = [], field = 'x') {
+  return points?.reduce((prev, curr) => Math.abs(prev[field] - target) <= Math.abs(curr[field] - target) ? prev : curr, 1)
+}
 
 const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
@@ -135,43 +138,62 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       id: value, label,
       rows: isDs ? generateDsRows(value) : generateKwRows(value),
     }))
+    console.log('list:', list)
     setList(list)
   }
 
   function generateDsRows(tid) {
     const tts = tasks.filter(({ testing }) => testing === tid)
 
-    return kd.map(({ value }) => {
-      return tts.map(({ model, result: rid }) => {
+    return tts.map(({ model, result: rid }) => {
+      return range.map(rate => {
         const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
+
         const _model = getModelCell(rid)
-        const line = ddata[value]?.pr_curve
-        const points = rangePoints(range, line, pointField[0])
-        const _average = average(points.map(point => point[pointField[1]]))
-        const confidenceAverage = toFixed(average(points.map(({ z }) => z)), 4)
-        return points.map((point, index) => ({
-          id: `${rid}${range[index]}`,
-          value: range[index],
+        const kwPoints = kd.map(({ value: kw }) => {
+          const line = ddata[kw]?.pr_curve
+          return { point: findClosestPoint(rate, line, pointField[0]), kw }
+        })
+        const _average = average(kwPoints.map(({ point }) => point[pointField[1]]))
+        const confidenceAverage = average(kwPoints.map(({ point: { z } }) => z))
+        const kwFields = kwPoints.reduce((prev, { kw, point }) => ({
+          ...prev,
+          [`${kw}_target`]: point[pointField[1]],
+          [`${kw}_conf`]: point.z,
+        }), {})
+
+        return {
+          id: `${rid}${rate}`,
+          value: rate,
           span: model,
-          title: value,
           name: _model,
-          target: point[pointField[1]],
-          point,
-          conf: point.z,
+          ...kwFields,
           a: _average,
           ca: confidenceAverage,
-        })).flat()
-      }).flat()
+        }
+      })
     }).flat()
   }
 
+  // todo
   function generateKwRows(kw) {
     const kdata = kwType ? kData[keywords][kw] : kData[kw]
+
+    const rids = Object.keys(kdata)
+    console.log('rids:', rids, dd)
+    const mids = models.map(md => md.id)
+    return mids.map(mid => {
+      const configs = tasks.map(({ model, config }) => model === mid)
+      return configs.map(config => {
+
+      })
+    }).flat()
 
     return dd.map(({ value: tid, label }) => {
       const tks = tasks.filter(({ testing }) => testing === tid)
       return tks.map(({ model, result }) => {
         const _model = getModelCell(result)
+
         const line = kdata ? kdata[result]?.pr_curve : []
         const points = rangePoints(range, line, pointField[0])
         const _average = average(points.map(point => point[pointField[1]]))
@@ -187,7 +209,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
           conf: point.z,
           a: _average,
           ca: confidenceAverage,
-        })).flat()
+        }))
       }).flat()
     }).flat()
   }
@@ -203,12 +225,12 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
     const dynamicColumns = xasix.map(({ value, label }) => ([
       {
         title: t(labels.colTarget, { label }),
-        dataIndex: value,
-        render: (_, record) => percentRender(record.target),
+        dataIndex: `${value}_target`,
+        render: target => percentRender(target),
       }, {
         title: t('model.diagnose.metrics.confidence.label', { label }),
-        dataIndex: value,
-        render: (_, { conf }) => conf,
+        dataIndex: `${value}_conf`,
+        render: numRender,
       },
     ])).flat()
     return [
@@ -233,11 +255,13 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       {
         title: t('model.diagnose.metrics.confidence.average.label'),
         dataIndex: 'ca',
+        render: numRender,
       },
     ]
   }
 
   const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
+  const numRender = value => typeof value === 'number' && !Number.isNaN(value) ? toFixed(value, 4) : '-'
 
   return list.map(({ id, label, rows }) => <div key={id}>
     <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
