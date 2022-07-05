@@ -31,7 +31,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
                 openpai_storage=assets_config["openpai_storage"],
                 openpai_user=assets_config["openpai_user"],
             ),
-            preprocess=train_request.preprocess,
+            preprocess=train_request.preprocess_config,
         )
         if not gpu_lock_ret:
             return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")

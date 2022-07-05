@@ -111,7 +111,7 @@ class ControllerRequest:
             train_task_req.in_dataset_types.append(dataset)
         train_task_req.in_class_ids[:] = args["class_ids"]
         if "preprocess" in args:
-            train_task_req.preprocess = args["preprocess"]
+            train_task_req.preprocess_config = args["preprocess"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeTraining
