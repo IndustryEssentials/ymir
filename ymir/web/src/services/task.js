@@ -113,8 +113,10 @@ export function updateTask(id, name) {
 export function createFusionTask({
   iteration, project_id, group_id, dataset, include_datasets = [], mining_strategy, include_strategy = 2,
   exclude_result, exclude_datasets = [], include = [], exclude = [], samples,
+  result_description: description,
 }) {
   return request.post('/datasets/fusion', {
+    result_description: description,
     project_id, include_datasets, exclude_datasets,
     iteration_context: iteration ? {
       iteration_id: iteration,
@@ -145,10 +147,11 @@ export function createFusionTask({
 export function createLabelTask({
   projectId, iteration, stage,
   groupId, name, datasetId, keywords,
-  labellers, keepAnnotations, doc,
+  labellers, keepAnnotations, doc, description,
 }) {
   return createTask({
     name,
+    result_description: description,
     type: TASKTYPES.LABEL,
     project_id: projectId,
     iteration_id: iteration,
@@ -183,7 +186,7 @@ export function createLabelTask({
  * @returns 
  */
 export function createTrainTask({
-  iteration, stage, openpai,
+  iteration, stage, openpai, description,
   name, projectId, datasetId, keywords, testset,
   backbone, config, network, trainType, strategy,
   modelStage = [], image, imageId, preprocess,
@@ -193,6 +196,7 @@ export function createTrainTask({
   return createTask({
     name,
     project_id: projectId,
+    result_description: description,
     iteration_id: iteration,
     iteration_stage: stage,
     type: TASKTYPES.TRAINING,
@@ -215,7 +219,7 @@ export function createTrainTask({
 }
 
 export function createMiningTask({
-  iteration, stage,
+  iteration, stage, description,
   projectId, datasetId, modelStage = [], topk, algorithm,
   config, strategy, inference, name, image, imageId,
 }) {
@@ -224,6 +228,7 @@ export function createMiningTask({
   return createTask({
     type: TASKTYPES.MINING,
     project_id: projectId,
+    result_description: description,
     iteration_id: iteration,
     iteration_stage: stage,
     name,
@@ -271,7 +276,7 @@ export function createInferenceTask({
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
-    description,
+    result_description: description,
     docker_image_config: config,
     parameters: {
       model_id: model,
