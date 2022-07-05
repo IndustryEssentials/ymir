@@ -1,4 +1,5 @@
 import io
+import shutil
 
 from PIL import Image
 
@@ -65,24 +66,35 @@ class DataPreprocessor:
         return Image.open(img_path)
 
     @classmethod
-    def _to_bytes(cls, img: Image, format: str) -> bytes:
+    def _save(cls, img: Image, format: str) -> bytes:
         img_bytes = io.BytesIO()
         img.save(img_bytes, format=format)
         return img_bytes.getvalue()
 
-    def prep_img(self, img_path: str) -> bytes:
+    def prep_img(self, src_img_path: str, dest_img_path: str) -> bytes:
         """
-        preprocess, and returns encoded bytes and format str of this image
+        preprocess, copy preprocessed image to dest_img_path, or return bytes of preprocessed image
         """
         if self.need_prep:
-            img = self._read(img_path=img_path)
+            img = self._read(img_path=src_img_path)
             orig_img_format = img.format
             if self._lr_dest_size > 0:
                 img = _prep_img_longside_resize(img=img, dest_size=self._lr_dest_size)
-            return self._to_bytes(img=img, format=orig_img_format)
+            if dest_img_path:
+                with open(dest_img_path, 'wb') as f:
+                    img.save(dest_img_path, format=orig_img_format)
+                return b''
+            else:
+                img_bytes = io.BytesIO()
+                img.save(img_bytes, format=orig_img_format)
+                return img_bytes.getvalue()
         else:
-            with open(img_path, 'rb') as f:
-                return f.read()
+            if dest_img_path:
+                shutil.copyfile(src_img_path, dest_img_path)
+                return b''
+            else:
+                with open(src_img_path, 'rb') as f:
+                    return f.read()
 
     def prep_pbs(self, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                  gt_annotations: mirpb.SingleImageAnnotations) -> None:
