@@ -342,8 +342,8 @@ class CmdTrain(base.BaseCommand):
             )
             if asset_cache_dir:
                 orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
-                if dw_train.prep_signature:
-                    orig_lmdb_dir = os.path.join(orig_lmdb_dir, dw_train.prep_signature)
+                if dw_train.signature:
+                    orig_lmdb_dir = os.path.join(orig_lmdb_dir, dw_train.signature)
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, train_lmdb_dir)
@@ -363,8 +363,8 @@ class CmdTrain(base.BaseCommand):
             )
             if asset_cache_dir:
                 orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
-                if dw_val.prep_signature:
-                    orig_lmdb_dir = os.path.join(orig_lmdb_dir, dw_val.prep_signature)
+                if dw_val.signature:
+                    orig_lmdb_dir = os.path.join(orig_lmdb_dir, dw_val.signature)
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
 
                 os.symlink(orig_lmdb_dir, val_lmdb_dir)

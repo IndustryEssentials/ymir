@@ -266,7 +266,7 @@ class BaseDataWriter:
         self._preprocessor = data_preprocessor.DataPreprocessor(args=prep_args)
 
     @property
-    def prep_signature(self) -> str:
+    def signature(self) -> str:
         return self._preprocessor.signature
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
@@ -370,7 +370,7 @@ class RawDataWriter(BaseDataWriter):
         asset_src_path = os.path.join(self._assets_location, asset_id)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
-        asset_file_name = f"{asset_id}-{self.prep_signature}" if self.prep_signature else asset_id
+        asset_file_name = f"{asset_id}-{self.signature}" if self.signature else asset_id
 
         asset_format = _ASSET_TYPE_ENUM_TO_STR_MAPPING.get(attrs.asset_type, 'unknown')
         if self._need_ext:
