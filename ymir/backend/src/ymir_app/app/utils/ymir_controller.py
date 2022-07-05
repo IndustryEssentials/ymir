@@ -110,14 +110,16 @@ class ControllerRequest:
         for dataset in datasets:
             train_task_req.in_dataset_types.append(dataset)
         train_task_req.in_class_ids[:] = args["class_ids"]
-        if "model_hash" in args:
-            request.model_hash = args["model_hash"]
-            request.model_stage = args["model_stage_name"]
+        if "preprocess" in args:
+            train_task_req.preprocess_config = args["preprocess"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeTraining
         req_create_task.training.CopyFrom(train_task_req)
 
+        if "model_hash" in args:
+            request.model_hash = args["model_hash"]
+            request.model_stage = args["model_stage_name"]
         request.req_type = mirsvrpb.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
