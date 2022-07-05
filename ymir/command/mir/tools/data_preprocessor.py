@@ -82,9 +82,9 @@ class DataPreprocessor:
             if dest_img_path:
                 shutil.copyfile(src_img_path, dest_img_path)
                 return b''
-            else:
-                with open(src_img_path, 'rb') as f:
-                    return f.read()
+            # if wants to return bytes
+            with open(src_img_path, 'rb') as f:
+                return f.read()
 
         # if need prep
         img = self._read(img_path=src_img_path)
@@ -98,10 +98,10 @@ class DataPreprocessor:
             with open(dest_img_path, 'wb') as f:
                 img.save(dest_img_path, format=orig_img_format)
             return b''
-        else:
-            img_bytes = io.BytesIO()
-            img.save(img_bytes, format=orig_img_format)
-            return img_bytes.getvalue()
+        # if wants to return bytes
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format=orig_img_format)
+        return img_bytes.getvalue()
 
     def prep_pbs(self, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                  gt_annotations: mirpb.SingleImageAnnotations) -> None:
