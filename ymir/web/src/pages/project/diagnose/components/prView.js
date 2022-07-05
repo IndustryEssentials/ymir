@@ -227,12 +227,13 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   function generateColumns() {
     const dynamicColumns = xasix.map(({ value, label }) => ([
       {
-        title: t(labels.colTarget, { label }),
+        title: t(labels.colTarget, { label: <div>{label}</div> }),
         dataIndex: `${value}_target`,
         colSpan: 2,
         render: percentRender,
       }, {
         title: t('model.diagnose.metrics.confidence.label', { label }),
+        colSpan: 0,
         dataIndex: `${value}_conf`,
         render: percentRender,
       },
@@ -265,7 +266,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   }
 
   const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
-  const numRender = value => typeof value === 'number' && !Number.isNaN(value) ? toFixed(value, 4) : '-'
 
   return list.map(({ id, label, rows }) => <div key={id}>
     <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>

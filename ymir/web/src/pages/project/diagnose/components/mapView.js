@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Col, Row, Table } from "antd"
 import { percent } from '@/utils/number'
+import { isSame } from '@/utils/object'
 import Panel from "@/components/form/panel"
 
 const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
@@ -122,12 +123,20 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
 
   const generateKwRows = (kw) => {
     const kdata = kwType ? kData[keywords][kw] : kData[kw]
-    const mids = [...new Set(tasks.map(({ model }) => model))]
 
-    return mids.map(mid => {
-      const tks = tasks.filter(({ model }) => model === mid)
-      const _model = getModelCell(tks[0].result)
-      const drow = kdata ? tks.reduce((prev, { testing, result }) => {
+    const mids = Object.values(tasks.reduce((prev, { model, stage, config }) => {
+      const id = `${model}${stage}${JSON.stringify(config)}`
+      return {
+        ...prev,
+        [id]: { id, mid: model, sid: stage, config: config },
+      }
+    }, {}))
+
+    return mids.map(({ id, mid, sid, config }) => {
+      const tts = tasks.filter(({ model, stage, config: tconfig }) => model === mid && stage === sid && isSame(config, tconfig))
+      const _model = getModelCell(tts[0].result)
+
+      const drow = kdata ? tts.reduce((prev, { testing, result }) => {
         return {
           ...prev,
           [testing]: kdata[result]?.ap,
@@ -135,12 +144,12 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       }, {}) : {}
       const _average = kwType ? kdata._average.ap : average(Object.values(drow))
       return {
-        id: mid,
+        id,
         _model,
         _average,
         ...drow,
       }
-    })
+    }).flat()
   }
 
   function getModelCell(rid) {
@@ -160,6 +169,8 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       {
         title: 'Model',
         dataIndex: '_model',
+        width: 150,
+        ellipsis: true,
       },
       {
         title: 'Average mAP',
