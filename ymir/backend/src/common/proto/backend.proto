@@ -181,6 +181,7 @@ message TaskReqTraining {
     }
     repeated TrainingDatasetType in_dataset_types = 1;
     repeated int32 in_class_ids = 2;
+    string preprocess_config = 4;
 
     reserved 3;
 }

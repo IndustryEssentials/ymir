@@ -2,7 +2,7 @@ from distutils.util import strtobool
 import logging
 import os
 import threading
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -91,8 +91,10 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                       class_names: List,
                                       task_parameters: str,
                                       output_config_file: str,
-                                      openpai_config: Dict = {}) -> bool:
+                                      openpai_config: Dict = {},
+                                      preprocess: Optional[str] = None) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
+        preprocess_config = yaml.safe_load(preprocess) if preprocess else None
         task_context: Dict[str, Any] = {}
 
         if class_names:
@@ -100,6 +102,9 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
 
         if task_parameters:
             task_context["task_parameters"] = task_parameters
+
+        if preprocess_config:
+            task_context["preprocess"] = preprocess_config
 
         gpu_count = executor_config.get("gpu_count", 0)
         executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
