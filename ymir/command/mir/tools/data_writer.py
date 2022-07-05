@@ -371,7 +371,6 @@ class RawDataWriter(BaseDataWriter):
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
         asset_file_name = f"{asset_id}-{self.prep_signature}" if self.prep_signature else asset_id
-        logging.info(f"asset id: {asset_id}, file name: {asset_file_name}")
 
         asset_format = _ASSET_TYPE_ENUM_TO_STR_MAPPING.get(attrs.asset_type, 'unknown')
         if self._need_ext:
