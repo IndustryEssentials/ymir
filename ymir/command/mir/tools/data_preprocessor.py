@@ -68,12 +68,6 @@ class DataPreprocessor:
     def _read(cls, img_path: str) -> Image:
         return Image.open(img_path)
 
-    @classmethod
-    def _save(cls, img: Image, format: str) -> bytes:
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, format=format)
-        return img_bytes.getvalue()
-
     def prep_img(self, src_img_path: str, dest_img_path: str = '') -> bytes:
         """
         preprocess, copy preprocessed image to dest_img_path, or return bytes of preprocessed image
