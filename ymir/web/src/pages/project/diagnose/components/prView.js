@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Table } from "antd"
 import { percent, toFixed } from '@/utils/number'
+import { isSame } from '@/utils/object'
 import t from '@/utils/t'
 import Panel from "@/components/form/panel"
 
@@ -165,7 +166,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
         return {
           id: `${rid}${rate}`,
           value: rate,
-          span: model,
           name: _model,
           ...kwFields,
           a: _average,
@@ -179,38 +179,41 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   function generateKwRows(kw) {
     const kdata = kwType ? kData[keywords][kw] : kData[kw]
 
-    const rids = Object.keys(kdata)
-    console.log('rids:', rids, dd)
-    const mids = models.map(md => md.id)
-    return mids.map(mid => {
-      const configs = tasks.map(({ model, config }) => model === mid)
-      return configs.map(config => {
+    const mids = Object.values(tasks.reduce((prev, { model, stage, config }) => ({
+      ...prev,
+      [`${model}${stage}${JSON.stringify(config)}`]: { mid: model, sid: stage, config: config },
+    }), {}))
+    return mids.map(({ mid, sid, config }) => {
+      const tts = tasks.filter(({ model, stage, config: tconfig }) => model === mid && stage === sid && isSame(config, tconfig))
+      const _model = getModelCell(tts[0].result)
 
+      return range.map(rate => {
+        const points = tts.map(({ result: rid, testing: tid }) => {
+          const line = kdata ? kdata[rid]?.pr_curve : []
+          const point = findClosestPoint(rate, line, pointField[0])
+          return {
+            tid,
+            point,
+          }
+        })
+        const _average = average(points.map(({point}) => point[pointField[1]]))
+        const confidenceAverage = average(points.map(({ point: { z }}) => z))
+        const tpoints = points.reduce((prev, { tid, point }) => ({
+          ...prev,
+          [`${tid}_target`]: point[pointField[1]],
+          [`${tid}_conf`]: point.z,
+        }), {})
+
+        return {
+          
+            id: `${mid}${sid}${JSON.stringify(config)}${rate}`,
+            value: rate,
+            name: _model,
+            ...tpoints,
+            a: _average,
+            ca: confidenceAverage,
+        }
       })
-    }).flat()
-
-    return dd.map(({ value: tid, label }) => {
-      const tks = tasks.filter(({ testing }) => testing === tid)
-      return tks.map(({ model, result }) => {
-        const _model = getModelCell(result)
-
-        const line = kdata ? kdata[result]?.pr_curve : []
-        const points = rangePoints(range, line, pointField[0])
-        const _average = average(points.map(point => point[pointField[1]]))
-        const confidenceAverage = toFixed(average(points.map(({ z }) => z)), 4)
-        return points.map((point, index) => ({
-          id: `${result}${range[index]}`,
-          value: range[index],
-          span: model,
-          title: label,
-          name: _model,
-          target: point[pointField[1]],
-          point,
-          conf: point.z,
-          a: _average,
-          ca: confidenceAverage,
-        }))
-      }).flat()
     }).flat()
   }
 
@@ -226,11 +229,12 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       {
         title: t(labels.colTarget, { label }),
         dataIndex: `${value}_target`,
-        render: target => percentRender(target),
+        colSpan: 2,
+        render: percentRender,
       }, {
         title: t('model.diagnose.metrics.confidence.label', { label }),
         dataIndex: `${value}_conf`,
-        render: numRender,
+        render: percentRender,
       },
     ])).flat()
     return [
@@ -255,7 +259,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       {
         title: t('model.diagnose.metrics.confidence.average.label'),
         dataIndex: 'ca',
-        render: numRender,
+        render: percentRender,
       },
     ]
   }
