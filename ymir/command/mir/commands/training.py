@@ -341,7 +341,7 @@ class CmdTrain(base.BaseCommand):
                 prep_args=prep_args,
             )
             if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs, dw_train.prep_signature)
+                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
                 if dw_train.prep_signature:
                     orig_lmdb_dir = os.path.join(orig_lmdb_dir, dw_train.prep_signature)
                 os.makedirs(orig_lmdb_dir, exist_ok=True)
