@@ -1,6 +1,7 @@
 import hashlib
 import io
 import shutil
+import sys
 from typing import Dict
 
 from PIL import Image
@@ -85,7 +86,7 @@ class DataPreprocessor:
         orig_img_format = img.format
 
         for op_name, op_args in self._op_args:
-            func = globals()[f"_prep_img_{op_name}"]
+            func = getattr(sys.modules[__name__], f"_prep_img_{op_name}")
             img = func(img=img, **op_args)
 
         if dest_img_path:
@@ -102,5 +103,5 @@ class DataPreprocessor:
         if not self.need_prep:
             return
         for op_name, op_args in self._op_args:
-            func = globals()[f"_prep_pbs_{op_name}"]
+            func = getattr(sys.modules[__name__], f"_prep_pbs_{op_name}")
             func(attrs=attrs, image_annotations=image_annotations, gt_annotations=gt_annotations, **op_args)
