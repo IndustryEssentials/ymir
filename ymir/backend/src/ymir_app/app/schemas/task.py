@@ -79,6 +79,7 @@ class TaskCreate(TaskBase):
     parameters: TaskParameter = Field(description="task specific parameters")
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
+    result_description: Optional[str] = Field(description="description for task result, not task itself")
 
     @validator("docker_image_config")
     def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
