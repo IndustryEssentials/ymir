@@ -158,9 +158,13 @@ const task = {
     en: "Duplicated completely, please select another training dataset or validation dataset.",
     cn: "数据完全重复，请重新选择训练集或验证集",
   },
-  "task.train.preprocess.title": { en: "Preprocess", cn: "前处理", },
+  "task.train.preprocess.title": { en: "Image Preprocess", cn: "图像前处理", },
   "task.train.preprocess.resize": { en: "Maximum Side Length Resize", cn: "最长边长缩放", },
-  "task.train.preprocess.resize.placeholder": { en: "Length for resize", cn: "缩放边长", },
+  "task.train.preprocess.resize.tip": {
+    en: "Images will resize as original scale which longest width/height equal to input value",
+    cn: "图像将按原始比例缩放至最长边为设置值",
+  },
+  "task.train.preprocess.resize.placeholder": { en: "Max width/height", cn: "最大高/宽", },
 }
 
 export default task
