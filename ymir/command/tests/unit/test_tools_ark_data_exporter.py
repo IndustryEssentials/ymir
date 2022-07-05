@@ -296,9 +296,6 @@ class TestArkDataExporter(unittest.TestCase):
             index_file_path=lmdb_index_file_path)
 
     def test_data_rw_01(self):
-        # dpp = data_preprocessor.DataPreprocessor(args={'longside_resize': {'dest_size': 250}})
-        # self.assertEqual(250, dpp._lr_dest_size)
-
         train_path = os.path.join(self._dest_root, 'train')
 
         index_file_path = os.path.join(train_path, 'index.tsv')

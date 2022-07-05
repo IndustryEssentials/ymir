@@ -1,5 +1,7 @@
+import hashlib
 import io
 import shutil
+from typing import Dict
 
 from PIL import Image
 
@@ -46,20 +48,21 @@ def _resize_annotation(annotation: mirpb.Annotation, ratio: float) -> None:
 
 
 class DataPreprocessor:
-    def __init__(self, args: dict = {}) -> None:
+    def __init__(self, args: Dict[str, dict] = {}) -> None:
         """
         init a dpp
         args: {'longside_resize': {'dest_size': xxx}}
         """
-        self._lr_dest_size = args.get('longside_resize', {}).get('dest_size', 0)
+        self._op_args = [(k, v) for k, v in args.items()]
+        self._op_args_signature = hashlib.md5(str(self._op_args).encode('utf-8')).hexdigest()[-6:]
 
     @property
-    def id(self) -> str:
-        return f"lr{self._lr_dest_size}" if self._lr_dest_size > 0 else ''
+    def signature(self) -> str:
+        return self._op_args_signature if self.need_prep else ''
 
     @property
     def need_prep(self) -> bool:
-        return self._lr_dest_size > 0
+        return len(self._op_args) > 0
 
     @classmethod
     def _read(cls, img_path: str) -> Image:
@@ -78,8 +81,11 @@ class DataPreprocessor:
         if self.need_prep:
             img = self._read(img_path=src_img_path)
             orig_img_format = img.format
-            if self._lr_dest_size > 0:
-                img = _prep_img_longside_resize(img=img, dest_size=self._lr_dest_size)
+
+            for op_name, op_args in self._op_args:
+                func = globals()[f"_prep_img_{op_name}"]
+                img = func(img=img, **op_args)
+
             if dest_img_path:
                 with open(dest_img_path, 'wb') as f:
                     img.save(dest_img_path, format=orig_img_format)
@@ -98,8 +104,6 @@ class DataPreprocessor:
 
     def prep_pbs(self, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                  gt_annotations: mirpb.SingleImageAnnotations) -> None:
-        if self._lr_dest_size > 0:
-            _prep_pbs_longside_resize(attrs=attrs,
-                                      image_annotations=image_annotations,
-                                      gt_annotations=gt_annotations,
-                                      dest_size=self._lr_dest_size)
+        for op_name, op_args in self._op_args:
+            func = globals()[f"_prep_pbs_{op_name}"]
+            func(attrs=attrs, image_annotations=image_annotations, gt_annotations=gt_annotations, **op_args)
