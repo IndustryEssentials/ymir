@@ -149,7 +149,6 @@ def import_model(
     model_group_in = schemas.ModelGroupCreate(
         name=model_import.group_name,
         project_id=model_import.project_id,
-        description=model_import.description,
     )
     model_group = crud.model_group.create_with_user_id(db=db, user_id=current_user.id, obj_in=model_group_in)
 

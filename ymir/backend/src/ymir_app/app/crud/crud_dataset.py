@@ -118,10 +118,16 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         return db_obj
 
     def create_as_task_result(
-        self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
+        self,
+        db: Session,
+        task: schemas.TaskInternal,
+        dest_group_id: int,
+        dest_group_name: str,
+        description: Optional[str],
     ) -> Dataset:
         dataset_in = DatasetCreate(
             hash=task.hash,
+            description=description,
             source=task.type,
             dataset_group_id=dest_group_id,
             project_id=task.project_id,
