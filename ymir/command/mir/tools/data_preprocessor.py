@@ -65,7 +65,7 @@ class DataPreprocessor:
     def need_prep(self) -> bool:
         return len(self._op_args) > 0
 
-    def prep_img(self, src_img_path: str, dest_img_path: str = '', return_bytes: bool = True) -> bytes:
+    def prep_img(self, src_img_path: str, return_bytes: bool, dest_img_path: str = '') -> bytes:
         """
         preprocess, copy preprocessed image to dest_img_path, or return bytes of preprocessed image
         """
