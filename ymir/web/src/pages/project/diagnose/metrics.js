@@ -60,16 +60,20 @@ function Matrics({ pid, project }) {
     if (diagnosing) {
       const kws = [...new Set(selectedModels.map(({ keywords }) => keywords).flat())]
       setKeywords(kws)
+    } else {
+      setKeywords([])
     }
   }, [selectedModels, diagnosing])
 
   useEffect(() => {
     // calculate ck
-    const cks = remoteData ? Object.values(remoteData).map(({ iou_averaged_evaluation }) => Object.keys(iou_averaged_evaluation.ck_evaluations)).flat() : []
-    console.log('cks:', cks)
+    const cks = diagnosis ?
+      Object.values(diagnosis).map(({ iou_averaged_evaluation }) =>
+        Object.keys(iou_averaged_evaluation.ck_evaluations)).flat() :
+      []
 
     setCK([...new Set(cks)])
-  }, [remoteData])
+  }, [diagnosis])
 
   useEffect(() => {
     const kws = !kwType ? keywords : ck

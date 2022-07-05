@@ -1,6 +1,6 @@
 import { Radio } from "antd"
 
-const annotationFormats = ['none', 'ark', 'voc', 'ls_json']
+const annotationFormats = ['ark', 'voc', 'ls_json']
 const assetFormats = ['raw', 'lmdb']
 
 const TrainFormat = ({ value, onChange }) => {

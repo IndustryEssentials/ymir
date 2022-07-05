@@ -10,6 +10,7 @@ import ProjectEmpty from '@/components/empty/project'
 import Del from './del'
 import s from "./list.less"
 import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/icons"
+import KeywordsItem from "@/components/project/keywordsItem"
 
 const ProjectList = ({ list, query, ...func }) => {
 
@@ -149,7 +150,7 @@ const ProjectList = ({ list, query, ...func }) => {
           <span className={s.name}><a>{item.name}</a></span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
-            <span className='titleContent'>{item.keywords.join(',')}</span>
+            <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>
           </span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.iteration.current')}:</span>
@@ -209,8 +210,7 @@ const ProjectList = ({ list, query, ...func }) => {
           />
         </ConfigProvider>
         <Pagination className= 'pager' onChange={pageChange}
-          current={query.current}
-          defaultCurrent={query.current} defaultPageSize={query.limit} total={total}
+          current={query.current} pageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
           showQuickJumper showSizeChanger />
         <Del ref={delRef} ok={delOk} />
