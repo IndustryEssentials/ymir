@@ -380,8 +380,7 @@ class RawDataWriter(BaseDataWriter):
         os.makedirs(asset_dest_dir, exist_ok=True)
         asset_dest_path = os.path.join(asset_dest_dir, asset_file_name)
         if self._overwrite or not os.path.isfile(asset_dest_path):
-            self._preprocessor.prep_img(src_img_path=asset_src_path,
-                                        dest_img_path=asset_dest_path)
+            self._preprocessor.prep_img(src_img_path=asset_src_path, dest_img_path=asset_dest_path, return_bytes=False)
 
         anno_file_name = ''
         if self._format_type != AnnoFormat.ANNO_FORMAT_NO_ANNOTATION:
@@ -497,7 +496,7 @@ class LmdbDataWriter(BaseDataWriter):
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         asset_src_path = os.path.join(self._assets_location, asset_id)
-        asset_data = self._preprocessor.prep_img(src_img_path=asset_src_path)
+        asset_data = self._preprocessor.prep_img(src_img_path=asset_src_path, return_bytes=True)
 
         # write asset and annotations
         anno_key_name = ''

@@ -65,24 +65,22 @@ class DataPreprocessor:
     def need_prep(self) -> bool:
         return len(self._op_args) > 0
 
-    @classmethod
-    def _read(cls, img_path: str) -> Image:
-        return Image.open(img_path)
-
-    def prep_img(self, src_img_path: str, dest_img_path: str = '') -> bytes:
+    def prep_img(self, src_img_path: str, dest_img_path: str = '', return_bytes: bool = True) -> bytes:
         """
         preprocess, copy preprocessed image to dest_img_path, or return bytes of preprocessed image
         """
         if not self.need_prep:
             if dest_img_path:
                 shutil.copyfile(src_img_path, dest_img_path)
-                return b''
+
             # if wants to return bytes
-            with open(src_img_path, 'rb') as f:
-                return f.read()
+            if return_bytes:
+                with open(src_img_path, 'rb') as f:
+                    return f.read()
+            return b''
 
         # if need prep
-        img = self._read(img_path=src_img_path)
+        img = Image.open(src_img_path)
         orig_img_format = img.format
 
         for op_name, op_args in self._op_args:
@@ -92,11 +90,12 @@ class DataPreprocessor:
         if dest_img_path:
             with open(dest_img_path, 'wb') as f:
                 img.save(dest_img_path, format=orig_img_format)
-            return b''
         # if wants to return bytes
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, format=orig_img_format)
-        return img_bytes.getvalue()
+        if return_bytes:
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format=orig_img_format)
+            return img_bytes.getvalue()
+        return b''
 
     def prep_pbs(self, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                  gt_annotations: mirpb.SingleImageAnnotations) -> None:
