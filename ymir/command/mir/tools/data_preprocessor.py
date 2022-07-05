@@ -104,6 +104,8 @@ class DataPreprocessor:
 
     def prep_pbs(self, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                  gt_annotations: mirpb.SingleImageAnnotations) -> None:
+        if not self.need_prep:
+            return
         for op_name, op_args in self._op_args:
             func = globals()[f"_prep_pbs_{op_name}"]
             func(attrs=attrs, image_annotations=image_annotations, gt_annotations=gt_annotations, **op_args)
