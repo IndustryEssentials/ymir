@@ -60,12 +60,14 @@ class GPUInfo:
     def add_locked_gpus(cls, gpus: List[str]) -> None:
         gpu_mapping = {gpu: time.time() for gpu in gpus}
         rds.zadd(gpu_task_config.GPU_LOCKING_SET, gpu_mapping)
+        logging.info(f"[add_locked_gpus]: {gpu_mapping}")
 
     @classmethod
     def get_available_gpus(cls) -> List:
         runtime_free_gpus = GPUInfo.get_free_gpus()
         locked_gpus = cls.get_locked_gpus()
         ava_gpus = runtime_free_gpus - locked_gpus
+        logging.info(f"[get_available_gpus] free: {runtime_free_gpus}, locked: {locked_gpus}, aval: {ava_gpus}")
 
         return list(ava_gpus)
 
