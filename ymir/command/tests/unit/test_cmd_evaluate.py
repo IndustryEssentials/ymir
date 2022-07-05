@@ -138,12 +138,14 @@ class TestCmdEvaluate(unittest.TestCase):
                         'weather': 'sunny',
                         'color': 'red',
                     },
+                    'image_quality': 0.5,
                 },
                 'a1': {
                     'cks': {
                         'weather': 'sunny',
                         'color': 'blue',
                     },
+                    'image_quality': 1.0,
                 },
             },
             'ground_truth': {
@@ -483,7 +485,22 @@ class TestCmdEvaluate(unittest.TestCase):
                 },
                 'task_id': ''
             },
-            'image_cks': {}
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'weather': 'sunny',
+                        'color': 'red',
+                    },
+                    'image_quality': 0.5,
+                },
+                'a1': {
+                    'cks': {
+                        'weather': 'sunny',
+                        'color': 'blue',
+                    },
+                    'image_quality': 1.0,
+                },
+            },
         }
         annotations_dict = json_format.MessageToDict(mir_annotations,
                                                      including_default_value_fields=True,

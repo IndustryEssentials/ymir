@@ -725,6 +725,69 @@
       "font_class": "pretreatment",
       "unicode": "e6fb",
       "unicode_decimal": 59131
+    },
+    {
+      "icon_id": "100896692",
+      "name": "start",
+      "font_class": "start",
+      "unicode": "e6fc",
+      "unicode_decimal": 59132
+    },
+    {
+      "icon_id": "100896693",
+      "name": "stop",
+      "font_class": "stop1",
+      "unicode": "e6fd",
+      "unicode_decimal": 59133
+    },
+    {
+      "icon_id": "100896694",
+      "name": "bell",
+      "font_class": "bell",
+      "unicode": "e6fe",
+      "unicode_decimal": 59134
+    },
+    {
+      "icon_id": "100896695",
+      "name": "wait",
+      "font_class": "wait",
+      "unicode": "e6ff",
+      "unicode_decimal": 59135
+    },
+    {
+      "icon_id": "100896696",
+      "name": "tipts",
+      "font_class": "tipts",
+      "unicode": "e700",
+      "unicode_decimal": 59136
+    },
+    {
+      "icon_id": "102565537",
+      "name": "diagnosis2",
+      "font_class": "diagnosis2",
+      "unicode": "e701",
+      "unicode_decimal": 59137
+    },
+    {
+      "icon_id": "102565538",
+      "name": "government-line",
+      "font_class": "government-line",
+      "unicode": "e702",
+      "unicode_decimal": 59138
+    },
+    {
+      "icon_id": "102565539",
+      "name": "diagnosis",
+      "font_class": "diagnosis",
+      "unicode": "e703",
+      "unicode_decimal": 59139
+    },
+    {
+      "icon_id": "102565540",
+      "name": "scene",
+      "font_class": "scene",
+      "unicode": "e704",
+      "unicode_decimal": 59140
     }
   ]
 }

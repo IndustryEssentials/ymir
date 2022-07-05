@@ -326,7 +326,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 </Form.Item>}
             </Tip>
             <Tip content={t('tip.train.export.format')}>
-              <Form.Item label={t('task.train.export.format')} name='trainFormat' initialValue={'none:raw'}>
+              <Form.Item label={t('task.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
                 <TrainFormat />
               </Form.Item>
             </Tip>

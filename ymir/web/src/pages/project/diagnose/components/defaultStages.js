@@ -26,7 +26,7 @@ const DefaultStages = ({ diagnosing, models = [] }) => {
   return diagnosing && models.length ?
     <Panel label={t('model.diagnose.stage.label')} toogleVisible={false}>
       {uniqueModels.map(model =>
-        <Form.Item label={`${model.name} ${model.versionName}`}>
+        <Form.Item key={model.id} label={`${model.name} ${model.versionName}`}>
           <Select defaultValue={model.recommendStage} onChange={(value) => clickHandle(model.id, value)}>
             {model.stages.map(stage => <Select.Option key={stage.id} value={stage.id}>{stage.name}</Select.Option>)}
           </Select>
