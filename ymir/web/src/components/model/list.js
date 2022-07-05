@@ -450,7 +450,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       </div>) : <Empty />}
     </div>
     <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
-      current={query.current} defaultCurrent={query.current} defaultPageSize={query.limit} onChange={listChange} />
+      current={query.current} pageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
