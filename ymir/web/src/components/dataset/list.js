@@ -489,7 +489,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       </div>)}
     </div>
     <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
-      current={query.current} defaultCurrent={query.current} defaultPageSize={query.limit} onChange={listChange} />
+      current={query.current} pageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
