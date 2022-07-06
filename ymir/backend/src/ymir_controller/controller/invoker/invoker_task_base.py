@@ -106,7 +106,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if preprocess_config:
             task_context["preprocess"] = preprocess_config
 
-        task_context['server_runtime'] = assets_config.get('server_runtime', 'nvidia')
+        task_context['server_runtime'] = assets_config['server_runtime']
 
         gpu_count = executor_config.get("gpu_count", 0)
         executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
