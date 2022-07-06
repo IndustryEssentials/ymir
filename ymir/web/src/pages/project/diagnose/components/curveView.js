@@ -129,7 +129,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   return list.map(({ id, label, rows }) => <div key={id}>
     <h3>{label}</h3>
     <Row gutter={20}>
-      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 200 }}>
+      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 300 }}>
         <PrCurve title={title} lines={lines} />
       </Col>
       )}

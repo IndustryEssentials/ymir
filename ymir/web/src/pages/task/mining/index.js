@@ -170,7 +170,7 @@ function Mining({ datasetCache, ...func }) {
           >
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
-              <Tip hidden={true}>
+              <Tip content={t('tip.task.mining.dataset')}>
                 <Form.Item
                   label={t('task.mining.form.dataset.label')}
                   required

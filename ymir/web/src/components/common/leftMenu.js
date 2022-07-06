@@ -15,7 +15,6 @@ const getItem = (label, key, icon, children, type = '') => ({
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
 
 function LeftMenu({ role }) {
-  console.log('role:', role)
   const history = useHistory()
   const { pathname } = useLocation()
   const [defaultKeys, setDefaultKeys] = useState(null)
@@ -58,7 +57,6 @@ function LeftMenu({ role }) {
   }, [pathname])
 
   const clickHandle = ({ key }) => {
-    console.log('key:', key)
     setDefaultKeys([key])
     history.push(key)
   }
