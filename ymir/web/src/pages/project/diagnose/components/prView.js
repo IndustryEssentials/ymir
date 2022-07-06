@@ -220,10 +220,12 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
         title: t(labels.colTarget, { label: <div>{label}</div> }),
         dataIndex: `${value}_target`,
         colSpan: 2,
+        width: 100,
         render: percentRender,
       }, {
         colSpan: 0,
         dataIndex: `${value}_conf`,
+        width: 100,
         render: percentRender,
       },
     ])).flat()
@@ -231,6 +233,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       {
         title: 'Model',
         dataIndex: 'name',
+        width: 150,
         onCell: (_, index) => ({
           rowSpan: index % range.length ? 0 : range.length,
         }),
@@ -238,17 +241,20 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       {
         title: t(labels.colMain),
         dataIndex: 'value',
+        width: 100,
         render: percentRender,
       },
       ...dynamicColumns,
       {
         title: t(labels.colAverage),
         dataIndex: 'a',
+        width: 100,
         render: percentRender,
       },
       {
         title: t('model.diagnose.metrics.confidence.average.label'),
         dataIndex: 'ca',
+        width: 100,
         render: percentRender,
       },
     ]
