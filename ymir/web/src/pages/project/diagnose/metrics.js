@@ -86,6 +86,7 @@ function Matrics({ pid, project }) {
 
   useEffect(() => {
     setDiagnosing(!!diagnosis)
+    setSelectedKeywords([])
   }, [diagnosis])
 
   useEffect(() => {
