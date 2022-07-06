@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { Card, Button, Form, Row, Col, } from "antd"
+import { Card, Button, Form, Row, Col, Table, } from "antd"
 
 import t from "@/utils/t"
 import Panel from "@/components/form/panel"
@@ -15,10 +15,23 @@ function Training({ pid, project }) {
   const [selectedModels, setSelectedModels] = useState([])
   const [tensorboardUrl, setUrl] = useState('')
   const [hasResult, setHasResult] = useState(false)
+  const [modelMap, setModelMap] = useState([])
+  const nameColumns = [
+    {title: 'model', dataIndex: 'name', ellipsis: true, width: '50%' },
+    {title: 'hash', dataIndex: 'hash', ellipsis: true },
+  ]
+
+  useEffect(() => {
+    const maps = selectedModels.map(model => ({
+      id: model.id,
+      name: `${model.name} ${model.versionName}`,
+      hash: model.task.hash,
+    }))
+    setModelMap(maps)
+  }, [hasResult, selectedModels])
 
   useEffect(() => {
     if (iframe.current && tensorboardUrl) {
-      console.log('iframe loaded')
       iframe.current.onload = () => {
         hideSidebar()
       }
@@ -42,7 +55,6 @@ function Training({ pid, project }) {
   function hideSidebar() {
     setTimeout(() => {
       try {
-        console.log('iframe loaded')
         const document = iframe.current.contentWindow.document
         const sidebarShadowRoot = document.getElementsByTagName('tf-scalar-dashboard')[0].shadowRoot.children[1].shadowRoot
 
@@ -68,12 +80,15 @@ function Training({ pid, project }) {
   return (
     <div className={s.wrapper}>
       <Row gutter={20}>
-        <Col span={18} style={{ border: '1px solid #ccc', minHeight: 500, height: 'calc(100vh - 300px)', padding: 0 }}>
+        <Col span={18} style={{ border: '1px solid #ccc', minHeight: 500, height: 'calc(100vh - 250px)', padding: 0 }}>
           {tensorboardUrl ? <iframe ref={iframe} src={tensorboardUrl} style={{ width: '100%', height: '100%', border: 'none' }}></iframe>
             : ''}
         </Col>
         <Col span={6} className={s.formContainer}>
-          <div className={s.mask} hidden={!hasResult}>
+          <div className={s.trainingMask} hidden={!hasResult}>
+            <div className={s.nameList}>
+              <Table dataSource={modelMap} columns={nameColumns} pagination={false} rowKey={r => r.id} />
+            </div>
             <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}>
               <CompareIcon /> {t('model.action.diagnose.training.retry')}
             </Button>
@@ -91,7 +106,7 @@ function Training({ pid, project }) {
               colon={false}
             >
               <Form.Item label={t('model.diagnose.form.model')} name='model' rules={[{ required: true }, { type: 'array', max: 5 }]}>
-                <ModelSelect multiple placeholder={t('task.train.form.model.placeholder')} pid={pid} onChange={modelChange} />
+                <ModelSelect multiple placeholder={t('task.train.form.model.placeholder')} pid={pid} onChange={modelChange} onlyModel />
               </Form.Item>
               <Form.Item name='submitBtn'>
                 <div style={{ textAlign: 'center' }}>
