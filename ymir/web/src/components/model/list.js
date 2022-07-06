@@ -200,6 +200,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.iterationLabel
         const iteration = iterations.find(iter => iter.model === item.id)
         if (iteration) {
           item.iterationLabel = t('iteration.tag.round', iteration)
@@ -215,6 +216,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.projectLabel
         item = setLabelByProject(project?.model, 'isInitModel', item)
         return { ...item }
       })
@@ -225,6 +227,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
 
   function setGroupLabelsByProject(items, project) {
     return items.map(item => {
+      delete item.projectLabel
       item = setLabelByProject(project?.model, 'isInitModel', item)
       return { ...item }
     })
