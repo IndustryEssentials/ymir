@@ -4,14 +4,7 @@ import { percent, toFixed } from '@/utils/number'
 import { isSame } from '@/utils/object'
 import t from '@/utils/t'
 import Panel from "@/components/form/panel"
-
-const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
-
-const average = (nums = []) => nums.reduce((prev, num) => !Number.isNaN(num) ? prev + num : prev, 0) / nums.length
-
-const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
-  Object.values(iou_evaluations)[0]['ci_evaluations'] :
-  iou_averaged_evaluation['ck_evaluations']
+import { average, getCK, getKwField, opt, percentRender, getModelCell } from "./common"
 
 const getLabels = type => ({
   colMain: `model.diagnose.metrics.${type}.label`,
@@ -81,8 +74,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   useEffect(() => {
     if (data && keywords) {
       const kws = kwType ?
-        Object.keys(Object.values(data)[0].iou_averaged_evaluation.ck_evaluations[keywords].sub)
-          .map(k => ({ value: k, label: k, parent: keywords })) :
+        getCK(data, keywords) :
         keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
     }
@@ -148,9 +140,9 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
     return tts.map(({ model, result: rid }) => {
       return range.map(rate => {
-        const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
+        const ddata = (kwType ? dData[rid][keywords]?.sub : dData[rid]) || {}
 
-        const _model = getModelCell(rid)
+        const _model = getModelCell(rid, tasks, models)
         const kwPoints = kd.map(({ value: kw }) => {
           const line = ddata[kw]?.pr_curve
           return { point: findClosestPoint(rate, line, pointField[0]), kw }
@@ -177,7 +169,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
   // todo
   function generateKwRows(kw) {
-    const kdata = kwType ? kData[keywords][kw] : kData[kw]
+    const kdata = (kwType ? kData[keywords][kw] : kData[kw]) || {}
 
 
     const mids = Object.values(tasks.reduce((prev, { model, stage, config }) => {
@@ -190,11 +182,11 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
     return mids.map(({ id, mid, sid, config }) => {
       const tts = tasks.filter(({ model, stage, config: tconfig }) => model === mid && stage === sid && isSame(config, tconfig))
-      const _model = getModelCell(tts[0].result)
+      const _model = getModelCell(tts[0].result, tasks, models)
 
       return range.map(rate => {
         const points = tts.map(({ result: rid, testing: tid }) => {
-          const line = kdata ? kdata[rid]?.pr_curve : []
+          const line = kdata[rid]?.pr_curve
           const point = findClosestPoint(rate, line, pointField[0])
           return {
             tid,
@@ -222,13 +214,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
     }).flat()
   }
 
-  function getModelCell(rid) {
-    const task = tasks.find(({ result }) => result === rid)
-    const model = models.find(model => model.id === task.model)
-    const stage = model.stages.find(sg => sg.id === task.stage)
-    return <span title={JSON.stringify(task.config)}>{`${model.name} ${model.versionName} ${stage.name}`}</span>
-  }
-
   function generateColumns() {
     const dynamicColumns = xasix.map(({ value, label }) => ([
       {
@@ -237,7 +222,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
         colSpan: 2,
         render: percentRender,
       }, {
-        title: t('model.diagnose.metrics.confidence.label', { label }),
         colSpan: 0,
         dataIndex: `${value}_conf`,
         render: percentRender,
@@ -269,8 +253,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       },
     ]
   }
-
-  const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
 
   return list.map(({ id, label, rows }) => <div key={id}>
     <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
