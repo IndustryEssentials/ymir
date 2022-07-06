@@ -98,7 +98,7 @@ function Mining({ datasetCache, ...func }) {
     setSeniorConfig(params)
   }
 
-  const onFinish = async (values) => {    
+  const onFinish = async (values) => {
     const config = {
       ...values.hyperparam?.reduce(
         (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
@@ -230,15 +230,11 @@ function Mining({ datasetCache, ...func }) {
                   initialValue={true}
                   noStyle
                 >
-                  <Radio.Group onChange={filterStrategyChange}>
-                    <Radio value={false}>{t('common.all')}</Radio>
-                    <Radio checked value={true}>{t('task.mining.form.topk.label')}</Radio>
-                    <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
-                      { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
-                    ] : null}>
-                      <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
-                    </Form.Item>
-                  </Radio.Group>
+                  <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
+                    { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
+                  ] : null}>
+                    <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
+                  </Form.Item>
                 </Form.Item>
                 <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
               </Form.Item>
