@@ -54,7 +54,7 @@ function LeftMenu({ role }) {
       getItem(t('user.settings'), '/home/user', <UserIcon />,),
       getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'github',),
     ])
-  }, [pathname])
+  }, [pathname, role])
 
   const clickHandle = ({ key }) => {
     setDefaultKeys([key])
