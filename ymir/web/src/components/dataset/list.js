@@ -197,15 +197,15 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const actionMenus = (record) => {
-    const { id, groupId, state, taskState, task, isProtected } = record
+    const { id, groupId, state, taskState, task, assetCount } = record
+    const always = [{
+      key: "fusion",
+      label: t("dataset.action.fusion"),
+      hidden: () => !isValidDataset(state),
+      onclick: () => history.push(`/home/project/${pid}/fusion?did=${id}`),
+      icon: <ScreenIcon className={styles.addBtnIcon} />,
+    }]
     const menus = [
-      {
-        key: "fusion",
-        label: t("dataset.action.fusion"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/project/${pid}/fusion?did=${id}`),
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
-      },
       {
         key: "train",
         label: t("dataset.action.train"),
@@ -256,7 +256,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         icon: <EyeOffIcon />,
       },
     ]
-    return menus
+    return assetCount === 0 ? always : [...always, ...menus]
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
