@@ -390,4 +390,7 @@ def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str
 
 
 def get_docker_executable(gpu_ids: str) -> str:
-    return 'nvidia-docker'
+    runtime = os.environ.get('SERVER_RUNTIME', 'nvidia')
+    if runtime == 'nvidia':
+        return 'nvidia-docker'
+    return 'docker'
