@@ -1,7 +1,7 @@
 import requests
 from fastapi.testclient import TestClient
 
-from monitor.utils.crontab_job import update_monitor_percent_log
+from monitor.utils.crontab_job import monitor_task_logs
 
 
 def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
@@ -9,7 +9,11 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
     mocker.patch("os.path.isfile", return_value=True)
     data = "task_id_1	21245543	0.50	2"
     mocker.patch("builtins.open", mocker.mock_open(read_data=data))
-    body = dict(task_id="task_id_1", log_path_weights={"/data/test/monitor.txt": 1.0},)
+    body = dict(
+        task_id="task_id_1",
+        user_id="12",
+        log_path_weights={"/data/test/monitor.txt": 1.0},
+    )
     client.post("/api/v1/tasks", json=body)
 
     data = "task_id_1	21245567	1	3"
@@ -20,7 +24,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
     mock_resp.status_code = 200
     mocker.patch.object(requests, "post", return_value=mock_resp)
 
-    update_monitor_percent_log()
+    monitor_task_logs()
 
     r = client.get("/api/v1/finished_tasks")
 
@@ -40,9 +44,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
                 },
                 "task_extra_info": {
                     "monitor_type": 1,
-                    "log_path_weights": {
-                        "/data/test/monitor.txt": 1.0
-                    },
+                    "log_path_weights": {"/data/test/monitor.txt": 1.0},
                     "description": None,
                 },
                 "percent_result": {

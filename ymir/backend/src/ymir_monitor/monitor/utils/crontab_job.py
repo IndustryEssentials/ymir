@@ -1,8 +1,7 @@
-from datetime import datetime
-import json
+import itertools
 import logging
-import os
 import sys
+import time
 from typing import List
 
 import sentry_sdk
@@ -14,91 +13,110 @@ from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
 from monitor.libs.services import TaskService
-from monitor.schemas.task import TaskSetStorageStructure
+from monitor.schemas.task import TaskStorageStructure
 
 
-def send_updated_task(redis_client: RedisHandler, updated_info: TaskSetStorageStructure) -> None:
-    for event in updated_info.dict().values():
-        logging.info("send_updated_task: %s to redis stream", event)
-        redis_client.xadd(settings.APP_REDIS_STREAM, {"payload": json.dumps(event)})
+def notify_updated_task(redis_client: RedisHandler, task_infos: List[TaskStorageStructure]) -> None:
+    """
+    Enqueue updated task to Redis Stream.
+    Ymir App will fetch and pass them to Frontend.
+    """
+    for task_info in task_infos:
+        logging.info("notify_updated_task: %s to redis stream", task_info.percent_result)
+        redis_client.xadd(settings.APP_REDIS_STREAM, {"payload": task_info.json()})
 
 
-def process_updated_task(
-    redis_client: RedisHandler,
-    task_updated_model: TaskSetStorageStructure,
-    task_id_finished: List[str],
-) -> None:
+def _update_redis_for_running_tasks(redis_client: RedisHandler, task_infos: List[TaskStorageStructure]) -> None:
     # sentry will catch Exception
-    send_updated_task(redis_client, task_updated_model)
-    task_updated = task_updated_model.dict()
-    redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_updated)
-    if task_id_finished:
-        redis_client.hmset(
-            settings.MONITOR_FINISHED_KEY, mapping={task_id: task_updated[task_id] for task_id in task_id_finished}
+    if not task_infos:
+        return
+    task_info_mapping = {task_info.percent_result.task_id: task_info.dict() for task_info in task_infos}
+    redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_info_mapping)
+    logging.info(f"processed redis key for updated task ids {task_info_mapping.keys()}")
+
+
+def _update_redis_for_finished_tasks(redis_client: RedisHandler, task_infos: List[TaskStorageStructure]) -> None:
+    if not task_infos:
+        return
+    task_info_mapping = {task_info.percent_result.task_id: task_info.dict() for task_info in task_infos}
+    redis_client.hmset(settings.MONITOR_FINISHED_KEY, mapping=task_info_mapping)
+    redis_client.hdel(settings.MONITOR_RUNNING_KEY, *task_info_mapping.keys())
+    logging.info(f"processed redis key for finished task ids {task_info_mapping.keys()}")
+
+
+def update_monitor_redis(redis_client: RedisHandler, task_infos: List[TaskStorageStructure]) -> None:
+    for state, tasks in itertools.groupby(
+        sorted(task_infos, key=lambda x: x.percent_result.state), key=lambda x: x.percent_result.state
+    ):
+        # group tasks by states so as to bulk process tasks in the same state in one go
+        if state in [LogState.DONE, LogState.ERROR]:
+            _update_redis_for_finished_tasks(redis_client, list(tasks))
+        else:
+            _update_redis_for_running_tasks(redis_client, list(tasks))
+
+
+def read_latest_log(log_path: str, task_id: str) -> PercentResult:
+    try:
+        percent_result = PercentLogHandler.parse_percent_log(log_path)
+    except Exception:
+        msg = f"failed to parse log file: {log_path}"
+        sentry_sdk.capture_exception()
+        logging.exception(msg)
+        percent_result = PercentResult(
+            task_id=task_id,
+            timestamp=f"{time.time():.6f}",
+            percent=1.0,
+            state=LogState.ERROR,
+            state_code=MonitorErrorCode.PERCENT_LOG_PARSE_ERROR,
+            state_message=msg,
         )
-        redis_client.hdel(settings.MONITOR_RUNNING_KEY, *task_id_finished)
-
-        logging.info(f"finished task ids {task_id_finished}")
+    return percent_result
 
 
-def update_monitor_percent_log() -> None:
+def monitor_task_logs() -> None:
+    """
+    Periodically monitor task logs.
+    Only registered tasks will be checked.
+    """
     redis_client = redis_handler.RedisHandler()
-    contents = redis_client.hgetall(settings.MONITOR_RUNNING_KEY)
+    running_tasks = redis_client.hgetall(settings.MONITOR_RUNNING_KEY)
 
-    task_updated = dict()
-    task_id_finished = []
-    for task_id, content in contents.items():
-        flag_task_updated = False
-        runtime_log_contents = dict()
-        logging.info(f"content: {content}")
-        for log_path, previous_log_content in content["raw_log_contents"].items():
-            if not os.path.isfile(log_path):
-                logging.info(f"log file not exists: {log_path}")
-                continue
+    updated_tasks = []
+    for task_id, task_info in running_tasks.items():
+        # task_info: TaskStorageStructure.dict()
+        is_updated_task = False
+        raw_log_contents = {}
+        logging.info(f"previous percent_result: {task_info['percent_result']}")
+        for log_path, previous_percent_result in task_info["raw_log_contents"].items():
+            percent_result = read_latest_log(log_path, task_id)
+            logging.info(f"current percent_result: {percent_result}")
+            raw_log_contents[log_path] = percent_result
+            if percent_result.timestamp != previous_percent_result["timestamp"]:
+                is_updated_task = True
 
-            try:
-                runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
-            except EOFError as e:
-                sentry_sdk.capture_exception(e)
-                logging.exception(e)
-                continue
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
-                logging.exception(e)
-                runtime_log_content = PercentResult(task_id=task_id,
-                                                    timestamp=f"{datetime.now().timestamp():.6f}",
-                                                    percent=1.0,
-                                                    state=LogState.ERROR,
-                                                    state_code=MonitorErrorCode.PERCENT_LOG_PARSE_ERROR,
-                                                    state_message=f"logfile parse error: {log_path}")
-
-            runtime_log_contents[log_path] = runtime_log_content
-            if runtime_log_content.timestamp != previous_log_content["timestamp"]:
-                flag_task_updated = True
-
-        if flag_task_updated:
-            task_extra_info = content["task_extra_info"]
-            content_merged = TaskService.merge_task_progress_contents(
+        if is_updated_task:
+            task_extra_info = task_info["task_extra_info"]
+            merged_percent_result = TaskService.merge_task_progress_contents(
                 task_id=task_id,
-                raw_log_contents=runtime_log_contents,
+                raw_log_contents=raw_log_contents,
                 log_path_weights=task_extra_info["log_path_weights"],
             )
-            if content_merged.state in [LogState.DONE, LogState.ERROR]:
-                task_id_finished.append(task_id)
-            task_updated[task_id] = dict(
-                raw_log_contents=runtime_log_contents,
-                task_extra_info=task_extra_info,
-                percent_result=content_merged,
+            logging.info(f"merged percent_result: {merged_percent_result}")
+            updated_tasks.append(
+                TaskStorageStructure(
+                    raw_log_contents=raw_log_contents,
+                    task_extra_info=task_extra_info,
+                    percent_result=merged_percent_result,
+                )
             )
 
-    if len(task_updated):
-        task_updated_model = TaskSetStorageStructure.parse_obj(task_updated)
-        process_updated_task(redis_client, task_updated_model, task_id_finished)
+    notify_updated_task(redis_client, updated_tasks)
+    update_monitor_redis(redis_client, updated_tasks)
 
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, format="%(levelname)-8s: [%(asctime)s] %(message)s", level=logging.INFO)
     sentry_sdk.init(settings.MONITOR_SENTRY_DSN)
     sched = BlockingScheduler()
-    sched.add_job(update_monitor_percent_log, "interval", seconds=settings.INTERVAL_SECONDS)
+    sched.add_job(monitor_task_logs, "interval", seconds=settings.INTERVAL_SECONDS)
     sched.start()
