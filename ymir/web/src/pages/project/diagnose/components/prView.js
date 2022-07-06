@@ -179,11 +179,16 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   function generateKwRows(kw) {
     const kdata = kwType ? kData[keywords][kw] : kData[kw]
 
-    const mids = Object.values(tasks.reduce((prev, { model, stage, config }) => ({
-      ...prev,
-      [`${model}${stage}${JSON.stringify(config)}`]: { mid: model, sid: stage, config: config },
-    }), {}))
-    return mids.map(({ mid, sid, config }) => {
+
+    const mids = Object.values(tasks.reduce((prev, { model, stage, config }) => {
+      const id = `${model}${stage}${JSON.stringify(config)}`
+      return {
+        ...prev,
+        [id]: { id, mid: model, sid: stage, config: config },
+      }
+    }, {}))
+
+    return mids.map(({ id, mid, sid, config }) => {
       const tts = tasks.filter(({ model, stage, config: tconfig }) => model === mid && stage === sid && isSame(config, tconfig))
       const _model = getModelCell(tts[0].result)
 
@@ -206,7 +211,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
         return {
           
-            id: `${mid}${sid}${JSON.stringify(config)}${rate}`,
+            id: `${id}${rate}`,
             value: rate,
             name: _model,
             ...tpoints,

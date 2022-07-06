@@ -144,7 +144,8 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       }, {}) : {}
       const _average = kwType ? kdata._average.ap : average(Object.values(drow))
       return {
-        id,
+        id: `${id}${rate}`,
+        config,
         _model,
         _average,
         ...drow,

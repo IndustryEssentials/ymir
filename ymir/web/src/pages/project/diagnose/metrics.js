@@ -22,8 +22,8 @@ const metricsTabs = [
 ]
 
 const xAxisOptions = [
-  { label: 'Dataset', value: 0 },
-  { label: 'Class', value: 1 },
+  { key: 'dataset', value: 0 },
+  { key: 'keyword', value: 1 },
 ]
 
 const kwTypes = [{ label: 'keyword.add.name.label', value: 0 }, { label: 'keyword.ck.label', value: 1 }]
@@ -185,7 +185,7 @@ function Matrics({ pid, project }) {
       <Col>
         <Space size={20}>
           <span>{t('model.diagnose.metrics.dimension.label')}</span>
-          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions} onChange={xAxisChange} />
+          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions.map(({ key, value }) => ({ value, label: t(`model.diagnose.metrics.x.${key}`)}))} onChange={xAxisChange} />
         </Space>
       </Col>
     </Row>
