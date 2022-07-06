@@ -32,3 +32,9 @@ jobs:
         git config --global user.email 'deployer@ymir-team'
         tox
       working-directory: ymir/backend
+    - uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip
+        restore-keys: |
+          ${{ runner.os }}-pip-
