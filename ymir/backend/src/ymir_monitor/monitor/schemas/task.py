@@ -22,7 +22,7 @@ class TaskParameter(BaseModel):
     @validator("log_path_weights")
     def check_files(cls, log_path_weights: Dict[str, float]) -> Dict[str, float]:
         for log_path in log_path_weights:
-            if not os.path.exists(log_path):
+            if not os.path.isfile(log_path):
                 raise ValueError(f"log_path not exists {log_path}")
 
         delta = 0.001
@@ -43,10 +43,3 @@ class TaskStorageStructure(BaseModel):
     raw_log_contents: Dict[str, PercentResult]
     task_extra_info: TaskExtraInfo
     percent_result: PercentResult
-
-
-class TaskSetStorageStructure(BaseModel):
-    __root__: Dict[str, TaskStorageStructure]
-
-    def dict(self) -> Dict:  # type: ignore
-        return super().dict()["__root__"]
