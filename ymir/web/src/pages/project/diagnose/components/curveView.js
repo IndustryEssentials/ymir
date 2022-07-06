@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react"
 import { Col, Row, Table } from "antd"
-import { percent } from '@/utils/number'
 import PrCurve from "./prCurve"
-
-const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
-
-const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
-  Object.values(iou_evaluations)[0]['ci_evaluations'] :
-  iou_averaged_evaluation['ck_evaluations']
+import { getCK, getKwField, getModelCell, opt } from "./common"
 
 const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
@@ -34,8 +28,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   useEffect(() => {
     if (data && keywords) {
       const kws = kwType ?
-        Object.keys(Object.values(data)[0].iou_averaged_evaluation.ck_evaluations[keywords].sub)
-          .map(k => ({ value: k, label: k, parent: keywords })) :
+        getCK(data, keywords) :
         keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
     }
@@ -95,9 +88,9 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
 
     return kd.map(({ value }) => {
       const kwRows = tts.map(({ result: rid }) => {
-        const ddata = kwType ? dData[rid][keywords].sub : dData[rid]
-        const _model = getModelCell(rid)
-        const line = ddata[value]?.pr_curve
+        const ddata = (kwType ? dData[rid][keywords]?.sub : dData[rid]) || {}
+        const _model = getModelCell(rid, tasks, models)
+        const line = ddata[value]?.pr_curve || []
         return {
           id: rid,
           name: _model,
@@ -113,12 +106,12 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   }
 
   const generateKwRows = (kw) => {
-    const kdata = kwType ? kData[keywords][kw] : kData[kw]
+    const kdata = kwType ? (kData[keywords] ? kData[keywords][kw] : null) : kData[kw]
 
     return dd.map(({ value: tid, label }) => {
       const tks = tasks.filter(({ testing }) => testing === tid)
       const lines = tks.map(({ testing, result }) => {
-        const _model = getModelCell(result)
+        const _model = getModelCell(result, tasks, models)
         return {
           id: testing,
           name: _model,
@@ -133,17 +126,10 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     })
   }
 
-  function getModelCell(rid) {
-    const task = tasks.find(({ result }) => result === rid)
-    const model = models.find(model => model.id === task.model)
-    const stage = model.stages.find(sg => sg.id === task.stage)
-    return `${model.name} ${model.versionName} ${stage.name}`
-  }
-
   return list.map(({ id, label, rows }) => <div key={id}>
     <h3>{label}</h3>
     <Row gutter={20}>
-      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 200 }}>
+      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 300 }}>
         <PrCurve title={title} lines={lines} />
       </Col>
       )}
