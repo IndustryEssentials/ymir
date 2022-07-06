@@ -33,6 +33,7 @@ def _execute_in_openpai(
         executor_config=executor_config,
         gpu_id=gpu_id,
         run_as_root=run_as_root,
+        task_config=task_config,
     )
 
 
@@ -56,8 +57,9 @@ def _execute_locally(
     executor_config: Dict,
     gpu_id: str,
     run_as_root: bool,
+    task_config: dict,
 ) -> int:
-    cmd = [mir_utils.get_docker_executable(gpu_ids=gpu_id), 'run', '--rm']
+    cmd = [mir_utils.get_docker_executable(task_context=task_config), 'run', '--rm']
     # path bindings
     cmd.append(f"-v{work_dir_in}:/in:ro")
     cmd.append(f"-v{work_dir_out}:/out")
@@ -150,4 +152,5 @@ def run_docker_executant(work_dir_in: str,
             executor_config=executor_config,
             gpu_id=gpu_id,
             run_as_root=run_as_root,
+            task_config=task_config,
         )
